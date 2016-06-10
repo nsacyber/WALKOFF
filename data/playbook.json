@@ -1,0 +1,43 @@
+{
+    "HelloWorldWorkflow": {
+          "options": {
+              "autorun": "true",
+              "scheduler": {
+                  "eDT": "2016-3-15 12:00:00",
+                  "interval": 0.1,
+                  "sDT": "2016-1-1 12:00:00"
+              }
+          },
+          "play": [
+              {
+                  "action": "helloWorld",
+                  "app": "HelloWorld",
+                  "device": "hwTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "start",
+                  "in": {
+                  },
+                  "to": [
+                          {"conditions":[{"flag":"regMatch", "args":{"regex":"(.*)"}, "filters":[]},  {"flag":"count", "args":{"type":"int", "operator":"e", "threshold":"45"}, "filters":[{"filter":"length", "args":{}, "type":"pre"}]}], "next":"1"}
+                        ]
+              },
+              {
+                  "action": "repeatBackToMe",
+                  "app": "HelloWorld",
+                  "device": "hwTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "1",
+                  "in": {
+                    "call":"<-{\"action\":\"out\", \"args\":{\"id\":\"start\"}, \"filters\":[]}->"
+                  },
+                  "to": [
+
+                        ]
+              }
+          ]
+      }
+}

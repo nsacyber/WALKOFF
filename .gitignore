@@ -1,0 +1,11 @@
+*.name
+.idea/encodings.xml
+*.iml
+*.pyc
+.idea/misc.xml
+.idea/workspace.xml
+.idea/vcs.xml
+.idea/modules.xml
+*.log
+data/walkoff.db
+*.pem

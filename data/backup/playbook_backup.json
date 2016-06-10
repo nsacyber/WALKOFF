@@ -1,0 +1,170 @@
+{
+    "DOE_Playbook": {
+        "options": {
+            "autorun": "true",
+            "scheduler": {
+                "eDT": "2016-3-15 12:00:00",
+                "interval": 0.1,
+                "sDT": "2016-1-1 12:00:00"
+            }
+        },
+        "play": [
+            {
+                "action": "connect",
+                "app": "Splunk",
+                "device": "test",
+                "error": [
+                    []
+                ],
+                "id": "start",
+                "in": {
+                    "query": "success"
+                },
+                "to": [
+                    [[["reg", "(.*)"]], "1"]
+                ]
+            },
+          {
+            "action": "search",
+            "app": "Splunk",
+            "device": "test",
+            "error": [
+              []
+            ],
+            "id": "1",
+            "in": {
+              "query": "search fireeye fileHash=\"*\" src=\"*\" dst=\"*\" | table fileHash src dst",
+              "exec_type": "oneshot",
+              "output_mode": "json"
+            },
+            "to": [
+               [[["reg", "(.*)"]], "2"]
+            ]
+          },
+          {
+                  "action": "connect",
+                  "app": "HawkeyeG",
+                  "device": "hegTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "2",
+                  "in": {
+                      "query": "success"
+                  },
+                  "to": [
+                          [[["reg", "(.*)"]], "3"]
+                        ]
+              },
+
+              {
+                  "action": "getMD5",
+                  "app": "HawkeyeG",
+                  "device": "hegTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "3",
+                  "in": {
+                      "md5": "91c6c12c6ce6c1650fbe4be01b69151c",
+                      "n":"25"
+                  },
+                  "to": [
+                          [[["reg", "(.*)"], ["count", "0", "le", "int"]], "4"],
+                          [[["reg", "(.*)"]], "5"]
+                        ]
+              },
+
+              {
+                  "action": "uploadMD5",
+                  "app": "HawkeyeG",
+                  "device": "hegTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "4",
+                  "in": {
+                      "md5": "91c6c12c6ce6c1650fbe4be01b69151c",
+                      "comments":"Andrew test MD5",
+                      "name":"testMD5"
+                  },
+                  "to": [
+                          [[["reg", "(.*)"]], "5"]
+                        ]
+              },
+
+              {
+                  "action": "scanHostFromIP",
+                  "app": "HawkeyeG",
+                  "device": "hegTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "5",
+                  "in": {
+                      "ip": "10.100.49.36"
+                  },
+                  "to": [
+                          [[["reg", "(.*)"]], "6"]
+                        ]
+              },
+
+              {
+                  "action": "close",
+                  "app": "HawkeyeG",
+                  "device": "hegTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "6",
+                  "in": {
+                      "query": "<-out:4->"
+                  },
+                  "to": [
+                  ]
+              }
+
+        ]
+    },
+    "HelloWorldWorkflow": {
+          "options": {
+              "autorun": "true",
+              "scheduler": {
+                  "eDT": "2016-3-15 12:00:00",
+                  "interval": 0.1,
+                  "sDT": "2016-1-1 12:00:00"
+              }
+          },
+          "play": [
+              {
+                  "action": "helloWorld",
+                  "app": "HelloWorld",
+                  "device": "hwTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "start",
+                  "in": {
+                  },
+                  "to": [
+                          {"conditions":[{"flag":"regMatch", "args":{"regex":"(.*)"}, "filters":[]},  {"flag":"count", "args":{"type":"int", "operator":"e", "threshold":"45"}, "filters":[{"filter":"length", "args":{}, "type":"pre"}]}], "next":"1"}
+                        ]
+              },
+              {
+                  "action": "repeatBackToMe",
+                  "app": "HelloWorld",
+                  "device": "hwTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "1",
+                  "in": {
+                    "call":"<-{\"action\":\"out\", \"args\":{\"id\":\"start\"}, \"filters\":[]}->"
+                  },
+                  "to": [
+
+                        ]
+              }
+          ]
+      }
+}
