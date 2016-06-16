@@ -9,3 +9,4 @@
 *.log
 data/walkoff.db
 *.pem
+*.bak
