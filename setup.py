@@ -20,7 +20,8 @@ setup(
                         'sqlalchemy >= 1.0.12',
                         'wtforms >= 2.1',
                         'werkzeug >= 0.11.4',
-                        'requests >= 2.9.1'],
+                        'requests >= 2.9.1',
+                        'importlib'],
 
     # metadata for upload to PyPI
     description = "This package is a reference implementation of the WALKOFF development standard.",
