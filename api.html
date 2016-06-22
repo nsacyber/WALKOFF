@@ -524,7 +524,49 @@ role-2:user
 									</tr>
 								</tbody>
 							</table></br>
-							
+						<h4> Trigger Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </th>
+										<th> Description </th>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Send </td>
+										<td> Takes the passed data through the form and matches it against configured triggers to execute a given playbook </td>
+										<td> /execution/listener </td>
+										<td> data - the data being sent </td>
+									</tr>
+									<tr>
+										<td> Display </td>
+										<td> Displays a given trigger </td>
+										<td> /execution/listener/triggers/[string:trigger_name]/display </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes the designated trigger </td>
+										<td> /execution/listener/triggers/[string:trigger_name]/remove </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits the given trigger </td>
+										<td> /execution/listener/triggers/[string:trigger_name]/edit </td>
+										<td> name:string, play:string, conditional:FieldList(string) </td>
+									</tr>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new trigger </td>
+										<td> /execution/listener/triggers/add </td>
+										<td> name:string, play:string, conditional:FieldList(string) </td>
+									</tr>
+								</tbody>
+							</table></br>	
 						<h4> Config Functions </h4>
 							<table class="table">
 								<thead>
