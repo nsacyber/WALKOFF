@@ -132,6 +132,160 @@
 			]
 		},
 		{
+			"id": "44ce2efc-2611-77c9-c5b3-f8ae963599a4",
+			"name": "Listener",
+			"description": "",
+			"order": [
+				"a8a7df38-3a12-92fa-e739-892cb717459e",
+				"6c404d6f-6c83-e5f7-0f83-dbb54678bd68",
+				"79f0af6c-07fd-ce3a-ddfc-d6416ebf7ebf",
+				"7659491a-1dba-14b6-7dd8-bf8c31cd25da",
+				"004fe098-04ac-3b4b-998c-65c4518b09b9"
+			],
+			"folders": [],
+			"timestamp": 1466424172065,
+			"synced": false,
+			"remote_id": 0,
+			"owner": 0,
+			"sharedWithTeam": false,
+			"subscribed": false,
+			"remoteLink": "",
+			"public": false,
+			"createdAt": 1466424172065,
+			"updatedAt": 1466427386709,
+			"write": true,
+			"requests": [
+				{
+					"id": "004fe098-04ac-3b4b-998c-65c4518b09b9",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.CkwLaw.7AqMp_7K0HHcwp_01PezXIQGbf0\n",
+					"url": "https://127.0.0.1:5000/execution/listener/triggers/add",
+					"preRequestScript": null,
+					"pathVariables": {},
+					"method": "POST",
+					"data": [
+						{
+							"key": "name",
+							"value": "test",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "conditional-0",
+							"value": "{\"flag\":\"regMatch\", \"args\":{\"regex\": \"(.*)\" }, \"filters\":[]}",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "play",
+							"value": "HelloWorldWorkflow",
+							"type": "text",
+							"enabled": true
+						}
+					],
+					"dataMode": "params",
+					"version": 2,
+					"tests": "",
+					"currentHelper": "normal",
+					"helperAttributes": {},
+					"time": 1466595833147,
+					"name": "Add",
+					"description": "",
+					"collectionId": "44ce2efc-2611-77c9-c5b3-f8ae963599a4",
+					"responses": []
+				},
+				{
+					"id": "6c404d6f-6c83-e5f7-0f83-dbb54678bd68",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.CkwLaw.7AqMp_7K0HHcwp_01PezXIQGbf0\n",
+					"url": "https://127.0.0.1:5000/execution/listener/triggers/test/display",
+					"preRequestScript": null,
+					"pathVariables": {},
+					"method": "POST",
+					"data": [],
+					"dataMode": "params",
+					"version": 2,
+					"tests": "",
+					"currentHelper": "normal",
+					"helperAttributes": {},
+					"time": 1466595840043,
+					"name": "Display",
+					"description": "",
+					"collectionId": "44ce2efc-2611-77c9-c5b3-f8ae963599a4",
+					"responses": []
+				},
+				{
+					"id": "7659491a-1dba-14b6-7dd8-bf8c31cd25da",
+					"headers": "Authentication-Token: WyIxIiwiMzFmNzU5YjllOTAzNjFhZDg3NjhlZTU1NTE3YjZkYmUiXQ.CklwWg.qjd37HjXUFr_qpfMIzswcZ8tQ-c\n",
+					"url": "https://127.0.0.1:5000/execution/listener/triggers/test/edit",
+					"preRequestScript": null,
+					"pathVariables": {},
+					"method": "POST",
+					"data": [
+						{
+							"key": "conditional-0",
+							"value": "{\"flag\":\"regMatch\", \"args\":{\"regex\": \"*\" }, \"filters\":[]}",
+							"type": "text",
+							"enabled": true
+						}
+					],
+					"dataMode": "params",
+					"version": 2,
+					"tests": "",
+					"currentHelper": "normal",
+					"helperAttributes": {},
+					"time": 1466427283897,
+					"name": "Edit",
+					"description": "",
+					"collectionId": "44ce2efc-2611-77c9-c5b3-f8ae963599a4",
+					"responses": []
+				},
+				{
+					"id": "79f0af6c-07fd-ce3a-ddfc-d6416ebf7ebf",
+					"headers": "Authentication-Token: WyIxIiwiYWU4MzQzODYzYzA2ODk4MWQzOTVhMGRiNTdlNTBkMmIiXQ.CksJuA.LMkqW0k_iTjFMzqSIxSzk6hkbiU\n",
+					"url": "https://127.0.0.1:5000/execution/listener/triggers/test/remove",
+					"preRequestScript": null,
+					"pathVariables": {},
+					"method": "POST",
+					"data": [],
+					"dataMode": "params",
+					"version": 2,
+					"tests": "",
+					"currentHelper": "normal",
+					"helperAttributes": {},
+					"time": 1466529937721,
+					"name": "Remove",
+					"description": "",
+					"collectionId": "44ce2efc-2611-77c9-c5b3-f8ae963599a4",
+					"responses": []
+				},
+				{
+					"id": "a8a7df38-3a12-92fa-e739-892cb717459e",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.CkwM7A.qpH1p2w98-yvG_PJRu678FnF1Wg\n",
+					"url": "https://127.0.0.1:5000/execution/listener",
+					"preRequestScript": null,
+					"pathVariables": {},
+					"method": "POST",
+					"data": [
+						{
+							"key": "data",
+							"value": "TEST DATA ",
+							"type": "text",
+							"enabled": true
+						}
+					],
+					"dataMode": "params",
+					"version": 2,
+					"tests": "",
+					"currentHelper": "normal",
+					"helperAttributes": {},
+					"time": 1466596215011,
+					"name": "Send",
+					"description": "",
+					"collectionId": "44ce2efc-2611-77c9-c5b3-f8ae963599a4",
+					"responses": []
+				}
+			]
+		},
+		{
 			"id": "494116d8-1b58-8a14-afc3-e3bc5d87209a",
 			"name": "Shortstop",
 			"description": "",
@@ -152,7 +306,7 @@
 			"remoteLink": "",
 			"public": false,
 			"createdAt": 1460376351529,
-			"updatedAt": 1465477737831,
+			"updatedAt": 1466424215913,
 			"write": true,
 			"requests": [
 				{

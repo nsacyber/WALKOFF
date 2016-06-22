@@ -1,4 +1,4 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, SelectMultipleField, DateTimeField, DecimalField, IntegerField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField
 import formChecks
 
 
@@ -29,12 +29,12 @@ class EditPlayOptionsForm(Form):
 
 class EditStepForm(Form):
     id = StringField('id', [validators.Optional()])
-    to = FieldList(StringField('to-id'), [validators.Optional(), formChecks.toValidator])
+    to = FieldList(StringField('to-id'), [validators.Optional()])
     app = StringField('app', [validators.Optional()])
     device = StringField('device', [validators.Optional()])
     action = StringField('action', [validators.Optional()])
     input = StringField('input', [validators.Optional(), formChecks.inValidator])
-    error = FieldList(StringField('error'), [validators.Optional(), formChecks.toValidator])
+    error = FieldList(StringField('error'), [validators.Optional()])
 
 class EditConfigForm(Form):
     key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
@@ -58,3 +58,16 @@ class AddNewDeviceForm(Form):
 class LoginForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25)])
     password = PasswordField('password')
+
+class addNewTriggerForm(Form):
+    name = StringField('name', [validators.Length(min=1, max=25), validators.required()])
+    conditional = FieldList(StringField('conditional'), [validators.required()])
+    play = StringField('play', [validators.Length(min=1, max=25), validators.required()])
+
+class editTriggerForm(Form):
+    name = StringField('name', [validators.Length(min=1, max=25), validators.Optional()])
+    conditional = FieldList(StringField('conditional'), [validators.Optional()])
+    play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
+
+class incomingDataForm(Form):
+    data = StringField('data')

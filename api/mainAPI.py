@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 from auth import forms
 from core import config, interface, logging
 
-import executionAPI
+import executionAPI, core.flagsFiltersKeywords as ffk
 import ssl, json, os
 
 #Create Flask App
@@ -78,7 +78,7 @@ class Device(Base):
             self.port = form.port.data
 
     def __repr__(self):
-        return json.dumps({"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : str(self.port)})
+        return {"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : str(self.port)}
 
 #Define Models
 roles_users = db.Table('roles_users',
@@ -166,6 +166,51 @@ def create_user():
         user_datastore.add_role_to_user(u, adminRole)
 
         db.session.commit()
+
+#Stores the execution triggers
+class Triggers(Base):
+    __tablename__ = "triggers"
+    name = db.Column(db.String(255), nullable=False)
+    play = db.Column(db.String(255), nullable=False)
+    condition = db.Column(db.String(255, convert_unicode=False), nullable=False)
+
+    def  __init__(self, name, play, condition):
+        self.name = name
+        self.play = play
+        self.condition = condition
+
+    def editTrigger(self, form=None):
+        if form != None:
+            if form.name.data != "" and form.name.data != None:
+                self.name = form.name.data
+
+            if form.play.data != "" and form.play.data != None:
+                self.play = form.play.data
+
+            if form.conditional.data != "" and form.conditional.data != None:
+                self.condition = str(form.conditional.data)
+
+        return True
+
+    def asJSON(self):
+        out = {}
+        out["name"] = self.name
+        out["conditions"] = self.condition
+        out["play"] = self.play
+        return out
+
+    def __repr__(self):
+        return {"name":self.name, "conditions":self.condition, "play":self.play}
+
+    def __str__(self):
+        out = dict()
+        out["name"] = self.name
+        out["conditions"] = json.loads(self.condition)
+        out["play"] = self.play
+
+        return json.dumps(out)
+
+
 
 #
 #URL Declarations
@@ -359,6 +404,89 @@ execution = executionAPI.Execution()
 def executionAction(action):
     response = execution.post(action)
     return jsonify(response)
+
+#Controls execution triggers
+@app.route('/execution/listener', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def listener():
+    form = forms.incomingDataForm(request.form)
+    if form.validate():
+        triggers = Triggers.query.all()
+        listenerOutput = {}
+
+        for trigger in triggers:
+            flags = 0
+            data = form.data.data
+
+            conditionals = json.loads(trigger.condition)
+
+            for conditional in conditionals:
+                conditional = json.loads(conditional)
+                for filter in conditional["filters"]:
+                    output = ffk.executeFilter(function=filter["filter"], args=filter["args"], value=data)
+                    if output != None:
+                        data = output
+
+                result = ffk.executeFlag(args=conditional["args"], value=data, function=conditional["flag"])
+                if result:
+                    flags += 1
+
+            if flags == len(conditionals):
+                triggerResults = config.playbook.getPlay(trigger.play).executePlay()
+                listenerOutput[trigger.name] = triggerResults
+
+    return json.dumps(listenerOutput)
+
+@app.route('/execution/listener/triggers/<string:action>', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def triggerManagement(action):
+    if action == "add":
+        form = forms.addNewTriggerForm(request.form)
+        if form.validate():
+            query = Triggers.query.filter_by(name=form.name.data).first()
+            if query == None:
+                db.session.add(Triggers(name=form.name.data, condition=json.dumps(form.conditional.data), play=form.play.data))
+                db.session.commit()
+
+                return json.dumps({"status" : "trigger successfully added"})
+        return json.dumps({"status" : "trigger could not be added"})
+
+@app.route('/execution/listener/triggers/<string:name>/<string:action>', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def triggerFunctions(action, name):
+    if action == "edit":
+        form = forms.editTriggerForm(request.form)
+        trigger = Triggers.query.filter_by(name=name).first()
+        if form.validate() and trigger != None:
+            #Ensures new name is unique
+            if form.name.data:
+                if len(Triggers.query.filter_by(name=form.name.data).all()) > 0:
+                    return json.dumps({"status" : "device could not be edited"})
+
+            result = trigger.editTrigger(form)
+
+            if result:
+                db.session.commit()
+                return json.dumps({"status" : "device successfully edited"})
+
+        return json.dumps({"status" : "device could not be edited"})
+
+    elif action == "remove":
+        query = Triggers.query.filter_by(name=name).first()
+        if query != None and query != []:
+            Triggers.query.filter_by(name=name).delete()
+            db.session.commit()
+            return json.dumps({"status" : "removed trigger"})
+        return json.dumps({"status" : "could not remove trigger"})
+
+    elif action == "display":
+        query = Triggers.query.filter_by(name=name).first()
+        if query != None and query != []:
+            return str(query)
+        return json.dumps({"status" : "could not display trigger"})
 
 #Controls the Playbook
 @app.route('/playbook/<string:action>', methods=["POST"])
@@ -591,7 +719,7 @@ def configDevicesConfigId(app, device, action):
 
             device.editDevice(form)
 
-            print Device.query.filter_by().all()
+            db.session.commit()
             return json.dumps({"status" : "device successfully edited"})
         return json.dumps({"status" : "device could not be edited"})
 

@@ -1,0 +1,1079 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WALKOFF | Documentation</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="./files/bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="./files/plugins/font-awesome-4.5.0/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="./files/plugins/ionicons/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="./files/dist/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="./files/dist/css/skins/skin-blue.min.css">
+    <link rel="stylesheet" href="./files/documentation/style.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="skin-blue fixed" data-spy="scroll" data-target="#scrollspy">
+    <div class="wrapper">
+
+        <header class="main-header">
+            <a href="#" class="logo">
+                <span class="logo-mini"><b>WALK</b>OFF</span>
+                <span class="logo-lg"><b>WALK</b>OFF</span>
+            </a>
+            <nav class="navbar navbar-static-top" role="navigation">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+            </nav>
+        </header>
+        
+        <aside class="main-sidebar">
+            <div class="sidebar" id="scrollspy">
+
+                <ul class="nav sidebar-menu">
+                    <li class="header">TABLE OF CONTENTS</li>
+                    <li class="active"><a href="./index.html"><i class="fa fa-circle-o"></i> Introduction</a></li>
+					
+					<li class="treeview" id="scrollspy-gettingStarted">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i>  Getting started</a>
+                        <ul class="nav treeview-menu">
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Setup </a></li>
+                        </ul>
+                    </li>
+					
+					<li class="treeview" id="scrollspy-walkthru">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Walkthrough</a>
+                        <ul class="nav treeview-menu">
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Executing a Basic Workflow</a></li>
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Start Service</a></li>							
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Postman</a></li>							
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Login</a></li>	
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Running Hello World Workflow</a></li>	
+                        </ul>
+                    </li>
+					
+                    <li class="treeview" id="scrollspy-documentation">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Documentation</a>
+                        <ul class="nav treeview-menu">
+                            <li><a href="#documentation-overview"><i class="fa fa-square-o"></i> Overview</a></li>
+							<li><a href="#documentation-engine"><i class="fa fa-square-o"></i> Engine</a></li>
+							
+							<li><a href="#documentation-api"><i class="fa fa-square-o"></i> API</a>
+								<ul class="nav treeview-menu">
+									<li><a href="#documentation-api-curlExample"><i class="fa fa-square-o"></i> CURL Example </a></li>
+									<li><a href="#documentation-api-pythonExample"><i class="fa fa-square-o"></i> Python Example </a></li>
+									<li><a href="#documentation-api-functions"><i class="fa fa-square-o"></i> Functions</a></li>
+								</ul>
+							</li>
+							
+                        </ul>
+                    </li>
+					
+                    <li class="treeview" id="scrollspy-standard">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Standard</a>
+                        <ul class="nav treeview-menu">
+							<li><a href="#standard-overview"><i class="fa fa-square-o"></i> Overview</a></li>
+                            <li><a href="#standard-walkoffApps"><i class="fa fa-square-o"></i> WALKOFF Apps</a></li>
+							<li><a href="#standard-walkoffWorkflows"><i class="fa fa-square-o"></i> WALKOFF Workflows</a></li>
+							<li><a href="#standard-walkoffFlagsFiltersKeywords"><i class="fa fa-square-o"></i> Filters, Flags, and Keywords </a></li>
+                        </ul>
+                    </li>
+					
+                    <li><a href="./index.html"><i class="fa fa-circle-o"></i> FAQ</a></li>
+                    <li><a href="./index.html"><i class="fa fa-circle-o"></i> License</a></li>
+                    <li><a href="./index.html"><i class="fa fa-circle-o"></i> Disclaimer</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <h1>
+            WALKOFF Documentation
+            <small>Current version 0.5.0b</small>
+          </h1>
+                <ol class="breadcrumb">
+                    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+                    <li class="active">Documentation</li>
+                </ol>
+            </div>
+
+            <div class="content body">                
+                <section id="documentation" data-spy="scroll" data-target="#scrollspy-documentation">
+                    <h2 class="page-header"><a href="#documentation">Documentation</a></h2>
+
+                    <h3 id="documentation-overview">Overview</h3>
+						<p class="lead"> This section provides an overview of the WALKOFF engine implementation and structure, as well as a listing of the different WALKOFF API commands.  </p>
+						
+                    <h3 id="documentation-engine">Engine</h3>
+						<h4> Play Execution </h4>
+							<img class="img-responsive" src="./files/images/PlayExecutionFlow.png"></br>
+							<ol>
+								<li> Play is initiated </li></br>
+								<li> Checks to see if the play_status is NULL or <i> <-status:end-> </i>
+									<ul>
+										<li> If the play has ended, any custom shutdown procedures are executed for each app and then the results are returned. </li>
+									</ul>
+								</li></br>
+								<li> Checks to see if a device instance already exists.  If not a new device instance is created. </li></br>
+								<li> Parses and prepares the input and executes any keywords. </li></br>
+								<li> Passes the prepared input and executes the defined function and stores the returned value </li></br>
+								<li> Parses and prepares the output of the function and executes any keywords </li></br>
+								<li> If an error occurs goes to the next step defined in the error field. </li> </br>
+								<li> If no errors occured the prepared output is then evaluated and the next step is determined; upon which the cycle is repeated until <i> <-status:end-> </i> or NULL is returned. </li>
+							</ol></br>
+							
+						<h4> Architecture Diagram </h4>
+							<img class="img-responsive" src="./files/images/EngineDiagram.png"></br>
+							
+							<ol>
+								<li> <b> API/mainAPI </b> - Provides the interface to the web server, api functions, configuration, users and roles, devices, and databases 
+									<ol>
+										<li> <b> Core/logging </b> - Provides the interface to logging functions </li></br>
+										<li> <b> Core/config </b> - Provides the interface for parsing and storing options defined in data/walkoff.config </li></br>
+										<li> <b> Core/interface </b> - Defines functions for displaying WALKOFF apps custom interfaces. </li></br>
+										<li> <b> Data/walkoff.db </b> - Database which stores users, roles, and device/app configurations </li></br>
+										<li> <b> Auth/forms </b> - Defines forms and validates API input
+											<ol>
+												<li> <b> Auth/formChecks </b> - Defines custom/non-standard validators for the forms class. </li></br>
+											</ol>
+										</li></br>
+										<li> <b> API/executionAPI </b> - Provides an interface to the functionality for non-manual execution of a play. 
+											<ol>
+												<li> <b> Signals/executionSignals </b> - Defines signals to send to the automatic execution control thread. </li></br>
+												<li> <b> Core/execution </b> - Defines automatic execution control thread functionality. 
+													<ol>
+														<li> <b> Core/Scheduler </b> - Parses and checks to see if play should be executed. </li>
+													</ol>
+												</li></br>
+												<li> <b> Core/eventQueue </b> - Custom data structure used in execution. </li></br>
+											</ol>
+										</li>
+									</ol>
+								</li>
+								<li> <b> Core/playbook </b> - Imports, parses, and exports the playbook file in playbook.json. 
+									<ol>
+										<li> <b> Core/play </b> - Manages and executes a single play within the playbook. </li></br>
+										<li> <b> Core/step </b> - Manages and executes a single step within the playbook. </li></br>
+									</ol>
+								</li>
+								<li> <b> Core/app </b> - parent class for WALKOFF apps which retrieves an apps custom configuration from the database. </li></br>
+								
+								<li> <b> Core/Filters </b> - contains files enabling filter functionality </li></br>
+								<li> <b> Core/Flags </b> - contains files enabling flag functionality </li></br>
+								<li> <b> Core/Keywords </b> - contains files enabling keyword functionality </li>
+								
+							</ol>
+							</br>
+						
+						<h4> Configuration File </h4>
+						<p class="lead"> The configuration file lies within the data folder and is named walkoff.config.  It consists of the below categories with the following options. </p>
+						<ol>
+							<li> Auth - Details security related configuration options </li>
+							<table class="table"> 
+								<thead>
+									<tr>
+										<th> Key </th>
+										<th> Value Format/Options </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> https </td>
+										<td> boolean - true/false </td>
+										<td> Sets whether to enable https or not.  Certificates must be generated in order to use HTTPS functionality. </td>
+									</tr>
+									<tr>
+										<td> TLS_version </td>
+										<td> 1.2, 1.1 </td>
+										<td> Determines what version of TLS to use.  https must be enabled. </td>
+									</tr>
+									<tr>
+										<td> certificatePath </td>
+										<td> pathname </td>
+										<td> Sets the location of the public certificate path. https must be enabled. </td>
+									</tr>
+									<tr>
+										<td> privateKeyPath </td>
+										<td> pathname </td>
+										<td> Sets the location of the private certificate path.  https must be enabled. </td>
+									</tr>
+								</tbody>
+							</table></br>
+							<li> Execution - Details automated execution configuration options </li>
+							<table class="table"> 
+								<thead>
+									<tr>
+										<th> Key </th>
+										<th> Value Format/Options </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> maxProcesses </td>
+										<td> integer </td>
+										<td> sets the maximum number of workflows to run at a time when automatic execution mode is running. </td>
+									</tr>
+									<tr>
+										<td> secondsDelay </td>
+										<td> integer </td>
+										<td> when automatic execution mode is running sets the interval in seconds to wait between cycles. </td>
+									</tr>
+								</tbody>
+							</table></br>
+							<li> Global - Details configuration options that affect the system as a whole </li>
+							<table class="table"> 
+								<thead>
+									<tr>
+										<th> Key </th>
+										<th> Value Format/Options </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> appsPath </td>
+										<td> pathname </td>
+										<td> Sets the location of the apps </td>
+									</tr>
+									<tr>
+										<td> dbPath </td>
+										<td> pathname </td>
+										<td> Sets the location of the walkoff database </td>
+									</tr>
+									<tr>
+										<td> playbookPath </td>
+										<td> pathname </td>
+										<td> Sets the location of the walkoff playbook file </td>
+									</tr>
+								</tbody>
+							</table></br>
+							<li> Interface - Details web server and GUI (future) related configuration options </li>
+							<table class="table"> 
+								<thead>
+									<tr>
+										<th> Key </th>
+										<th> Value Format/Options </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> debug </td>
+										<td> boolean - true/false </td>
+										<td> Sets whether to run the web server in debug mode </td>
+									</tr>
+									<tr>
+										<td> defaultServer </td>
+										<td> boolean - true/false </td>
+										<td> Sets whether to use the default python web server </td>
+									</tr>
+									<tr>
+										<td> host </td>
+										<td> ip address </td>
+										<td> Sets the web server ip address </td>
+									</tr>
+									<tr>
+										<td> port </td>
+										<td> integer </td>
+										<td> Sets the web server port </td>
+									</tr>
+								</tbody>
+							</table></br>
+							<li> Logging - Details logging related configuration options </li>
+							<table class="table"> 
+								<thead>
+									<tr>
+										<th> Key </th>
+										<th> Value Format/Options </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> logPath </td>
+										<td> pathname </td>
+										<td> Sets the location where logs are stored </td>
+									</tr>
+								</tbody>
+							</table>
+						</ol></br>
+						
+						
+						<h4> Note on Databases </h4> 
+							<p class="lead"> The <b> WALKOFF </b> reference implementation utilizes SQLAlchemy and uses SQLLite by default.  SQLAlchemy provides a generic interface for a number of different databases including SQLlite, Postgresql, MySQL, Oracle, MS-SQL, Firebird, and Sybase to choose from and plug in based upon the needs of your deployment. </p> 
+							<p class="lead"> See <a href="http://www.sqlalchemy.org"> http://www.sqlalchemy.org/ </a> for more information. </p></br>
+							
+						
+					<h3 id="documentation-api">API</h3>
+						<h3 id="documentation-api-curlExample" > cURL Example </h3> 
+						<h4> Executing a play </h4>
+						<pre>		
+curl -d --cert *public cert path* --insecure --header "Authentication-Token:*authentication token*" https:// *IP*:*PORT* /playbook/play/HelloWorldWorkflow/execute
+
+curl -d --cert shortstop.public.pem --insecure --header "Authentication-Token:WyIxIiwiMGQzM2UyMWViZTVkMDg3NmYxODNhM2FiM2E2MmJkYmMiXQ.CjPJuA.sBEE_Woe8Ie-ge-1cFFBW9tsDPc" https://127.0.0.1:5000/playbook/play/HelloWorldWorkflow/execute
+						</pre></br>
+						<h3 id="documentation-api-pythonExample" > Python Example </h3> 
+						<h4> Executing a play </h4>
+						<pre>
+import httplib, urllib, ssl
+
+params = urllib.urlencode({})
+headers = {"Authentication-Token":"WyIxIiwiMGQzM2UyMWViZTVkMDg3NmYxODNhM2FiM2E2MmJkYmMiXQ.CjPJuA.sBEE_Woe8Ie-ge-1cFFBW9tsDPc"}
+conn = httplib.HTTPSConnection("127.0.0.1:5000", context=ssl._create_unverified_context())
+conn.request("POST", "/playbook/play/HelloWorldWorkflow/execute", params, headers)
+response = conn.getresponse()
+print response.status, response.reason, response.read()
+conn.close()
+
+						</pre>
+						<h3 id="documentation-api-functions" > Functions </h3> </br>
+						<h4> Notes on parameter data types </h4>
+							<ul>
+								<li> The FieldList(Type) refers to the ability to pass an x number of Type within the parameters. The parameter format adheres to the following pattern: "varName-x" x incrementing for each parameter for that variable being passed.  Below is an example of creating a new user and the format that should be used. 
+								
+									<pre>
+username:bob
+password:anewpassword
+role-0:playbook-admin
+role-1:system-admin
+role-2:user
+									</pre>
+									
+									Therefore when these parameters are submitted, a user bob will be created with the password "anewpassword" and he was assigned 3 roles: playbook-admin, system-admin and user. 
+								</li>
+							</ul></br>
+						<h4> System Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </th>
+										<th> Description </th>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Login </td>
+										<td> Logs in and returns the API Key </td>
+										<td> /login </td>
+										<td> Email:String, Password:String </td>
+									</tr>
+									<tr>
+										<td> Start </td>
+										<td> Starts the automatic playbook execution thread </td>
+										<td> /execution/system/start </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Stop </td>
+										<td> Stops the automatic playbook execution thread </td>
+										<td> /execution/system/stop </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Save </td>
+										<td> Saves changes to the configuration, playbook, or commits changes to the database </td>
+										<td> /save/[string:object] </br>
+										Object options - 
+										<ul>
+											<li> database - commits changes to the database </li>
+											<li> playbook - saves changes to the playbook </li>
+											<li> config - saves changes to the configuration file </li>
+											<li> all - saves all changes </li>
+										</ul>
+										</td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Revert </td>
+										<td> Reverts to the backup config or playbook file.  <font color="red"><b> !!!WARNING - OVERWRITES THE DESIGNATED FILES WITH THE BACKUPS!!! </b></font></td>
+										<td> /revert/[action:string] </br> 
+										Action Options - 
+											<ul>
+												<li> config - reverts to only the configuration backup </li>
+												<li> playbook - reverts to only the playbook backup </li> 
+												<li> all - reverts to both the configuration and playbook backups </li>
+											</ul>
+										</td>
+										<td> None </td>
+									</tr>
+								</tbody>
+							</table></br>
+						<h4> Playbook Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </th>
+										<th> Description </th>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Display </td>
+										<td> Displays the playbook </td>
+										<td> /playbook/display </td>
+										<td> None </td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> Play Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new play to the playbook </td>
+										<td> /playbook/play/add </td>
+										<td> Name:String </td>
+									</tr>
+									<tr>
+										<td> Display </td>
+										<td> Displays a play </td>
+										<td> /playbook/play/[string:name]/display </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Execute </td>
+										<td> Executes a play </td>
+										<td> /playbook/play/[string: name]/execute </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes a play from the playbook</td>
+										<td> /playbook/play/[string: name]/remove </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Display Play Options </td>
+										<td> Displays the options for a play </td>
+										<td> /playbook/play/[string: name]/options/display </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit Play Options </td>
+										<td> Edits the options in a play </td>
+										<td> /playbook/play/[string: name]/options/edit </td>
+										<td> autoRun:boolean, sDT:dateTime, eDT:dateTime, interval:decimal </td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> Step Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Display </td>
+										<td> Displays a step within a play </td>
+										<td> /playbook/play/[string: playName]/[string:step]/display </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits the parameters of a specified step </td>
+										<td> /playbook/play/[string: playName]/[string:step]/edit </td>
+										<td> id:string, to:FieldList(String), app:String, device:String, action:String, input:String, error:FieldList(String) </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes a step from a play </td>
+										<td> /playbook/play/[string: playName]/[string:step]/remove </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new default step to a play </td>
+										<td> /playbook/play/[string: playName]/steps/add </td>
+										<td> None </td>
+									</tr>
+								</tbody>
+							</table></br>
+						<h4> Trigger Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </th>
+										<th> Description </th>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Send </td>
+										<td> Takes the passed data through the form and matches it against configured triggers to execute a given playbook </td>
+										<td> /execution/listener </td>
+										<td> data - the data being sent </td>
+									</tr>
+									<tr>
+										<td> Display </td>
+										<td> Displays a given trigger </td>
+										<td> /execution/listener/triggers/[string:trigger_name]/display </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes the designated trigger </td>
+										<td> /execution/listener/triggers/[string:trigger_name]/remove </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits the given trigger </td>
+										<td> /execution/listener/triggers/[string:trigger_name]/edit </td>
+										<td> name:string, play:string, conditional:FieldList(string) </td>
+									</tr>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new trigger </td>
+										<td> /execution/listener/triggers/add </td>
+										<td> name:string, play:string, conditional:FieldList(string) </td>
+									</tr>
+								</tbody>
+							</table></br>	
+						<h4> Config Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Display </td>
+										<td> Displays a configuration file section </td>
+										<td> /configuration/[string: section]/display  </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits a configuration file section </td>
+										<td> /configuration/[string: section]/edit </td>
+										<td> key:string, value:string </td>
+									</tr>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new key:value pair to a configuration file section </td>
+										<td> /configuration/[string: section]/add </td>
+										<td> key:string, value:string </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes a key:value pair from the specified configuration file section </td>
+										<td> /configuration/[string:section]/remove </td>
+										<td> key:string </td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> Device Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new device configuration </td>
+										<td> /configuration/[string:app]/devices/add </td>
+										<td> name:string, app:string, username:string, pw:string, ipaddr:string, port:string </td>
+									</tr>
+									<tr>
+										<td> Display </td>
+										<td> Displays a device configuration </td>
+										<td> /configuration/[string:app]/devices/[string:device]/display </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes a device configuration </td>
+										<td> /configuration/[string:app]/devices/[string:device]/remove </td>
+										<td> Parameters </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits a device configuration </td>
+										<td> /configuration/[string:app]/devices/[string:device]/edit </td>
+										<td> name:string, app:string, username:string, pw:string, ipaddr:string, port:string </td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> App Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Display </td>
+										<td> Displays a given template/custom interface for a WALKOFF app </td>
+										<td> /apps/[string:name]/display </td>
+										<td> None </td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> User Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Display </td>
+										<td> Displays a users details </td>
+										<td> /users/display/[int: id] </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits a users details </td>
+										<td> /users/edit/[int: id] </td>
+										<td> password:String, role:FieldList(String) </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes a user </td>
+										<td> /users/remove/<int: id> </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new user </td>
+										<td> /users/add </td>
+										<td> username:String, password:String, role:FieldList(String) </td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> Role Functions </h4>
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Name </td>
+										<th> Description </td>
+										<th> URL </th>
+										<th> Parameters </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td> Display </td>
+										<td> Displays the details of a role </td>
+										<td> /roles/display/[int: id] </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Edit </td>
+										<td> Edits a role </td>
+										<td> /roles/edit/[int :id] </td>
+										<td> description:string </td>
+									</tr>
+									<tr>
+										<td> Remove </td>
+										<td> Removes a role </td>
+										<td> /roles/remove/[int: id] </td>
+										<td> None </td>
+									</tr>
+									<tr>
+										<td> Add </td>
+										<td> Adds a new role </td>
+										<td> /roles/add </td>
+										<td> name:string, description:string </td>
+									</tr>
+								</tbody>
+							</table>
+                </section>
+				
+				<section id="standard" data-spy="scroll" data-target="#scrollspy-standard">
+                    <h2 class="page-header"><a href="#standard">WALKOFF Standard</a></h2>
+
+                    <h3 id="standard-overview">Overview</h3>
+						<p class="lead"> The <b> WALKOFF </b> framework seeks to standardize two aspects of orchestration.  The apps which are where integration logic, analytics, and other capabilities are containted for automatic execution and the workflows which define how the functions should execute in accordance with local policy. A "hello world" app and workflow template can be found in the code base. </p>
+                    <h3 id="standard-walkoffApps">WALKOFF Apps</h3>
+						<p class="lead">
+							<b> WALKOFF </b> enabled apps are a folder/set of python scripts and web resources contained within the folder structure detailed below.  All apps can be placed within the Core/apps folder. 
+						</p>
+						<pre>
+-app_name
+	-interface
+		-static 
+	-main.py
+	-display.py
+	-__init__.py
+						</pre>
+						<ol>
+							<li> app_name - The root of the folder should be the same name as the app </li>
+							<li> interface - Folder containing all HTML web pages </li>
+							<li> static - Sub-Folder of Interface containing all Javascript, CSS, Images and other static web resources </li>
+							<li> main.py - Python file where the capabilities for the app are written </li>
+							<li> display.py - Python file for any server side interface code. </li>
+							<li> __init__.py - python file turning the folder into a python module so that it may be read and executed. </li>
+						</ol>
+						</br>
+						<p class="lead">
+							<b> main.py </b>
+						</p>
+						<pre>
+from core import app
+
+#There is an associated Hello world test workflow which can be executed
+
+class Main(app.App):
+    def __init__(self, name=None, device=None):
+        #The parent app constructor looks for a device configuration and returns that as a dictionary called self.config
+        app.App.__init__(self, name, device)
+        #Functions and Variables that are designed to exist across functions go here
+        self.introMessage = "I SAY THIS BEFORE EVERY FUNCTION: HELLO WORLD"
+
+    #Every function in Main is an action that can be taken
+    #Every function needs to define an args argument which recieves a dictionary of input parameters
+    def helloWorld(self, args={}):
+        #LOOK AT YOUR CONSOLE WHEN EXECUTING
+        print self.introMessage
+						</pre>
+						<p class="lead">
+							<b> display.py </b>
+						</p>
+						<pre>
+#Provides server side logic when loading a custom interface
+def load(args={}):
+	#Server side logic goes here
+	return {}
+						</pre>
+						
+					<h3 id="standard-walkoffWorkflows">WALKOFF Workflows</h3>
+						<p class="lead">
+							<b> WALKOFF </b> enabled workflows define the order in which capablities are executed when triggered and are contained within a JSON structured file.  These workflows can be restricted based upon a time period or based upon events among many other variables.  
+						</p>
+						<p class="lead">
+							<b> playbook.json </b>
+						</p>
+						<pre>
+{
+    "HelloWorldWorkflow": {
+          "options": {
+              "autorun": "true",
+              "scheduler": {
+                  "eDT": "2016-3-15 12:00:00",
+                  "interval": 0.1,
+                  "sDT": "2016-1-1 12:00:00"
+              }
+          },
+          "play": [
+              {
+                  "action": "helloWorld",
+                  "app": "HelloWorld",
+                  "device": "hwTest",
+                  "error": [
+                      []
+                  ],
+                  "id": "start",
+                  "in": {
+                  },
+                  "to": [
+
+                        ]
+              }
+          ]
+      }
+}
+						</pre>
+						<ol>
+							<li> "HelloWorldWorkflow" - The name of the play </li>
+							<li> "options" - JSON Object containing play options 
+								<ol>
+									<li> "autorun" - True or False, whether the play should run automatically at a given interval. </li>
+									<li> "scheduler" - Defines under what time conditions the play should execute. 
+										<ol>
+											<li> "sDT" - The starting date and time defined as "yyyy-mm-dd hh:mm:ss" </li>
+											<li> "eDT" - The ending date and time defined as "yyyy-mm-dd hh:mm:ss" </li>
+											<li> "interval" - decimal value in Minutes defining how often the play should be run between the starting and ending dates.  Example: 0.1 = 10 second interval. 
+										</ol>
+									</li>
+								</ol>
+							</li>
+							</br>
+							<li> "play" - Where the play steps are defined, each step being a json object. 
+								<ol>
+									<li> id - Name of the step.  The first step should always be named "start" </li>
+									<li> action - Name of the action to be taken.  Should correspond with a function in a given app.  </li>
+									<li> app - Name of the app where the function is defined. </li>
+									<li> device - Name of the configuration set to be used when executing the function.  This allows for multiple instances to be created of the same app.  </li>
+									<li> in - Dictionary of Key:Value pairs for function arguments </li>
+									<li> to - Defines the next step to be taken  </li>
+									<li> error - Defines the next step to be taken if an error occurs when executing. </li>
+								</ol>
+							</li>
+						</ol>
+					<h3 id="standard-walkoffFlagsFiltersKeywords"> Filters, Flags and Keywords </h3>
+						<p class="lead"> WALKOFF Flags, Filters, and Keywords enable a special category of functionality within WALKOFF.  These modules located within the Core directory enable quick non-permanent functions to be executed.  This allows for more advanced objects to be utilized, better decision making, and easier normalization and manipulation of advanced data types. </p>
+						
+						<h4> Filters </h4>
+							<p class="lead"> Filters are used within the Flags and Keywords objects described below to allow for the quick, temporary normalization of data for evaluation. Filters are contained within the Core/Filters folder and consist of a python module named after the name of the action.  Examples of filters include a keyValue filter which returns the value, given a key or a length filter which converts an array to its length for future evaluation. Below is an example of a filter template using the length function.  </p>
+							
+							<pre>
+def main(args, value):
+    try:
+        result = len(value)
+        return result
+    except Exception as e:
+        print e
+        return None
+							</pre>
+							
+							<p class="lead"> Filters consist of a main function which can be considered the execution entry point for the module.  The filter should then input that step's output and then return a modified version of it in some aspect.  Below is an example of a filter being used in a conditional testing for the length of a string. </p>
+							
+							<pre>
+"to": [
+		  {"conditions":[
+			{"flag":"count", "args":{"type":"int", "operator":"e", "threshold":"45"}, "filters":[{"filter":"length", "args":{}, "type":"pre"}]},  
+		], "next":"1"}
+      ]									
+							</pre>
+							
+							<p class="lead"> In this case a conditional is defined testing whether the input string is equal to 45.  Before that conditional is executed, however, the filter is executed converting the string to its length and then testing it against the 45.  </p>
+							
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Filter </th>
+										<th> Arguments </th>
+										<th> Return Value </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											length
+										</td>
+										<td>
+											None
+										</td>
+										<td>
+											integer
+										</td>
+										<td>
+											Returns the length of the output object. 
+										</td>
+									</tr>
+									
+								</tbody>
+							</table></br>
+						
+						<h4> Flags </h4>
+							<p class="lead"> Flag modules are involved in the decision making process and always return a boolean value as the result of some function.  In the execution flow if a series of functions all return true the next step defined is taken.  Examples of these conditionals include regular expression matching, a numeric conditional such as equals, greater than or less than, or some other given function.  These flags can be written using the template below and placed in the Core/Flags folder. </p>
+							
+							<pre>
+import re
+
+def main(args, value):
+    regex = args["regex"]
+    #Accounts for python wildcard bug
+    if regex == "*":
+        regex = "(.*)"
+    pattern = re.compile(regex)
+    matchObj = pattern.search(value)
+    if matchObj:
+        return True
+    return False
+							</pre>
+							
+							<p class="lead"> This example module is a python file with the name of the action, in this case called regMatch.py.  A flag minimally includes a function called main which is the module's entry point.  Flag modules always return a boolean (True/False) value. </p>
+							
+							<p class="lead"> Below is an excerpt from a workflow using the regmatch conditional.  </p>
+							
+							<pre>
+"to": [
+		  {"conditions":[
+			{"flag":"regMatch", "args":{"regex":"(.*)"}, "filters":[]},  
+		], "next":"1"}
+      ]							
+							</pre>
+							
+							<p class="lead"> In this case an array of conditions is passed.  In this example, the only condition is a flag object with the regMatch command.  An argument is passed in with the regex which is matched against the output of that step. If the regMatch returns true, the flow moves on to the next step with id 1. </p>
+							
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Flag </th>
+										<th> Arguments </th>
+										<th> Return Value </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											count
+										</td>
+										<td>
+											operator - string
+											<ul>
+												<li> g - greater than </li>
+												<li> ge - greater than or equal</li>
+												<li> l - less than </li>
+												<li> le - less than or equal </li>
+												<li> e - equal </li>
+											</ul>
+											threshold - int
+										</td>
+										<td>
+											Boolean - True/False
+										</td>
+										<td>
+											Compares the output to the threshold using the designated comparison operator and returns True or False. 
+										</td>
+									</tr>
+									<tr>
+										<td>
+											regMatch
+										</td>
+										<td>
+											regex - regular expression 
+										</td>
+										<td>
+											Boolean - True/False
+										</td>
+										<td>
+											Attempts to match the output to a regular expression and returns true or false based upon if a match is found. 
+										</td>
+									</tr>
+								</tbody>
+							</table></br>
+							
+						<h4> Keywords </h4> 
+							<p class="lead"> Keywords translates into a given object based upon the function given.  Keywords are stored in the Core/Keywords folder and consist of a python module named after the action itself. The keyword module then consists of a function main which can be considered the module entry point and returns an object.  Below is a template using the out keyword module. </p>
+							
+							<pre>
+def main(steps, args):
+    if args["id"] in steps:
+        step = steps[args["id"]]
+        return step.out
+    else:
+        return ""
+							</pre>
+							
+							<p class="lead"> Below is an excerpt from a workflow using the out keyword </p>
+							
+							<pre>
+"in": {
+	"call":"<- "action":"out", "args":{"id":"start"}, "filters":[]}->"
+ }
+							</pre>
+							
+							<p class="lead"> Keywords can be placed within strings using the "<-{object}->" format as seen above. In the case of the above example, the action out is defined and an id of start is passed in as an argument.  This replaces the keyword with the out variable defined in step "start".  This allows the orchestrator to pass in the result of start as an input to this step.  </p>
+							
+							<table class="table">
+								<thead>
+									<tr>
+										<th> Keyword </th>
+										<th> Arguments </th>
+										<th> Return Value </th>
+										<th> Description </th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											out
+										</td>
+										<td>
+											id - the id of another step
+										</td>
+										<td>
+											object
+										</td>
+										<td>
+											returns the output of another step.  
+										</td>
+									</tr>
+									
+								</tbody>
+							</table>
+							
+                </section>
+
+
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <div class="pull-right hidden-xs">
+                <b>Version</b> 0.5.0b
+            </div>
+            <strong>IAD IX - WALKOFF</strong>
+        </footer>
+
+    </div>
+
+    <!-- jQuery 2.1.4 -->
+    <script src="./files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+    <!-- Bootstrap 3.3.5 -->
+    <script src="./files/bootstrap/js/bootstrap.min.js"></script>
+    <!-- FastClick -->
+    <script src="./files/plugins/fastclick/fastclick.min.js"></script>
+    <!-- goSecure App -->
+    <script src="./files/dist/js/app.min.js"></script>
+    <!-- SlimScroll 1.3.0 -->
+    <script src="./files/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <script src="./files/documentation/docs.js"></script>
+</body>
+
+</html>
