@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="./files/bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="./files/plugins/font-awesome-4.5.0/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="./files/plugins/ionicons/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="./files/dist/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="./files/dist/css/skins/skin-blue.min.css">
+    <link rel="stylesheet" href="./files/documentation/style.css">
+    <title>WALKOFF</title>
+    <style>
+    .middle {
+      padding-right: 100px;
+      padding-top: 40px;
+      display: inline-block;
+      border-bottom: solid 1px #ffffff;
+    }
+    .leftBox {
+      display: inline-block;
+      width: 225px;
+      border-bottom: solid 1px #ffffff;
+    }
+    .divBody {
+      margin: auto;
+      padding-left: 225px;
+      padding-right: 100px;
+    }
+    .footer {
+      width: 100%;
+      position: relative;
+      background:#fff;
+      padding:15px;
+      color:#444;
+      border-top:1px
+      solid #d2d6de
+    }
+    #mainBody{
+  		-webkit-user-select: none;  /* Chrome all / Safari all */
+  		-moz-user-select: none;     /* Firefox all */
+  		-ms-user-select: none;      /* IE 10+ */
+  	}
+    #flashy {
+      background: #ddd;
+      height: 300px;
+      margin-bottom: 2em;
+      overflow: hidden;
+      position: relative;
+      border-top: solid 1px #fff;
+      border-bottom: solid 1px #fff;
+    }
+
+    #flashy:after,
+    #flashy:before {
+      content: "";
+      display: block;
+      width: 100%;
+      position: absolute;
+      height: 10px;
+      z-index: 2;
+    }
+
+    #flashy:before {
+      bottom: -10px;
+      box-shadow: 0px -8px 10px rgba(0,0,0,.3);
+    }
+
+    #flashy:after {
+      top: -10px;
+      box-shadow: 0px 8px 10px rgba(0,0,0,.3);
+    }
+    .carousel-fade .carousel-inner .item {
+      opacity: 0;
+      -webkit-transition-property: opacity;
+      -moz-transition-property: opacity;
+      -o-transition-property: opacity;
+      transition-property: opacity;
+    }
+    .carousel-fade .carousel-inner .active {
+      opacity: 1;
+    }
+    .carousel-fade .carousel-inner .active.left,
+    .carousel-fade .carousel-inner .active.right {
+      left: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+    .carousel-fade .carousel-inner .next.left,
+    .carousel-fade .carousel-inner .prev.right {
+      opacity: 1;
+    }
+    .carousel-fade .carousel-control {
+      z-index: 2;
+    }
+    </style>
+    <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-default.css">
+    <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-demo.css">
+    <link rel="stylesheet" href="./files/plugins/jsPlumb/app.css">
+</head>
+<body id="mainBody">
+  <div class="leftBox">
+    <a href="./"><img width="225px" src="files/images/walkoffLogo.png" alt="WALKOFF"></a>
+  </div>
+  <div class="middle">
+    <header>
+      <b>Introduction</b>
+      <a style="margin-left:3em;" href="https://iadgov.github.io/WALKOFF/index.html">Documentation</a>
+      <a style="margin-left:3em;" href="https://github.com/iadgov/WALKOFF">Source</a>
+    </header>
+    <h1>WALKOFF - Global Orchestration for Cyber Defense</h1>
+  </div>
+  <div id="flashy">
+      <div class="jtk-demo-main">
+        <div class="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
+          <div class="w" id="ERD1">ENDPOINT REMEDIATION DEVICE: <br>Is MDS in threat feed?
+              <div class="ep" action="ERD1"></div>
+          </div>
+          <div class="w" id="ERD2">ERD:<br> Update threat feed
+              <div class="ep" action="ERD2"></div>
+          </div>
+          <div class="w" id="ERD3">ERD:<br> Scan Host
+              <div class="ep" action="ERD3"></div>
+          </div>
+          <div class="w" id="FW1">FIREWALL:<br>Is destination IP in block list?
+              <div class="ep" action="FW1"></div>
+          </div>
+          <div class="w" id="FW2">FIREWALL:<br>Update threat
+              <div class="ep" action="FW2"></div>
+          </div>
+      </div>
+    </div>
+  </div>
+    <!--<div id="Carousel" class="carousel slide carousel-fade">
+        <ol class="carousel-indicators">
+            <li data-target="Carousel" data-slide-to="0" class="active"></li>
+            <li data-target="Carousel" data-slide-to="1"></li>
+            <li data-target="Carousel" data-slide-to="2"></li>
+        </ol>
+
+        <div class="carousel-inner">
+            <div class="item active">
+                <img width="100%" src="files/images/PostHelloWorldWorkflowSend.png" class="img-responsive">
+            </div>
+           <div class="item">
+             <img width="100%" src="files/images/Enable_create_user_anotation.png" class="img-responsive">
+            </div>
+           <div class="item">
+             <img width="100%" src="files/images/PlayExecutionFlow.png" class="img-responsive">
+            </div>
+        </div>
+
+        <a class="left carousel-control" href="#Carousel" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#Carousel" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+    </div>-->
+  <div class="divBody">
+    <p><h3>What is WALKOFF?</h3></p>
+    <p class="lead">
+      <b>WALKOFF</b> is a framework that makes it easy to develop and integrate cyber-defensive capabilities across WALKOFF-enabled tools to provide active cyber defense capabilities.	<b>WALKOFF</b> seeks to create an Active Cyber Defense development framework enabling orchestration capablities to be written once and deployed across WALKOFF-Enabled orchestration tools. The WALKOFF framework makes it easy to develop and integrate cyber defensive capabilities across WALKOFF-enabled orchestration platforms. One of the benefits of WALKOFF is its ability to combine a multitude of NSA endorsed standards such as OpenC2 and STIX/TAXII into a deployable active cyber defense package.
+      Active Cyber Defense is a cyber defense strategy that integrates cyber defensive capabilities together to automatically defend a network. Orchestration is a class of cyber-security tools that integrate commercial cybersecurity tools and capabilities together and automates defensive processes in accordance with local policy.
+    </p>
+    <p class="lead"><b> Features: </b>
+        <ul class="lead">
+          <li> Makes it easy to automate custom workflows in accordance with local policy </li>
+          <li> Provides many different ways to run workflows including on demand, at certain intervals, and when certain events occur </li>
+          <li> Lightweight and Flexible, WALKOFF is designed to work on Windows or Linux and to be as easy to use and deploy as possible. </li>
+          <li> Extensible and Customizable, WALKOFF was designed to fit within your environment not have your environment fit around it. WALKOFF apps are easy to develop and enables deployments to utilize the exact capablities that they need to fit their environment. </li>
+        </ul>
+    </p>
+    <p><h3>Who should use WALKOFF?</h3></p>
+    <p class="lead">
+      Orchestrators of all shapes and sizes are able to become WALKOFF enabled and are not limited to how the WALKOFF reference implementation was built. As long as an orchestrator can read and execute the functions within a WALKOFF app and read and execute a WALKOFF workflow that orchestrator can be considered WALKOFF-enabled.
+    </p>
+    <p><h3>How can you contribute?</h3></p>
+    <p class="lead">
+      See something that's broken?  That could be better?  What if WALKOFF had <i> x </i> feature or <i> x </i> app?  The success of WALKOFF depends upon an active community and therefore we highly encourage suggestions and contributions to help WALKOFF achieve its full potential.
+      <h4>Together we can...</h4>
+      <ul class="lead">
+        <li> Defend networks more efficiently and effectively </li>
+        <li> Make it cheaper and easier to create and deploy automated cyberdefense capabilities </li>
+        <li> Shape the future of cybersecurity </li>
+      </ul>
+    </p>
+  </div>
+  <footer class="footer">
+    <div class="pull-right hidden-xs">
+        <b>Version</b> 0.5.0b
+    </div>
+    <strong>IAD IX - WALKOFF</strong>
+    <!--<p><br>This work was prepared by an U.S. Government employee and, therefore, is excluded from copyright by Section 105 of the Copyright Act of 1976. Copyright and Related Rights in the Work worldwide are waived through the <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> <a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">Universal license</a>.<br>
+    Contact: <a href="mailto:someone@example.com">someone@example.com</a></p>-->
+
+  </footer>
+  <!-- jQuery 2.1.4 -->
+  <script src="./files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+  <!-- Bootstrap 3.3.5 -->
+  <script src="./files/bootstrap/js/bootstrap.min.js"></script>
+  <!-- FastClick -->
+  <script src="./files/plugins/fastclick/fastclick.min.js"></script>
+  <!-- goSecure App -->
+  <script src="./files/dist/js/app.min.js"></script>
+  <!-- SlimScroll 1.3.0 -->
+  <script src="./files/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+  <script src="./files/documentation/docs.js"></script>
+  <script src="./files/plugins/jsPlumb/jsPlumb-2.1.2-min.js "></script>
+  <script src="./files/plugins/jsPlumb/inst.js "></script>
+</body>
+</html>
