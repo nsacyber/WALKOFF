@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="./files/dist/css/AdminLTE.min.css">
     <link rel="stylesheet" href="./files/dist/css/skins/skin-blue.min.css">
     <link rel="stylesheet" href="./files/documentation/style.css">
+    <link rel="stylesheet" href="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.min.css">
     <title>WALKOFF</title>
     <style>
     .middle {
@@ -99,6 +100,7 @@
     .carousel-fade .carousel-control {
       z-index: 2;
     }
+    .ui-button:focus { outline:none !important }
     </style>
     <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-default.css">
     <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-demo.css">
@@ -138,6 +140,7 @@
           </div>
       </div>-->
       <div class="jtk-demo-main">
+        <div id="dialog" title="WALKOFF ACTIONS">With WALKOFF, you can easily identify events and actions that should be executed in response.</div>
         <div class="jtk-demo-canvas canvas-wide flowchart-demo jtk-surface jtk-surface-nopan" id="canvas">
             <!--<div class="ends jtk-node" id="flowchartEnd1"><strong>ALERT</strong></div>-->
             <div class="window jtk-node" id="flowchartWindow1"><strong>ENDPOINT REMEDIATION DEVICE:<br>Is MDS in threat feed?</strong></div>
@@ -190,6 +193,8 @@
   </footer>
   <!-- jQuery 2.1.4 -->
   <script src="./files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+  <!-- jQueryUI 1.11.4 -->
+  <script src="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.min.js"></script>
   <!-- Bootstrap 3.3.5 -->
   <script src="./files/bootstrap/js/bootstrap.min.js"></script>
   <!-- FastClick -->
@@ -202,5 +207,18 @@
   <script src="./files/plugins/jsPlumb/jsPlumb-2.1.2-min.js "></script>
   <!--<script src="./files/plugins/jsPlumb/inst.js "></script>-->
   <script src="./files/plugins/jsPlumb/inst2.js "></script>
+  <script>
+    $(function () {
+      //prevent ui conflict between jqueryUI and bootstrap
+      var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
+      $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
+
+      $( "#dialog" ).dialog({
+        autoOpen: false,
+        show: 'fade',
+        hide: 'drop'
+      });
+    });
+  </script>
 </body>
 </html>
