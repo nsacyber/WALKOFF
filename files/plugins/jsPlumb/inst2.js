@@ -11,7 +11,7 @@ jsPlumb.ready(function () {
                 visible:true,
                 id:"ARROW",
                 events:{
-                    click:function() { alert("These arrows designate the flow of actions in response to an event or alert.")}
+                    click:function() {$("#dialog").dialog('open');}
                 }
             } ],
             [ "Label", {
@@ -20,7 +20,7 @@ jsPlumb.ready(function () {
                 id: "label",
                 cssClass: "aLabel",
                 events:{
-                    tap:function() { alert("With WALKOFF, you can easily identify events and actions that should be executed in response."); }
+                    tap:function() {$("#dialog").dialog('open');}
                 }
             }]
         ],
@@ -122,7 +122,7 @@ jsPlumb.ready(function () {
              location: 0.1,
              cssClass: 'aLabel',
              events:{
-                 tap:function() { alert("With WALKOFF, you can easily identify events and actions that should be executed in response."); }
+                 tap:function() { $("#dialog").dialog('open');}
              }},
              true]
       );
