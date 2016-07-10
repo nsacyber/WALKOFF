@@ -11,7 +11,7 @@ jsPlumb.ready(function () {
                 visible:true,
                 id:"ARROW",
                 events:{
-                    click:function() {$("#dialog").dialog('open');}
+                    click:function() {$("#connDialog").dialog('open');}
                 }
             } ],
             [ "Label", {
@@ -20,7 +20,7 @@ jsPlumb.ready(function () {
                 id: "label",
                 cssClass: "aLabel",
                 events:{
-                    tap:function() {$("#dialog").dialog('open');}
+                    tap:function() {$("#connDialog").dialog('open');}
                 }
             }]
         ],
@@ -122,7 +122,7 @@ jsPlumb.ready(function () {
              location: 0.1,
              cssClass: 'aLabel',
              events:{
-                 tap:function() { $("#dialog").dialog('open');}
+                 tap:function() { $("#connDialog").dialog('open');}
              }},
              true]
       );

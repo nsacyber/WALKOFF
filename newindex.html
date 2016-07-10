@@ -140,14 +140,15 @@
           </div>
       </div>-->
       <div class="jtk-demo-main">
-        <div id="dialog" title="WALKOFF ACTIONS">With WALKOFF, you can easily identify events and actions that should be executed in response.</div>
+        <div id="connDialog" title="WALKOFF Actions">With WALKOFF, you can easily identify events and actions that should be executed in response.</div>
+        <div id="nodeDialog" title="WALKOFF Node"></div>
         <div class="jtk-demo-canvas canvas-wide flowchart-demo jtk-surface jtk-surface-nopan" id="canvas">
             <!--<div class="ends jtk-node" id="flowchartEnd1"><strong>ALERT</strong></div>-->
-            <div class="window jtk-node" id="flowchartWindow1"><strong>ENDPOINT REMEDIATION DEVICE:<br>Is MDS in threat feed?</strong></div>
-            <div class="window jtk-node" id="flowchartWindow2"><strong>ENDPOINT REMEDIATION DEVICE:<br>Update threat feed</strong></div>
-            <div class="window jtk-node" id="flowchartWindow3"><strong>ENDPOINT REMEDIATION DEVICE:<br>Scan Host</strong></div>
-            <div class="window jtk-node" id="flowchartWindow4"><strong>FIREWALL:<br>Is destination IP in block list?</strong></div>
-            <div class="window jtk-node" id="flowchartWindow5"><strong>FIREWALL:<br>Update threat</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow1"><strong>ENDPOINT REMEDIATION DEVICE:<br>Is MDS in threat feed?</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow2"><strong>ENDPOINT REMEDIATION DEVICE:<br>Update threat feed</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow3"><strong>ENDPOINT REMEDIATION DEVICE:<br>Scan Host</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow4"><strong>FIREWALL:<br>Is destination IP in block list?</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow5"><strong>FIREWALL:<br>Update threat</strong></div>
             <!--<div class="ends jtk-node" id="flowchartEnd2"><strong>END</strong></div>-->
         </div>
       </div>
@@ -209,15 +210,52 @@
   <script src="./files/plugins/jsPlumb/inst2.js "></script>
   <script>
     $(function () {
+
+      $('.nodeDiv').each(function(){
+         $(this).click(function(){
+           displayDialog(this.id)
+         });
+       });
       //prevent ui conflict between jqueryUI and bootstrap
       var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
       $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
 
-      $( "#dialog" ).dialog({
+      $( "#connDialog" ).dialog({
         autoOpen: false,
         show: 'fade',
         hide: 'drop'
       });
+
+      $( "#nodeDialog" ).dialog({
+        autoOpen: false,
+        show: 'fade',
+        hide: 'drop'
+      });
+
+      function displayDialog(id){
+        switch (id){
+  				case 'flowchartWindow1':
+  					$("#nodeDialog").html("Use your own device to determine if an alert is a threat.");
+  					break;
+  				case 'flowchartWindow2':
+  					$("#nodeDialog").html("Use your own device to update your feed if the threat is not found.");
+  					break;
+  				case 'flowchartWindow3':
+  					$("#nodeDialog").html("Use your own device to scan the host.");
+  					break;
+          case 'flowchartWindow4':
+            $("#nodeDialog").html("Use your firewall to determine if the destination IP should be blocked.");
+            break;
+          case 'flowchartWindow5':
+            $("#nodeDialog").html("Use your firewall to update your threat.");
+            break;
+  				default:
+            $("#nodeDialog").html("WALKOFF allows you to add actions and decision points to your playbook.");
+  					break;
+  			}
+        $("#nodeDialog").dialog('open');
+      }
+
     });
   </script>
 </body>
