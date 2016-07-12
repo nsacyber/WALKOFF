@@ -1,5 +1,4 @@
 from core import app
-from core import action
 from xml.dom import minidom
 import requests, json
 
@@ -9,12 +8,13 @@ class Main(app.App):
         self.baseURL = "https://" + self.config.ip + ":" + str(self.config.port)
         self.s = requests.Session()
         self.sessionKey = None
+        self.connect()
 
     def connect(self, args=[]):
         url = self.baseURL + "/services/auth/login"
         payload = {'username' : self.config.username, 'password' : self.config.password}
         headers = {'content-type': 'application/json'}
-        r = self.s.post(url, data=payload, headers=headers, verify=False)
+        r = self.s.post(url, data=payload, verify=False)
 
         if r.status_code >= 200 and r.status_code <= 400:
             self.sessionKey = minidom.parseString(r.text).getElementsByTagName('sessionKey')[0].childNodes[0].nodeValue
@@ -22,6 +22,7 @@ class Main(app.App):
         return json.dumps({"status":"connected"})
 
     def search(self, args={}):
+
         if "query" in args and self.sessionKey:
             query = args["query"]
             if not query.startswith('search'):
@@ -41,10 +42,14 @@ class Main(app.App):
             if "exec_type" in args:
                 url = url + "/" + args["exec_type"]
 
-            headers = {"Authorization" : "Splunk " + self.sessionKey}
+            headers = {"Authorization" : "Splunk " + self.sessionKey, 'content-type': 'application/json'}
 
             r = self.s.post(url, headers=headers, data=body, verify=False)
-            results = json.loads(r.text)["results"]
+            
+            results = r.json()["results"]
 
-            print results
             return results
+
+    def shutdown(self):
+        print "Splunk Shutting Down"
+        return

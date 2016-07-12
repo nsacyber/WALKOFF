@@ -1,5 +1,6 @@
 import step, datetime, sys, importlib, logging, uuid, json
 from multiprocessing import Queue
+import flagsFiltersKeywords as ffk
 import app
 
 class Play():
@@ -93,26 +94,27 @@ class Play():
             args = self.steps[current].setupArguments()
             if len(args.keys()) > 0:
                 for key in args.keys():
-                    #Handles the out command
-                    #--Replaces the command with the value of another step
-                    try:
-                        keywordModule = importlib.import_module("core.keywords." + args[key]["action"])
-                    except ImportError as e:
-                        keywordModule = None
+                    for tags in args[key]:
+                        try:
+                            keywordModule = importlib.import_module("core.keywords." + tags["action"])
+                        except ImportError as e:
+                            keywordModule = None
+
+                        if keywordModule:
+                            result = getattr(keywordModule, "main")(steps=self.steps, args=tags["args"])
+
+                            for filter in tags["filters"]:
+                                result = ffk.executeFilter(function=filter["filter"], args=filter["args"], value=result)
+
+                            self.steps[current].setInputValue(key, result)
 
 
-                    if keywordModule:
-                        result = getattr(keywordModule, "main")(steps=self.steps, args=args[key]["args"])
-                    else:
-                        result = ""
-
-                    self.steps[current].setInputValue(key, result)
 
             #Executes step and sets the return value
             try:
                 out = self.steps[current].execute(i[self.steps[current].device])
                 if not isinstance(out, str):
-                    out = json.dumps(out)
+                    out = json.dumps(out, ensure_ascii=True, default=str)
                 self.steps[current].setOut(out)
 
                 #Adds log of execution
@@ -127,7 +129,7 @@ class Play():
                 self.steps[current].setOut(str(e))
 
                 #Adds log of execution
-                outputs.append(str(self.steps[current]))
+                outputs.append(json.dumps(self.steps[current]), ensure_ascii=True, default=str, indent=2)
 
                 current = self.steps[current].nextStep(self.steps[current].error)
 

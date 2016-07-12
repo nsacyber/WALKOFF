@@ -51,6 +51,19 @@ class Main(app.App):
         print r.text
         return r.text
 
+    def addElementToDynamicBlockList(self, args={}):
+        element = '<entry name="' + args['name'] + '"><url>' + args['ip'] + '</url><description>' + args['description'] + '</description></entry>'
+
+        xpath = "/config/devices/entry/vsys/entry/external-list"
+
+        url = 'https://' + self.ip + '/api/'
+        payload = {'type' : 'config', 'action' : 'set', 'xpath' : xpath, 'element' : element, 'key' : self.keySuffix}
+
+        r = self.s.get(url, params=payload, verify=False)
+
+        print r.text
+        return r.text
+
     #Information
     def getRunningConfiguration(self, args={}):
         url = 'https://' + self.ip + '/api/?type=config&action=show'
@@ -68,3 +81,7 @@ class Main(app.App):
         url = 'https://' + self.ip + '/api/?type=config&action=show&xpath=/config/devices/entry/vsys/entry/profiles/custom-url-category&key=' + self.keySuffix
         r = self.s.get(url, verify=False)
         return r.text
+
+    def shutdown(self):
+        print "Palo Alto Shutting Down"
+        return

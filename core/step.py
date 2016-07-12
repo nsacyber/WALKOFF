@@ -22,10 +22,11 @@ class Step:
         re_tag = "<-(.*?)->"
         args = {}
         for x in self.input.keys():
-            tag = re.findall(re_tag, self.input[x])
+            tags = re.findall(re_tag, str(self.input[x]))
 
-            if len(tag) == 1:
-                args[x] = json.loads(tag[0])
+            args[x] = []
+            for tag in tags:
+                args[x].append(json.loads(tag))
 
         return args
 
@@ -95,7 +96,6 @@ class Step:
             #For each potential Path
             for option in path:
                 flags = 0
-
                 #For each check
                 for valueTest in option["conditions"]:
                     #Execute Filters Before Conditionals
