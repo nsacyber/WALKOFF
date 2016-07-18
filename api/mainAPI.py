@@ -27,7 +27,7 @@ app.config.update(
     )
 
 #Template Loader
-env = Environment(loader=FileSystemLoader('../apps'))
+env = Environment(loader=FileSystemLoader('apps'))
 
 #Database Connection Object
 db = SQLAlchemy(app)
@@ -616,19 +616,18 @@ def appActions(action):
 @roles_required("admin")
 def appActionsId(name, action):
     if action == "display":
-        try:
-            form = forms.RenderArgsForm(request.form)
-            path = name + "/interface/templates/" + form.page.data
+        form = forms.RenderArgsForm(request.form)
 
-            #Gets app template
-            template = env.get_template(path)
+        path =  name + "/interface/templates/" + form.page.data
 
-            args = interface.loadApp(name, form.args.entries)
+        #Gets app template
+        template = env.get_template(path)
 
-            rendered = template.render(**args)
-            return json.dumps({"content" : rendered})
-        except Exception as e:
-            return json.dumps({"status" : "Could not display app"})
+        args = interface.loadApp(name, form.key.entries, form.value.entries)
+
+        rendered = template.render(**args)
+        return rendered
+
 
     elif action == "remove":
         pass

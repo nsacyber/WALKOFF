@@ -45,7 +45,8 @@ class RemoveConfigForm(Form):
 
 class RenderArgsForm(Form):
     page = StringField("page", [validators.required()])
-    args = FieldList(StringField("arg", [validators.Optional()]))
+    key = FieldList(StringField("key", [validators.Optional()]))
+    value = FieldList(StringField("value", [validators.Optional()]))
 
 class AddNewDeviceForm(Form):
     name = StringField('name', [validators.Length(min=4, max=25), validators.required()])
