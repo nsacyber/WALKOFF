@@ -78,7 +78,7 @@ class Device(Base):
             self.port = form.port.data
 
     def __repr__(self):
-        return {"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : str(self.port)}
+        return json.dumps({"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : str(self.port)})
 
 #Define Models
 roles_users = db.Table('roles_users',
@@ -526,9 +526,9 @@ def playActionId(name, action):
     elif action == "execute":
         play = config.playbook.getPlay(name)
         if play != None:
-            return json.dumps({"results" : play.executePlay()})
+            return str({"results" : play.executePlay()})
         else:
-            return json.dumps({"status" : "Could not execute play"})
+            return str({"status" : "Could not execute play"})
 
     elif action == "remove":
         status = config.playbook.removePlay(name)
