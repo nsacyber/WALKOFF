@@ -15,9 +15,9 @@ class Main(app.App):
     def execCommand(self, args=[]):
         if "command" in args:
             stdin, stdout, stderr = self.ssh.exec_command(args["command"])
-            print "OUTPUT: ", stdout.read()
-
-            return stdout.read()
+            result = stdout.read()
+            print result
+            return result
 
 
     def shutdown(self):
