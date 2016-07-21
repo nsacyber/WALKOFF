@@ -1,8 +1,7 @@
 import re, json, importlib
-import flags.regMatch
 
 class Step:
-    def __init__(self, id=None, to=[], app="", device="", action="", input={}, error=[], **kwargs):
+    def __init__(self, id=None, to=[], app="", device=[], action="", input={}, error=[], **kwargs):
         self.id = id
         self.to = to
         self.app = app
@@ -11,12 +10,12 @@ class Step:
         self.input = input
         self.error = error
 
-        self.out = None
+        self.out = {}
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def setOut(self, value):
-        self.out = value
+    def setOut(self, device, value):
+        self.out[device] = value
 
     def setupArguments(self):
         re_tag = "<-(.*?)->"
@@ -29,6 +28,28 @@ class Step:
                 args[x].append(json.loads(tag))
 
         return args
+
+    def setupDevices(self):
+        re_tag = "<-(.*?)->"
+        devices = []
+        args = {}
+        for d in self.device:
+            tags = re.findall(re_tag, str(d))
+            if len(tags) > 0:
+                device = tags[0]
+
+                try:
+                    args = json.loads(device)
+                except Exception as e:
+                    print "ERROR"
+                    print e
+
+                #"All" returns all the devices for a specific app
+                if args["device"] == "all":
+                    from api.mainAPI import Device
+                    query = Device.query.filter_by(app=self.app).with_entities(Device.name).all()
+                    devices = list({k[0] for k in query})
+                    self.device = devices
 
     def setInputValue(self, key, value):
         self.input[key] = value
@@ -74,7 +95,7 @@ class Step:
         except ImportError as e:
             flagModule = None
 
-        if flagModule:
+        if flagModule and args and value:
             result = getattr(flagModule, "main")(args=args, value=value)
             return result
         return None
@@ -92,28 +113,31 @@ class Step:
         return None
 
     def nextStep(self, path):
-        if len(path) > 0:
+        if len(path) > 0 and self.out != None:
             #For each potential Path
             for option in path:
                 flags = 0
-                #For each check
-                for valueTest in option["conditions"]:
-                    #Execute Filters Before Conditionals
-                    out = self.out
-                    filters = valueTest["filters"]
-                    for filter in filters:
-                        out = self.executeFilter(function=filter["filter"], args=filter["args"], value=out)
+                if "conditions" in option:
+                    #For each check
+                    for valueTest in option["conditions"]:
 
-                    flagModule = None
-                    function = valueTest["flag"]
-                    args = valueTest["args"]
+                        #Execute Filters Before Conditionals
+                        out = self.out
+                        filters = valueTest["filters"]
+                        for filter in filters:
+                            out = self.executeFilter(function=filter["filter"], args=filter["args"], value=out)
 
-                    result = self.executeFlag(args=args, value=out, function=function)
-                    if result:
-                        flags+=1
+                        flagModule = None
+                        function = valueTest["flag"]
+                        args = valueTest["args"]
 
-                    if flags == len(option["conditions"]):
-                        return option["next"]
+                        result = self.executeFlag(args=args, value=out, function=function)
+
+                        if result:
+                            flags+=1
+
+                        if flags == len(option["conditions"]):
+                            return option["next"]
 
         return "<-[status:play_end]->"
 
@@ -122,10 +146,10 @@ class Step:
         result = dict()
         result["id"] = self.id
         result["to"] = self.to
-        result["device"] = self.device
+        result["device"] = str(self.device)
         result["app"] = self.app
         result["action"] = self.action
         result["in"] = self.input
         result["error"] = self.error
-        result["out"] = self.out
+        result["out"] = str(self.out)
         return json.dumps(result)

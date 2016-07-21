@@ -526,7 +526,8 @@ def playActionId(name, action):
     elif action == "execute":
         play = config.playbook.getPlay(name)
         if play != None:
-            return str({"results" : play.executePlay()})
+            output, instances = play.executePlay()
+            return json.dumps(output)
         else:
             return str({"status" : "Could not execute play"})
 
@@ -687,6 +688,12 @@ def configDevicesConfig(app, action):
 
             return json.dumps({"status" : "device successfully added"})
         return json.dumps({"status" : "device could not be added"})
+
+    if action == "all":
+        query = Device.query.filter_by(app=app).all()
+        if query != None and query != []:
+            return str(query)
+        return json.dumps({"status" : "could not display all devices"})
 
 #Controls the specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])

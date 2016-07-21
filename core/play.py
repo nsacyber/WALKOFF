@@ -70,76 +70,77 @@ class Play():
         else:
             return None
 
-    #Executes the play
-    def executePlay(self, q=Queue(), start="start", instances={"system":None}):
-        #Updates lastRun
-        status = {"name" : self.name, "lastRun": datetime.datetime.now()}
+    def setupStep(self, current):
+        self.steps[current].setupDevices()
 
-        #initializes instances
-        i = instances
+        #Parses arguments for input tags
+        args = self.steps[current].setupArguments()
+        if len(args.keys()) > 0:
+            for key in args.keys():
+                for tags in args[key]:
+                    try:
+                        keywordModule = importlib.import_module("core.keywords." + tags["action"])
+                    except ImportError as e:
+                        keywordModule = None
 
-        #Stores the results of each step to return
-        outputs = []
+                    if keywordModule:
+                        result = getattr(keywordModule, "main")(steps=self.steps, args=tags["args"])
 
-        current = start
-        while current != "<-[status:play_end]->" and current != None:
+                        for filter in tags["filters"]:
+                            result = ffk.executeFilter(function=filter["filter"], args=filter["args"], value=result)
 
-            #Create instance for uninstanciated commands
-            if self.steps[current].device not in instances:
-                instance = self.createInstance(self.steps[current].app, self.steps[current].device)
+                        self.steps[current].setInputValue(key, result)
+
+    def executeStep(self, i, d, current):
+        print current
+        #Executes step and sets the return value
+        try:
+            out = self.steps[current].execute(i[d])
+            if not isinstance(out, str):
+                out = str(out, ensure_ascii=True, default=str)
+            self.steps[current].setOut(str(d), out)
+
+            #Adds log of execution
+            outputs = str(self.steps[current])
+
+            #Decides where to go next
+            #current = self.steps[current].nextStep(self.steps[current].to)
+            nextStep = self.steps[current].nextStep(self.steps[current].to)
+            return outputs, nextStep
+
+        except Exception as e:
+            self.steps[current].setOut(i[d], str(e))
+
+            #Adds log of execution
+            outputs = str(self.steps[current])
+
+            #current = self.steps[current].nextStep(self.steps[current].error)
+            nextStep = self.steps[current].nextStep(self.steps[current].error)
+            return outputs, nextStep
+
+
+
+    def executePlay(self, q=Queue(), start="start", instances={}, output={}):
+        self.setupStep(start)
+        for d in self.steps[start].device:
+            if d not in instances:
+                instance = self.createInstance(self.steps[start].app, d)
                 if instance != None:
-                    i[self.steps[current].device] = instance
+                    instances[d] = instance
 
-            #Parses arguments for input tags
-            args = self.steps[current].setupArguments()
-            if len(args.keys()) > 0:
-                for key in args.keys():
-                    for tags in args[key]:
-                        try:
-                            keywordModule = importlib.import_module("core.keywords." + tags["action"])
-                        except ImportError as e:
-                            keywordModule = None
+            o, next = self.executeStep(i=instances, d=d, current=start)
+            key = str(uuid.uuid4())
+            output[key] = o
 
-                        if keywordModule:
-                            result = getattr(keywordModule, "main")(steps=self.steps, args=tags["args"])
+            if next != "<-[status:play_end]->" and next != None:
+                output, instances = self.executePlay(q=q, start=next, instances=instances, output=output)
 
-                            for filter in tags["filters"]:
-                                result = ffk.executeFilter(function=filter["filter"], args=filter["args"], value=result)
+            elif next == "<-[status:play_end]->":
+                instance = d
+                if instances[instance].__class__.__base__.__name__ == app.App.__name__:
+                    instances.pop(instance, None).shutdown()
 
-                            self.steps[current].setInputValue(key, result)
+        print "output: ", o
+        return output, instances
 
-
-
-            #Executes step and sets the return value
-            try:
-                out = self.steps[current].execute(i[self.steps[current].device])
-                if not isinstance(out, str):
-                    out = json.dumps(out, ensure_ascii=True, default=str)
-                self.steps[current].setOut(out)
-
-                #Adds log of execution
-                outputs.append(str(self.steps[current]))
-
-                #Decides where to go next
-                current = self.steps[current].nextStep(self.steps[current].to)
-
-            except Exception as e:
-                print "ERROR"
-                print e
-                self.steps[current].setOut(str(e))
-
-                #Adds log of execution
-                outputs.append(json.dumps(self.steps[current]), ensure_ascii=True, default=str, indent=2)
-
-                current = self.steps[current].nextStep(self.steps[current].error)
-
-
-
-        status["status"] = "<-[status:play_executed]->"
-        #Cycles through instances and executes shutdown procedures
-        for instance in instances:
-            if instances[instance].__class__.__base__.__name__ == app.App.__name__:
-                instances[instance].shutdown()
-
-        q.put(status)
-        return outputs
+   
