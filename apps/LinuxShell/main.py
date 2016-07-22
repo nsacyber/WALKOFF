@@ -1,5 +1,5 @@
 from core import app
-import paramiko
+import paramiko, json
 
 class Main(app.App):
     def __init__(self, name=None, device=None):
@@ -13,11 +13,15 @@ class Main(app.App):
         return
 
     def execCommand(self, args=[]):
+        result = []
         if "command" in args:
-            stdin, stdout, stderr = self.ssh.exec_command(args["command"])
-            result = stdout.read()
-            print result
-            return result
+            for cmd in args["command"]:
+                stdin, stdout, stderr = self.ssh.exec_command(cmd)
+                output = stdout.read()
+                result.append(output)
+
+        return str(result)
+
 
 
     def shutdown(self):

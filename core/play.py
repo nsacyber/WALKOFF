@@ -140,7 +140,4 @@ class Play():
                 if instances[instance].__class__.__base__.__name__ == app.App.__name__:
                     instances.pop(instance, None).shutdown()
 
-        print "output: ", o
         return output, instances
-
-   
