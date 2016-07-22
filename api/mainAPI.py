@@ -228,7 +228,7 @@ class Triggers(Base):
 #     return dict(something="else")
 
 
-#Returns the API key for the user
+#Returns the outer interface container
 @app.route('/', methods=["GET"])
 @login_required
 def loginPage():
@@ -236,6 +236,17 @@ def loginPage():
 
         args = {"apps": config.getApps(), "authKey":current_user.get_auth_token()}
         return render_template("container.html", **args)
+    else:
+        return {"status" : "Could Not Log In."}
+
+#Returns System-Level Interface Pages
+@app.route('/interface/<string:name>/display', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def systemPages(name):
+    if current_user.is_authenticated and name:
+        args, form = getattr(interface, name)()
+        return render_template("pages/" + name + ".html", form=form, **args)
     else:
         return {"status" : "Could Not Log In."}
 

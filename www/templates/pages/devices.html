@@ -1,0 +1,286 @@
+<div id="main">
+
+    <script src="{{ url_for('static', filename='pages/display/sly.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/display/slyPlugins.js' ) }}"> </script>
+
+    <script type="app/javascript">
+        var apps = {{apps|safe}};
+    </script>
+
+    <script src="{{ url_for('static', filename='pages/display/main.js' ) }}"> </script>
+
+    <style>
+        #appScroll{
+            width:825px;
+
+            background-color:#c3c3c3;
+            margin-bottom:15px;
+        }
+
+        .selectColumn{
+            height:600px;
+            display:inline-block;
+            background-color:#f8f8f8;
+        }
+
+        #deviceSelect{
+            width:250px;
+            margin-right:25px;
+        }
+
+        #parameterSelect{
+            width:550px;
+            height:600px;
+            position:relative;
+            bottom:330px;
+        }
+
+
+        /* Frame */
+        .frame {
+            height: 100px;
+            line-height: 100px;
+            overflow: hidden;
+        }
+        .frame ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-size: 40px;
+        }
+        .frame ul li {
+            float: left;
+            width: 227px;
+            height: 100%;
+            margin: 0 1px 0 0;
+            padding: 0;
+            background: #333;
+            color: #ddd;
+            text-align: center;
+            cursor: pointer;
+        }
+        .frame ul li.active {
+            color: #fff;
+            background: #a03232;
+        }
+
+        /* Scrollbar */
+        .scrollbar {
+            margin: 0 0 1em 0;
+            height: 2px;
+            background: #ccc;
+            line-height: 0;
+        }
+        .scrollbar .handle {
+            width: 100px;
+            height: 100%;
+            background: #292a33;
+            cursor: pointer;
+        }
+        .scrollbar .handle .mousearea {
+            position: absolute;
+            top: -9px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+        }
+
+        /* Pages */
+        .pages {
+            list-style: none;
+            margin: 20px 0;
+            padding: 0;
+            text-align: center;
+        }
+        .pages li {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin: 0 4px;
+            text-indent: -999px;
+            border-radius: 10px;
+            cursor: pointer;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+        }
+        .pages li:hover {
+            background: #aaa;
+        }
+        .pages li.active {
+            background: #666;
+        }
+
+        /* Controls */
+        .controls { margin: 15px 0; text-align: center; }
+
+        .btn {
+            position: relative;
+            display: inline-block;
+
+            width:75px;
+            height:50px;
+
+            padding: 4px 12px;
+            margin-bottom: 0;
+            line-height: 30px;
+            color: #333333;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-bottom-width: 2px;
+            border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.15);
+        }
+        /* Example wrapper */
+
+
+
+            /* Frame */
+            .vframe {
+                width: 250px;
+                height: 600px;
+                overflow: hidden;
+                border: 1px solid #444;
+            }
+            .vframe .slidee {
+                padding: 20px 25px;
+                background: #fff;
+            }
+            .vframe ul.items {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                font-size: 24px;
+                line-height: 75px;
+            }
+            .vframe ul.items li {
+                float: left;
+                width: 100%;
+                height: 75px;
+                margin: 0 0 1px;
+                padding: 0;
+                background: #333;
+                color: #ddd;
+                text-align: center;
+                cursor: pointer;
+            }
+            .vframe ul.items li.active {
+                color: #fff;
+                background: #a03232;
+            }
+
+            /* Scrollbar */
+            .vscrollbar {
+                position: absolute;
+                right: 10px;
+                width: 2px;
+                height: 600px;
+                background: #ccc;
+                line-height: 0;
+            }
+            .vscrollbar .handle {
+                width: 100%;
+                height: 100px;
+                background: #292a33;
+                cursor: pointer;
+            }
+            .vscrollbar .handle .mousearea {
+                position: absolute;
+                top: 0;
+                left: -10px;
+                width: 22px;
+                height: 100%;
+            }
+
+            /* Pages */
+            .vpages {
+                list-style: none;
+                margin: 20px 0;
+                padding: 0;
+                text-align: center;
+            }
+            .vpages li {
+                display: inline-block;
+                width: 14px;
+                height: 14px;
+                margin: 0 4px;
+                text-indent: -999px;
+                border-radius: 10px;
+                cursor: pointer;
+                overflow: hidden;
+                background: #fff;
+                box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+            }
+            .vpages li:hover {
+                background: #aaa;
+            }
+            .vpages li.active {
+                background: #666;
+            }
+
+            /* Controls */
+            .vcontrols { margin: 25px 0; text-align: center; }
+    </style>
+
+    <div id="appScroll" class="">
+        <div class="scrollbar">
+            <div class="handle">
+                <div class="mousearea"></div>
+            </div>
+        </div>
+
+        <div class="frame" id="centered">
+            <ul id="appList" class="clearfix">
+
+            </ul>
+        </div>
+
+        <div class="controls center">
+            <button class="btn prev"><i class="icon-chevron-left"></i> prev</button>
+            <button class="btn next">next <i class="icon-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div id="deviceSelect" class="selectColumn">
+        <div class="vertScrollBar">
+            <div class="handle">
+                <div class="mousearea"></div>
+            </div>
+        </div>
+
+        <div class="vframe smart" id="smart">
+            <ul id="deviceList" class="items">
+
+            </ul>
+        </div>
+
+        <ul class="vpages"></ul>
+
+        <div class="vcontrols center">
+            <p>
+                <span class="btn-group">
+                    <button class="btn add">Add</button>
+                    <button class="btn remove">Remove</button>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <div id="parameterSelect" class="selectColumn">
+        <form id="deviceForm">
+            {% from "pages/_formhelpers.html" import render_field %}
+            {{ render_field(form.name) }}
+            {{ render_field(form.username) }}
+            {{ render_field(form.pw) }}
+            {{ render_field(form.app) }}
+            {{ render_field(form.ipaddr) }}
+            {{ render_field(form.port) }}
+            <input id="formSubmit" type="submit" value="submit">
+        </form>
+
+    </div>
+</div>

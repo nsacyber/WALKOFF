@@ -1,4 +1,6 @@
 import sys, importlib, itertools
+from config import getApps
+from auth import forms
 
 def loadModule(name):
     module = "apps." + name + ".display"
@@ -19,3 +21,6 @@ def loadApp(name, keys, values):
     if module:
         return getattr(module, "load")(args)
     return {}
+
+def devices():
+    return {"apps" : getApps()}, forms.AddNewDeviceForm()

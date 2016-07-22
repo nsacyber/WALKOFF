@@ -54,6 +54,22 @@ $(document).ready(function(){
         });
     });
 
+    $("#ss_devices").on("click", function(e){
+        $.ajax({
+            url:'/interface/devices/display',
+            data:{},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success: function(e){
+                data = e;
+                $("#ss_main").html(data);
+            },
+            error: function(e){
+                console.log("ERRROR");
+            }
+        });
+    });
+
     $("#ss_settings").on("click", function(e){
         console.log("shortstop settings");
         $.ajax({
