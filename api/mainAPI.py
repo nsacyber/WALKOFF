@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
 from flask_security import auth_token_required, current_user, roles_required
@@ -13,7 +13,9 @@ import executionAPI, core.flagsFiltersKeywords as ffk
 import ssl, json, os
 
 #Create Flask App
-app = Flask(__name__)
+app = Flask(__name__, static_folder=os.path.abspath('www/static'), static_url_path='/static')
+
+app.jinja_loader = FileSystemLoader(['apps', 'www/templates'])
 
 app.config.update(
         #CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
@@ -22,12 +24,15 @@ app.config.update(
         SECURITY_PASSWORD_HASH = 'pbkdf2_sha512',
         SECURITY_TRACKABLE = False,
         SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production',
-        SECURITY_POST_LOGIN_VIEW = '/',
+        SECURITY_POST_LOGIN_VIEW = 'container.html',
+
         WTF_CSRF_ENABLED = False
     )
 
 #Template Loader
-env = Environment(loader=FileSystemLoader('apps'))
+env = Environment(loader=FileSystemLoader("apps"))
+
+app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
 
 #Database Connection Object
 db = SQLAlchemy(app)
@@ -216,11 +221,28 @@ class Triggers(Base):
 #URL Declarations
 #
 
+# This processor is added to only the register view
+# @security.login_context_processor
+# def security_register_processor():
+#     print "HERE"
+#     return dict(something="else")
+
+
 #Returns the API key for the user
 @app.route('/', methods=["GET"])
 @login_required
+def loginPage():
+    if current_user.is_authenticated:
+
+        args = {"apps": config.getApps(), "authKey":current_user.get_auth_token()}
+        return render_template("container.html", **args)
+    else:
+        return {"status" : "Could Not Log In."}
+
+#Returns the API key for the user
+@app.route('/key', methods=["GET"])
+@login_required
 def loginInfo():
-    print current_user
     if current_user.is_authenticated:
         return json.dumps({"auth_token" : current_user.get_auth_token()})
     else:
