@@ -22,4 +22,4 @@ def executeFilter(function, args, value):
     if filterModule:
         result = getattr(filterModule, "main")(args=args, value=value)
         return result
-    return None
+    return value
