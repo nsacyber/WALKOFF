@@ -73,11 +73,11 @@ class Device(Base):
         if form.username.data != "" and form.username.data != None:
             self.username = form.username.data
 
-        if form.password.data != "" and form.password.data != None:
-            self.password = form.password.data
+        if form.pw.data != "" and form.pw.data != None:
+            self.password = form.pw.data
 
-        if form.ip.data != "" and form.ip.data != None:
-            self.ip = form.ip.data
+        if form.ipaddr.data != "" and form.ipaddr.data != None:
+            self.ip = form.ipaddr.data
 
         if form.port.data != "" and form.port.data != None:
             self.port = form.port.data
@@ -753,8 +753,8 @@ def configDevicesConfigId(app, device, action):
         device = Device.query.filter_by(app=app, name=device).first()
         if form.validate() and device != None:
             #Ensures new name is unique
-            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
-                return json.dumps({"status" : "device could not be edited"})
+            # if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+            #     return json.dumps({"status" : "device could not be edited"})
 
             device.editDevice(form)
 

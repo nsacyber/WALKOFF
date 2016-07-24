@@ -6,12 +6,6 @@ function displayNameList(devices){
     }
 }
 
-function displayForm(devices){
-    for(device in devices){
-
-    }
-}
-
 for(var app in apps){
     $("#appList").append("<li>" + apps[app] + "</li>");
 }
@@ -48,12 +42,53 @@ for(var app in apps){
 
     // Add item
     $vwrap.find('.add').on('click', function () {
-        $vframe.sly('add', '<li>' + apps[sly.rel.activeItem] + "-" + $slidee.children().length + '</li>');
+        var defaultValues = {"name":apps[sly.rel.activeItem] + "-" + $slidee.children().length, "app":apps[sly.rel.activeItem], "ipaddr":"", "port":0, "username":"", "pw":""};
+        $(this).closest('#deviceForm').find("input[type=text]").val("");
+        for(key in defaultValues){
+            if(key == "ip"){
+                k = "ipaddr";
+            }else if(key == "password"){
+                k = "pw";
+            }
+            else{
+                k = key;
+            }
+            $("#" + k).val(defaultValues[key]);
+        }
+
+        $.ajax({
+            url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/add',
+            data:$("#deviceForm").serialize(),
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success:function(e){
+                console.log(e);
+                $vframe.sly('add', '<li>' + defaultValues["name"] + '</li>');
+                vsly.toEnd();
+
+            },
+            error: function(e){
+                console.log("ERROR");
+            }
+        });
     });
 
     // Remove item
     $vwrap.find('.remove').on('click', function () {
-        $vframe.sly('remove', vsly.rel.activeItem);
+
+        $.ajax({
+            url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[vsly.rel.activeItem].el.innerHTML + '/remove',
+            data:{},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success:function(e){
+                console.log(e);
+                $vframe.sly('remove', vsly.rel.activeItem);
+            },
+            error: function(e){
+                console.log("ERROR");
+            }
+        });
     });
 
 
@@ -151,11 +186,13 @@ for(var app in apps){
           event.preventDefault();
          $.ajax({
             url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[vsly.rel.activeItem].el.innerHTML + '/edit',
-            data:{},
+            data:$("#deviceForm").serialize(),
             headers:{"Authentication-Token":authKey},
             type:"POST",
             success:function(e){
                 console.log(e);
+
+                vsly.items[vsly.rel.activeItem].el.innerHTML = $("#name")[0].value;
             },
             error: function(e){
                 console.log("ERROR");
