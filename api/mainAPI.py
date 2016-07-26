@@ -234,7 +234,7 @@ class Triggers(Base):
 def loginPage():
     if current_user.is_authenticated:
 
-        args = {"apps": config.getApps(), "authKey":current_user.get_auth_token()}
+        args = {"apps": config.getApps(), "authKey":current_user.get_auth_token(), "currentUser":current_user.email}
         return render_template("container.html", **args)
     else:
         return {"status" : "Could Not Log In."}
