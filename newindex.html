@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="./files/dist/css/AdminLTE.min.css">
     <link rel="stylesheet" href="./files/dist/css/skins/skin-blue.min.css">
     <link rel="stylesheet" href="./files/documentation/style.css">
+    <link rel="stylesheet" href="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.min.css">
     <title>WALKOFF</title>
     <style>
     .middle {
@@ -99,10 +100,12 @@
     .carousel-fade .carousel-control {
       z-index: 2;
     }
+    .ui-button:focus { outline:none !important }
     </style>
     <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-default.css">
     <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-demo.css">
-    <link rel="stylesheet" href="./files/plugins/jsPlumb/app.css">
+    <!--<link rel="stylesheet" href="./files/plugins/jsPlumb/app.css">-->
+    <link rel="stylesheet" href="./files/plugins/jsPlumb/app2.css">
 </head>
 <body id="mainBody">
   <div class="leftBox">
@@ -117,6 +120,7 @@
     <h1>WALKOFF - Global Orchestration for Cyber Defense</h1>
   </div>
   <div id="flashy">
+      <!--State Machine Diagram | Uses app.css and inst.js
       <div class="jtk-demo-main">
         <div class="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
           <div class="w" id="ERD1">ENDPOINT REMEDIATION DEVICE: <br>Is MDS in threat feed?
@@ -134,35 +138,22 @@
           <div class="w" id="FW2">FIREWALL:<br>Update threat
               <div class="ep" action="FW2"></div>
           </div>
+      </div>-->
+      <div class="jtk-demo-main">
+        <div id="connDialog" title="WALKOFF Actions">With WALKOFF, you can easily identify events and actions that should be executed in response.</div>
+        <div id="nodeDialog" title="WALKOFF Node"></div>
+        <div class="jtk-demo-canvas canvas-wide flowchart-demo jtk-surface jtk-surface-nopan" id="canvas">
+            <!--<div class="ends jtk-node" id="flowchartEnd1"><strong>ALERT</strong></div>-->
+            <div class="window jtk-node nodeDiv" id="flowchartWindow1"><strong>ENDPOINT REMEDIATION DEVICE:<br>Is MDS in threat feed?</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow2"><strong>ENDPOINT REMEDIATION DEVICE:<br>Update threat feed</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow3"><strong>ENDPOINT REMEDIATION DEVICE:<br>Scan Host</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow4"><strong>FIREWALL:<br>Is destination IP in block list?</strong></div>
+            <div class="window jtk-node nodeDiv" id="flowchartWindow5"><strong>FIREWALL:<br>Update threat</strong></div>
+            <!--<div class="ends jtk-node" id="flowchartEnd2"><strong>END</strong></div>-->
+        </div>
       </div>
     </div>
   </div>
-    <!--<div id="Carousel" class="carousel slide carousel-fade">
-        <ol class="carousel-indicators">
-            <li data-target="Carousel" data-slide-to="0" class="active"></li>
-            <li data-target="Carousel" data-slide-to="1"></li>
-            <li data-target="Carousel" data-slide-to="2"></li>
-        </ol>
-
-        <div class="carousel-inner">
-            <div class="item active">
-                <img width="100%" src="files/images/PostHelloWorldWorkflowSend.png" class="img-responsive">
-            </div>
-           <div class="item">
-             <img width="100%" src="files/images/Enable_create_user_anotation.png" class="img-responsive">
-            </div>
-           <div class="item">
-             <img width="100%" src="files/images/PlayExecutionFlow.png" class="img-responsive">
-            </div>
-        </div>
-
-        <a class="left carousel-control" href="#Carousel" data-slide="prev">
-            <span class="glyphicon glyphicon-chevron-left"></span>
-        </a>
-        <a class="right carousel-control" href="#Carousel" data-slide="next">
-            <span class="glyphicon glyphicon-chevron-right"></span>
-        </a>
-    </div>-->
   <div class="divBody">
     <p><h3>What is WALKOFF?</h3></p>
     <p class="lead">
@@ -203,6 +194,8 @@
   </footer>
   <!-- jQuery 2.1.4 -->
   <script src="./files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+  <!-- jQueryUI 1.11.4 -->
+  <script src="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.min.js"></script>
   <!-- Bootstrap 3.3.5 -->
   <script src="./files/bootstrap/js/bootstrap.min.js"></script>
   <!-- FastClick -->
@@ -213,6 +206,57 @@
   <script src="./files/plugins/slimScroll/jquery.slimscroll.min.js"></script>
   <script src="./files/documentation/docs.js"></script>
   <script src="./files/plugins/jsPlumb/jsPlumb-2.1.2-min.js "></script>
-  <script src="./files/plugins/jsPlumb/inst.js "></script>
+  <!--<script src="./files/plugins/jsPlumb/inst.js "></script>-->
+  <script src="./files/plugins/jsPlumb/inst2.js "></script>
+  <script>
+    $(function () {
+
+      $('.nodeDiv').each(function(){
+         $(this).click(function(){
+           displayDialog(this.id)
+         });
+       });
+      //prevent ui conflict between jqueryUI and bootstrap
+      var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
+      $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
+
+      $( "#connDialog" ).dialog({
+        autoOpen: false,
+        show: 'fade',
+        hide: 'drop'
+      });
+
+      $( "#nodeDialog" ).dialog({
+        autoOpen: false,
+        show: 'fade',
+        hide: 'drop'
+      });
+
+      function displayDialog(id){
+        switch (id){
+  				case 'flowchartWindow1':
+  					$("#nodeDialog").html("Use your own device to determine if an alert is a threat.");
+  					break;
+  				case 'flowchartWindow2':
+  					$("#nodeDialog").html("Use your own device to update your feed if the threat is not found.");
+  					break;
+  				case 'flowchartWindow3':
+  					$("#nodeDialog").html("Use your own device to scan the host.");
+  					break;
+          case 'flowchartWindow4':
+            $("#nodeDialog").html("Use your firewall to determine if the destination IP should be blocked.");
+            break;
+          case 'flowchartWindow5':
+            $("#nodeDialog").html("Use your firewall to update your threat.");
+            break;
+  				default:
+            $("#nodeDialog").html("WALKOFF allows you to add actions and decision points to your playbook.");
+  					break;
+  			}
+        $("#nodeDialog").dialog('open');
+      }
+
+    });
+  </script>
 </body>
 </html>
