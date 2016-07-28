@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WALKOFF | Documentation</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="./files/bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="./files/plugins/font-awesome-4.5.0/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="./files/plugins/ionicons/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="./files/dist/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="./files/dist/css/skins/skin-blue.min.css">
+    <link rel="stylesheet" href="./files/documentation/style.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="skin-blue fixed" data-spy="scroll" data-target="#scrollspy">
+    <div class="wrapper">
+
+        <header class="main-header">
+            <a href="#" class="logo">
+                <span class="logo-mini"><b>WALK</b>OFF</span>
+                <span class="logo-lg"><b>WALK</b>OFF</span>
+            </a>
+            <nav class="navbar navbar-static-top" role="navigation">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+            </nav>
+        </header>
+        
+        <aside class="main-sidebar">
+            <div class="sidebar" id="scrollspy">
+
+                <ul class="nav sidebar-menu">
+                    <li class="header">TABLE OF CONTENTS</li>
+                    <li class="active"><a href="./index.html"><i class="fa fa-circle-o"></i> Introduction</a></li>
+					
+					<li class="treeview" id="scrollspy-gettingStarted">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i>  Getting started</a>
+                        <ul class="nav treeview-menu">
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Setup </a></li>
+                        </ul>
+                    </li>
+					
+					
+					<li class="treeview" id="scrollspy-walkthru">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Walkthrough</a>
+                        <ul class="nav treeview-menu">
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Executing a Basic Workflow</a></li>
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Start Service</a></li>							
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Postman</a></li>							
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Login</a></li>	
+							<li><a href="./tutorials.html"><i class="fa fa-square-o"></i> Running Hello World Workflow</a></li>	
+                        </ul>
+                    </li>
+					
+					<li class="treeview" id="scrollspy-walkthru">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Development Walkthrough </a>
+                        <ul class="nav treeview-menu">
+							<li><a href="#buildingAnApp"><i class="fa fa-square-o"></i> Building a basic app </a></li>
+							<li><a href="#addingCustomInterface"><i class="fa fa-square-o"></i> Adding a custom interface </a></li>
+                        </ul>
+                    </li>
+					
+                    <li class="treeview" id="scrollspy-documentation">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Documentation</a>
+                        <ul class="nav treeview-menu">
+                            <li><a href="./api.html"><i class="fa fa-square-o"></i> Overview</a></li>
+							<li><a href="./api.html"><i class="fa fa-square-o"></i> Engine</a></li>
+							
+							<li><a href="./api.html"><i class="fa fa-square-o"></i> API</a>
+								<ul class="nav treeview-menu">
+									<li><a href="./api.html"><i class="fa fa-square-o"></i> CURL Example </a></li>
+									<li><a href="./api.html"><i class="fa fa-square-o"></i> Python Example </a></li>
+									<li><a href="./api.html"><i class="fa fa-square-o"></i> Functions</a></li>
+								</ul>
+							</li>
+							
+                        </ul>
+                    </li>
+					
+                    <li class="treeview" id="scrollspy-standard">
+                        <a href="javascript:void(0)"><i class="fa fa-circle-o"></i> Standard</a>
+                        <ul class="nav treeview-menu">
+							<li><a href="./api.html"><i class="fa fa-square-o"></i> Overview</a></li>
+                            <li><a href="./api.html"><i class="fa fa-square-o"></i> WALKOFF Apps</a></li>
+							<li><a href="./api.html"><i class="fa fa-square-o"></i> WALKOFF Workflows</a></li>
+							<li><a href="./api.html"><i class="fa fa-square-o"></i> Filters, Flags, and Keywords </a></li>
+                        </ul>
+                    </li>
+					
+                    <li><a href="#faq"><i class="fa fa-circle-o"></i> FAQ</a></li>
+                    <li><a href="#license"><i class="fa fa-circle-o"></i> License</a></li>
+                    <li><a href="#disclaimer"><i class="fa fa-circle-o"></i> Disclaimer</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <h1>
+            WALKOFF Documentation
+            <small>Current version 0.5.0b</small>
+          </h1>
+                <ol class="breadcrumb">
+                    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+                    <li class="active">Documentation</li>
+                </ol>
+            </div>
+
+            <div class="content body">
+                <section id="gettingStarted" data-spy="scroll" data-target="#buildingAnApp">
+                    <h2 class="page-header"><a href="#gettingStarted">Building a Basic App</a></h2>
+					<p class="lead"> This tutorial will walk through how to build a basic device integration app.  In this case we will use the Palo Alto API as an example. </p>
+                    <h3 id="tutorial-setup" href="#tutorial-setup">Step One: Setup Folder Structure </h3>
+						<p class="lead" >A Walkoff app consists of various components in a set folder structure which is listed below.  These files are the bare minimum requirements and other files are able to be added as needed. </p>
+						<pre>
+-app_name
+	-interface
+		-static 
+	-main.py
+	-display.py
+	-__init__.py
+						</pre>
+						<ol>
+							<li> The folder name should be the same name as your app.  So our file structure will now look as follows. 
+							<pre>
+-PaloAlto
+	-interface
+		-static 
+	-main.py
+	-display.py
+	-__init__.py
+							</pre>
+							</li>
+						</ol>
+					
+					<h3 id="tutorial-setup" href="#tutorial-setup">Step Two: Setup main.py class </h3>
+						<p class="lead" >The main.py file consists of a class named Main, and consists of three parts: 
+							<ol>
+								<li> 
+									The constructor is called when the device is instanciated and should store variables and functionality that will last across the execution lifetime of a play.  Two arguments are automatically passed into the constructor during execution: the app name, and the device name.  Within the constructor the parent class App is called which returns the app configuration from the database.  This configuration can be retrived through the self.config object. 
+									<pre>
+from core import app
+									
+class Main(app.App):
+    def __init__(self,name=None, device=None):
+        app.App.__init__(self, name, device)
+        
+									</pre>
+								</li>
+								<li> 
+									The second component of main.py is the shutdown method which is called for each instance when play execution resolves.  
+									<pre>
+def shutdown(self):
+    return
+									</pre>
+								</li>
+								<li> 
+									The third component consists of any other methods within the Main class.  These methods will serve as the entry points for any unique functionality in the app. In the case of our Palo Alto app we want a function that will return the currently running configuration. Every one of these functions should take a function called args which is a dictionary object of arguments to be passed in for use within the function. In addition, every method should return a dictionary object.
+									
+									<pre>
+def getRunningConfiguration(self, args={}):
+	return {}
+									</pre>
+									<p class="lead"> Below is the code for step two in a single section. </p>
+									<pre>
+from core import app
+									
+class Main(app.App):
+    def __init__(self,name=None, device=None):
+        app.App.__init__(self, name, device)
+		
+	def getRunningConfiguration(self, args={}):
+		return {}
+		
+	def shutdown(self):
+		return
+									</pre>
+									</p>
+								</li>
+							</ol>
+					<h3 id="tutorial-setup" href="#tutorial-setup">Step Three: Integrate with the Palo Alto </h3>
+					
+					<p class="lead"> This step will be unique for each app created, however integrating with devices generally follows a three part pattern. </p>
+					<p class="lead">Note: Our app uses the Python requests library which makes HTTP requests in Python easy. In addition, we use the python xml library to parse the xml that is returned from the Palo Alto device. </p>
+							<pre>
+import requests, json, xml.etree.ElementTree as ET
+							</pre>
+					<ol>
+						<li>
+							Connecting to the Device
+							<p class="lead"> In this case we will want to write the connection function in our constructor allowing the session to exist across the play execution lifecycle. In the specific case of our Palo Alto app we set up a base URL, create a Session, and use the username and password retrieved in the parent constructor to store the required API key.   </p>
+							<pre>
+def __init__(self,name=None, device=None):
+	#Parent Class Constructor 
+	app.App.__init__(self, name, device)
+	
+	#Create new Session
+	self.s = requests.Session()
+	
+	#Setup base url
+	self.ip = self.config.ip + ":" + str(self.config.port)
+	
+	#Request the API Key
+	url = 'https://' + self.ip + '/api/?type=keygen&user=' + self.config.username + '&password=' + self.config.password
+	r = self.s.get(url, verify=False)
+	
+	#Parse out and store the API key
+	tree = ET.fromstring(r.text)
+	if tree.attrib['status'] == 'success':
+		print "success!"
+		#self.keySuffix = '&key=' + tree[0][0].text
+		self.keySuffix = tree[0][0].text
+							</pre>
+							
+						</li>
+						<li>
+							Device Specific Functionality
+							<p class="lead"> Next we write the functionality to retrieve and return the running configuration from the device.  The steps below setup the HTTP request and return the results in a the dictionary under the config key. </p>
+							<pre>
+def getRunningConfiguration(self, args={}):
+	#setup URL
+	url = 'https://' + self.ip + '/api/?type=config&action=show'
+	
+	#Setup Parameters/Data for the HTTP request
+	payload = {'key' : self.keySuffix}
+	
+	#Send and return the HTTP request
+	r = self.s.get(url, params=payload, verify=False)
+	return {"config" : r.text}
+							</pre>
+						</li>
+						<li>
+							Shutdown steps
+							<p class="lead">Fortunately for us the Palo Alto does not require any unique shutdown steps.  However, be warned some devices do require cleanup which should be performed within this method. </p>
+							<pre>
+def shutdown(self):
+	return
+							</pre>
+							
+							<p class="lead"> Below is the code for main.py </p>
+							<pre>
+from core import app
+import requests, json, xml.etree.ElementTree as ET
+									
+class Main(app.App):
+    def __init__(self,name=None, device=None):
+		#Parent Class Constructor 
+		app.App.__init__(self, name, device)
+		
+		#Create new Session
+		self.s = requests.Session()
+		
+		#Setup base url
+		self.ip = self.config.ip + ":" + str(self.config.port)
+		
+		#Request the API Key
+		url = 'https://' + self.ip + '/api/?type=keygen&user=' + self.config.username + '&password=' + self.config.password
+		r = self.s.get(url, verify=False)
+		
+		#Parse out and store the API key
+		tree = ET.fromstring(r.text)
+		if tree.attrib['status'] == 'success':
+			print "success!"
+			#self.keySuffix = '&key=' + tree[0][0].text
+			self.keySuffix = tree[0][0].text
+		
+	def getRunningConfiguration(self, args={}):
+		#setup URL
+		url = 'https://' + self.ip + '/api/?type=config&action=show'
+		
+		#Setup Parameters/Data for the HTTP request
+		payload = {'key' : self.keySuffix}
+		
+		#Send and return the HTTP request
+		r = self.s.get(url, params=payload, verify=False)
+		return {"config" : r.text}
+			
+	def shutdown(self):
+		return
+							</pre>
+						</li>
+					</ol>
+					<p class="lead"> And that's it!  Now the Palo Alto app can be called within your workflows and have it return the device configuration to aid in decision making. </p>
+                </section>
+                
+                <section id="walkthru" data-spy="scroll" data-target="#addingCustomInterface">
+                    <h2 class="page-header"><a href="#walkthru">Adding a Custom Interface </a></h2>
+					<p class="lead"> Every app can have an optional custom interface associated with it as well.  These interfaces can provide dashboards, reports, or be interactive to allow greater control over the execution of the app.  Below is an introduction to creating a basic interface. </p>
+					
+                    <h3 id="tutorial-setup" href="#tutorial-setup">Step One: Setup display.py class </h3>
+						<p class="lead"> The display.py class is the entry point for any server side code required for the interface.  It consists of a load method that is executed any time a page within the app is loaded.  The load function returns a dictionary object which allows for templating within your HTML pages. </p>
+						<pre>
+def load(args={}):
+    return {"message" : "Hello World!"}
+						</pre>
+					
+					<h3 id="tutorial-setup" href="#tutorial-setup">Step Two: Setup templates </h3>
+						<p class="lead"> Templates are html files stored in the templates folder.  WALKOFF interfaces are contained within a div which has the id main.  WALKOFF also allows templating with the values returned from  display.py module created in Step One.  In the example below the header will become "Hello World!" </p>
+						<pre>
+&lt;div id='main'&gt;
+	&lt;h1&gt; {{message}} &lt;/h1&gt;
+&lt;/div&gt;
+						</pre>
+						
+					<h3 id="tutorial-setup" href="#tutorial-setup">Step Two: Setup any static files </h3>
+						<p class="lead"> Any static files such as javascript or css will be contained within the templates folder in the static folder.  In the example below we can call a javascript file that alerts upon loading.  </p>
+						
+						templates/index.html
+						<pre>
+&lt;script src='templates/main.js'&gt; &lt;/script&gt; 
+&lt;div id='main'&gt;
+	&lt;h1&gt; {{message}} &lt;/h1&gt;
+&lt;/div&gt;
+						</pre>
+						
+						templates/static/main.js
+						<pre>
+alert("The Javascript was loaded!");
+						</pre>
+                </section>
+
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <div class="pull-right hidden-xs">
+                <b>Version</b> 0.5.0b
+            </div>
+            <strong>IAD IX - WALKOFF</strong>
+        </footer>
+
+    </div>
+
+    <!-- jQuery 2.1.4 -->
+    <script src="./files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+    <!-- Bootstrap 3.3.5 -->
+    <script src="./files/bootstrap/js/bootstrap.min.js"></script>
+    <!-- FastClick -->
+    <script src="./files/plugins/fastclick/fastclick.min.js"></script>
+    <!-- goSecure App -->
+    <script src="./files/dist/js/app.min.js"></script>
+    <!-- SlimScroll 1.3.0 -->
+    <script src="./files/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <script src="./files/documentation/docs.js"></script>
+</body>
+
+</html>
