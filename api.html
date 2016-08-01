@@ -827,7 +827,7 @@ def load(args={}):
               {
                   "action": "helloWorld",
                   "app": "HelloWorld",
-                  "device": "hwTest",
+                  "device": ["hwTest"],
                   "error": [
                       []
                   ],
@@ -862,7 +862,48 @@ def load(args={}):
 									<li> id - Name of the step.  The first step should always be named "start" </li>
 									<li> action - Name of the action to be taken.  Should correspond with a function in a given app.  </li>
 									<li> app - Name of the app where the function is defined. </li>
-									<li> device - Name of the configuration set to be used when executing the function.  This allows for multiple instances to be created of the same app.  </li>
+									<li> 
+										device - A device is the name of the configuration set to be used when executing the function.  This allows for multiple instances to be created of the same app.  The field is an array of these values allowing for a function to be executed on a set of different devices.  The field also allows keywords which will generate this array based upon provided conditions.  
+										
+										Providing an array of devices
+										<pre>
+...
+"device": ["testDevice"]
+...
+										</pre>
+										
+										Using a device key word. This example returns all of the configured testApp devices. 
+										<pre>
+...
+"app":"testApp", 
+"device": ["<-{"device":"all", "options":[]}->"],
+...
+										</pre>
+										
+										<table class="table">
+											<thead>
+												<tr>
+													<th> Device Keyword </th>
+													<th> Arguments </th>
+													<th> Description </th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>
+														all
+													</td>
+													<td>
+														None
+													</td>
+													<td>
+														Takes the app workflow field and returns all of the devices for that app. . 
+													</td>
+												</tr>
+												
+											</tbody>
+										</table>
+									</li>
 									<li> in - Dictionary of Key:Value pairs for function arguments </li>
 									<li> to - Defines the next step to be taken  </li>
 									<li> error - Defines the next step to be taken if an error occurs when executing. </li>
