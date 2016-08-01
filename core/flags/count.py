@@ -3,9 +3,9 @@ import json
 def main(args, value):
     if not args["type"] or args["type"] == "json":
         var = len(json.loads(value))
-    elif args["type"] == "int":
+    try:
         var = int(value)
-    else:
+    except Exception as e:
         var = len(value)
 
     threshold = int(args["threshold"])

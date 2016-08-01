@@ -1,0 +1,133 @@
+<div id="main">
+    <h2> LinuxShell </h2>
+    <!-- Main content -->
+    <section class="content">
+?
+        <div class="box">
+            <br>
+            <div class="row">
+                <div class="col-md-offset-2 col-md-2">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                <i class="fa fa-terminal"></i>
+                            </div>
+                            <input type="text" class="form-control">
+                        </div>
+                        <!-- /.input group -->
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button name="run_cmd_btn" id="run_cmd_btn" type="button" class="btn btn-block btn-default btn-md">Run Command</button>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-control">
+                        <option>CheckList_20160704</option>
+                        <option>CheckList_20160705</option>
+                        <option>CheckList_20160706</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-block btn-default btn-md">Run Script</button>
+                </div>
+            </div>
+            <br>
+            <div class="box-body">
+                <div id="users_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                    <table id="table_users" class="table table-hover dataTable" aria-describedby="users_info">
+                        <thead>
+                            <tr role="row">
+                                <th class="sorting_asc" role="columnheader" tabindex="0" aria-controls="users" rowspan="1" colspan="1" aria-sort="ascending" aria-label="The name of the user.">Select</th>
+                                <th class="sorting" role="columnheader" tabindex="0" aria-controls="users" rowspan="1" colspan="1" aria-label="The email of the user.">Name</th>
+                                <th class="sorting" role="columnheader" tabindex="0" aria-controls="users" rowspan="1" colspan="1" aria-label="The last login time of the user.">IP Address</th>
+?
+                                <th class="sorting" role="columnheader" tabindex="0" aria-controls="users" rowspan="1" colspan="1" aria-label="Edit the user.">Action</th>
+                            </tr>
+                        </thead>
+?
+                        <tbody role="alert" aria-live="polite" aria-relevant="all">
+                            <tr class="odd">
+                                <td class="sorting_1">
+                                    <input type="checkbox">
+                                </td>
+                                <td class=" ">File_Server</td>
+                                <td class=" ">10.10.20.34</td>
+                                <td class=" " align="center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-social" id="edit_device_1"><i class="fa fa-gear"></i> Edit</button>
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a href="#"><i class="fa fa-trash-o"></i>Delete</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td class="sorting_1">
+                                    <input type="checkbox">
+                                </td>
+                                <td class=" ">Web_Server</td>
+                                <td class=" ">10.10.30.51</td>
+                                <td class=" " align="center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-social" id="edit_device_2"><i class="fa fa-gear"></i> Edit</button>
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a href="#"><i class="fa fa-trash-o"></i>Delete</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="odd">
+                                <td class="sorting_1">
+                                    <input type="checkbox">
+                                </td>
+                                <td class=" ">Database_Server</td>
+                                <td class=" ">10.10.30.61</td>
+                                <td class=" " align="center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-social" id="edit_device_3"><i class="fa fa-gear"></i> Edit</button>
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a href="#"><i class="fa fa-trash-o"></i>Delete</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+?
+        <br>
+?
+        <div class="box box-information">
+            <div class="box-header with-border">
+                <h3 class="box-title">Output</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+?
+                <!-- textarea -->
+                <div class="form-group">
+                    <textarea name="output_area" id="output_area" class="form-control" rows="15" placeholder=""></textarea>
+                </div>
+            </div>
+            <!-- /.box-body -->
+        </div>
+?
+    </section>
+</div>

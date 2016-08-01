@@ -6,7 +6,7 @@ def main(args, value):
     if regex == "*":
         regex = "(.*)"
     pattern = re.compile(regex)
-    matchObj = pattern.search(value)
+    matchObj = pattern.search(str(value))
     if matchObj:
         return True
     return False
