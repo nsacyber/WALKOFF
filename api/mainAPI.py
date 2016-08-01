@@ -781,6 +781,11 @@ def start(config_type=None):
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
         else:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+
+        #Provide user with informative error message
+        displayIfFileNotFound(config.authConfig["certificatePath"])
+        displayIfFileNotFound(config.authConfig["privateKeyPath"])
+
         context.load_cert_chain(config.authConfig["certificatePath"], config.authConfig["privateKeyPath"])
         logging.logger.log.send(message="Walkoff started HTTPS")
         app.run(debug=config.interfaceConfig["debug"], ssl_context=context, host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]))
@@ -788,5 +793,8 @@ def start(config_type=None):
         logging.logger.log.send(message="Walkoff started HTTP")
         app.run(debug=config.interfaceConfig["debug"], host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]))
 
+def displayIfFileNotFound(filepath):
+    if not os.path.isfile(filepath):
+        print("File not found: " + filepath)
 
 
