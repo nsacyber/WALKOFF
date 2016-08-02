@@ -48,7 +48,7 @@ class Base(db.Model):
 class Device(Base):
     __tablename__ = 'devices'
 
-    name = db.Column(db.String(80))
+    name = db.Column(db.String(80), unique=True)
     app = db.Column(db.String(80))
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
@@ -715,6 +715,9 @@ def configDevicesConfig(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
+            #Checks if there is more than one
+            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+                return json.dumps({"status": "device could not be added"})
             db.session.add(Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data, ip=form.ipaddr.data, port=form.port.data))
 
             db.session.commit()
@@ -753,8 +756,8 @@ def configDevicesConfigId(app, device, action):
         device = Device.query.filter_by(app=app, name=device).first()
         if form.validate() and device != None:
             #Ensures new name is unique
-            # if len(Device.query.filter_by(name=form.name.data).all()) > 0:
-            #     return json.dumps({"status" : "device could not be edited"})
+            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+                return json.dumps({"status" : "device could not be edited"})
 
             device.editDevice(form)
 

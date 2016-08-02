@@ -191,8 +191,11 @@ for(var app in apps){
             type:"POST",
             success:function(e){
                 console.log(e);
+                var data = JSON.parse(e);
+                if(!("status" in data && data["status"] == "device could not be edited")){
+                    vsly.items[vsly.rel.activeItem].el.innerHTML = $("#name")[0].value;
+                }
 
-                vsly.items[vsly.rel.activeItem].el.innerHTML = $("#name")[0].value;
             },
             error: function(e){
                 console.log("ERROR");

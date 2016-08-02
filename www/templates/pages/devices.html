@@ -23,9 +23,14 @@
             background-color:#f8f8f8;
         }
 
+        .selectColumn > h2{
+            margin-bottom:25px;
+        }
+
         #deviceSelect{
             width:250px;
-            margin-right:25px;
+            margin-right:50px;
+            background-color:#ecf0f5;
         }
 
         #parameterSelect{
@@ -225,63 +230,71 @@
 
             /* Controls */
             .vcontrols { margin: 25px 0; text-align: center; }
+
+
+            .appsHeader{
+                display:left;
+            }
     </style>
+    <div id="deviceWrapper">
+        <h2 class="appsHeader"> Apps </h2>
+        <div id="appScroll" class="">
+            <div class="scrollbar">
+                <div class="handle">
+                    <div class="mousearea"></div>
+                </div>
+            </div>
 
-    <div id="appScroll" class="">
-        <div class="scrollbar">
-            <div class="handle">
-                <div class="mousearea"></div>
+            <div class="frame" id="centered">
+                <ul id="appList" class="clearfix">
+
+                </ul>
+            </div>
+
+            <div class="controls center">
+                <button class="btn prev"><i class="icon-chevron-left"></i> prev</button>
+                <button class="btn next">next <i class="icon-chevron-right"></i></button>
             </div>
         </div>
 
-        <div class="frame" id="centered">
-            <ul id="appList" class="clearfix">
+        <div id="deviceSelect" class="selectColumn">
+            <h2> Devices </h2>
+            <div class="vertScrollBar">
+                <div class="handle">
+                    <div class="mousearea"></div>
+                </div>
+            </div>
 
-            </ul>
-        </div>
+            <div class="vframe smart" id="smart">
+                <ul id="deviceList" class="items">
 
-        <div class="controls center">
-            <button class="btn prev"><i class="icon-chevron-left"></i> prev</button>
-            <button class="btn next">next <i class="icon-chevron-right"></i></button>
-        </div>
-    </div>
+                </ul>
+            </div>
 
-    <div id="deviceSelect" class="selectColumn">
-        <div class="vertScrollBar">
-            <div class="handle">
-                <div class="mousearea"></div>
+            <ul class="vpages"></ul>
+
+            <div class="vcontrols center">
+                <p>
+                    <span class="btn-group">
+                        <button class="btn add">Add</button>
+                        <button class="btn remove">Remove</button>
+                    </span>
+                </p>
             </div>
         </div>
 
-        <div class="vframe smart" id="smart">
-            <ul id="deviceList" class="items">
-
-            </ul>
+        <div id="parameterSelect" class="selectColumn">
+            <h2> Parameters </h2>
+            <form id="deviceForm">
+                {% from "pages/_formhelpers.html" import render_field %}
+                {{ render_field(form.name) }}
+                {{ render_field(form.username) }}
+                {{ render_field(form.pw) }}
+                {{ render_field(form.app) }}
+                {{ render_field(form.ipaddr) }}
+                {{ render_field(form.port) }}
+                <input id="formSubmit" type="submit" value="submit">
+            </form>
         </div>
-
-        <ul class="vpages"></ul>
-
-        <div class="vcontrols center">
-            <p>
-                <span class="btn-group">
-                    <button class="btn add">Add</button>
-                    <button class="btn remove">Remove</button>
-                </span>
-            </p>
-        </div>
-    </div>
-
-    <div id="parameterSelect" class="selectColumn">
-        <form id="deviceForm">
-            {% from "pages/_formhelpers.html" import render_field %}
-            {{ render_field(form.name) }}
-            {{ render_field(form.username) }}
-            {{ render_field(form.pw) }}
-            {{ render_field(form.app) }}
-            {{ render_field(form.ipaddr) }}
-            {{ render_field(form.port) }}
-            <input id="formSubmit" type="submit" value="submit">
-        </form>
-
     </div>
 </div>

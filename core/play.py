@@ -92,7 +92,6 @@ class Play():
                         self.steps[current].setInputValue(key, result)
 
     def executeStep(self, i, d, current):
-        print current
         #Executes step and sets the return value
         try:
             out = self.steps[current].execute(i[d])
@@ -104,7 +103,6 @@ class Play():
             outputs = str(self.steps[current])
 
             #Decides where to go next
-            #current = self.steps[current].nextStep(self.steps[current].to)
             nextStep = self.steps[current].nextStep(self.steps[current].to)
             return outputs, nextStep
 
@@ -114,7 +112,7 @@ class Play():
             #Adds log of execution
             outputs = str(self.steps[current])
 
-            #current = self.steps[current].nextStep(self.steps[current].error)
+            # Decides where to go next
             nextStep = self.steps[current].nextStep(self.steps[current].error)
             return outputs, nextStep
 
