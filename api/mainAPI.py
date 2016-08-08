@@ -205,7 +205,7 @@ class Triggers(Base):
         return out
 
     def __repr__(self):
-        return {"name":self.name, "conditions":self.condition, "play":self.play}
+        return json.dumps({"name":self.name, "conditions":self.condition, "play":self.play})
 
     def __str__(self):
         out = dict()
@@ -246,7 +246,7 @@ def loginPage():
 def systemPages(name):
     if current_user.is_authenticated and name:
         args, form = getattr(interface, name)()
-        return render_template("pages/" + name + ".html", form=form, **args)
+        return render_template("pages/" + name + "/index.html", form=form, **args)
     else:
         return {"status" : "Could Not Log In."}
 
@@ -466,7 +466,12 @@ def listener():
                     flags += 1
 
             if flags == len(conditionals):
-                triggerResults = config.playbook.getPlay(trigger.play).executePlay()
+                playToBeExecuted = config.playbook.getPlay(trigger.play)
+                if playToBeExecuted:
+                    triggerResults = playToBeExecuted.executePlay()
+                else:
+                    return json.dumps({"status" : "trigger error: play could not be found"})
+
                 listenerOutput[trigger.name] = triggerResults
 
     return json.dumps(listenerOutput)
@@ -610,9 +615,9 @@ def stepActionId(playName, step, action):
             id = form.id.data
             to = form.to.entries
             app = form.app.data
-            device = form.device.data
+            device = json.loads(form.device.data)
             action = form.action.data
-            input = form.input.data
+            input = json.loads(form.input.data)
             error = form.error.entries
 
             config.playbook.getPlay(playName).getStep(step).editStep(id, to, app, device, action, input, error)
@@ -791,10 +796,10 @@ def start(config_type=None):
 
         context.load_cert_chain(config.authConfig["certificatePath"], config.authConfig["privateKeyPath"])
         logging.logger.log.send(message="Walkoff started HTTPS")
-        app.run(debug=config.interfaceConfig["debug"], ssl_context=context, host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]))
+        app.run(debug=config.interfaceConfig["debug"], ssl_context=context, host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]),threaded=True)
     else:
         logging.logger.log.send(message="Walkoff started HTTP")
-        app.run(debug=config.interfaceConfig["debug"], host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]))
+        app.run(debug=config.interfaceConfig["debug"], host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]),threaded=True)
 
 def displayIfFileNotFound(filepath):
     if not os.path.isfile(filepath):

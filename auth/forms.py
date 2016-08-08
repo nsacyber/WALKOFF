@@ -1,4 +1,4 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField
 import formChecks
 
 
@@ -33,7 +33,7 @@ class EditStepForm(Form):
     app = StringField('app', [validators.Optional()])
     device = StringField('device', [validators.Optional()])
     action = StringField('action', [validators.Optional()])
-    input = StringField('input', [validators.Optional(), formChecks.inValidator])
+    input = StringField('input', [validators.Optional()])
     error = FieldList(StringField('error'), [validators.Optional()])
 
 class EditConfigForm(Form):

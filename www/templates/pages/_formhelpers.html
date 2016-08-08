@@ -10,3 +10,23 @@
   {% endif %}
   </dd>
 {% endmacro %}
+
+{% macro render_multi_field(field,field_name) %}
+    <div class="form-group">
+        {{ field_name }}
+        {% for subfield in field %}
+        <div class="base_class{% if subfield.errors %} error_class{% endif %}" id="{{subfield.name}}-group">
+            {{ subfield(**kwargs)|safe }}
+            <button class="removeEntryButton" data-field="{{ subfield.name }}-group">Remove Entry</button>
+        </div>
+        {% if subfield.errors %}
+             {% for error in subfield.errors %}
+                <p class="error_class">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {% endfor %}
+        <br/>
+        <button id="addEntryButton" type="button">Add entry</button>
+    </div>
+{% endmacro %}
