@@ -120,6 +120,7 @@ class Play():
 
     def executePlay(self, q=Queue(), start="start", instances={}, output={}):
         self.setupStep(start)
+        #If there is more than one device assigned to an action execute those actions before moving on
         for d in self.steps[start].device:
             if d not in instances:
                 instance = self.createInstance(self.steps[start].app, d)
@@ -130,6 +131,7 @@ class Play():
             key = str(uuid.uuid4())
             output[key] = o
 
+            #Continues that device's workflow independently
             if next != "<-[status:play_end]->" and next != None:
                 output, instances = self.executePlay(q=q, start=next, instances=instances, output=output)
 

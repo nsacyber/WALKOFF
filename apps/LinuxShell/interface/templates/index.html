@@ -129,13 +129,17 @@
         table = $("#devices").DataTable();
         
         $('#devices tbody').on( 'click', 'tr', function() {
-            $(this).toggleClass('selected');
-            $('#checkboxDevice_'+this.id.split("_",2)[1]).prop('checked', !$('#checkboxDevice_'+this.id.split("_",2)[1]).prop('checked'));
+            if(this.checked=!this.checked){
+                $(this).toggleClass('selected');
+                console.log('#checkboxDevice_'+this.id);
+                $('#checkboxDevice_'+this.id).prop('checked', !$('#checkboxDevice_'+this.id).prop('checked'));
+            }
         });
     });
 </script>
 <script>
     $("#run_cmd_btn").click(function(){
+        $("#run_cmd_btn").prop("disabled", true);
         var cmd_to_run = $("#run_cmd_textbox").val();
         
         var selected_devices = $.map(table.rows('.selected').data(), function(item) {
@@ -146,8 +150,10 @@
         
         var form = new FormData();
         form.append("id", "start");
+        form.append("app", "LinuxShell");
+        form.append("action", "execCommand");
         form.append("device", "[" + selected_devices + "]");
-        form.append("input", '{"command": ["' + cmd_to_run + '"]}');
+        form.append("input", JSON.stringify({"command": [cmd_to_run]}));
         
         var settings = {
           "async": true,
@@ -160,31 +166,41 @@
           "processData": false,
           "contentType": false,
           "mimeType": "multipart/form-data",
-          "data": form
+          "data": form,
+          "success":function(e){
+            $.ajax({
+                url:'/playbook/play/LinuxShellRunCommandButtonWorkflow/execute',
+                data:{},
+                headers:{"Authentication-Token":authKey},
+                type:"POST",
+                success:function(e){
+                    /*var cmd_output = JSON.parse(e);
+                    for (var firstkey in cmd_output) break;
+                    var cmd_out = JSON.parse(cmd_output[firstkey])["out"];
+                    $("#output_area").append(cmd_out);*/
+
+                    console.log(JSON.parse(e));
+                    $("#command_status_div").html('<span class="label label-success">Command run successfully.</span>');
+                    $("#output_area").append(e);
+                },
+                error: function(e){
+                    $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
+                    console.log("ERROR running play.");
+                }
+            });
+          },
+          "error":function(e){
+            $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
+            console.log("ERROR editing play.");
+          }
         }
 
         $.ajax(settings).done(function (response) {
             console.log(response);
+            $("#run_cmd_btn").prop("disabled", false);
         });
 
-        $.ajax({
-            url:'/playbook/play/LinuxShellRunCommandButtonWorkflow/execute',
-            data:{},
-            headers:{"Authentication-Token":authKey},
-            type:"POST",
-            success:function(e){
-                /*var cmd_output = JSON.parse(e);
-                for (var firstkey in cmd_output) break;
-                var cmd_out = JSON.parse(cmd_output[firstkey])["out"];
-                $("#output_area").append(cmd_out);*/
-                $("#command_status_div").html('<span class="label label-success">Command run successfully.</span>');
-                $("#output_area").append(e);
-            },
-            error: function(e){
-                $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
-                console.log("ERROR running play.");
-            }
-        });
+
         
     });
     

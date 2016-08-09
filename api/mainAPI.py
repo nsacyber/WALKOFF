@@ -598,12 +598,12 @@ def playOptionActions(name, action):
             return json.dumps({"status" : "Play options edited"})
 
 #Controls specific Steps
-@app.route('/playbook/play/<string:playName>/<string:step>/<string:action>', methods=["POST"])
+@app.route('/playbook/play/<string:playName>/<string:stepName>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_required("admin")
-def stepActionId(playName, step, action):
+def stepActionId(playName, stepName, action):
     if action == "display":
-        step = config.playbook.getPlay(playName).getStep(step)
+        step = config.playbook.getPlay(playName).getStep(stepName)
         if step != None:
             return str(step)
         else:
@@ -620,16 +620,18 @@ def stepActionId(playName, step, action):
             input = json.loads(form.input.data)
             error = form.error.entries
 
-            config.playbook.getPlay(playName).getStep(step).editStep(id, to, app, device, action, input, error)
-
-            print config.playbook.getPlay(playName).getStep(step)
+            #If step doesn't exist add it
+            if config.playbook.getPlay(playName).getStep(stepName) == None:
+                config.playbook.getPlay(playName).addStep(id=id, app=app, device=device, input=input)
+            else:
+                config.playbook.getPlay(playName).getStep(stepName).editStep(id, to, app, device, action, input, error)
 
             return json.dumps({"status" : "Step edited"})
 
         return json.dumps({"status" : "Could not edit step"})
 
     elif action == "remove":
-        return json.dumps(config.playbook.getPlay(playName).removeStep(step))
+        return json.dumps(config.playbook.getPlay(playName).removeStep(stepName))
 
 #Controls non-specific Steps
 @app.route('/playbook/play/<string:playName>/steps/<string:action>', methods=["POST"])
