@@ -737,8 +737,9 @@ def configDevicesConfig(app, action):
         output = []
         if query != None and query != []:
             for device in query:
-                output.append({"name":device[0], "username": device[1], "port":device[2], "ip":device[3], "app":device[4]})
-            return str(output)
+                output.append({"name": device[0], "username": device[1], "port": device[2], "ip": device[3], "app": device[4] })
+
+            return json.dumps(output)
         return json.dumps({"status" : "could not display all devices"})
 
 #Controls the specific app device configuration
@@ -750,7 +751,7 @@ def configDevicesConfigId(app, device, action):
         query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(app=app, name=device).first()
         if query != None and query != []:
             output = {"name":query[0], "username": query[1], "port":query[2], "ip":query[3], "app":query[4]}
-            return str(output)
+            return json.dumps(output)
         return json.dumps({"status" : "could not display device"})
 
     elif action == "remove":
