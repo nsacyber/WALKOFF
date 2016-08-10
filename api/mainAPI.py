@@ -733,9 +733,12 @@ def configDevicesConfig(app, action):
         return json.dumps({"status" : "device could not be added"})
 
     if action == "all":
-        query = Device.query.filter_by(app=app).all()
+        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(app=app).all()
+        output = []
         if query != None and query != []:
-            return str(query)
+            for device in query:
+                output.append({"name":device[0], "username": device[1], "port":device[2], "ip":device[3], "app":device[4]})
+            return str(output)
         return json.dumps({"status" : "could not display all devices"})
 
 #Controls the specific app device configuration
@@ -744,9 +747,10 @@ def configDevicesConfig(app, action):
 @roles_required("admin")
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        query = Device.query.filter_by(app=app, name=device).first()
+        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(app=app, name=device).first()
         if query != None and query != []:
-            return str(query)
+            output = {"name":query[0], "username": query[1], "port":query[2], "ip":query[3], "app":query[4]}
+            return str(output)
         return json.dumps({"status" : "could not display device"})
 
     elif action == "remove":
