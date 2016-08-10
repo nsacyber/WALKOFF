@@ -64,6 +64,9 @@ class Device(Base):
         self.port = port
 
     def editDevice(self, form):
+        if form.name.data != "" and form.name.data != None:
+            self.name = form.name.data
+
         if form.username.data != "" and form.username.data != None:
             self.username = form.username.data
 
