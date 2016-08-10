@@ -56,6 +56,12 @@ class AddNewDeviceForm(Form):
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
 
+class EditDeviceForm(Form):
+    username = StringField('username', [validators.Optional()])
+    pw = PasswordField('pw', [validators.Optional()])
+    ipaddr = StringField('ipaddr', [validators.Optional()])
+    port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+
 class LoginForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25)])
     password = PasswordField('password')

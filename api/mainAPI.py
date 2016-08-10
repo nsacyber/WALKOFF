@@ -64,12 +64,6 @@ class Device(Base):
         self.port = port
 
     def editDevice(self, form):
-        if form.name.data != "" and form.name.data != None:
-            self.name = form.name.data
-
-        if form.app.data != "" and form.app.data != None:
-            self.app = form.app.data
-
         if form.username.data != "" and form.username.data != None:
             self.username = form.username.data
 
@@ -764,11 +758,11 @@ def configDevicesConfigId(app, device, action):
         return json.dumps({"status" : "could not remove device"})
 
     elif action == "edit":
-        form = forms.AddNewDeviceForm(request.form)
+        form = forms.EditDeviceForm(request.form)
         device = Device.query.filter_by(app=app, name=device).first()
         if form.validate() and device != None:
             #Ensures new name is unique
-            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+            if len(Device.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status" : "device could not be edited"})
 
             device.editDevice(form)
