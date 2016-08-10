@@ -139,7 +139,6 @@
 </script>
 <script>
     $("#run_cmd_btn").click(function(){
-        $("#run_cmd_btn").prop("disabled", true);
         var cmd_to_run = $("#run_cmd_textbox").val();
         
         var selected_devices = $.map(table.rows('.selected').data(), function(item) {
@@ -154,7 +153,7 @@
         form.append("action", "execCommand");
         form.append("device", "[" + selected_devices + "]");
         form.append("input", JSON.stringify({"command": [cmd_to_run]}));
-        
+
         var settings = {
           "async": true,
           "crossDomain": true,
@@ -168,6 +167,15 @@
           "mimeType": "multipart/form-data",
           "data": form,
           "success":function(e){
+            //Save the command into the playbook
+            $.ajax({
+                url:'/save/playbook',
+                data:{},
+                headers:{"Authentication-Token":authKey},
+                type:"POST"
+            });
+
+
             $.ajax({
                 url:'/playbook/play/LinuxShellRunCommandButtonWorkflow/execute',
                 data:{},
@@ -179,7 +187,6 @@
                     var cmd_out = JSON.parse(cmd_output[firstkey])["out"];
                     $("#output_area").append(cmd_out);*/
 
-                    console.log(JSON.parse(e));
                     $("#command_status_div").html('<span class="label label-success">Command run successfully.</span>');
                     $("#output_area").append(e);
                 },
@@ -193,11 +200,24 @@
             $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
             console.log("ERROR editing play.");
           }
-        }
+        };
+
+        //Adds play if does not exist
+        var addPlayForm = new FormData();
+        addPlayForm.append("name", "LinuxShellRunCommandButtonWorkflow");
+
+        $.ajax({
+            url:'/playbook/play/add',
+            data:{'name': 'LinuxShellRunCommandButtonWorkflow'},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success:function(e){
+                console.log(e);
+            }
+        });
 
         $.ajax(settings).done(function (response) {
             console.log(response);
-            $("#run_cmd_btn").prop("disabled", false);
         });
 
 

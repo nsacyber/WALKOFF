@@ -129,7 +129,7 @@ class Play():
 
             o, next = self.executeStep(i=instances, d=d, current=start)
             key = str(uuid.uuid4())
-            output[key] = o
+            output = o
 
             #Continues that device's workflow independently
             if next != "<-[status:play_end]->" and next != None:

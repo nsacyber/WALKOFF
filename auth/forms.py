@@ -19,7 +19,7 @@ class EditRoleForm(Form):
     description = StringField('description')
 
 class AddNewPlayForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=25), validators.required()])
+    name = StringField('name', [validators.Length(min=1, max=50), validators.required()])
 
 class EditPlayOptionsForm(Form):
     autoRun = BooleanField("autorun")
