@@ -7,7 +7,7 @@ class Main(app.App):
         #The parent app constructor looks for a device configuration and returns that as a dictionary called self.config
         app.App.__init__(self, name, device)
         #Functions and Variables that are designed to exist across functions go here
-        self.introMessage = "I SAY THIS BEFORE EVERY FUNCTION: HELLO WORLD"
+        self.introMessage = {"message":"I SAY THIS BEFORE EVERY FUNCTION: HELLO WORLD"}
 
     #Every function in Main is an action that can be taken
     #Every function needs to define an args argument which recieves a dictionary of input parameters

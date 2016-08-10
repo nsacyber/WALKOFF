@@ -66,7 +66,7 @@ class Playbook:
             self.plays[key] = play.Play(key, data)
             return {"status" : "added empty play"}
         else:
-            return {"status" : "could not add play"}
+            return {"status" : "play already exists"}
 
     def updatePlaybook(self, path):
         with open(path) as f:

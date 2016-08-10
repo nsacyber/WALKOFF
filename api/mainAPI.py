@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
 from flask_security import auth_token_required, current_user, roles_required
@@ -13,7 +13,9 @@ import executionAPI, core.flagsFiltersKeywords as ffk
 import ssl, json, os
 
 #Create Flask App
-app = Flask(__name__)
+app = Flask(__name__, static_folder=os.path.abspath('www/static'), static_url_path='/static')
+
+app.jinja_loader = FileSystemLoader(['apps', 'www/templates'])
 
 app.config.update(
         #CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
@@ -22,12 +24,15 @@ app.config.update(
         SECURITY_PASSWORD_HASH = 'pbkdf2_sha512',
         SECURITY_TRACKABLE = False,
         SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production',
-        SECURITY_POST_LOGIN_VIEW = '/',
+        SECURITY_POST_LOGIN_VIEW = 'container.html',
+
         WTF_CSRF_ENABLED = False
     )
 
 #Template Loader
-env = Environment(loader=FileSystemLoader('../apps'))
+env = Environment(loader=FileSystemLoader("apps"))
+
+app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
 
 #Database Connection Object
 db = SQLAlchemy(app)
@@ -43,7 +48,7 @@ class Base(db.Model):
 class Device(Base):
     __tablename__ = 'devices'
 
-    name = db.Column(db.String(80))
+    name = db.Column(db.String(80), unique=True)
     app = db.Column(db.String(80))
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
@@ -68,17 +73,17 @@ class Device(Base):
         if form.username.data != "" and form.username.data != None:
             self.username = form.username.data
 
-        if form.password.data != "" and form.password.data != None:
-            self.password = form.password.data
+        if form.pw.data != "" and form.pw.data != None:
+            self.password = form.pw.data
 
-        if form.ip.data != "" and form.ip.data != None:
-            self.ip = form.ip.data
+        if form.ipaddr.data != "" and form.ipaddr.data != None:
+            self.ip = form.ipaddr.data
 
         if form.port.data != "" and form.port.data != None:
             self.port = form.port.data
 
     def __repr__(self):
-        return {"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : str(self.port)}
+        return json.dumps({"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : str(self.port)})
 
 #Define Models
 roles_users = db.Table('roles_users',
@@ -200,7 +205,7 @@ class Triggers(Base):
         return out
 
     def __repr__(self):
-        return {"name":self.name, "conditions":self.condition, "play":self.play}
+        return json.dumps({"name":self.name, "conditions":self.condition, "play":self.play})
 
     def __str__(self):
         out = dict()
@@ -216,11 +221,39 @@ class Triggers(Base):
 #URL Declarations
 #
 
-#Returns the API key for the user
+# This processor is added to only the register view
+# @security.login_context_processor
+# def security_register_processor():
+#     print "HERE"
+#     return dict(something="else")
+
+
+#Returns the outer interface container
 @app.route('/', methods=["GET"])
 @login_required
+def loginPage():
+    if current_user.is_authenticated:
+
+        args = {"apps": config.getApps(), "authKey":current_user.get_auth_token(), "currentUser":current_user.email}
+        return render_template("container.html", **args)
+    else:
+        return {"status" : "Could Not Log In."}
+
+#Returns System-Level Interface Pages
+@app.route('/interface/<string:name>/display', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def systemPages(name):
+    if current_user.is_authenticated and name:
+        args, form = getattr(interface, name)()
+        return render_template("pages/" + name + "/index.html", form=form, **args)
+    else:
+        return {"status" : "Could Not Log In."}
+
+#Returns the API key for the user
+@app.route('/key', methods=["GET"])
+@login_required
 def loginInfo():
-    print current_user
     if current_user.is_authenticated:
         return json.dumps({"auth_token" : current_user.get_auth_token()})
     else:
@@ -433,7 +466,12 @@ def listener():
                     flags += 1
 
             if flags == len(conditionals):
-                triggerResults = config.playbook.getPlay(trigger.play).executePlay()
+                playToBeExecuted = config.playbook.getPlay(trigger.play)
+                if playToBeExecuted:
+                    triggerResults = playToBeExecuted.executePlay()
+                else:
+                    return json.dumps({"status" : "trigger error: play could not be found"})
+
                 listenerOutput[trigger.name] = triggerResults
 
     return json.dumps(listenerOutput)
@@ -526,9 +564,10 @@ def playActionId(name, action):
     elif action == "execute":
         play = config.playbook.getPlay(name)
         if play != None:
-            return json.dumps({"results" : play.executePlay()})
+            output, instances = play.executePlay()
+            return json.dumps(output)
         else:
-            return json.dumps({"status" : "Could not execute play"})
+            return str({"status" : "Could not execute play"})
 
     elif action == "remove":
         status = config.playbook.removePlay(name)
@@ -559,12 +598,12 @@ def playOptionActions(name, action):
             return json.dumps({"status" : "Play options edited"})
 
 #Controls specific Steps
-@app.route('/playbook/play/<string:playName>/<string:step>/<string:action>', methods=["POST"])
+@app.route('/playbook/play/<string:playName>/<string:stepName>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_required("admin")
-def stepActionId(playName, step, action):
+def stepActionId(playName, stepName, action):
     if action == "display":
-        step = config.playbook.getPlay(playName).getStep(step)
+        step = config.playbook.getPlay(playName).getStep(stepName)
         if step != None:
             return str(step)
         else:
@@ -576,21 +615,23 @@ def stepActionId(playName, step, action):
             id = form.id.data
             to = form.to.entries
             app = form.app.data
-            device = form.device.data
+            device = json.loads(form.device.data)
             action = form.action.data
-            input = form.input.data
+            input = json.loads(form.input.data)
             error = form.error.entries
 
-            config.playbook.getPlay(playName).getStep(step).editStep(id, to, app, device, action, input, error)
-
-            print config.playbook.getPlay(playName).getStep(step)
+            #If step doesn't exist add it
+            if config.playbook.getPlay(playName).getStep(stepName) == None:
+                config.playbook.getPlay(playName).addStep(id=id, app=app, device=device, input=input)
+            else:
+                config.playbook.getPlay(playName).getStep(stepName).editStep(id, to, app, device, action, input, error)
 
             return json.dumps({"status" : "Step edited"})
 
         return json.dumps({"status" : "Could not edit step"})
 
     elif action == "remove":
-        return json.dumps(config.playbook.getPlay(playName).removeStep(step))
+        return json.dumps(config.playbook.getPlay(playName).removeStep(stepName))
 
 #Controls non-specific Steps
 @app.route('/playbook/play/<string:playName>/steps/<string:action>', methods=["POST"])
@@ -616,19 +657,18 @@ def appActions(action):
 @roles_required("admin")
 def appActionsId(name, action):
     if action == "display":
-        try:
-            form = forms.RenderArgsForm(request.form)
-            path = name + "/interface/templates/" + form.page.data
+        form = forms.RenderArgsForm(request.form)
 
-            #Gets app template
-            template = env.get_template(path)
+        path =  name + "/interface/templates/" + form.page.data
 
-            args = interface.loadApp(name, form.args.entries)
+        #Gets app template
+        template = env.get_template(path)
 
-            rendered = template.render(**args)
-            return json.dumps({"content" : rendered})
-        except Exception as e:
-            return json.dumps({"status" : "Could not display app"})
+        args = interface.loadApp(name, form.key.entries, form.value.entries)
+
+        rendered = template.render(**args)
+        return rendered
+
 
     elif action == "remove":
         pass
@@ -682,6 +722,9 @@ def configDevicesConfig(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
+            #Checks if there is more than one
+            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+                return json.dumps({"status": "device could not be added"})
             db.session.add(Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data, ip=form.ipaddr.data, port=form.port.data))
 
             db.session.commit()
@@ -689,15 +732,25 @@ def configDevicesConfig(app, action):
             return json.dumps({"status" : "device successfully added"})
         return json.dumps({"status" : "device could not be added"})
 
+    if action == "all":
+        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(app=app).all()
+        output = []
+        if query != None and query != []:
+            for device in query:
+                output.append({"name":device[0], "username": device[1], "port":device[2], "ip":device[3], "app":device[4]})
+            return str(output)
+        return json.dumps({"status" : "could not display all devices"})
+
 #Controls the specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_required("admin")
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        query = Device.query.filter_by(app=app, name=device).first()
+        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(app=app, name=device).first()
         if query != None and query != []:
-            return str(query)
+            output = {"name":query[0], "username": query[1], "port":query[2], "ip":query[3], "app":query[4]}
+            return str(output)
         return json.dumps({"status" : "could not display device"})
 
     elif action == "remove":
@@ -742,12 +795,20 @@ def start(config_type=None):
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
         else:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+
+        #Provide user with informative error message
+        displayIfFileNotFound(config.authConfig["certificatePath"])
+        displayIfFileNotFound(config.authConfig["privateKeyPath"])
+
         context.load_cert_chain(config.authConfig["certificatePath"], config.authConfig["privateKeyPath"])
         logging.logger.log.send(message="Walkoff started HTTPS")
-        app.run(debug=config.interfaceConfig["debug"], ssl_context=context, host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]))
+        app.run(debug=config.interfaceConfig["debug"], ssl_context=context, host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]),threaded=True)
     else:
         logging.logger.log.send(message="Walkoff started HTTP")
-        app.run(debug=config.interfaceConfig["debug"], host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]))
+        app.run(debug=config.interfaceConfig["debug"], host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]),threaded=True)
 
+def displayIfFileNotFound(filepath):
+    if not os.path.isfile(filepath):
+        print("File not found: " + filepath)
 
 

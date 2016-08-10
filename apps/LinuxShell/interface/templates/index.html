@@ -1,0 +1,266 @@
+<link rel="stylesheet" href="/static/plugins/datatables/dataTables.bootstrap.css">
+
+<div id="main">
+    <h2> LinuxShell </h2>
+    <!-- Main content -->
+    <section class="content">
+
+        <div class="box">
+            <div class="box-header">
+                <h2 class="box-title">Devices</h2>
+            </div>
+            <!-- /.box-header -->
+            
+            <br>
+            <div class="row">
+                <div class="col-md-offset-2 col-md-2">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">
+                                <i class="fa fa-terminal"></i>
+                            </div>
+                            <input type="text" id="run_cmd_textbox" name="run_cmd_textbox" class="form-control">
+                        </div>
+                        <!-- /.input group -->
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button name="run_cmd_btn" id="run_cmd_btn" type="button" class="btn btn-block btn-primary btn-md">Run Command</button>
+                </div>
+                <div class="col-md-2">
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="fa fa-hashtag"></i>
+                        </div>
+                        <select class="form-control" id="run_script_select" name="run_script_select">
+                            <option>{{helloWorld}}</option>
+                            <option>CheckList_20160705</option>
+                            <option>CheckList_20160706</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" name="run_script_btn" id="run_script_btn" class="btn btn-block btn-primary btn-md">Run Script</button>
+                </div>
+            </div>
+            <br>
+            
+            <div class="box-body">
+                <div id="devices_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <table id="devices" class="table table-bordered table-striped dataTable display" role="grid" aria-describedby="devices_info">
+                                <thead>
+                                    <tr role="row">
+                                        <th class="sorting_asc" tabindex="0" aria-controls="devices" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending" style="width: 97px;">Select</th>
+                                        <th class="sorting" tabindex="0" aria-controls="devices" rowspan="1" colspan="1" aria-label="Name of device." style="width: 124px;">Name</th>
+                                        <th class="sorting" tabindex="0" aria-controls="devices" rowspan="1" colspan="1" aria-label="IP for device." style="width: 107px;">IP Address</th>
+                                        <th class="sorting" tabindex="0" aria-controls="devices" rowspan="1" colspan="1" aria-label="Port for device." style="width: 107px;">Port</th>
+                                        <th class="sorting" tabindex="0" aria-controls="devices" rowspan="1" colspan="1" aria-label="Username for device." style="width: 107px;">Username</th>
+                                        <th class="sorting" tabindex="0" aria-controls="devices" rowspan="1" colspan="1" aria-label="Edit device." style="width: 81px;">Edit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for line in device_list %}                                          
+                                        <tr role="row" class="{{ loop.cycle('odd','even') }}" id="row_{{line[0]}}">
+                                            <td class="sorting_1"><input type="checkbox" id="checkboxDevice_{{line[0]}}"></td>
+                                            <td>{{ line[0] }}</td>
+                                            <td>{{ line[1] }}</td>
+                                            <td>{{ line[2] }}</td>
+                                            <td>{{ line[3] }}</td>
+                                            <td class="" align="center" id="device_{{line[0]}}">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-default btn-social" id="editDevice_{{line[0]}}"><i class="fa fa-gear"></i> Edit</button>
+                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="caret"></span>
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu" role="menu">
+                                                        <li><a href="#" id="deleteDevice_{{line[0]}}"><i class="fa fa-trash-o"></i>Delete</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th rowspan="1" colspan="1">Select</th>
+                                        <th rowspan="1" colspan="1">Name</th>
+                                        <th rowspan="1" colspan="1">IP Address</th>
+                                        <th rowspan="1" colspan="1">Port</th>
+                                        <th rowspan="1" colspan="1">Username</th>
+                                        <th rowspan="1" colspan="1">Edit</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.box-body -->
+        </div>
+
+        <br>
+        <div class="box box-information">
+            <div class="box-header with-border">
+                <h3 class="box-title">Output</h3>
+                <div id="command_status_div" class="pull-right"></div>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <!-- textarea -->
+                <div class="form-group">
+                    <textarea name="output_area" id="output_area" class="form-control" rows="15" placeholder=""></textarea>
+                </div>
+            </div>
+            <!-- /.box-body -->
+        </div>
+    </section>
+</div>
+
+<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+<!-- page script -->
+<script>
+	 var table;
+    $(document).ready(function () {
+        table = $("#devices").DataTable();
+        
+        $('#devices tbody').on( 'click', 'tr', function() {
+            if(this.checked=!this.checked){
+                $(this).toggleClass('selected');
+                console.log('#checkboxDevice_'+this.id);
+                $('#checkboxDevice_'+this.id).prop('checked', !$('#checkboxDevice_'+this.id).prop('checked'));
+            }
+        });
+    });
+</script>
+<script>
+    $("#run_cmd_btn").click(function(){
+        var cmd_to_run = $("#run_cmd_textbox").val();
+        
+        var selected_devices = $.map(table.rows('.selected').data(), function(item) {
+            return '"' + item[1] + '"';
+        });
+        
+        $("#output_area").append("\n\nNEW PLAY RUN:\nCOMMAND: " + cmd_to_run + '\nDEVICES: ' + selected_devices + '\n');
+        
+        var form = new FormData();
+        form.append("id", "start");
+        form.append("app", "LinuxShell");
+        form.append("action", "execCommand");
+        form.append("device", "[" + selected_devices + "]");
+        form.append("input", JSON.stringify({"command": [cmd_to_run]}));
+
+        var settings = {
+          "async": true,
+          "crossDomain": true,
+          "url": "/playbook/play/LinuxShellRunCommandButtonWorkflow/start/edit",
+          "method": "POST",
+          "headers": {
+            "authentication-token": authKey
+          },
+          "processData": false,
+          "contentType": false,
+          "mimeType": "multipart/form-data",
+          "data": form,
+          "success":function(e){
+            //Save the command into the playbook
+            $.ajax({
+                url:'/save/playbook',
+                data:{},
+                headers:{"Authentication-Token":authKey},
+                type:"POST"
+            });
+
+
+            $.ajax({
+                url:'/playbook/play/LinuxShellRunCommandButtonWorkflow/execute',
+                data:{},
+                headers:{"Authentication-Token":authKey},
+                type:"POST",
+                success:function(e){
+                    /*var cmd_output = JSON.parse(e);
+                    for (var firstkey in cmd_output) break;
+                    var cmd_out = JSON.parse(cmd_output[firstkey])["out"];
+                    $("#output_area").append(cmd_out);*/
+
+                    $("#command_status_div").html('<span class="label label-success">Command run successfully.</span>');
+                    $("#output_area").append(e);
+                },
+                error: function(e){
+                    $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
+                    console.log("ERROR running play.");
+                }
+            });
+          },
+          "error":function(e){
+            $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
+            console.log("ERROR editing play.");
+          }
+        };
+
+        //Adds play if does not exist
+        var addPlayForm = new FormData();
+        addPlayForm.append("name", "LinuxShellRunCommandButtonWorkflow");
+
+        $.ajax({
+            url:'/playbook/play/add',
+            data:{'name': 'LinuxShellRunCommandButtonWorkflow'},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success:function(e){
+                console.log(e);
+            }
+        });
+
+        $.ajax(settings).done(function (response) {
+            console.log(response);
+        });
+
+
+        
+    });
+    
+    //Edit device
+    
+    $('[id^="editDevice_"]').on("click", function(e){
+        $.ajax({
+            url:'/interface/devices/display',
+            data:{},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success: function(e){
+                data = e;
+                $("#ss_main").html(data);
+            },
+            error: function(e){
+                console.log("ERROR");
+            }
+        });
+    });
+    
+    
+    //Remove device
+    $('[id^="deleteDevice_"]').each(function() {
+            $(this).click(function () {
+            	var deviceId = (this.id.split("_",2)[1])
+                $.ajax({
+                    url:'/configuration/LinuxShell/devices/' + deviceId + '/remove',
+                    data:{},
+                    headers:{"Authentication-Token":authKey},
+                    type:"POST",
+                    success:function(e){
+                        console.log(e);
+                        table.row($('#row_'+deviceId)).remove();
+                        table.draw();
+                    },
+                    error: function(e){
+                        console.log("ERROR");
+                    }
+                });
+        });
+    });
+</script>
