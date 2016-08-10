@@ -25,7 +25,7 @@ setup(
 
     # metadata for upload to PyPI
     description = "This package is a reference implementation of the WALKOFF development standard.",
-    license = "Apache",
+    license = "Creative Commons",
     keywords = "orchestration cybersecurity automation",
     url = "http://github.com/iadgov/walkoff",
     zip_safe = False,

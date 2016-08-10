@@ -577,31 +577,52 @@
 			"sharedWithTeam": false,
 			"subscribed": false,
 			"remoteLink": "",
+			"remoteLinkUpdatedAt": null,
 			"public": false,
 			"createdAt": 1460646239268,
 			"updatedAt": 1460646251005,
 			"write": true,
+			"published": false,
+			"favorite": false,
+			"permissions": {},
+			"syncedPermissions": {},
 			"requests": [
 				{
 					"id": "dcfaff63-6f66-8efb-914b-b6b751c459af",
-					"headers": "Authentication-Token: WyIxIiwiNjVjYTFjZWZjODg2MzVkMTM1YTVmOTM3ZDQwOTFmYTMiXQ.Ce_jsg.M7Wa3N9Q5XurZIFgIl9kaNO42eY\n",
-					"url": "https://127.0.0.1:5000/configuration/execution/display",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cm6Oag.thulVREFP32zIM8kkSOf5vH5Hmc\n",
+					"url": "https://127.0.0.1:5000/apps/LinuxShell/display",
 					"preRequestScript": null,
 					"pathVariables": {},
 					"method": "POST",
-					"data": [],
-					"dataMode": "urlencoded",
+					"data": [
+						{
+							"key": "page",
+							"value": "index.html",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "key-0",
+							"value": "name",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "value-0",
+							"value": "test",
+							"type": "text",
+							"enabled": true
+						}
+					],
+					"dataMode": "params",
 					"version": 2,
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1460644090240,
+					"time": 1470158285643,
 					"name": "display app",
 					"description": "",
-					"collectionId": "502fb7fe-eaf4-f7a0-98cc-9f2838d35c92",
-					"synced": true,
-					"owner": 0,
-					"collection": "502fb7fe-eaf4-f7a0-98cc-9f2838d35c92"
+					"collectionId": "502fb7fe-eaf4-f7a0-98cc-9f2838d35c92"
 				}
 			]
 		},
@@ -613,7 +634,8 @@
 				"ac601403-6356-2b4a-e687-ec96ecf8a129",
 				"99723bba-f99a-cf22-80b9-b8181c682f12",
 				"3c300bf2-66f7-a459-79d3-567e0632e72e",
-				"6d20029a-ac05-e85f-ac52-70ad1aeaadeb"
+				"6d20029a-ac05-e85f-ac52-70ad1aeaadeb",
+				"cca501aa-9a3d-4fef-5773-6aa4a6e510c6"
 			],
 			"folders": [],
 			"timestamp": 1460726372535,
@@ -625,13 +647,17 @@
 			"remoteLink": "",
 			"public": false,
 			"createdAt": 1460726372535,
-			"updatedAt": 1460727973397,
+			"updatedAt": 1468944482369,
 			"write": true,
+			"published": false,
+			"favorite": false,
+			"permissions": {},
+			"syncedPermissions": {},
 			"requests": [
 				{
 					"id": "3c300bf2-66f7-a459-79d3-567e0632e72e",
-					"headers": "Authentication-Token: WyIxIiwiZGQ1YzY2ZmM0MzM2NmQwOTQyZGQ0MzgxOTc4Y2I3YjQiXQ.Cjsd9Q.ycBsGNYzP5YkuKhAVPSSnpayMyw\n",
-					"url": "https://127.0.0.1:5000/configuration/Splunk/devices/SplunkTest/remove",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cl6Rxw.oOl6ildnqyRAWGMZJtMTJFijxKY\n",
+					"url": "https://127.0.0.1:5000/configuration/Splunk/devices/splunkTest/remove",
 					"preRequestScript": null,
 					"pathVariables": {},
 					"method": "POST",
@@ -678,52 +704,22 @@
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1465487672825,
+					"time": 1467809947690,
 					"name": "remove device",
 					"description": "",
 					"collectionId": "711fd8c2-39a2-51f4-b592-73693a1661b6"
 				},
 				{
 					"id": "6d20029a-ac05-e85f-ac52-70ad1aeaadeb",
-					"headers": "Authentication-Token: WyIxIiwiNTQyZTY1MjBjNTJlZTM0NzgwMjc3YThiYTcwZWE5NWYiXQ.CfJ_TQ.3pVrGRe12SVKLkQa0absWfAUX54\n",
-					"url": "https://127.0.0.1:5000/configuration/splunk/devices/deviceOne/edit",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cl6Rxw.oOl6ildnqyRAWGMZJtMTJFijxKY\n",
+					"url": "https://127.0.0.1:5000/configuration/Splunk/devices/splunkTest/edit",
 					"preRequestScript": null,
 					"pathVariables": {},
 					"method": "POST",
 					"data": [
 						{
-							"key": "name",
-							"value": "BLAH",
-							"type": "text",
-							"enabled": true
-						},
-						{
-							"key": "app",
-							"value": "splunk",
-							"type": "text",
-							"enabled": true
-						},
-						{
-							"key": "username",
-							"value": "admin",
-							"type": "text",
-							"enabled": true
-						},
-						{
 							"key": "password ",
-							"value": "password",
-							"type": "text",
-							"enabled": true
-						},
-						{
-							"key": "ip ",
-							"value": "0.0.0.0",
-							"type": "text",
-							"enabled": true
-						},
-						{
-							"key": "port",
-							"value": "5000",
+							"value": "test",
 							"type": "text",
 							"enabled": true
 						}
@@ -733,15 +729,15 @@
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1465487743920,
+					"time": 1470158324739,
 					"name": "edit device",
 					"description": "",
 					"collectionId": "711fd8c2-39a2-51f4-b592-73693a1661b6"
 				},
 				{
 					"id": "99723bba-f99a-cf22-80b9-b8181c682f12",
-					"headers": "Authentication-Token: WyIxIiwiZGQ1YzY2ZmM0MzM2NmQwOTQyZGQ0MzgxOTc4Y2I3YjQiXQ.Cjsd9Q.ycBsGNYzP5YkuKhAVPSSnpayMyw\n",
-					"url": "https://127.0.0.1:5000/configuration/Splunk/devices/SplunkTest/display",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cl6Rxw.oOl6ildnqyRAWGMZJtMTJFijxKY\n",
+					"url": "https://127.0.0.1:5000/configuration/SCP/devices/scpTest/display",
 					"preRequestScript": null,
 					"pathVariables": {},
 					"method": "POST",
@@ -751,52 +747,52 @@
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1465487639721,
+					"time": 1468415062326,
 					"name": "displayDevice",
 					"description": "",
 					"collectionId": "711fd8c2-39a2-51f4-b592-73693a1661b6"
 				},
 				{
 					"id": "ac601403-6356-2b4a-e687-ec96ecf8a129",
-					"headers": "Authentication-Token: WyIxIiwiZGQ1YzY2ZmM0MzM2NmQwOTQyZGQ0MzgxOTc4Y2I3YjQiXQ.Cjsd9Q.ycBsGNYzP5YkuKhAVPSSnpayMyw\n",
-					"url": "https://127.0.0.1:5000/configuration/Splunk/devices/add",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cl6Rxw.oOl6ildnqyRAWGMZJtMTJFijxKY\n",
+					"url": "https://127.0.0.1:5000/configuration/SCP/devices/add",
 					"preRequestScript": null,
 					"pathVariables": {},
 					"method": "POST",
 					"data": [
 						{
 							"key": "name",
-							"value": "SplunkTest",
+							"value": "scpTest",
 							"type": "text",
 							"enabled": true
 						},
 						{
 							"key": "app",
-							"value": "Splunk",
+							"value": "SCP",
 							"type": "text",
 							"enabled": true
 						},
 						{
 							"key": "username",
-							"value": "tester",
+							"value": "user",
 							"type": "text",
 							"enabled": true
 						},
 						{
 							"key": "pw",
-							"value": "password",
+							"value": "P@$$w0rd!",
 							"type": "text",
 							"enabled": true
 						},
 						{
 							"key": "ipaddr",
-							"value": "192.168.0.83",
+							"value": "192.168.1.30",
 							"type": "text",
 							"enabled": true
 						},
 						{
 							"key": "port",
-							"value": "0000",
+							"value": "22",
 							"type": "text",
 							"enabled": true
 						}
@@ -806,8 +802,26 @@
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1465487588896,
+					"time": 1470158312650,
 					"name": "add device",
+					"description": "",
+					"collectionId": "711fd8c2-39a2-51f4-b592-73693a1661b6"
+				},
+				{
+					"id": "cca501aa-9a3d-4fef-5773-6aa4a6e510c6",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cl6Rxw.oOl6ildnqyRAWGMZJtMTJFijxKY\n",
+					"url": "https://127.0.0.1:5000/configuration/SCP/devices/all",
+					"preRequestScript": null,
+					"pathVariables": {},
+					"method": "POST",
+					"data": [],
+					"dataMode": "params",
+					"version": 2,
+					"tests": "",
+					"currentHelper": "normal",
+					"helperAttributes": {},
+					"time": 1469371997030,
+					"name": "display all devices ",
 					"description": "",
 					"collectionId": "711fd8c2-39a2-51f4-b592-73693a1661b6"
 				}
@@ -948,6 +962,10 @@
 			"createdAt": 1460551969774,
 			"updatedAt": 1460638344389,
 			"write": true,
+			"published": false,
+			"favorite": false,
+			"permissions": {},
+			"syncedPermissions": {},
 			"requests": [
 				{
 					"id": "073ab42b-fda5-0831-c5e4-00820dce6d63",
@@ -1030,31 +1048,18 @@
 				},
 				{
 					"id": "8bbe9880-7f2a-cf0d-4310-8f09303a3232",
-					"headers": "Authentication-Token: WyIxIiwiZGQ1YzY2ZmM0MzM2NmQwOTQyZGQ0MzgxOTc4Y2I3YjQiXQ.CjhdJA.YvugQbcTAXNh8t147wKZXeTtuio\n",
-					"url": "https://127.0.0.1:5000/playbook/play/HelloWorldWorkflow/execute",
+					"headers": "Authentication-Token: WyIxIiwiYzlkNTRjNjIzY2FjNThhM2M2Y2UwNDhiYzRmZTI5MWQiXQ.Cl1L6A.CDkH-zl6tn_lnVaRqLHFGLR4Sho\n",
+					"url": "https://127.0.0.1:5000/playbook/play/LinuxWorkflow/execute",
 					"preRequestScript": null,
 					"pathVariables": {},
 					"method": "POST",
-					"data": [
-						{
-							"key": "email",
-							"value": "admin",
-							"type": "text",
-							"enabled": true
-						},
-						{
-							"key": "password",
-							"value": "admin",
-							"type": "text",
-							"enabled": true
-						}
-					],
+					"data": [],
 					"dataMode": "params",
 					"version": 2,
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1465314165736,
+					"time": 1468411767682,
 					"name": "execute play",
 					"description": "",
 					"collectionId": "8c0c8eee-63ad-fcd2-ed6b-bbbb6ed993be"
@@ -1202,7 +1207,7 @@
 					"data": [
 						{
 							"key": "username",
-							"value": "andrew",
+							"value": "test",
 							"type": "text",
 							"enabled": true
 						},
@@ -1224,7 +1229,7 @@
 					"tests": "",
 					"currentHelper": "normal",
 					"helperAttributes": {},
-					"time": 1465485150233,
+					"time": 1470158370723,
 					"name": "add user ",
 					"description": "",
 					"collectionId": "fd0f7469-a323-540d-ff08-7dbc39f0222a"

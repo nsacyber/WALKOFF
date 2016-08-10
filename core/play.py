@@ -1,5 +1,6 @@
 import step, datetime, sys, importlib, logging, uuid, json
 from multiprocessing import Queue
+import flagsFiltersKeywords as ffk
 import app
 
 class Play():
@@ -69,75 +70,74 @@ class Play():
         else:
             return None
 
-    #Executes the play
-    def executePlay(self, q=Queue(), start="start", instances={"system":None}):
-        #Updates lastRun
-        status = {"name" : self.name, "lastRun": datetime.datetime.now()}
+    def setupStep(self, current):
+        self.steps[current].setupDevices()
 
-        #initializes instances
-        i = instances
-
-        #Stores the results of each step to return
-        outputs = []
-
-        current = start
-        while current != "<-[status:play_end]->" and current != None:
-
-            #Create instance for uninstanciated commands
-            if self.steps[current].device not in instances:
-                instance = self.createInstance(self.steps[current].app, self.steps[current].device)
-                if instance != None:
-                    i[self.steps[current].device] = instance
-
-            #Parses arguments for input tags
-            args = self.steps[current].setupArguments()
-            if len(args.keys()) > 0:
-                for key in args.keys():
-                    #Handles the out command
-                    #--Replaces the command with the value of another step
+        #Parses arguments for input tags
+        args = self.steps[current].setupArguments()
+        if len(args.keys()) > 0:
+            for key in args.keys():
+                for tags in args[key]:
                     try:
-                        keywordModule = importlib.import_module("core.keywords." + args[key]["action"])
+                        keywordModule = importlib.import_module("core.keywords." + tags["action"])
                     except ImportError as e:
                         keywordModule = None
 
-
                     if keywordModule:
-                        result = getattr(keywordModule, "main")(steps=self.steps, args=args[key]["args"])
-                    else:
-                        result = ""
+                        result = getattr(keywordModule, "main")(steps=self.steps, args=tags["args"])
 
-                    self.steps[current].setInputValue(key, result)
+                        for filter in tags["filters"]:
+                            result = ffk.executeFilter(function=filter["filter"], args=filter["args"], value=result)
 
-            #Executes step and sets the return value
-            try:
-                out = self.steps[current].execute(i[self.steps[current].device])
-                if not isinstance(out, str):
-                    out = json.dumps(out)
-                self.steps[current].setOut(out)
+                        self.steps[current].setInputValue(key, result)
 
-                #Adds log of execution
-                outputs.append(str(self.steps[current]))
+    def executeStep(self, i, d, current):
+        #Executes step and sets the return value
+        try:
+            out = self.steps[current].execute(i[d])
+            if not isinstance(out, str):
+                out = str(out, ensure_ascii=True, default=str)
+            self.steps[current].setOut(str(d), out)
 
-                #Decides where to go next
-                current = self.steps[current].nextStep(self.steps[current].to)
+            #Adds log of execution
+            outputs = str(self.steps[current])
 
-            except Exception as e:
-                print "ERROR"
-                print e
-                self.steps[current].setOut(str(e))
+            #Decides where to go next
+            nextStep = self.steps[current].nextStep(self.steps[current].to)
+            return outputs, nextStep
 
-                #Adds log of execution
-                outputs.append(str(self.steps[current]))
+        except Exception as e:
+            self.steps[current].setOut(i[d], str(e))
 
-                current = self.steps[current].nextStep(self.steps[current].error)
+            #Adds log of execution
+            outputs = str(self.steps[current])
+
+            # Decides where to go next
+            nextStep = self.steps[current].nextStep(self.steps[current].error)
+            return outputs, nextStep
 
 
 
-        status["status"] = "<-[status:play_executed]->"
-        #Cycles through instances and executes shutdown procedures
-        for instance in instances:
-            if instances[instance].__class__.__base__.__name__ == app.App.__name__:
-                instances[instance].shutdown()
+    def executePlay(self, q=Queue(), start="start", instances={}, output={}):
+        self.setupStep(start)
+        #If there is more than one device assigned to an action execute those actions before moving on
+        for d in self.steps[start].device:
+            if d not in instances:
+                instance = self.createInstance(self.steps[start].app, d)
+                if instance != None:
+                    instances[d] = instance
 
-        q.put(status)
-        return outputs
+            o, next = self.executeStep(i=instances, d=d, current=start)
+            key = str(uuid.uuid4())
+            output = o
+
+            #Continues that device's workflow independently
+            if next != "<-[status:play_end]->" and next != None:
+                output, instances = self.executePlay(q=q, start=next, instances=instances, output=output)
+
+            elif next == "<-[status:play_end]->":
+                instance = d
+                if instances[instance].__class__.__base__.__name__ == app.App.__name__:
+                    instances.pop(instance, None).shutdown()
+
+        return output, instances

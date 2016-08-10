@@ -1,11 +1,42 @@
-import json
+import json, os
 import playbook as pb
 import core.logging as logging
+from pkg_resources import WorkingSet , DistributionNotFound
 
 path = "data/walkoff.config"
 backupPath = "data/backup/walkoff_backup.config"
 defaultPath = "data/backup/walkoff_default.config"
 config = None
+
+#Gets all the app instances
+def getApps(path="apps"):
+    apps = next(os.walk(path))[1]
+    return apps
+
+def getAppManifest(app):
+    path = "apps/" + app + "/app.manifest"
+    try:
+        manifest = json.loads(open(path, "r").read())
+        return manifest
+    except Exception as e:
+        return None
+
+#Checks to ensure app dependencies are installed; installs dependency if doesnt exist
+def checkApps(apps=[]):
+    working_set = WorkingSet()
+    for app in apps:
+        manifest = getAppManifest(app)
+        if manifest:
+            for dependency in  manifest["externalDependencies"]:
+                try:
+                    dep = working_set.require(dependency)
+                except DistributionNotFound:
+                    from setuptools.command.easy_install import main as install
+                    try:
+                        install([dependency])
+                    except Exception as e:
+                        print e
+
 
 def displayConfig(section):
     if config != None:
