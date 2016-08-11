@@ -12,7 +12,7 @@ def get_device_list():
             device_list = device_list_req.json()
             device_list_parsed = []
 
-            if device_list:
+            if "status" not in device_list:
                 for device in device_list:
                     device_list_parsed.append((device['name'],device['ip'],device['port'],device['username']))
             return device_list_parsed
