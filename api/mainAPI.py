@@ -7,15 +7,17 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 from jinja2 import Environment, FileSystemLoader
 
 from auth import forms
-from core import config, interface, logging
+from core import config, interface, logging, appBlueprint
 
 import executionAPI, core.flagsFiltersKeywords as ffk
 import ssl, json, os
 
 #Create Flask App
-app = Flask(__name__, static_folder=os.path.abspath('www/static'), static_url_path='/static')
+app = Flask(__name__, static_folder=os.path.abspath('www/static'))
 
-app.jinja_loader = FileSystemLoader(['apps', 'www/templates'])
+app.jinja_loader = FileSystemLoader(['www/templates'])
+
+app.register_blueprint(appBlueprint.appPage, url_prefix='/apps/<app>')
 
 app.config.update(
         #CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
@@ -649,26 +651,27 @@ def appActions(action):
         pass
 
 #Controls specific apps
-@app.route('/apps/<string:name>/<string:action>', methods=["POST"])
-@auth_token_required
-@roles_required("admin")
-def appActionsId(name, action):
-    if action == "display":
-        form = forms.RenderArgsForm(request.form)
-
-        path =  name + "/interface/templates/" + form.page.data
-
-        #Gets app template
-        template = env.get_template(path)
-
-        args = interface.loadApp(name, form.key.entries, form.value.entries)
-
-        rendered = template.render(**args)
-        return rendered
-
-
-    elif action == "remove":
-        pass
+# @app.route('/apps/<string:name>/<string:action>', methods=["POST"])
+# @auth_token_required
+# @roles_required("admin")
+# def appActionsId(name, action):
+#     if action == "display":
+#         form = forms.RenderArgsForm(request.form)
+#
+#         path =  name + "/interface/templates/" + form.page.data
+#
+#         #Gets app template
+#         template = env.get_template(path)
+#
+#         args = interface.loadApp(name, form.key.entries, form.value.entries)
+#
+#         rendered = template.render(**args)
+#
+#         return rendered
+#
+#
+#     if action == "remove":
+#         pass
 
 #Controls specific app configurations
 @app.route('/apps/<string:name>/config/<string:action>', methods=["POST"])
