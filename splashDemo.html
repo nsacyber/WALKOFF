@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./files/plugins/jointjs/joint.css" />
+    <link rel="stylesheet" href="./files/plugins/jQuery/jquery-ui-1.12.0/jquery-ui.css">
+
+    <script src="./files/plugins/jQuery/jquery-2.0.3.min.js"></script>
+    <script src="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.js"></script>
+    <script src="./files/plugins/lodash/lodash.min.js"></script>
+    <script src="./files/plugins/backbone/backbone-min.js"></script>
+    <script src="./files/plugins/jointjs/joint.min.js"></script>
+    <script>
+
+    $( function() {
+      var xPos = 0;
+      var yPos = 0;
+      var dummyNode = null;
+
+      $( "#eDT" ).datepicker();
+      $( "#sDT" ).datepicker();
+
+      $(".draggable").draggable({
+          revert: "valid",
+          drag: function(){
+              var offset = $(this).offset();
+              xPos = offset.left - 88; //adjustment img width*2
+              yPos = offset.top - 58;
+          }
+      });
+      $("#dropArea").droppable({
+        drop: function( event, ui ) {
+          $( this )
+
+            /*.addClass( "ui-state-highlight" )
+            .find( "p" )
+              .html( "Dropped!" );*/
+              dummyNode = new joint.shapes.devs.Model({
+                  position: { x: xPos, y: yPos },
+                  size: { width: 70, height: 30 },
+                  attrs: {
+                    '.label': { text: 'NEW_ACTION' },
+                      rect: { fill: '#4d94ff' },
+                      '.inPorts circle': { fill: '#16A085' },
+                      '.outPorts circle': { fill: '#E74C3C'},
+                      '.body': { rx: 6, ry: 6 }
+                  }
+              });
+
+              $( "#action" ).val(ui.draggable.find("img").attr("title")); //set Action value in dialog
+              if($('#paloActions').css('display') != 'none'){ //set App value in dialog
+                  $( "#app" ).val("Palo Alto")
+              }
+              else if($('#linuxActions').css('display') != 'none'){
+                  $( "#app" ).val("LinuxShell")
+              }
+              else{
+                  $( "#app" ).val("Hawkeye-G")
+              }
+
+              graph.addCells([dummyNode]);
+              dialog.dialog( "open" );
+        }
+      });
+
+      dialog = $( "#dialog-form" ).dialog({
+          autoOpen: false,
+          height: 400,
+          width: 350,
+          modal: true,
+          buttons: {
+            "Add New Action": function() {addNode();dialog.dialog( "close" );},
+            Cancel: function() {
+              dialog.dialog( "close" );
+            }
+          },
+          close: function() {
+            form[ 0 ].reset();
+            //allFields.removeClass( "ui-state-error" );
+          }
+      });
+
+      form = dialog.find( "form" ).on( "submit", function( event ) {
+        event.preventDefault();
+        addNode();
+      });
+
+
+      function addNode() {
+        event.preventDefault();
+
+        graph.getLastCell().remove();
+        name = $( "#action" ).val();
+        outputs = $("input[name=outputs]:checked").val();
+
+        if (outputs == "2")
+        {
+          var newNode = new joint.shapes.devs.Model({
+              inPorts: ['in'],
+              outPorts: ['1','2'],
+              position: { x: xPos, y: yPos },
+              size: { width: 70, height: 30 },
+              attrs: {
+                '.label': { text: name },
+                  rect: { fill: '#4d94ff' },
+                  '.inPorts circle': { fill: '#16A085' },
+                  '.outPorts circle': { fill: '#E74C3C'},
+                  '.body': { rx: 6, ry: 6 }
+              }
+          });
+          graph.addCells([newNode]);
+
+        }
+        else {
+          var newNode = new joint.shapes.devs.Model({
+              inPorts: ['in'],
+              outPorts: ['out'],
+              position: { x: xPos, y: yPos },
+              size: { width: 70, height: 30 },
+              attrs: {
+                '.label': { text: name },
+                  rect: { fill: '#4d94ff' },
+                  '.inPorts circle': { fill: '#16A085' },
+                  '.outPorts circle': { fill: '#E74C3C'},
+                  '.body': { rx: 6, ry: 6 }
+              }
+          });
+          graph.addCells([newNode]);
+        }
+
+      }
+
+
+    } );
+
+    function showApps(table){
+      $(".nodeOptionsTable").hide();
+      $(table).show("slow");
+    };
+    </script>
+    <style>
+
+        #main{
+      		-webkit-user-select: none;  /* Chrome all / Safari all */
+      		-moz-user-select: none;     /* Firefox all */
+      		-ms-user-select: none;      /* IE 10+ */
+          cursor:default;
+      	}
+
+        #paloActions, #linuxActions{
+          display: none;
+        }
+
+        #dropArea{
+          width:800px;
+          height:500px;
+          display:inline-block;
+          float:left;
+        }
+
+        #propertiesBar{
+            width:65px;
+            height:500px;
+            display:inline-block;
+            float:left;
+        }
+
+        #dropSource{
+            width:175px;
+            height:500px;
+            display:inline-block;
+            float:left;
+            padding-left:15px;
+        }
+
+        #propertiesHeader{
+            height:50px;
+            text-align:left;
+            position:relative;
+            padding-left: 65px;
+            font-family: "Arial", Helvetica, sans-serif;
+        }
+
+        #propertiesHeader h2{
+          color:#0066ff;
+        }
+
+        #nodeForm input{
+          margin-bottom: 10px;
+        }
+
+        .node-input{
+          width:100%;
+        }
+
+        .toolIcon{
+            width:25px;
+            height:25px;
+            margin:5px;
+        }
+
+        .sidebarTabs{
+            width:100%;
+            height:100%;
+        }
+
+        #toolsTable tr td{
+            padding:5px;
+        }
+
+        #dropArea{
+            border:solid;
+            border-width:2px;
+            background-image:url("./files/images/backgroundGrid.png");
+        }
+        .iconDisplay{
+    			height:50px;
+    			width:100px;
+    			margin-bottom:10px;
+    		}
+
+        .deviceIcon{
+    			width:48px;
+    			height:48px;
+    		}
+
+        .iconDisplay, {
+    			text-align:center;
+    			word-wrap:break-word;
+    			font-size: 10px;
+          font-family: "Arial", Helvetica, sans-serif;
+    		}
+
+        .iconlabel{
+          padding-left: 3px;
+          font-size: 9px;
+          font-family: "Arial", Helvetica, sans-serif;
+        }
+
+        .propTextInput{
+            width:150px;
+        }
+
+        .propArrayInput{
+            width:100px;
+        }
+
+        .propDatePicker{
+            width:100px;
+        }
+
+        .propSpinnerInput{
+            width:100px;
+        }
+
+        .nodeOptionsTable tr td, .appsTable tr td{
+          padding-bottom:10px;
+          padding-right:5px;
+        }
+
+        .nodeOptionsTable caption, .appsTable caption{
+          font-family: "Arial", Helvetica, sans-serif;
+          text-transform: uppercase;
+        }
+
+        .dynamicNode{
+            padding-bottom:5px;
+            padding-right:5px;
+        }
+
+        .devs text {
+            text-transform: uppercase;
+            font-size: 10px;
+        	  font-family: "Arial", Helvetica, sans-serif;
+
+        }
+
+        .devs .body {
+
+            stroke: #000000;
+            stroke-width: 2px;
+
+        }
+
+        .devs .label {
+            fill: #000000;
+            font-size: 10px;
+        }
+
+        .devs .port-body {
+            r: 5;
+            stroke: #000000;
+            stroke-width: 1px;
+            fill: #7c68fc;
+        }
+
+        .devs .port-body:hover {
+            opacity: 1;
+            fill: #ffff00;
+        }
+
+        .devs .port-label {
+            text:"";
+        }
+
+        .devs.Atomic .body {
+            stroke: #000000;
+        }
+
+        .devs.Atomic .label {
+            fill: #000000;
+        }
+
+        /* links */
+
+        .link .connection {
+            stroke: #212135;
+            stroke-width: 4px;
+        }
+
+        .link .marker-arrowhead, .link .marker-vertex {
+            fill: #696b87;
+        }
+
+        .link-tools .tool-remove circle {
+            fill: #ff7e5d;
+        }
+
+        /* highlighting */
+
+        .devs.highlighted-parent .body {
+            stroke: #ff7e5d;
+            transition: stroke 1s;
+        }
+
+        .devs.highlighted-parent .label {
+            fill: #ff7e5d;
+            transition: fill 1s;
+            text-decoration: underline;
+        }
+
+        .imageHolder {
+          width:48px;
+    			height:48px;
+        }
+
+        .imageHolder .caption {
+          position: absolute;
+          width:44px;
+    			height:44px;
+          top: 3px;
+          left: 3px;
+          color: #ffffff;
+          background:#0066ff;
+          text-align:center;
+          font-weight:bold;
+          font-size: 10px;
+          font-family: "Arial", Helvetica, sans-serif;
+          opacity:0.7;
+        }
+    </style>
+</head>
+<body id="main">
+  <div id="propertiesHeader">
+      <h2>New WALKOFF Play</h2>
+  </div>
+  <div id="propertiesBar">
+      <div id="toolsTab">
+          <table id="toolsTable">
+              <tr>
+                  <td><img id="newPlay" src="./files/images/newPlay.png" class="toolIcon typeClick" title="new play"/></td>
+              </tr>
+              <tr>
+                  <td><img id="open" src="./files/images/open.png" class="toolIcon typeClick" title="open play" /></td>
+              </tr>
+              <tr>
+                  <td><img id="save" src="./files/images/save.png" class="toolIcon typeClick" title="save" /></td>
+              </tr>
+              <tr>
+                  <td><img id="arrow" src="./files/images/arrow.png" class="toolIcon typeTool" title="select"/> </td>
+              </tr>
+              <tr>
+                  <td><img id="delete" src="./files/images/delete.png" class="toolIcon typeTool" title="delete"/> </td>
+              </tr>
+              <tr>
+                  <td><img id="move" src="./files/images/move.png" class="toolIcon typeTool" title="move view"/></td>
+              </tr>
+              <tr>
+                  <td><img id="zoomIn" src="./files/images/zoomIn.png" class="toolIcon typeTool" title="zoom in"/></td>
+              </tr>
+              <tr>
+                  <td><img id="zoomOut" src="./files/images/zoomOut.png" class="toolIcon typeTool" title="zoom out"/> </td>
+              </tr>
+          </table>
+      </div>
+  </div>
+  <div id="dropArea">
+
+  </div>
+  <div id="dropSource">
+    <table class="appsTable">
+      <caption><h4>Apps</h4></caption>
+      <tr>
+          <td>
+            <div>
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="hawkeye" onclick="showApps($('#hawkeyeActions'))"/>
+              <span class="iconlabel"><br>Hawkeye-G</span>
+            </div>
+          </td>
+          <td>
+            <div>
+              <img src="./files/images/splunk-icon.png" class="deviceIcon ui-widget-content" title="linux" onclick="showApps($('#linuxActions'))"/>
+              <span class="iconlabel"><br>LinuxShell</span>
+            </div>
+          </td>
+          <td>
+            <div>
+              <img src="./files/images/palo-alto-icon.png" class="deviceIcon ui-widget-content" title="palo" onclick="showApps($('#paloActions'))"/>
+              <span class="iconlabel"><br>Palo Alto</span>
+            </div>
+          </td>
+      </tr>
+    </table>
+    <hr>
+    <table class="nodeOptionsTable" id="hawkeyeActions">
+      <caption><h4>Actions</h4></caption>
+      <tr>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="Upload MD5"/>
+              <span class="caption"><br>Upload<br>MD5</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="Scan Host"/>
+              <span class="caption"><br>Scan<br>Host</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="IP Threat"/>
+              <span class="caption"><br>IP<br>Threat</span>
+            </div>
+          </td>
+      </tr>
+      <tr>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="Domain Threat"/>
+              <span class="caption"><br>Domain<br>Threat</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="Site Threat"/>
+              <span class="caption"><br>Site<br>Threat</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/hawkeye-icon.png" class="deviceIcon ui-widget-content" title="URL Threat"/>
+              <span class="caption"><br>URL<br>Threat</span>
+            </div>
+          </td>
+      </tr>
+    </table>
+    <table class="nodeOptionsTable" id="linuxActions">
+      <caption><h4>Actions</h4></caption>
+      <tr>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/splunk-icon.png" class="deviceIcon ui-widget-content" title="Exec Command"/>
+              <span class="caption"><br>Exec<br>Command</span>
+            </div>
+          </td>
+          <td>
+          </td>
+          <td>
+          </td>
+      </tr>
+    </table>
+    <table class="nodeOptionsTable" id="paloActions">
+      <caption><h4>Actions</h4></caption>
+      <tr>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/palo-alto-icon.png" class="deviceIcon ui-widget-content" title="Custom URL"/>
+              <span class="caption"><br>Custom<br>URL</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/palo-alto-icon.png" class="deviceIcon ui-widget-content" title="Filter"/>
+              <span class="caption"><br>Custom<br>Filter IP</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/palo-alto-icon.png" class="deviceIcon ui-widget-content" title="Add Element"/>
+              <span class="caption"><br>Add<br>Element</span>
+            </div>
+          </td>
+      </tr>
+      <tr>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/palo-alto-icon.png" class="deviceIcon ui-widget-content" title="Validate"/>
+              <span class="caption"><br>Validate</span>
+            </div>
+          </td>
+          <td>
+            <div class="draggable imageHolder">
+              <img src="./files/images/palo-alto-icon.png" class="deviceIcon ui-widget-content" title="Commit"/>
+              <span class="caption"><br>Commit</span>
+            </div>
+          </td>
+          <td>
+          </td>
+      </tr>
+    </table>
+  </div>
+  <div id="dialog-form" title="Node Properties">
+    <p class="validateTips">All form fields are required.</p>
+
+    <form id="nodeForm">
+      <fieldset>
+        <label for="id">ID</label>
+        <input type="text" name="id" id="id" class="node-input text ui-widget-content ui-corner-all">
+        <label for="app">App</label>
+        <input type="text" name="app" id="app" class="node-input text ui-widget-content ui-corner-all">
+        <label for="device">Device</label>
+        <input type="text" name="device" id="device" class="node-input text ui-widget-content ui-corner-all">
+        <label for="action">Action</label>
+        <input type="text" name="action" id="action" class="node-input text ui-widget-content ui-corner-all">
+        <label for="in">In</label>
+        <input type="text" name="in" id="in" class="node-input text ui-widget-content ui-corner-all">
+        <!--<label for="eDT">eDT</label>
+        <input type="text" name="action" id="eDT" class="node-input text ui-widget-content ui-corner-all">
+        <label for="sDT">sDT</label>
+        <input type="text" name="action" id="sDT" class="node-input text ui-widget-content ui-corner-all">-->
+        <!-- Allow form submission with keyboard without duplicating the dialog button -->
+        <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+      </fieldset>
+      <fieldset>
+        <legend>Number of Outputs: </legend>
+        <label for="radio-1">1</label>
+        <input type="radio" name="outputs" id="radio-1" value="1">
+        <label for="radio-2">2</label>
+        <input type="radio" name="outputs" id="radio-2" value="2">
+      </fieldset>
+      <fieldset>
+        <legend>Autorun? </legend>
+        <label for="radio-1">true</label>
+        <input type="radio" name="autorun" id="radio-1" value="0">
+        <label for="radio-2">false</label>
+        <input type="radio" name="autorun" id="radio-2" value="1">
+      </fieldset>
+    </form>
+  </div>
+  <script type="text/javascript">
+
+  //Custom circle node
+    joint.shapes.devs.circle = joint.shapes.devs.Model.extend({
+
+      markup: '<g class="rotatable"><g class="scalable"><circle class="body"/></g><text class="label"/><g class="inPorts"/><g class="outPorts"/></g>',
+      portMarkup: '<g class="port port<%= id %>"><circle class="port-body"/><text class="port-label"/></g>',
+
+      defaults: joint.util.deepSupplement({
+
+          type: 'devs.CircleModel',
+          attrs: {
+              '.body': { r: 50, cx: 50, stroke: 'blue', fill: 'lightblue' },
+              '.label': { text: 'Circle Model', 'ref-y': 0.5, 'y-alignment': 'middle' },
+              '.port-body': { r: 10, stroke: 'gray', fill: 'lightgray', magnet: 'active' },
+          }
+
+      }, joint.shapes.devs.Model.prototype.defaults)
+    });
+
+    //Custom rectangle model
+    joint.shapes.devs.Model = joint.shapes.basic.Generic.extend(_.extend({}, joint.shapes.basic.PortsModelInterface, {
+
+      markup: '<g class="rotatable"><g class="scalable"><rect class="body"/></g><text class="label"/><g class="inPorts"/><g class="outPorts"/></g>',
+      portMarkup: '<g class="port port<%= id %>"><circle class="port-body"/><text class="port-label"/></g>',
+
+      defaults: joint.util.deepSupplement({
+
+          type: 'devs.Model',
+          size: { width: 1, height: 1 },
+
+          inPorts: [],
+          outPorts: [],
+
+          attrs: {
+              '.': { magnet: false },
+              '.body': {
+                  width: 150, height: 250,
+                  stroke: '#000000'
+              },
+              '.port-body': {
+                  r: 10,
+                  magnet: true,
+                  stroke: '#000000'
+              },
+              text: {
+                  'pointer-events': 'none'
+              },
+              '.label': { text: 'Model', 'ref-x': .5, 'ref-y': 10, ref: '.body', 'text-anchor': 'middle', fill: '#000000' },
+              '.inPorts .port-label': { x:-15, dy: 4, 'text-anchor': 'end', fill: '#000000' },
+              '.outPorts .port-label':{ x: 15, dy: 4, fill: '#000000' }
+          }
+
+      }, joint.shapes.basic.Generic.prototype.defaults),
+
+      getPortAttrs: function(portName, index, total, selector, type) {
+
+          var attrs = {};
+
+          var portClass = 'port' + index;
+          var portSelector = selector + '>.' + portClass;
+          var portLabelSelector = portSelector + '>.port-label';
+          var portBodySelector = portSelector + '>.port-body';
+
+          attrs[portLabelSelector] = { text: "" };
+          attrs[portBodySelector] = { port: { id: portName || _.uniqueId(type) , type: type } };
+          attrs[portSelector] = { ref: '.body', 'ref-y': (index + 0.5) * (1 / total) };
+
+          if (selector === '.outPorts') { attrs[portSelector]['ref-dx'] = 0; }
+
+          return attrs;
+      }
+  }));
+
+    joint.shapes.devs.CircleModelView = joint.shapes.devs.ModelView;
+
+    var xoffset = 100;
+    var graph = new joint.dia.Graph;
+
+    var paper = new joint.dia.Paper({
+        el: $('#dropArea'),
+        model: graph,
+        gridSize: 1,
+        model: graph,
+        snapLinks: true,
+        linkPinning: false,
+        embeddingMode: true,
+        validateEmbedding: function(childView, parentView) {
+            return parentView.model instanceof joint.shapes.devs.Coupled;
+        },
+        validateConnection: function(sourceView, sourceMagnet, targetView, targetMagnet) {
+            return sourceMagnet != targetMagnet;
+        }
+    });
+
+    var connect = function(source, sourcePort, target, targetPort) {
+        var link = new joint.shapes.devs.Link({
+            source: { id: source.id, selector: source.getPortSelector(sourcePort) },
+            target: { id: target.id, selector: target.getPortSelector(targetPort) }
+        });
+        link.addTo(graph).reparent();
+    };
+
+    /*var start = new joint.shapes.devs.circle({
+        position: { x: 30, y: 260 },
+        size: { width: 70, height: 40 },
+        outPorts: ['out'],
+        attrs: {
+          '.label': { text: 'START' },
+            circle: { fill: '#2ECC71' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });*/
+
+    var search = new joint.shapes.devs.Model({
+        position: { x: xoffset, y: 245 },
+        size: { width: 70, height: 30 },
+        inPorts: ['in'],
+        outPorts: ['out'],
+        attrs: {
+          '.label': { text: 'SEARCH' },
+            rect: { fill: '#4d94ff' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    var ifequal = new joint.shapes.devs.Model({
+        position: { x: xoffset + 120 , y: 245 },
+        size: { width: 70, height: 30 },
+        inPorts: ['in'],
+        outPorts: ['1','2'],
+        attrs: {
+          '.label': { text: 'IF_EQUAL' },
+            rect: { fill: '#4d94ff' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    var log = new joint.shapes.devs.Model({
+        position: { x: xoffset+250 , y: 180 },
+        size: { width: 70, height: 30 },
+        inPorts: ['in'],
+        outPorts: ['out'],
+        attrs: {
+          '.label': { text: 'LOG' },
+            rect: { fill: '#4d94ff' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    var log2 = new joint.shapes.devs.Model({
+        position: { x: xoffset+390, y: 180 },
+        size: { width: 70, height: 30 },
+        inPorts: ['in'],
+        outPorts: ['out'],
+        attrs: {
+          '.label': { text: 'LOG' },
+            rect: { fill: '#4d94ff' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    var backlog = new joint.shapes.devs.Model({
+        position: { x: xoffset+250, y: 320 },
+        size: { width: 70, height: 30 },
+        inPorts: ['in'],
+        outPorts: ['out'],
+        attrs: {
+          '.label': { text: 'BACKLOG' },
+            rect: { fill: '#4d94ff' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    var search2 = new joint.shapes.devs.Model({
+        position: { x: xoffset+540, y: 260 },
+        size: { width: 70, height: 30 },
+        inPorts: ['in'],
+        outPorts: ['out'],
+        attrs: {
+          '.label': { text: 'SEARCH' },
+            rect: { fill: '#4d94ff' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    /*var end = new joint.shapes.devs.circle({
+        position: { x: 850, y: 275},
+        size: { width: 70, height: 40 },
+        inPorts: ['in'],
+        attrs: {
+          '.label': { text: 'END' },
+            circle: { fill: '#2ECC71' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });
+
+    var end2 = new joint.shapes.devs.circle({
+        position: { x: 550, y: 335 },
+        size: { width: 70, height: 40 },
+        inPorts: ['in'],
+        attrs: {
+          '.label': { text: 'END' },
+            circle: { fill: '#2ECC71' },
+            '.inPorts circle': { fill: '#16A085' },
+            '.outPorts circle': { fill: '#E74C3C'}
+        }
+    });*/
+
+
+    graph.addCells([search, search2, ifequal, log, log2, backlog]);
+
+    //c1.embed(a1);
+
+    //connect(start,'out',search,'in');
+    connect(search,'out',ifequal,'in');
+    connect(ifequal,'1',log,'in');
+    connect(ifequal,'2',backlog,'in');
+    connect(log,'out',log2,'in');
+    connect(log2,'out',search2,'in');
+    //connect(search2,'out',end,'in');
+    //connect(backlog,'out',end2,'in');
+
+    /* rounded corners */
+
+    _.each([search, search2, ifequal, log, log2, backlog], function(element) {
+        element.attr({ '.body': { 'rx': 6, 'ry': 6 }});
+    });
+
+    /* custom highlighting */
+
+    var highlighter = V('circle', {
+        'r': 14,
+        'stroke': '#ff7e5d',
+        'stroke-width': '6px',
+        'fill': 'transparent',
+        'pointer-events': 'none'
+    });
+
+    paper.off('cell:highlight cell:unhighlight').on({
+
+        'cell:highlight': function(cellView, el, opt) {
+
+            if (opt.embedding) {
+                V(el).addClass('highlighted-parent');
+            }
+
+            if (opt.connecting) {
+                var bbox = V(el).bbox(false, paper.viewport);
+                highlighter.translate(bbox.x + 10, bbox.y + 10, { absolute: true });
+                V(paper.viewport).append(highlighter);
+            }
+        },
+
+        'cell:unhighlight': function(cellView, el, opt) {
+
+            if (opt.embedding) {
+                V(el).removeClass('highlighted-parent');
+            }
+
+            if (opt.connecting) {
+                highlighter.remove();
+            }
+        }
+    });
+
+
+  </script>
+</body>
+</html>
