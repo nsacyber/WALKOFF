@@ -127,14 +127,12 @@
 	 var table;
     $(document).ready(function () {
         table = $("#devices").DataTable();
-        
-        $('#devices tbody').on( 'click', 'tr', function() {
-            if(this.checked=!this.checked){
-                $(this).toggleClass('selected');
-                console.log('#checkboxDevice_'+this.id);
-                $('#checkboxDevice_'+this.id).prop('checked', !$('#checkboxDevice_'+this.id).prop('checked'));
-            }
-        });
+
+        $('[id^="checkboxDevice_"]').click(function(){
+           var deviceName = this.id.split("_",2)[1];
+           $(this).closest('tr').toggleClass("selected", this.checked);
+       });
+
     });
 </script>
 <script>

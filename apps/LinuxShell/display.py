@@ -11,8 +11,10 @@ def get_device_list():
         if device_list_req.status_code == 200:
             device_list = device_list_req.json()
             device_list_parsed = []
-            for device in device_list:
-                device_list_parsed.append((device['name'],device['ip'],device['username'],device['port']))
+
+            if "status" not in device_list:
+                for device in device_list:
+                    device_list_parsed.append((device['name'],device['ip'],device['port'],device['username']))
             return device_list_parsed
         else:
             return "Could not retrieve devices"

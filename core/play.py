@@ -126,6 +126,8 @@ class Play():
                 instance = self.createInstance(self.steps[start].app, d)
                 if instance != None:
                     instances[d] = instance
+                else:
+                    instances[d] = None
 
             o, next = self.executeStep(i=instances, d=d, current=start)
             key = str(uuid.uuid4())
