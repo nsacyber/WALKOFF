@@ -19,15 +19,18 @@
     <title>WALKOFF</title>
     <style>
     .divheader {
-      padding-left: 100px;
+      
       padding-top: 5px;
       padding-bottom: 5px;
+	  text-align:center;
+	  
     }
     .middle {
       padding-right: 100px;
       padding-top: 40px;
       display: inline-block;
       border-bottom: solid 1px #ffffff;
+	  
     }
     .leftBox {
       display: inline-block;
@@ -38,6 +41,7 @@
       margin: auto;
       padding-left: 225px;
       padding-right: 100px;
+	  background-color:#FFFFFF;
     }
     .footer {
       width: 100%;
@@ -52,6 +56,8 @@
   		-webkit-user-select: none;  /* Chrome all / Safari all */
   		-moz-user-select: none;     /* Firefox all */
   		-ms-user-select: none;      /* IE 10+ */
+		
+
   	}
     #flashy {
       background: #ddd;
@@ -106,6 +112,35 @@
       z-index: 2;
     }
     .ui-button:focus { outline:none !important }
+	
+	#bannerImage{
+		text-align:center;
+	}
+	
+	#middleText{
+		position:relative;
+		right:100px;
+		padding-top:20px;
+		padding-bottom:20px;
+		padding-left:60px;
+		background-color: #e6f0ff;
+	}
+	#contactText{
+		position:relative;
+		right:100px;
+		padding-top:20px;
+		padding-bottom:20px;
+		padding-left:60px;
+		background-color: #e6f0ff;
+	}
+	#problemText{
+		position:relative;
+		right:100px;
+		padding-top:20px;
+		padding-bottom:20px;
+		padding-left:60px;
+		background-color: #e6f0ff;
+	}
     </style>
     <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-default.css">
     <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-demo.css">
@@ -114,7 +149,9 @@
 </head>
 <body id="mainBody">
   <div>
-    <img width="100%" src="files/images/header.png">
+	<div id="bannerImage">
+		<img width="1500px;" src="files/images/header.png">
+	</div>
     <div  class="divheader">
       <b>Introduction</b>
       <a style="margin-left:3em;" href="https://iadgov.github.io/WALKOFF/documentation.html">Documentation</a>
@@ -170,12 +207,14 @@
     </div>
   </div>
   <div class="divBody">
-    <h1 > Today's Cyber Analysts are Completely <b> Overwhelmed </b> </h1>
-	<ul class="lead">
-		<li> <h3> Attacks are happening constantly </h3> </li>
-		<li> <h3> There is not enough people or resources </h3> </li>
-		<li> <h3> And there is too much data to be able to confidently defend our networks </h3> </li>
-	</p>
+	<div id="problemText">
+		<h1 > Today's Cyber Analysts are Completely <b> Overwhelmed </b> </h1>
+		<ul class="lead">
+			<li> <h3> Attacks are happening constantly </h3> </li>
+			<li> <h3> There is not enough people or resources </h3> </li>
+			<li> <h3> And there is too much data to be able to confidently defend our networks </h3> </li>
+		</p>
+	</div>
 	</br>
 	<p class="lead"> Help has started to emerge in the form of security automation with a class of devices called orchestrators.  These devices automate the repetitive processes currently dragging your analysts down enabling you to refocus your resources on eliminating the cyber threat.  </p>
 	
@@ -186,12 +225,14 @@
 		<li><h3 style="position:relative; right:40px;"> Identical capabilities are being developed repeatedly for each proprietary API  </h3></li>
 	</ul>
 	</br>
-	<h1 style="position:relative; right:40px;"><b> WALKOFF </b> seeks to free Automation from the constraints of proprietary APIs By</h1>
-	<ul class="lead">
-		<li><h3 style="position:relative; right:40px;"> Standardizing the way orchestration capabilities are developed  </h3></li>
-		<li><h3 style="position:relative; right:40px;"> Fostering an active community across the Cybersecurity community and Commercial Industry </h3></li>
-		<li><h3 style="position:relative; right:40px;"> Creating an Open Source Implementation ensuring immediate <b> impact </b> </h3></li>
-	</ul>
+	<div id="middleText">
+		<h1><b> WALKOFF </b> seeks to free Automation from the constraints of proprietary APIs By</h1>
+		<ul class="lead">
+			<li><h3> Standardizing the way orchestration capabilities are developed  </h3></li>
+			<li><h3> Fostering an active community across the Cybersecurity community and Commercial Industry </h3></li>
+			<li><h3> Creating an Open Source Implementation ensuring immediate <b> impact </b> </h3></li>
+		</ul>
+	</div>
 	</br>
 	<h1 style="position:relative; right:40px;" ><b> Join </b> the Effort.  Together We Can </h1>
       <ul class="lead">
@@ -200,8 +241,10 @@
         <li><h3 style="position:relative; right:40px;" > Shape the future of cybersecurity </h3></li>
       </ul>
 	</br>
-	<h3 style="position:relative; right:40px;" > More Information can be found within the <a href="./documentation.html"> Documentation </a> </h3>
-	<h3 style="position:relative; right:40px;" > Questions or comments? Email us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a></h3>
+	<div id="contactText">
+		<h3> More Information can be found within the <a href="./documentation.html"> Documentation </a> </h3>
+		<h3> Questions or comments? Email us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a></h3>
+	</div>
   </div>
   <footer class="footer">
     <div class="pull-right hidden-xs">
