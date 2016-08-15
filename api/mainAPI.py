@@ -7,15 +7,17 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 from jinja2 import Environment, FileSystemLoader
 
 from auth import forms
-from core import config, interface, logging
+from core import config, interface, logging, appBlueprint
 
 import executionAPI, core.flagsFiltersKeywords as ffk
 import ssl, json, os
 
 #Create Flask App
-app = Flask(__name__, static_folder=os.path.abspath('www/static'), static_url_path='/static')
+app = Flask(__name__, static_folder=os.path.abspath('www/static'))
 
-app.jinja_loader = FileSystemLoader(['apps', 'www/templates'])
+app.jinja_loader = FileSystemLoader(['www/templates'])
+
+app.register_blueprint(appBlueprint.appPage, url_prefix='/apps/<app>')
 
 app.config.update(
         #CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
@@ -66,9 +68,6 @@ class Device(Base):
     def editDevice(self, form):
         if form.name.data != "" and form.name.data != None:
             self.name = form.name.data
-
-        if form.app.data != "" and form.app.data != None:
-            self.app = form.app.data
 
         if form.username.data != "" and form.username.data != None:
             self.username = form.username.data
@@ -652,26 +651,27 @@ def appActions(action):
         pass
 
 #Controls specific apps
-@app.route('/apps/<string:name>/<string:action>', methods=["POST"])
-@auth_token_required
-@roles_required("admin")
-def appActionsId(name, action):
-    if action == "display":
-        form = forms.RenderArgsForm(request.form)
-
-        path =  name + "/interface/templates/" + form.page.data
-
-        #Gets app template
-        template = env.get_template(path)
-
-        args = interface.loadApp(name, form.key.entries, form.value.entries)
-
-        rendered = template.render(**args)
-        return rendered
-
-
-    elif action == "remove":
-        pass
+# @app.route('/apps/<string:name>/<string:action>', methods=["POST"])
+# @auth_token_required
+# @roles_required("admin")
+# def appActionsId(name, action):
+#     if action == "display":
+#         form = forms.RenderArgsForm(request.form)
+#
+#         path =  name + "/interface/templates/" + form.page.data
+#
+#         #Gets app template
+#         template = env.get_template(path)
+#
+#         args = interface.loadApp(name, form.key.entries, form.value.entries)
+#
+#         rendered = template.render(**args)
+#
+#         return rendered
+#
+#
+#     if action == "remove":
+#         pass
 
 #Controls specific app configurations
 @app.route('/apps/<string:name>/config/<string:action>', methods=["POST"])
@@ -764,11 +764,11 @@ def configDevicesConfigId(app, device, action):
         return json.dumps({"status" : "could not remove device"})
 
     elif action == "edit":
-        form = forms.AddNewDeviceForm(request.form)
+        form = forms.EditDeviceForm(request.form)
         device = Device.query.filter_by(app=app, name=device).first()
         if form.validate() and device != None:
             #Ensures new name is unique
-            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+            if len(Device.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status" : "device could not be edited"})
 
             device.editDevice(form)
