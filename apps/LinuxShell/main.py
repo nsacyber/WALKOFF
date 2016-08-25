@@ -19,8 +19,7 @@ class Main(app.App):
                 stdin, stdout, stderr = self.ssh.exec_command(cmd)
                 output = stdout.read()
                 result.append(output)
-
-        return str(result)
+        return result
 
     def secureCopy(self, args={}):
         try:

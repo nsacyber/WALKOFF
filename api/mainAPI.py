@@ -564,7 +564,7 @@ def playActionId(name, action):
         play = config.playbook.getPlay(name)
         if play != None:
             output, instances = play.executePlay()
-            return json.dumps(output)
+            return output.__repr__()
         else:
             return str({"status" : "Could not execute play"})
 
