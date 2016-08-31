@@ -9,15 +9,15 @@ class Main(app.App):
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(self.config.ip, self.config.port, self.config.username, self.config.password)
 
-    def execScript(self, args={}):
-        return
-
     def execCommand(self, args={}):
         result = []
         if "command" in args:
             for cmd in args["command"]:
                 stdin, stdout, stderr = self.ssh.exec_command(cmd)
                 output = stdout.read()
+                #print str(stdin.read())
+                print output
+                print str(stderr.read())
                 result.append(output)
         return result
 
@@ -56,6 +56,16 @@ class Main(app.App):
             return "UNSUCCESSFUL"
         return "SUCCESS"
 
+
+    def runLocalScriptRemotely(self, args={}):
+        result = []
+        if "localPath" in args:
+            script = open(args["localPath"], "r").read()
+            cmd = "eval " + script
+            stdin, stdout, stderr = self.ssh.exec_command(cmd)
+            output = stdout.read()
+            result.append(output)
+        return result
 
     def shutdown(self):
         if self.ssh:
