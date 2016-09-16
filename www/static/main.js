@@ -10,7 +10,7 @@ $(document).ready(function(){
                 $("#ss_main").html(data["content"]);
             },
             error: function(e){
-                console.log("ERRROR");
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
             }
         });
     });
@@ -25,7 +25,7 @@ $(document).ready(function(){
                 $("#ss_main").html(data["content"]);
             },
             error: function(e){
-                console.log("ERRROR");
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
             }
         });
     });
@@ -49,7 +49,7 @@ $(document).ready(function(){
                 $("#ss_main").html(data["content"]);
             },
             error: function(e){
-                console.log("ERRROR");
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
             }
         });
     });
@@ -65,7 +65,7 @@ $(document).ready(function(){
                 $("#ss_main").html(data);
             },
             error: function(e){
-                console.log("ERRROR");
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
             }
         });
     });
@@ -81,7 +81,7 @@ $(document).ready(function(){
                 $("#ss_main").html(data["content"]);
             },
             error: function(e){
-                console.log("ERRROR");
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
             }
         });
     });
@@ -99,7 +99,7 @@ $(document).ready(function(){
                 $("#ss_main").html(e);
             },
             error: function(e){
-                console.log("ERRROR");
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
             }
         });
     });

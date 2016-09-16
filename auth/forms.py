@@ -1,4 +1,4 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField
 import formChecks
 
 
@@ -19,7 +19,7 @@ class EditRoleForm(Form):
     description = StringField('description')
 
 class AddNewPlayForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=25), validators.required()])
+    name = StringField('name', [validators.Length(min=1, max=50), validators.required()])
 
 class EditPlayOptionsForm(Form):
     autoRun = BooleanField("autorun")
@@ -33,7 +33,7 @@ class EditStepForm(Form):
     app = StringField('app', [validators.Optional()])
     device = StringField('device', [validators.Optional()])
     action = StringField('action', [validators.Optional()])
-    input = StringField('input', [validators.Optional(), formChecks.inValidator])
+    input = StringField('input', [validators.Optional()])
     error = FieldList(StringField('error'), [validators.Optional()])
 
 class EditConfigForm(Form):
@@ -53,6 +53,13 @@ class AddNewDeviceForm(Form):
     username = StringField('username', [validators.Optional()])
     pw = PasswordField('pw', [validators.Optional()])
     app = StringField('app', [validators.required()])
+    ipaddr = StringField('ipaddr', [validators.Optional()])
+    port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+
+class EditDeviceForm(Form):
+    name = StringField('name', [validators.Length(min=4, max=25), validators.Optional()])
+    username = StringField('username', [validators.Optional()])
+    pw = PasswordField('pw', [validators.Optional()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
 

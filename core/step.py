@@ -151,5 +151,5 @@ class Step:
         result["action"] = self.action
         result["in"] = self.input
         result["error"] = self.error
-        result["out"] = str(self.out)
+        result["out"] = self.out
         return json.dumps(result)
