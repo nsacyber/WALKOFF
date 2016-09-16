@@ -92,19 +92,17 @@ class Play():
                         self.steps[current].setInputValue(key, result)
 
     def executeStep(self, i, d, current):
-        print current
         #Executes step and sets the return value
         try:
             out = self.steps[current].execute(i[d])
-            if not isinstance(out, str):
-                out = str(out, ensure_ascii=True, default=str)
+            #if not isinstance(out, str):
+                #out = str(out, ensure_ascii=True, default=str)
             self.steps[current].setOut(str(d), out)
 
             #Adds log of execution
-            outputs = str(self.steps[current])
+            outputs = self.steps[current]
 
             #Decides where to go next
-            #current = self.steps[current].nextStep(self.steps[current].to)
             nextStep = self.steps[current].nextStep(self.steps[current].to)
             return outputs, nextStep
 
@@ -114,7 +112,7 @@ class Play():
             #Adds log of execution
             outputs = str(self.steps[current])
 
-            #current = self.steps[current].nextStep(self.steps[current].error)
+            # Decides where to go next
             nextStep = self.steps[current].nextStep(self.steps[current].error)
             return outputs, nextStep
 
@@ -122,16 +120,20 @@ class Play():
 
     def executePlay(self, q=Queue(), start="start", instances={}, output={}):
         self.setupStep(start)
+        #If there is more than one device assigned to an action execute those actions before moving on
         for d in self.steps[start].device:
             if d not in instances:
                 instance = self.createInstance(self.steps[start].app, d)
                 if instance != None:
                     instances[d] = instance
+                else:
+                    instances[d] = None
 
             o, next = self.executeStep(i=instances, d=d, current=start)
             key = str(uuid.uuid4())
-            output[key] = o
+            output = o
 
+            #Continues that device's workflow independently
             if next != "<-[status:play_end]->" and next != None:
                 output, instances = self.executePlay(q=q, start=next, instances=instances, output=output)
 
