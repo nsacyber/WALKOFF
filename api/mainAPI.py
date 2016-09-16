@@ -470,9 +470,7 @@ def listener():
                     triggerResults = playToBeExecuted.executePlay()
                 else:
                     return json.dumps({"status" : "trigger error: play could not be found"})
-
-                listenerOutput[trigger.name] = triggerResults
-
+                listenerOutput[trigger.name] = json.loads(str(triggerResults[0]))
     return json.dumps(listenerOutput)
 
 @app.route('/execution/listener/triggers/<string:action>', methods=["POST"])
