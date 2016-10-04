@@ -111,7 +111,8 @@ class Main(app.App):
             out = handler.export_obj(**export_kwargs)
 
             return out
-
+        print "No Action Results"
+        return "No Action Results"
 
     # Every function in Main is an action that can be taken
     # Every function needs to define an args argument which recieves a dictionary of input parameters
