@@ -118,8 +118,17 @@ class Play():
 
 
 
-    def executePlay(self, q=Queue(), start="start", instances={}, output={}):
+    def executePlay(self, q=Queue(), start="start", instances={}, output={}, data=None):
+        if data != None:
+            # If not a JSON then just add passed format
+            try:
+                self.steps[start].setInputValue("prePlayData", json.loads(data))
+            except:
+                self.steps[start].setInputValue("prePlayData", data)
+
         self.setupStep(start)
+
+
         #If there is more than one device assigned to an action execute those actions before moving on
         for d in self.steps[start].device:
             if d not in instances:

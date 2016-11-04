@@ -10,7 +10,7 @@
           },
           "play": [
               {
-                  "action": "helloWorld",
+                  "action": "repeatBackToMe",
                   "app": "HelloWorld",
                   "device": "hwTest",
                   "error": [
@@ -18,6 +18,7 @@
                   ],
                   "id": "start",
                   "in": {
+                    "call":"<-{\"action\":\"passedData\", \"args\":{\"id\":\"start\"}, \"filters\":[]}->"
                   },
                   "to": [
                           {"conditions":[{"flag":"regMatch", "args":{"regex":"(.*)"}, "filters":[]},  {"flag":"count", "args":{"type":"int", "operator":"e", "threshold":"45"}, "filters":[{"filter":"length", "args":{}, "type":"pre"}]}], "next":"1"}
