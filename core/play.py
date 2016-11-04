@@ -95,12 +95,12 @@ class Play():
         #Executes step and sets the return value
         try:
             out = self.steps[current].execute(i[d])
-            if not isinstance(out, str):
-                out = str(out, ensure_ascii=True, default=str)
+            #if not isinstance(out, str):
+                #out = str(out, ensure_ascii=True, default=str)
             self.steps[current].setOut(str(d), out)
 
             #Adds log of execution
-            outputs = str(self.steps[current])
+            outputs = self.steps[current]
 
             #Decides where to go next
             nextStep = self.steps[current].nextStep(self.steps[current].to)

@@ -32,11 +32,12 @@
                         <div class="input-group-addon">
                             <i class="fa fa-hashtag"></i>
                         </div>
-                        <select class="form-control" id="run_script_select" name="run_script_select">
+                        <!-- <select class="form-control" id="run_script_select" name="run_script_select">
                             <option>{{helloWorld}}</option>
                             <option>CheckList_20160705</option>
                             <option>CheckList_20160706</option>
-                        </select>
+                        </select> -->
+                        <input type="text" id="run_script_textbox" name="run_script_select" class="form-control">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -217,11 +218,88 @@
         $.ajax(settings).done(function (response) {
             console.log(response);
         });
-
-
-        
     });
-    
+
+    $("#run_script_btn").click(function(){
+            var path_to_run = $("#run_script_textbox").val();
+
+            var selected_devices = $.map(table.rows('.selected').data(), function(item) {
+                return '"' + item[1] + '"';
+            });
+
+            $("#output_area").append("\n\nNEW SCRIPT RUN:\nCOMMAND: " + path_to_run + '\nDEVICES: ' + selected_devices + '\n');
+
+            var form = new FormData();
+            form.append("id", "start");
+            form.append("app", "LinuxShell");
+            form.append("action", "runLocalScriptRemotely");
+            form.append("device", "[" + selected_devices + "]");
+            form.append("input", JSON.stringify({"localPath": path_to_run}));
+
+            var settings = {
+              "async": true,
+              "crossDomain": true,
+              "url": "/playbook/play/LinuxShellRunLocalScriptButtonWorkflow/start/edit",
+              "method": "POST",
+              "headers": {
+                "authentication-token": authKey
+              },
+              "processData": false,
+              "contentType": false,
+              "mimeType": "multipart/form-data",
+              "data": form,
+              "success":function(e){
+                //Save the command into the playbook
+                $.ajax({
+                    url:'/save/playbook',
+                    data:{},
+                    headers:{"Authentication-Token":authKey},
+                    type:"POST"
+                });
+
+
+                $.ajax({
+                    url:'/playbook/play/LinuxShellRunLocalScriptButtonWorkflow/execute',
+                    data:{},
+                    headers:{"Authentication-Token":authKey},
+                    type:"POST",
+                    success:function(e){
+                        /*var cmd_output = JSON.parse(e);
+                        for (var firstkey in cmd_output) break;
+                        var cmd_out = JSON.parse(cmd_output[firstkey])["out"];
+                        $("#output_area").append(cmd_out);*/
+
+                        $("#command_status_div").html('<span class="label label-success">Command run successfully.</span>');
+                        $("#output_area").append(e);
+
+                    },
+                    error: function(e){
+                        $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
+                        console.log("ERROR running play.");
+                    }
+                });
+              },
+              "error":function(e){
+                $("#command_status_div").html('<span class="label label-danger">Command failed.</span>');
+                console.log("ERROR editing play.");
+              }
+        };
+
+         $.ajax({
+            url:'/playbook/play/add',
+            data:{'name': 'LinuxShellRunLocalScriptButtonWorkflow'},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success:function(e){
+                console.log(e);
+            }
+        });
+
+        $.ajax(settings).done(function (response) {
+            console.log(response);
+        });
+    });
+
     //Edit device
     
     $('[id^="editDevice_"]').on("click", function(e){
