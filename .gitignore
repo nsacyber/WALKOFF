@@ -10,3 +10,5 @@
 data/walkoff.db
 *.pem
 *.bak
+*.config
+*.json
