@@ -9,7 +9,8 @@ def main(args, value):
 
         if isinstance(value, str):
             context = json.loads(value)
-
+        else:
+            context = value
         for item in args["args"]:
             result = context
             for key in item:
