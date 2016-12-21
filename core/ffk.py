@@ -42,7 +42,7 @@ class Flag():
 
         filtersElement = et.SubElement(elem, "filters")
         for filter in self.filters:
-            filtersElement.append(self.filters[filter].toXML())
+            filtersElement.append(filter.toXML())
 
         return elem
 

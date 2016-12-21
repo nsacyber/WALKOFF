@@ -32,6 +32,10 @@ class Step():
                 self.nextUp = nextStep
                 return nextStep
 
+    def set(self, attribute=None, value=None):
+        setattr(self, attribute, value)
+
+
     def toXML(self):
         step = et.Element("step")
         step.set("id", self.id)
@@ -53,10 +57,10 @@ class Step():
             input.append(self.input[i].toXML())
 
         for next in self.next:
-            step.append(self.next[next].toXML())
+            step.append(next.toXML())
 
         for error in self.errors:
-            step.append(self.errors[error].toXML())
+            step.append(error.toXML())
 
         return step
 

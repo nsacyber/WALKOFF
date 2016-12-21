@@ -70,6 +70,11 @@ class Workflow():
         return False
 
     def toXML(self):
+        stepsXML = []
+        for step in self.steps:
+            self.workflowXML.find(".//steps").remove(self.workflowXML.find(".//steps/step/[@id='" + step + "']"))
+            self.workflowXML.find(".//steps").append(self.steps[step].toXML())
+
         return self.workflowXML
 
     def importApp(self, app=""):

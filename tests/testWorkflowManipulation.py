@@ -73,8 +73,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         #Verify Structure
         steps = xml.findall(".//steps/step")
         self.assertTrue(len(steps) == 2)
-        step = steps[1]
-        self.assertTrue(step.find(".//id").text == "1")
+        step = xml.find(".//steps/step/[@id='1']")
+        self.assertTrue(step.get("id") == "1")
         self.assertTrue(step.find(".//action").text == "repeatBackToMe")
         self.assertTrue(step.find(".//app").text == "HelloWorld")
         self.assertTrue(step.find(".//device").text == "hwTest")
@@ -104,9 +104,14 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.reset()
 
     def test_updateStep(self):
-        self.assertEqual(True, True)
+        self.assertTrue(self.testWorkflow.steps["start"].action == "repeatBackToMe")
+        self.testWorkflow.steps["start"].set(attribute="action", value="helloWorld")
+        self.assertTrue(self.testWorkflow.steps["start"].action == "helloWorld")
 
-    def test_displayStep(self):
+        xml = self.testWorkflow.toXML()
+        self.assertTrue(xml.find(".//steps/step/[@id='start']/action").text == "helloWorld")
+
+    def test_displayStepsInJSON(self):
         self.assertEqual(True, True)
 
     """
