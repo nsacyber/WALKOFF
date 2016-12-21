@@ -1,5 +1,7 @@
-from core import config
 from jinja2 import Template
+import xml.etree.cElementTree as et
+
+from core import config
 
 class Argument():
     def __init__(self, key=None, value=None, type="string"):
@@ -13,6 +15,12 @@ class Argument():
     def template(self, steps):
         t = Template(self.value)
         self.value = t.render(steps=steps)
+
+    def toXML(self):
+        elem = et.Element(self.key)
+        elem.text = self.value
+        elem.set("format", self.type)
+        return elem
 
     def __repr__(self):
         output={}

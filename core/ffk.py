@@ -1,9 +1,18 @@
 import importlib
+import xml.etree.cElementTree as et
 
 class Next():
     def __init__(self, nextStep=None, flags=[]):
         self.nextStep = nextStep
         self.flags = flags
+
+    def toXML(self):
+        elem = et.Element("next")
+        elem.set("next", self.nextStep)
+        for flag in self.flags:
+            elem.append(flag.toXML())
+
+        return elem
 
     def __call__(self, output=None):
         for flag in self.flags:
@@ -23,6 +32,20 @@ class Flag():
         self.action = action
         self.args = args
         self.filters = filters
+
+    def toXML(self):
+        elem = et.Element("flag")
+        elem.set("action", self.action)
+        argsElement = et.SubElement(elem, "args")
+        for arg in self.args:
+            argsElement.append(self.args[arg].toXML())
+
+        filtersElement = et.SubElement(elem, "filters")
+        for filter in self.filters:
+            filtersElement.append(self.filters[filter].toXML())
+
+        return elem
+
 
     def validateArgs(self):
         for arg in self.args:
@@ -60,6 +83,15 @@ class Filter():
     def __init__(self, action="", args={}):
         self.action = action
         self.args = args
+
+    def toXML(self):
+        elem = et.Element("filter")
+        elem.set("action", self.action)
+        argsElement = et.Element("args")
+        for arg in self.args:
+            argsElement.append(self.args[arg].toXML())
+
+        return elem
 
     def __call__(self, output=None):
         module = self.checkImport()

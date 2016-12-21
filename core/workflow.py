@@ -1,14 +1,17 @@
+import sys
+import importlib
+import xml.etree.cElementTree as et
+
 from core import step as wfstep
 from core import ffk
 from core import arguments
 from core import instance
 
-import sys
-import importlib
-import ast
+
 
 class Workflow():
     def __init__(self, workflowConfig=None):
+        self.workflowXML = workflowConfig
         self.options = self.parseOptions(workflowConfig.findall(".//options/*"))
         self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
 
@@ -49,9 +52,14 @@ class Workflow():
         return ffk.Filter(action=action, args=args)
 
     def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
+        #Creates new step object
         input = {input[key]["tag"]:arguments.Argument(key=input[key]["tag"], value=input[key]["value"], type=input[key]["format"]) for key in input}
         self.steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors)
+        stepXML = self.steps[id].toXML()
+        self.workflowXML.find(".//steps").append(stepXML)
 
+    def toXML(self):
+        return self.workflowXML
 
     def importApp(self, app=""):
         module = "apps." + app + ".main"
