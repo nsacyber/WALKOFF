@@ -1,0 +1,47 @@
+{
+  "helloWorld":{
+    "description":"Prints a generic string for debugging purposes",
+    "type":"action",
+    "run":"HelloWorld.main.Main.helloWorld.",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"string",
+    "output_type":"string",
+    "args":[]
+  },
+
+  "repeatBackToMe":{
+    "description":"Prints a generic string with the call argument appended.  For debugging purposes",
+    "type":"action",
+    "run":"HelloWorld.main.Main.repeatBackToMe",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"string",
+    "output_type":"string",
+    "args":[
+      {
+        "name":"call",
+        "type":"string"
+      }
+    ]
+  },
+
+  "regMatch":{
+    "description":"Matches a regular expression to the output",
+    "type":"flag",
+    "run":"flags.regmatch.main",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"string",
+    "output_type":"boolean",
+    "args":[
+      {
+        "name":"regex",
+        "type":"regex"
+      }
+    ]
+  }
+
+}
+
+
