@@ -34,6 +34,7 @@ class Step():
 
     def toXML(self):
         step = et.Element("step")
+        step.set("id", self.id)
 
         id = et.SubElement(step, "id")
         id.text = self.id

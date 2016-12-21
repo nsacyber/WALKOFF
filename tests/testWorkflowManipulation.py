@@ -86,7 +86,22 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.reset()
 
     def test_removeStep(self):
-        self.assertEqual(True, True)
+        self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
+                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "string"}})
+        #Makes sure a new step was created...
+        self.assertTrue(len(self.testWorkflow.steps) == 2)
+
+        #...So that we may destroy it!
+        removed = self.testWorkflow.removeStep(id="1")
+        self.assertTrue(removed)
+        self.assertTrue(len(self.testWorkflow.steps) == 1)
+
+        #Tests the XML representation after changes
+        xml = self.testWorkflow.toXML()
+        steps = xml.findall(".//steps/*")
+        self.assertTrue(len(steps) == 1)
+        self.assertTrue(steps[0].get("id") == "start")
+        self.reset()
 
     def test_updateStep(self):
         self.assertEqual(True, True)

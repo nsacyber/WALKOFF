@@ -1,6 +1,5 @@
 import sys
 import importlib
-import xml.etree.cElementTree as et
 
 from core import step as wfstep
 from core import ffk
@@ -24,7 +23,7 @@ class Workflow():
         steps = {}
         # Parses out the step variables
         for step in stepConfig:
-            id = step.find("id").text
+            id = step.get("id")
             action = step.find("action").text
             app = step.find("app").text
             device = step.find("device").text
@@ -57,6 +56,18 @@ class Workflow():
         self.steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors)
         stepXML = self.steps[id].toXML()
         self.workflowXML.find(".//steps").append(stepXML)
+
+    def removeStep(self, id=""):
+        if id in self.steps:
+            newDict = dict(self.steps)
+            del newDict[id]
+            self.steps = newDict
+
+            #Remove XML
+            stepXML = self.workflowXML.find(".//steps/step/[@id='" + id + "']")
+            self.workflowXML.find(".//steps").remove(stepXML)
+            return True
+        return False
 
     def toXML(self):
         return self.workflowXML
