@@ -7,7 +7,7 @@ class Step():
         self.app = app
         self.device = device
         self.input = input
-        self.next = next
+        self.conditionals = next
         self.errors = errors
         self.output = None
         self.nextUp = None
@@ -26,7 +26,7 @@ class Step():
             return result
 
     def nextStep(self):
-        for n in self.next:
+        for n in self.conditionals:
             nextStep = n(output=self.output)
             if nextStep:
                 self.nextUp = nextStep
@@ -56,7 +56,7 @@ class Step():
         for i in self.input:
             input.append(self.input[i].toXML())
 
-        for next in self.next:
+        for next in self.conditionals:
             step.append(next.toXML())
 
         for error in self.errors:
@@ -72,7 +72,7 @@ class Step():
         output["app"] = self.app
         output["device"] = self.device
         output["input"] = {key:self.input[key] for key in self.input}
-        output["next"] = [next for next in self.next]
+        output["next"] = [next for next in self.conditionals]
         output["errors"] = [error for error in self.errors]
         return str(output)
 

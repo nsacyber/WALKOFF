@@ -160,10 +160,19 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(len(nextStepFlagsXML) == 0)
 
     def test_updateFlag(self):
-        self.assertEqual(True, True)
+        self.assertTrue(self.testWorkflow.steps["start"].conditionals[0].flags[0].action == "regMatch")
+        self.testWorkflow.steps["start"].conditionals[0].flags[0].set(attribute="action", value="count")
+        self.assertTrue(self.testWorkflow.steps["start"].conditionals[0].flags[0].action == "count")
+
+        #Check the XML output
+        xml = self.testWorkflow.toXML()
+        self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag[1]").get("action") == "count")
 
     def test_displayFlag(self):
-        self.assertEqual(True, True)
+        output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
+        self.assertTrue(output["action"])
+        self.assertTrue(output["args"])
+        self.assertTrue(output["filters"] == [{'action': 'length', 'args': {}}])
 
     """
         CRUD - Filter

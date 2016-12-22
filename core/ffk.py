@@ -48,6 +48,9 @@ class Flag():
         self.args = args
         self.filters = filters
 
+    def set(self, attribute=None, value=None):
+        setattr(self, attribute, value)
+
     def toXML(self):
         elem = et.Element("flag")
         elem.set("action", self.action)
