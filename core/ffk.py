@@ -2,7 +2,7 @@ import importlib
 import xml.etree.cElementTree as et
 
 class Next():
-    def __init__(self, nextStep=None, flags=[]):
+    def __init__(self, nextStep="", flags=[]):
         self.nextStep = nextStep
         self.flags = flags
 
@@ -23,7 +23,7 @@ class Next():
     def __repr__(self):
         output = {}
         output["nextStep"] = self.nextStep
-        output["flags"] = self.flags
+        output["flags"] = [flag.__dict__ for flag in self.flags]
         return str(output)
 
 
@@ -75,8 +75,8 @@ class Flag():
     def __repr__(self):
         output = {}
         output["action"] = self.action
-        output["args"] = self.args
-        output["filters"] = self.filters
+        output["args"] = {arg:self.args[arg].__dict__ for arg in self.args}
+        output["filters"] = [filter.__dict__ for filter in self.filters]
         return str(output)
 
 class Filter():
@@ -111,5 +111,5 @@ class Filter():
     def __repr__(self):
         output = {}
         output["action"] = self.action
-        output["args"] = self.args
+        output["args"] = {arg:self.args[arg].__dict__ for arg in self.args}
         return str(output)

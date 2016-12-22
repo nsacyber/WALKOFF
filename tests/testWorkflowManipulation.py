@@ -1,5 +1,4 @@
 import unittest, ast
-import xml.etree.cElementTree as et
 
 from core import controller
 
@@ -111,8 +110,13 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.testWorkflow.toXML()
         self.assertTrue(xml.find(".//steps/step/[@id='start']/action").text == "helloWorld")
 
-    def test_displayStepsInJSON(self):
-        self.assertEqual(True, True)
+    def test_displaySteps(self):
+        output = ast.literal_eval(self.testWorkflow.__repr__())
+        self.assertTrue(output["options"])
+        self.assertTrue(output["steps"])
+        self.assertTrue(len(output["steps"]) == 1)
+        self.assertTrue(output["steps"]["start"]["action"] == "repeatBackToMe")
+
 
     """
         CRUD - Flag

@@ -118,6 +118,12 @@ class Workflow():
 
         return totalSteps, str(instances)
 
+    def __repr__(self):
+        output = {}
+        output["options"] = self.options
+        output["steps"] = {step:self.steps[step] for step in self.steps}
+        return str(output)
+
 
 
 

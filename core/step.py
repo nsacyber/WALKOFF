@@ -71,9 +71,9 @@ class Step():
         output["action"] = self.action
         output["app"] = self.app
         output["device"] = self.device
-        output["input"] = self.input
-        output["next"] = self.next
-        output["errors"] = self.errors
+        output["input"] = {key:self.input[key] for key in self.input}
+        output["next"] = [next for next in self.next]
+        output["errors"] = [error for error in self.errors]
         return str(output)
 
 
