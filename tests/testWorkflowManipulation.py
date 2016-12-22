@@ -119,7 +119,16 @@ class TestWorkflowManipulation(unittest.TestCase):
     """
 
     def test_createNext(self):
-        pass
+        self.testWorkflow.steps["start"].createNext(nextStep="2", flags=[])
+        xml = self.testWorkflow.toXML()
+        step = self.testWorkflow.steps["start"]
+
+        self.assertTrue(len(step.conditionals) == 2)
+        self.assertTrue(step.conditionals[1].nextStep == "2")
+
+        #Check XML
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next")) == 2)
+        self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='2']").get("next") == "2")
 
     def test_removeNext(self):
         pass

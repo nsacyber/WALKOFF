@@ -1,5 +1,7 @@
 import xml.etree.cElementTree as et
 
+from core.ffk import Next
+
 class Step():
     def __init__(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
         self.id = id
@@ -35,6 +37,13 @@ class Step():
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
 
+    def createNext(self, nextStep="", flags=[]):
+        newConditional = Next(nextStep=nextStep, flags=flags)
+        for conditional in self.conditionals:
+            if conditional.__eq__(newConditional):
+                return False
+        self.conditionals.append(newConditional)
+        return True
 
     def toXML(self):
         step = et.Element("step")
@@ -60,7 +69,7 @@ class Step():
             step.append(next.toXML())
 
         for error in self.errors:
-            step.append(error.toXML())
+            step.append(error.toXML(tag="error"))
 
         return step
 

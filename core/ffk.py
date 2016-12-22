@@ -6,8 +6,8 @@ class Next():
         self.nextStep = nextStep
         self.flags = flags
 
-    def toXML(self):
-        elem = et.Element("next")
+    def toXML(self, tag="next"):
+        elem = et.Element(tag)
         elem.set("next", self.nextStep)
         for flag in self.flags:
             elem.append(flag.toXML())
@@ -28,6 +28,12 @@ class Next():
             return True
         except IndexError:
             return False
+
+    def __eq__(self, other):
+        if self.nextStep == other.nextStep:
+            if set(self.flags) == set(other.flags):
+                return True
+        return False
 
     def __call__(self, output=None):
         for flag in self.flags:
