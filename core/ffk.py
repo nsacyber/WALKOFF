@@ -5,7 +5,6 @@ class Next():
     def __init__(self, nextStep="", flags=[]):
         self.nextStep = nextStep
         self.flags = flags
-        self.xml = self.toXML()
 
     def toXML(self):
         elem = et.Element("next")

@@ -11,7 +11,7 @@ class Controller():
         self.tree = et.ElementTree(file=path)
         for workflow in self.tree.iter(tag="workflow"):
             name = workflow.get("name")
-            self.workflows[name] = wf.Workflow(workflow)
+            self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow)
 
     def writeWorkflowToFile(self, workflow="", path=""):
         xml = self.workflows[workflow].toXML()

@@ -57,7 +57,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(step.app == "HelloWorld")
         self.assertTrue(step.device == "hwTest")
         #self.assertTrue(step.input == {'call': {'value': 'This is a test.', 'type': 'string', 'key': 'call'}}))
-        self.assertTrue(step.next == [])
+        self.assertTrue(step.conditionals == [])
         self.assertTrue(step.errors == [])
 
         self.executionTest()
@@ -137,7 +137,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     """
 
     def test_createFlag(self):
-        nextStep = self.testWorkflow.steps["start"].next[0]
+        nextStep = self.testWorkflow.steps["start"].conditionals[0]
         self.assertTrue(len(nextStep.flags) == 1)
         nextStep.createFlag(action="count", args={"operator" : "ge", "threshold":"1"}, filters=[])
         self.assertTrue(len(nextStep.flags) == 2)
@@ -146,7 +146,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(nextStep.flags[1].filters == [])
 
     def test_removeFlag(self):
-        nextStep = self.testWorkflow.steps["start"].next[0]
+        nextStep = self.testWorkflow.steps["start"].conditionals[0]
         self.assertTrue(len(nextStep.flags) == 1)
         success = nextStep.removeFlag(index=0)
         self.assertTrue(success)
@@ -156,8 +156,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.testWorkflow.toXML()
         step = xml.findall(".//steps/step/[@id='start']/next")
 
-        nextStepXML = xml.findall(".//steps/step/[@id='start']/next")
-        self.assertTrue(len(nextStepXML) == 1)
+        nextStepFlagsXML = xml.find(".//steps/step/[@id='start']/next")
+        self.assertTrue(len(nextStepFlagsXML) == 0)
 
     def test_updateFlag(self):
         self.assertEqual(True, True)

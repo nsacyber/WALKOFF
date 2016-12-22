@@ -9,7 +9,8 @@ from core import instance
 
 
 class Workflow():
-    def __init__(self, workflowConfig=None):
+    def __init__(self, name="", workflowConfig=None):
+        self.name = name
         self.workflowXML = workflowConfig
         self.options = self.parseOptions(workflowConfig.findall(".//options/*"))
         self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
@@ -62,19 +63,14 @@ class Workflow():
             newDict = dict(self.steps)
             del newDict[id]
             self.steps = newDict
-
-            #Remove XML
-            stepXML = self.workflowXML.find(".//steps/step/[@id='" + id + "']")
-            self.workflowXML.find(".//steps").remove(stepXML)
             return True
         return False
 
     def toXML(self):
-        stepsXML = []
+        root = self.workflowXML.find(".//steps")
+        root.clear()
         for step in self.steps:
-            for selected in self.workflowXML.findall(".//steps/step/[@id='" + str(step) + "']"):
-                self.workflowXML.find(".//steps").remove(selected)
-            self.workflowXML.find(".//steps").append(self.steps[step].toXML())
+            root.append(self.steps[step].toXML())
 
         return self.workflowXML
 

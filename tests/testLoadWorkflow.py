@@ -36,7 +36,7 @@ class TestLoadWorkflow(unittest.TestCase):
         # self.assertTrue(step.input == {"call":arg})
 
     def test_workflowNextSteps(self):
-        next = self.testWorkflow.steps["start"].next
+        next = self.testWorkflow.steps["start"].conditionals
         self.assertTrue(len(next) == 1)
 
         next = next[0]
@@ -45,7 +45,7 @@ class TestLoadWorkflow(unittest.TestCase):
 
 
     def test_workflowNextStepFlags(self):
-        flags = self.testWorkflow.steps["start"].next[0].flags
+        flags = self.testWorkflow.steps["start"].conditionals[0].flags
 
         # Verify flags exist
         self.assertTrue(len(flags) == 1)
@@ -56,7 +56,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(flag.filters)
 
     def test_workflowNextStepFilters(self):
-        filters = self.testWorkflow.steps["start"].next[0].flags[0].filters
+        filters = self.testWorkflow.steps["start"].conditionals[0].flags[0].filters
         self.assertTrue(len(filters) == 1)
 
         filter = filters[0]
