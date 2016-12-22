@@ -72,7 +72,8 @@ class Workflow():
     def toXML(self):
         stepsXML = []
         for step in self.steps:
-            self.workflowXML.find(".//steps").remove(self.workflowXML.find(".//steps/step/[@id='" + step + "']"))
+            for selected in self.workflowXML.findall(".//steps/step/[@id='" + str(step) + "']"):
+                self.workflowXML.find(".//steps").remove(selected)
             self.workflowXML.find(".//steps").append(self.steps[step].toXML())
 
         return self.workflowXML

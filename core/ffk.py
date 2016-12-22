@@ -5,6 +5,7 @@ class Next():
     def __init__(self, nextStep="", flags=[]):
         self.nextStep = nextStep
         self.flags = flags
+        self.xml = self.toXML()
 
     def toXML(self):
         elem = et.Element("next")
@@ -13,6 +14,21 @@ class Next():
             elem.append(flag.toXML())
 
         return elem
+
+    def createFlag(self, action="", args={}, filters=[]):
+        newFlag = Flag(action=action, args=args, filters=filters)
+        self.flags.append(newFlag)
+
+    def removeFlag(self, index=-1):
+        try:
+            self.flags.remove(self.flags[index])
+
+            #Reflect change in XML
+            #selected = self.xml.find(".//flag[" + str(index) + "]")
+            #self.xml.find(".").remove(selected)
+            return True
+        except IndexError:
+            return False
 
     def __call__(self, output=None):
         for flag in self.flags:
