@@ -45,6 +45,10 @@ class Step():
         self.conditionals.append(newConditional)
         return True
 
+    def removeNext(self, nextStep=""):
+        self.conditionals = [x for x in self.conditionals if x.nextStep != nextStep]
+        return True
+
     def toXML(self):
         step = et.Element("step")
         step.set("id", self.id)

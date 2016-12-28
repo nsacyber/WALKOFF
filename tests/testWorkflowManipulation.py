@@ -131,13 +131,32 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='2']").get("next") == "2")
 
     def test_removeNext(self):
-        pass
+        step = self.testWorkflow.steps["start"]
+        self.assertTrue(len(step.conditionals) == 1)
+        success = step.removeNext("1")
+        self.assertTrue(success)
+        self.assertTrue(len(step.conditionals) == 0)
+
+        xml = self.testWorkflow.toXML()
+
+        #Check XML
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next")) == 0)
 
     def test_updateNext(self):
-        pass
+        step = self.testWorkflow.steps["start"]
+        self.assertTrue(step.conditionals[0].nextStep == "1")
+        step.conditionals[0].nextStep = "2"
+        self.assertTrue(step.conditionals[0].nextStep == "2")
+
+        xml = self.testWorkflow.toXML()
+
+        #Check XML
+        self.assertTrue(xml.find(".//steps/step/[@id='start']/next").get("next") == "2")
 
     def test_displayNext(self):
-        pass
+        conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].__repr__())
+        self.assertTrue(conditional["flags"])
+        self.assertTrue(conditional["nextStep"] == "1")
 
 
 
