@@ -26,16 +26,37 @@ class TestWorkflowManipulation(unittest.TestCase):
         CRUD - Workflow
     """
     def test_createWorkflow(self):
-        pass
+        self.assertTrue(len(self.c.workflows) == 1)
+        #Create Empty Workflow
+        self.c.createWorkflowFromTemplate()
+        self.assertTrue(len(self.c.workflows) == 2)
+        self.assertTrue(self.c.workflows["emptyWorkflow"].steps == {})
+
+        xml = self.c.workflows["emptyWorkflow"].toXML()
+        self.assertTrue(len(xml.findall(".//steps/*")) == 0)
 
     def test_removeWorkflow(self):
-        pass
+        self.c.createWorkflowFromTemplate()
+        self.assertTrue(len(self.c.workflows) == 2)
+
+        success = self.c.removeWorkflow("emptyWorkflow")
+        self.assertTrue(success)
+        self.assertTrue(len(self.c.workflows) == 1)
+        self.assertTrue(self.c.workflows["helloWorldWorkflow"])
 
     def test_updateWorkflow(self):
-        pass
+        self.c.createWorkflowFromTemplate()
+        self.c.updateWorkflowName(oldName="emptyWorkflow", newName="newWorkflowName")
+
+        self.assertTrue(len(self.c.workflows) == 2)
+        self.assertFalse("emptyWorkflow" in self.c.workflows)
+        self.assertTrue(self.c.workflows["newWorkflowName"])
 
     def test_displayWorkflow(self):
-        pass
+        workflow = ast.literal_eval(self.c.workflows["helloWorldWorkflow"].__repr__())
+        self.assertTrue(len(workflow["steps"]) == 1)
+        self.assertTrue(workflow["options"])
+
 
     """
         CRUD - Step

@@ -1,7 +1,9 @@
 import json, importlib
 from os import listdir
 from os.path import isfile, join, splitext
-import jinja2, blinker
+import jinja2
+
+templatesPath = "data/templates/"
 
 #Keyword folder path
 keywordsPath = "core/keywords"
