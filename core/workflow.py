@@ -5,20 +5,23 @@ from core import step as wfstep
 from core import ffk
 from core import arguments
 from core import instance
-
-
+from core import options
 
 class Workflow():
     def __init__(self, name="", workflowConfig=None):
         self.name = name
         self.workflowXML = workflowConfig
-        self.options = self.parseOptions(workflowConfig.findall(".//options/*"))
+        self.options = self.parseOptions(workflowConfig.find(".//options"))
         self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
 
-    def parseOptions(self, options=None):
+    def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
-        options = [{ch.tag: {item.tag: item.text for item in ch} or ch.text} for ch in options]
-        return options
+        #options = [{ch.tag: {item.tag: item.text for item in ch} or ch.text} for ch in options]
+
+        scheduler = {option.tag:option.text for option in ops.findall(".//scheduler/*")}
+        enabled = ops.find(".//enabled").text
+        result = options.Options(scheduler=scheduler, enabled=enabled)
+        return result
 
     def parseSteps(self, stepConfig=None):
         steps = {}

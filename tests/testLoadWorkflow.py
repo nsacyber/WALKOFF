@@ -14,9 +14,6 @@ class TestLoadWorkflow(unittest.TestCase):
         #Tests that helloWorldWorkflow exists
         self.assertTrue("helloWorldWorkflow" in self.c.workflows)
 
-    def test_workflowOptions(self):
-        self.assertTrue(self.testWorkflow.options == [{'enabled': 'true'}, {'scheduler': {'sDT': '2016-1-1 12:00:00', 'eDT': '2016-3-15 12:00:00', 'interval': '0.1', 'autorun': 'true'}}])
-
     def test_baseWorkflowAttributes(self):
         #Correct number of steps
         self.assertTrue(len(self.testWorkflow.steps) == 1)

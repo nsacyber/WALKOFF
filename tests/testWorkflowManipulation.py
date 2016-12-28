@@ -279,7 +279,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         xml = self.testWorkflow.toXML()
         #Check XML
-        self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[0]").get("action") == "combine")
+        self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[1]").get("action") == "combine")
 
     def test_displayFilter(self):
         conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].filters.__repr__())
