@@ -1,6 +1,8 @@
 import importlib
 import xml.etree.cElementTree as et
 
+from core import arguments
+
 class Next():
     def __init__(self, nextStep="", flags=[]):
         self.nextStep = nextStep
@@ -70,6 +72,16 @@ class Flag():
 
         return elem
 
+    def addFilter(self, action="", args={}, index=None):
+        if index != None:
+            self.filters.insert(index, Filter(action=action, args=args))
+        else:
+            self.filters.append(Filter(action=action, args=args))
+        return True
+
+    def removeFilter(self, index=None):
+        del self.filters[index]
+        return True
 
     def validateArgs(self):
         for arg in self.args:
@@ -106,12 +118,12 @@ class Flag():
 class Filter():
     def __init__(self, action="", args={}):
         self.action = action
-        self.args = args
+        self.args = {arg:arguments.Argument(key=arg, value=args[arg], type=type(args[arg]).__name__) for arg in args}
 
     def toXML(self):
         elem = et.Element("filter")
         elem.set("action", self.action)
-        argsElement = et.Element("args")
+        argsElement = et.SubElement(elem, "args")
         for arg in self.args:
             argsElement.append(self.args[arg].toXML())
 

@@ -207,16 +207,63 @@ class TestWorkflowManipulation(unittest.TestCase):
     """
 
     def test_createFilter(self):
-        self.assertEqual(True, True)
+        conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
+        self.assertTrue(len(conditional.filters) == 1)
+
+        conditional.addFilter(action="length", args={"test":"test"})
+        self.assertTrue(len(conditional.filters) == 2)
+        self.assertTrue(conditional.filters[1].action == "length")
+        self.assertTrue(conditional.filters[1].args["test"])
+
+        #Tests adding a filter at index
+        conditional.addFilter(action="length", args={"test2": "test2"}, index=1)
+        self.assertTrue(len(conditional.filters) == 3)
+        self.assertTrue(conditional.filters[1].action == "length")
+        self.assertTrue(conditional.filters[1].args["test2"])
+        self.assertTrue(conditional.filters[2].action == "length")
+        self.assertTrue(conditional.filters[2].args["test"])
+
+        xml = self.testWorkflow.toXML()
+
+        #Check XML
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter")) == 3)
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[2]/args/test2")) == 1)
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[3]/args/test")) == 1)
 
     def test_removeFilter(self):
-        self.assertEqual(True, True)
+        conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
+        conditional.addFilter(action="length", args={"test": "test"})
+        conditional.addFilter(action="length", args={"test2": "test2"}, index=1)
+        self.assertTrue(len(conditional.filters) == 3)
+
+        conditional.removeFilter(index=0)
+        self.assertTrue(len(conditional.filters) == 2)
+        self.assertTrue(conditional.filters[1].action == "length")
+        self.assertTrue(conditional.filters[1].args["test"])
+        self.assertTrue(conditional.filters[0].action == "length")
+        self.assertTrue(conditional.filters[0].args["test2"])
+
+        xml = self.testWorkflow.toXML()
+
+        #Check XML
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter")) == 2)
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[1]/args/test2")) == 1)
+        self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[2]/args/test")) == 1)
 
     def test_updateFilter(self):
-        self.assertEqual(True, True)
+        conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
+        self.assertTrue(conditional.filters[0].action == "length")
+        conditional.filters[0].action = "combine"
+        self.assertTrue(conditional.filters[0].action == "combine")
+
+        xml = self.testWorkflow.toXML()
+        #Check XML
+        self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[0]").get("action") == "combine")
 
     def test_displayFilter(self):
-        self.assertEqual(True, True)
+        conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].filters.__repr__())
+        self.assertTrue(len(conditional) == 1)
+        self.assertTrue(conditional[0]["action"] == "length")
 
     """
         CRUD - Options
