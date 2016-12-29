@@ -36,19 +36,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertTrue(steps[1].nextUp == None)
         self.assertTrue(instances["hwTest"]["state"] == '0')
 
-    """
-        Tests the out templating function which replaces the value of an argument with the output of another step.
-    """
-    def test_TemplatedWorkflow(self):
-        steps, instances = self.c.workflows["templatedWorkflow"].execute()
-        instances = ast.literal_eval(instances)
-        self.assertTrue(len(steps) == 2)
-        self.assertTrue(steps[0].id == "start")
-        self.assertTrue(steps[0].output == {"message": "HELLO WORLD"})
-        self.assertTrue(steps[0].nextUp == "1")
-        self.assertTrue(steps[1].id == "1")
-        self.assertTrue(steps[1].output == "REPEATING: {'message': 'HELLO WORLD'}")
-        self.assertTrue(steps[1].nextUp == None)
-        self.assertTrue(instances["hwTest"]["state"] == '0')
+
 
 

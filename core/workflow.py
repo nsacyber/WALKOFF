@@ -7,12 +7,13 @@ from core import arguments
 from core import instance
 from core import options
 
-class Workflow():
-    def __init__(self, name="", workflowConfig=None):
+class Workflow(object):
+    def __init__(self, name="", workflowConfig=None, children={}):
         self.name = name
         self.workflowXML = workflowConfig
         self.options = self.parseOptions(workflowConfig.find(".//options"))
         self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
+        self.children = {}
 
     def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
@@ -20,8 +21,13 @@ class Workflow():
 
         scheduler = {option.tag:option.text for option in ops.findall(".//scheduler/*")}
         enabled = ops.find(".//enabled").text
-        result = options.Options(scheduler=scheduler, enabled=enabled)
+        children = {child.text:None for child in ops.findall(".//children/child")}
+
+        result = options.Options(scheduler=scheduler, enabled=enabled, children=children)
         return result
+
+    def assignChild(self, name="", workflow=None):
+        self.children[name] = workflow
 
     def parseSteps(self, stepConfig=None):
         steps = {}
@@ -39,7 +45,7 @@ class Workflow():
 
     def parseNext(self, next=None):
         flags = [self.parseFlag(flag) for flag in next.findall("flag")]
-        nextId = next.get("next")
+        nextId = next.get("step")
         nextStep = ffk.Next(nextStep=nextId, flags=flags)
         return nextStep
 
@@ -93,10 +99,23 @@ class Workflow():
         if imported:
             return instance.Instance(instance=getattr(imported, "Main")(name=app, device=device), state=instance.OK)
 
-    def execute(self, start="start"):
+    def goToNextStep(self, current="", nextUp=""):
+        if nextUp not in self.steps:
+            self.steps[current].nextUp = None
+            current = None
+        else:
+            current = nextUp
+        return current
+
+    def executeChild(self, name="", start="start", data=None, instances={}):
+        if name in self.options.children and type(self.options.children[name]).__name__ == "Workflow":
+            steps, instances = self.options.children[name].execute(start=start, data=data, instances=instances)
+            return steps
+
+    def execute(self, start="start", data=None, instances={}):
         totalSteps = []
         current = start
-        instances = {}
+        instances = instances
         while current != None:
             step = self.steps[current]
             if step.device not in instances:
@@ -106,11 +125,18 @@ class Workflow():
             step.execute(instance=instances[step.device]())
             totalSteps.append(self.steps[current])
             nextUp = step.nextStep()
-            if nextUp not in self.steps:
-                self.steps[current].nextUp = None
-                current = None
-            else:
-                current = nextUp
+
+            #Check for call to child workflow
+            if nextUp and nextUp[0] == '@':
+                params = nextUp.split(":")
+                params[0] = params[0].lstrip("@")
+                if len(params) == 3:
+                    childWorkflowOutput = self.executeChild(name=params[0], start=params[1])
+                    if childWorkflowOutput:
+                        totalSteps.extend(childWorkflowOutput)
+                        nextUp = params[2]
+
+            current = self.goToNextStep(current=current, nextUp=nextUp)
 
         #Upon finishing shuts down instances
         for instance in instances:

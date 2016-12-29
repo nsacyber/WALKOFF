@@ -6,7 +6,7 @@ OK = 1
 SHUTDOWN = 0
 ERROR = -1
 
-class Instance():
+class Instance(object):
     def __init__(self, instance=None, state=1):
         self.instance = instance
         self.state = state

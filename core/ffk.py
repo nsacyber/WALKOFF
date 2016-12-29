@@ -1,10 +1,9 @@
 import importlib
 import xml.etree.cElementTree as et
-
 from core import arguments
 
-class Next():
-    def __init__(self, nextStep="", flags=[]):
+class Next(object):
+    def __init__(self, nextStep="", nextWorkflow="", flags=[]):
         self.nextStep = nextStep
         self.flags = flags
 
@@ -13,7 +12,6 @@ class Next():
         elem.set("next", self.nextStep)
         for flag in self.flags:
             elem.append(flag.toXML())
-
         return elem
 
     def createFlag(self, action="", args={}, filters=[]):
@@ -50,7 +48,7 @@ class Next():
         return str(output)
 
 
-class Flag():
+class Flag(object):
     def __init__(self, action="", args={}, filters=[]):
         self.action = action
         self.args = args
@@ -69,7 +67,6 @@ class Flag():
         filtersElement = et.SubElement(elem, "filters")
         for filter in self.filters:
             filtersElement.append(filter.toXML())
-
         return elem
 
     def addFilter(self, action="", args={}, index=None):
@@ -115,7 +112,7 @@ class Flag():
         output["filters"] = [filter.__dict__ for filter in self.filters]
         return str(output)
 
-class Filter():
+class Filter(object):
     def __init__(self, action="", args={}):
         self.action = action
         self.args = {arg:arguments.Argument(key=arg, value=args[arg], type=type(args[arg]).__name__) for arg in args}

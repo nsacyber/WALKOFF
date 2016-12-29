@@ -2,7 +2,7 @@ import xml.etree.cElementTree as et
 
 from core.ffk import Next
 
-class Step():
+class Step(object):
     def __init__(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
         self.id = id
         self.action = action

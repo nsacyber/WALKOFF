@@ -3,7 +3,7 @@ import xml.etree.cElementTree as et
 
 from core import config
 
-class Argument():
+class Argument(object):
     def __init__(self, key=None, value=None, type="string"):
         self.key = key
         self.type = type

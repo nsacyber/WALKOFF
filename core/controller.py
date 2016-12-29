@@ -3,7 +3,7 @@ from core import config
 
 import xml.etree.cElementTree as et
 
-class Controller():
+class Controller(object):
     def __init__(self):
         self.workflows = {}
         self.instances = {}
@@ -14,6 +14,14 @@ class Controller():
         for workflow in self.tree.iter(tag="workflow"):
             name = workflow.get("name")
             self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow)
+        self.addChildWorkflows()
+
+    def addChildWorkflows(self):
+        for workflow in self.workflows:
+            children = self.workflows[workflow].options.children
+            for child in children:
+                if child in self.workflows:
+                    children[child] = self.workflows[child]
 
     def createWorkflowFromTemplate(self, name="emptyWorkflow"):
         self.loadWorkflowsFromFile(path = config.templatesPath + name + ".workflow")
