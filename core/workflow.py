@@ -37,7 +37,7 @@ class Workflow(object):
             action = step.find("action").text
             app = step.find("app").text
             device = step.find("device").text
-            input = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, type=arg.get("format")) for arg in step.findall("input/*")}
+            input = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in step.findall("input/*")}
             next = [self.parseNext(nextStep) for nextStep in step.findall("next")]
             errors = [self.parseNext(error) for error in step.findall("error")]
             steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors)
@@ -52,17 +52,17 @@ class Workflow(object):
     def parseFlag(self, flag=None):
         action = flag.get("action")
         filters = [self.parseFilter(filter) for filter in flag.findall("filters/*")]
-        args = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, type=arg.get("format")) for arg in flag.findall("args/*")}
+        args = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in flag.findall("args/*")}
         return ffk.Flag(action=action, filters=filters, args=args)
 
     def parseFilter(self, filter=None):
         action = filter.get("action")
-        args = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, type=arg.get("format")) for arg in filter.findall("args/*")}
+        args = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in filter.findall("args/*")}
         return ffk.Filter(action=action, args=args)
 
     def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
         #Creates new step object
-        input = {input[key]["tag"]:arguments.Argument(key=input[key]["tag"], value=input[key]["value"], type=input[key]["format"]) for key in input}
+        input = {input[key]["tag"]:arguments.Argument(key=input[key]["tag"], value=input[key]["value"], format=input[key]["format"]) for key in input}
         self.steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors)
         stepXML = self.steps[id].toXML()
         self.workflowXML.find(".//steps").append(stepXML)
@@ -142,6 +142,8 @@ class Workflow(object):
         for instance in instances:
             instances[instance].shutdown()
 
+        if data:
+            data.put(totalSteps)
         return totalSteps, str(instances)
 
     def __repr__(self):

@@ -87,6 +87,8 @@ class Step(object):
         output["input"] = {key:self.input[key] for key in self.input}
         output["next"] = [next for next in self.conditionals]
         output["errors"] = [error for error in self.errors]
+        if self.output:
+            output["output"] = self.output
         return str(output)
 
 

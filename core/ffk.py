@@ -93,6 +93,7 @@ class Flag(object):
 
         module = self.checkImport()
         if module:
+            result = None
             if self.validateArgs():
                 result = getattr(module, "main")(args=self.args, value=output)
             return result
@@ -115,7 +116,7 @@ class Flag(object):
 class Filter(object):
     def __init__(self, action="", args={}):
         self.action = action
-        self.args = {arg:arguments.Argument(key=arg, value=args[arg], type=type(args[arg]).__name__) for arg in args}
+        self.args = {arg:arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__) for arg in args}
 
     def toXML(self):
         elem = et.Element("filter")

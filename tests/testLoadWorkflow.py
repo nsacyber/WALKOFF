@@ -29,7 +29,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(step.device == "hwTest")
 
     def test_workflowInput(self):
-        arg = arguments.Argument(key="call", value="Hello World", type="string")
+        arg = arguments.Argument(key="call", value="Hello World", format="string")
         # self.assertTrue(step.input == {"call":arg})
 
     def test_workflowNextSteps(self):
