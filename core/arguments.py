@@ -4,10 +4,10 @@ import xml.etree.cElementTree as et
 from core import config
 
 class Argument(object):
-    def __init__(self, key=None, value=None, type="string"):
+    def __init__(self, key=None, value=None, format="string"):
         self.key = key
-        self.type = type
         self.value = value
+        self.format = type(format).__name__
 
     def __call__(self):
         return self.value
@@ -19,18 +19,18 @@ class Argument(object):
     def toXML(self):
         elem = et.Element(self.key)
         elem.text = self.value
-        elem.set("format", self.type)
+        elem.set("format", self.format)
         return elem
 
     def __repr__(self):
         output={}
         output["key"] = self.key
         output["value"] = self.value
-        output["type"] = self.type
+        output["type"] = self.format
         return str(output)
 
     def validate(self, action=None, io="input"):
-        return any(x["name"] == self.key and x["type"] == self.type for x in config.functionConfig[action]["args"])
+        return any(x["name"] == self.key and x["type"] == self.format for x in config.functionConfig[action]["args"])
 
 
 
