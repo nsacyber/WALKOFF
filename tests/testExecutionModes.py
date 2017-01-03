@@ -8,24 +8,16 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_startStopExecutionLoop(self):
         self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/simpleDataManipulationWorkflow.workflow")
-        self.c.startActiveExecution()
+        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
 
-        self.assertTrue(self.c.status.value == 1)
-        self.assertFalse(self.c.mainProcess == None)
+        self.c.start()
+        time.sleep(2)
+        self.c.stop()
+        self.assertTrue(len(self.c.eventLog) == 1)
 
-        time.sleep(3)
-        self.c.stopActiveExecution()
 
-        self.assertTrue(self.c.status.value == 0)
-        #self.assertTrue(self.c.mainProcess == None)
 
-        #Check Output
-        output = []
-        while not self.c.executionLog.empty():
-            output.extend(self.c.executionLog.get())
-        self.assertTrue(len(output) == 1)
-        self.assertTrue(output[0].output == "REPEATING: Hello World")
+
 
 
 

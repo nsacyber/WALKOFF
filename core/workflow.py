@@ -18,8 +18,7 @@ class Workflow(object):
     def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
         #options = [{ch.tag: {item.tag: item.text for item in ch} or ch.text} for ch in options]
-
-        scheduler = {option.tag:option.text for option in ops.findall(".//scheduler/*")}
+        scheduler = {"autorun": ops.find(".//scheduler").get("autorun"), "type":ops.find(".//scheduler").get("type"), "args":{option.tag:option.text for option in ops.findall(".//scheduler/*")}}
         enabled = ops.find(".//enabled").text
         children = {child.text:None for child in ops.findall(".//children/child")}
 
@@ -142,8 +141,6 @@ class Workflow(object):
         for instance in instances:
             instances[instance].shutdown()
 
-        if data:
-            data.put(totalSteps)
         return totalSteps, str(instances)
 
     def __repr__(self):

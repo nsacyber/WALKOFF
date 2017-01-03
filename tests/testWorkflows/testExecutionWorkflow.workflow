@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<workflow name="templatedWorkflow" >
+<workflow name="helloWorldWorkflow">
     <options>
         <enabled>true</enabled>
         <scheduler type="cron" autorun="false">
@@ -11,10 +11,11 @@
     </options>
     <steps>
         <step id="start">
-            <action>helloWorld</action>
+            <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
+                <call format="string">Hello World</call>
             </input>
             <next step="1">
                 <flag action="regMatch">
@@ -27,17 +28,6 @@
                         </filter>
                     </filters>
                 </flag>
-            </next>
-            <error step="1"></error>
-        </step>
-        <step id="1">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <input>
-                <call format="string">{{steps | outputFrom("start")}}</call>
-            </input>
-            <next>
             </next>
             <error step="1"></error>
         </step>

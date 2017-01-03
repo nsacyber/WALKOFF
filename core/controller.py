@@ -1,13 +1,13 @@
 import xml.etree.cElementTree as et
-import multiprocessing as mp
-from multiprocessing import Value, Lock
-import threading
-
-import time
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_JOB_ERROR, EVENT_ALL, EVENT_JOB_ADDED, EVENT_JOB_REMOVED
 
 from core import workflow as wf
 from core import config
-from core.config import executionSettings
+
 
 
 class Controller(object):
@@ -16,11 +16,13 @@ class Controller(object):
         self.instances = {}
         self.tree = None
 
-        self.mainProcess = None
-        #self.lock = Lock()
-        self.lock = threading.Lock()
-        self.status = Value("i", 0)
-        self.executionLog = mp.Queue()
+        self.scheduler = BackgroundScheduler()
+        #self.scheduler.add_listener(self.schedulerStatusListener,EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN)
+        #self.scheduler.add_listener(self.jobStatusListener, EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
+        self.scheduler.add_listener(self.jobExecutionListener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+
+
+        self.eventLog = []
 
     def loadWorkflowsFromFile(self, path):
         self.tree = et.ElementTree(file=path)
@@ -28,6 +30,7 @@ class Controller(object):
             name = workflow.get("name")
             self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow)
         self.addChildWorkflows()
+        self.addWorkflowScheduledJobs()
 
     def addChildWorkflows(self):
         for workflow in self.workflows:
@@ -35,6 +38,13 @@ class Controller(object):
             for child in children:
                 if child in self.workflows:
                     children[child] = self.workflows[child]
+
+    def addWorkflowScheduledJobs(self):
+        for workflow in self.workflows:
+            if self.workflows[workflow].options.enabled and self.workflows[workflow].options.scheduler["autorun"] == "true":
+                scheduleType = self.workflows[workflow].options.scheduler["type"]
+                schedule = self.workflows[workflow].options.scheduler["args"]
+                self.scheduler.add_job(self.workflows[workflow].execute, trigger=scheduleType, replace_existing=True, **schedule)
 
     def createWorkflowFromTemplate(self, name="emptyWorkflow"):
         self.loadWorkflowsFromFile(path = config.templatesPath + name + ".workflow")
@@ -49,52 +59,27 @@ class Controller(object):
         self.workflows[newName] = self.workflows.pop(oldName)
         self.workflows[newName].name = newName
 
-    # Main Processing Loop
-    def mainLoop(self, status):
-        queue = ["helloWorldWorkflow"]
-        while self.status.value == 1:
-            # Adds Ready Jobs to EventQueue
-            # queue.addJobs(scheduler.readyPlays(playbook.plays))
-            if len(queue) > 0:
-                for job in queue:
-                    pq = mp.Queue()
-                    jobs = []
-                    for process in range(0, executionSettings["maxJobs"]):
-                        if len(queue) > 0:
-                            # if job in queue execute
-                            proc = self.workflows[queue.pop()].execute
-                            #"start" - the entry id for the workflow execution
-                            if proc:
-                                worker = threading.Thread(target=proc, args=("start", pq))
-                                jobs.append(worker)
-                                worker.start()
+    def start(self):
+        self.scheduler.start()
 
-                    for job in jobs:
-                        t = pq.get()
-                        self.executionLog.put(t)
-                        job.join()
+    def stop(self):
+        self.scheduler.shutdown()
 
-            else:
-                # If no jobs then sleep for specified amount
-                time.sleep(executionSettings["secondsDelay"])
-
-        return None
-
-    # Creates a thread and starts the Main Processing Loop
-    def startActiveExecution(self):
-        with self.lock:
-            self.status.value = 1
-        #self.mainProcess = mp.Process(target=self.mainLoop, args=(self.status.value,))
-        self.mainProcess = threading.Thread(target=self.mainLoop, args=(self.status.value,))
-        self.mainProcess.start()
-
-    def stopActiveExecution(self):
-        if self.mainProcess is not None:
-            with self.lock:
-                self.status.value = 0
-            self.mainProcess = None
+    def jobExecutionListener(self, event):
+        if event.exception:
+            self.eventLog.append({"jobError": event.retval})
         else:
-            print("No Process To Stop!")
+            self.eventLog.append({"jobExecuted":event.retval})
+
+    #def schedulerStatusListener(self, event):
+        #self.eventLog.append({"schedulerStatus" : event.code})
+
+    #def jobStatusListener(self, event):
+        #self.eventLog.append({"jobStatus" : event.code})
+
+
+
+
 
 
 

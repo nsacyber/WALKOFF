@@ -14,7 +14,7 @@ keywordsPath = "core/keywords"
 
 #Active Execution (Workflows called from constant loop) settings.
 #secondsDelay - delay in seconds between execution loops
-#maxProcesses - maximum number of jobs to be run at once
+#maxJobs - maximum number of jobs to be run at once
 executionSettings = {
     "secondsDelay" : 0.1,
     "maxJobs" : 2
