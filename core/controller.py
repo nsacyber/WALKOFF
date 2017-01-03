@@ -1,14 +1,8 @@
 import xml.etree.cElementTree as et
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.date import DateTrigger
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_JOB_ERROR, EVENT_ALL, EVENT_JOB_ADDED, EVENT_JOB_REMOVED
-
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from core import workflow as wf
 from core import config
-
-
 
 class Controller(object):
     def __init__(self):
@@ -20,8 +14,6 @@ class Controller(object):
         #self.scheduler.add_listener(self.schedulerStatusListener,EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN)
         #self.scheduler.add_listener(self.jobStatusListener, EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
         self.scheduler.add_listener(self.jobExecutionListener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-
-
         self.eventLog = []
 
     def loadWorkflowsFromFile(self, path):

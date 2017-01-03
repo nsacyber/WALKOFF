@@ -1,4 +1,4 @@
-import sys
+import sys, copy
 import importlib
 
 from core import step as wfstep
@@ -17,7 +17,6 @@ class Workflow(object):
 
     def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
-        #options = [{ch.tag: {item.tag: item.text for item in ch} or ch.text} for ch in options]
         scheduler = {"autorun": ops.find(".//scheduler").get("autorun"), "type":ops.find(".//scheduler").get("type"), "args":{option.tag:option.text for option in ops.findall(".//scheduler/*")}}
         enabled = ops.find(".//enabled").text
         children = {child.text:None for child in ops.findall(".//children/child")}
@@ -115,26 +114,33 @@ class Workflow(object):
         totalSteps = []
         current = start
         instances = instances
+
         while current != None:
-            step = self.steps[current]
-            if step.device not in instances:
-                instances[step.device] = self.createInstance(app=step.app, device=step.device)
+            #Closure to maintain scope
+            def executionClosure(step, totalSteps):
+                if step.device not in instances:
+                    instances[step.device] = self.createInstance(app=step.app, device=step.device)
 
-            [self.steps[current].input[arg].template(self.steps) for arg in step.input]
-            step.execute(instance=instances[step.device]())
-            totalSteps.append(self.steps[current])
-            nextUp = step.nextStep()
+                for arg in step.input:
+                    step.input[arg].value = step.input[arg].template(totalSteps)
 
-            #Check for call to child workflow
-            if nextUp and nextUp[0] == '@':
-                params = nextUp.split(":")
-                params[0] = params[0].lstrip("@")
-                if len(params) == 3:
-                    childWorkflowOutput = self.executeChild(name=params[0], start=params[1])
-                    if childWorkflowOutput:
-                        totalSteps.extend(childWorkflowOutput)
-                        nextUp = params[2]
+                step.execute(instance=instances[step.device]())
 
+                totalSteps.append(step)
+                nextUp = step.nextStep()
+
+                #Check for call to child workflow
+                if nextUp and nextUp[0] == '@':
+                    params = nextUp.split(":")
+                    params[0] = params[0].lstrip("@")
+                    if len(params) == 3:
+                        childWorkflowOutput = self.executeChild(name=params[0], start=params[1])
+                        if childWorkflowOutput:
+                            totalSteps.extend(childWorkflowOutput)
+                            nextUp = params[2]
+                return nextUp
+
+            nextUp  = executionClosure(step=copy.deepcopy(self.steps[current]), totalSteps=totalSteps)
             current = self.goToNextStep(current=current, nextUp=nextUp)
 
         #Upon finishing shuts down instances

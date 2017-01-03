@@ -30,5 +30,13 @@ class TestExecutionRuntime(unittest.TestCase):
         self.assertTrue(output[1] == "REPEATING: Child Step One")
         self.assertTrue(output[2] == "REPEATING: Parent Step Two")
 
+    def test_Loop(self):
+        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
+        steps, instances = self.c.workflows["loopWorkflow"].execute()
+        output = [step.output for step in steps]
+        self.assertTrue(len(output) == 5)
+
+
+
 
 

@@ -1,30 +1,47 @@
 <?xml version="1.0"?>
-<workflow name="templatedWorkflow" >
+<workflow name="loopWorkflow">
     <options>
         <enabled>true</enabled>
         <scheduler type="cron" autorun="false">
-            <month>11-12</month>
+            <month>1-2</month>
             <day>*</day>
             <hour>*</hour>
-            <minute>*/0.1</minute>
+            <second>*/10</second>
         </scheduler>
     </options>
     <steps>
         <step id="start">
-            <action>helloWorld</action>
+            <action>returnPlusOne</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
+                <number format="string">
+                    {%- if steps | length > 0 -%}
+                        {%- set x = steps | outputFrom(-1) -%}
+                    {%- endif -%}
+
+                    {%- if x is not none and x is defined -%}
+                        {{x}}
+                    {%- else -%}
+                        1
+                    {%- endif -%}
+                </number>
             </input>
+            <next step="start">
+                <flag action="regMatch">
+                    <args>
+                        <regex format="regex">1|2|3|4</regex>
+                    </args>
+                    <filters>
+                    </filters>
+                </flag>
+            </next>
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="regex">(.*)</regex>
+                        <regex format="regex">5</regex>
                     </args>
                     <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
                     </filters>
                 </flag>
             </next>
@@ -37,8 +54,6 @@
             <input>
                 <call format="string">{{steps | outputFrom(-1)}}</call>
             </input>
-            <next>
-            </next>
             <error step="1"></error>
         </step>
     </steps>

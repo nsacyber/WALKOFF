@@ -7,6 +7,7 @@ class Argument(object):
     def __init__(self, key=None, value=None, format="string"):
         self.key = key
         self.value = value
+        self.templated = None
         self.format = type(format).__name__
 
     def __call__(self):
@@ -14,7 +15,7 @@ class Argument(object):
 
     def template(self, steps):
         t = Template(self.value)
-        self.value = t.render(steps=steps)
+        return t.render(steps=steps)
 
     def toXML(self):
         elem = et.Element(self.key)

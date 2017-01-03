@@ -23,6 +23,10 @@ class Main():
         #print("REPEATING: " + args["call"]())
         return "REPEATING: " + args["call"]()
 
+    #Increments number by one
+    def returnPlusOne(self, args={}):
+        return str(int(args["number"]()) + 1)
+
     def shutdown(self):
         #print("SHUTTING DOWN")
         return

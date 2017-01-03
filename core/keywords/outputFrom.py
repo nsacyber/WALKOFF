@@ -1,5 +1,5 @@
 def main(steps, input):
-    input = str(input)
+    input = int(input)
     if steps[input]:
         return steps[input].output
     return None
