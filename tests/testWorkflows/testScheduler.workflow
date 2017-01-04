@@ -6,7 +6,7 @@
             <month>1-2</month>
             <day>*</day>
             <hour>*</hour>
-            <second>*/3</second>
+            <second>*/10</second>
         </scheduler>
     </options>
     <steps>

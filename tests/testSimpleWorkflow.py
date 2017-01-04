@@ -12,7 +12,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests simple workflow execution with a single action with an argument and no jumps.
     """
     def test_SimpleWorkflowExecution(self):
-        steps, instances = self.c.workflows["helloWorldWorkflow"].execute()
+        steps, instances = self.c.executeWorkflow("helloWorldWorkflow")
         instances = ast.literal_eval(instances)
         self.assertTrue(len(steps) == 1)
         self.assertTrue(steps[0].id == "start")
@@ -26,7 +26,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests workflow execution that has multiple steps.
     """
     def test_MultiActionWorkflow(self):
-        steps, instances = self.c.workflows["multiactionWorkflow"].execute()
+        steps, instances = self.c.executeWorkflow("multiactionWorkflow")
         instances = ast.literal_eval(instances)
         self.assertTrue(len(steps) == 2)
         self.assertTrue(steps[0].id == "start")

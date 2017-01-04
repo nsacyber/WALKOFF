@@ -1,6 +1,7 @@
 import xml.etree.cElementTree as et
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_SCHEDULER_START, \
+    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from core import workflow as wf
 from core import config
 
@@ -11,8 +12,8 @@ class Controller(object):
         self.tree = None
 
         self.scheduler = BackgroundScheduler()
-        #self.scheduler.add_listener(self.schedulerStatusListener,EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN)
-        #self.scheduler.add_listener(self.jobStatusListener, EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
+        self.scheduler.add_listener(self.schedulerStatusListener,EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED)
+        self.scheduler.add_listener(self.jobStatusListener, EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
         self.scheduler.add_listener(self.jobExecutionListener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.eventLog = []
 
@@ -51,11 +52,37 @@ class Controller(object):
         self.workflows[newName] = self.workflows.pop(oldName)
         self.workflows[newName].name = newName
 
+    def executeWorkflow(self, name, start="start"):
+        steps, instances = self.workflows[name].execute(start=start)
+        return steps, instances
+
+    #Starts active execution
     def start(self):
         self.scheduler.start()
 
+    #Stops active execution
     def stop(self):
         self.scheduler.shutdown()
+
+    #Pauses active execution
+    def pause(self):
+        self.scheduler.pause()
+
+    #Resumes active execution
+    def resume(self):
+        self.scheduler.resume()
+
+    #Pauses active execution of specific job
+    def pauseJob(self, jobId):
+        self.scheduler.pause_job(job_id=jobId)
+
+    #Resumes active execution of specific job
+    def resumeJob(self, jobId):
+        self.scheduler.resume_job(job_id=jobId)
+
+    #Returns jobs scheduled for active execution
+    def getScheduledJobs(self):
+        return self.scheduler.get_jobs()
 
     def jobExecutionListener(self, event):
         if event.exception:
@@ -63,11 +90,11 @@ class Controller(object):
         else:
             self.eventLog.append({"jobExecuted":event.retval})
 
-    #def schedulerStatusListener(self, event):
-        #self.eventLog.append({"schedulerStatus" : event.code})
+    def schedulerStatusListener(self, event):
+        self.eventLog.append({"schedulerStatus" : event.code})
 
-    #def jobStatusListener(self, event):
-        #self.eventLog.append({"jobStatus" : event.code})
+    def jobStatusListener(self, event):
+        self.eventLog.append({"jobStatus" : event.code})
 
 
 

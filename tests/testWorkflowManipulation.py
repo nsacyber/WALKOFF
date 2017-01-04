@@ -14,7 +14,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def executionTest(self):
         # Check that the workflow executed correctly post-manipulation
-        steps, instances = self.testWorkflow.execute()
+        steps, instances = self.c.executeWorkflow(self.testWorkflow.name)
         instances = ast.literal_eval(instances)
         self.assertTrue(len(steps) == 2)
         self.assertTrue(len(instances) == 1)

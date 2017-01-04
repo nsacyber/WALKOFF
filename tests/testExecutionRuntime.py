@@ -7,11 +7,11 @@ class TestExecutionRuntime(unittest.TestCase):
         self.c = controller.Controller()
 
     """
-            Tests the out templating function which replaces the value of an argument with the output of another step.
+            Tests the out templating function which replaces the value of an argument with the output from the workflow history.
     """
     def test_TemplatedWorkflow(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/templatedWorkflowTest.workflow")
-        steps, instances = self.c.workflows["templatedWorkflow"].execute()
+        steps, instances = self.c.executeWorkflow("templatedWorkflow")
         instances = ast.literal_eval(instances)
         self.assertTrue(len(steps) == 2)
         self.assertTrue(steps[0].id == "start")
@@ -24,7 +24,7 @@ class TestExecutionRuntime(unittest.TestCase):
 
     def test_SimpleTieredWorkflow(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/tieredWorkflow.workflow")
-        steps, instances = self.c.workflows["parentWorkflow"].execute()
+        steps, instances = self.c.executeWorkflow("parentWorkflow")
         output = [step.output for step in steps]
         self.assertTrue(output[0] == "REPEATING: Parent Step One")
         self.assertTrue(output[1] == "REPEATING: Child Step One")
@@ -32,7 +32,7 @@ class TestExecutionRuntime(unittest.TestCase):
 
     def test_Loop(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
-        steps, instances = self.c.workflows["loopWorkflow"].execute()
+        steps, instances = self.c.executeWorkflow("loopWorkflow")
         output = [step.output for step in steps]
         self.assertTrue(len(output) == 5)
 
