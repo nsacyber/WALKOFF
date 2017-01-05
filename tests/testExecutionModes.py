@@ -1,30 +1,41 @@
 import unittest, time
-
-from core import controller
+from core import controller, case
 
 class TestExecutionModes(unittest.TestCase):
-    def setUp(self):
-        pass
-
     def test_startStopExecutionLoop(self):
-        self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
+        c = controller.Controller(name="startStopController")
+        c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
 
-        self.c.start()
-        time.sleep(3)
-        self.c.stop()
-        self.assertTrue(len(self.c.eventLog) == 3)
+        case.addCase(name="startStop", case=case.Case(subscriptions={
+            "startStopController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
+                                    "jobRemoved", "jobExecuted", "jobException"]
+            }, history=[]), controllers=[c])
+        history = case.cases["startStop"]
+        with history:
+            c.start()
+            time.sleep(1)
+            c.stop(wait=False)
+            self.assertTrue(len(history.history) == 2)
 
     def test_pauseResumeSchedulerExecution(self):
-        self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
-        self.c.start()
-        self.c.pause()
-        time.sleep(3)
-        self.c.resume()
-        time.sleep(3)
-        self.c.stop()
-        self.assertTrue(len(self.c.eventLog) == 6)
+        c = controller.Controller(name="pauseResumeController")
+        c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
+
+        case.addCase(name="pauseResume", case=case.Case(subscriptions={
+            "pauseResumeController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
+                       "jobRemoved", "jobExecuted", "jobException"]
+            }, history=[]), controllers=[c])
+
+        history = case.cases["pauseResume"]
+
+        with history:
+            c.start()
+            c.pause()
+            time.sleep(1)
+            c.resume()
+            time.sleep(1)
+            c.stop(wait=False)
+            self.assertTrue(len(history.history) == 4)
 
 
 

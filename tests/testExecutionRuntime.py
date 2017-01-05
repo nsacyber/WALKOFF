@@ -1,6 +1,5 @@
 import unittest, ast
-
-from core import controller
+from core import controller, case
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
@@ -31,6 +30,11 @@ class TestExecutionRuntime(unittest.TestCase):
         self.assertTrue(output[2] == "REPEATING: Parent Step Two")
 
     def test_Loop(self):
+        history = case.Case(subscriptions=[{
+            "object": self.c,
+            "events": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
+                       "jobRemoved", "jobExecuted", "jobException"]
+        }])
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("loopWorkflow")
         output = [step.output for step in steps]

@@ -2,11 +2,11 @@
 <workflow name="helloWorldWorkflow">
     <options>
         <enabled>true</enabled>
-        <scheduler type="cron" autorun="true">
+        <scheduler type="cron" autorun="false">
             <month>1-2</month>
             <day>*</day>
             <hour>*</hour>
-            <second>*/10</second>
+            <second>*/4</second>
         </scheduler>
     </options>
     <steps>
