@@ -1,19 +1,36 @@
 import sys, copy
 import importlib
+from blinker import Signal
 
 from core import step as wfstep
 from core import ffk
 from core import arguments
 from core import instance
 from core import options
+from core import case
+
 
 class Workflow(object):
-    def __init__(self, name="", workflowConfig=None, children={}):
+    def __init__(self, name="", workflowConfig=None, children={}, parentController=""):
         self.name = name
+        self.parentController = parentController
         self.workflowXML = workflowConfig
         self.options = self.parseOptions(workflowConfig.find(".//options"))
         self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
         self.children = {}
+
+        # Signals
+        self.instanceCreated = Signal()
+        self.instanceCreated.connect(case.instanceCreated)
+
+        self.stepExecutedSuccessfully = Signal()
+        self.stepExecutedSuccessfully.connect(case.stepExecutedSuccessfully)
+
+        self.nextStepFound = Signal()
+        self.nextStepFound.connect(case.nextStepFound)
+
+        self.workflowShutdown = Signal()
+        self.workflowShutdown.connect(case.workflowShutdown)
 
     def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
@@ -120,11 +137,17 @@ class Workflow(object):
             def executionClosure(step, totalSteps):
                 if step.device not in instances:
                     instances[step.device] = self.createInstance(app=step.app, device=step.device)
+                    if instances[step.device]:
+                        self.instanceCreated.send(self)
 
                 for arg in step.input:
                     step.input[arg].value = step.input[arg].template(totalSteps)
 
-                step.execute(instance=instances[step.device]())
+                try:
+                    step.execute(instance=instances[step.device]())
+                    self.stepExecutedSuccessfully.send(self)
+                except Exception as e:
+                    pass
 
                 totalSteps.append(step)
                 nextUp = step.nextStep()
@@ -142,10 +165,15 @@ class Workflow(object):
 
             nextUp  = executionClosure(step=copy.deepcopy(self.steps[current]), totalSteps=totalSteps)
             current = self.goToNextStep(current=current, nextUp=nextUp)
+            self.nextStepFound.send(self)
 
-        #Upon finishing shuts down instances
-        for instance in instances:
-            instances[instance].shutdown()
+        try:
+            #Upon finishing shuts down instances
+            for instance in instances:
+                instances[instance].shutdown()
+            self.workflowShutdown.send(self)
+        except Exception as e:
+            pass
 
         return totalSteps, str(instances)
 

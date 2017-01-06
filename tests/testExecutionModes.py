@@ -9,7 +9,7 @@ class TestExecutionModes(unittest.TestCase):
         case.addCase(name="startStop", case=case.Case(subscriptions={
             "startStopController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
                                     "jobRemoved", "jobExecuted", "jobException"]
-            }, history=[]), controllers=[c])
+            }, history=[]))
         history = case.cases["startStop"]
         with history:
             c.start()
@@ -24,7 +24,7 @@ class TestExecutionModes(unittest.TestCase):
         case.addCase(name="pauseResume", case=case.Case(subscriptions={
             "pauseResumeController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
                        "jobRemoved", "jobExecuted", "jobException"]
-            }, history=[]), controllers=[c])
+            }, history=[]))
 
         history = case.cases["pauseResume"]
 

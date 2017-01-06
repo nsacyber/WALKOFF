@@ -3,7 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
-from blinker import Signal, Namespace, signal
+from blinker import Signal
 from core import workflow as wf
 from core import config, case
 
@@ -50,7 +50,7 @@ class Controller(object):
         self.tree = et.ElementTree(file=path)
         for workflow in self.tree.iter(tag="workflow"):
             name = workflow.get("name")
-            self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow)
+            self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow, parentController=self.name)
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
