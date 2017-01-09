@@ -1,9 +1,12 @@
 import xml.etree.cElementTree as et
+from blinker import Signal
+from copy import deepcopy, copy
 
 from core.ffk import Next
+from core import case
 
 class Step(object):
-    def __init__(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
+    def __init__(self, id="", action="", app="", device="", input={}, next=[], errors=[], parent=""):
         self.id = id
         self.action = action
         self.app = app
@@ -11,8 +14,30 @@ class Step(object):
         self.input = input
         self.conditionals = next
         self.errors = errors
+        self.parent = parent
         self.output = None
         self.nextUp = None
+
+        #Signals
+        self.functionExecutedSuccessfully = Signal()
+        self.functionExecutedSuccessfully.connect(case.functionExecutedSuccessfully)
+
+        self.inputValidated = Signal()
+        self.inputValidated.connect(case.inputValidated)
+
+        self.conditionalsExecuted = Signal()
+        self.conditionalsExecuted.connect(case.conditionalsExecuted)
+
+    def __deepcopy__(self, memo={}):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k in ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]:
+                setattr(result, k, copy(getattr(self, k)))
+            else:
+                setattr(result, k, deepcopy(getattr(self, k)))
+        return result
 
     def validateInput(self):
         if len(self.input) > 0:
@@ -23,7 +48,9 @@ class Step(object):
 
     def execute(self, instance=None):
         if self.validateInput():
+            self.inputValidated.send(self)
             result = getattr(instance, self.action)(args=self.input)
+            self.functionExecutedSuccessfully.send(self)
             self.output = result
             return result
 
@@ -32,6 +59,7 @@ class Step(object):
             nextStep = n(output=self.output)
             if nextStep:
                 self.nextUp = nextStep
+                self.conditionalsExecuted.send(self)
                 return nextStep
 
     def set(self, attribute=None, value=None):

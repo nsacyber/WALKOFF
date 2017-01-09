@@ -3,7 +3,7 @@ from core import controller, case
 
 class TestExecutionEvents(unittest.TestCase):
 
-    def test_executionEvents(self):
+    def test_workflowExecutionEvents(self):
         c = controller.Controller(name="testExecutionEventsController")
         c.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
@@ -15,6 +15,20 @@ class TestExecutionEvents(unittest.TestCase):
         with history:
             c.executeWorkflow(name="multiactionWorkflow")
             self.assertTrue(len(history.history) == 6)
+
+    def test_stepExecutionEvents(self):
+        c = controller.Controller(name="testStepExecutionEventsController")
+        c.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+
+        executionCase = case.Case(subscriptions={"helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]}, history=[])
+
+        case.addCase(name="testStepExecutionEvents", case=executionCase)
+
+        history = case.cases["testStepExecutionEvents"]
+        with history:
+            c.executeWorkflow(name="helloWorldWorkflow")
+            print(len(history.history))
+            self.assertTrue(len(history.history) == 3)
 
 
 

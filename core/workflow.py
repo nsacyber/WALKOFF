@@ -55,7 +55,7 @@ class Workflow(object):
             input = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in step.findall("input/*")}
             next = [self.parseNext(nextStep) for nextStep in step.findall("next")]
             errors = [self.parseNext(error) for error in step.findall("error")]
-            steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors)
+            steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors, parent=self.name)
         return steps
 
     def parseNext(self, next=None):
@@ -137,8 +137,7 @@ class Workflow(object):
             def executionClosure(step, totalSteps):
                 if step.device not in instances:
                     instances[step.device] = self.createInstance(app=step.app, device=step.device)
-                    if instances[step.device]:
-                        self.instanceCreated.send(self)
+                    self.instanceCreated.send(self)
 
                 for arg in step.input:
                     step.input[arg].value = step.input[arg].template(totalSteps)
@@ -163,7 +162,8 @@ class Workflow(object):
                             nextUp = params[2]
                 return nextUp
 
-            nextUp  = executionClosure(step=copy.deepcopy(self.steps[current]), totalSteps=totalSteps)
+            stepCopy = self.steps[current].__deepcopy__()
+            nextUp  = executionClosure(step=stepCopy, totalSteps=totalSteps)
             current = self.goToNextStep(current=current, nextUp=nextUp)
             self.nextStepFound.send(self)
 

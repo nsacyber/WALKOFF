@@ -1,7 +1,7 @@
-import uuid, datetime, sys
+import uuid, datetime
 
 class Case(object):
-    def __init__(self, id="", history=[], subscriptions=[]):
+    def __init__(self, id="", history=[], subscriptions={}):
         self.id = id
         self.uid = uuid.uuid4()
         self.history = history
@@ -26,23 +26,33 @@ def addCase(name, case):
     return False
 
 def addEntryToCase(caller, type, message, data=None):
+    if hasattr(caller, "name"):
+        name = caller.name
+    else:
+        name  = caller.id
+
     event = {
         "uuid" : str(uuid.uuid4()),
         "timestamp" : str(datetime.datetime.utcnow()),
         "type" : type,
-        "controller" : caller.name,
+        "caller" : name,
         "message" : message,
         "data" : data
     }
 
     for case in cases:
         if cases[case].enabled:
-            if type == "SYSTEM":
-                if caller.name in cases[case].subscriptions:
-                    cases[case].addEvent(event=event)
-            elif type == "WORKFLOW":
-                if caller.parentController in cases[case].subscriptions:
-                    cases[case].addEvent(event=event)
+            for key in cases[case].subscriptions:
+                if type == "SYSTEM":
+                    if caller.name in cases[case].subscriptions:
+                        cases[case].addEvent(event=event)
+                elif type == "WORKFLOW":
+                    if caller.parentController in cases[case].subscriptions:
+                        cases[case].addEvent(event=event)
+                elif type == "STEP":
+                    subs = key.split(":")
+                    if caller.id in subs and caller.parent in subs:
+                        cases[case].addEvent(event=event)
     return event
 
 """
@@ -80,10 +90,26 @@ def instanceCreated(sender):
     addEntryToCase(caller=sender, type="WORKFLOW", message="New instance created")
 
 def stepExecutedSuccessfully(sender):
-    addEntryToCase(caller=sender, type="WORKFLOW", message="Step Executed")
+    addEntryToCase(caller=sender, type="WORKFLOW", message="Step executed")
 
 def nextStepFound(sender):
     addEntryToCase(caller=sender, type="WORKFLOW", message="Next step found")
 
 def workflowShutdown(sender):
     addEntryToCase(caller=sender, type="WORKFLOW", message="Workflow shut down")
+
+
+
+"""
+    Step Execution Event Handlers
+"""
+
+def functionExecutedSuccessfully(sender):
+    addEntryToCase(caller=sender, type="STEP", message="Function executed successfully")
+
+def inputValidated(sender):
+    addEntryToCase(caller=sender, type="STEP", message="Input successfully validated")
+
+def conditionalsExecuted(sender):
+    addEntryToCase(caller=sender, type="STEP", message="Conditionals executed")
+
