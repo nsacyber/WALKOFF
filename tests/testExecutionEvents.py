@@ -1,8 +1,9 @@
 import unittest
-from core import controller, case
+from core import controller, case, graphDecorator
 
 class TestExecutionEvents(unittest.TestCase):
 
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
         c = controller.Controller(name="testExecutionEventsController")
         c.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
@@ -16,6 +17,7 @@ class TestExecutionEvents(unittest.TestCase):
             c.executeWorkflow(name="multiactionWorkflow")
             self.assertTrue(len(history.history) == 6)
 
+    @graphDecorator.callgraph(enabled=False)
     def test_stepExecutionEvents(self):
         c = controller.Controller(name="testStepExecutionEventsController")
         c.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
@@ -29,6 +31,8 @@ class TestExecutionEvents(unittest.TestCase):
             c.executeWorkflow(name="helloWorldWorkflow")
             print(len(history.history))
             self.assertTrue(len(history.history) == 3)
+
+
 
 
 

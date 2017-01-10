@@ -1,6 +1,7 @@
 import unittest, os
 from core import controller
 from core import arguments
+from core import graphDecorator
 
 
 
@@ -10,10 +11,12 @@ class TestLoadWorkflow(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
 
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowLoaded(self):
         #Tests that helloWorldWorkflow exists
         self.assertTrue("helloWorldWorkflow" in self.c.workflows)
 
+    @graphDecorator.callgraph(enabled=False)
     def test_baseWorkflowAttributes(self):
         #Correct number of steps
         self.assertTrue(len(self.testWorkflow.steps) == 1)
@@ -28,10 +31,12 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(step.action == "repeatBackToMe")
         self.assertTrue(step.device == "hwTest")
 
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowInput(self):
         arg = arguments.Argument(key="call", value="Hello World", format="string")
         # self.assertTrue(step.input == {"call":arg})
 
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowNextSteps(self):
         next = self.testWorkflow.steps["start"].conditionals
         self.assertTrue(len(next) == 1)
@@ -40,7 +45,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(next.nextStep == "1")
         self.assertTrue(next.flags)
 
-
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowNextStepFlags(self):
         flags = self.testWorkflow.steps["start"].conditionals[0].flags
 
@@ -52,6 +57,7 @@ class TestLoadWorkflow(unittest.TestCase):
         #self.assertDictEqual({'regex': {'key': 'regex', 'type': 'regex', 'value': '(.*)'}}, flag.args)
         self.assertTrue(flag.filters)
 
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowNextStepFilters(self):
         filters = self.testWorkflow.steps["start"].conditionals[0].flags[0].filters
         self.assertTrue(len(filters) == 1)
@@ -60,6 +66,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(filter.action == "length")
         self.assertTrue(filter.args == {})
 
+    @graphDecorator.callgraph(enabled=False)
     def test_workflowError(self):
         errors = self.testWorkflow.steps["start"].errors
         self.assertTrue(len(errors) == 1)

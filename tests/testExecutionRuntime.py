@@ -1,5 +1,7 @@
 import unittest, ast
 from core import controller, case
+from core import graphDecorator
+
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
@@ -8,6 +10,7 @@ class TestExecutionRuntime(unittest.TestCase):
     """
             Tests the out templating function which replaces the value of an argument with the output from the workflow history.
     """
+    @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/templatedWorkflowTest.workflow")
         steps, instances = self.c.executeWorkflow("templatedWorkflow")
@@ -21,6 +24,7 @@ class TestExecutionRuntime(unittest.TestCase):
         self.assertTrue(steps[1].nextUp == None)
         self.assertTrue(instances["hwTest"]["state"] == '0')
 
+    @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/tieredWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("parentWorkflow")
@@ -29,6 +33,7 @@ class TestExecutionRuntime(unittest.TestCase):
         self.assertTrue(output[1] == "REPEATING: Child Step One")
         self.assertTrue(output[2] == "REPEATING: Parent Step Two")
 
+    @graphDecorator.callgraph(enabled=True)
     def test_Loop(self):
         history = case.Case(subscriptions=[{
             "object": self.c,

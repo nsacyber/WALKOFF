@@ -51,7 +51,7 @@ def addEntryToCase(caller, type, message, data=None):
                         cases[case].addEvent(event=event)
                 elif type == "STEP":
                     subs = key.split(":")
-                    if caller.id in subs and caller.parent in subs:
+                    if caller.parent in subs:
                         cases[case].addEvent(event=event)
     return event
 

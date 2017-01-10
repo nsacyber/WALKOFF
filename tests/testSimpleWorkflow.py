@@ -1,5 +1,5 @@
 import unittest, ast
-from core import controller
+from core import controller, graphDecorator
 
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
@@ -11,6 +11,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     """
         Tests simple workflow execution with a single action with an argument and no jumps.
     """
+    @graphDecorator.callgraph(enabled=False)
     def test_SimpleWorkflowExecution(self):
         steps, instances = self.c.executeWorkflow("helloWorldWorkflow")
         instances = ast.literal_eval(instances)
@@ -24,6 +25,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     """
         Tests workflow execution that has multiple steps.
     """
+    @graphDecorator.callgraph(enabled=False)
     def test_MultiActionWorkflow(self):
         steps, instances = self.c.executeWorkflow("multiactionWorkflow")
         instances = ast.literal_eval(instances)

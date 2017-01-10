@@ -1,7 +1,8 @@
 import unittest, time
-from core import controller, case
+from core import controller, case, graphDecorator
 
 class TestExecutionModes(unittest.TestCase):
+    @graphDecorator.callgraph(enabled=False)
     def test_startStopExecutionLoop(self):
         c = controller.Controller(name="startStopController")
         c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
@@ -17,6 +18,7 @@ class TestExecutionModes(unittest.TestCase):
             c.stop(wait=False)
             self.assertTrue(len(history.history) == 2)
 
+    @graphDecorator.callgraph(enabled=False)
     def test_pauseResumeSchedulerExecution(self):
         c = controller.Controller(name="pauseResumeController")
         c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
