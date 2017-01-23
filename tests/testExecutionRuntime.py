@@ -8,7 +8,7 @@ class TestExecutionRuntime(unittest.TestCase):
         self.c = controller.Controller()
 
     """
-            Tests the out templating function which replaces the value of an argument with the output from the workflow history.
+        Tests the out templating function which replaces the value of an argument with the output from the workflow history.
     """
     @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
@@ -24,6 +24,9 @@ class TestExecutionRuntime(unittest.TestCase):
         self.assertTrue(steps[1].nextUp == None)
         self.assertTrue(instances["hwTest"]["state"] == '0')
 
+    """
+        Tests the calling of nested workflows
+    """
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/tieredWorkflow.workflow")
@@ -33,6 +36,9 @@ class TestExecutionRuntime(unittest.TestCase):
         self.assertTrue(output[1] == "REPEATING: Child Step One")
         self.assertTrue(output[2] == "REPEATING: Parent Step Two")
 
+    """
+        Tests a workflow that loops a few times
+    """
     @graphDecorator.callgraph(enabled=True)
     def test_Loop(self):
         history = case.Case(subscriptions=[{

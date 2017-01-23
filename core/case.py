@@ -113,3 +113,16 @@ def inputValidated(sender):
 def conditionalsExecuted(sender):
     addEntryToCase(caller=sender, type="STEP", message="Conditionals executed")
 
+
+"""
+    Next Execution Event Handlers
+"""
+
+def stepTaken(sender):
+    addEntryToCase(caller=sender, type="NEXT", message="Step taken")
+
+def stepNotTaken(sender):
+    addEntryToCase(caller=sender, type="NEXT", message="Step not taken")
+
+
+

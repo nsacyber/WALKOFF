@@ -1,11 +1,21 @@
 import importlib
 import xml.etree.cElementTree as et
+from blinker import Signal
+
 from core import arguments
+from core import case
+
 
 class Next(object):
     def __init__(self, nextStep="", nextWorkflow="", flags=[]):
         self.nextStep = nextStep
         self.flags = flags
+
+        #self.stepTaken = Signal()
+        #self.stepTaken.connect(case.stepTaken)
+
+        #self.stepNotTaken = Signal()
+        #self.stepNotTaken.connect(case.stepNotTaken)
 
     def toXML(self, tag="next"):
         elem = et.Element(tag)
@@ -53,6 +63,12 @@ class Flag(object):
         self.action = action
         self.args = args
         self.filters = filters
+
+        #self.stepTaken = Signal()
+        #self.stepTaken.connect(case.stepTaken)
+
+        #self.stepNotTaken = Signal()
+        #self.stepNotTaken.connect(case.stepNotTaken)
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
