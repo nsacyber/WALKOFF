@@ -134,13 +134,13 @@ class Workflow(object):
 
         while current != None:
             #Closure to maintain scope
-            def executionClosure(step, totalSteps):
+            def executionClosure(step):
                 if step.device not in instances:
                     instances[step.device] = self.createInstance(app=step.app, device=step.device)
                     self.instanceCreated.send(self)
 
                 for arg in step.input:
-                    step.input[arg].value = step.input[arg].template(totalSteps)
+                    step.input[arg].template(totalSteps)
 
                 try:
                     step.execute(instance=instances[step.device]())
@@ -164,8 +164,7 @@ class Workflow(object):
                             nextUp = params[2]
                 return nextUp
 
-            stepCopy = self.steps[current].__deepcopy__()
-            nextUp  = executionClosure(step=stepCopy, totalSteps=totalSteps)
+            nextUp  = executionClosure(step=self.steps[current])
             current = self.goToNextStep(current=current, nextUp=nextUp)
             self.nextStepFound.send(self)
 

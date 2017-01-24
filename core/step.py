@@ -28,17 +28,6 @@ class Step(object):
         self.conditionalsExecuted = Signal()
         self.conditionalsExecuted.connect(case.conditionalsExecuted)
 
-    def __deepcopy__(self, memo={}):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            if k in ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]:
-                setattr(result, k, copy(getattr(self, k)))
-            else:
-                setattr(result, k, deepcopy(getattr(self, k)))
-        return result
-
     def validateInput(self):
         if len(self.input) > 0:
             for arg in self.input:

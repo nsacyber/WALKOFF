@@ -12,6 +12,8 @@ class Argument(object):
         self.value = self.convertTo(value=self.value, type=self.format)
 
     def __call__(self):
+        if self.templated:
+            return self.templated
         return self.value
 
     def convertTo(self, value=None, type="str"):
@@ -30,7 +32,8 @@ class Argument(object):
 
     def template(self, steps):
         t = Template(str(self.value))
-        return t.render(steps=steps)
+        self.templated = t.render(steps=steps)
+        return self.templated
 
     def toXML(self):
         elem = et.Element(self.key)
