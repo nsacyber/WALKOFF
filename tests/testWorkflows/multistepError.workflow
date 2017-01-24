@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<workflow name="templatedWorkflow" >
+<workflow name="multiactionErrorWorkflow">
     <options>
         <enabled>true</enabled>
         <scheduler type="cron" autorun="false">
@@ -35,7 +35,25 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <call format="str">{{steps | outputFrom(-1)}}</call>
+                <call format="int">Hello World</call>
+            </input>
+            <next>
+            </next>
+            <error step="error">
+                <flag action="regMatch">
+                    <args>
+                        <regex format="str">(.*)</regex>
+                    </args>
+                    <filters></filters>
+                </flag>
+            </error>
+        </step>
+        <step id="error">
+            <action>repeatBackToMe</action>
+            <app>HelloWorld</app>
+            <device>hwTest</device>
+            <input>
+                <call format="str">Hello World</call>
             </input>
             <next>
             </next>

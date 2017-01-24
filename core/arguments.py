@@ -4,33 +4,54 @@ import xml.etree.cElementTree as et
 from core import config
 
 class Argument(object):
-    def __init__(self, key=None, value=None, format="string"):
+    def __init__(self, key=None, value=None, format="str"):
         self.key = key
         self.value = value
         self.templated = None
-        self.format = type(format).__name__
+        self.format = format
+        self.value = self.convertTo(value=self.value, type=self.format)
 
     def __call__(self):
         return self.value
 
+    def convertTo(self, value=None, type="str"):
+        output = value
+        if type == "str" or type == "string" or type == "unicode":
+            try:
+                output = str(output)
+            except ValueError as e:
+                return output
+        elif type == "int":
+            try:
+                output = int(output)
+            except ValueError as e:
+                return output
+        return output
+
     def template(self, steps):
-        t = Template(self.value)
+        t = Template(str(self.value))
         return t.render(steps=steps)
 
     def toXML(self):
         elem = et.Element(self.key)
-        elem.text = self.value
+        elem.text = str(self.value)
         elem.set("format", self.format)
         return elem
 
     def __repr__(self):
         output={}
         output["key"] = self.key
-        output["value"] = self.value
+        output["value"] = str(self.value)
         output["type"] = self.format
         return str(output)
 
     def validate(self, action=None, io="input"):
+        for x in config.functionConfig[action]["args"]:
+            if x["type"] != self.format:
+                try:
+                    self.value = self.convertTo(value=self.value, type=x["type"])
+                except:
+                    return False
         return any(x["name"] == self.key and x["type"] == self.format for x in config.functionConfig[action]["args"])
 
 

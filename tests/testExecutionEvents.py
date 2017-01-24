@@ -35,7 +35,6 @@ class TestExecutionEvents(unittest.TestCase):
         history = case.cases["testStepExecutionEvents"]
         with history:
             c.executeWorkflow(name="helloWorldWorkflow")
-            print(len(history.history))
             self.assertTrue(len(history.history) == 3)
 
 

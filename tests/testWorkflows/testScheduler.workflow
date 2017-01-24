@@ -15,12 +15,12 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <call format="string">Hello World</call>
+                <call format="str">Hello World</call>
             </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="regex">(.*)</regex>
+                        <regex format="str">(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">

@@ -19,7 +19,7 @@
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="regex">(.*)</regex>
+                        <regex format="str">(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">
@@ -28,18 +28,18 @@
                     </filters>
                 </flag>
             </next>
-            <error step="1"></error>
+            <error></error>
         </step>
         <step id="1">
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <call format="string">Hello World</call>
+                <call format="str">Hello World</call>
             </input>
             <next>
             </next>
-            <error step="1"></error>
+            <error></error>
         </step>
     </steps>
 </workflow>

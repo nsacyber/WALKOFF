@@ -7,6 +7,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/templatedWorkflowTest.workflow")
+        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/multistepError.workflow")
 
     """
         Tests simple workflow execution with a single action with an argument and no jumps.
@@ -36,6 +37,22 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertTrue(steps[1].id == "1")
         self.assertTrue(steps[1].output == "REPEATING: Hello World")
         self.assertTrue(steps[1].nextUp == None)
+        self.assertTrue(instances["hwTest"]["state"] == '0')
+
+    """
+            Tests workflow execution that has an error in the second step. Then moves to step "error" instead.
+    """
+    @graphDecorator.callgraph(enabled=False)
+    def test_ErrorWorkflow(self):
+        steps, instances = self.c.executeWorkflow("multiactionErrorWorkflow")
+        instances = ast.literal_eval(instances)
+        self.assertTrue(len(steps) == 3)
+        self.assertTrue(steps[0].id == "start")
+        self.assertTrue(steps[0].output == {"message": "HELLO WORLD"})
+        self.assertTrue(steps[0].nextUp == "1")
+        self.assertTrue(steps[1].nextUp == "error")
+        self.assertTrue(steps[2].id == "error")
+        self.assertTrue(steps[2].output == "REPEATING: Hello World")
         self.assertTrue(instances["hwTest"]["state"] == '0')
 
 

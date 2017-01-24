@@ -15,7 +15,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <number format="string">
+                <number format="str">
                     {%- if steps | length > 0 -%}
                         {%- set x = steps | outputFrom(-1) -%}
                     {%- endif -%}
@@ -30,7 +30,7 @@
             <next step="start">
                 <flag action="regMatch">
                     <args>
-                        <regex format="regex">1|2|3|4</regex>
+                        <regex format="str">1|2|3|4</regex>
                     </args>
                     <filters>
                     </filters>
@@ -39,7 +39,7 @@
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="regex">5</regex>
+                        <regex format="str">5</regex>
                     </args>
                     <filters>
                     </filters>
@@ -52,7 +52,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <call format="string">{{steps | outputFrom(-1)}}</call>
+                <call format="str">{{steps | outputFrom(-1)}}</call>
             </input>
             <error step="1"></error>
         </step>

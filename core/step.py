@@ -53,9 +53,15 @@ class Step(object):
             self.functionExecutedSuccessfully.send(self)
             self.output = result
             return result
+        raise Exception
 
-    def nextStep(self):
-        for n in self.conditionals:
+    def nextStep(self, error=False):
+        if error:
+            nextSteps = self.errors
+        else:
+            nextSteps = self.conditionals
+
+        for n in nextSteps:
             nextStep = n(output=self.output)
             if nextStep:
                 self.nextUp = nextStep

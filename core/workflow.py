@@ -145,11 +145,13 @@ class Workflow(object):
                 try:
                     step.execute(instance=instances[step.device]())
                     self.stepExecutedSuccessfully.send(self)
+                    errorFlag = False
                 except Exception as e:
-                    pass
-
-                totalSteps.append(step)
-                nextUp = step.nextStep()
+                    errorFlag = True
+                    step.output = str(e)
+                finally:
+                    totalSteps.append(step)
+                    nextUp = step.nextStep(error=errorFlag)
 
                 #Check for call to child workflow
                 if nextUp and nextUp[0] == '@':

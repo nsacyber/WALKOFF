@@ -69,7 +69,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_createStep(self):
         self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                     input={"call":{"tag":"call", "value":"This is a test.", "format":"string"}})
+                                     input={"call":{"tag":"call", "value":"This is a test.", "format":"str"}})
 
         steps = self.testWorkflow.steps
 
@@ -92,8 +92,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_addStepToXML(self):
         self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "string"}})
-
+                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
         xml = self.testWorkflow.toXML()
 
         #Verify Structure
@@ -113,7 +112,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_removeStep(self):
         self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "string"}})
+                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
         #Makes sure a new step was created...
         self.assertTrue(len(self.testWorkflow.steps) == 2)
 
