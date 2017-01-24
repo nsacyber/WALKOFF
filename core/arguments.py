@@ -30,9 +30,9 @@ class Argument(object):
                 return output
         return output
 
-    def template(self, steps):
+    def template(self, **kwargs):
         t = Template(str(self.value))
-        self.templated = t.render(steps=steps)
+        self.templated = t.render(config.JINJA_GLOBALS, **kwargs)
         return self.templated
 
     def toXML(self):

@@ -61,25 +61,25 @@ def addEntryToCase(caller, type, message, data=None):
 def schedulerStart(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Scheduler started")
 
-def schedulerShutdown(sender, case="default"):
+def schedulerShutdown(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Scheduler shutdown")
 
-def schedulerPaused(sender, case="default"):
+def schedulerPaused(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Scheduler paused")
 
-def schedulerResumed(sender, case="default"):
+def schedulerResumed(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Scheduler resumed")
 
-def jobAdded(sender, case="default"):
+def jobAdded(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Job added")
 
-def jobRemoved(sender, case="default"):
+def jobRemoved(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Job removed")
 
-def jobExecuted(sender, case="default"):
+def jobExecuted(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Job executed")
 
-def jobException(sender, case="default"):
+def jobException(sender):
     addEntryToCase(caller=sender, type="SYSTEM", message="Job executed with exception")
 
 """

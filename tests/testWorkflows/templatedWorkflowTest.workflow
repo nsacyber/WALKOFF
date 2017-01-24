@@ -35,7 +35,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <call format="str">{{steps | outputFrom(-1)}}</call>
+                <call format="str">{{outputFrom(steps, -1)}}</call>
             </input>
             <next>
             </next>

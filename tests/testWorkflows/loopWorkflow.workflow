@@ -17,7 +17,7 @@
             <input>
                 <number format="str">
                     {%- if steps | length > 0 -%}
-                        {%- set x = steps | outputFrom(-1) -%}
+                        {%- set x = outputFrom(steps, -1) -%}
                     {%- endif -%}
 
                     {%- if x is not none and x is defined -%}
@@ -52,7 +52,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <call format="str">{{steps | outputFrom(-1)}}</call>
+                <call format="str">{{outputFrom(steps, -1)}}</call>
             </input>
             <error step="1"></error>
         </step>

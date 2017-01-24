@@ -140,7 +140,7 @@ class Workflow(object):
                     self.instanceCreated.send(self)
 
                 for arg in step.input:
-                    step.input[arg].template(totalSteps)
+                    step.input[arg].template(steps=totalSteps)
 
                 try:
                     step.execute(instance=instances[step.device]())
