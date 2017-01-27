@@ -5,5 +5,5 @@ def main(args, value):
         else:
             result = len(value)
             return result
-    except Exception as e:
+    except Exception:
         return None

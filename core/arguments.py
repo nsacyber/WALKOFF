@@ -3,6 +3,7 @@ import xml.etree.cElementTree as et
 
 from core import config
 
+
 class Argument(object):
     def __init__(self, key=None, value=None, format="str"):
         self.key = key
@@ -42,10 +43,9 @@ class Argument(object):
         return elem
 
     def __repr__(self):
-        output={}
-        output["key"] = self.key
-        output["value"] = str(self.value)
-        output["type"] = self.format
+        output = {'key': self.key,
+                  'value': str(self.value),
+                  'type': self.format}
         return str(output)
 
     def validate(self, action=None, io="input"):
@@ -56,10 +56,3 @@ class Argument(object):
                 except:
                     return False
         return any(x["name"] == self.key and x["type"] == self.format for x in config.functionConfig[action]["args"])
-
-
-
-
-
-
-

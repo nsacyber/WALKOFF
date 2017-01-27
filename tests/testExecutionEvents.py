@@ -1,17 +1,21 @@
 import unittest
 from core import controller, case, graphDecorator
+from tests import config
+
 
 class TestExecutionEvents(unittest.TestCase):
-
     """
             Tests execution Events at the Workflow Level
     """
+
     @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
         c = controller.Controller(name="testExecutionEventsController")
-        c.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
+        c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
 
-        executionCase = case.Case(subscriptions={"testExecutionEventsController": ["instanceCreated", "stepExecutedSuccessfully", "nextStepFound", "workflowShutdown"]}, history=[])
+        executionCase = case.Case(subscriptions={
+            "testExecutionEventsController": ["instanceCreated", "stepExecutedSuccessfully", "nextStepFound",
+                                              "workflowShutdown"]}, history=[])
 
         case.addCase(name="testExecutionEvents", case=executionCase)
 
@@ -23,12 +27,15 @@ class TestExecutionEvents(unittest.TestCase):
     """
         Tests execution events at the Step Level
     """
+
     @graphDecorator.callgraph(enabled=False)
     def test_stepExecutionEvents(self):
         c = controller.Controller(name="testStepExecutionEventsController")
-        c.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+        c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
 
-        executionCase = case.Case(subscriptions={"helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]}, history=[])
+        executionCase = case.Case(subscriptions={
+            "helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]},
+            history=[])
 
         case.addCase(name="testStepExecutionEvents", case=executionCase)
 
@@ -37,18 +44,18 @@ class TestExecutionEvents(unittest.TestCase):
             c.executeWorkflow(name="helloWorldWorkflow")
             self.assertTrue(len(history.history) == 3)
 
-
     """
         Tests execution events at the Filter Flag and Keyword Level
     """
+
     @graphDecorator.callgraph(enabled=False)
     def test_ffkExecutionEvents(self):
         c = controller.Controller(name="testStepFFKEventsController")
-        c.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+        c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
 
         executionCase = case.Case(subscriptions={
             "helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]},
-                                  history=[])
+            history=[])
 
         case.addCase(name="testStepFFKEventsEvents", case=executionCase)
 
@@ -56,15 +63,3 @@ class TestExecutionEvents(unittest.TestCase):
         with history:
             c.executeWorkflow(name="helloWorldWorkflow")
             self.assertTrue(len(history.history) == 3)
-
-
-
-
-
-
-
-
-
-
-
-
