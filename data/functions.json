@@ -1,27 +1,43 @@
 {
   "helloWorld":{
-    "description":"Prints a generic string for debugging purposes",
+    "description":"Prints a generic str for debugging purposes",
     "type":"action",
-    "run":"HelloWorld.main.Main.helloWorld.",
+    "run":"HelloWorld.main.Main.helloWorld",
     "highlight":"",
     "highlight_reverse":"",
-    "input_type":"string",
-    "output_type":"string",
+    "input_type":"str",
+    "output_type":"str",
     "args":[]
   },
 
   "repeatBackToMe":{
-    "description":"Prints a generic string with the call argument appended.  For debugging purposes",
+    "description":"Prints a generic str with the call argument appended.  For debugging purposes",
     "type":"action",
     "run":"HelloWorld.main.Main.repeatBackToMe",
     "highlight":"",
     "highlight_reverse":"",
-    "input_type":"string",
-    "output_type":"string",
+    "input_type":"str",
+    "output_type":"str",
     "args":[
       {
         "name":"call",
-        "type":"string"
+        "type":"str"
+      }
+    ]
+  },
+
+    "returnPlusOne":{
+    "description":"Increments a passed number by one.  For debugging purposes",
+    "type":"action",
+    "run":"HelloWorld.main.Main.returnPlusOne",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"int",
+    "output_type":"str",
+    "args":[
+      {
+        "name":"number",
+        "type":"str"
       }
     ]
   },
@@ -32,12 +48,12 @@
     "run":"flags.regmatch.main",
     "highlight":"",
     "highlight_reverse":"",
-    "input_type":"string",
+    "input_type":"str",
     "output_type":"boolean",
     "args":[
       {
         "name":"regex",
-        "type":"regex"
+        "type":"str"
       }
     ]
   }
