@@ -439,8 +439,8 @@ def executionAction(action):
 
 #Controls execution triggers
 @app.route('/execution/listener', methods=["POST"])
-@auth_token_required
-@roles_required("admin")
+#@auth_token_required
+#@roles_required("admin")
 def listener():
     form = forms.incomingDataForm(request.form)
     if form.validate():
@@ -467,7 +467,7 @@ def listener():
             if flags == len(conditionals):
                 playToBeExecuted = config.playbook.getPlay(trigger.play)
                 if playToBeExecuted:
-                    triggerResults = playToBeExecuted.executePlay()
+                    triggerResults = playToBeExecuted.executePlay(data=data)
                 else:
                     return json.dumps({"status" : "trigger error: play could not be found"})
                 listenerOutput[trigger.name] = json.loads(str(triggerResults[0]))

@@ -20,6 +20,7 @@ class Main(app.App):
     #Example using arguments
     #Repeats back the contents of the call argument
     def repeatBackToMe(self, args={}):
+        print args["call"]
         print "REPEATING: " + args["call"]
 
         return "REPEATING: " + args["call"]
