@@ -1,11 +1,12 @@
 import json
 
+
 def main(args, value):
     if not args["type"] or args["type"] == "json":
         var = len(json.loads(value))
     try:
         var = int(value)
-    except Exception as e:
+    except Exception:
         var = len(value)
 
     threshold = int(args["threshold"])
