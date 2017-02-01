@@ -1,2 +1,7 @@
 *.bak
 *.pyc
+.idea/
+tests/profileVisualizations/*
+*.ipynb
+*.sw*
+*~

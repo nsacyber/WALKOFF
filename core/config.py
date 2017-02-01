@@ -1,13 +1,14 @@
 import json, importlib
-from os import listdir, walk
+from os import listdir, walk, sep
 from os.path import isfile, join, splitext
 import jinja2
 
-#Folder path for new templates
-templatesPath = "data/templates/"
+# Folder path for new templates
+templatesPath = join('.', 'data', 'templates')
+profileVisualizationsPath = join('.', 'tests', 'profileVisualizations') + sep
 
-#Keyword folder path
-keywordsPath = "core/keywords"
+# Keyword folder path
+keywordsPath =  join('.', 'core', 'keywords')
 
 #Database Path
 dbPath = "data/walkoff.db"
@@ -30,22 +31,22 @@ interfaceConfig = {
 #[jinja2.filters.FILTERS.update({splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")}) for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] == "__init__"]
 JINJA_GLOBALS = {splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main") for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] in ["__init__", "."]}
 
-#Active Execution (Workflows called from constant loop) settings.
-#secondsDelay - delay in seconds between execution loops
-#maxJobs - maximum number of jobs to be run at once
+# Active Execution (Workflows called from constant loop) settings.
+# secondsDelay - delay in seconds between execution loops
+# maxJobs - maximum number of jobs to be run at once
 executionSettings = {
-    "secondsDelay" : 0.1,
-    "maxJobs" : 2
+    "secondsDelay": 0.1,
+    "maxJobs": 2
 }
 
-#Logging Verbosity
+# Logging Verbosity
 logSettings = {
-    "executed" : True,
-    "next" : True
+    "executed": True,
+    "next": True
 }
 
-#Function Dict Paths/Initialization
-functionConfigPath = "data/functions.json"
+# Function Dict Paths/Initialization
+functionConfigPath = join('.', 'data', 'functions.json')
 functionConfig = None
 
 try:
