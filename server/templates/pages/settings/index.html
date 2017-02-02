@@ -1,3 +1,29 @@
 <div id="main">
-    <p> HELLO WORLD </p>
+    <p> This is the settings page </p>
+    <script src="{{ url_for('static', filename='pages/display/main.js' ) }}"> </script>
+    <!-- This div will contain keyword labels with textboxes that are
+        auto-populated with the default setting -->
+    <div id="settingsWrapper">
+        <h2 class="settingsHeader"> Settings </h2>
+        <div id="settingsForm">
+            <!-- use jinja and formhelpers.html to populate form -->
+            <!-- below is pulled from devices\index.html -->
+            {% from "pages/_formhelpers.html" import render_field %}
+                {{ render_field(form.templatePath) }}
+                {{ render_field(form.keywordsPath) }}
+                {{ render_field(form.dbPath) }}
+            <h4> AuthConfig </h4>
+            {% from "pages/_formhelpers.html" import render_field %}
+                {{ render_field(form.TLS_version) }}
+                {{ render_field(form.certificatePath) }}
+                {{ render_field(form.https) }}
+                {{ render_field(form.privateKeyPath) }}
+            <h4> InterfaceConfig </h4>
+            {% from "pages/_formhelpers.html" import render_field %}
+                {{ render_field(form.debug) }}
+                {{ render_field(form.defaultServer) }}
+                {{ render_field(form.host) }}
+                {{ render_field(form.port) }}
+        </div>
+    </div>
 </div>

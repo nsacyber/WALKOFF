@@ -86,3 +86,18 @@ class conditionalField(Form):
 
 class incomingDataForm(Form):
     data = StringField('data')
+
+class settingsForm(Form):
+    templatePath = StringField('templatePath')
+    keywordsPath = StringField('keywordsPath')
+    dbPath = StringField('dbPath')
+
+    TLS_version = StringField('TLS_version')
+    certificatePath = StringField('certificatePath')
+    https = StringField('https')
+    privateKeyPath = StringField('privateKeyPath')
+
+    debug = StringField('debug')
+    defaultServer = StringField('defaultServer')
+    host = StringField('host')
+    port = StringField('port')
