@@ -1,6 +1,6 @@
 import sys, importlib, itertools
 #from config import getApps
-#from core import forms
+from core import forms
 
 def loadModule(name):
     module = "apps." + name + ".display"
@@ -23,3 +23,6 @@ def loadApp(name, keys, values):
 
 #def devices():
 #    return {"apps" : getApps()}, forms.AddNewDeviceForm()
+
+def settings():
+    return {}, forms.settingsForm()
