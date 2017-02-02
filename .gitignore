@@ -3,8 +3,5 @@
 .idea/
 tests/profileVisualizations/*
 *.ipynb
-*.swp
-*.swo
-*.swn
-*.swm
+*.sw[ponm]
 *~

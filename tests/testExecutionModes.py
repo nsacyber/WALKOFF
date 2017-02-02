@@ -2,6 +2,10 @@ import unittest, time
 from core import controller, case, graphDecorator
 from tests import config
 
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
+    EVENT_SCHEDULER_START, \
+    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+
 
 class TestExecutionModes(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
@@ -10,9 +14,10 @@ class TestExecutionModes(unittest.TestCase):
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "testScheduler.workflow")
 
         case.addCase(name="startStop", case=case.Case(subscriptions={
-            "startStopController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed",
-                                    "jobAdded", "jobRemoved",
-                                    "jobExecuted", "jobException"]
+            "startStopController": [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
+                                    EVENT_SCHEDULER_RESUMED,
+                                    EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                    EVENT_JOB_EXECUTED, EVENT_JOB_ERROR]
         }, history=[]))
         history = case.cases["startStop"]
         with history:
@@ -27,9 +32,10 @@ class TestExecutionModes(unittest.TestCase):
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "testScheduler.workflow")
 
         case.addCase(name="pauseResume", case=case.Case(subscriptions={
-            "pauseResumeController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed",
-                                      "jobAdded", "jobRemoved",
-                                      "jobExecuted", "jobException"]
+            "pauseResumeController": [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
+                                      EVENT_SCHEDULER_RESUMED,
+                                      EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                      EVENT_JOB_EXECUTED, EVENT_JOB_ERROR]
         }, history=[]))
 
         history = case.cases["pauseResume"]

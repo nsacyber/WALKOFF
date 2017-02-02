@@ -7,6 +7,9 @@ class TestExecutionEvents(unittest.TestCase):
     """
             Tests execution Events at the Workflow Level
     """
+    def setUp(self):
+        case.cases = {}
+
 
     @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
@@ -14,11 +17,10 @@ class TestExecutionEvents(unittest.TestCase):
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
 
         executionCase = case.Case(subscriptions={
-            "testExecutionEventsController": ["instanceCreated", "stepExecutedSuccessfully", "nextStepFound",
-                                              "workflowShutdown"]}, history=[])
+            "testExecutionEventsController": ["InstanceCreated", "StepExecutionSuccess", "NextStepFound",
+                                              "WorkflowShutdown"]}, history=[])
 
         case.addCase(name="testExecutionEvents", case=executionCase)
-
         history = case.cases["testExecutionEvents"]
         with history:
             c.executeWorkflow(name="multiactionWorkflow")
@@ -34,7 +36,7 @@ class TestExecutionEvents(unittest.TestCase):
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
 
         executionCase = case.Case(subscriptions={
-            "helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]},
+            "helloWorldWorkflow:start": ["FunctionExecutionSuccess", "InputValidated", "ConditionalsExecuted"]},
             history=[])
 
         case.addCase(name="testStepExecutionEvents", case=executionCase)
@@ -54,7 +56,10 @@ class TestExecutionEvents(unittest.TestCase):
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
 
         executionCase = case.Case(subscriptions={
-            "helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]},
+            "helloWorldWorkflow:start": ["FunctionExecutionSuccess", "InputValidated", "ConditionalsExecuted",
+                                         'NextStepTaken', 'NextStepNotTaken',
+                                         'FlagArgsValid', 'FlagArgsInvalid',
+                                         'FilterSuccess', 'FilterError']},
             history=[])
 
         case.addCase(name="testStepFFKEventsEvents", case=executionCase)
@@ -62,4 +67,4 @@ class TestExecutionEvents(unittest.TestCase):
         history = case.cases["testStepFFKEventsEvents"]
         with history:
             c.executeWorkflow(name="helloWorldWorkflow")
-            self.assertTrue(len(history.history) == 3)
+            self.assertTrue(len(history.history) == 6)

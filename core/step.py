@@ -5,12 +5,14 @@ from core.ffk import Next
 from core import case
 from core.events import Event, EventHandler
 
+
 class StepEventHandler(EventHandler):
     def __init__(self, shared_log=None):
-        EventHandler.__init__(self, 'StepEventHandler', shared_log)
-        self.events = {'FUNCTION_EXECUTION_SUCCESS': Event(case.add_step_entry('Function executed successfully')),
-                       'INPUT_VALIDATED': Event(case.add_step_entry('Input successfully validated')),
-                       'CONDITIONALS_EXECUTED': Event(case.add_step_entry('Conditionals executed'))}
+        EventHandler.__init__(self, 'StepEventHandler', shared_log,
+                              events={'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
+                                      'InputValidated': case.add_step_entry('Input successfully validated'),
+                                      'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
+
 
 class Step(object):
     def __init__(self, id="", action="", app="", device="", input=None, next=None, errors=None, parent=""):
@@ -21,7 +23,7 @@ class Step(object):
         self.input = input if input is not None else {}
         self.conditionals = next if next is not None else []
         self.errors = errors if errors is not None else []
-        self.parent = parent
+        self.parent_workflow = parent
         self.output = None
         self.nextUp = None
         self.eventlog = []
@@ -31,12 +33,11 @@ class Step(object):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
                 else True)
 
-
     def execute(self, instance=None):
         if self.validateInput():
-            self.stepEventHandler.execute_event_code(self, 'INPUT_VALIDATED')
+            self.stepEventHandler.execute_event_code(self, 'InputValidated')
             result = getattr(instance, self.action)(args=self.input)
-            self.stepEventHandler.execute_event_code(self, 'FUNCTION_EXECUTION_SUCCESS')
+            self.stepEventHandler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result
         raise Exception
@@ -48,7 +49,7 @@ class Step(object):
             nextStep = n(output=self.output)
             if nextStep:
                 self.nextUp = nextStep
-                self.stepEventHandler.execute_event_code(self, 'CONDITIONALS_EXECUTED')
+                self.stepEventHandler.execute_event_code(self, 'ConditionalsExecuted')
                 return nextStep
 
     def set(self, attribute=None, value=None):

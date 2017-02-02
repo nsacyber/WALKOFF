@@ -1,6 +1,7 @@
 from core import config
 import blinker
 
+
 # Signals
 executed = blinker.signal("executed")
 next = blinker.signal("next")

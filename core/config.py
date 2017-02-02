@@ -8,7 +8,7 @@ templatesPath = join('.', 'data', 'templates')
 profileVisualizationsPath = join('.', 'tests', 'profileVisualizations') + sep
 
 # Keyword folder path
-keywordsPath =  join('.', 'core', 'keywords')
+keywordsPath = join('.', 'core', 'keywords')
 
 #Database Path
 dbPath = "data/walkoff.db"
@@ -23,13 +23,15 @@ authConfig = {
 interfaceConfig = {
     "debug":"True",
     "defaultServer":"True",
-    "host":"127.0.0.1",
+    "host":"127.0.0.1",    "debug":"True",
+
     "port":"5000"
 }
 
 #Loads the keywords into the environment filter for use
 #[jinja2.filters.FILTERS.update({splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")}) for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] == "__init__"]
-JINJA_GLOBALS = {splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main") for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] in ["__init__", "."]}
+JINJA_GLOBALS = {splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
+                 for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] in ["__init__", "."]}
 
 # Active Execution (Workflows called from constant loop) settings.
 # secondsDelay - delay in seconds between execution loops

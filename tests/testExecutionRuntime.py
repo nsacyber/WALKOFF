@@ -5,6 +5,9 @@ from core import config as coreConfig
 from os.path import isdir
 from os import mkdir
 from tests import config
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
+    EVENT_SCHEDULER_START, \
+    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
 
 class TestExecutionRuntime(unittest.TestCase):
@@ -52,8 +55,10 @@ class TestExecutionRuntime(unittest.TestCase):
     def test_Loop(self):
         history = case.Case(subscriptions=[{
             "object": self.c,
-            "events": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
-                       "jobRemoved", "jobExecuted", "jobException"]
+            "events": [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
+                       EVENT_SCHEDULER_RESUMED,
+                       EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                       EVENT_JOB_EXECUTED, EVENT_JOB_ERROR]
         }])
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("loopWorkflow")

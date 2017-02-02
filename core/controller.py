@@ -12,39 +12,39 @@ from os import sep
 
 class SchedulerStatusListener(EventListener):
     def __init__(self, shared_log=None):
-        EventListener.__init__(self, "schedulerStatus", shared_log)
-        self.events = {EVENT_SCHEDULER_START: Event(case.add_system_entry("Scheduler start")),
-                       EVENT_SCHEDULER_SHUTDOWN: Event(case.add_system_entry("Scheduler shutdown")),
-                       EVENT_SCHEDULER_PAUSED: Event(case.add_system_entry("Scheduler paused")),
-                       EVENT_SCHEDULER_RESUMED: Event(case.add_system_entry("Scheduler resumed"))}
+        EventListener.__init__(self, "schedulerStatus", shared_log=shared_log,
+                               events={EVENT_SCHEDULER_START: case.add_system_entry("Scheduler start"),
+                                       EVENT_SCHEDULER_SHUTDOWN: case.add_system_entry("Scheduler shutdown"),
+                                       EVENT_SCHEDULER_PAUSED: case.add_system_entry("Scheduler paused"),
+                                       EVENT_SCHEDULER_RESUMED: case.add_system_entry("Scheduler resumed")})
 
 
 class JobStatusListener(EventListener):
     def __init__(self, shared_log=None):
-        EventListener.__init__(self, "jobStatus", shared_log)
-        self.events = {EVENT_JOB_ADDED: Event(case.add_system_entry("Job added")),
-                       EVENT_JOB_REMOVED: Event(case.add_system_entry("Job removed"))}
+        EventListener.__init__(self, "jobStatus", shared_log,
+                               events={EVENT_JOB_ADDED: case.add_system_entry("Job added"),
+                                       EVENT_JOB_REMOVED: case.add_system_entry("Job removed")})
 
 
 class JobExecutionListener(EventListener):
     def __init__(self, shared_log=None):
-        EventListener.__init__(self, "jobExecution", shared_log)
-        self.events = {'JOB_EXECUTED': Event(case.add_system_entry("Job executed")),
-                       'JOB_ERROR': Event(case.add_system_entry("Job executed with error"))}
+        EventListener.__init__(self, "jobExecution", shared_log,
+                               events={'JobExecuted': case.add_system_entry("Job executed"),
+                                       'JobError': case.add_system_entry("Job executed with error")})
 
     def execute_event(self, sender, event):
         if event.exception:
-            self.events['JOB_ERROR'].send(sender)
+            self.events['JobError'].send(sender)
             self.eventlog.append({"jobError": event.retval})
         else:
-            self.events['JOB_EXECUTED'].send(sender)
+            self.events['JobExecuted'].send(sender)
             self.eventlog.append({"jobExecuted": event.retval})
 
     def execute_event_code(self, sender, event_code):
-        if event_code == 'JOB_EXECUTED':
+        if event_code == 'JobExecuted':
             self.events[event_code].send(sender)
             self.eventlog.append({"jobExecuted": 'Success'})
-        elif event_code == 'JOB_ERROR':
+        elif event_code == 'JobError':
             self.events[event_code].send(sender)
             self.eventlog.append({"jobError": 'Error'})
         else:
@@ -92,7 +92,7 @@ class Controller(object):
     def addWorkflowScheduledJobs(self):
         for workflow in self.workflows:
             if (self.workflows[workflow].options.enabled
-                    and self.workflows[workflow].options.scheduler["autorun"] == "true"):
+                and self.workflows[workflow].options.scheduler["autorun"] == "true"):
                 scheduleType = self.workflows[workflow].options.scheduler["type"]
                 schedule = self.workflows[workflow].options.scheduler["args"]
                 self.scheduler.add_job(self.workflows[workflow].execute, trigger=scheduleType, replace_existing=True,
@@ -113,7 +113,7 @@ class Controller(object):
 
     def executeWorkflow(self, name, start="start"):
         steps, instances = self.workflows[name].execute(start=start)
-        self.jobExecutionListener.execute_event_code(self, 'JOB_EXECUTED')
+        self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
         return steps, instances
 
     # Starts active execution

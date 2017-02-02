@@ -105,7 +105,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(step.find(".//action").text == "repeatBackToMe")
         self.assertTrue(step.find(".//app").text == "HelloWorld")
         self.assertTrue(step.find(".//device").text == "hwTest")
-        # self.assertTrue(et.dump(step.find(".//input")) == "<input><call format=\"string\">This is a test.</call></input>")
         self.assertTrue(step.find(".//next") == None)
         self.assertTrue(step.find(".//error") == None)
 
@@ -238,8 +237,10 @@ class TestWorkflowManipulation(unittest.TestCase):
         output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
         self.assertTrue(output["action"])
         self.assertTrue(output["args"])
-        self.assertTrue(output["filters"] == [{'action': 'length', 'args': {}}])
-
+        self.assertTrue(output["filters"] == [{'action': 'length', 'args': {},
+                                               'event_handler': {'event_type': 'filterHandler',
+                                                                 'events': "['FilterSuccess', 'FilterError']"},
+                                               'id': 'start'}])
     """
         CRUD - Filter
     """

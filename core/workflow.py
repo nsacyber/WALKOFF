@@ -12,11 +12,11 @@ from core.events import EventHandler, Event
 
 class WorkflowEventHandler(EventHandler):
     def __init__(self, shared_log=None):
-        EventHandler.__init__(self, "WorkflowEventHandler", shared_log)
-        self.events = {'INSTANCE_CREATED': Event(case.add_workflow_entry("New workflow instance Created")),
-                       'STEP_EXECUTION_SUCCESS': Event(case.add_workflow_entry('Step executed successfully')),
-                       'NEXT_STEP_FOUND': Event(case.add_workflow_entry('Next step found')),
-                       'SHUTDOWN_WORKFLOW': Event(case.add_workflow_entry("Workflow shut down"))}
+        EventHandler.__init__(self, "WorkflowEventHandler", shared_log,
+                              events={'InstanceCreated': case.add_workflow_entry("New workflow instance Created"),
+                                      'StepExecutionSuccess': case.add_workflow_entry('Step executed successfully'),
+                                      'NextStepFound': case.add_workflow_entry('Next step found'),
+                                      'WorkflowShutdown': case.add_workflow_entry("Workflow shut down")})
 
 
 class Workflow(object):
@@ -60,23 +60,23 @@ class Workflow(object):
         return steps
 
     def parseNext(self, previous_id, next=None):
-        flags = [self.parseFlag(flag) for flag in next.findall("flag")]
+        flags = [self.parseFlag(previous_id, flag) for flag in next.findall("flag")]
         nextId = next.get("step")
         nextStep = ffk.Next(previous_id, nextStep=nextId, flags=flags)
         return nextStep
 
-    def parseFlag(self, flag=None):
+    def parseFlag(self, previous_id, flag=None):
         action = flag.get("action")
-        filters = [self.parseFilter(filter) for filter in flag.findall("filters/*")]
+        filters = [self.parseFilter(previous_id, filter) for filter in flag.findall("filters/*")]
         args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
                 flag.findall("args/*")}
-        return ffk.Flag(action=action, filters=filters, args=args)
+        return ffk.Flag(previous_step_id=previous_id, action=action, filters=filters, args=args)
 
-    def parseFilter(self, filter=None):
+    def parseFilter(self, previous_id, filter=None):
         action = filter.get("action")
         args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
                 filter.findall("args/*")}
-        return ffk.Filter(action=action, args=args)
+        return ffk.Filter(previous_step_id=previous_id, action=action, args=args)
 
     def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
         # Creates new step object
@@ -137,7 +137,7 @@ class Workflow(object):
         total_steps = []
         instances = instances if instances is not None else {}
         for __ in self.__step_generator(start, instances, total_steps):
-            self.workflowEventHandler.execute_event_code(self, 'NEXT_STEP_FOUND')
+            self.workflowEventHandler.execute_event_code(self, 'NextStepFound')
 
         self.__shutdown(instances)
 
@@ -153,13 +153,14 @@ class Workflow(object):
     def __execute_step(self, step, instances, total_steps):
         if step.device not in instances:
             instances[step.device] = self.createInstance(app=step.app, device=step.device)
+            self.workflowEventHandler.execute_event_code(self, 'InstanceCreated')
 
         for arg in step.input:
             step.input[arg].template(steps=total_steps)
 
         try:
             step.execute(instance=instances[step.device]())
-            self.workflowEventHandler.execute_event_code(self, 'STEP_EXECUTION_SUCCESS')
+            self.workflowEventHandler.execute_event_code(self, 'StepExecutionSuccess')
             error_flag = False
         except Exception as e:
             error_flag = True
@@ -187,7 +188,7 @@ class Workflow(object):
             # Upon finishing shuts down instances
             for instance in instances:
                 instances[instance].shutdown()
-            self.workflowEventHandler.execute_event_code(self, 'SHUTDOWN_WORKFLOW')
+            self.workflowEventHandler.execute_event_code(self, 'WorkflowShutdown')
         except Exception:
             pass
 

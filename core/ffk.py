@@ -4,12 +4,26 @@ import xml.etree.cElementTree as et
 from core import arguments, case
 from core.events import EventHandler, Event
 
+
 class NextStepEventHandler(EventHandler):
     def __init__(self, shared_log=None):
-        EventHandler.__init__(self, "nextStepHandler", shared_log)
-        self.events = {'NEXT_STEP_TAKEN': Event(case.add_next_step_entry('Step taken')),
-                       'NEXT_STEP_NOT_TAKEN': Event(case.add_next_step_entry('Step not taken'))}
+        EventHandler.__init__(self, "nextStepHandler", shared_log,
+                              events={'NextStepTaken': case.add_next_step_entry('Step taken'),
+                                      'NextStepNotTaken': case.add_next_step_entry('Step not taken')})
 
+
+class FlagEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, "flagHandler", shared_log,
+                              events={'FlagArgsValid': case.add_flag_entry('Flag args valid'),
+                                      'FlagArgsInvalid': case.add_flag_entry('Flag args invalid')})
+
+
+class FilterEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, "filterHandler", shared_log,
+                              events={'FilterSuccess': case.add_flag_entry('Filter success'),
+                                      'FilterError': case.add_flag_entry('Filter error')})
 
 
 class Next(object):
@@ -17,7 +31,7 @@ class Next(object):
         self.nextStep = nextStep
         self.id = previous_step_id
         self.flags = flags if flags is not None else []
-        self.eventHandler = NextStepEventHandler()
+        self.event_handler = NextStepEventHandler()
 
     def toXML(self, tag="next"):
         elem = et.Element(tag)
@@ -48,12 +62,11 @@ class Next(object):
 
     def __call__(self, output=None):
         if all(flag(output=output) for flag in self.flags):
-            self.eventHandler.execute_event_code(self, 'NEXT_STEP_TAKEN')
+            self.event_handler.execute_event_code(self, 'NextStepTaken')
             return self.nextStep
         else:
-            self.eventHandler.execute_event_code(self, 'NEXT_STEP_NOT_TAKEN')
+            self.event_handler.execute_event_code(self, 'NextStepNotTaken')
             return None
-        # return self.nextStep if all(flag(output=output) for flag in self.flags) else None
 
     def __repr__(self):
         output = {'nextStep': self.nextStep,
@@ -62,16 +75,12 @@ class Next(object):
 
 
 class Flag(object):
-    def __init__(self, action="", args=None, filters=None):
+    def __init__(self, previous_step_id="", action="", args=None, filters=None):
         self.action = action
         self.args = args if args is not None else {}
         self.filters = filters if filters is not None else []
-
-        # self.stepTaken = Signal()
-        # self.stepTaken.connect(case.stepTaken)
-
-        # self.stepNotTaken = Signal()
-        # self.stepNotTaken.connect(case.stepNotTaken)
+        self.event_handler = FlagEventHandler()
+        self.id = previous_step_id
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
@@ -112,6 +121,9 @@ class Flag(object):
             result = None
             if self.validateArgs():
                 result = getattr(module, "main")(args=self.args, value=output)
+                self.event_handler.execute_event_code(self, 'FlagArgsValid')
+            else:
+                self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
             return result
 
     def checkImport(self):
@@ -130,11 +142,13 @@ class Flag(object):
 
 
 class Filter(object):
-    def __init__(self, action="", args=None):
+    def __init__(self, previous_step_id="", action="", args=None):
         self.action = action
         safeargs = args if args is not None else {}
         self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
                      for arg in safeargs}
+        self.event_handler = FilterEventHandler()
+        self.id = previous_step_id
 
     def toXML(self):
         elem = et.Element("filter")
@@ -148,8 +162,12 @@ class Filter(object):
     def __call__(self, output=None):
         module = self.checkImport()
         if module:
-            result = getattr(module, "main")(args=self.args, value=output)
-            return result
+            try:
+                result = getattr(module, "main")(args=self.args, value=output)
+                self.event_handler.execute_event_code(self, 'FilterSuccess')
+                return result
+            except Exception:
+                self.event_handler.execute_event_code(self, 'FilterError')
         return output
 
     def checkImport(self):

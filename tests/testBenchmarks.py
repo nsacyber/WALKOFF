@@ -21,7 +21,7 @@ class TestExecutionLoads(unittest.TestCase):
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'basicWorkflowTest.workflow')
 
         executionCase = case.Case(subscriptions={
-            "helloWorldWorkflow:start": ["functionExecutedSuccessfully", "inputValidated", "conditionalsExecuted"]},
+            "helloWorldWorkflow:start": ["FunctionExecutedSuccessfully", "InputValidated", "ConditionalsExecuted"]},
             history=[])
 
         case.addCase(name="benchmark1000Events", case=executionCase)
