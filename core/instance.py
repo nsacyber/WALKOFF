@@ -1,10 +1,10 @@
-
 """
 States
 """
 OK = 1
 SHUTDOWN = 0
 ERROR = -1
+
 
 class Instance(object):
     def __init__(self, instance=None, state=1):
@@ -19,7 +19,6 @@ class Instance(object):
         self.state = 0
 
     def __repr__(self):
-        output = dict()
-        output["instance"] = str(self.instance)
-        output["state"] = str(self.state)
+        output = {'instance': str(self.instance),
+                  'state': str(self.state)}
         return str(output)

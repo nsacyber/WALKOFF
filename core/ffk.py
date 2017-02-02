@@ -1,21 +1,37 @@
 import importlib
 import xml.etree.cElementTree as et
-from blinker import Signal
 
-from core import arguments
-from core import case
+from core import arguments, case
+from core.events import EventHandler, Event
+
+
+class NextStepEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, "nextStepHandler", shared_log,
+                              events={'NextStepTaken': case.add_next_step_entry('Step taken'),
+                                      'NextStepNotTaken': case.add_next_step_entry('Step not taken')})
+
+
+class FlagEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, "flagHandler", shared_log,
+                              events={'FlagArgsValid': case.add_flag_entry('Flag args valid'),
+                                      'FlagArgsInvalid': case.add_flag_entry('Flag args invalid')})
+
+
+class FilterEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, "filterHandler", shared_log,
+                              events={'FilterSuccess': case.add_flag_entry('Filter success'),
+                                      'FilterError': case.add_flag_entry('Filter error')})
 
 
 class Next(object):
-    def __init__(self, nextStep="", nextWorkflow="", flags=[]):
+    def __init__(self, previous_step_id="", nextStep="", nextWorkflow="", flags=None):
         self.nextStep = nextStep
-        self.flags = flags
-
-        #self.stepTaken = Signal()
-        #self.stepTaken.connect(case.stepTaken)
-
-        #self.stepNotTaken = Signal()
-        #self.stepNotTaken.connect(case.stepNotTaken)
+        self.id = previous_step_id
+        self.flags = flags if flags is not None else []
+        self.event_handler = NextStepEventHandler()
 
     def toXML(self, tag="next"):
         elem = et.Element(tag)
@@ -24,51 +40,47 @@ class Next(object):
             elem.append(flag.toXML())
         return elem
 
-    def createFlag(self, action="", args={}, filters=[]):
-        newFlag = Flag(action=action, args=args, filters=filters)
+    def createFlag(self, action="", args=None, filters=None):
+        newFlag = Flag(action=action,
+                       args=(args if args is not None else {}),
+                       filters=(filters if filters is not None else []))
         self.flags.append(newFlag)
 
     def removeFlag(self, index=-1):
         try:
             self.flags.remove(self.flags[index])
 
-            #Reflect change in XML
-            #selected = self.xml.find(".//flag[" + str(index) + "]")
-            #self.xml.find(".").remove(selected)
+            # Reflect change in XML
+            # selected = self.xml.find(".//flag[" + str(index) + "]")
+            # self.xml.find(".").remove(selected)
             return True
         except IndexError:
             return False
 
     def __eq__(self, other):
-        if self.nextStep == other.nextStep:
-            if set(self.flags) == set(other.flags):
-                return True
-        return False
+        return self.nextStep == other.nextStep and set(self.flags) == set(other.flags)
 
     def __call__(self, output=None):
-        for flag in self.flags:
-            if not flag(output=output):
-                return None
-        return self.nextStep
+        if all(flag(output=output) for flag in self.flags):
+            self.event_handler.execute_event_code(self, 'NextStepTaken')
+            return self.nextStep
+        else:
+            self.event_handler.execute_event_code(self, 'NextStepNotTaken')
+            return None
 
     def __repr__(self):
-        output = {}
-        output["nextStep"] = self.nextStep
-        output["flags"] = [flag.__dict__ for flag in self.flags]
+        output = {'nextStep': self.nextStep,
+                  'flags': [flag.__dict__ for flag in self.flags]}
         return str(output)
 
 
 class Flag(object):
-    def __init__(self, action="", args={}, filters=[]):
+    def __init__(self, previous_step_id="", action="", args=None, filters=None):
         self.action = action
-        self.args = args
-        self.filters = filters
-
-        #self.stepTaken = Signal()
-        #self.stepTaken.connect(case.stepTaken)
-
-        #self.stepNotTaken = Signal()
-        #self.stepNotTaken.connect(case.stepNotTaken)
+        self.args = args if args is not None else {}
+        self.filters = filters if filters is not None else []
+        self.event_handler = FlagEventHandler()
+        self.id = previous_step_id
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
@@ -85,11 +97,11 @@ class Flag(object):
             filtersElement.append(filter.toXML())
         return elem
 
-    def addFilter(self, action="", args={}, index=None):
-        if index != None:
-            self.filters.insert(index, Filter(action=action, args=args))
+    def addFilter(self, action="", args=None, index=None):
+        if index is not None:
+            self.filters.insert(index, Filter(action=action, args=(args if args is not None else {})))
         else:
-            self.filters.append(Filter(action=action, args=args))
+            self.filters.append(Filter(action=action, args=(args if args is not None else {})))
         return True
 
     def removeFilter(self, index=None):
@@ -97,10 +109,7 @@ class Flag(object):
         return True
 
     def validateArgs(self):
-        for arg in self.args:
-            if not self.args[arg].validate(action=self.action, io="input"):
-                return False
-        return True
+        return all(self.args[arg].validate(action=self.action, io="input") for arg in self.args)
 
     def __call__(self, output=None):
         data = output
@@ -112,6 +121,9 @@ class Flag(object):
             result = None
             if self.validateArgs():
                 result = getattr(module, "main")(args=self.args, value=output)
+                self.event_handler.execute_event_code(self, 'FlagArgsValid')
+            else:
+                self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
             return result
 
     def checkImport(self):
@@ -123,16 +135,20 @@ class Flag(object):
             return flagModule
 
     def __repr__(self):
-        output = {}
-        output["action"] = self.action
-        output["args"] = {arg:self.args[arg].__dict__ for arg in self.args}
-        output["filters"] = [filter.__dict__ for filter in self.filters]
+        output = {'action': self.action,
+                  'args': {arg: self.args[arg].__dict__ for arg in self.args},
+                  'filters': [filter.__dict__ for filter in self.filters]}
         return str(output)
 
+
 class Filter(object):
-    def __init__(self, action="", args={}):
+    def __init__(self, previous_step_id="", action="", args=None):
         self.action = action
-        self.args = {arg:arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__) for arg in args}
+        safeargs = args if args is not None else {}
+        self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
+                     for arg in safeargs}
+        self.event_handler = FilterEventHandler()
+        self.id = previous_step_id
 
     def toXML(self):
         elem = et.Element("filter")
@@ -146,8 +162,12 @@ class Filter(object):
     def __call__(self, output=None):
         module = self.checkImport()
         if module:
-            result = getattr(module, "main")(args=self.args, value=output)
-            return result
+            try:
+                result = getattr(module, "main")(args=self.args, value=output)
+                self.event_handler.execute_event_code(self, 'FilterSuccess')
+                return result
+            except Exception:
+                self.event_handler.execute_event_code(self, 'FilterError')
         return output
 
     def checkImport(self):
@@ -159,7 +179,6 @@ class Filter(object):
             return filterModule
 
     def __repr__(self):
-        output = {}
-        output["action"] = self.action
-        output["args"] = {arg:self.args[arg].__dict__ for arg in self.args}
+        output = {'action': self.action,
+                  'args': {arg: self.args[arg].__dict__ for arg in self.args}}
         return str(output)

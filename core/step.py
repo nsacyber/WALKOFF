@@ -1,70 +1,65 @@
 import xml.etree.cElementTree as et
 from blinker import Signal
-from copy import deepcopy, copy
 
 from core.ffk import Next
 from core import case
+from core.events import Event, EventHandler
+
+
+class StepEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, 'StepEventHandler', shared_log,
+                              events={'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
+                                      'InputValidated': case.add_step_entry('Input successfully validated'),
+                                      'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
+
 
 class Step(object):
-    def __init__(self, id="", action="", app="", device="", input={}, next=[], errors=[], parent=""):
+    def __init__(self, id="", action="", app="", device="", input=None, next=None, errors=None, parent=""):
         self.id = id
         self.action = action
         self.app = app
         self.device = device
-        self.input = input
-        self.conditionals = next
-        self.errors = errors
-        self.parent = parent
+        self.input = input if input is not None else {}
+        self.conditionals = next if next is not None else []
+        self.errors = errors if errors is not None else []
+        self.parent_workflow = parent
         self.output = None
         self.nextUp = None
-
-        #Signals
-        self.functionExecutedSuccessfully = Signal()
-        self.functionExecutedSuccessfully.connect(case.functionExecutedSuccessfully)
-
-        self.inputValidated = Signal()
-        self.inputValidated.connect(case.inputValidated)
-
-        self.conditionalsExecuted = Signal()
-        self.conditionalsExecuted.connect(case.conditionalsExecuted)
+        self.eventlog = []
+        self.stepEventHandler = StepEventHandler(self.eventlog)
 
     def validateInput(self):
-        if len(self.input) > 0:
-            for arg in self.input:
-                if not self.input[arg].validate(action=self.action, io="input"):
-                    return False
-        return True
+        return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
+                else True)
 
     def execute(self, instance=None):
         if self.validateInput():
-            self.inputValidated.send(self)
+            self.stepEventHandler.execute_event_code(self, 'InputValidated')
             result = getattr(instance, self.action)(args=self.input)
-            self.functionExecutedSuccessfully.send(self)
+            self.stepEventHandler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result
         raise Exception
 
     def nextStep(self, error=False):
-        if error:
-            nextSteps = self.errors
-        else:
-            nextSteps = self.conditionals
+        nextSteps = self.errors if error else self.conditionals
 
         for n in nextSteps:
             nextStep = n(output=self.output)
             if nextStep:
                 self.nextUp = nextStep
-                self.conditionalsExecuted.send(self)
+                self.stepEventHandler.execute_event_code(self, 'ConditionalsExecuted')
                 return nextStep
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
 
-    def createNext(self, nextStep="", flags=[]):
-        newConditional = Next(nextStep=nextStep, flags=flags)
-        for conditional in self.conditionals:
-            if conditional.__eq__(newConditional):
-                return False
+    def createNext(self, nextStep="", flags=None):
+        flags = flags if flags is not None else []
+        newConditional = Next(self.id, nextStep=nextStep, flags=flags)
+        if any(conditional == newConditional for conditional in self.conditionals):
+            return False
         self.conditionals.append(newConditional)
         return True
 
@@ -100,19 +95,15 @@ class Step(object):
 
         return step
 
-
     def __repr__(self):
-        output = {}
-        output["id"] = self.id
-        output["action"] = self.action
-        output["app"] = self.app
-        output["device"] = self.device
-        output["input"] = {key:self.input[key] for key in self.input}
-        output["next"] = [next for next in self.conditionals]
-        output["errors"] = [error for error in self.errors]
-        output["nextUp"] = self.nextUp
+        output = {'id': self.id,
+                  'action': self.action,
+                  'app': self.app,
+                  'device': self.device,
+                  'input': {key: self.input[key] for key in self.input},
+                  'next': [next for next in self.conditionals],
+                  'errors': [error for error in self.errors],
+                  'nextUp': self.nextUp}
         if self.output:
             output["output"] = self.output
         return str(output)
-
-
