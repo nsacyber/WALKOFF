@@ -7,10 +7,7 @@ Welcome to WALKOFF's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-    docs
+   :maxdepth: 10
 
 Indices and tables
 ==================
