@@ -1,2 +1,14 @@
 *.bak
 *.pyc
+*.pyc
+data/walkoff.db
+*.pyc
+.idea/workspace.xml
+*.iml
+.idea/misc.xml
+.idea/modules.xml
+*.pyc
+core/config.pyc
+.idea/vcs.xml
+core/config.pyc
+core/config.pyc
