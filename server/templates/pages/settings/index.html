@@ -1,5 +1,5 @@
 <div id="main">
-    <p> This is the settings page </p>
+    <!--<p> This is the settings page </p> -->
     <script src="{{ url_for('static', filename='pages/display/main.js' ) }}"> </script>
     <!-- This div will contain keyword labels with textboxes that are
         auto-populated with the default setting -->
@@ -12,13 +12,13 @@
                 {{ render_field(form.templatePath) }}
                 {{ render_field(form.keywordsPath) }}
                 {{ render_field(form.dbPath) }}
-            <h4> AuthConfig </h4>
+            <h3><b> AuthConfig </b></h3>
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.TLS_version) }}
                 {{ render_field(form.certificatePath) }}
                 {{ render_field(form.https) }}
                 {{ render_field(form.privateKeyPath) }}
-            <h4> InterfaceConfig </h4>
+            <h3><b> InterfaceConfig </b></h3>
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.debug) }}
                 {{ render_field(form.defaultServer) }}
