@@ -4,21 +4,22 @@
     <!-- This div will contain keyword labels with textboxes that are
         auto-populated with the default setting -->
     <div id="settingsWrapper">
-        <h2 class="settingsHeader"> Settings </h2>
+        <h1 class="settingsHeader"> Settings </h1>
         <div id="settingsForm">
             <!-- use jinja and formhelpers.html to populate form -->
             <!-- below is pulled from devices\index.html -->
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.templatePath) }}
+                {{ render_field(form.profileVisualizationsPath) }}
                 {{ render_field(form.keywordsPath) }}
                 {{ render_field(form.dbPath) }}
-            <h3><b> AuthConfig </b></h3>
+            <h3><i> AuthConfig </i></h3>
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.TLS_version) }}
                 {{ render_field(form.certificatePath) }}
                 {{ render_field(form.https) }}
                 {{ render_field(form.privateKeyPath) }}
-            <h3><b> InterfaceConfig </b></h3>
+            <h3><i> InterfaceConfig </i></h3>
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.debug) }}
                 {{ render_field(form.defaultServer) }}
