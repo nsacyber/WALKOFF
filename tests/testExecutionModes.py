@@ -1,16 +1,24 @@
 import unittest, time
 from core import controller, case, graphDecorator
+from tests import config
+
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
+    EVENT_SCHEDULER_START, \
+    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+
 
 class TestExecutionModes(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_startStopExecutionLoop(self):
         c = controller.Controller(name="startStopController")
-        c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
+        c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "testScheduler.workflow")
 
         case.addCase(name="startStop", case=case.Case(subscriptions={
-            "startStopController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
-                                    "jobRemoved", "jobExecuted", "jobException"]
-            }, history=[]))
+            "startStopController": [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
+                                    EVENT_SCHEDULER_RESUMED,
+                                    EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                    EVENT_JOB_EXECUTED, EVENT_JOB_ERROR]
+        }, history=[]))
         history = case.cases["startStop"]
         with history:
             c.start()
@@ -21,12 +29,14 @@ class TestExecutionModes(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_pauseResumeSchedulerExecution(self):
         c = controller.Controller(name="pauseResumeController")
-        c.loadWorkflowsFromFile(path="tests/testWorkflows/testScheduler.workflow")
+        c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "testScheduler.workflow")
 
         case.addCase(name="pauseResume", case=case.Case(subscriptions={
-            "pauseResumeController": ["schedulerStart", "schedulerShutdown", "schedulerPaused", "schedulerResumed", "jobAdded",
-                       "jobRemoved", "jobExecuted", "jobException"]
-            }, history=[]))
+            "pauseResumeController": [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
+                                      EVENT_SCHEDULER_RESUMED,
+                                      EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                      EVENT_JOB_EXECUTED, EVENT_JOB_ERROR]
+        }, history=[]))
 
         history = case.cases["pauseResume"]
 
@@ -38,12 +48,3 @@ class TestExecutionModes(unittest.TestCase):
             time.sleep(1)
             c.stop(wait=False)
             self.assertTrue(len(history.history) == 4)
-
-
-
-
-
-
-
-
-

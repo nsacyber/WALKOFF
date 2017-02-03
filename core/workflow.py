@@ -1,6 +1,5 @@
-import sys, copy
+import sys
 import importlib
-from blinker import Signal
 
 from core import step as wfstep
 from core import ffk
@@ -8,35 +7,35 @@ from core import arguments
 from core import instance
 from core import options
 from core import case
+from core.events import EventHandler, Event
+
+
+class WorkflowEventHandler(EventHandler):
+    def __init__(self, shared_log=None):
+        EventHandler.__init__(self, "WorkflowEventHandler", shared_log,
+                              events={'InstanceCreated': case.add_workflow_entry("New workflow instance Created"),
+                                      'StepExecutionSuccess': case.add_workflow_entry('Step executed successfully'),
+                                      'NextStepFound': case.add_workflow_entry('Next step found'),
+                                      'WorkflowShutdown': case.add_workflow_entry("Workflow shut down")})
 
 
 class Workflow(object):
-    def __init__(self, name="", workflowConfig=None, children={}, parentController=""):
+    def __init__(self, name="", workflowConfig=None, children=None, parentController=""):
         self.name = name
         self.parentController = parentController
         self.workflowXML = workflowConfig
         self.options = self.parseOptions(workflowConfig.find(".//options"))
         self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
-        self.children = {}
-
-        # Signals
-        self.instanceCreated = Signal()
-        self.instanceCreated.connect(case.instanceCreated)
-
-        self.stepExecutedSuccessfully = Signal()
-        self.stepExecutedSuccessfully.connect(case.stepExecutedSuccessfully)
-
-        self.nextStepFound = Signal()
-        self.nextStepFound.connect(case.nextStepFound)
-
-        self.workflowShutdown = Signal()
-        self.workflowShutdown.connect(case.workflowShutdown)
+        self.children = children if (children is not None) else {}
+        self.eventlog = []
+        self.workflowEventHandler = WorkflowEventHandler(self.eventlog)
 
     def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
-        scheduler = {"autorun": ops.find(".//scheduler").get("autorun"), "type":ops.find(".//scheduler").get("type"), "args":{option.tag:option.text for option in ops.findall(".//scheduler/*")}}
+        scheduler = {"autorun": ops.find(".//scheduler").get("autorun"), "type": ops.find(".//scheduler").get("type"),
+                     "args": {option.tag: option.text for option in ops.findall(".//scheduler/*")}}
         enabled = ops.find(".//enabled").text
-        children = {child.text:None for child in ops.findall(".//children/child")}
+        children = {child.text: None for child in ops.findall(".//children/child")}
 
         result = options.Options(scheduler=scheduler, enabled=enabled, children=children)
         return result
@@ -52,33 +51,39 @@ class Workflow(object):
             action = step.find("action").text
             app = step.find("app").text
             device = step.find("device").text
-            input = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in step.findall("input/*")}
-            next = [self.parseNext(nextStep) for nextStep in step.findall("next")]
-            errors = [self.parseNext(error) for error in step.findall("error")]
-            steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors, parent=self.name)
+            input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
+                     step.findall("input/*")}
+            next = [self.parseNext(id, nextStep) for nextStep in step.findall("next")]
+            errors = [self.parseNext(id, error) for error in step.findall("error")]
+            steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors,
+                                    parent=self.name)
         return steps
 
-    def parseNext(self, next=None):
-        flags = [self.parseFlag(flag) for flag in next.findall("flag")]
+    def parseNext(self, previous_id, next=None):
+        flags = [self.parseFlag(previous_id, flag) for flag in next.findall("flag")]
         nextId = next.get("step")
-        nextStep = ffk.Next(nextStep=nextId, flags=flags)
+        nextStep = ffk.Next(previous_id, nextStep=nextId, flags=flags)
         return nextStep
 
-    def parseFlag(self, flag=None):
+    def parseFlag(self, previous_id, flag=None):
         action = flag.get("action")
-        filters = [self.parseFilter(filter) for filter in flag.findall("filters/*")]
-        args = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in flag.findall("args/*")}
-        return ffk.Flag(action=action, filters=filters, args=args)
+        filters = [self.parseFilter(previous_id, filter) for filter in flag.findall("filters/*")]
+        args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
+                flag.findall("args/*")}
+        return ffk.Flag(previous_step_id=previous_id, action=action, filters=filters, args=args)
 
-    def parseFilter(self, filter=None):
+    def parseFilter(self, previous_id, filter=None):
         action = filter.get("action")
-        args = {arg.tag:arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in filter.findall("args/*")}
-        return ffk.Filter(action=action, args=args)
+        args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
+                filter.findall("args/*")}
+        return ffk.Filter(previous_step_id=previous_id, action=action, args=args)
 
     def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
-        #Creates new step object
-        input = {input[key]["tag"]:arguments.Argument(key=input[key]["tag"], value=input[key]["value"], format=input[key]["format"]) for key in input}
-        self.steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors)
+        # Creates new step object
+        input = {input[key]["tag"]: arguments.Argument(key=input[key]["tag"], value=input[key]["value"],
+                                                       format=input[key]["format"]) for key in input}
+        self.steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next,
+                                     errors=errors)
         stepXML = self.steps[id].toXML()
         self.workflowXML.find(".//steps").append(stepXML)
 
@@ -106,7 +111,7 @@ class Workflow(object):
             pass
         try:
             return importlib.import_module(module, 'Main')
-        except ImportError as e:
+        except ImportError:
             pass
 
     def createInstance(self, app="", device=""):
@@ -122,73 +127,72 @@ class Workflow(object):
             current = nextUp
         return current
 
-    def executeChild(self, name="", start="start", data=None, instances={}):
+    def executeChild(self, name="", start="start", data=None, instances=None):
+        instances = instances if instances is not None else {}
         if name in self.options.children and type(self.options.children[name]).__name__ == "Workflow":
             steps, instances = self.options.children[name].execute(start=start, data=data, instances=instances)
             return steps
 
-    def execute(self, start="start", data=None, instances={}):
-        totalSteps = []
+    def execute(self, start="start", data=None, instances=None):
+        total_steps = []
+        instances = instances if instances is not None else {}
+        for __ in self.__step_generator(start, instances, total_steps):
+            self.workflowEventHandler.execute_event_code(self, 'NextStepFound')
+
+        self.__shutdown(instances)
+
+        return total_steps, str(instances)
+
+    def __step_generator(self, start, instances, total_steps):
         current = start
-        instances = instances
+        while current:
+            next_step = self.__execute_step(self.steps[current], instances, total_steps)
+            yield next_step
+            current = self.goToNextStep(current=current, nextUp=next_step)
 
-        while current != None:
-            #Closure to maintain scope
-            def executionClosure(step):
-                if step.device not in instances:
-                    instances[step.device] = self.createInstance(app=step.app, device=step.device)
-                    self.instanceCreated.send(self)
+    def __execute_step(self, step, instances, total_steps):
+        if step.device not in instances:
+            instances[step.device] = self.createInstance(app=step.app, device=step.device)
+            self.workflowEventHandler.execute_event_code(self, 'InstanceCreated')
 
-                for arg in step.input:
-                    step.input[arg].template(steps=totalSteps)
-
-                try:
-                    step.execute(instance=instances[step.device]())
-                    self.stepExecutedSuccessfully.send(self)
-                    errorFlag = False
-                except Exception as e:
-                    errorFlag = True
-                    step.output = str(e)
-                finally:
-                    totalSteps.append(step)
-                    nextUp = step.nextStep(error=errorFlag)
-
-                #Check for call to child workflow
-                if nextUp and nextUp[0] == '@':
-                    params = nextUp.split(":")
-                    params[0] = params[0].lstrip("@")
-                    if len(params) == 3:
-                        childWorkflowOutput = self.executeChild(name=params[0], start=params[1])
-                        if childWorkflowOutput:
-                            totalSteps.extend(childWorkflowOutput)
-                            nextUp = params[2]
-                return nextUp
-
-            nextUp  = executionClosure(step=self.steps[current])
-            current = self.goToNextStep(current=current, nextUp=nextUp)
-            self.nextStepFound.send(self)
+        for arg in step.input:
+            step.input[arg].template(steps=total_steps)
 
         try:
-            #Upon finishing shuts down instances
+            step.execute(instance=instances[step.device]())
+            self.workflowEventHandler.execute_event_code(self, 'StepExecutionSuccess')
+            error_flag = False
+        except Exception as e:
+            error_flag = True
+            step.output = str(e)
+        finally:
+            total_steps.append(step)
+            return self.__next_step(step, error_flag, total_steps)
+
+    def __next_step(self, step, error_flag, total_steps):
+        next_step = step.nextStep(error=error_flag)
+
+        # Check for call to child workflow
+        if next_step and next_step[0] == '@':
+            params = next_step.split(":")
+            params[0] = params[0].lstrip("@")
+            if len(params) == 3:
+                childWorkflowOutput = self.executeChild(name=params[0], start=params[1])
+                if childWorkflowOutput:
+                    total_steps.extend(childWorkflowOutput)
+                    next_step = params[2]
+        return next_step
+
+    def __shutdown(self, instances):
+        try:
+            # Upon finishing shuts down instances
             for instance in instances:
                 instances[instance].shutdown()
-            self.workflowShutdown.send(self)
-        except Exception as e:
+            self.workflowEventHandler.execute_event_code(self, 'WorkflowShutdown')
+        except Exception:
             pass
 
-        return totalSteps, str(instances)
-
     def __repr__(self):
-        output = {}
-        output["options"] = self.options
-        output["steps"] = {step:self.steps[step] for step in self.steps}
+        output = {'options': self.options,
+                  'steps': {step: self.steps[step] for step in self.steps}}
         return str(output)
-
-
-
-
-
-
-
-
-

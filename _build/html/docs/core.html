@@ -1,0 +1,1110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core package &#8212; WALKOFF 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="core-package">
+<h1>core package<a class="headerlink" href="#core-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="core.filters.html">core.filters package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.filters.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.filters.html#module-core.filters.length">core.filters.length module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.filters.html#module-core.filters">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core.flags.html">core.flags package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.flags.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.flags.html#module-core.flags.count">core.flags.count module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.flags.html#module-core.flags.regMatch">core.flags.regMatch module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.flags.html#module-core.flags">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core.keywords.html">core.keywords package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.keywords.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.keywords.html#module-core.keywords.outputFrom">core.keywords.outputFrom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.keywords.html#module-core.keywords">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-core.appBlueprint">
+<span id="core-appblueprint-module"></span><h2>core.appBlueprint module<a class="headerlink" href="#module-core.appBlueprint" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.appBlueprint.displayApp">
+<code class="descclassname">core.appBlueprint.</code><code class="descname">displayApp</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.appBlueprint.displayApp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.appBlueprint.staticRequestHandler">
+<code class="descclassname">core.appBlueprint.</code><code class="descname">staticRequestHandler</code><span class="sig-paren">(</span><em>endpoint</em>, <em>values</em><span class="sig-paren">)</span><a class="headerlink" href="#core.appBlueprint.staticRequestHandler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.arguments">
+<span id="core-arguments-module"></span><h2>core.arguments module<a class="headerlink" href="#module-core.arguments" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.arguments.Argument">
+<em class="property">class </em><code class="descclassname">core.arguments.</code><code class="descname">Argument</code><span class="sig-paren">(</span><em>key=None</em>, <em>value=None</em>, <em>format='str'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.arguments.Argument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.arguments.Argument.convertTo">
+<code class="descname">convertTo</code><span class="sig-paren">(</span><em>value=None</em>, <em>type='str'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.arguments.Argument.convertTo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.arguments.Argument.template">
+<code class="descname">template</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.arguments.Argument.template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.arguments.Argument.toXML">
+<code class="descname">toXML</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.arguments.Argument.toXML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.arguments.Argument.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><em>action=None</em>, <em>io='input'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.arguments.Argument.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.case">
+<span id="core-case-module"></span><h2>core.case module<a class="headerlink" href="#module-core.case" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.case.Case">
+<em class="property">class </em><code class="descclassname">core.case.</code><code class="descname">Case</code><span class="sig-paren">(</span><em>id=''</em>, <em>history=[]</em>, <em>subscriptions={}</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.Case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.case.Case.addEvent">
+<code class="descname">addEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.Case.addEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.addCase">
+<code class="descclassname">core.case.</code><code class="descname">addCase</code><span class="sig-paren">(</span><em>name</em>, <em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.addCase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.addEntryToCase">
+<code class="descclassname">core.case.</code><code class="descname">addEntryToCase</code><span class="sig-paren">(</span><em>caller</em>, <em>type</em>, <em>message</em>, <em>data=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.addEntryToCase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.conditionalsExecuted">
+<code class="descclassname">core.case.</code><code class="descname">conditionalsExecuted</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.conditionalsExecuted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.functionExecutedSuccessfully">
+<code class="descclassname">core.case.</code><code class="descname">functionExecutedSuccessfully</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.functionExecutedSuccessfully" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.inputValidated">
+<code class="descclassname">core.case.</code><code class="descname">inputValidated</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.inputValidated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.instanceCreated">
+<code class="descclassname">core.case.</code><code class="descname">instanceCreated</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.instanceCreated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.jobAdded">
+<code class="descclassname">core.case.</code><code class="descname">jobAdded</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.jobAdded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.jobException">
+<code class="descclassname">core.case.</code><code class="descname">jobException</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.jobException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.jobExecuted">
+<code class="descclassname">core.case.</code><code class="descname">jobExecuted</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.jobExecuted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.jobRemoved">
+<code class="descclassname">core.case.</code><code class="descname">jobRemoved</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.jobRemoved" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.nextStepFound">
+<code class="descclassname">core.case.</code><code class="descname">nextStepFound</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.nextStepFound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.schedulerPaused">
+<code class="descclassname">core.case.</code><code class="descname">schedulerPaused</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.schedulerPaused" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.schedulerResumed">
+<code class="descclassname">core.case.</code><code class="descname">schedulerResumed</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.schedulerResumed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.schedulerShutdown">
+<code class="descclassname">core.case.</code><code class="descname">schedulerShutdown</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.schedulerShutdown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.schedulerStart">
+<code class="descclassname">core.case.</code><code class="descname">schedulerStart</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.schedulerStart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.stepExecutedSuccessfully">
+<code class="descclassname">core.case.</code><code class="descname">stepExecutedSuccessfully</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.stepExecutedSuccessfully" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.stepNotTaken">
+<code class="descclassname">core.case.</code><code class="descname">stepNotTaken</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.stepNotTaken" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.stepTaken">
+<code class="descclassname">core.case.</code><code class="descname">stepTaken</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.stepTaken" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.case.workflowShutdown">
+<code class="descclassname">core.case.</code><code class="descname">workflowShutdown</code><span class="sig-paren">(</span><em>sender</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowShutdown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.config">
+<span id="core-config-module"></span><h2>core.config module<a class="headerlink" href="#module-core.config" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.config.getApps">
+<code class="descclassname">core.config.</code><code class="descname">getApps</code><span class="sig-paren">(</span><em>path='apps'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.config.getApps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.controller">
+<span id="core-controller-module"></span><h2>core.controller module<a class="headerlink" href="#module-core.controller" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.controller.Controller">
+<em class="property">class </em><code class="descclassname">core.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>name='defaultController'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.controller.Controller.addChildWorkflows">
+<code class="descname">addChildWorkflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.addChildWorkflows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.addWorkflowScheduledJobs">
+<code class="descname">addWorkflowScheduledJobs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.addWorkflowScheduledJobs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.createWorkflowFromTemplate">
+<code class="descname">createWorkflowFromTemplate</code><span class="sig-paren">(</span><em>name='emptyWorkflow'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.createWorkflowFromTemplate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.executeWorkflow">
+<code class="descname">executeWorkflow</code><span class="sig-paren">(</span><em>name</em>, <em>start='start'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.executeWorkflow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.getScheduledJobs">
+<code class="descname">getScheduledJobs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.getScheduledJobs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.jobExecutionListener">
+<code class="descname">jobExecutionListener</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.jobExecutionListener" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.jobStatusListener">
+<code class="descname">jobStatusListener</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.jobStatusListener" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.loadWorkflowsFromFile">
+<code class="descname">loadWorkflowsFromFile</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.loadWorkflowsFromFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.pause">
+<code class="descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.pause" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.pauseJob">
+<code class="descname">pauseJob</code><span class="sig-paren">(</span><em>jobId</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.pauseJob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.removeWorkflow">
+<code class="descname">removeWorkflow</code><span class="sig-paren">(</span><em>name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.removeWorkflow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.resume">
+<code class="descname">resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.resume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.resumeJob">
+<code class="descname">resumeJob</code><span class="sig-paren">(</span><em>jobId</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.resumeJob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.schedulerStatusListener">
+<code class="descname">schedulerStatusListener</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.schedulerStatusListener" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><em>wait=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.updateWorkflowName">
+<code class="descname">updateWorkflowName</code><span class="sig-paren">(</span><em>oldName=''</em>, <em>newName=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.updateWorkflowName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.ffk">
+<span id="core-ffk-module"></span><h2>core.ffk module<a class="headerlink" href="#module-core.ffk" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.ffk.Filter">
+<em class="property">class </em><code class="descclassname">core.ffk.</code><code class="descname">Filter</code><span class="sig-paren">(</span><em>action=''</em>, <em>args={}</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.ffk.Filter.checkImport">
+<code class="descname">checkImport</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Filter.checkImport" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Filter.toXML">
+<code class="descname">toXML</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Filter.toXML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.ffk.Flag">
+<em class="property">class </em><code class="descclassname">core.ffk.</code><code class="descname">Flag</code><span class="sig-paren">(</span><em>action=''</em>, <em>args={}</em>, <em>filters=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.ffk.Flag.addFilter">
+<code class="descname">addFilter</code><span class="sig-paren">(</span><em>action=''</em>, <em>args={}</em>, <em>index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag.addFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Flag.checkImport">
+<code class="descname">checkImport</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag.checkImport" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Flag.removeFilter">
+<code class="descname">removeFilter</code><span class="sig-paren">(</span><em>index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag.removeFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Flag.set">
+<code class="descname">set</code><span class="sig-paren">(</span><em>attribute=None</em>, <em>value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag.set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Flag.toXML">
+<code class="descname">toXML</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag.toXML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Flag.validateArgs">
+<code class="descname">validateArgs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Flag.validateArgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.ffk.Next">
+<em class="property">class </em><code class="descclassname">core.ffk.</code><code class="descname">Next</code><span class="sig-paren">(</span><em>nextStep=''</em>, <em>nextWorkflow=''</em>, <em>flags=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.ffk.Next.createFlag">
+<code class="descname">createFlag</code><span class="sig-paren">(</span><em>action=''</em>, <em>args={}</em>, <em>filters=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Next.createFlag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Next.removeFlag">
+<code class="descname">removeFlag</code><span class="sig-paren">(</span><em>index=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Next.removeFlag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.ffk.Next.toXML">
+<code class="descname">toXML</code><span class="sig-paren">(</span><em>tag='next'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.ffk.Next.toXML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.forms">
+<span id="core-forms-module"></span><h2>core.forms module<a class="headerlink" href="#module-core.forms" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.forms.AddNewDeviceForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">AddNewDeviceForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.AddNewDeviceForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.AddNewDeviceForm.app">
+<code class="descname">app</code><em class="property"> = &lt;UnboundField(StringField, ('app', [&lt;wtforms.validators.Required object at 0x04D5AD70&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewDeviceForm.app" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.AddNewDeviceForm.ipaddr">
+<code class="descname">ipaddr</code><em class="property"> = &lt;UnboundField(StringField, ('ipaddr', [&lt;wtforms.validators.Optional object at 0x04D5ADB0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewDeviceForm.ipaddr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.AddNewDeviceForm.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Length object at 0x04D5AC50&gt;, &lt;wtforms.validators.Required object at 0x04D5AC70&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewDeviceForm.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.AddNewDeviceForm.port">
+<code class="descname">port</code><em class="property"> = &lt;UnboundField(IntegerField, ('port', [&lt;wtforms.validators.Optional object at 0x04D5ADF0&gt;, &lt;wtforms.validators.NumberRange object at 0x04D5AE10&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewDeviceForm.port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.AddNewDeviceForm.pw">
+<code class="descname">pw</code><em class="property"> = &lt;UnboundField(PasswordField, ('pw', [&lt;wtforms.validators.Optional object at 0x04D5AD30&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewDeviceForm.pw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.AddNewDeviceForm.username">
+<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('username', [&lt;wtforms.validators.Optional object at 0x04D5ACF0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewDeviceForm.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.AddNewPlayForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">AddNewPlayForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.AddNewPlayForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.AddNewPlayForm.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Length object at 0x04D5A5B0&gt;, &lt;wtforms.validators.Required object at 0x04D5A5D0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.AddNewPlayForm.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.EditConfigForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">EditConfigForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.EditConfigForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.EditConfigForm.key">
+<code class="descname">key</code><em class="property"> = &lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.Required object at 0x04D5A9B0&gt;, &lt;wtforms.validators.Length object at 0x04D5AA10&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditConfigForm.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditConfigForm.value">
+<code class="descname">value</code><em class="property"> = &lt;UnboundField(StringField, ('value',), {})&gt;</em><a class="headerlink" href="#core.forms.EditConfigForm.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.EditDeviceForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">EditDeviceForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.EditDeviceForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.EditDeviceForm.ipaddr">
+<code class="descname">ipaddr</code><em class="property"> = &lt;UnboundField(StringField, ('ipaddr', [&lt;wtforms.validators.Optional object at 0x04D5AF30&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditDeviceForm.ipaddr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditDeviceForm.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Length object at 0x04D5AE50&gt;, &lt;wtforms.validators.Optional object at 0x04D5AE70&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditDeviceForm.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditDeviceForm.port">
+<code class="descname">port</code><em class="property"> = &lt;UnboundField(IntegerField, ('port', [&lt;wtforms.validators.Optional object at 0x04D5AF70&gt;, &lt;wtforms.validators.NumberRange object at 0x04D5AF90&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditDeviceForm.port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditDeviceForm.pw">
+<code class="descname">pw</code><em class="property"> = &lt;UnboundField(PasswordField, ('pw', [&lt;wtforms.validators.Optional object at 0x04D5AEF0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditDeviceForm.pw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditDeviceForm.username">
+<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('username', [&lt;wtforms.validators.Optional object at 0x04D5AEB0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditDeviceForm.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.EditPlayOptionsForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">EditPlayOptionsForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.EditPlayOptionsForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.EditPlayOptionsForm.autoRun">
+<code class="descname">autoRun</code><em class="property"> = &lt;UnboundField(BooleanField, ('autorun',), {})&gt;</em><a class="headerlink" href="#core.forms.EditPlayOptionsForm.autoRun" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditPlayOptionsForm.s_eDT">
+<code class="descname">s_eDT</code><em class="property"> = &lt;UnboundField(DateTimeField, ('eDT',), {})&gt;</em><a class="headerlink" href="#core.forms.EditPlayOptionsForm.s_eDT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditPlayOptionsForm.s_interval">
+<code class="descname">s_interval</code><em class="property"> = &lt;UnboundField(DecimalField, ('interval',), {'places': 2})&gt;</em><a class="headerlink" href="#core.forms.EditPlayOptionsForm.s_interval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditPlayOptionsForm.s_sDT">
+<code class="descname">s_sDT</code><em class="property"> = &lt;UnboundField(DateTimeField, ('sDT',), {})&gt;</em><a class="headerlink" href="#core.forms.EditPlayOptionsForm.s_sDT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.EditRoleForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">EditRoleForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.EditRoleForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.EditRoleForm.description">
+<code class="descname">description</code><em class="property"> = &lt;UnboundField(StringField, ('description',), {})&gt;</em><a class="headerlink" href="#core.forms.EditRoleForm.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.EditStepForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">EditStepForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.EditStepForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.action">
+<code class="descname">action</code><em class="property"> = &lt;UnboundField(StringField, ('action', [&lt;wtforms.validators.Optional object at 0x04D5A8B0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.action" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.app">
+<code class="descname">app</code><em class="property"> = &lt;UnboundField(StringField, ('app', [&lt;wtforms.validators.Optional object at 0x04D5A830&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.app" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.device">
+<code class="descname">device</code><em class="property"> = &lt;UnboundField(StringField, ('device', [&lt;wtforms.validators.Optional object at 0x04D5A870&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.error">
+<code class="descname">error</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('error',), {})&gt;, [&lt;wtforms.validators.Optional object at 0x04D5A970&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.id">
+<code class="descname">id</code><em class="property"> = &lt;UnboundField(StringField, ('id', [&lt;wtforms.validators.Optional object at 0x04D5A750&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.input">
+<code class="descname">input</code><em class="property"> = &lt;UnboundField(StringField, ('input', [&lt;wtforms.validators.Optional object at 0x04D5A8F0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditStepForm.to">
+<code class="descname">to</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('to-id',), {})&gt;, [&lt;wtforms.validators.Optional object at 0x04D5A7F0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.EditStepForm.to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.EditUserForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">EditUserForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.EditUserForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.EditUserForm.password">
+<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('password',), {})&gt;</em><a class="headerlink" href="#core.forms.EditUserForm.password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.EditUserForm.role">
+<code class="descname">role</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('role', [&lt;wtforms.validators.Length object at 0x04D5A430&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#core.forms.EditUserForm.role" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.LoginForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">LoginForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.LoginForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.LoginForm.password">
+<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('password',), {})&gt;</em><a class="headerlink" href="#core.forms.LoginForm.password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.LoginForm.username">
+<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('username', [&lt;wtforms.validators.Length object at 0x04D5AFD0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.LoginForm.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.NewRoleForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">NewRoleForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.NewRoleForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.NewRoleForm.description">
+<code class="descname">description</code><em class="property"> = &lt;UnboundField(StringField, ('description',), {})&gt;</em><a class="headerlink" href="#core.forms.NewRoleForm.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.NewRoleForm.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Required object at 0x04D5A4B0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.NewRoleForm.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.NewUserForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">NewUserForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.NewUserForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.NewUserForm.password">
+<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('password', [&lt;wtforms.validators.Required object at 0x04D5A330&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.NewUserForm.password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.NewUserForm.role">
+<code class="descname">role</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('role', [&lt;wtforms.validators.Length object at 0x04D5A370&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#core.forms.NewUserForm.role" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.NewUserForm.username">
+<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('username', [&lt;wtforms.validators.Length object at 0x04D5A270&gt;, &lt;wtforms.validators.Required object at 0x04D5A2B0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.NewUserForm.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.RemoveConfigForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">RemoveConfigForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.RemoveConfigForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.RemoveConfigForm.key">
+<code class="descname">key</code><em class="property"> = &lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.Required object at 0x04D5AA70&gt;, &lt;wtforms.validators.Length object at 0x04D5AAD0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.RemoveConfigForm.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.RenderArgsForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">RenderArgsForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.RenderArgsForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.RenderArgsForm.key">
+<code class="descname">key</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.Optional object at 0x04D5AB70&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#core.forms.RenderArgsForm.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.RenderArgsForm.page">
+<code class="descname">page</code><em class="property"> = &lt;UnboundField(StringField, ('page', [&lt;wtforms.validators.Required object at 0x04D5AB10&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.RenderArgsForm.page" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.RenderArgsForm.value">
+<code class="descname">value</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('value', [&lt;wtforms.validators.Optional object at 0x04D5ABD0&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#core.forms.RenderArgsForm.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.addNewTriggerForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">addNewTriggerForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.addNewTriggerForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.addNewTriggerForm.conditional">
+<code class="descname">conditional</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('conditional',), {})&gt;, [&lt;wtforms.validators.Required object at 0x04D63150&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.addNewTriggerForm.conditional" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.addNewTriggerForm.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Length object at 0x04D63090&gt;, &lt;wtforms.validators.Required object at 0x04D630B0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.addNewTriggerForm.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.addNewTriggerForm.play">
+<code class="descname">play</code><em class="property"> = &lt;UnboundField(StringField, ('play', [&lt;wtforms.validators.Length object at 0x04D631B0&gt;, &lt;wtforms.validators.Required object at 0x04D631D0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.addNewTriggerForm.play" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.conditionalArgsField">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">conditionalArgsField</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.conditionalArgsField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.conditionalArgsField.key">
+<code class="descname">key</code><em class="property"> = &lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.Length object at 0x04D63350&gt;, &lt;wtforms.validators.Optional object at 0x04D63370&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.conditionalArgsField.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.conditionalArgsField.value">
+<code class="descname">value</code><em class="property"> = &lt;UnboundField(StringField, ('value', [&lt;wtforms.validators.Length object at 0x04D633B0&gt;, &lt;wtforms.validators.Optional object at 0x04D633D0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.conditionalArgsField.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.conditionalField">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">conditionalField</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.conditionalField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.conditionalField.args">
+<code class="descname">args</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(FormField, (&lt;class 'core.forms.conditionalArgsField'&gt;, [&lt;wtforms.validators.Optional object at 0x04D63490&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#core.forms.conditionalField.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.conditionalField.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('flag', [&lt;wtforms.validators.Length object at 0x04D63410&gt;, &lt;wtforms.validators.Optional object at 0x04D63450&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.conditionalField.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.conditionalField.play">
+<code class="descname">play</code><em class="property"> = &lt;UnboundField(StringField, ('play', [&lt;wtforms.validators.Length object at 0x04D63530&gt;, &lt;wtforms.validators.Optional object at 0x04D63550&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.conditionalField.play" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.editTriggerForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">editTriggerForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.editTriggerForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.editTriggerForm.conditional">
+<code class="descname">conditional</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('conditional',), {})&gt;, [&lt;wtforms.validators.Optional object at 0x04D632B0&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.editTriggerForm.conditional" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.editTriggerForm.name">
+<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Length object at 0x04D63210&gt;, &lt;wtforms.validators.Optional object at 0x04D63230&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.editTriggerForm.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.editTriggerForm.play">
+<code class="descname">play</code><em class="property"> = &lt;UnboundField(StringField, ('play', [&lt;wtforms.validators.Length object at 0x04D632F0&gt;, &lt;wtforms.validators.Optional object at 0x04D63310&gt;]), {})&gt;</em><a class="headerlink" href="#core.forms.editTriggerForm.play" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.incomingDataForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">incomingDataForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.incomingDataForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.incomingDataForm.data">
+<code class="descname">data</code><em class="property"> = &lt;UnboundField(StringField, ('data',), {})&gt;</em><a class="headerlink" href="#core.forms.incomingDataForm.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.forms.settingsForm">
+<em class="property">class </em><code class="descclassname">core.forms.</code><code class="descname">settingsForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.forms.settingsForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
+<dl class="attribute">
+<dt id="core.forms.settingsForm.TLS_version">
+<code class="descname">TLS_version</code><em class="property"> = &lt;UnboundField(StringField, ('TLS_version',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.TLS_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.certificatePath">
+<code class="descname">certificatePath</code><em class="property"> = &lt;UnboundField(StringField, ('certificatePath',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.certificatePath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.dbPath">
+<code class="descname">dbPath</code><em class="property"> = &lt;UnboundField(StringField, ('dbPath',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.dbPath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.debug">
+<code class="descname">debug</code><em class="property"> = &lt;UnboundField(StringField, ('debug',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.debug" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.defaultServer">
+<code class="descname">defaultServer</code><em class="property"> = &lt;UnboundField(StringField, ('defaultServer',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.defaultServer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.host">
+<code class="descname">host</code><em class="property"> = &lt;UnboundField(StringField, ('host',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.https">
+<code class="descname">https</code><em class="property"> = &lt;UnboundField(StringField, ('https',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.https" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.keywordsPath">
+<code class="descname">keywordsPath</code><em class="property"> = &lt;UnboundField(StringField, ('keywordsPath',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.keywordsPath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.port">
+<code class="descname">port</code><em class="property"> = &lt;UnboundField(StringField, ('port',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.privateKeyPath">
+<code class="descname">privateKeyPath</code><em class="property"> = &lt;UnboundField(StringField, ('privateKeyPath',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.privateKeyPath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.forms.settingsForm.templatePath">
+<code class="descname">templatePath</code><em class="property"> = &lt;UnboundField(StringField, ('templatePath',), {})&gt;</em><a class="headerlink" href="#core.forms.settingsForm.templatePath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.graphDecorator">
+<span id="core-graphdecorator-module"></span><h2>core.graphDecorator module<a class="headerlink" href="#module-core.graphDecorator" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.graphDecorator.callgraph">
+<code class="descclassname">core.graphDecorator.</code><code class="descname">callgraph</code><span class="sig-paren">(</span><em>enabled=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.graphDecorator.callgraph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.instance">
+<span id="core-instance-module"></span><h2>core.instance module<a class="headerlink" href="#module-core.instance" title="Permalink to this headline">¶</a></h2>
+<p>States</p>
+<dl class="class">
+<dt id="core.instance.Instance">
+<em class="property">class </em><code class="descclassname">core.instance.</code><code class="descname">Instance</code><span class="sig-paren">(</span><em>instance=None</em>, <em>state=1</em><span class="sig-paren">)</span><a class="headerlink" href="#core.instance.Instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.instance.Instance.shutdown">
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.instance.Instance.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.interface">
+<span id="core-interface-module"></span><h2>core.interface module<a class="headerlink" href="#module-core.interface" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.interface.loadApp">
+<code class="descclassname">core.interface.</code><code class="descname">loadApp</code><span class="sig-paren">(</span><em>name</em>, <em>keys</em>, <em>values</em><span class="sig-paren">)</span><a class="headerlink" href="#core.interface.loadApp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.interface.loadModule">
+<code class="descclassname">core.interface.</code><code class="descname">loadModule</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.interface.loadModule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.interface.settings">
+<code class="descclassname">core.interface.</code><code class="descname">settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.interface.settings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.logging">
+<span id="core-logging-module"></span><h2>core.logging module<a class="headerlink" href="#module-core.logging" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.logging.ExecutedReciever">
+<em class="property">class </em><code class="descclassname">core.logging.</code><code class="descname">ExecutedReciever</code><a class="headerlink" href="#core.logging.ExecutedReciever" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="core.logging.ExecutedReciever.onExecuted">
+<code class="descname">onExecuted</code><span class="sig-paren">(</span><em>sender</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.logging.ExecutedReciever.onExecuted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.logging.NextReciever">
+<em class="property">class </em><code class="descclassname">core.logging.</code><code class="descname">NextReciever</code><a class="headerlink" href="#core.logging.NextReciever" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="core.logging.NextReciever.onNext">
+<code class="descname">onNext</code><span class="sig-paren">(</span><em>sender</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.logging.NextReciever.onNext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.logging.logEvent">
+<code class="descclassname">core.logging.</code><code class="descname">logEvent</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#core.logging.logEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.options">
+<span id="core-options-module"></span><h2>core.options module<a class="headerlink" href="#module-core.options" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.options.Options">
+<em class="property">class </em><code class="descclassname">core.options.</code><code class="descname">Options</code><span class="sig-paren">(</span><em>scheduler={}</em>, <em>children={}</em>, <em>enabled=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.options.Options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.step">
+<span id="core-step-module"></span><h2>core.step module<a class="headerlink" href="#module-core.step" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.step.Step">
+<em class="property">class </em><code class="descclassname">core.step.</code><code class="descname">Step</code><span class="sig-paren">(</span><em>id=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>input={}</em>, <em>next=[]</em>, <em>errors=[]</em>, <em>parent=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.step.Step.createNext">
+<code class="descname">createNext</code><span class="sig-paren">(</span><em>nextStep=''</em>, <em>flags=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.createNext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.step.Step.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>instance=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.execute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.step.Step.nextStep">
+<code class="descname">nextStep</code><span class="sig-paren">(</span><em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.nextStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.step.Step.removeNext">
+<code class="descname">removeNext</code><span class="sig-paren">(</span><em>nextStep=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.removeNext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.step.Step.set">
+<code class="descname">set</code><span class="sig-paren">(</span><em>attribute=None</em>, <em>value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.step.Step.toXML">
+<code class="descname">toXML</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.toXML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.step.Step.validateInput">
+<code class="descname">validateInput</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.validateInput" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.workflow">
+<span id="core-workflow-module"></span><h2>core.workflow module<a class="headerlink" href="#module-core.workflow" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.workflow.Workflow">
+<em class="property">class </em><code class="descclassname">core.workflow.</code><code class="descname">Workflow</code><span class="sig-paren">(</span><em>name=''</em>, <em>workflowConfig=None</em>, <em>children={}</em>, <em>parentController=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.workflow.Workflow.assignChild">
+<code class="descname">assignChild</code><span class="sig-paren">(</span><em>name=''</em>, <em>workflow=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.assignChild" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.createInstance">
+<code class="descname">createInstance</code><span class="sig-paren">(</span><em>app=''</em>, <em>device=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.createInstance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.createStep">
+<code class="descname">createStep</code><span class="sig-paren">(</span><em>id=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>input={}</em>, <em>next=[]</em>, <em>errors=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.createStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>start='start'</em>, <em>data=None</em>, <em>instances={}</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.execute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.executeChild">
+<code class="descname">executeChild</code><span class="sig-paren">(</span><em>name=''</em>, <em>start='start'</em>, <em>data=None</em>, <em>instances={}</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.executeChild" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.goToNextStep">
+<code class="descname">goToNextStep</code><span class="sig-paren">(</span><em>current=''</em>, <em>nextUp=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.goToNextStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.importApp">
+<code class="descname">importApp</code><span class="sig-paren">(</span><em>app=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.importApp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.parseFilter">
+<code class="descname">parseFilter</code><span class="sig-paren">(</span><em>filter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.parseFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.parseFlag">
+<code class="descname">parseFlag</code><span class="sig-paren">(</span><em>flag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.parseFlag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.parseNext">
+<code class="descname">parseNext</code><span class="sig-paren">(</span><em>next=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.parseNext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.parseOptions">
+<code class="descname">parseOptions</code><span class="sig-paren">(</span><em>ops=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.parseOptions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.parseSteps">
+<code class="descname">parseSteps</code><span class="sig-paren">(</span><em>stepConfig=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.parseSteps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.removeStep">
+<code class="descname">removeStep</code><span class="sig-paren">(</span><em>id=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.removeStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.workflow.Workflow.toXML">
+<code class="descname">toXML</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.toXML" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-core.appBlueprint">core.appBlueprint module</a></li>
+<li><a class="reference internal" href="#module-core.arguments">core.arguments module</a></li>
+<li><a class="reference internal" href="#module-core.case">core.case module</a></li>
+<li><a class="reference internal" href="#module-core.config">core.config module</a></li>
+<li><a class="reference internal" href="#module-core.controller">core.controller module</a></li>
+<li><a class="reference internal" href="#module-core.ffk">core.ffk module</a></li>
+<li><a class="reference internal" href="#module-core.forms">core.forms module</a></li>
+<li><a class="reference internal" href="#module-core.graphDecorator">core.graphDecorator module</a></li>
+<li><a class="reference internal" href="#module-core.instance">core.instance module</a></li>
+<li><a class="reference internal" href="#module-core.interface">core.interface module</a></li>
+<li><a class="reference internal" href="#module-core.logging">core.logging module</a></li>
+<li><a class="reference internal" href="#module-core.options">core.options module</a></li>
+<li><a class="reference internal" href="#module-core.step">core.step module</a></li>
+<li><a class="reference internal" href="#module-core.workflow">core.workflow module</a></li>
+<li><a class="reference internal" href="#module-core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/docs/core.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, IADGOV.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/docs/core.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -130,6 +130,7 @@ def create_user():
 
         db.session.commit()
 
+
 @app.route("/")
 @login_required
 def default():
@@ -138,6 +139,7 @@ def default():
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
+
 
 @app.route("/workflow/", methods=['GET'])
 def workflow():
