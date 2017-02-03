@@ -1,4 +1,5 @@
-import uuid, datetime
+import uuid
+import datetime
 from functools import partial
 
 import logging
@@ -6,13 +7,71 @@ import logging
 logging.basicConfig()
 
 
+class _SubscriptionEventList(object):
+    def __init__(self, events=None, all=False):
+        self.all = all
+        self.events = events if (events is not None and not self.all) else []
+
+    def is_subscribed(self, message_name):
+        return True if self.all else message_name in self.events
+
+    @staticmethod
+    def construct(events):
+        if events is not None:
+            if events == '*':
+                return _SubscriptionEventList(all=True)
+            else:
+                return _SubscriptionEventList(events=events)
+        else:
+            return _SubscriptionEventList()
+
+    def __repr__(self):
+        return str({'all': str(self.all), 'events': str(self.events)})
+
+
+class GlobalSubscriptions(object):
+    def __init__(self, controller=None, workflow=None, step=None, next_step=None, flag=None, filter=None):
+        self.controller = _SubscriptionEventList.construct(controller)
+        self.workflow = _SubscriptionEventList.construct(workflow)
+        self.step = _SubscriptionEventList.construct(step)
+        self.next_step = _SubscriptionEventList.construct(next_step)
+        self.flag = _SubscriptionEventList.construct(flag)
+        self.filter = _SubscriptionEventList.construct(filter)
+
+    def __iter__(self):
+        yield self.controller
+        yield self.workflow
+        yield self.step
+        yield self.next_step
+        yield self.flag
+        yield self.filter
+
+
+class Subscription(object):
+    def __init__(self, events=None, subscriptions=None, disabled=None):
+        self.events = _SubscriptionEventList.construct(events)
+        self.subscriptions = subscriptions if subscriptions is not None else {}  # in form of {'name' => Subscription()}
+        self.disabled = _SubscriptionEventList.construct(disabled)
+
+    def is_subscribed(self, message_name, global_subs=None):
+        global_subs = global_subs if global_subs is not None else []
+        return ((self.events.is_subscribed(message_name) or global_subs.is_subscribed(message_name))
+                and not self.disabled.is_subscribed(message_name))
+
+    def __repr__(self):
+        return str({'events': str(self.events),
+                    'disabled': str(self.disabled),
+                    'subscriptions': str(self.subscriptions)})
+
+
 class Case(object):
-    def __init__(self, id="", history=None, subscriptions=None):
+    def __init__(self, id="", history=None, subscriptions=None, global_subscriptions=None):
         self.id = id
         self.uid = uuid.uuid4()
         self.history = history if history is not None else []
         self.enabled = False
         self.subscriptions = subscriptions if subscriptions is not None else {}
+        self.global_subscriptions = global_subscriptions if global_subscriptions is not None else GlobalSubscriptions()
 
     def __enter__(self):
         self.enabled = True
@@ -25,8 +84,8 @@ class Case(object):
 
     def __repr__(self):
         return str({'id': self.id,
-                    'history': str(self.history),
-                    'subscriptions': str(self.subscriptions)})
+                    'history': self.history,
+                    'subscriptions': self.subscriptions})
 
 
 cases = {}
@@ -47,118 +106,72 @@ def __create_event_entry(sender, entry_message, entry_type, data=None, name=""):
         "timestamp": str(datetime.datetime.utcnow()),
         "type": entry_type,
         "caller": name,
+        "ancestry": str(sender.ancestry),
         "message": entry_message,
         "data": data
     }
 
 
-def __add_entry_to_case(sender, event, entry_condition):
+def __add_entry_to_case(sender, event, message_name):
     for case in cases:
         if cases[case].enabled:
-            for key in cases[case].subscriptions:
-                if entry_condition(sender, case, key):
-                    cases[case].add_event(event=event)
+            subscriptions = cases[case].subscriptions
+            for level, (ancestry_level_name, global_sub) in enumerate(zip(sender.ancestry,
+                                                                          cases[case].global_subscriptions)):
+                if subscriptions and ancestry_level_name in subscriptions:
+                    if (level == len(sender.ancestry) - 1
+                            and subscriptions[ancestry_level_name].is_subscribed(message_name, global_subs=global_sub)):
+                        cases[case].add_event(event=event)
+                    else:
+                        subscriptions = subscriptions[ancestry_level_name].subscriptions
+                        continue
+                else:
+                    break
 
 
-def __add_entry_to_case_wrapper(sender, event_type, entry_condition, message_name, entry_message):
+def __add_entry_to_case_wrapper(sender, event_type, message_name, entry_message):
     event_entry = __create_event_entry(sender, event_type, entry_message)
-    __add_entry_to_case(sender, event_entry, partial(entry_condition, message_name=message_name))
+    __add_entry_to_case(sender, event_entry, message_name)
 
 
-def __add_entry(message_name, event_type, entry_condition, entry_message):
+def __add_entry(message_name, event_type, entry_message):
     return partial(__add_entry_to_case_wrapper,
                    event_type=event_type,
-                   entry_condition=entry_condition,
                    message_name=message_name,
                    entry_message=entry_message)
-
-
-def __is_message_tracked(message_name, case, subscription_key):
-    return message_name in cases[case].subscriptions[subscription_key]
-
-# System Cases
-
-
-def __system_entry_condition(sender, case, subscription_key, message_name):
-    return sender.name in cases[case].subscriptions and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_system_entry(entry_message):
     return partial(__add_entry,
                    event_type='SYSTEM',
-                   entry_condition=__system_entry_condition,
                    entry_message=entry_message)
-
-
-# Workflow Cases
-
-def __workflow_entry_condition(sender, case, subscription_key, message_name):
-    return (sender.parentController in cases[case].subscriptions
-            and __is_message_tracked(message_name, case, subscription_key))
 
 
 def add_workflow_entry(entry_message):
     return partial(__add_entry,
                    event_type='WORKFLOW',
-                   entry_condition=__workflow_entry_condition,
                    entry_message=entry_message)
-
-
-#  Step Cases
-
-
-def __step_entry_condition(sender, case, subscription_key, message_name):
-    steps_tracked = subscription_key.split(':')
-    return ((sender.parent_workflow == steps_tracked[0] if steps_tracked else False)
-            and __is_message_tracked(message_name, case, subscription_key))
 
 
 def add_step_entry(entry_message):
     return partial(__add_entry,
                    event_type='STEP',
-                   entry_condition=__step_entry_condition,
                    entry_message=entry_message)
-
-
-#  Next Execution Event Cases
-def __is_step_tracked(sender_id, subscription_key):
-    steps_tracked = subscription_key.split(':')
-    return sender_id in steps_tracked[1:] if len(steps_tracked) > 1 else False
-
-
-def __next_step_entry_condition(sender, case, subscription_key, message_name):
-    return __is_step_tracked(sender.id, subscription_key) and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_next_step_entry(entry_message):
     return partial(__add_entry,
                    event_type='NEXT',
-                   entry_condition=__next_step_entry_condition,
                    entry_message=entry_message)
-
-
-#  Flag Events
-
-
-def __flag_entry_condition(sender, case, subscription_key, message_name):
-    return __is_step_tracked(sender.id, subscription_key) and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_flag_entry(entry_message):
     return partial(__add_entry,
                    event_type='FLAG',
-                   entry_condition=__flag_entry_condition,
                    entry_message=entry_message)
-
-# Filter Events
-
-
-def __filter_entry_condition(sender, case, subscription_key, message_name):
-    return __is_step_tracked(sender.id, subscription_key) and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_filter_entry(entry_message):
     return partial(__add_entry,
                    event_type='FILTER',
-                   entry_condition=__filter_entry_condition,
                    entry_message=entry_message)

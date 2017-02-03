@@ -1,9 +1,7 @@
 import xml.etree.cElementTree as et
-from blinker import Signal
-
 from core.ffk import Next
 from core import case
-from core.events import Event, EventHandler
+from core.events import EventHandler
 
 
 class StepEventHandler(EventHandler):
@@ -15,7 +13,8 @@ class StepEventHandler(EventHandler):
 
 
 class Step(object):
-    def __init__(self, id="", action="", app="", device="", input=None, next=None, errors=None, parent=""):
+    def __init__(self, id="", action="", app="", device="", input=None, next=None, errors=None, parent="",
+                 ancestry=None, ):
         self.id = id
         self.action = action
         self.app = app
@@ -28,6 +27,8 @@ class Step(object):
         self.nextUp = None
         self.eventlog = []
         self.stepEventHandler = StepEventHandler(self.eventlog)
+        self.ancestry = list(ancestry) if ancestry is not None else []
+        self.ancestry.append(self.id)
 
     def validateInput(self):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
@@ -57,7 +58,7 @@ class Step(object):
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        newConditional = Next(self.id, nextStep=nextStep, flags=flags)
+        newConditional = Next(self.id, nextStep=nextStep, flags=flags, ancestry=self.ancestry)
         if any(conditional == newConditional for conditional in self.conditionals):
             return False
         self.conditionals.append(newConditional)
@@ -66,6 +67,8 @@ class Step(object):
     def removeNext(self, nextStep=""):
         self.conditionals = [x for x in self.conditionals if x.nextStep != nextStep]
         return True
+
+
 
     def toXML(self):
         step = et.Element("step")
@@ -107,3 +110,5 @@ class Step(object):
         if self.output:
             output["output"] = self.output
         return str(output)
+
+

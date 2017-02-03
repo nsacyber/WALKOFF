@@ -73,6 +73,7 @@ class Controller(object):
                                     | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED)
         self.scheduler.add_listener(self.jobStatusListener.callback(self), EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+        self.ancestry = [self.name]
 
     def loadWorkflowsFromFile(self, path):
         self.tree = et.ElementTree(file=path)
