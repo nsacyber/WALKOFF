@@ -60,45 +60,48 @@ def __add_entry_to_case(sender, event, entry_condition):
                     cases[case].add_event(event=event)
 
 
+def __add_entry_to_case_wrapper(sender, event_type, entry_condition, message_name, entry_message):
+    event_entry = __create_event_entry(sender, event_type, entry_message)
+    __add_entry_to_case(sender, event_entry, partial(entry_condition, message_name=message_name))
+
+
+def __add_entry(message_name, event_type, entry_condition, entry_message):
+    return partial(__add_entry_to_case_wrapper,
+                   event_type=event_type,
+                   entry_condition=entry_condition,
+                   message_name=message_name,
+                   entry_message=entry_message)
+
+
+def __is_message_tracked(message_name, case, subscription_key):
+    return message_name in cases[case].subscriptions[subscription_key]
+
 # System Cases
 
 
 def __system_entry_condition(sender, case, subscription_key, message_name):
-    return (sender.name in cases[case].subscriptions
-            and message_name in cases[case].subscriptions[subscription_key])
-
-
-def __add_system_entry_to_case(sender, message_name, entry_message):
-    event_entry = __create_event_entry(sender, entry_message, "SYSTEM")
-    __add_entry_to_case(sender, event_entry, partial(__system_entry_condition, message_name=message_name))
-
-
-def __add_system_entry(message_name, entry_message):
-    return partial(__add_system_entry_to_case, message_name=message_name, entry_message=entry_message)
+    return sender.name in cases[case].subscriptions and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_system_entry(entry_message):
-    return partial(__add_system_entry, entry_message=entry_message)
+    return partial(__add_entry,
+                   event_type='SYSTEM',
+                   entry_condition=__system_entry_condition,
+                   entry_message=entry_message)
 
 
 # Workflow Cases
 
 def __workflow_entry_condition(sender, case, subscription_key, message_name):
     return (sender.parentController in cases[case].subscriptions
-            and message_name in cases[case].subscriptions[subscription_key])
-
-
-def __add_workflow_entry_to_case(sender, message_name, entry_message):
-    event_entry = __create_event_entry(sender, entry_message, "WORKFLOW")
-    __add_entry_to_case(sender, event_entry, partial(__workflow_entry_condition, message_name=message_name))
-
-
-def __add_workflow_entry(message_name, entry_message):
-    return partial(__add_workflow_entry_to_case, message_name=message_name, entry_message=entry_message)
+            and __is_message_tracked(message_name, case, subscription_key))
 
 
 def add_workflow_entry(entry_message):
-    return partial(__add_workflow_entry, entry_message=entry_message)
+    return partial(__add_entry,
+                   event_type='WORKFLOW',
+                   entry_condition=__workflow_entry_condition,
+                   entry_message=entry_message)
 
 
 #  Step Cases
@@ -106,82 +109,56 @@ def add_workflow_entry(entry_message):
 
 def __step_entry_condition(sender, case, subscription_key, message_name):
     steps_tracked = subscription_key.split(':')
-    return ((sender.parent_workflow == steps_tracked[0] if steps_tracked else False))
-
-
-def __add_step_entry_to_case(sender, message_name, entry_message, **kwargs):
-    event_entry = __create_event_entry(sender, entry_message, "STEP")
-    __add_entry_to_case(sender, event_entry, partial(__step_entry_condition, message_name=message_name))
-
-
-def __add_step_entry(message_name, entry_message):
-    return partial(__add_step_entry_to_case, message_name=message_name, entry_message=entry_message)
+    return ((sender.parent_workflow == steps_tracked[0] if steps_tracked else False)
+            and __is_message_tracked(message_name, case, subscription_key))
 
 
 def add_step_entry(entry_message):
-    return partial(__add_step_entry, entry_message=entry_message)
+    return partial(__add_entry,
+                   event_type='STEP',
+                   entry_condition=__step_entry_condition,
+                   entry_message=entry_message)
 
 
 #  Next Execution Event Cases
+def __is_step_tracked(sender_id, subscription_key):
+    steps_tracked = subscription_key.split(':')
+    return sender_id in steps_tracked[1:] if len(steps_tracked) > 1 else False
+
 
 def __next_step_entry_condition(sender, case, subscription_key, message_name):
-    steps_tracked = subscription_key.split(':')
-    return ((sender.id in steps_tracked[1:] if len(steps_tracked) > 1 else False)
-            and message_name in cases[case].subscriptions[subscription_key])
-
-
-def __add_next_step_entry_to_case(sender, message_name, entry_message):
-    event_entry = __create_event_entry(sender, entry_message, "NEXT")
-    __add_entry_to_case(sender, event_entry, partial(__next_step_entry_condition, message_name=message_name))
-
-
-def __add_next_step_entry(message_name, entry_message):
-    return partial(__add_next_step_entry_to_case, message_name=message_name, entry_message=entry_message)
+    return __is_step_tracked(sender.id, subscription_key) and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_next_step_entry(entry_message):
-    return partial(__add_next_step_entry, entry_message=entry_message)
+    return partial(__add_entry,
+                   event_type='NEXT',
+                   entry_condition=__next_step_entry_condition,
+                   entry_message=entry_message)
 
 
 #  Flag Events
 
 
 def __flag_entry_condition(sender, case, subscription_key, message_name):
-    steps_tracked = subscription_key.split(':')
-    return ((sender.id in steps_tracked[1:] if len(steps_tracked) > 1 else False)
-            and message_name in cases[case].subscriptions[subscription_key])
-
-
-def __add_flag_entry_to_case(sender, message_name, entry_message):
-    event_entry = __create_event_entry(sender, entry_message, "FLAG")
-    __add_entry_to_case(sender, event_entry, partial(__flag_entry_condition, message_name=message_name))
-
-
-def __add_flag_entry(message_name, entry_message):
-    return partial(__add_flag_entry_to_case, message_name=message_name, entry_message=entry_message)
+    return __is_step_tracked(sender.id, subscription_key) and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_flag_entry(entry_message):
-    return partial(__add_flag_entry, entry_message=entry_message)
-
+    return partial(__add_entry,
+                   event_type='FLAG',
+                   entry_condition=__flag_entry_condition,
+                   entry_message=entry_message)
 
 # Filter Events
 
 
 def __filter_entry_condition(sender, case, subscription_key, message_name):
-    steps_tracked = subscription_key.split(':')
-    return ((sender.id in steps_tracked[1:] if len(steps_tracked) > 1 else False)
-            and message_name in cases[case].subscriptions[subscription_key])
-
-
-def __add_filter_entry_to_case(sender, message_name, entry_message):
-    event_entry = __create_event_entry(sender, entry_message, "FILTER")
-    __add_entry_to_case(sender, event_entry, partial(__filter_entry_condition, message_name=message_name))
-
-
-def __add_filter_entry(message_name, entry_message):
-    return partial(__add_filter_entry_to_case, message_name=message_name, entry_message=entry_message)
+    return __is_step_tracked(sender.id, subscription_key) and __is_message_tracked(message_name, case, subscription_key)
 
 
 def add_filter_entry(entry_message):
-    return partial(__add_filter_entry, entry_message=entry_message)
+    return partial(__add_entry,
+                   event_type='FILTER',
+                   entry_condition=__filter_entry_condition,
+                   entry_message=entry_message)
