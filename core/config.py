@@ -1,7 +1,9 @@
 import json, importlib
-from os import listdir, walk, sep
+from os import listdir, walk, sep, environ
 from os.path import isfile, join, splitext
-import jinja2
+
+#Path to graphviz location
+environ["PATH"] = "C:/Program Files (x86)/Graphviz2.38/bin"
 
 # Folder path for new templates
 templatesPath = join('.', 'data', 'templates')

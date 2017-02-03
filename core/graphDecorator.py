@@ -1,12 +1,10 @@
 from pycallgraph import PyCallGraph
 from pycallgraph.output import GraphvizOutput
 from core import config
-from os import sep
+
 """
 Let's you use PyCallGraph as a decorator
 """
-
-
 def callgraph(enabled=False):
     def argwrapper(func):
         def callwrapper(*args, **kwargs):

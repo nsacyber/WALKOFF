@@ -12,7 +12,7 @@ class TestExecutionLoads(unittest.TestCase):
     """
 
     def setUp(self):
-        if not isdir(coreConig.profileVisualizationsPath):
+        if not isdir(coreConfig.profileVisualizationsPath):
             mkdir(coreConfig.profileVisualizationsPath)
 
     @graphDecorator.callgraph(enabled=True)
