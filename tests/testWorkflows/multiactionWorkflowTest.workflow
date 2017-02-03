@@ -37,8 +37,7 @@
             <input>
                 <call format="str">Hello World</call>
             </input>
-            <next>
-            </next>
+            <next></next>
             <error></error>
         </step>
     </steps>

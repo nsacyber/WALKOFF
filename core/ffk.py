@@ -27,11 +27,13 @@ class FilterEventHandler(EventHandler):
 
 
 class Next(object):
-    def __init__(self, previous_step_id="", nextStep="", nextWorkflow="", flags=None):
+    def __init__(self, previous_step_id="", nextStep="", nextWorkflow="", flags=None, ancestry=None):
         self.nextStep = nextStep
         self.id = previous_step_id
         self.flags = flags if flags is not None else []
         self.event_handler = NextStepEventHandler()
+        self.ancestry = list(ancestry) if ancestry is not None else []
+        self.ancestry.append(self.nextStep)
 
     def toXML(self, tag="next"):
         elem = et.Element(tag)
@@ -75,12 +77,14 @@ class Next(object):
 
 
 class Flag(object):
-    def __init__(self, previous_step_id="", action="", args=None, filters=None):
+    def __init__(self, previous_step_id="", action="", args=None, filters=None, ancestry=None):
         self.action = action
         self.args = args if args is not None else {}
         self.filters = filters if filters is not None else []
         self.event_handler = FlagEventHandler()
         self.id = previous_step_id
+        self.ancestry = list(ancestry) if ancestry is not None else []
+        self.ancestry.append(self.action)
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
@@ -120,7 +124,7 @@ class Flag(object):
         if module:
             result = None
             if self.validateArgs():
-                result = getattr(module, "main")(args=self.args, value=output)
+                result = getattr(module, "main")(args=self.args, value=data)
                 self.event_handler.execute_event_code(self, 'FlagArgsValid')
             else:
                 self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
@@ -142,13 +146,15 @@ class Flag(object):
 
 
 class Filter(object):
-    def __init__(self, previous_step_id="", action="", args=None):
+    def __init__(self, previous_step_id="", action="", args=None, ancestry=None):
         self.action = action
         safeargs = args if args is not None else {}
         self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
                      for arg in safeargs}
         self.event_handler = FilterEventHandler()
         self.id = previous_step_id
+        self.ancestry = list(ancestry) if ancestry is not None else []
+        self.ancestry.append(self.action)
 
     def toXML(self):
         elem = et.Element("filter")

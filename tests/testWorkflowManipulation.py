@@ -237,10 +237,13 @@ class TestWorkflowManipulation(unittest.TestCase):
         output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
         self.assertTrue(output["action"])
         self.assertTrue(output["args"])
-        self.assertTrue(output["filters"] == [{'action': 'length', 'args': {},
+        self.assertTrue(output["filters"] == [{'action': 'length',
+                                               'args': {},
                                                'event_handler': {'event_type': 'filterHandler',
                                                                  'events': "['FilterSuccess', 'FilterError']"},
-                                               'id': 'start'}])
+                                               'id': 'start',
+                                               'ancestry': ['defaultController', 'helloWorldWorkflow', 'start', '1',
+                                                            'regMatch', 'length']}])
     """
         CRUD - Filter
     """
