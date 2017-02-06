@@ -26,3 +26,6 @@ def loadApp(name, keys, values):
 
 def settings():
     return {}, forms.settingsForm()
+
+def playbook():
+    return {}, None

@@ -89,6 +89,7 @@ class incomingDataForm(Form):
 
 class settingsForm(Form):
     templatePath = StringField('templatePath')
+    profileVisualizationsPath = StringField('profileVisualizationsPath')
     keywordsPath = StringField('keywordsPath')
     dbPath = StringField('dbPath')
 
