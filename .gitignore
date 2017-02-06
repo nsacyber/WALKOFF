@@ -1,7 +1,12 @@
 *.bak
 *.pyc
-.idea/
-tests/profileVisualizations/*
 *.ipynb
 *.sw[ponm]
 *~
+*.iml
+.idea/workspace.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+data/walkoff.db
+tests/profileVisualizations/*

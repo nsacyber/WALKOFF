@@ -8,7 +8,7 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 
 from jinja2 import Environment, FileSystemLoader
 
-from core import config, appBlueprint
+from core import config, appBlueprint, interface
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 
@@ -145,6 +145,18 @@ def default():
 def workflow():
     return ""
 
+
+
+#Returns System-Level Interface Pages
+@app.route('/interface/<string:name>/display', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def systemPages(name):
+    if current_user.is_authenticated and name:
+        args, form = getattr(interface, name)()
+        return render_template("pages/" + name + "/index.html", form=form, **args)
+    else:
+        return {"status" : "Could Not Log In."}
 
 #Start Flask
 def start(config_type=None):
