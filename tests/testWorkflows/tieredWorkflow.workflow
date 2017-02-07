@@ -68,7 +68,6 @@
                 <next></next>
                 <error></error>
             </step>
-
         </steps>
     </workflow>
 </workflows>

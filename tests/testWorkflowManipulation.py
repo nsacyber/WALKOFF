@@ -105,8 +105,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(step.find(".//action").text == "repeatBackToMe")
         self.assertTrue(step.find(".//app").text == "HelloWorld")
         self.assertTrue(step.find(".//device").text == "hwTest")
-        self.assertTrue(step.find(".//next") == None)
-        self.assertTrue(step.find(".//error") == None)
+        self.assertTrue(step.find(".//next") is None)
+        self.assertTrue(step.find(".//error") is None)
 
         self.executionTest()
 

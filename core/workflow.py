@@ -30,6 +30,7 @@ class Workflow(object):
         self.children = children if (children is not None) else {}
         self.eventlog = []
         self.workflowEventHandler = WorkflowEventHandler(self.eventlog)
+        self.__instances = {}
 
     def parseOptions(self, ops=None):
         # Parses out the options for each item if there are no subelements then pass the text instead
@@ -129,61 +130,70 @@ class Workflow(object):
             current = nextUp
         return current
 
-    def executeChild(self, name="", start="start", data=None, instances=None):
-        instances = instances if instances is not None else {}
-        if name in self.options.children and type(self.options.children[name]).__name__ == "Workflow":
-            steps, instances = self.options.children[name].execute(start=start, data=data, instances=instances)
-            return steps
-
-    def execute(self, start="start", data=None, instances=None):
+    def execute(self, start="start"):
         total_steps = []
-        instances = instances if instances is not None else {}
-        for __ in self.__step_generator(start, instances, total_steps):
-            self.workflowEventHandler.execute_event_code(self, 'NextStepFound')
+        instances = {}
+        steps = self.__steps(start=start)
 
+        for step in steps:
+            if step:
+                self.workflowEventHandler.execute_event_code(self, 'NextStepFound')
+                if step.device not in instances:
+                    instances[step.device] = self.createInstance(app=step.app, device=step.device)
+                    self.workflowEventHandler.execute_event_code(self, 'InstanceCreated')
+
+                for arg in step.input:
+                    step.input[arg].template(steps=total_steps)
+
+                error_flag = self.__execute_step(step, instances[step.device])
+                total_steps.append(step)
+                steps.send(error_flag)
         self.__shutdown(instances)
-
         return total_steps, str(instances)
 
-    def __step_generator(self, start, instances, total_steps):
-        current = start
+    def __steps(self, start="start"):
+        initial_step_name = start
+        current_name = initial_step_name
+        current = self.steps[current_name]
         while current:
-            next_step = self.__execute_step(self.steps[current], instances, total_steps)
-            yield next_step
-            current = self.goToNextStep(current=current, nextUp=next_step)
+            error_flag = yield current
+            next_step = current.nextStep(error=error_flag)
 
-    def __execute_step(self, step, instances, total_steps):
-        if step.device not in instances:
-            instances[step.device] = self.createInstance(app=step.app, device=step.device)
-            self.workflowEventHandler.execute_event_code(self, 'InstanceCreated')
+            # Check for call to child workflow
+            if next_step and next_step[0] == '@':
+                child_step_generator, child_next_step = self.__get_child_step_generator(next_step)
+                if child_step_generator:
+                    for child_step in child_step_generator:
+                        if child_step:
+                            yield  # needed so outer for-loop is in sync
+                            error_flag = yield child_step
+                            child_step_generator.send(error_flag)
+                    next_step = child_next_step
 
-        for arg in step.input:
-            step.input[arg].template(steps=total_steps)
+            current_name = self.goToNextStep(current=current_name, nextUp=next_step)
+            current = self.steps[current_name] if current_name is not None else None
+            yield  # needed so that when for-loop calls next() it doesn't advance too far
+        yield  # needed so you can avoid catching StopIteration exception
 
+    def __execute_step(self, step, instance):
         try:
-            step.execute(instance=instances[step.device]())
+            step.execute(instance=instance())
             self.workflowEventHandler.execute_event_code(self, 'StepExecutionSuccess')
             error_flag = False
         except Exception as e:
             error_flag = True
             step.output = str(e)
         finally:
-            total_steps.append(step)
-            return self.__next_step(step, error_flag, total_steps)
+            return error_flag
 
-    def __next_step(self, step, error_flag, total_steps):
-        next_step = step.nextStep(error=error_flag)
-
-        # Check for call to child workflow
-        if next_step and next_step[0] == '@':
-            params = next_step.split(":")
-            params[0] = params[0].lstrip("@")
+    def __get_child_step_generator(self, tiered_step_str):
+            params = tiered_step_str.split(':')
             if len(params) == 3:
-                childWorkflowOutput = self.executeChild(name=params[0], start=params[1])
-                if childWorkflowOutput:
-                    total_steps.extend(childWorkflowOutput)
-                    next_step = params[2]
-        return next_step
+                child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
+                if (child_name in self.options.children
+                    and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                    child_step_generator = self.options.children[child_name].__steps(start=child_start)
+            return child_step_generator, child_next
 
     def __shutdown(self, instances):
         try:
