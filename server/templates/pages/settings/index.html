@@ -13,13 +13,13 @@
                 {{ render_field(form.profileVisualizationsPath) }}
                 {{ render_field(form.keywordsPath) }}
                 {{ render_field(form.dbPath) }}
-            <h3><i> AuthConfig </i></h3>
+            <h3><i> Auth Config </i></h3>
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.TLS_version) }}
                 {{ render_field(form.certificatePath) }}
                 {{ render_field(form.https) }}
                 {{ render_field(form.privateKeyPath) }}
-            <h3><i> InterfaceConfig </i></h3>
+            <h3><i> Interface Config </i></h3>
             {% from "pages/_formhelpers.html" import render_field %}
                 {{ render_field(form.debug) }}
                 {{ render_field(form.defaultServer) }}
