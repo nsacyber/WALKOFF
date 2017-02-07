@@ -146,6 +146,14 @@ def default():
 def workflow():
     return ""
 
+@app.route("/configuration/<string:key>", methods=['POST'])
+@auth_token_required
+@roles_required("admin")
+def configValues(key):
+    if current_user.is_authenticated and key:
+        if hasattr(config, key):
+            return json.dumps({str(key): str(getattr(config, key))})
+
 #Returns System-Level Interface Pages
 @app.route('/interface/<string:name>/display', methods=["POST"])
 @auth_token_required
@@ -161,23 +169,23 @@ def systemPages(name):
 def start(config_type=None):
     global db, env
 
-    if config.authConfig["https"].lower() == "true":
+    if config.https.lower() == "true":
         #Sets up HTTPS
-        if config.authConfig["TLS_version"] == "1.2":
+        if config.TLS_version == "1.2":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        elif config.authConfig["TLS_version"] == "1.1":
+        elif config.TLS_version == "1.1":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
         else:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
         #Provide user with informative error message
-        displayIfFileNotFound(config.authConfig["certificatePath"])
-        displayIfFileNotFound(config.authConfig["privateKeyPath"])
+        displayIfFileNotFound(config.certificatePath)
+        displayIfFileNotFound(config.privateKeyPath)
 
-        context.load_cert_chain(config.authConfig["certificatePath"], config.authConfig["privateKeyPath"])
-        app.run(debug=config.interfaceConfig["debug"], ssl_context=context, host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]),threaded=True)
+        context.load_cert_chain(config.certificatePath, config.privateKeyPath)
+        app.run(debug=config.debug, ssl_context=context, host=config.host, port=int(config.port),threaded=True)
     else:
-        app.run(debug=config.interfaceConfig["debug"], host=config.interfaceConfig["host"], port=int(config.interfaceConfig["port"]),threaded=True)
+        app.run(debug=config.debug, host=config.host, port=int(config.port),threaded=True)
 
 def displayIfFileNotFound(filepath):
     if not os.path.isfile(filepath):
