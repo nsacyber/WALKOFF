@@ -22,6 +22,7 @@ class WorkflowEventHandler(EventHandler):
 class Workflow(object):
     def __init__(self, name="", workflowConfig=None, children=None, parentController=""):
         self.name = name
+        self.ancestry = [parentController, self.name]
         self.parentController = parentController
         self.workflowXML = workflowConfig
         self.options = self.parseOptions(workflowConfig.find(".//options"))
@@ -53,30 +54,31 @@ class Workflow(object):
             device = step.find("device").text
             input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
                      step.findall("input/*")}
-            next = [self.parseNext(id, nextStep) for nextStep in step.findall("next")]
-            errors = [self.parseNext(id, error) for error in step.findall("error")]
-            steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input, next=next, errors=errors,
-                                    parent=self.name)
+            steps[id] = wfstep.Step(id=id, action=action, app=app, device=device, input=input,
+                                    parent=self.name, ancestry=self.ancestry)
+            steps[id].conditionals = [self.parseNext(id, steps[id].ancestry, next=nextStep) for nextStep in step.findall("next")]
+            steps[id].errors = [self.parseNext(id, steps[id].ancestry, next=error) for error in step.findall("error")]
         return steps
 
-    def parseNext(self, previous_id, next=None):
-        flags = [self.parseFlag(previous_id, flag) for flag in next.findall("flag")]
+    def parseNext(self, previous_id, ancestry, next=None):
         nextId = next.get("step")
-        nextStep = ffk.Next(previous_id, nextStep=nextId, flags=flags)
+        nextStep = ffk.Next(previous_id, nextStep=nextId, ancestry=ancestry)
+        nextStep.flags = [self.parseFlag(previous_id, nextStep.ancestry, flag) for flag in next.findall("flag")]
         return nextStep
 
-    def parseFlag(self, previous_id, flag=None):
+    def parseFlag(self, previous_id, ancestry, flag=None):
         action = flag.get("action")
-        filters = [self.parseFilter(previous_id, filter) for filter in flag.findall("filters/*")]
         args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
                 flag.findall("args/*")}
-        return ffk.Flag(previous_step_id=previous_id, action=action, filters=filters, args=args)
+        parsed_flag = ffk.Flag(previous_step_id=previous_id, action=action, args=args, ancestry=ancestry)
+        parsed_flag.filters = [self.parseFilter(previous_id, parsed_flag.ancestry, filter) for filter in flag.findall("filters/*")]
+        return parsed_flag
 
-    def parseFilter(self, previous_id, filter=None):
+    def parseFilter(self, previous_id, ancestry, filter=None):
         action = filter.get("action")
         args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
                 filter.findall("args/*")}
-        return ffk.Filter(previous_step_id=previous_id, action=action, args=args)
+        return ffk.Filter(previous_step_id=previous_id, action=action, args=args, ancestry=ancestry)
 
     def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
         # Creates new step object
