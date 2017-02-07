@@ -1,14 +1,14 @@
 $.ajax({
-    url:'configuration/templatePath',
+    url:'configuration/templatesPath',
     data:{},
     headers:{"Authentication-Token":authKey},
     type:"POST",
     success: function(e){
         data = JSON.parse(e);
-        $("#templatePath").val(data["templatePath"]);
+        $("#templatePath").val(data["templatesPath"]);
     },
     error: function(e){
-        $("#templatePath").val("Error");
+        $("#templatesPath").val("Error");
     }
 });
 $.ajax({
