@@ -130,7 +130,9 @@ def create_user():
 
         db.session.commit()
 
-
+"""
+    URLS
+"""
 @app.route("/")
 @login_required
 def default():
@@ -140,12 +142,9 @@ def default():
     else:
         return {"status": "Could Not Log In."}
 
-
 @app.route("/workflow/", methods=['GET'])
 def workflow():
     return ""
-
-
 
 #Returns System-Level Interface Pages
 @app.route('/interface/<string:name>/display', methods=["POST"])
