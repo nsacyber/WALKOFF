@@ -3,6 +3,9 @@
     <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
     <head>
         <style>
+            #setForm input[type=text]{
+                width: 300px;
+            }
             #settingsForm {
                 padding-left: 50px;
             }
@@ -14,6 +17,10 @@
             }
             #interfaceConfig {
                 padding-left: 50px;
+            }
+            #formSubmit{
+                position:relative;
+                top:25px;
             }
             h1 {
                 font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
