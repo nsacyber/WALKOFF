@@ -19,9 +19,9 @@ class TestWorkflowManipulation(unittest.TestCase):
         instances = ast.literal_eval(instances)
         self.assertTrue(len(steps) == 2)
         self.assertTrue(len(instances) == 1)
-        self.assertTrue(steps[0].id == "start")
+        self.assertTrue(steps[0].name == "start")
         self.assertTrue(steps[0].output == "REPEATING: Hello World")
-        self.assertTrue(steps[1].id == "1")
+        self.assertTrue(steps[1].name == "1")
         self.assertTrue(steps[1].output == "REPEATING: This is a test.")
 
     """
@@ -81,7 +81,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         # Check attributes
         step = self.testWorkflow.steps["1"]
-        self.assertTrue(step.id == "1")
+        self.assertTrue(step.name == "1")
         self.assertTrue(step.action == "repeatBackToMe")
         self.assertTrue(step.app == "HelloWorld")
         self.assertTrue(step.device == "hwTest")
@@ -156,7 +156,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         step = self.testWorkflow.steps["start"]
 
         self.assertTrue(len(step.conditionals) == 2)
-        self.assertTrue(step.conditionals[1].nextStep == "2")
+        self.assertTrue(step.conditionals[1].name == "2")
 
         # Check XML
         self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next")) == 2)
@@ -178,9 +178,9 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_updateNext(self):
         step = self.testWorkflow.steps["start"]
-        self.assertTrue(step.conditionals[0].nextStep == "1")
-        step.conditionals[0].nextStep = "2"
-        self.assertTrue(step.conditionals[0].nextStep == "2")
+        self.assertTrue(step.conditionals[0].name == "1")
+        step.conditionals[0].name = "2"
+        self.assertTrue(step.conditionals[0].name == "2")
 
         xml = self.testWorkflow.toXML()
 
@@ -237,13 +237,13 @@ class TestWorkflowManipulation(unittest.TestCase):
         output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
         self.assertTrue(output["action"])
         self.assertTrue(output["args"])
-        self.assertTrue(output["filters"] == [{'action': 'length',
-                                               'args': {},
-                                               'event_handler': {'event_type': 'filterHandler',
-                                                                 'events': "['FilterSuccess', 'FilterError']"},
-                                               'id': 'start',
-                                               'ancestry': ['defaultController', 'helloWorldWorkflow', 'start', '1',
-                                                            'regMatch', 'length']}])
+        self.assertTrue(output["filters"] ==  [{'parent_name': 'start',
+                                                'name': 'length',
+                                                'args': {},
+                                                'event_handler': {'event_type': 'FilterEventHandler',
+                                                                  'events': "['FilterSuccess', 'FilterError']"},
+                                                'ancestry': ['defaultController', 'helloWorldWorkflow', 'start',
+                                                             '1', 'regMatch', 'length'], 'action': 'length'}])
     """
         CRUD - Filter
     """

@@ -1,34 +1,41 @@
 import xml.etree.cElementTree as et
 from core.ffk import Next
-from core import case
-from core.events import EventHandler
+from core import case, arguments
+from core.executionelement import ExecutionElement
 
 
-class StepEventHandler(EventHandler):
-    def __init__(self, shared_log=None):
-        EventHandler.__init__(self, 'StepEventHandler', shared_log,
-                              events={'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
-                                      'InputValidated': case.add_step_entry('Input successfully validated'),
-                                      'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
-
-
-class Step(object):
-    def __init__(self, id="", action="", app="", device="", input=None, next=None, errors=None, parent="",
-                 ancestry=None, ):
-        self.id = id
-        self.action = action
-        self.app = app
-        self.device = device
-        self.input = input if input is not None else {}
-        self.conditionals = next if next is not None else []
-        self.errors = errors if errors is not None else []
-        self.parent_workflow = parent
+class Step(ExecutionElement):
+    def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
+                 ancestry=None):
+        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+        if xml is not None:
+            self.from_xml(xml)
+        else:
+            self.action = action
+            self.app = app
+            self.device = device
+            self.input = input if input is not None else {}
+            self.conditionals = next if next is not None else []
+            self.errors = errors if errors is not None else []
         self.output = None
         self.nextUp = None
-        self.eventlog = []
-        self.stepEventHandler = StepEventHandler(self.eventlog)
-        self.ancestry = list(ancestry) if ancestry is not None else []
-        self.ancestry.append(self.id)
+        super(Step, self)._register_event_callbacks(
+            {'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
+             'InputValidated': case.add_step_entry('Input successfully validated'),
+             'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
+    '''
+    def from_xml(self, step_xml, ancestry=None):
+        self.id = step_xml.get("id")
+        self.action = step_xml.find("action").text
+        self.app = step_xml.find("app").text
+        self.device = step_xml.find("device").text
+        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
+                      for arg in step_xml.findall("input/*")}
+        self.__construct_ancestry(ancestry)
+        self.conditionals = [self.parseNext(self.id, step.ancestry, next=nextStep)
+                             for nextStep in step_xml.findall("next")]
+        self.errors = [self.parseNext(self.id, step.ancestry, next=error) for error in step_xml.findall("error")]
+    '''
 
     def validateInput(self):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
@@ -36,9 +43,9 @@ class Step(object):
 
     def execute(self, instance=None):
         if self.validateInput():
-            self.stepEventHandler.execute_event_code(self, 'InputValidated')
+            self.event_handler.execute_event_code(self, 'InputValidated')
             result = getattr(instance, self.action)(args=self.input)
-            self.stepEventHandler.execute_event_code(self, 'FunctionExecutionSuccess')
+            self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result
         raise Exception
@@ -50,7 +57,7 @@ class Step(object):
             nextStep = n(output=self.output)
             if nextStep:
                 self.nextUp = nextStep
-                self.stepEventHandler.execute_event_code(self, 'ConditionalsExecuted')
+                self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
                 return nextStep
 
     def set(self, attribute=None, value=None):
@@ -58,24 +65,24 @@ class Step(object):
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        newConditional = Next(self.id, nextStep=nextStep, flags=flags, ancestry=self.ancestry)
+        newConditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
         if any(conditional == newConditional for conditional in self.conditionals):
             return False
         self.conditionals.append(newConditional)
         return True
 
     def removeNext(self, nextStep=""):
-        self.conditionals = [x for x in self.conditionals if x.nextStep != nextStep]
+        self.conditionals = [x for x in self.conditionals if x.name != nextStep]
         return True
 
 
 
     def toXML(self):
         step = et.Element("step")
-        step.set("id", self.id)
+        step.set("id", self.name)
 
         id = et.SubElement(step, "id")
-        id.text = self.id
+        id.text = self.name
 
         app = et.SubElement(step, "app")
         app.text = self.app
@@ -99,7 +106,7 @@ class Step(object):
         return step
 
     def __repr__(self):
-        output = {'id': self.id,
+        output = {'name': self.name,
                   'action': self.action,
                   'app': self.app,
                   'device': self.device,

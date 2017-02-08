@@ -26,7 +26,7 @@ class TestLoadWorkflow(unittest.TestCase):
         step = self.testWorkflow.steps["start"]
 
         # Verify attributes
-        self.assertTrue(step.id == "start")
+        self.assertTrue(step.name == "start")
         self.assertTrue(step.app == "HelloWorld")
         self.assertTrue(step.action == "repeatBackToMe")
         self.assertTrue(step.device == "hwTest")
@@ -42,7 +42,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(len(next) == 1)
 
         next = next[0]
-        self.assertTrue(next.nextStep == "1")
+        self.assertTrue(next.name == "1")
         self.assertTrue(next.flags)
 
     @graphDecorator.callgraph(enabled=False)
@@ -70,4 +70,4 @@ class TestLoadWorkflow(unittest.TestCase):
     def test_workflowError(self):
         errors = self.testWorkflow.steps["start"].errors
         self.assertTrue(len(errors) == 1)
-        self.assertTrue(errors[0].nextStep == "1")
+        self.assertTrue(errors[0].name == "1")
