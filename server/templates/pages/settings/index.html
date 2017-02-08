@@ -1,30 +1,61 @@
-<div id="main">
+<div id="main" xmlns:padding="http://www.w3.org/1999/xhtml">
     <!--<p> This is the settings page </p> -->
     <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
+    <head>
+        <style>
+            #settingsForm {
+                padding-left: 50px;
+            }
+            #pathConfig {
+                padding-left: 50px;
+            }
+            #authConfig {
+                padding-left: 50px;
+            }
+            #interfaceConfig {
+                padding-left: 50px;
+            }
+            h1 {
+                font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+                font-weight: bold;
+                font-variant: small-caps;
+            }
+        </style>
+    </head>
     <!-- This div will contain keyword labels with textboxes that are
         auto-populated with the default setting -->
     <div id="settingsWrapper">
         <h1 class="settingsHeader"> Settings </h1>
         <div id="settingsForm">
-            <!-- use jinja and formhelpers.html to populate form -->
-            <!-- below is pulled from devices\index.html -->
-            {% from "pages/_formhelpers.html" import render_field %}
-                {{ render_field(form.templatePath) }}
-                {{ render_field(form.profileVisualizationsPath) }}
-                {{ render_field(form.keywordsPath) }}
-                {{ render_field(form.dbPath) }}
-            <h3><i> Auth Config </i></h3>
-            {% from "pages/_formhelpers.html" import render_field %}
-                {{ render_field(form.TLS_version) }}
-                {{ render_field(form.certificatePath) }}
-                {{ render_field(form.https) }}
-                {{ render_field(form.privateKeyPath) }}
-            <h3><i> Interface Config </i></h3>
-            {% from "pages/_formhelpers.html" import render_field %}
-                {{ render_field(form.debug) }}
-                {{ render_field(form.defaultServer) }}
-                {{ render_field(form.host) }}
-                {{ render_field(form.port) }}
+            <form id="setForm">
+                <!-- use jinja and formhelpers.html to populate form -->
+                <!-- below is pulled from devices\index.html -->
+                <h3><i> Path Configuration </i></h3>
+                    <div id="pathConfig">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(form.templatePath) }}
+                        {{ render_field(form.profileVisualizationsPath) }}
+                        {{ render_field(form.keywordsPath) }}
+                        {{ render_field(form.dbPath) }}
+                    </div>
+                <h3><i> Authorization Configuration </i></h3>
+                    <div id="authConfig">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(form.TLS_version) }}
+                        {{ render_field(form.certificatePath) }}
+                        {{ render_field(form.https) }}
+                        {{ render_field(form.privateKeyPath) }}
+                    </div>
+                <h3><i> Interface Configuration </i></h3>
+                    <div id="interfaceConfig">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(form.debug) }}
+                        {{ render_field(form.defaultServer) }}
+                        {{ render_field(form.host) }}
+                        {{ render_field(form.port) }}
+                    </div>
+                <input id="formSubmit" type="submit" value="submit">
+            </form>
         </div>
     </div>
 </div>
