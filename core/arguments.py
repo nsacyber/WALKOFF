@@ -36,7 +36,7 @@ class Argument(object):
         self.templated = t.render(config.JINJA_GLOBALS, **kwargs)
         return self.templated
 
-    def toXML(self):
+    def to_xml(self):
         elem = et.Element(self.key)
         elem.text = str(self.value)
         elem.set("format", self.format)

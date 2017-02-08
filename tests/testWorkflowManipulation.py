@@ -36,7 +36,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(len(self.c.workflows) == 2)
         self.assertTrue(self.c.workflows["emptyWorkflow"].steps == {})
 
-        xml = self.c.workflows["emptyWorkflow"].toXML()
+        xml = self.c.workflows["emptyWorkflow"].to_xml()
         self.assertTrue(len(xml.findall(".//steps/*")) == 0)
 
     @graphDecorator.callgraph(enabled=False)
@@ -95,7 +95,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_addStepToXML(self):
         self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
                                      input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
 
         # Verify Structure
         steps = xml.findall(".//steps/step")
@@ -123,7 +123,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(len(self.testWorkflow.steps) == 1)
 
         # Tests the XML representation after changes
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
         steps = xml.findall(".//steps/*")
         self.assertTrue(len(steps) == 1)
         self.assertTrue(steps[0].get("id") == "start")
@@ -134,7 +134,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.testWorkflow.steps["start"].set(attribute="action", value="helloWorld")
         self.assertTrue(self.testWorkflow.steps["start"].action == "helloWorld")
 
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
         self.assertTrue(xml.find(".//steps/step/[@id='start']/action").text == "helloWorld")
 
     @graphDecorator.callgraph(enabled=False)
@@ -152,7 +152,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_createNext(self):
         self.testWorkflow.steps["start"].createNext(nextStep="2", flags=[])
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
         step = self.testWorkflow.steps["start"]
 
         self.assertTrue(len(step.conditionals) == 2)
@@ -170,7 +170,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(success)
         self.assertTrue(len(step.conditionals) == 0)
 
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
 
         # Check XML
         self.assertTrue(len(xml.findall(".//steps/step/[@id='start']/next")) == 0)
@@ -182,7 +182,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         step.conditionals[0].name = "2"
         self.assertTrue(step.conditionals[0].name == "2")
 
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
 
         # Check XML
         self.assertTrue(xml.find(".//steps/step/[@id='start']/next").get("next") == "2")
@@ -216,7 +216,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(len(nextStep.flags) == 0)
 
         # Tests the XML representation after changes
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
         step = xml.findall(".//steps/step/[@id='start']/next")
 
         nextStepFlagsXML = xml.find(".//steps/step/[@id='start']/next")
@@ -229,7 +229,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(self.testWorkflow.steps["start"].conditionals[0].flags[0].action == "count")
 
         # Check the XML output
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
         self.assertTrue(xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag[1]").get("action") == "count")
 
     @graphDecorator.callgraph(enabled=False)
@@ -237,13 +237,14 @@ class TestWorkflowManipulation(unittest.TestCase):
         output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
         self.assertTrue(output["action"])
         self.assertTrue(output["args"])
-        self.assertTrue(output["filters"] ==  [{'parent_name': 'start',
-                                                'name': 'length',
-                                                'args': {},
-                                                'event_handler': {'event_type': 'FilterEventHandler',
-                                                                  'events': "['FilterSuccess', 'FilterError']"},
-                                                'ancestry': ['defaultController', 'helloWorldWorkflow', 'start',
-                                                             '1', 'regMatch', 'length'], 'action': 'length'}])
+        self.assertTrue(output["filters"] == [{'parent_name': 'regMatch',
+                                               'name': 'length',
+                                               'args': {},
+                                               'event_handler': {'event_type': 'FilterEventHandler',
+                                                                 'events': "['FilterSuccess', 'FilterError']"},
+                                               'ancestry': ['defaultController', 'helloWorldWorkflow', 'start',
+                                                            '1', 'regMatch', 'length'], 'action': 'length'}])
+
     """
         CRUD - Filter
     """
@@ -266,7 +267,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(conditional.filters[2].action == "length")
         self.assertTrue(conditional.filters[2].args["test"])
 
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
 
         # Check XML
         self.assertTrue(len(
@@ -290,7 +291,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(conditional.filters[0].action == "length")
         self.assertTrue(conditional.filters[0].args["test2"])
 
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
 
         # Check XML
         self.assertTrue(len(
@@ -307,7 +308,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         conditional.filters[0].action = "combine"
         self.assertTrue(conditional.filters[0].action == "combine")
 
-        xml = self.testWorkflow.toXML()
+        xml = self.testWorkflow.to_xml()
         # Check XML
         self.assertTrue(
             xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[1]").get(

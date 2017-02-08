@@ -1,8 +1,7 @@
 import sys
 import importlib
 
-from core import step as wfstep
-from core import ffk
+from core.step import Step
 from core import arguments
 from core import instance
 from core import options
@@ -14,66 +13,23 @@ class Workflow(ExecutionElement):
     def __init__(self, name="", workflowConfig=None, children=None, parent_name=""):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
         self.workflowXML = workflowConfig
-        self.options = self.parseOptions(workflowConfig.find(".//options"))
-        self.steps = self.parseSteps(workflowConfig.findall(".//steps/*"))
+        self._from_xml(self.workflowXML)
         self.children = children if (children is not None) else {}
-        self.__instances = {}
         super(Workflow, self)._register_event_callbacks(
             {'InstanceCreated': case.add_workflow_entry("New workflow instance Created"),
              'StepExecutionSuccess': case.add_workflow_entry('Step executed successfully'),
              'NextStepFound': case.add_workflow_entry('Next step found'),
              'WorkflowShutdown': case.add_workflow_entry("Workflow shut down")})
 
-    def parseOptions(self, ops=None):
-        # Parses out the options for each item if there are no subelements then pass the text instead
-        scheduler = {"autorun": ops.find(".//scheduler").get("autorun"), "type": ops.find(".//scheduler").get("type"),
-                     "args": {option.tag: option.text for option in ops.findall(".//scheduler/*")}}
-        enabled = ops.find(".//enabled").text
-        children = {child.text: None for child in ops.findall(".//children/child")}
-
-        result = options.Options(scheduler=scheduler, enabled=enabled, children=children)
-        return result
+    def _from_xml(self, xml_element):
+        self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)
+        self.steps = {}
+        for step_xml in xml_element.findall(".//steps/*"):
+            step = Step(xml=step_xml, parent_name=self.name, ancestry=self.ancestry)
+            self.steps[step.name] = step
 
     def assignChild(self, name="", workflow=None):
         self.children[name] = workflow
-
-    def parseSteps(self, stepConfig=None):
-        steps = {}
-        # Parses out the step variables
-        for step in stepConfig:
-            id = step.get("id")
-            action = step.find("action").text
-            app = step.find("app").text
-            device = step.find("device").text
-            input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
-                     step.findall("input/*")}
-            steps[id] = wfstep.Step(name=id, action=action, app=app, device=device, input=input,
-                                    parent_name=self.name, ancestry=self.ancestry)
-            steps[id].conditionals = [self.parseNext(id, steps[id].ancestry, next=nextStep) for nextStep in
-                                      step.findall("next")]
-            steps[id].errors = [self.parseNext(id, steps[id].ancestry, next=error) for error in step.findall("error")]
-        return steps
-
-    def parseNext(self, previous_id, ancestry, next=None):
-        nextId = next.get("step")
-        nextStep = ffk.Next(parent_name=previous_id, name=nextId, ancestry=ancestry)
-        nextStep.flags = [self.parseFlag(previous_id, nextStep.ancestry, flag) for flag in next.findall("flag")]
-        return nextStep
-
-    def parseFlag(self, previous_id, ancestry, flag=None):
-        action = flag.get("action")
-        args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
-                flag.findall("args/*")}
-        parsed_flag = ffk.Flag(parent_name=previous_id, action=action, args=args, ancestry=ancestry)
-        parsed_flag.filters = [self.parseFilter(previous_id, parsed_flag.ancestry, filter) for filter in
-                               flag.findall("filters/*")]
-        return parsed_flag
-
-    def parseFilter(self, previous_id, ancestry, filter=None):
-        action = filter.get("action")
-        args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
-                filter.findall("args/*")}
-        return ffk.Filter(parent_name=previous_id, action=action, args=args, ancestry=ancestry)
 
     def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
         # Creates new step object
@@ -81,9 +37,9 @@ class Workflow(ExecutionElement):
                                                        format=input[key]["format"]) for key in input}
         ancestry = list(self.ancestry)
         ancestry.append(id)
-        self.steps[id] = wfstep.Step(name=id, action=action, app=app, device=device, input=input, next=next,
-                                     errors=errors, ancestry=ancestry, parent_name=self.name)
-        stepXML = self.steps[id].toXML()
+        self.steps[id] = Step(name=id, action=action, app=app, device=device, input=input, next=next,
+                              errors=errors, ancestry=ancestry, parent_name=self.name)
+        stepXML = self.steps[id].to_xml()
         self.workflowXML.find(".//steps").append(stepXML)
 
     def removeStep(self, id=""):
@@ -94,11 +50,11 @@ class Workflow(ExecutionElement):
             return True
         return False
 
-    def toXML(self):
+    def to_xml(self):
         root = self.workflowXML.find(".//steps")
         root.clear()
         for step in self.steps:
-            root.append(self.steps[step].toXML())
+            root.append(self.steps[step].to_xml())
 
         return self.workflowXML
 

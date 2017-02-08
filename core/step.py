@@ -2,14 +2,14 @@ import xml.etree.cElementTree as et
 from core.ffk import Next
 from core import case, arguments
 from core.executionelement import ExecutionElement
-
+from core import ffk
 
 class Step(ExecutionElement):
     def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
                  ancestry=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         if xml is not None:
-            self.from_xml(xml)
+            self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
             self.action = action
             self.app = app
@@ -23,19 +23,19 @@ class Step(ExecutionElement):
             {'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
              'InputValidated': case.add_step_entry('Input successfully validated'),
              'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
-    '''
-    def from_xml(self, step_xml, ancestry=None):
-        self.id = step_xml.get("id")
+
+    def _from_xml(self, step_xml, parent_name='', ancestry=None):
+        name = step_xml.get("id")
+        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.action = step_xml.find("action").text
         self.app = step_xml.find("app").text
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.__construct_ancestry(ancestry)
-        self.conditionals = [self.parseNext(self.id, step.ancestry, next=nextStep)
-                             for nextStep in step_xml.findall("next")]
-        self.errors = [self.parseNext(self.id, step.ancestry, next=error) for error in step_xml.findall("error")]
-    '''
+        self.conditionals = [ffk.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+                                  for next_step_element in step_xml.findall("next")]
+        self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+                            for error_step_element in step_xml.findall("error")]
 
     def validateInput(self):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
@@ -77,7 +77,7 @@ class Step(ExecutionElement):
 
 
 
-    def toXML(self):
+    def to_xml(self):
         step = et.Element("step")
         step.set("id", self.name)
 
@@ -95,13 +95,13 @@ class Step(ExecutionElement):
 
         input = et.SubElement(step, "input")
         for i in self.input:
-            input.append(self.input[i].toXML())
+            input.append(self.input[i].to_xml())
 
         for next in self.conditionals:
-            step.append(next.toXML())
+            step.append(next.to_xml())
 
         for error in self.errors:
-            step.append(error.toXML(tag="error"))
+            step.append(error.to_xml(tag="error"))
 
         return step
 

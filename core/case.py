@@ -189,11 +189,12 @@ class EventEntry(object):
             "uuid": self.uuid,
             "timestamp": self.timestamp,
             "type": str(self.type),
-            "caller": str(self.name),
+            "caller": str(self.caller),
             "ancestry": str(self.ancestry),
             "message": str(self.message),
             "data": str(self.data)
         })
+
 
 def __add_entry_to_case(sender, event, message_name):
     for case in cases:
