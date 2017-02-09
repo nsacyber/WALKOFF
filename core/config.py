@@ -1,9 +1,31 @@
-import json, importlib
+import json, importlib, sys
 from os import listdir, walk, sep, environ
 from os.path import isfile, join, splitext
 
+def loadConfig():
+    self = sys.modules[__name__]
+    with open("./data/walkoff.config") as f:
+        config = json.loads(f.read())
+        for key in config.keys():
+            if hasattr(self, key):
+                setattr(self, key, config[key])
+
+def writeValuesToFile(values=["graphVizPath", "templatesPath", "profileVisualizationsPath", "keywordsPath", "dbPath", "TLS_version", "certificatePath", "https", "privateKeyPath", "debug", "defaultServer", "host", "port"]):
+    self = sys.modules[__name__]
+    f = open("./data/walkoff.config", "r")
+    parsed = json.loads(f.read())
+    f.close()
+    for key in values:
+        parsed[key] = getattr(self, key)
+
+    with open("./data/walkoff.config", "w") as f:
+        json.dump(parsed, f)
+
+loadConfig()
+
 #Path to graphviz location
-environ["PATH"] = "C:/Program Files (x86)/Graphviz2.38/bin"
+graphVizPath = "C:/Program Files (x86)/Graphviz2.38/bin"
+environ["PATH"] = graphVizPath
 
 # Folder path for new templates
 templatesPath = join('.', 'data', 'templates')
@@ -61,3 +83,17 @@ except Exception as e:
 def getApps(path="apps"):
     apps = next(walk(path))[1]
     return apps
+
+#Function to set config value
+def set(key, value):
+    self = sys.modules[__name__]
+    if hasattr(self, key):
+        setattr(self, key, value)
+        return True
+    return False
+
+
+
+
+
+

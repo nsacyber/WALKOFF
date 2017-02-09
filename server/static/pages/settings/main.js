@@ -156,3 +156,20 @@ $.ajax({
         $("#port").val("Error");
     }
 });
+
+$("#setForm").on("submit", function(e){
+    $.ajax({
+        url:'configuration/set',
+        data:$("#setForm").serialize(),
+        headers:{"Authentication-Token":authKey},
+        type:"POST",
+        success: function(e){
+            data = JSON.parse(e);
+            console.log(data);
+        },
+        error: function(e){
+           console.log(e);
+        }
+    });
+    e.preventDefault();
+});

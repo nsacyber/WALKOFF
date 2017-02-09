@@ -38,6 +38,9 @@ class EditConfigForm(Form):
     key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
     value = StringField('value')
 
+class EditSingleConfigForm(Form):
+    value = StringField('value')
+
 class RemoveConfigForm(Form):
     key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
 
@@ -88,17 +91,17 @@ class incomingDataForm(Form):
     data = StringField('data')
 
 class settingsForm(Form):
-    templatePath = StringField('templatePath')
-    profileVisualizationsPath = StringField('profileVisualizationsPath')
-    keywordsPath = StringField('keywordsPath')
-    dbPath = StringField('dbPath')
+    templatesPath = StringField('templatesPath', [validators.Optional()])
+    profileVisualizationsPath = StringField('profileVisualizationsPath', [validators.Optional()])
+    keywordsPath = StringField('keywordsPath', [validators.Optional()])
+    dbPath = StringField('dbPath', [validators.Optional()])
 
-    TLS_version = StringField('TLS_version')
-    certificatePath = StringField('certificatePath')
-    https = StringField('https')
-    privateKeyPath = StringField('privateKeyPath')
+    TLS_version = StringField('TLS_version', [validators.Optional()])
+    certificatePath = StringField('certificatePath', [validators.Optional()])
+    https = StringField('https', [validators.Optional()])
+    privateKeyPath = StringField('privateKeyPath', [validators.Optional()])
 
-    debug = StringField('debug')
-    defaultServer = StringField('defaultServer')
-    host = StringField('host')
-    port = StringField('port')
+    debug = StringField('debug', [validators.Optional()])
+    defaultServer = StringField('defaultServer', [validators.Optional()])
+    host = StringField('host', [validators.Optional()])
+    port = StringField('port', [validators.Optional()])

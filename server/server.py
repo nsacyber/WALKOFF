@@ -1,4 +1,4 @@
-import os, ssl, json
+import os, ssl, json, importlib
 
 from flask import Flask, jsonify, request, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -8,7 +8,7 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 
 from jinja2 import Environment, FileSystemLoader
 
-from core import config, appBlueprint, interface
+from core import config, appBlueprint, interface, forms
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 
@@ -151,8 +151,36 @@ def workflow():
 @roles_required("admin")
 def configValues(key):
     if current_user.is_authenticated and key:
-        if hasattr(config, key):
+        if key == "set":
+            form = forms.settingsForm(request.form)
+            if form.validate():
+                for fieldname, value in form.data.items():
+                    result = config.set(fieldname, value)
+                    if not result:
+                        return json.dumps({"error": "error setting form: " + str(fieldname) + " with value: " + str(value)})
+
+                config.writeValuesToFile()
+                return json.dumps({"status": "edit successful"})
+            else:
+                return json.dumps({"error": "request invalid"})
+        elif hasattr(config, key):
             return json.dumps({str(key): str(getattr(config, key))})
+
+@app.route("/configuration/<string:key>/<string:action>", methods=['POST'])
+@auth_token_required
+@roles_required("admin")
+def setConfigValues(key, action):
+    if current_user.is_authenticated and key:
+        if action == "set":
+            form = forms.EditSingleConfigForm(request.form)
+            if form.validate():
+                result = config.set(key, form.value.data)
+                if result:
+                    return json.dumps({"status" : "edit successful"})
+                else:
+                    return json.dumps({"error": "error setting form"})
+            else:
+                return json.dumps({"error": "request invalid"})
 
 #Returns System-Level Interface Pages
 @app.route('/interface/<string:name>/display', methods=["POST"])
