@@ -113,6 +113,7 @@ $(document).ready(function(){
             success: function(e){
                 data = e;
                 $("#ss_main").html(e);
+                $("#main").resize();
             },
             error: function(e){
                 $("#ss_main").html("<p> Interface could not be Loaded! </p>");
