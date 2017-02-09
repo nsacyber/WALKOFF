@@ -1,28 +1,23 @@
-import argparse
-import pip
+from setuptools import setup
 import os
+import argparse
 
 def cmd_line():
-
-    parser = argparse.ArgumentParser("Command Line Parser")
-
-    parser.add_argument('-a', '--app', type=str, required=True, nargs='*', help='Specify name of app(s) to install dependencies')
-
+    parser = argparse.ArgumentParser("Install Dependencies")
+    parser.add_argument('-a', '--apps', nargs='*', type=str, required=True, help='List of apps for which you would like to install dependencies')
     args = parser.parse_args()
-
     return args
-
-def install(package):
-    pip.main(['install', package])
 
 if __name__ == '__main__':
 
     args = cmd_line()
+    apps = args.apps
 
-    for app in args.app:
-        print "Installing dependencies for "+app+" App..."
-
-        file = os.path.abspath('apps/'+app+'/dependencies.txt')
-        with open(file) as f:
-            for dependency in f:
-                install(dependency)
+    for app in apps:
+        print "Installing dependencies for " + app + " App..."
+        deps = []
+        path = os.path.abspath('apps/' + app + '/setup.py')
+        if os.path.isfile(path) is False:
+            print "No setup.py script found in "+app+" folder. Skipping..."
+            continue
+        os.system("python "+path+" install")
