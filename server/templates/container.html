@@ -225,6 +225,7 @@ desired effect
 <script type="application/javascript">
     var authKey = '{{ authKey|safe }}';
 </script>
+<script src="{{ url_for('static', filename='pageSetup.js' ) }}"></script>
 <script src="{{ url_for('static', filename='main.js' ) }}"></script>
 </body>
 </html>

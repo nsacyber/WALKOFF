@@ -23,6 +23,9 @@ def writeValuesToFile(values=["graphVizPath", "templatesPath", "profileVisualiza
 
 loadConfig()
 
+#Enables/Disables Browser Notifications
+notifications = "True"
+
 #Path to graphviz location
 graphVizPath = "C:/Program Files (x86)/Graphviz2.38/bin"
 environ["PATH"] = graphVizPath

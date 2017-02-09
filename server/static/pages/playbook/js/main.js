@@ -1,3 +1,8 @@
+$("#executeWorkflowButton").on("click", function(e){
+    notifyMe();
+})
+
+
 // fix arrow end issues:
 // https://github.com/DmitryBaranovskiy/raphael/issues/471
 
