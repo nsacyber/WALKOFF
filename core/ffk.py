@@ -127,7 +127,7 @@ class Flag(ExecutionElement):
                 result = getattr(module, "main")(args=self.args, value=data)
                 self.event_handler.execute_event_code(self, 'FlagArgsValid')
             else:
-                print "ARGS INVALID"
+                print("ARGS INVALID")
                 self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
             return result
 
@@ -185,7 +185,7 @@ class Filter(ExecutionElement):
                 return result
             except Exception:
                 self.event_handler.execute_event_code(self, 'FilterError')
-                print "FILTER ERROR"
+                print("FILTER ERROR")
         return output
 
     def checkImport(self):
