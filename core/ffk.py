@@ -3,43 +3,30 @@ import xml.etree.cElementTree as et
 
 from core import arguments, case
 from core.events import EventHandler, Event
+from core.executionelement import ExecutionElement
 
 
-class NextStepEventHandler(EventHandler):
-    def __init__(self, shared_log=None):
-        EventHandler.__init__(self, "nextStepHandler", shared_log,
-                              events={'NextStepTaken': case.add_next_step_entry('Step taken'),
-                                      'NextStepNotTaken': case.add_next_step_entry('Step not taken')})
+class Next(ExecutionElement):
+    def __init__(self, xml=None, parent_name="", name="", nextWorkflow="", flags=None, ancestry=None):
+        if xml is not None:
+            self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
+        else:
+            ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+            self.flags = flags if flags is not None else []
+        super(Next, self)._register_event_callbacks({'NextStepTaken': case.add_next_step_entry('Step taken'),
+                                                     'NextStepNotTaken': case.add_next_step_entry('Step not taken')})
 
+    def _from_xml(self, xml_element, parent_name='', ancestry=None):
+        name = xml_element.get("step")
+        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+        self.flags = [Flag(xml=flag_element, parent_name=self.name, ancestry=self.ancestry)
+                      for flag_element in xml_element.findall("flag")]
 
-class FlagEventHandler(EventHandler):
-    def __init__(self, shared_log=None):
-        EventHandler.__init__(self, "flagHandler", shared_log,
-                              events={'FlagArgsValid': case.add_flag_entry('Flag args valid'),
-                                      'FlagArgsInvalid': case.add_flag_entry('Flag args invalid')})
-
-
-class FilterEventHandler(EventHandler):
-    def __init__(self, shared_log=None):
-        EventHandler.__init__(self, "filterHandler", shared_log,
-                              events={'FilterSuccess': case.add_flag_entry('Filter success'),
-                                      'FilterError': case.add_flag_entry('Filter error')})
-
-
-class Next(object):
-    def __init__(self, previous_step_id="", nextStep="", nextWorkflow="", flags=None, ancestry=None):
-        self.nextStep = nextStep
-        self.id = previous_step_id
-        self.flags = flags if flags is not None else []
-        self.event_handler = NextStepEventHandler()
-        self.ancestry = list(ancestry) if ancestry is not None else []
-        self.ancestry.append(self.nextStep)
-
-    def toXML(self, tag="next"):
+    def to_xml(self, tag="next"):
         elem = et.Element(tag)
-        elem.set("next", self.nextStep)
+        elem.set("next", self.name)
         for flag in self.flags:
-            elem.append(flag.toXML())
+            elem.append(flag.to_xml())
         return elem
 
     def createFlag(self, action="", args=None, filters=None):
@@ -60,45 +47,58 @@ class Next(object):
             return False
 
     def __eq__(self, other):
-        return self.nextStep == other.nextStep and set(self.flags) == set(other.flags)
+        return self.name == other.name and set(self.flags) == set(other.flags)
 
     def __call__(self, output=None):
         if all(flag(output=output) for flag in self.flags):
             self.event_handler.execute_event_code(self, 'NextStepTaken')
-            return self.nextStep
+            return self.name
         else:
             self.event_handler.execute_event_code(self, 'NextStepNotTaken')
             return None
 
     def __repr__(self):
-        output = {'nextStep': self.nextStep,
-                  'flags': [flag.__dict__ for flag in self.flags]}
+        output = {'nextStep': self.name,
+                  'flags': [flag.__dict__ for flag in self.flags],
+                  'name': self.name}
         return str(output)
 
 
-class Flag(object):
-    def __init__(self, previous_step_id="", action="", args=None, filters=None, ancestry=None):
-        self.action = action
-        self.args = args if args is not None else {}
-        self.filters = filters if filters is not None else []
-        self.event_handler = FlagEventHandler()
-        self.id = previous_step_id
-        self.ancestry = list(ancestry) if ancestry is not None else []
-        self.ancestry.append(self.action)
+class Flag(ExecutionElement):
+    def __init__(self, xml=None, parent_name='', action='', args=None, filters=None, ancestry=None):
+        if xml:
+            self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
+        else:
+            ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
+            self.action = action
+            self.args = args if args is not None else {}
+            self.filters = filters if filters is not None else []
+        super(Flag, self)._register_event_callbacks({'FlagArgsValid': case.add_flag_entry('Flag args valid'),
+                                                     'FlagArgsInvalid': case.add_flag_entry('Flag args invalid')})
+
+    def _from_xml(self, xml_element, parent_name='', ancestry=None):
+        self.action = xml_element.get("action")
+        ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
+        self.args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
+                     for arg in xml_element.findall("args/*")}
+        self.filters = [Filter(xml=filter_element,
+                               parent_name=self.name,
+                               ancestry=self.ancestry)
+                        for filter_element in xml_element.findall("filters/*")]
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
 
-    def toXML(self):
+    def to_xml(self):
         elem = et.Element("flag")
         elem.set("action", self.action)
         argsElement = et.SubElement(elem, "args")
         for arg in self.args:
-            argsElement.append(self.args[arg].toXML())
+            argsElement.append(self.args[arg].to_xml())
 
         filtersElement = et.SubElement(elem, "filters")
         for filter in self.filters:
-            filtersElement.append(filter.toXML())
+            filtersElement.append(filter.to_xml())
         return elem
 
     def addFilter(self, action="", args=None, index=None):
@@ -127,6 +127,7 @@ class Flag(object):
                 result = getattr(module, "main")(args=self.args, value=data)
                 self.event_handler.execute_event_code(self, 'FlagArgsValid')
             else:
+                print "ARGS INVALID"
                 self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
             return result
 
@@ -145,23 +146,33 @@ class Flag(object):
         return str(output)
 
 
-class Filter(object):
-    def __init__(self, previous_step_id="", action="", args=None, ancestry=None):
-        self.action = action
-        safeargs = args if args is not None else {}
-        self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
-                     for arg in safeargs}
-        self.event_handler = FilterEventHandler()
-        self.id = previous_step_id
-        self.ancestry = list(ancestry) if ancestry is not None else []
-        self.ancestry.append(self.action)
+class Filter(ExecutionElement):
+    def __init__(self, xml=None, parent_name="", action="", args=None, ancestry=None):
+        if xml:
+            self._from_xml(xml, parent_name, ancestry)
+        else:
+            ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
+            self.action = action
+            args = args if args is not None else {}
+            self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
+                         for arg in args}
+        super(Filter, self)._register_event_callbacks({'FilterSuccess': case.add_flag_entry('Filter success'),
+                                                       'FilterError': case.add_flag_entry('Filter error')})
 
-    def toXML(self):
+    def _from_xml(self, xml_element, parent_name=None, ancestry=None):
+        self.action = xml_element.get('action')
+        ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
+        args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
+                xml_element.findall("args/*")}
+        self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
+                     for arg in args}
+
+    def to_xml(self):
         elem = et.Element("filter")
         elem.set("action", self.action)
         argsElement = et.SubElement(elem, "args")
         for arg in self.args:
-            argsElement.append(self.args[arg].toXML())
+            argsElement.append(self.args[arg].to_xml())
 
         return elem
 
@@ -174,6 +185,7 @@ class Filter(object):
                 return result
             except Exception:
                 self.event_handler.execute_event_code(self, 'FilterError')
+                print "FILTER ERROR"
         return output
 
     def checkImport(self):

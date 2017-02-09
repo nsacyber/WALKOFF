@@ -79,7 +79,7 @@ class Controller(object):
         self.tree = et.ElementTree(file=path)
         for workflow in self.tree.iter(tag="workflow"):
             name = workflow.get("name")
-            self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow, parentController=self.name)
+            self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow, parent_name=self.name)
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
