@@ -1,5 +1,0 @@
-Documentation for the Code
-**************************
-
-.. automodule:: server
-   :members:

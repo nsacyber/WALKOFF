@@ -99,3 +99,5 @@ def create_user(self):
         user_datastore.add_role_to_user(u, adminRole)
 
         db.session.commit()
+
+
