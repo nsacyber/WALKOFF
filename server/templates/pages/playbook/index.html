@@ -1,10 +1,6 @@
 <div id="main">
     <script type="Application/javascript">
-        $("<link/>", {
-           rel: "stylesheet",
-           type: "text/css",
-           href: "{{ url_for('static', filename='pages/playbook/js/vendor/perfect-scrollbar/perfect-scrollbar.css') }}"
-        }).appendTo("head");
+
     </script>
     <style>
         #cy {
@@ -13,6 +9,9 @@
           position: relative;
           left: 0;
           top: 0;
+          border:solid;
+          background-color:white;
+          background-image:url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
         }
     </style>
 
@@ -24,6 +23,7 @@
         <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-undo-redo.js') }}"></script> -->
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 
     <div id="cy"></div>
