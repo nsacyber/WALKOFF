@@ -1,11 +1,9 @@
 from .app import app
 import flask_sqlalchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
-from flask_security.utils import encrypt_password
 
 # Database Connection Object
 db = flask_sqlalchemy.SQLAlchemy(app)
-
 
 # Base Class for Tables
 class Base(db.Model):
@@ -29,6 +27,13 @@ class Role(Base, RoleMixin):
 
     def toString(self):
         return {"name": self.name, "description": self.description}
+
+    def display(self):
+        result = {}
+        result["name"] = self.name
+        result["description"] = self.description
+
+        return result
 
     def __repr__(self):
         return '<Role %r>' % self.name
@@ -83,23 +88,3 @@ class User(Base, UserMixin):
 # Setup Flask Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
-
-
-# Creates Test Data
-@app.before_first_request
-def create_user(self):
-    # db.drop_all()
-    db.create_all()
-    if not User.query.first():
-        # Add Credentials to Splunk app
-        # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
-
-        adminRole = user_datastore.create_role(name="admin", description="administrator")
-        # userRole = user_datastore.create_role(name="user", description="user")
-
-        u = user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        # u2 = user_datastore.create_user(email='user', password=encrypt_password('user'))
-
-        user_datastore.add_role_to_user(u, adminRole)
-
-        db.session.commit()
