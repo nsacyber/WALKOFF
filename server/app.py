@@ -22,3 +22,4 @@ app.config.update(
 env = Environment(loader=FileSystemLoader("apps"))
 
 app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

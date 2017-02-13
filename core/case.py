@@ -4,9 +4,6 @@ from functools import partial
 
 import logging
 
-logging.basicConfig()
-
-
 class _SubscriptionEventList(object):
     """
     Wrapper for a list of events to subscribe to. Can specify which ones or all of them

@@ -4,7 +4,7 @@ import os
 import ssl
 import json
 from flask import render_template
-from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
 from flask_security import auth_token_required, current_user, roles_required
 
 from core import config, interface

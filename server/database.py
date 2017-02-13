@@ -1,10 +1,10 @@
 from .app import app
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
-from flask.ext.security.utils import encrypt_password
+import flask_sqlalchemy
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
+from flask_security.utils import encrypt_password
 
 # Database Connection Object
-db = SQLAlchemy(app)
+db = flask_sqlalchemy.SQLAlchemy(app)
 
 
 # Base Class for Tables
