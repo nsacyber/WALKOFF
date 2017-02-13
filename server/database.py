@@ -1,17 +1,19 @@
-import app
+from .app import app
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
 from flask.ext.security.utils import encrypt_password
 
-#Database Connection Object
+# Database Connection Object
 db = SQLAlchemy(app)
 
-#Base Class for Tables
+
+# Base Class for Tables
 class Base(db.Model):
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     modified_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
 
 class Role(Base, RoleMixin):
     __tablename__ = 'auth_role'
@@ -26,13 +28,13 @@ class Role(Base, RoleMixin):
         self.description = description
 
     def toString(self):
-        return {"name" : self.name, "description" : self.description}
+        return {"name": self.name, "description": self.description}
 
     def __repr__(self):
         return '<Role %r>' % self.name
 
-class User(Base, UserMixin):
 
+class User(Base, UserMixin):
     # Define Models
     roles_users = db.Table('roles_users',
                            db.Column('user_id', db.Integer(), db.ForeignKey('auth_user.id')),
@@ -77,9 +79,11 @@ class User(Base, UserMixin):
     def __repr__(self):
         return '<User %r>' % self.email
 
+
 # Setup Flask Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
+
 
 # Creates Test Data
 @app.before_first_request
@@ -99,5 +103,3 @@ def create_user(self):
         user_datastore.add_role_to_user(u, adminRole)
 
         db.session.commit()
-
-

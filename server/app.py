@@ -1,5 +1,5 @@
 import os
-from Flask import Flask
+from flask import Flask
 from jinja2 import Environment, FileSystemLoader
 from core import config, appBlueprint
 
