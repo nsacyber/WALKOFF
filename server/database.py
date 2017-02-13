@@ -87,7 +87,7 @@ security = Security(app, user_datastore)
 
 # Creates Test Data
 @app.before_first_request
-def create_user(self):
+def create_user():
     # db.drop_all()
     db.create_all()
     if not User.query.first():
@@ -103,3 +103,4 @@ def create_user(self):
         user_datastore.add_role_to_user(u, adminRole)
 
         db.session.commit()
+

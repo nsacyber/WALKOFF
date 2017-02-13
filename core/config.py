@@ -1,5 +1,5 @@
 import json, importlib, sys
-from os import listdir, walk, sep, environ
+from os import listdir, walk, sep, environ, pathsep
 from os.path import isfile, join, splitext
 
 def loadConfig():
@@ -28,7 +28,7 @@ notifications = "True"
 
 #Path to graphviz location
 graphVizPath = "C:/Program Files (x86)/Graphviz2.38/bin"
-environ["PATH"] = graphVizPath
+environ["PATH"] += (pathsep+graphVizPath)
 
 # Folder path for new templates
 templatesPath = join('.', 'data', 'templates')
