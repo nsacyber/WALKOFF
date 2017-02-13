@@ -7,50 +7,13 @@
         }).appendTo("head");
     </script>
     <style>
-         /* required LIB STYLES */
-
-        .Treant { position: relative; overflow: hidden; padding: 0 !important; }
-        .Treant > .node,
-        .Treant > .pseudo { position: absolute; display: block; visibility: hidden; }
-        .Treant.Treant-loaded .node,
-        .Treant.Treant-loaded .pseudo { visibility: visible; }
-        .Treant > .pseudo { width: 0; height: 0; border: none; padding: 0; }
-        .Treant .collapse-switch { width: 3px; height: 3px; display: block; border: 1px solid black; position: absolute; top: 1px; right: 1px; cursor: pointer; }
-        .Treant .collapsed .collapse-switch { background-color: #868DEE; }
-        .Treant > .node img {	border: none; float: left; }
-
-        /* optional Container STYLES */
-        .chart { height: 600px; width: 750px; margin: 5px; margin: 15px auto; border: 3px solid #DDD; border-radius: 3px; }
-
-        .node { font-size: 11px; }
-
-        .node.big-commpany {
-            cursor: pointer;
-            padding: 0 2px;
-            min-width: 60px;
-            text-align: center;
-            height: 30px;
-            border: 2px solid #E8E8E3;
-            border-radius: 2px;
-            box-shadow: 1px 1px 1px rgba(0,0,0,.5);
-            background: #fff;
+        #cy {
+          height: 700px;
+          width: 700px;
+          position: relative;
+          left: 0;
+          top: 0;
         }
-        .node.big-commpany:active {
-            box-shadow: inset 1px 1px 1px rgba(0,0,0,.1);
-            margin: 1px 0 0 1px;
-            border: 2px solid #D3D3CB;
-        }
-
-        .node.big-commpany .node-name {
-            line-height: 30px;
-            color: #9B9B9B;
-        }
-
-        .node.big-commpany:hover .node-name {
-            color: #8B8B8B;
-            text-shadow: 1px 1px rgba(0,0,0,.15);
-        }
-
     </style>
 
     <div id="header">
@@ -60,12 +23,8 @@
         <div class="chart" id="OrganiseChart-big-commpany"></div>
         <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
-
-    <script src="{{ url_for('static', filename='pages/playbook/js/vendor/raphael.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/Treant.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 
-    <script>
-        new Treant( chart_config );
-    </script>
+    <div id="cy"></div>
 </div>
