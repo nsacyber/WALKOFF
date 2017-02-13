@@ -1,12 +1,10 @@
 import app
-from flask.ext.sqlalchemy import SQLAlchemy, Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
+from flask.ext.security.utils import encrypt_password
 
 #Database Connection Object
 db = SQLAlchemy(app)
-
-# Setup Flask Security
-user_datastore = SQLAlchemyUserDatastore(db, user.User, role.Role)
-security = Security(app, user_datastore)
 
 #Base Class for Tables
 class Base(db.Model):
@@ -15,10 +13,25 @@ class Base(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     modified_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-class User(Base, UserMixin):
+class Role(Base, RoleMixin):
+    __tablename__ = 'auth_role'
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
-    # Database Connection Object
-    user_datastore = db.user_datastore
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    def setDescription(self, description):
+        self.description = description
+
+    def toString(self):
+        return {"name" : self.name, "description" : self.description}
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+class User(Base, UserMixin):
 
     # Define Models
     roles_users = db.Table('roles_users',
@@ -64,40 +77,25 @@ class User(Base, UserMixin):
     def __repr__(self):
         return '<User %r>' % self.email
 
-    # Creates Test Data
-    @app.before_first_request
-    def create_user(self):
-        # db.drop_all()
-        db.create_all()
-        if not User.query.first():
-            # Add Credentials to Splunk app
-            # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
+# Setup Flask Security
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
 
-            adminRole = user_datastore.create_role(name="admin", description="administrator")
-            # userRole = user_datastore.create_role(name="user", description="user")
+# Creates Test Data
+@app.before_first_request
+def create_user(self):
+    # db.drop_all()
+    db.create_all()
+    if not User.query.first():
+        # Add Credentials to Splunk app
+        # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
 
-            u = user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-            # u2 = user_datastore.create_user(email='user', password=encrypt_password('user'))
+        adminRole = user_datastore.create_role(name="admin", description="administrator")
+        # userRole = user_datastore.create_role(name="user", description="user")
 
-            user_datastore.add_role_to_user(u, adminRole)
+        u = user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        # u2 = user_datastore.create_user(email='user', password=encrypt_password('user'))
 
-            db.session.commit()
+        user_datastore.add_role_to_user(u, adminRole)
 
-class Role(Base, RoleMixin):
-    __tablename__ = 'auth_role'
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-    def setDescription(self, description):
-        self.description = description
-
-    def toString(self):
-        return {"name" : self.name, "description" : self.description}
-
-    def __repr__(self):
-        return '<Role %r>' % self.name
-
+        db.session.commit()
