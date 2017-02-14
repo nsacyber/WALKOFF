@@ -171,7 +171,8 @@ class Workflow(ExecutionElement):
             output.append(node)
             for next in self.steps[step].conditionals:
                 edgeId = str(self.steps[step].name) + str(next.name)
-                node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.ancestry}}
+                if next.name in self.steps:
+                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name}}
                 output.append(node)
         return output
 

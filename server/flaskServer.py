@@ -34,7 +34,7 @@ def create_user():
 
 #Temporary create controller
 workflowManager = controller.Controller()
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
 """
     URLS

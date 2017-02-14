@@ -10,7 +10,7 @@ var workflowData = function () {
         'type': "POST",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/workflow/helloWorldWorkflow/cytoscape",
+        'url': "/workflow/multiactionWorkflow/cytoscape",
         'success': function (data) {
             tmp = data;
         }
@@ -71,5 +71,5 @@ var cy = cytoscape({
   }
 });
 
-console.log(workflowData);
-cy.add(workflowData);
+cy.add(JSON.parse(workflowData));
+cy.center(cy.elements());
