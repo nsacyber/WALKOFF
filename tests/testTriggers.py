@@ -1,5 +1,7 @@
 import unittest
+
 from server import flaskServer as server
+
 
 
 class TestTriggers(unittest.TestCase):
