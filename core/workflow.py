@@ -6,8 +6,9 @@ from core import arguments
 from core import instance
 from core import options
 from core import case
+from core import config
 from core.executionelement import ExecutionElement
-
+from os.path import join, isfile
 
 class Workflow(ExecutionElement):
     def __init__(self, name="", workflowConfig=None, children=None, parent_name=""):
@@ -20,6 +21,11 @@ class Workflow(ExecutionElement):
              'StepExecutionSuccess': case.add_workflow_entry('Step executed successfully'),
              'NextStepFound': case.add_workflow_entry('Next step found'),
              'WorkflowShutdown': case.add_workflow_entry("Workflow shut down")})
+
+    @staticmethod
+    def get_workflow(workflow_name):
+        if isfile(join(config.workflow_path, workflow_name)):
+            return Workflow(name=workflow_name, workflow_name=workflow_name, parent_name='Trigger')
 
     def _from_xml(self, xml_element):
         self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)

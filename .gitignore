@@ -10,5 +10,7 @@
 .idea/vcs.xml
 data/walkoff.db
 tests/profileVisualizations/*
+build/*
 .idea/dictionaries/aheibel.xml
 .idea/inspectionProfiles/Project_Default.xml
+*.egg

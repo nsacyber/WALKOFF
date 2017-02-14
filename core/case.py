@@ -4,8 +4,6 @@ from functools import partial
 
 import logging
 
-#logging.basicConfig()
-
 
 class _SubscriptionEventList(object):
     """

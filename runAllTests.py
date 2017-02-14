@@ -6,6 +6,8 @@ from tests import testSimpleWorkflow as tsw
 from tests import testExecutionRuntime as ter
 from tests import testExecutionModes as tem
 from tests import testExecutionEvents as tee
+from tests import testTriggers as ttr
+from tests import testServer as tsv
 
 loadWorkflow = unittest.TestLoader().loadTestsFromTestCase(ttw.TestLoadWorkflow)
 manipulateWorkflow = unittest.TestLoader().loadTestsFromTestCase(twm.TestWorkflowManipulation)
@@ -13,7 +15,8 @@ executeWorkflow = unittest.TestLoader().loadTestsFromTestCase(tsw.TestSimpleWork
 executionRuntime = unittest.TestLoader().loadTestsFromTestCase(ter.TestExecutionRuntime)
 executionModes = unittest.TestLoader().loadTestsFromTestCase(tem.TestExecutionModes)
 executionEvents = unittest.TestLoader().loadTestsFromTestCase(tee.TestExecutionEvents)
-
+triggers = unittest.TestLoader().loadTestsFromTestCase(ttr.TestTriggers)
+login = unittest.TestLoader().loadTestsFromTestCase(tsv.TestTriggers)
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(loadWorkflow)
     unittest.TextTestRunner(verbosity=2).run(manipulateWorkflow)
@@ -21,3 +24,5 @@ if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(executionRuntime)
     unittest.TextTestRunner(verbosity=2).run(executionModes)
     unittest.TextTestRunner(verbosity=2).run(executionEvents)
+    unittest.TextTestRunner(verbosity=2).run(triggers)
+    unittest.TextTestRunner(verbosity=2).run(login)

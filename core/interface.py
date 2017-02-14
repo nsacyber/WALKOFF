@@ -1,5 +1,4 @@
-import sys, importlib, itertools
-#from config import getApps
+import sys, importlib
 from core import forms
 
 def loadModule(name):
@@ -10,7 +9,7 @@ def loadModule(name):
         pass
     try:
         return importlib.import_module(module, '')
-    except ImportError as e:
+    except ImportError:
         return None
 
 def loadApp(name, keys, values):
@@ -29,3 +28,6 @@ def settings():
 
 def playbook():
     return {}, None
+
+def triggers():
+    return {}, forms.addNewTriggerForm()

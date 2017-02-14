@@ -1,4 +1,4 @@
-from server import server
+from server import flaskServer
 
 if __name__ == "__main__":
-    server.start()
+    flaskServer.start()
