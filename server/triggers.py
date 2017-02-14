@@ -2,7 +2,7 @@ from .database import db, Base
 import json
 from core.ffk import Flag
 from core.workflow import Workflow
-
+from core.forms import addNewTriggerForm
 
 class Triggers(Base):
     __tablename__ = "triggers"

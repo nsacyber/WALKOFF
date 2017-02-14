@@ -13,3 +13,4 @@ class TestTriggers(unittest.TestCase):
     def test_login(self):
         response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.assertTrue(response.status_code, 200)
+

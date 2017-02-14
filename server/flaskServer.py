@@ -7,7 +7,6 @@ import json
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_required
 from flask_security.utils import encrypt_password, verify_and_update_password
-
 from core import config, interface, controller
 from core import forms
 
@@ -34,6 +33,7 @@ def create_user():
 
 #Temporary create controller
 workflowManager = controller.Controller()
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
 workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
 """
@@ -41,7 +41,7 @@ workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkf
 """
 
 
-@app.route("/")
+@app.route("/", methods=["POST"])
 @login_required
 def default():
     if current_user.is_authenticated:
@@ -50,6 +50,14 @@ def default():
     else:
         return {"status": "Could Not Log In."}
 
+#Returns the API key for the user
+@app.route('/key', methods=["GET", "POST"])
+@login_required
+def loginInfo():
+    if current_user.is_authenticated:
+        return json.dumps({"auth_token" : current_user.get_auth_token()})
+    else:
+        return {"status" : "Could Not Log In."}
 
 @app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
 @auth_token_required
@@ -91,6 +99,14 @@ def listener():
     return json.dumps(listener_output)
 
 
+@app.route('/execution/listener/triggers', methods=["POST"])
+@auth_token_required
+@roles_required("admin")
+def displayAllTriggers():
+    result = str(Triggers.query.all())
+    return result
+
+
 @app.route('/execution/listener/triggers/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_required("admin")
@@ -100,11 +116,13 @@ def triggerManagement(action):
         if form.validate():
             query = Triggers.query.filter_by(name=form.name.data).first()
             if query is None:
-                db.session.add(
+                database.db.session.add(
                     Triggers(name=form.name.data, condition=json.dumps(form.conditional.data), play=form.play.data))
-                db.session.commit()
 
+                database.db.session.commit()
                 return json.dumps({"status": "trigger successfully added"})
+            else:
+                return json.dumps({"status": "trigger with that name already exists"})
         return json.dumps({"status": "trigger could not be added"})
 
 
@@ -133,8 +151,10 @@ def triggerFunctions(action, name):
         query = Triggers.query.filter_by(name=name).first()
         if query:
             Triggers.query.filter_by(name=name).delete()
-            db.session.commit()
+            database.db.session.commit()
             return json.dumps({"status": "removed trigger"})
+        elif query == None:
+            json.dumps({"status": "trigger does not exist"})
         return json.dumps({"status": "could not remove trigger"})
 
     elif action == "display":
