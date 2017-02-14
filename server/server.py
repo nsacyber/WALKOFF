@@ -8,7 +8,7 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 
 from jinja2 import Environment, FileSystemLoader
 
-from core import config, appBlueprint, interface, forms
+from core import config, appBlueprint, interface, forms, controller
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 
@@ -130,6 +130,11 @@ def create_user():
 
         db.session.commit()
 
+
+#Temporary create controller
+workflowManager = controller.Controller()
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+
 """
     URLS
 """
@@ -142,9 +147,14 @@ def default():
     else:
         return {"status": "Could Not Log In."}
 
-@app.route("/workflow/", methods=['GET'])
-def workflow():
-    return ""
+@app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
+@auth_token_required
+@roles_required("admin")
+def workflow(name, format):
+    if name in workflowManager.workflows:
+        if format == "cytoscape":
+            output = workflowManager.workflows[name].returnCytoscapeData()
+            return json.dumps(output)
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required

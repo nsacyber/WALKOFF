@@ -2,6 +2,24 @@ $("#executeWorkflowButton").on("click", function(e){
     notifyMe();
 })
 
+
+var workflowData = function () {
+    var tmp = null;
+    $.ajax({
+        'async': false,
+        'type': "POST",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/workflow/helloWorldWorkflow/cytoscape",
+        'success': function (data) {
+            tmp = data;
+        }
+    });
+    return tmp;
+}();
+
+console.log(workflowData);
+
 var cy = cytoscape({
   container: document.getElementById('cy'),
   
@@ -47,25 +65,11 @@ var cy = cytoscape({
     }
   ],
   
-  elements: {
-    nodes: [
-      { data: { id: 'a', parent: 'b' }, position: { x: 215, y: 85 } },
-      { data: { id: 'b' } },
-      { data: { id: 'c', parent: 'b' }, position: { x: 300, y: 85 } },
-      { data: { id: 'd' }, position: { x: 215, y: 175 } },
-      { data: { id: 'e' } },
-      { data: { id: 'f', parent: 'e' }, position: { x: 300, y: 175 } }
-    ],
-    edges: [
-      { data: { id: 'ad', source: 'a', target: 'd' } },
-      { data: { id: 'eb', source: 'e', target: 'b' } }
-      
-    ]
-  },
-  
   layout: {
     name: 'preset',
     padding: 5
   }
 });
 
+console.log(workflowData);
+cy.add(workflowData);

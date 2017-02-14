@@ -157,6 +157,18 @@ class Workflow(ExecutionElement):
         except Exception:
             pass
 
+
+    def returnCytoscapeData(self):
+        output = []
+        for step in self.steps:
+            node = {"group":"nodes", "data":{"id":self.steps[step].name}}
+            output.append(node)
+            for next in self.steps[step].conditionals:
+                edgeId = str(self.steps[step].name) + str(next.name)
+                node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.ancestry}}
+                output.append(node)
+        return output
+
     def __repr__(self):
         output = {'options': self.options,
                   'steps': {step: self.steps[step] for step in self.steps}}

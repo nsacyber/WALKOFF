@@ -4,7 +4,7 @@ from functools import partial
 
 import logging
 
-logging.basicConfig()
+#logging.basicConfig()
 
 
 class _SubscriptionEventList(object):
