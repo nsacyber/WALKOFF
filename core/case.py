@@ -137,6 +137,9 @@ class Case(object):
         """
         self.history.append(event)
 
+    def clear_history(self):
+        self.history = []
+
     def __repr__(self):
         return str({'id': self.id,
                     'history': self.history,

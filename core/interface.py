@@ -27,7 +27,10 @@ def settings():
     return {}, forms.settingsForm()
 
 def playbook():
-    return {}, None
+    return {"currentWorkflow" : "multiactionWorkflow"}, None
 
 def triggers():
     return {}, forms.addNewTriggerForm()
+
+def cases():
+    return {"currentWorkflow": "multiactionWorkflow"}, None
