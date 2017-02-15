@@ -41,7 +41,7 @@ workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkf
 """
 
 
-@app.route("/", methods=["POST"])
+@app.route("/")
 @login_required
 def default():
     if current_user.is_authenticated:
