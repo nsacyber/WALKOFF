@@ -8,6 +8,7 @@ from tests import testExecutionModes as tem
 from tests import testExecutionEvents as tee
 from tests import testTriggers as ttr
 from tests import testServer as tsv
+from tests import testUsersAndRoles as tur
 
 loadWorkflow = unittest.TestLoader().loadTestsFromTestCase(ttw.TestLoadWorkflow)
 manipulateWorkflow = unittest.TestLoader().loadTestsFromTestCase(twm.TestWorkflowManipulation)
@@ -17,12 +18,14 @@ executionModes = unittest.TestLoader().loadTestsFromTestCase(tem.TestExecutionMo
 executionEvents = unittest.TestLoader().loadTestsFromTestCase(tee.TestExecutionEvents)
 triggers = unittest.TestLoader().loadTestsFromTestCase(ttr.TestTriggers)
 login = unittest.TestLoader().loadTestsFromTestCase(tsv.TestTriggers)
+usersAndRoles = unittest.TestLoader().loadTestsFromTestCase(tur.TestUsersAndRoles)
 if __name__ == '__main__':
-    # unittest.TextTestRunner(verbosity=2).run(loadWorkflow)
-    # unittest.TextTestRunner(verbosity=2).run(manipulateWorkflow)
-    # unittest.TextTestRunner(verbosity=2).run(executeWorkflow)
-    # unittest.TextTestRunner(verbosity=2).run(executionRuntime)
-    # unittest.TextTestRunner(verbosity=2).run(executionModes)
-    # unittest.TextTestRunner(verbosity=2).run(executionEvents)
+    unittest.TextTestRunner(verbosity=2).run(loadWorkflow)
+    unittest.TextTestRunner(verbosity=2).run(manipulateWorkflow)
+    unittest.TextTestRunner(verbosity=2).run(executeWorkflow)
+    unittest.TextTestRunner(verbosity=2).run(executionRuntime)
+    unittest.TextTestRunner(verbosity=2).run(executionModes)
+    unittest.TextTestRunner(verbosity=2).run(executionEvents)
     unittest.TextTestRunner(verbosity=2).run(triggers)
     unittest.TextTestRunner(verbosity=2).run(login)
+    unittest.TextTestRunner(verbosity=2).run(usersAndRoles)

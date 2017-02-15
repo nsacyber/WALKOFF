@@ -1,16 +1,27 @@
 from .app import app
-from server import database
+from . import database
 from .triggers import Triggers
 import os
 import ssl
 import json
 from flask import render_template, request
-from flask_security import login_required, auth_token_required, current_user, roles_required
+from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
 from core import forms
 
 user_datastore = database.user_datastore
+
+urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
+        "/roles", "/users"]
+
+default_urls = urls
+
+userRoles = database.userRoles
+
+database.initialize_userRoles(urls)
+
+db = database.db
 
 # Creates Test Data
 @app.before_first_request
@@ -21,7 +32,7 @@ def create_user():
         # Add Credentials to Splunk app
         # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
 
-        adminRole = user_datastore.create_role(name="admin", description="administrator")
+        adminRole = user_datastore.create_role(name="admin", description="administrator", pages=default_urls)
         # userRole = user_datastore.create_role(name="user", description="user")
 
         u = user_datastore.create_user(email='admin', password=encrypt_password('admin'))
@@ -39,7 +50,6 @@ workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkf
 """
     URLS
 """
-
 
 @app.route("/", methods=["POST"])
 @login_required
@@ -61,7 +71,7 @@ def loginInfo():
 
 @app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/workflow"])
 def workflow(name, format):
     if name in workflowManager.workflows:
         if format == "cytoscape":
@@ -70,7 +80,7 @@ def workflow(name, format):
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/configuration"])
 def configValues(key):
     if current_user.is_authenticated and key:
         if hasattr(config, key):
@@ -80,7 +90,7 @@ def configValues(key):
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>/display', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/interface"])
 def systemPages(name):
     if current_user.is_authenticated and name:
         args, form = getattr(interface, name)()
@@ -92,7 +102,7 @@ def systemPages(name):
 # Controls execution triggers
 @app.route('/execution/listener', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/execution/listener"])
 def listener():
     form = forms.incomingDataForm(request.form)
     listener_output = Triggers.execute(form.data.data) if form.validate() else {}
@@ -101,7 +111,7 @@ def listener():
 
 @app.route('/execution/listener/triggers', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/execution/listener/triggers"])
 def displayAllTriggers():
     result = str(Triggers.query.all())
     return result
@@ -109,7 +119,7 @@ def displayAllTriggers():
 
 @app.route('/execution/listener/triggers/<string:action>', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/execution/listener/triggers"])
 def triggerManagement(action):
     if action == "add":
         form = forms.addNewTriggerForm(request.form)
@@ -128,7 +138,7 @@ def triggerManagement(action):
 
 @app.route('/execution/listener/triggers/<string:name>/<string:action>', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/execution/listener/triggers"])
 def triggerFunctions(action, name):
     if action == "edit":
         form = forms.editTriggerForm(request.form)
@@ -166,7 +176,7 @@ def triggerFunctions(action, name):
 # Controls roles
 @app.route('/roles/<string:action>', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/roles"])
 def roleAddActions(action):
     # Adds a new role
     if action == "add":
@@ -177,9 +187,11 @@ def roleAddActions(action):
 
                 if form.description.data != None:
                     d = form.description.data
-                    r = user_datastore.create_role(name=n, description=d)
+                    user_datastore.create_role(name=n, description=d, pages=default_urls)
                 else:
-                    r = user_datastore.create_role(name=n)
+                    user_datastore.create_role(name=n, pages=default_urls)
+
+                database.add_to_userRoles(n, default_urls)
 
                 db.session.commit()
                 return json.dumps({"status" : "role added " + n})
@@ -187,20 +199,24 @@ def roleAddActions(action):
                 return json.dumps({"status" : "role exists"})
         else:
             return json.dumps({"status" : "invalid input"})
+    else:
+        return json.dumps({"status" : "invalid input"})
 
 @app.route('/roles/<string:action>/<string:name>', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/roles"])
 def roleActions(action, name):
-    role = user_datastore.find_role(name=name)
+    role = database.Role.query.filter_by(name=name).first()
 
     if role != None and role != []:
 
         if action == "edit":
             form = forms.EditRoleForm(request.form)
             if form.validate():
-                if form.description != "":
+                if form.description.data != "":
                     role.setDescription(form.description.data)
+                if form.pages.data != "" and form.pages.data != []:
+                    database.add_to_userRoles(name, form.pages)
             return json.dumps(role.display())
 
         elif action == "display":
@@ -213,7 +229,7 @@ def roleActions(action, name):
 # Controls non-specific users and roles
 @app.route('/users/<string:action>', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
+@roles_accepted(*userRoles["/users"])
 def userNonSpecificActions(action):
     # Adds a new user
     if action == "add":
@@ -237,11 +253,11 @@ def userNonSpecificActions(action):
             return json.dumps({"status" : "invalid input"})
 
 # Controls users and roles
-@app.route('/users/<string:action>/<int:id>', methods=["POST"])
+@app.route('/users/<string:action>/<string:id_or_email>', methods=["POST"])
 @auth_token_required
-@roles_required("admin")
-def userActions(action, id):
-    user = user_datastore.get_user(id)
+@roles_accepted(*userRoles["/users"])
+def userActions(action, id_or_email):
+    user = user_datastore.get_user(id_or_email)
     if user != None and user != []:
         if action == "remove":
             if user != current_user:
