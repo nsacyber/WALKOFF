@@ -5,6 +5,16 @@ from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMix
 # Database Connection Object
 db = flask_sqlalchemy.SQLAlchemy(app)
 
+userRoles = {}
+
+def initialize_userRoles(urls):
+    for url in urls:
+        userRoles[url] = ["admin"]
+
+def add_to_userRoles(role_name, urls):
+    for url in urls:
+        userRoles[url].append(role_name)
+
 # Base Class for Tables
 class Base(db.Model):
     __abstract__ = True
@@ -18,9 +28,10 @@ class Role(Base, RoleMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
-    def __init__(self, name, description):
+    def __init__(self, name, description, pages):
         self.name = name
         self.description = description
+        self.pages = pages
 
     def setDescription(self, description):
         self.description = description
@@ -37,7 +48,6 @@ class Role(Base, RoleMixin):
 
     def __repr__(self):
         return '<Role %r>' % self.name
-
 
 class User(Base, UserMixin):
     # Define Models

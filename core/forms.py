@@ -15,6 +15,7 @@ class NewRoleForm(Form):
 
 class EditRoleForm(Form):
     description = StringField('description')
+    pages = StringField('pages')
 
 class AddNewPlayForm(Form):
     name = StringField('name', [validators.Length(min=1, max=50), validators.required()])
