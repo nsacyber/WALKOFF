@@ -40,6 +40,8 @@ keywordsPath = join('.', 'core', 'keywords')
 #Database Path
 dbPath = "data/walkoff.db"
 
+case_db_path = join('data', 'events.db')
+reinitialize_case_db_on_startup = True
 
 TLS_version = "1.2"
 certificatePath = "data/auth/shortstop.public.pem"

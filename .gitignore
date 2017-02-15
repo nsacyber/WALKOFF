@@ -9,6 +9,7 @@
 .idea/modules.xml
 .idea/vcs.xml
 data/walkoff.db
+data/events.db
 tests/profileVisualizations/*
 build/*
 .idea/dictionaries/aheibel.xml

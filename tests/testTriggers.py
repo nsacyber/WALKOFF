@@ -13,9 +13,6 @@ class TestTriggers(unittest.TestCase):
         self.testTriggerName = "testTrigger"
         self.testTriggerPlay = "HelloWorldWorkflow"
 
-    def test_grep(self):
-        print('Not Implemented!')
-
     def test_display_triggers(self):
         response = self.app.post('/execution/listener/triggers', headers=self.headers).get_data(as_text=True)
 

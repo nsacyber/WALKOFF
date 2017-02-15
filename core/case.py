@@ -1,8 +1,16 @@
 import uuid
 import datetime
 from functools import partial
-
+from os.path import isfile
+from os import remove
+from core import config
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import DateTime, String, Integer, Column, func, ForeignKey, create_engine
+from sqlalchemy.orm import relationship, backref, sessionmaker
 import logging
+
+logging.basicConfig()
+
 
 class _SubscriptionEventList(object):
     """
@@ -12,6 +20,7 @@ class _SubscriptionEventList(object):
         all (bool): Are all events subscribed to?
         events (list[str]): Events which are subscribed to.
     """
+
     def __init__(self, events=None, all=False):
         self.all = all
         self.events = events if (events is not None and not self.all) else []
@@ -28,8 +37,10 @@ class _SubscriptionEventList(object):
     def construct(events=None):
         """
         Constructs a _SubscriptionEventList
-        :param events: if events is '*' then all are subscribed to. If a list is given then it is subscribed to those messages
-        :return (_SubscriptionEventList):
+        Args:
+            events: if events is '*' then all are subscribed to. If a list is given then it is subscribed to those messages
+        Returns:
+            _SubscriptionEventList:
         """
         if events is not None:
             if events == '*':
@@ -55,6 +66,7 @@ class GlobalSubscriptions(object):
         flag (list[str]): Events subscribed to by all flags
         filter (list[str]): Events subscribed to by all filters
     """
+
     def __init__(self, controller=None, workflow=None, step=None, next_step=None, flag=None, filter=None):
         self.controller = _SubscriptionEventList.construct(controller)
         self.workflow = _SubscriptionEventList.construct(workflow)
@@ -81,6 +93,7 @@ class Subscription(object):
         subscriptions (dict{str: Subscription}): A list of subscriptions to execution events one level lower
         disabled (_SubscriptionEventList): A list of events which should be ignored from the global subscriptions
     """
+
     def __init__(self, events=None, subscriptions=None, disabled=None):
         self.events = _SubscriptionEventList.construct(events)
         self.subscriptions = subscriptions if subscriptions is not None else {}  # in form of {'name' => Subscription()}
@@ -103,63 +116,83 @@ class Subscription(object):
                     'subscriptions': str(self.subscriptions)})
 
 
-class Case(object):
-    """
-    A log of a set of events
-
-    Attributes:
-        id (str): Identification
-        uid (uuid4): Unique identification
-        history (list[EventEntry]): Event log
-        enabled (bool):
-        subscriptions dict{str: Subscription}: Event types to log for this case.
-        global_subscriptions (GlobalSubscriptions): Subscriptions for all events of a given execution level
-    """
-    def __init__(self, id="", history=None, subscriptions=None, global_subscriptions=None):
-        self.id = id
-        self.uid = uuid.uuid4()
-        self.history = history if history is not None else []
-        self.enabled = False
+class CaseSubscriptions(object):
+    def __init__(self, subscriptions=None, global_subscriptions=None):
         self.subscriptions = subscriptions if subscriptions is not None else {}
         self.global_subscriptions = global_subscriptions if global_subscriptions is not None else GlobalSubscriptions()
 
-    def __enter__(self):
-        self.enabled = True
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        self.enabled = False
-
-    def add_event(self, event):
-        """
-        Appends an event to the log
-        :param event (EntryEvent):
-        :return:
-        """
-        self.history.append(event)
-
-    def clear_history(self):
-        self.history = []
-
-    def __repr__(self):
-        return str({'id': self.id,
-                    'history': self.history,
-                    'subscriptions': self.subscriptions})
-
-"""Global log of event cases"""
-cases = {}
+subscriptions = {}
 
 
-def addCase(name, case):
-    """
-    Add a case to cases
-    :param name(str): Name of case
-    :param case(Case): Case to add
-    :return (bool): Was case successfully added?
-    """
-    if name not in cases:
-        cases[name] = case
-        return True
-    return False
+def set_subscriptions(new_subscriptions):
+    global subscriptions
+    subscriptions = new_subscriptions
+    case_database.register_events(new_subscriptions.keys())
+
+
+_Base = declarative_base()
+
+
+class Cases(_Base):
+    __tablename__ = 'case'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
+class EventLog(_Base):
+    __tablename__ = 'event_log'
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, default=func.now())
+    type = Column(String)
+    ancestry = Column(String)
+    message = Column(String)
+    case_id = Column(String, ForeignKey('case.name'))
+    case = relationship(Cases, backref=backref('events', uselist=True, cascade='delete,all'))
+
+    @staticmethod
+    def create(sender, entry_message, entry_type, data=None, name=""):
+        return EventLog(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message)
+
+
+'''
+Setup database
+'''
+
+
+class CaseDatabase(object):
+    def __init__(self):
+        self.engine = create_engine('sqlite:///' + config.case_db_path)
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        self.session = Session()
+
+    def create(self):
+        _Base.metadata.bind = self.engine
+        _Base.metadata.create_all(self.engine)
+
+    def register_events(self, case_names):
+        self.session.add_all([Cases(name=case_name) for case_name in case_names])
+
+    def add_event(self, event, cases):
+        for case in cases:
+            self.session.add(EventLog(type=event.type,
+                                      ancestry=','.join(map(str, event.ancestry)),
+                                      message=event.message,
+                                      case_id=case))
+        self.session.commit()
+
+
+case_database = CaseDatabase()
+
+
+def initialize_case_db():
+    if isfile(config.case_db_path):
+        if config.reinitialize_case_db_on_startup:
+            remove(config.case_db_path)
+            case_database.create()
+    else:
+        case_database.create()
 
 
 class EventEntry(object):
@@ -175,6 +208,7 @@ class EventEntry(object):
         message (str): Event message
         data: other information attached to event
     """
+
     def __init__(self, sender, entry_message, entry_type, data=None, name=""):
         self.uuid = str(uuid.uuid4())
         self.timestamp = str(datetime.datetime.utcnow())
@@ -196,25 +230,27 @@ class EventEntry(object):
         })
 
 
-def __add_entry_to_case(sender, event, message_name):
-    for case in cases:
-        if cases[case].enabled:
-            subscriptions = cases[case].subscriptions
-            for level, (ancestry_level_name, global_sub) in enumerate(zip(sender.ancestry,
-                                                                          cases[case].global_subscriptions)):
-                if subscriptions and ancestry_level_name in subscriptions:
-                    if (level == len(sender.ancestry) - 1
-                            and subscriptions[ancestry_level_name].is_subscribed(message_name, global_subs=global_sub)):
-                        cases[case].add_event(event=event)
-                    else:
-                        subscriptions = subscriptions[ancestry_level_name].subscriptions
-                        continue
+def __add_entry_to_case_db(sender, event, message_name):
+    cases_to_add = []
+    for case in subscriptions:
+        current_subscriptions = subscriptions[case].subscriptions
+        for level, (ancestry_level_name, global_sub) in enumerate(zip(sender.ancestry,
+                                                                      subscriptions[case].global_subscriptions)):
+            if current_subscriptions and ancestry_level_name in current_subscriptions:
+                if (level == len(sender.ancestry) - 1
+                    and current_subscriptions[ancestry_level_name].is_subscribed(message_name,
+                                                                                 global_subs=global_sub)):
+                    cases_to_add.append(case)
                 else:
-                    break
+                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                    continue
+            else:
+                break
+    case_database.add_event(event, cases_to_add)
 
 
 def __add_entry_to_case_wrapper(sender, event_type, message_name, entry_message):
-    __add_entry_to_case(sender, EventEntry(sender, event_type, entry_message), message_name)
+    __add_entry_to_case_db(sender, EventEntry(sender, event_type, entry_message), message_name)
 
 
 def __add_entry(message_name, event_type, entry_message):

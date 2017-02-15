@@ -42,9 +42,7 @@ subs = {'defaultController':
                                  {'multiactionWorkflow':
                                       Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                            "NextStepFound", "WorkflowShutdown"])})}
-
-executionCase = case.Case(subscriptions=subs, history=[])
-case.addCase(name="testExecutionEvents", case=executionCase)
+case.set_subscriptions({'testExecutionEvents': case.CaseSubscriptions(subscriptions=subs)})
 """
     URLS
 """

@@ -53,13 +53,6 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=True)
     def test_Loop(self):
-        history = case.Case(subscriptions=[{
-            "object": self.c,
-            "events": [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
-                       EVENT_SCHEDULER_RESUMED,
-                       EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
-                       EVENT_JOB_EXECUTED, EVENT_JOB_ERROR]
-        }])
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("loopWorkflow")
         output = [step.output for step in steps]
