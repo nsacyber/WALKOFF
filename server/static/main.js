@@ -39,7 +39,6 @@ $(document).ready(function(){
     });
 
     $("#ss_playbook").on("click", function(e){
-        console.log("playbook clicked");
         $.ajax({
             url:'interface/playbook/display',
             data:{},
@@ -90,6 +89,23 @@ $(document).ready(function(){
     $("#ss_triggers").on("click", function(e){
         $.ajax({
             url:'/interface/triggers/display',
+            data:{},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success: function(e){
+                data = e;
+                $("#ss_main").html(data);
+            },
+            error: function(e){
+                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
+            }
+        });
+    });
+
+    $("#ss_cases").on("click", function(e){
+        console.log("CLICKED");
+        $.ajax({
+            url:'/interface/cases/display',
             data:{},
             headers:{"Authentication-Token":authKey},
             type:"POST",

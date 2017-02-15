@@ -8,7 +8,8 @@ from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
-from core import forms
+from core import forms, case
+from core.case import Subscription
 
 user_datastore = database.user_datastore
 
@@ -47,6 +48,14 @@ workflowManager = controller.Controller()
 workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
 workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
+subs = {'defaultController':
+                    Subscription(subscriptions=
+                                 {'multiactionWorkflow':
+                                      Subscription(events=["InstanceCreated", "StepExecutionSuccess",
+                                                           "NextStepFound", "WorkflowShutdown"])})}
+
+executionCase = case.Case(subscriptions=subs, history=[])
+case.addCase(name="testExecutionEvents", case=executionCase)
 """
     URLS
 """
@@ -77,6 +86,19 @@ def workflow(name, format):
         if format == "cytoscape":
             output = workflowManager.workflows[name].returnCytoscapeData()
             return json.dumps(output)
+        if format == "execute":
+            history = case.cases["testExecutionEvents"]
+            with history:
+                steps, instances = workflowManager.executeWorkflow(name=name, start="start")
+
+            responseFormat = request.form.get("format")
+            if responseFormat == "cytoscape":
+                #response = json.dumps(helpers.returnCytoscapeData(steps=steps))
+                response = str(history.history)
+            else:
+                response = json.dumps(str(steps))
+            case.cases["testExecutionEvents"].clear_history()
+            return response
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required

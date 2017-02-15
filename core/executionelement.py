@@ -9,7 +9,7 @@ class ExecutionElement(object):
         self.event_handler = EventHandler(self.__class__.__name__ + 'EventHandler')
 
     def _construct_ancestry(self, ancestry):
-        self.ancestry = list(ancestry) if ancestry is not None else [parent_name]
+        self.ancestry = list(ancestry) if ancestry is not None else [self.parent_name]
         self.ancestry.append(self.name)
 
     def _register_event_callbacks(self, callbacks):

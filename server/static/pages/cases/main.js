@@ -5,6 +5,7 @@ $("#executeWorkflowButton").on("click", function(e){
             'async': false,
             'type': "POST",
             'global': false,
+            'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
             'url': "/workflow/" + currentWorkflow + "/execute",
             'success': function (data) {
@@ -14,31 +15,20 @@ $("#executeWorkflowButton").on("click", function(e){
         return tmp;
     }();
     console.log(JSON.parse(result));
+
+    cy.add(JSON.parse(result));
+    cy.layout({
+        name: 'breadthfirst',
+        fit:true,
+        padding: 5,
+        root:"#start"
+     });
     notifyMe();
 })
 
-if(currentWorkflow){
-    var workflowData = function () {
-        var tmp = null;
-        $.ajax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authentication-Token":authKey},
-            'url': "/workflow/" + currentWorkflow + "/cytoscape",
-            'success': function (data) {
-                tmp = data;
-            }
-        });
-        return tmp;
-    }();
-}
-
-console.log(workflowData);
-
 var cy = cytoscape({
   container: document.getElementById('cy'),
-  
+
   boxSelectionEnabled: false,
   autounselectify: true,
   zoomingEnabled:false,
@@ -86,13 +76,7 @@ var cy = cytoscape({
 
 });
 
-cy.add(JSON.parse(workflowData));
-cy.layout({
-    name: 'breadthfirst',
-    fit:true,
-    padding: 5,
-    root:"#start"
- });
+
 
 function notifyMe() {
   if (!Notification) {
