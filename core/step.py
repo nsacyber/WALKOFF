@@ -2,12 +2,16 @@ import xml.etree.cElementTree as et
 from core.ffk import Next
 from core import case, arguments
 from core.executionelement import ExecutionElement
-from core import ffk
+from core import ffk, config
+from jinja2 import Template, TemplateSyntaxError, Markup, escape
+import sys
 
 class Step(ExecutionElement):
     def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
                  ancestry=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+        self.rawXML = xml
+
         if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
@@ -17,6 +21,8 @@ class Step(ExecutionElement):
             self.input = input if input is not None else {}
             self.conditionals = next if next is not None else []
             self.errors = errors if errors is not None else []
+            self.rawXML = self.to_xml()
+
         self.output = None
         self.nextUp = None
         super(Step, self)._register_event_callbacks(
@@ -36,6 +42,27 @@ class Step(ExecutionElement):
                                   for next_step_element in step_xml.findall("next")]
         self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
                             for error_step_element in step_xml.findall("error")]
+
+    def _update_xml(self, step_xml):
+        self.action = step_xml.find("action").text
+        self.app = step_xml.find("app").text
+        self.device = step_xml.find("device").text
+        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
+                      for arg in step_xml.findall("input/*")}
+        self.conditionals = [ffk.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+                             for next_step_element in step_xml.findall("next")]
+        self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+                       for error_step_element in step_xml.findall("error")]
+
+    def renderStep(self, **kwargs):
+        if sys.version_info[0] > 2:
+            content = et.tostring(self.rawXML, encoding="unicode", method="xml")
+        else:
+            content = et.tostring(self.rawXML,  method="xml")
+
+        t = Template(Markup(content).unescape(), autoescape=True)
+        xml = t.render(config.JINJA_GLOBALS, **kwargs)
+        self._update_xml(step_xml=et.fromstring(str(xml)))
 
     def validateInput(self):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input

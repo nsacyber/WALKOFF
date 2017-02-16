@@ -112,8 +112,8 @@ class Controller(object):
         self.workflows[newName] = self.workflows.pop(oldName)
         self.workflows[newName].name = newName
 
-    def executeWorkflow(self, name, start="start"):
-        steps, instances = self.workflows[name].execute(start=start)
+    def executeWorkflow(self, name, start="start", data=None):
+        steps, instances = self.workflows[name].execute(start=start, data=data)
         self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
         return steps, instances
 

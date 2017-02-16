@@ -9,7 +9,7 @@ from sqlalchemy import DateTime, String, Integer, Column, func, ForeignKey, crea
 from sqlalchemy.orm import relationship, backref, sessionmaker
 import logging
 
-logging.basicConfig()
+#logging.basicConfig()
 
 
 class _SubscriptionEventList(object):

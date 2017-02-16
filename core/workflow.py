@@ -10,6 +10,7 @@ from core import config
 from core.executionelement import ExecutionElement
 from os.path import join, isfile
 
+
 class Workflow(ExecutionElement):
     def __init__(self, name="", workflowConfig=None, children=None, parent_name=""):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
@@ -88,7 +89,7 @@ class Workflow(ExecutionElement):
             current = nextUp
         return current
 
-    def execute(self, start="start"):
+    def execute(self, start="start", data=None):
         total_steps = []
         instances = {}
         steps = self.__steps(start=start)
@@ -100,8 +101,10 @@ class Workflow(ExecutionElement):
                     instances[step.device] = self.createInstance(app=step.app, device=step.device)
                     self.event_handler.execute_event_code(self, 'InstanceCreated')
 
-                for arg in step.input:
-                    step.input[arg].template(steps=total_steps)
+                # for arg in step.input:
+                #     step.input[arg].template(steps=total_steps)
+
+                step.renderStep(steps=total_steps)
 
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
