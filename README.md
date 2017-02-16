@@ -16,3 +16,4 @@ Note: WALKOFF is in alpha and is undergoing changes daily.  For best results upd
 3. Case-based configurable logging
 4. User and role based management
 5. Call graph generation 
+6. Sphinx API generation
