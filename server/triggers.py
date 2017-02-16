@@ -1,7 +1,9 @@
 from .database import db, Base
 import json
-from core.ffk import Flag
+from core.ffk import Flag, Filter
 from core.workflow import Workflow
+from core.arguments import Argument
+import ast
 
 class Triggers(Base):
     __tablename__ = "triggers"
@@ -44,13 +46,24 @@ class Triggers(Base):
                     trigger_results = workflow_to_be_executed.execute()
                 else:
                     return json.dumps({"status": "trigger error: play could not be found"})
-                listener_output[trigger.name] = json.loads(str(trigger_results[0]))
+                listener_output[trigger.name] = [step.as_json() for step in trigger_results[0]]
         return listener_output
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        conditional = json.loads(conditional)
-        return Flag(**conditional)(data_in)
+        conditional = ast.literal_eval(conditional)
+        flag_args = {arg['key']: Argument(key=arg['key'],
+                                          value=arg['value'],
+                                          format=arg.get('format', 'str'))
+                     for arg in conditional['args']}
+        filters = [Filter(action=filter_element['action'],
+                          args={arg['key']: Argument(key=arg['key'],
+                                                     value=arg['value'],
+                                                     format=arg.get('format', 'str'))
+                                for arg in filter_element['args']}
+                          )
+                   for filter_element in conditional['filters']]
+        return Flag(action=conditional['flag'], args=flag_args, filters=filters)(data_in)
 
     def __repr__(self):
         return json.dumps(self.as_json())

@@ -9,6 +9,7 @@ from core import case
 from core import config
 from core.executionelement import ExecutionElement
 from os.path import join, isfile
+import xml.etree.cElementTree as et
 
 
 class Workflow(ExecutionElement):
@@ -25,10 +26,14 @@ class Workflow(ExecutionElement):
 
     @staticmethod
     def get_workflow(workflow_name):
-        if isfile(join(config.workflow_path, workflow_name)):
-            return Workflow(name=workflow_name, workflow_name=workflow_name, parent_name='Trigger')
+        if isfile(join(config.templatesPath, workflow_name)):
+            tree = et.ElementTree(file=join(config.templatesPath, workflow_name))
+            for workflow in tree.iter(tag="workflow"):
+                name = workflow.get("name")
+                return Workflow(name=name, workflowConfig=workflow)
+            # TODO: Make this work with child workflows
 
-    def _from_xml(self, xml_element):
+    def _from_xml(self, xml_element, *args):
         self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)
         self.steps = {}
         for step_xml in xml_element.findall(".//steps/*"):

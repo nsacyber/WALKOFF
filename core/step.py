@@ -145,4 +145,17 @@ class Step(ExecutionElement):
             output["output"] = self.output
         return str(output)
 
+    def as_json(self):
+        output = {"name": str(self.name),
+                "action": str(self.name),
+                "app": str(self.app),
+                "device": str(self.device),
+                "input": {str(key): str(self.input[key]) for key in self.input},
+                "next": [next.as_json() for next in self.conditionals],
+                "errors": [error.as_json() for error in self.errors]}
+        if self.output:
+            output["output"] = str(self.output)
+        return output
+
+
 

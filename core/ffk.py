@@ -1,6 +1,6 @@
 import importlib
 import xml.etree.cElementTree as et
-
+import json
 from core import arguments, case
 from core.events import EventHandler, Event
 from core.executionelement import ExecutionElement
@@ -62,6 +62,11 @@ class Next(ExecutionElement):
                   'flags': [flag.__dict__ for flag in self.flags],
                   'name': self.name}
         return str(output)
+
+    def as_json(self):
+        return {"nextStep": str(self.name),
+                "flags": [flag.as_json() for flag in self.flags],
+                "name": str(self.name)}
 
 
 class Flag(ExecutionElement):
@@ -145,6 +150,11 @@ class Flag(ExecutionElement):
                   'filters': [filter.__dict__ for filter in self.filters]}
         return str(output)
 
+    def as_json(self):
+        return {"action": self.action,
+                "args": {arg: self.args[arg].as_json() for arg in self.args},
+                "filters": [filter.as_json() for filter in self.filters]}
+
 
 class Filter(ExecutionElement):
     def __init__(self, xml=None, parent_name="", action="", args=None, ancestry=None):
@@ -200,3 +210,8 @@ class Filter(ExecutionElement):
         output = {'action': self.action,
                   'args': {arg: self.args[arg].__dict__ for arg in self.args}}
         return str(output)
+
+    def as_json(self):
+        return {"action": self.action,
+                "args": {arg: self.args[arg].as_json() for arg in self.args}}
+

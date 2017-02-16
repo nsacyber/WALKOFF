@@ -56,3 +56,8 @@ class Argument(object):
                 except:
                     return False
         return any(x["name"] == self.key and x["type"] == self.format for x in config.functionConfig[action]["args"])
+
+    def as_json(self):
+        return {"key": str(self.key),
+                "value": str(self.value),
+                "format": str(self.format)}

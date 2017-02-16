@@ -4,8 +4,7 @@ class ExecutionElement(object):
     def __init__(self, name='', parent_name='', ancestry=None):
         self.name = name
         self.parent_name = parent_name
-        self.ancestry = list(ancestry) if ancestry is not None else [parent_name]
-        self.ancestry.append(self.name)
+        self._construct_ancestry(ancestry)
         self.event_handler = EventHandler(self.__class__.__name__ + 'EventHandler')
 
     def _construct_ancestry(self, ancestry):

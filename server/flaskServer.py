@@ -24,6 +24,7 @@ database.initialize_userRoles(urls)
 
 db = database.db
 
+
 # Creates Test Data
 @app.before_first_request
 def create_user():
@@ -43,20 +44,22 @@ def create_user():
 
         database.db.session.commit()
 
-#Temporary create controller
+
+# Temporary create controller
 workflowManager = controller.Controller()
 workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
 workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
 subs = {'defaultController':
-                    Subscription(subscriptions=
-                                 {'multiactionWorkflow':
-                                      Subscription(events=["InstanceCreated", "StepExecutionSuccess",
-                                                           "NextStepFound", "WorkflowShutdown"])})}
+            Subscription(subscriptions=
+                         {'multiactionWorkflow':
+                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
+                                                   "NextStepFound", "WorkflowShutdown"])})}
 case.set_subscriptions({'testExecutionEvents': case.CaseSubscriptions(subscriptions=subs)})
 """
     URLS
 """
+
 
 @app.route("/")
 @login_required
@@ -67,14 +70,16 @@ def default():
     else:
         return {"status": "Could Not Log In."}
 
-#Returns the API key for the user
+
+# Returns the API key for the user
 @app.route('/key', methods=["GET", "POST"])
 @login_required
 def loginInfo():
     if current_user.is_authenticated:
-        return json.dumps({"auth_token" : current_user.get_auth_token()})
+        return json.dumps({"auth_token": current_user.get_auth_token()})
     else:
-        return {"status" : "Could Not Log In."}
+        return {"status": "Could Not Log In."}
+
 
 @app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
 @auth_token_required
@@ -91,12 +96,13 @@ def workflow(name, format):
 
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
-                #response = json.dumps(helpers.returnCytoscapeData(steps=steps))
+                # response = json.dumps(helpers.returnCytoscapeData(steps=steps))
                 response = str(history.history)
             else:
                 response = json.dumps(str(steps))
             case.cases["testExecutionEvents"].clear_history()
             return response
+
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required
@@ -193,6 +199,7 @@ def triggerFunctions(action, name):
             return str(query)
         return json.dumps({"status": "could not display trigger"})
 
+
 # Controls roles
 @app.route('/roles/<string:action>', methods=["POST"])
 @auth_token_required
@@ -214,13 +221,14 @@ def roleAddActions(action):
                 database.add_to_userRoles(n, default_urls)
 
                 db.session.commit()
-                return json.dumps({"status" : "role added " + n})
+                return json.dumps({"status": "role added " + n})
             else:
-                return json.dumps({"status" : "role exists"})
+                return json.dumps({"status": "role exists"})
         else:
-            return json.dumps({"status" : "invalid input"})
+            return json.dumps({"status": "invalid input"})
     else:
-        return json.dumps({"status" : "invalid input"})
+        return json.dumps({"status": "invalid input"})
+
 
 @app.route('/roles/<string:action>/<string:name>', methods=["POST"])
 @auth_token_required
@@ -242,9 +250,10 @@ def roleActions(action, name):
         elif action == "display":
             return json.dumps(role.display())
         else:
-            return json.dumps({"status" : "invalid input"})
+            return json.dumps({"status": "invalid input"})
 
     return json.dumps({"status": "role does not exist"})
+
 
 # Controls non-specific users and roles
 @app.route('/users/<string:action>', methods=["POST"])
@@ -266,11 +275,12 @@ def userNonSpecificActions(action):
                     u.setRoles(form.role.entries)
 
                 db.session.commit()
-                return json.dumps({"status" : "user added " + str(u.id)})
+                return json.dumps({"status": "user added " + str(u.id)})
             else:
-                return json.dumps({"status" : "user exists"})
+                return json.dumps({"status": "user exists"})
         else:
-            return json.dumps({"status" : "invalid input"})
+            return json.dumps({"status": "invalid input"})
+
 
 # Controls users and roles
 @app.route('/users/<string:action>/<string:id_or_email>', methods=["POST"])
@@ -283,9 +293,9 @@ def userActions(action, id_or_email):
             if user != current_user:
                 user_datastore.delete_user(user)
                 db.session.commit()
-                return json.dumps({"status" : "user removed"})
+                return json.dumps({"status": "user removed"})
             else:
-                return json.dumps({"status" : "user could not be removed"})
+                return json.dumps({"status": "user could not be removed"})
 
         elif action == "edit":
             form = forms.EditUserForm(request.form)
@@ -301,7 +311,7 @@ def userActions(action, id_or_email):
             if user != None:
                 return json.dumps(user.display())
             else:
-                return json.dumps({"status" : "could not display user"})
+                return json.dumps({"status": "could not display user"})
 
 
 # Start Flask
