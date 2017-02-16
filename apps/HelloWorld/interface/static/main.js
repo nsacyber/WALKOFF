@@ -189,7 +189,7 @@ $(function(){
 //-----------------------------------------------------------------------------
 $(function(){
     $('#chart5').vectorMap({
-        map: 'world_mill',
+        map: 'world_mill_en',
         normalizeFunction: 'polynomial',
         hoverOpacity: 0.7,
         hoverColor: false,
