@@ -58,7 +58,7 @@ case.set_subscriptions({'testExecutionEvents': case.CaseSubscriptions(subscripti
     URLS
 """
 
-@app.route("/", methods=["POST"])
+@app.route("/")
 @login_required
 def default():
     if current_user.is_authenticated:
