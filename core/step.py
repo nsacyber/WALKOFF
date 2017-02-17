@@ -3,6 +3,7 @@ from core.ffk import Next
 from core import case, arguments
 from core.executionelement import ExecutionElement
 from core import ffk, config
+from core import contextDecorator
 from jinja2 import Template, TemplateSyntaxError, Markup, escape
 import sys
 
@@ -54,6 +55,7 @@ class Step(ExecutionElement):
         self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
+    @contextDecorator.context
     def renderStep(self, **kwargs):
         if sys.version_info[0] > 2:
             content = et.tostring(self.rawXML, encoding="unicode", method="xml")
