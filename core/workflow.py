@@ -175,12 +175,12 @@ class Workflow(ExecutionElement):
     def returnCytoscapeData(self):
         output = []
         for step in self.steps:
-            node = {"group":"nodes", "data":{"id":self.steps[step].name}}
+            node = {"group":"nodes", "data":{"id":self.steps[step].name, "parameters":self.steps[step].as_json()}}
             output.append(node)
             for next in self.steps[step].conditionals:
                 edgeId = str(self.steps[step].name) + str(next.name)
                 if next.name in self.steps:
-                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name}}
+                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name, "parameters": next.as_json()}}
                     output.append(node)
         return output
 
