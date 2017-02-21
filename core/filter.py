@@ -28,7 +28,7 @@ class Filter(ExecutionElement):
         self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
                      for arg in args}
 
-    def to_xml(self):
+    def to_xml(self, *args):
         elem = et.Element("filter")
         elem.set("action", self.action)
         argsElement = et.SubElement(elem, "args")
@@ -38,8 +38,7 @@ class Filter(ExecutionElement):
         return elem
 
     def __call__(self, output=None):
-        
-        module = self.checkImport()
+        module = import_lib('filters', self.action)
         if module:
             try:
                 result = getattr(module, "main")(args=self.args, value=output)
@@ -49,15 +48,6 @@ class Filter(ExecutionElement):
                 self.event_handler.execute_event_code(self, 'FilterError')
                 print("FILTER ERROR")
         return output
-
-    def checkImport(self):
-
-        try:
-            filterModule = importlib.import_module("core.filters." + self.action)
-        except ImportError as e:
-            filterModule = None
-        finally:
-            return filterModule
 
     def __repr__(self):
         output = {'action': self.action,

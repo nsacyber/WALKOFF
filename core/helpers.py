@@ -16,7 +16,7 @@ def returnCytoscapeData(steps):
 def import_lib(dir, module_name):
     module = None
     try:
-        module = importlib.import_module('.'.join('core', dir, module_name))
+        module = importlib.import_module('.'.join(['core', dir, module_name]))
     except ImportError:
         pass
     finally:

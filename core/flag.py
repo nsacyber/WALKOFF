@@ -5,6 +5,7 @@ from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
+from core.helpers import import_lib
 
 
 
@@ -64,7 +65,7 @@ class Flag(ExecutionElement):
         for filter in self.filters:
             data = filter(output=data)
 
-        module = self.checkImport()
+        module = import_lib('flags', self.action)
         if module:
             result = None
             if self.validateArgs():
@@ -74,15 +75,6 @@ class Flag(ExecutionElement):
                 print("ARGS INVALID")
                 self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
             return result
-
-    def checkImport(self):
-        flag_module = None
-        try:
-            flag_module = importlib.import_module("core.flags." + self.action)
-        except ImportError:
-            pass
-        finally:
-            return flag_module
 
     def __repr__(self):
         output = {'action': self.action,
