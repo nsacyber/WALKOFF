@@ -8,6 +8,10 @@ from core import contextDecorator
 from jinja2 import Template, TemplateSyntaxError, Markup, escape
 import sys
 
+class InvalidStepArgumentsError(Exception):
+    def __init__(self, message=''):
+        super(InvalidStepArgumentsError, self).__init__(message)
+
 class Step(ExecutionElement):
     def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
                  ancestry=None):
@@ -78,7 +82,7 @@ class Step(ExecutionElement):
             self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result
-        raise Exception
+        raise InvalidStepArgumentsError()
 
     def nextStep(self, error=False):
         nextSteps = self.errors if error else self.conditionals
@@ -105,9 +109,7 @@ class Step(ExecutionElement):
         self.conditionals = [x for x in self.conditionals if x.name != nextStep]
         return True
 
-
-
-    def to_xml(self):
+    def to_xml(self, *args):
         step = et.Element("step")
         step.set("id", self.name)
 

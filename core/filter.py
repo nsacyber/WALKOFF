@@ -4,6 +4,7 @@ from xml.etree import cElementTree as et
 from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
+from core.helpers import import_lib
 
 
 class Filter(ExecutionElement):
@@ -37,6 +38,7 @@ class Filter(ExecutionElement):
         return elem
 
     def __call__(self, output=None):
+        
         module = self.checkImport()
         if module:
             try:
@@ -49,6 +51,7 @@ class Filter(ExecutionElement):
         return output
 
     def checkImport(self):
+
         try:
             filterModule = importlib.import_module("core.filters." + self.action)
         except ImportError as e:

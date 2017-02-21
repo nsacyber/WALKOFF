@@ -7,6 +7,7 @@ from core.executionelement import ExecutionElement
 from core.filter import Filter
 
 
+
 class Flag(ExecutionElement):
     def __init__(self, xml=None, parent_name='', action='', args=None, filters=None, ancestry=None):
         if xml:
@@ -32,7 +33,7 @@ class Flag(ExecutionElement):
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
 
-    def to_xml(self):
+    def to_xml(self, *args):
         elem = et.Element("flag")
         elem.set("action", self.action)
         argsElement = et.SubElement(elem, "args")
@@ -75,12 +76,13 @@ class Flag(ExecutionElement):
             return result
 
     def checkImport(self):
+        flag_module = None
         try:
-            flagModule = importlib.import_module("core.flags." + self.action)
-        except ImportError as e:
-            flagModule = None
+            flag_module = importlib.import_module("core.flags." + self.action)
+        except ImportError:
+            pass
         finally:
-            return flagModule
+            return flag_module
 
     def __repr__(self):
         output = {'action': self.action,

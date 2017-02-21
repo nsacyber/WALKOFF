@@ -22,7 +22,7 @@ class Argument(object):
         if any(type == string_type for string_type in ['str', 'string', 'unicode']):
             try:
                 output = str(output)
-            except ValueError as e:
+            except ValueError:
                 return output
         elif type == "int":
             try:

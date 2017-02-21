@@ -1,7 +1,7 @@
 import sys
 import importlib
 
-from core.step import Step
+from core.step import Step, InvalidStepArgumentsError
 from core import arguments
 from core import instance
 from core import options
@@ -146,7 +146,7 @@ class Workflow(ExecutionElement):
         try:
             step.execute(instance=instance())
             self.event_handler.execute_event_code(self, 'StepExecutionSuccess')
-        except Exception as e:
+        except InvalidStepArgumentsError as e:
             error_flag = True
             step.output = str(e)
         finally:

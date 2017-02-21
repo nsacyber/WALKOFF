@@ -135,12 +135,12 @@ class Controller(object):
         self.scheduler.resume()
 
     # Pauses active execution of specific job
-    def pauseJob(self, jobId):
-        self.scheduler.pause_job(job_id=jobId)
+    def pauseJob(self, job_id):
+        self.scheduler.pause_job(job_id=job_id)
 
     # Resumes active execution of specific job
-    def resumeJob(self, jobId):
-        self.scheduler.resume_job(job_id=jobId)
+    def resumeJob(self, job_id):
+        self.scheduler.resume_job(job_id=job_id)
 
     # Returns jobs scheduled for active execution
     def getScheduledJobs(self):
