@@ -31,9 +31,9 @@ class Filter(ExecutionElement):
     def to_xml(self, *args):
         elem = et.Element("filter")
         elem.set("action", self.action)
-        argsElement = et.SubElement(elem, "args")
+        args_element = et.SubElement(elem, "args")
         for arg in self.args:
-            argsElement.append(self.args[arg].to_xml())
+            args_element.append(self.args[arg].to_xml())
 
         return elem
 

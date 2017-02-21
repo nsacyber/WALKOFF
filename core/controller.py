@@ -94,10 +94,10 @@ class Controller(object):
     def addWorkflowScheduledJobs(self):
         for workflow in self.workflows:
             if (self.workflows[workflow].options.enabled
-                and self.workflows[workflow].options.scheduler["autorun"] == "true"):
-                scheduleType = self.workflows[workflow].options.scheduler["type"]
+                    and self.workflows[workflow].options.scheduler["autorun"] == "true"):
+                schedule_type = self.workflows[workflow].options.scheduler["type"]
                 schedule = self.workflows[workflow].options.scheduler["args"]
-                self.scheduler.add_job(self.workflows[workflow].execute, trigger=scheduleType, replace_existing=True,
+                self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
                                        **schedule)
 
     def createWorkflowFromTemplate(self, name="emptyWorkflow"):

@@ -51,14 +51,14 @@ class Workflow(ExecutionElement):
         ancestry.append(id)
         self.steps[id] = Step(name=id, action=action, app=app, device=device, input=input, next=next,
                               errors=errors, ancestry=ancestry, parent_name=self.name)
-        stepXML = self.steps[id].to_xml()
-        self.workflowXML.find(".//steps").append(stepXML)
+        step_xml = self.steps[id].to_xml()
+        self.workflowXML.find(".//steps").append(step_xml)
 
     def removeStep(self, id=""):
         if id in self.steps:
-            newDict = dict(self.steps)
-            del newDict[id]
-            self.steps = newDict
+            new_dict = dict(self.steps)
+            del new_dict[id]
+            self.steps = new_dict
             return True
         return False
 
@@ -178,9 +178,9 @@ class Workflow(ExecutionElement):
             node = {"group":"nodes", "data":{"id":self.steps[step].name}}
             output.append(node)
             for next in self.steps[step].conditionals:
-                edgeId = str(self.steps[step].name) + str(next.name)
+                edge_id = str(self.steps[step].name) + str(next.name)
                 if next.name in self.steps:
-                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name}}
+                    node = {"group":"edges", "data":{"id": edge_id, "source": self.steps[step].name, "target": next.name}}
                 output.append(node)
         return output
 

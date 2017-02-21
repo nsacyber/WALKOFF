@@ -1,4 +1,3 @@
-import importlib
 from xml.etree import cElementTree as et
 
 from core import arguments
@@ -37,13 +36,13 @@ class Flag(ExecutionElement):
     def to_xml(self, *args):
         elem = et.Element("flag")
         elem.set("action", self.action)
-        argsElement = et.SubElement(elem, "args")
+        args_element = et.SubElement(elem, "args")
         for arg in self.args:
-            argsElement.append(self.args[arg].to_xml())
+            args_element.append(self.args[arg].to_xml())
 
-        filtersElement = et.SubElement(elem, "filters")
+        filters_element = et.SubElement(elem, "filters")
         for filter in self.filters:
-            filtersElement.append(filter.to_xml())
+            filters_element.append(filter.to_xml())
         return elem
 
     def addFilter(self, action="", args=None, index=None):
@@ -54,7 +53,10 @@ class Flag(ExecutionElement):
         return True
 
     def removeFilter(self, index=None):
-        del self.filters[index]
+        try:
+            del self.filters[index]
+        except IndexError:
+            return False
         return True
 
     def validateArgs(self):

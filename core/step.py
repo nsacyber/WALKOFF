@@ -85,24 +85,24 @@ class Step(ExecutionElement):
         raise InvalidStepArgumentsError()
 
     def nextStep(self, error=False):
-        nextSteps = self.errors if error else self.conditionals
+        next_steps = self.errors if error else self.conditionals
 
-        for n in nextSteps:
-            nextStep = n(output=self.output)
-            if nextStep:
-                self.nextUp = nextStep
+        for n in next_steps:
+            next_step = n(output=self.output)
+            if next_step:
+                self.nextUp = next_step
                 self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
-                return nextStep
+                return next_step
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        newConditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
-        if any(conditional == newConditional for conditional in self.conditionals):
+        new_conditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
+        if any(conditional == new_conditional for conditional in self.conditionals):
             return False
-        self.conditionals.append(newConditional)
+        self.conditionals.append(new_conditional)
         return True
 
     def removeNext(self, nextStep=""):

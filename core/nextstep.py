@@ -29,10 +29,10 @@ class Next(ExecutionElement):
         return elem
 
     def createFlag(self, action="", args=None, filters=None):
-        newFlag = Flag(action=action,
+        new_flag = Flag(action=action,
                        args=(args if args is not None else {}),
                        filters=(filters if filters is not None else []))
-        self.flags.append(newFlag)
+        self.flags.append(new_flag)
 
     def removeFlag(self, index=-1):
         try:
