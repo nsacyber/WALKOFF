@@ -1,7 +1,6 @@
 import os
 
 from flask import Blueprint, render_template, request, g
-#from auth import forms
 from flask_security import roles_required, auth_token_required
 
 from core import forms

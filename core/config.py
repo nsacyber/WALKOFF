@@ -1,4 +1,6 @@
-import json, importlib, sys
+import json
+import importlib
+import sys
 from os import listdir, walk, sep, environ, pathsep
 from os.path import isfile, join, splitext
 

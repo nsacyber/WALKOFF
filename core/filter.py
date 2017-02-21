@@ -1,4 +1,3 @@
-import importlib
 from xml.etree import cElementTree as et
 
 from core import arguments

@@ -1,4 +1,5 @@
-import unittest, json
+import unittest
+import json
 from server import flaskServer as server
 from server import database
 

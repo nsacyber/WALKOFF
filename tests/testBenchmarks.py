@@ -3,7 +3,7 @@ from core import graphDecorator, controller, case
 from os.path import isdir
 from os import mkdir
 from tests import config
-from core import config as coreConfig
+from core import config as core_config
 
 
 class TestExecutionLoads(unittest.TestCase):
@@ -12,8 +12,8 @@ class TestExecutionLoads(unittest.TestCase):
     """
 
     def setUp(self):
-        if not isdir(coreConfig.profileVisualizationsPath):
-            mkdir(coreConfig.profileVisualizationsPath)
+        if not isdir(core_config.profileVisualizationsPath):
+            mkdir(core_config.profileVisualizationsPath)
 
     @graphDecorator.callgraph(enabled=True)
     def test_ffkExecutionEvents(self):

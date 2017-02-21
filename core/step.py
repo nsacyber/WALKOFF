@@ -5,7 +5,7 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core import nextstep, config
 from core import contextDecorator
-from jinja2 import Template, TemplateSyntaxError, Markup, escape
+from jinja2 import Template, Markup
 import sys
 
 class InvalidStepArgumentsError(Exception):

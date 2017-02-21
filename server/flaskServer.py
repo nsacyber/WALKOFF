@@ -1,4 +1,3 @@
-import core.case.subscription
 from .app import app
 from . import database
 from .triggers import Triggers

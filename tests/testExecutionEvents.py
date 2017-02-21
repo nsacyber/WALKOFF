@@ -1,7 +1,6 @@
 import unittest
 
 import core.case.database as case_database
-import core.case.subscription
 from core import controller, graphDecorator
 from tests import config
 from core.case.subscription import Subscription

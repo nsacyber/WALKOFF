@@ -1,4 +1,4 @@
-import unittest, os
+import unittest
 from core import controller
 from core import arguments
 from core import graphDecorator
