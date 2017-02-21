@@ -19,7 +19,7 @@ class Argument(object):
 
     def convertTo(self, value=None, type="str"):
         output = value
-        if type == "str" or type == "string" or type == "unicode":
+        if any(type == string_type for string_type in ['str', 'string', 'unicode']):
             try:
                 output = str(output)
             except ValueError as e:
@@ -32,8 +32,8 @@ class Argument(object):
         return output
 
     def template(self, **kwargs):
-        t = Template(str(self.value))
-        self.templated = t.render(config.JINJA_GLOBALS, **kwargs)
+        template = Template(str(self.value))
+        self.templated = template.render(config.JINJA_GLOBALS, **kwargs)
         return self.templated
 
     def to_xml(self):
