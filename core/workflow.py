@@ -1,7 +1,7 @@
 import sys
 import importlib
 
-from core.step import Step, InvalidStepArgumentsError
+from core.step import Step
 from core import arguments
 from core import instance
 from core import options
@@ -51,14 +51,14 @@ class Workflow(ExecutionElement):
         ancestry.append(id)
         self.steps[id] = Step(name=id, action=action, app=app, device=device, input=input, next=next,
                               errors=errors, ancestry=ancestry, parent_name=self.name)
-        step_xml = self.steps[id].to_xml()
-        self.workflowXML.find(".//steps").append(step_xml)
+        stepXML = self.steps[id].to_xml()
+        self.workflowXML.find(".//steps").append(stepXML)
 
     def removeStep(self, id=""):
         if id in self.steps:
-            new_dict = dict(self.steps)
-            del new_dict[id]
-            self.steps = new_dict
+            newDict = dict(self.steps)
+            del newDict[id]
+            self.steps = newDict
             return True
         return False
 
@@ -146,7 +146,7 @@ class Workflow(ExecutionElement):
         try:
             step.execute(instance=instance())
             self.event_handler.execute_event_code(self, 'StepExecutionSuccess')
-        except InvalidStepArgumentsError as e:
+        except Exception as e:
             error_flag = True
             step.output = str(e)
         finally:
@@ -175,13 +175,13 @@ class Workflow(ExecutionElement):
     def returnCytoscapeData(self):
         output = []
         for step in self.steps:
-            node = {"group":"nodes", "data":{"id":self.steps[step].name}}
+            node = {"group":"nodes", "data":{"id":self.steps[step].name, "parameters":self.steps[step].as_json()}}
             output.append(node)
             for next in self.steps[step].conditionals:
-                edge_id = str(self.steps[step].name) + str(next.name)
+                edgeId = str(self.steps[step].name) + str(next.name)
                 if next.name in self.steps:
-                    node = {"group":"edges", "data":{"id": edge_id, "source": self.steps[step].name, "target": next.name}}
-                output.append(node)
+                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name, "parameters": next.as_json()}}
+                    output.append(node)
         return output
 
     def __repr__(self):

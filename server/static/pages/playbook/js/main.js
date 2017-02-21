@@ -94,6 +94,23 @@ cy.layout({
     root:"#start"
  });
 
+cy.$('*').on('click', function(e){
+  // This function displays info about a node/edge when clicked upon next to the graph
+
+  function jsonStringifySort(obj) {
+      // Sort keys so they are displayed in alphabetical order
+      return JSON.stringify(Object.keys(obj).sort().reduce(function (result, key) {
+        result[key] = obj[key];
+        return result;
+    }, {}), null, 2);
+  }
+
+  var ele = e.cyTarget;
+  var parameters = ele.data().parameters;
+  var parametersAsJsonString = jsonStringifySort(parameters);
+  $("#parameters").text(parametersAsJsonString);
+});
+
 function notifyMe() {
   if (!Notification) {
     console.log('Desktop notifications not available in your browser. Try Chromium.');
