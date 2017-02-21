@@ -5,11 +5,11 @@ from os.path import isfile
 from os import remove
 from core import config
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import DateTime, String, Integer, Column, func, ForeignKey, create_engine
+from sqlalchemy import DateTime, String, Integer, Column, func, ForeignKey, create_engine, Table
 from sqlalchemy.orm import relationship, backref, sessionmaker
 import logging
 
-#logging.basicConfig()
+logging.basicConfig()
 
 
 class _SubscriptionEventList(object):
@@ -29,7 +29,7 @@ class _SubscriptionEventList(object):
         """
         Is a given message subscribed to in this list?
         :param message_name (str): The given message
-        :return (bool): Is the message subsribed to?
+        :return (bool): Is the message subscribed to?
         """
         return True if self.all else message_name in self.events
 
@@ -134,11 +134,16 @@ def set_subscriptions(new_subscriptions):
 _Base = declarative_base()
 
 
+class Case_Event(_Base):
+    __tablename__ = 'case_event'
+    case_id = Column(Integer, ForeignKey('cases.id'), primary_key=True)
+    event_id = Column(Integer, ForeignKey('event_log.id'), primary_key=True)
+
 class Cases(_Base):
-    __tablename__ = 'case'
+    __tablename__ = 'cases'
     id = Column(Integer, primary_key=True)
     name = Column(String)
-
+    events = relationship('EventLog', secondary='case_event', lazy='dynamic')
 
 class EventLog(_Base):
     __tablename__ = 'event_log'
@@ -147,11 +152,10 @@ class EventLog(_Base):
     type = Column(String)
     ancestry = Column(String)
     message = Column(String)
-    case_id = Column(String, ForeignKey('case.name'))
-    case = relationship(Cases, backref=backref('events', uselist=True, cascade='delete,all'))
+    cases = relationship('Cases', secondary='case_event', lazy='dynamic')
 
     @staticmethod
-    def create(sender, entry_message, entry_type, data=None, name=""):
+    def create(sender, entry_message, entry_type):
         return EventLog(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message)
 
 
@@ -175,11 +179,19 @@ class CaseDatabase(object):
         self.session.add_all([Cases(name=case_name) for case_name in case_names])
 
     def add_event(self, event, cases):
+        event_log = EventLog(type=event.type,
+                                  ancestry=','.join(map(str, event.ancestry)),
+                                  message=event.message)
+        existing_cases = case_database.session.query(Cases).all()
+        existing_case_names = [case.name for case in existing_cases]
         for case in cases:
-            self.session.add(EventLog(type=event.type,
-                                      ancestry=','.join(map(str, event.ancestry)),
-                                      message=event.message,
-                                      case_id=case))
+            if case in existing_case_names:
+                for case_elem in existing_cases:
+                    if case_elem.name == case:
+                        event_log.cases.append(case_elem)
+            else:
+                print("ERROR: Case is not tracked")
+        self.session.add(event_log)
         self.session.commit()
 
 

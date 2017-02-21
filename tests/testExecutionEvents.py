@@ -31,8 +31,8 @@ class TestExecutionEvents(unittest.TestCase):
         c.executeWorkflow(name="multiactionWorkflow")
 
         execution_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testExecutionEvents').one()
-        execution_event_history = execution_events_case.events
+            .filter(case.Cases.name == 'testExecutionEvents').first()
+        execution_event_history = execution_events_case.events.all()
         self.assertTrue(len(execution_event_history) == 6)
 
     """
@@ -58,8 +58,8 @@ class TestExecutionEvents(unittest.TestCase):
         c.executeWorkflow(name="helloWorldWorkflow")
 
         step_execution_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testStepExecutionEvents').one()
-        step_execution_event_history = step_execution_events_case.events
+            .filter(case.Cases.name == 'testStepExecutionEvents').first()
+        step_execution_event_history = step_execution_events_case.events.all()
         self.assertTrue(len(step_execution_event_history) == 3)
 
     """
@@ -87,8 +87,8 @@ class TestExecutionEvents(unittest.TestCase):
         c.executeWorkflow(name="helloWorldWorkflow")
 
         step_ffk_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testStepFFKEventsEvents').one()
-        step_ffk_event_history = step_ffk_events_case.events
+            .filter(case.Cases.name == 'testStepFFKEventsEvents').first()
+        step_ffk_event_history = step_ffk_events_case.events.all()
         self.assertTrue(len(step_ffk_event_history) == 6)
 
     @graphDecorator.callgraph(enabled=False)
@@ -117,6 +117,6 @@ class TestExecutionEvents(unittest.TestCase):
         c.executeWorkflow(name="helloWorldWorkflow")
 
         step_ffk_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testStepFFKEventsEvents').one()
-        step_ffk_event_history = step_ffk_events_case.events
+            .filter(case.Cases.name == 'testStepFFKEventsEvents').first()
+        step_ffk_event_history = step_ffk_events_case.events.all()
         self.assertTrue(len(step_ffk_event_history) == 5)

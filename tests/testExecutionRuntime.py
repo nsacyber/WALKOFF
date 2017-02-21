@@ -51,7 +51,7 @@ class TestExecutionRuntime(unittest.TestCase):
         Tests a workflow that loops a few times
     """
 
-    @graphDecorator.callgraph(enabled=True)
+    @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("loopWorkflow")

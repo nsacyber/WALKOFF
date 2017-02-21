@@ -29,9 +29,8 @@ class TestExecutionModes(unittest.TestCase):
         time.sleep(1)
         c.stop(wait=False)
 
-        start_stop_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'startStop').one()
-        start_stop_event_history = start_stop_events_case.events
+        start_stop_event_history = case.case_database.session.query(case.Cases) \
+            .filter(case.Cases.name == 'startStop').first().events.all()
         self.assertTrue(len(start_stop_event_history) == 2)
 
     @graphDecorator.callgraph(enabled=False)
@@ -54,6 +53,6 @@ class TestExecutionModes(unittest.TestCase):
         c.stop(wait=False)
 
         pause_resume_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'pauseResume').one()
-        pause_resume_event_history = pause_resume_events_case.events
+            .filter(case.Cases.name == 'pauseResume').first()
+        pause_resume_event_history = pause_resume_events_case.events.all()
         self.assertTrue(len(pause_resume_event_history) == 4)
