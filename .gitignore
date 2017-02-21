@@ -1,2 +1,6 @@
 index.html.bak
 *.bak
+.idea/*
+*.pyc
+tests/profileVisualizations/*
+*.db
