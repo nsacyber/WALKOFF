@@ -181,7 +181,7 @@ class Workflow(ExecutionElement):
                 edgeId = str(self.steps[step].name) + str(next.name)
                 if next.name in self.steps:
                     node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name}}
-                output.append(node)
+                    output.append(node)
         return output
 
     def __repr__(self):
