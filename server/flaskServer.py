@@ -1,3 +1,4 @@
+import core.case.subscription
 from .app import app
 from . import database
 from .triggers import Triggers
@@ -8,8 +9,10 @@ from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
-from core import forms, case
-from core.case import Subscription
+from core import forms
+from core.case import callbacks
+from core.case.subscription import Subscription
+import core.case.subscription as case_subscription
 
 user_datastore = database.user_datastore
 
@@ -55,7 +58,7 @@ subs = {'defaultController':
                          {'multiactionWorkflow':
                               Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                    "NextStepFound", "WorkflowShutdown"])})}
-case.set_subscriptions({'testExecutionEvents': case.CaseSubscriptions(subscriptions=subs)})
+case_subscription.set_subscriptions({'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 """
     URLS
 """
@@ -90,7 +93,7 @@ def workflow(name, format):
             output = workflowManager.workflows[name].returnCytoscapeData()
             return json.dumps(output)
         if format == "execute":
-            history = case.cases["testExecutionEvents"]
+            history = callbacks.cases["testExecutionEvents"]
             with history:
                 steps, instances = workflowManager.executeWorkflow(name=name, start="start")
 
@@ -100,7 +103,7 @@ def workflow(name, format):
                 response = str(history.history)
             else:
                 response = json.dumps(str(steps))
-            case.cases["testExecutionEvents"].clear_history()
+            callbacks.cases["testExecutionEvents"].clear_history()
             return response
 
 

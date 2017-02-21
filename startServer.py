@@ -1,5 +1,5 @@
+import core.case.database as case_database
 from server import flaskServer
-from core import case
 from gevent.wsgi import WSGIServer
 from core import config
 import ssl
@@ -26,7 +26,7 @@ def get_ssl_context():
 
 
 if __name__ == "__main__":
-    case.initialize_case_db()
+    case_database.initialize()
     ssl_context = get_ssl_context()
     try:
         port = int(config.port)

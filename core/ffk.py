@@ -1,8 +1,7 @@
 import importlib
 import xml.etree.cElementTree as et
-import json
-from core import arguments, case
-from core.events import EventHandler, Event
+from core import arguments
+from core.case import callbacks
 from core.executionelement import ExecutionElement
 
 
@@ -13,8 +12,8 @@ class Next(ExecutionElement):
         else:
             ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
             self.flags = flags if flags is not None else []
-        super(Next, self)._register_event_callbacks({'NextStepTaken': case.add_next_step_entry('Step taken'),
-                                                     'NextStepNotTaken': case.add_next_step_entry('Step not taken')})
+        super(Next, self)._register_event_callbacks({'NextStepTaken': callbacks.add_next_step_entry('Step taken'),
+                                                     'NextStepNotTaken': callbacks.add_next_step_entry('Step not taken')})
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         name = xml_element.get("step")
@@ -78,8 +77,8 @@ class Flag(ExecutionElement):
             self.action = action
             self.args = args if args is not None else {}
             self.filters = filters if filters is not None else []
-        super(Flag, self)._register_event_callbacks({'FlagArgsValid': case.add_flag_entry('Flag args valid'),
-                                                     'FlagArgsInvalid': case.add_flag_entry('Flag args invalid')})
+        super(Flag, self)._register_event_callbacks({'FlagArgsValid': callbacks.add_flag_entry('Flag args valid'),
+                                                     'FlagArgsInvalid': callbacks.add_flag_entry('Flag args invalid')})
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get("action")
@@ -166,8 +165,8 @@ class Filter(ExecutionElement):
             args = args if args is not None else {}
             self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
                          for arg in args}
-        super(Filter, self)._register_event_callbacks({'FilterSuccess': case.add_flag_entry('Filter success'),
-                                                       'FilterError': case.add_flag_entry('Filter error')})
+        super(Filter, self)._register_event_callbacks({'FilterSuccess': callbacks.add_flag_entry('Filter success'),
+                                                       'FilterError': callbacks.add_flag_entry('Filter error')})
 
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')

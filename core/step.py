@@ -1,6 +1,7 @@
 import xml.etree.cElementTree as et
 from core.ffk import Next
-from core import case, arguments
+from core import arguments
+from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core import ffk, config
 from core import contextDecorator
@@ -27,9 +28,9 @@ class Step(ExecutionElement):
         self.output = None
         self.nextUp = None
         super(Step, self)._register_event_callbacks(
-            {'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
-             'InputValidated': case.add_step_entry('Input successfully validated'),
-             'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
+            {'FunctionExecutionSuccess': callbacks.add_step_entry('Function executed successfully'),
+             'InputValidated': callbacks.add_step_entry('Input successfully validated'),
+             'ConditionalsExecuted': callbacks.add_step_entry('Conditionals executed')})
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get("id")
