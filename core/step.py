@@ -1,9 +1,9 @@
 import xml.etree.cElementTree as et
-from core.ffk import Next
+from core.nextstep import Next
 from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core import ffk, config
+from core import nextstep, config
 from core import contextDecorator
 from jinja2 import Template, TemplateSyntaxError, Markup, escape
 import sys
@@ -40,10 +40,10 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [ffk.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
-                                  for next_step_element in step_xml.findall("next")]
-        self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
-                            for error_step_element in step_xml.findall("error")]
+        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+                             for next_step_element in step_xml.findall("next")]
+        self.errors = [nextstep.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+                       for error_step_element in step_xml.findall("error")]
 
     def _update_xml(self, step_xml):
         self.action = step_xml.find("action").text
@@ -51,9 +51,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [ffk.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+        self.errors = [nextstep.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     @contextDecorator.context

@@ -1,6 +1,7 @@
 from .database import db, Base
 import json
-from core.ffk import Flag, Filter
+from core.flag import Flag
+from core.filter import Filter
 from core.workflow import Workflow
 from core.arguments import Argument
 import ast
