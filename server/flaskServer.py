@@ -19,11 +19,8 @@ urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/li
         "/roles", "/users"]
 
 default_urls = urls
-
 userRoles = database.userRoles
-
 database.initialize_userRoles(urls)
-
 db = database.db
 
 
@@ -257,6 +254,9 @@ def roleActions(action, name):
     return json.dumps({"status": "role does not exist"})
 
 
+
+
+
 # Controls non-specific users and roles
 @app.route('/users/<string:action>', methods=["POST"])
 @auth_token_required
@@ -283,9 +283,26 @@ def userNonSpecificActions(action):
         else:
             return json.dumps({"status": "invalid input"})
 
+# Controls non-specific users and roles
+@app.route('/users', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/users"])
+def displayAllUsers():
+    pass
+
+# Controls non-specific users and roles
+@app.route('/users/<string:id_or_email>', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/users"])
+def displayUser(id_or_email):
+    user = user_datastore.get_user(id_or_email)
+    if user != None:
+        return json.dumps(user.display())
+    else:
+        return json.dumps({"status": "could not display user"})
 
 # Controls users and roles
-@app.route('/users/<string:action>/<string:id_or_email>', methods=["POST"])
+@app.route('/users/<string:id_or_email>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def userActions(action, id_or_email):

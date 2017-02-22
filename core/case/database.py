@@ -39,14 +39,24 @@ class EventLog(_Base):
 
 class CaseDatabase(object):
     def __init__(self):
+        self.create()
+
+    def create(self):
         self.engine = create_engine('sqlite:///' + config.case_db_path)
+        self.connection = self.engine.connect()
+        self.transaction = self.connection.begin()
+
         Session = sessionmaker()
         Session.configure(bind=self.engine)
         self.session = Session()
 
-    def create(self):
         _Base.metadata.bind = self.engine
         _Base.metadata.create_all(self.engine)
+
+    def tearDown(self):
+        self.session.rollback()
+        self.connection.close()
+        self.engine.dispose()
 
     def register_events(self, case_names):
         self.session.add_all([Cases(name=case_name) for case_name in case_names])
@@ -74,6 +84,7 @@ case_db = CaseDatabase()
 def initialize():
     if isfile(config.case_db_path):
         if config.reinitialize_case_db_on_startup:
+            case_db.tearDown()
             remove(config.case_db_path)
             case_db.create()
     else:

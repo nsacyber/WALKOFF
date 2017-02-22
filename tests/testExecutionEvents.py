@@ -16,7 +16,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.session.rollback()
+        case_database.case_db.tearDown()
 
     @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
