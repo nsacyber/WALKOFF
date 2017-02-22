@@ -25,6 +25,20 @@ $.ajax({
     }
 });
 $.ajax({
+    url:'users/display/admin',
+    data:{},
+    headers:{"Authentication-Token":authKey},
+    type:"POST",
+    success: function(e){
+        data = JSON.parse(e);
+        console.log(data);
+        // $("#profi").val(data["profileVisualizationsPath"]);
+    },
+    error: function(e){
+        // $("#profileVisualizationsPath").val("Error");
+    }
+});
+$.ajax({
     url:'configuration/keywordsPath',
     data:{},
     headers:{"Authentication-Token":authKey},
@@ -155,6 +169,9 @@ $.ajax({
     error: function(e){
         $("#port").val("Error");
     }
+});
+$(function () {
+    $("#settingsTabs").tabs();
 });
 
 $("#setForm").on("submit", function(e){
