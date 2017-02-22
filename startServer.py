@@ -30,10 +30,11 @@ if __name__ == "__main__":
     ssl_context = get_ssl_context()
     try:
         port = int(config.port)
+        host = config.host
         if ssl_context:
-            server = WSGIServer(('', port), application=flaskServer.app, ssl_context=ssl_context)
+            server = WSGIServer((host, port), application=flaskServer.app, ssl_context=ssl_context)
         else:
-            server = WSGIServer(('', port), application=flaskServer.app)
+            server = WSGIServer((host, port), application=flaskServer.app)
         server.serve_forever()
     except ValueError:
         print('Invalid port {0}. Port must be an integer'.format(config.port))

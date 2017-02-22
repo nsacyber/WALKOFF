@@ -1,4 +1,17 @@
 $.ajax({
+        url:'users',
+        headers:{"Authentication-Token":authKey},
+        type:"POST",
+        success: function(e){
+            data = JSON.parse(e);
+            console.log(data);
+        },
+        error: function(e){
+           console.log(e);
+        }
+    });
+
+$.ajax({
     url:'configuration/templatesPath',
     data:{},
     headers:{"Authentication-Token":authKey},

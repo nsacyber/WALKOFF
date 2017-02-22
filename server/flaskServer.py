@@ -1,5 +1,6 @@
 from .app import app
 from . import database
+from .database import User
 from .triggers import Triggers
 import os
 import ssl
@@ -288,7 +289,8 @@ def userNonSpecificActions(action):
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def displayAllUsers():
-    pass
+    result = str(User.query.all())
+    return result
 
 # Controls non-specific users and roles
 @app.route('/users/<string:id_or_email>', methods=["POST"])
