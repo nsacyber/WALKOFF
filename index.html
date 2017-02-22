@@ -1,325 +1,161 @@
 <!DOCTYPE html>
 <html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <!-- Bootstrap 3.3.5 -->
-    <link rel="stylesheet" href="./files/bootstrap/css/bootstrap.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="./files/plugins/font-awesome-4.5.0/css/font-awesome.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="./files/plugins/ionicons/ionicons.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="./files/dist/css/AdminLTE.min.css">
-    <link rel="stylesheet" href="./files/dist/css/skins/skin-blue.min.css">
-    <link rel="stylesheet" href="./files/documentation/style.css">
-    <link rel="stylesheet" href="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.min.css">
-    <title>WALKOFF</title>
-    <style>
-    .divheader {
-      
-      padding-top: 5px;
-      padding-bottom: 5px;
-	  text-align:center;
-	  
-    }
-    .middle {
-      padding-right: 100px;
-      padding-top: 40px;
-      display: inline-block;
-      border-bottom: solid 1px #ffffff;
-	  
-    }
-    .leftBox {
-      display: inline-block;
-      width: 225px;
-      border-bottom: solid 1px #ffffff;
-    }
-    .divBody {
-      margin: auto;
-      padding-left: 225px;
-      padding-right: 100px;
-	  background-color:#FFFFFF;
-    }
-    .footer {
-      width: 100%;
-      position: relative;
-      background:#fff;
-      padding:15px;
-      color:#444;
-      border-top:1px
-      solid #d2d6de
-    }
-    #mainBody{
-  		-webkit-user-select: none;  /* Chrome all / Safari all */
-  		-moz-user-select: none;     /* Firefox all */
-  		-ms-user-select: none;      /* IE 10+ */
-		
 
-  	}
-    #flashy {
-      background: #ddd;
-      height: 300px;
-      margin-bottom: 2em;
-      overflow: hidden;
-      position: relative;
-      border-top: solid 1px #fff;
-      border-bottom: solid 1px #fff;
-    }
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-plus-circle,.fa-cogs, .fa-wrench {font-size:200px}
 
-    #flashy:after,
-    #flashy:before {
-      content: "";
-      display: block;
-      width: 100%;
-      position: absolute;
-      height: 10px;
-      z-index: 2;
-    }
+#headerDiv{
+    background-image:url("files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
 
-    #flashy:before {
-      bottom: -10px;
-      box-shadow: 0px -8px 10px rgba(0,0,0,.3);
-    }
+.headerText{
+    position:relative;
+    bottom:40px;
+}
 
-    #flashy:after {
-      top: -10px;
-      box-shadow: 0px 8px 10px rgba(0,0,0,.3);
-    }
-    .carousel-fade .carousel-inner .item {
-      opacity: 0;
-      -webkit-transition-property: opacity;
-      -moz-transition-property: opacity;
-      -o-transition-property: opacity;
-      transition-property: opacity;
-    }
-    .carousel-fade .carousel-inner .active {
-      opacity: 1;
-    }
-    .carousel-fade .carousel-inner .active.left,
-    .carousel-fade .carousel-inner .active.right {
-      left: 0;
-      opacity: 0;
-      z-index: 1;
-    }
-    .carousel-fade .carousel-inner .next.left,
-    .carousel-fade .carousel-inner .prev.right {
-      opacity: 1;
-    }
-    .carousel-fade .carousel-control {
-      z-index: 2;
-    }
-    .ui-button:focus { outline:none !important }
-	
-	#bannerImage{
-		text-align:center;
-	}
-	
-	#middleText{
-		position:relative;
-		right:100px;
-		padding-top:20px;
-		padding-bottom:20px;
-		padding-left:60px;
-		background-color: #e6f0ff;
-	}
-	#contactText{
-		position:relative;
-		right:100px;
-		padding-top:20px;
-		padding-bottom:20px;
-		padding-left:60px;
-		background-color: #e6f0ff;
-	}
-	#problemText{
-		position:relative;
-		right:100px;
-		padding-top:20px;
-		padding-bottom:20px;
-		padding-left:60px;
-		background-color: #e6f0ff;
-	}
-    </style>
-    <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-default.css">
-    <link rel="stylesheet" href="./files/plugins/jsPlumb/tks-demo.css">
-    <!--<link rel="stylesheet" href="./files/plugins/jsPlumb/app.css">-->
-    <link rel="stylesheet" href="./files/plugins/jsPlumb/app2.css">
-</head>
-<body id="mainBody">
-  <div>
-	<div id="bannerImage">
-		<img width="1500px;" src="files/images/header.png">
-	</div>
-    <div  class="divheader">
-      <b>Introduction</b>
-      <a style="margin-left:3em;" href="https://iadgov.github.io/WALKOFF/documentation.html">Version One Documentation</a>
-      <a style="margin-left:3em;" href="https://github.com/iadgov/WALKOFF">Source</a>
+#headerButton{
+    background-color:#607d8b;
+}
+</style>
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+    <a href="https://iadgov.github.io/WALKOFF/documentation.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Version One</a>
+    <a href="documentationVersionTwo.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Version Two</a>
+    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+    <a href="tutorials/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+  </div>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+    <a class="w3-padding-large" href="https://iadgov.github.io/WALKOFF/documentation.html">Version One</a>
+    <a class="w3-padding-large" href="documentationVersionTwo.html">Version Two</a>
+    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+    <a class="w3-padding-large" href="tutorials/index.html">Tutorials</a>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-128">
+  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+  <p class="headerText w3-xlarge">Automation for All</p>
+  <button id="headerButton" class="headerText w3-btn w3-padding-16 w3-large w3-margin-top">Get Started</button>
+</header>
+
+<!-- First Grid -->
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h3>Is your environment suffering from... </h3>
+      <h4><i> Too many devices? </i></h4>
+        <h4><i> Too much data? </i></h4>
+        <h4><i> Repetitive manual processes? </i></h4>
+        <h1><b>WALKOFF</b> can help</h1>
+      <h5 class="w3-padding-32">WALKOFF is an open source community supported platform whose goal is to make integrating and automating components faster, cheaper, and easier
+      than ever before. </h5>
+
+        <p class="w3-text-grey">The WALKOFF platform makes integrating across disparate devices, services, data, and capabilities easier than ever in a multitude of use cases including </p>
+        <ul class="w3-text-grey">
+            <li>Cybersecurity</li>
+            <li>Systems Administration</li>
+            <li>Analytics</li>
+            <li>Internet of Things</li>
+            <li>And more...</li>
+        </ul>
+        <p class="w3-text-grey"> Allowing you to spend less time integrating and more time taking control of your environment.</p>
+
+    </div>
+
+    <div class="w3-third w3-center">
+      <i class="fa fa-plus-circle w3-padding-128 w3-text-red"></i>
     </div>
   </div>
-  <!--
-  <div class="leftBox">
-    <a href="./"><img width="225px" src="files/images/walkoffLogo.png" alt="WALKOFF"></a>
-  </div>
-  <div class="middle">
-    <header>
-      <b>Introduction</b>
-      <a style="margin-left:3em;" href="https://iadgov.github.io/WALKOFF/index.html">Documentation</a>
-      <a style="margin-left:3em;" href="https://github.com/iadgov/WALKOFF">Source</a>
-    </header>
-    <h1>WALKOFF - Global Orchestration for Cyber Defense</h1>
-  </div>
-  -->
-  <div id="flashy">
-      <!--State Machine Diagram | Uses app.css and inst.js
-      <div class="jtk-demo-main">
-        <div class="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
-          <div class="w" id="ERD1">ENDPOINT REMEDIATION DEVICE: <br>Is MDS in threat feed?
-              <div class="ep" action="ERD1"></div>
-          </div>
-          <div class="w" id="ERD2">ERD:<br> Update threat feed
-              <div class="ep" action="ERD2"></div>
-          </div>
-          <div class="w" id="ERD3">ERD:<br> Scan Host
-              <div class="ep" action="ERD3"></div>
-          </div>
-          <div class="w" id="FW1">FIREWALL:<br>Is destination IP in block list?
-              <div class="ep" action="FW1"></div>
-          </div>
-          <div class="w" id="FW2">FIREWALL:<br>Update threat
-              <div class="ep" action="FW2"></div>
-          </div>
-      </div>-->
-      <div class="jtk-demo-main">
-        <div id="connDialog" title="WALKOFF Actions">With WALKOFF, you can easily identify events and actions that should be executed in response.</div>
-        <div id="nodeDialog" title="WALKOFF Node"></div>
-        <div class="jtk-demo-canvas canvas-wide flowchart-demo jtk-surface jtk-surface-nopan" id="canvas">
-            <!--<div class="ends jtk-node" id="flowchartEnd1"><strong>ALERT</strong></div>-->
-            <div class="window jtk-node nodeDiv" id="flowchartWindow1"><strong>ENDPOINT REMEDIATION DEVICE:<br>Is MDS in threat feed?</strong></div>
-            <div class="window jtk-node nodeDiv" id="flowchartWindow2"><strong>ENDPOINT REMEDIATION DEVICE:<br>Update threat feed</strong></div>
-            <div class="window jtk-node nodeDiv" id="flowchartWindow3"><strong>ENDPOINT REMEDIATION DEVICE:<br>Scan Host</strong></div>
-            <div class="window jtk-node nodeDiv" id="flowchartWindow4"><strong>FIREWALL:<br>Is destination IP in block list?</strong></div>
-            <div class="window jtk-node nodeDiv" id="flowchartWindow5"><strong>FIREWALL:<br>Update threat</strong></div>
-            <!--<div class="ends jtk-node" id="flowchartEnd2"><strong>END</strong></div>-->
-        </div>
-      </div>
+</div>
+
+<!-- Second Grid -->
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-third w3-center">
+      <i class="fa fa-cogs w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
+    </div>
+
+    <div class="w3-twothird">
+        <h1><b>WALKOFF</b> is a Community Effort</h1>
+      <h5 class="w3-padding-32">WALKOFF is working together to build a community and create a common integration format so that we can spend less resources on
+      building the same integrations repetitively and more resources on accomplishing your mission. </h5>
+      <p class="w3-text-grey">Anyone is welcome to build WALKOFF-enabled apps or contribute to the WALKOFF open source orchestrator.  These apps can be deployed across any
+      WALKOFF-enabled orchestrator or platform.  Anyone is also welcome to make their products or platforms WALKOFF-enabled as well making it easier than ever to integrate with more, faster. </p>
+
     </div>
   </div>
-  <div class="divBody">
-	<div id="problemText">
-		<h1 > Today's Cyber Analysts are Completely <b> Overwhelmed </b> </h1>
-		<ul class="lead">
-			<li> <h3> Attacks are happening constantly </h3> </li>
-			<li> <h3> There is not enough people or resources </h3> </li>
-			<li> <h3> And there is too much data to be able to confidently defend our networks </h3> </li>
-		</p>
-	</div>
-	</br>
-	<p class="lead"> Help has started to emerge in the form of security automation with a class of devices called orchestrators.  These devices automate the repetitive processes currently dragging your analysts down enabling you to refocus your resources on eliminating the cyber threat.  </p>
-	
-	<h2> But this is <b> not enough </b></h2>
-	<ul class="lead">
-		<li><h3 style="position:relative; right:40px;"> Networks become Locked-In to these proprietary APIs  </h3></li>
-		<li><h3 style="position:relative; right:40px;"> Development of orchestration capabilities are restricted to proprietary APIs and Data Structures </h3></li>
-		<li><h3 style="position:relative; right:40px;"> Identical capabilities are being developed repeatedly for each proprietary API  </h3></li>
-	</ul>
-	</br>
-	<div id="middleText">
-		<h1><b> WALKOFF </b> seeks to free Automation from the constraints of proprietary APIs By</h1>
-		<ul class="lead">
-			<li><h3> Standardizing the way orchestration capabilities are developed  </h3></li>
-			<li><h3> Fostering an active community across the Cybersecurity community and Commercial Industry </h3></li>
-			<li><h3> Creating an Open Source Implementation ensuring immediate <b> impact </b> </h3></li>
-		</ul>
-	</div>
-	</br>
-	<h1 style="position:relative; right:40px;" ><b> Join </b> the Effort.  Together We Can </h1>
-      <ul class="lead">
-        <li><h3 style="position:relative; right:40px;" > Defend networks more efficiently and effectively </h3> </li>
-        <li><h3 style="position:relative; right:40px;" > Make it cheaper and easier to create and deploy automated cyberdefense capabilities </h3></li>
-        <li><h3 style="position:relative; right:40px;" > Shape the future of cybersecurity </h3></li>
-      </ul>
-	</br>
-	<div id="contactText">
-		<h3> More Information can be found within the <a href="./documentation.html"> Documentation </a> </h3>
-		<h3> Questions or comments? Email us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a></h3>
-	</div>
-  </div>
-  <footer class="footer">
-    <div class="pull-right hidden-xs">
-        <b>Version</b> 0.5.0b
+</div>
+
+<!-- Third Grid -->
+<!-- First Grid -->
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+        <h1><b>WALKOFF</b> is </h1>
+        <h1>Scalable Accessible and Versatile </h1>
+      <h5 class="w3-padding-32">WALKOFF aims to bring automation to as many environments as possible by creating a community-supported platform that is easy to install, maintain, and use.
+      Helping you to become automated faster. </h5>
+
+        <p class="w3-text-grey">WALKOFF was tested with Python 2.7 and 3.5 on both Linux and Windows environments allowing maximum flexibility in your deployments. </p>
+        <p class="w3-text-grey">The platform is actively being refined and currently include these features:</p>
+        <ul class="w3-text-grey">
+            <li>XML Workflows</li>
+            <li>App based modular plug and play integration</li>
+            <li>Custom visual interfaces for apps </li>
+            <li>User and Role Management</li>
+            <li>Case based granular logging </li>
+        </ul>
+        <p class="w3-text-grey">WALKOFF depends on community engagement therefore the more active the community the more powerful the platform becomes. </p>
     </div>
-    <strong>IAD IX - WALKOFF</strong>
-    <!--<p><br>This work was prepared by an U.S. Government employee and, therefore, is excluded from copyright by Section 105 of the Copyright Act of 1976. Copyright and Related Rights in the Work worldwide are waived through the <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> <a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode">Universal license</a>.<br>
-    Contact: <a href="mailto:someone@example.com">someone@example.com</a></p>-->
 
-  </footer>
-  <!-- jQuery 2.1.4 -->
-  <script src="./files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
-  <!-- jQueryUI 1.11.4 -->
-  <script src="./files/plugins/jQuery/jquery-ui-1.11.4/jquery-ui.min.js"></script>
-  <!-- Bootstrap 3.3.5 -->
-  <script src="./files/bootstrap/js/bootstrap.min.js"></script>
-  <!-- FastClick -->
-  <script src="./files/plugins/fastclick/fastclick.min.js"></script>
-  <!-- goSecure App -->
-  <script src="./files/dist/js/app.min.js"></script>
-  <!-- SlimScroll 1.3.0 -->
-  <script src="./files/plugins/slimScroll/jquery.slimscroll.min.js"></script>
-  <script src="./files/documentation/docs.js"></script>
-  <script src="./files/plugins/jsPlumb/jsPlumb-2.1.2-min.js "></script>
-  <!--<script src="./files/plugins/jsPlumb/inst.js "></script>-->
-  <script src="./files/plugins/jsPlumb/inst2.js "></script>
-  <script>
-    $(function () {
+    <div class="w3-third w3-center">
+      <i class="fa fa-wrench w3-padding-128 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
 
-      $('.nodeDiv').each(function(){
-         $(this).click(function(){
-           displayDialog(this.id)
-         });
-       });
-      //prevent ui conflict between jqueryUI and bootstrap
-      var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
-      $.fn.bootstrapBtn = bootstrapButton            // give $().bootstrapBtn the Bootstrap functionality
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
+</div>
 
-      $( "#connDialog" ).dialog({
-        autoOpen: false,
-        show: 'fade',
-        hide: 'drop'
-      });
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+ <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
 
-      $( "#nodeDialog" ).dialog({
-        autoOpen: false,
-        show: 'fade',
-        hide: 'drop'
-      });
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
 
-      function displayDialog(id){
-        switch (id){
-  				case 'flowchartWindow1':
-  					$("#nodeDialog").html("Use your own device to determine if an alert is a threat.");
-  					break;
-  				case 'flowchartWindow2':
-  					$("#nodeDialog").html("Use your own device to update your feed if the threat is not found.");
-  					break;
-  				case 'flowchartWindow3':
-  					$("#nodeDialog").html("Use your own device to scan the host.");
-  					break;
-          case 'flowchartWindow4':
-            $("#nodeDialog").html("Use your firewall to determine if the destination IP should be blocked.");
-            break;
-          case 'flowchartWindow5':
-            $("#nodeDialog").html("Use your firewall to update your threat.");
-            break;
-  				default:
-            $("#nodeDialog").html("WALKOFF allows you to add actions and decision points to your playbook.");
-  					break;
-  			}
-        $("#nodeDialog").dialog('open');
-      }
-
-    });
-  </script>
 </body>
 </html>
