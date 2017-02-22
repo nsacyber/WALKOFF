@@ -1,9 +1,10 @@
 import unittest
-from core import graphDecorator, controller, case
-from os.path import isdir
 from os import mkdir
-from tests import config
+from os.path import isdir
+
 from core import config as core_config
+from core import graphDecorator, controller, case
+from tests import config
 
 
 class TestExecutionLoads(unittest.TestCase):

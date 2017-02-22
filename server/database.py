@@ -1,6 +1,7 @@
-from .app import app
 import flask_sqlalchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
+
+from .app import app
 
 # Database Connection Object
 db = flask_sqlalchemy.SQLAlchemy(app)

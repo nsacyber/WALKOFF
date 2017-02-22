@@ -1,9 +1,9 @@
 import unittest
-from tests.util.case import *
+
 import core.case.database as case_database
-from core.case.subscription import set_subscriptions
 from core.case.callbacks import EventEntry
 from core.executionelement import ExecutionElement
+from tests.util.case import *
 
 
 class TestCaseDatabase(unittest.TestCase):

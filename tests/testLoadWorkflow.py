@@ -1,6 +1,7 @@
 import unittest
-from core import controller
+
 from core import arguments
+from core import controller
 from core import graphDecorator
 from tests import config
 

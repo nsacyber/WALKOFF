@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
+
 class App(object):
-    __metaclass__=ABCMeta
+    __metaclass__ = ABCMeta
 
     def __init__(self, app=None, device=None):
         self.app = app
@@ -10,9 +11,9 @@ class App(object):
     def getConfig(self, device):
         from server import device as d
 
-        if device != None and device != "":
+        if device:
             query = d.Device.query.filter_by(app=self.app, name=device).first()
-            if query != None and query != []:
+            if query:
                 self.config = query
 
         else:

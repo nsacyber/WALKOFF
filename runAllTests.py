@@ -1,16 +1,16 @@
 import unittest
 
-from tests import testLoadWorkflow as ttw
-from tests import testWorkflowManipulation as twm
-from tests import testSimpleWorkflow as tsw
-from tests import testExecutionRuntime as ter
-from tests import testExecutionModes as tem
-from tests import testExecutionEvents as tee
-from tests import testTriggers as ttr
-from tests import testServer as tsv
-from tests import testUsersAndRoles as tur
-from tests import testCaseSubscriptions as tcs
 from tests import testCaseDatabase as tdb
+from tests import testCaseSubscriptions as tcs
+from tests import testExecutionEvents as tee
+from tests import testExecutionModes as tem
+from tests import testExecutionRuntime as ter
+from tests import testLoadWorkflow as ttw
+from tests import testServer as tsv
+from tests import testSimpleWorkflow as tsw
+from tests import testTriggers as ttr
+from tests import testUsersAndRoles as tur
+from tests import testWorkflowManipulation as twm
 
 loadWorkflow = unittest.TestLoader().loadTestsFromTestCase(ttw.TestLoadWorkflow)
 manipulateWorkflow = unittest.TestLoader().loadTestsFromTestCase(twm.TestWorkflowManipulation)

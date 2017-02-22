@@ -1,10 +1,10 @@
 import unittest
 
 import core.case.database as case_database
-from core import controller, graphDecorator
-from tests import config
-from core.case.subscription import Subscription
 import core.case.subscription as case_subscription
+from core import controller, graphDecorator
+from core.case.subscription import Subscription
+from tests import config
 
 
 class TestExecutionEvents(unittest.TestCase):

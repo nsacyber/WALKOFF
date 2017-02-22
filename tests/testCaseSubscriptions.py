@@ -1,7 +1,7 @@
 import unittest
-from core.case.subscription import _SubscriptionEventList
-from core.case.subscription import *
+
 import core.case.database as case_database
+from core.case.subscription import _SubscriptionEventList
 from tests.util.case import *
 
 

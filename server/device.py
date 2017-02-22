@@ -1,5 +1,6 @@
-from server import database
 import json
+
+from server import database
 
 db = database.db
 

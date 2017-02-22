@@ -1,6 +1,8 @@
 import os
+
 from flask import Flask
 from jinja2 import Environment, FileSystemLoader
+
 from core import config, appBlueprint
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))

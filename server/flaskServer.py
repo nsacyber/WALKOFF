@@ -1,19 +1,21 @@
-from .app import app
-from .device import Device
-from . import database
-from .database import User
-from .triggers import Triggers
+import json
 import os
 import ssl
-import json
+
 from flask import render_template, request
-from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
+from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
+
+import core.case.subscription as case_subscription
 from core import config, interface, controller
 from core import forms
 from core.case import callbacks
 from core.case.subscription import Subscription
-import core.case.subscription as case_subscription
+from . import database
+from .app import app
+from .database import User
+from .device import Device
+from .triggers import Triggers
 
 user_datastore = database.user_datastore
 

@@ -1,5 +1,6 @@
 from core.case.subscription import *
 
+
 def construct_case1():
     '''
     Assumes case where the possible events are as follows:

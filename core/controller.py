@@ -1,14 +1,15 @@
 import xml.etree.cElementTree as et
-from apscheduler.schedulers.background import BackgroundScheduler
+from os import sep
+
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+from apscheduler.schedulers.background import BackgroundScheduler
 
-from core import workflow as wf
 from core import config
+from core import workflow as wf
 from core.case import callbacks
 from core.events import EventListener
-from os import sep
 
 
 class SchedulerStatusListener(EventListener):

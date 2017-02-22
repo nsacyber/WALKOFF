@@ -1,6 +1,8 @@
-import sys
 import importlib
+import sys
+
 from core import forms
+
 
 def loadModule(name):
     module = "apps." + name + ".display"

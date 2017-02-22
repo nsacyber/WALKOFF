@@ -1,10 +1,12 @@
-from .database import db, Base
-import json
-from core.flag import Flag
-from core.filter import Filter
-from core.workflow import Workflow
-from core.arguments import Argument
 import ast
+import json
+
+from core.arguments import Argument
+from core.filter import Filter
+from core.flag import Flag
+from core.workflow import Workflow
+from .database import db, Base
+
 
 class Triggers(Base):
     __tablename__ = "triggers"

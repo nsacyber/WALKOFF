@@ -3,8 +3,8 @@ import logging
 import uuid
 from functools import partial
 
-from core.case.database import case_db
 import core.case.subscription as case_subscription
+from core.case.database import case_db
 
 logging.basicConfig()  # needed so apscheduler can log to console when an error occurs
 
