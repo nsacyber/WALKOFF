@@ -1,4 +1,5 @@
-import unittest, json
+import unittest
+import json
 from server import flaskServer as server
 from server import database
 
@@ -54,12 +55,12 @@ class TestUsersAndRoles(unittest.TestCase):
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"password": self.password}
-        response = json.loads(self.app.post('/users/edit/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
+        response = json.loads(self.app.post('/users/'+self.email+'/edit', data=data, headers=self.headers).get_data(as_text=True))
         self.assertTrue(response["username"] == self.email)
 
     def testRemoveUser(self):
         data = {"username": self.email, "password": self.password}
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
-        response = json.loads(self.app.post('/users/remove/'+self.email, headers=self.headers).get_data(as_text=True))
+        response = json.loads(self.app.post('/users/'+self.email+'/remove', headers=self.headers).get_data(as_text=True))
         self.assertTrue(response["status"] == "user removed")

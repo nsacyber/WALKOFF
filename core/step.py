@@ -1,10 +1,16 @@
 import xml.etree.cElementTree as et
-from core.ffk import Next
-from core import case, arguments
+from core.nextstep import Next
+from core import arguments
+from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core import ffk, config
-from jinja2 import Template, TemplateSyntaxError, Markup, escape
+from core import nextstep, config
+from core import contextDecorator
+from jinja2 import Template, Markup
 import sys
+
+class InvalidStepArgumentsError(Exception):
+    def __init__(self, message=''):
+        super(InvalidStepArgumentsError, self).__init__(message)
 
 class Step(ExecutionElement):
     def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
@@ -26,9 +32,9 @@ class Step(ExecutionElement):
         self.output = None
         self.nextUp = None
         super(Step, self)._register_event_callbacks(
-            {'FunctionExecutionSuccess': case.add_step_entry('Function executed successfully'),
-             'InputValidated': case.add_step_entry('Input successfully validated'),
-             'ConditionalsExecuted': case.add_step_entry('Conditionals executed')})
+            {'FunctionExecutionSuccess': callbacks.add_step_entry('Function executed successfully'),
+             'InputValidated': callbacks.add_step_entry('Input successfully validated'),
+             'ConditionalsExecuted': callbacks.add_step_entry('Conditionals executed')})
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get("id")
@@ -38,10 +44,10 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [ffk.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
-                                  for next_step_element in step_xml.findall("next")]
-        self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
-                            for error_step_element in step_xml.findall("error")]
+        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+                             for next_step_element in step_xml.findall("next")]
+        self.errors = [nextstep.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+                       for error_step_element in step_xml.findall("error")]
 
     def _update_xml(self, step_xml):
         self.action = step_xml.find("action").text
@@ -49,11 +55,12 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [ffk.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [ffk.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+        self.errors = [nextstep.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
+    @contextDecorator.context
     def renderStep(self, **kwargs):
         if sys.version_info[0] > 2:
             content = et.tostring(self.rawXML, encoding="unicode", method="xml")
@@ -75,36 +82,34 @@ class Step(ExecutionElement):
             self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result
-        raise Exception
+        raise InvalidStepArgumentsError()
 
     def nextStep(self, error=False):
-        nextSteps = self.errors if error else self.conditionals
+        next_steps = self.errors if error else self.conditionals
 
-        for n in nextSteps:
-            nextStep = n(output=self.output)
-            if nextStep:
-                self.nextUp = nextStep
+        for n in next_steps:
+            next_step = n(output=self.output)
+            if next_step:
+                self.nextUp = next_step
                 self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
-                return nextStep
+                return next_step
 
     def set(self, attribute=None, value=None):
         setattr(self, attribute, value)
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        newConditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
-        if any(conditional == newConditional for conditional in self.conditionals):
+        new_conditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
+        if any(conditional == new_conditional for conditional in self.conditionals):
             return False
-        self.conditionals.append(newConditional)
+        self.conditionals.append(new_conditional)
         return True
 
     def removeNext(self, nextStep=""):
         self.conditionals = [x for x in self.conditionals if x.name != nextStep]
         return True
 
-
-
-    def to_xml(self):
+    def to_xml(self, *args):
         step = et.Element("step")
         step.set("id", self.name)
 

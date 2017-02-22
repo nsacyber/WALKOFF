@@ -23,5 +23,6 @@ setup(
                         'werkzeug >= 0.11.4',
                         'requests >= 2.9.1',
                         'APscheduler >= 3.0.0',
+                        'gevent',
                         'importlib']
 )

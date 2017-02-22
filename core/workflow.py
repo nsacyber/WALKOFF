@@ -5,7 +5,7 @@ from core.step import Step
 from core import arguments
 from core import instance
 from core import options
-from core import case
+from core.case import callbacks
 from core import config
 from core.executionelement import ExecutionElement
 from os.path import join, isfile
@@ -19,10 +19,10 @@ class Workflow(ExecutionElement):
         self._from_xml(self.workflowXML)
         self.children = children if (children is not None) else {}
         super(Workflow, self)._register_event_callbacks(
-            {'InstanceCreated': case.add_workflow_entry("New workflow instance Created"),
-             'StepExecutionSuccess': case.add_workflow_entry('Step executed successfully'),
-             'NextStepFound': case.add_workflow_entry('Next step found'),
-             'WorkflowShutdown': case.add_workflow_entry("Workflow shut down")})
+            {'InstanceCreated': callbacks.add_workflow_entry("New workflow instance Created"),
+             'StepExecutionSuccess': callbacks.add_workflow_entry('Step executed successfully'),
+             'NextStepFound': callbacks.add_workflow_entry('Next step found'),
+             'WorkflowShutdown': callbacks.add_workflow_entry("Workflow shut down")})
 
     @staticmethod
     def get_workflow(workflow_name):
@@ -175,13 +175,13 @@ class Workflow(ExecutionElement):
     def returnCytoscapeData(self):
         output = []
         for step in self.steps:
-            node = {"group":"nodes", "data":{"id":self.steps[step].name}}
+            node = {"group":"nodes", "data":{"id":self.steps[step].name, "parameters":self.steps[step].as_json()}}
             output.append(node)
             for next in self.steps[step].conditionals:
                 edgeId = str(self.steps[step].name) + str(next.name)
                 if next.name in self.steps:
-                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name}}
-                output.append(node)
+                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name, "parameters": next.as_json()}}
+                    output.append(node)
         return output
 
     def __repr__(self):

@@ -1,4 +1,5 @@
-import unittest, ast
+import unittest
+import ast
 from core import controller, graphDecorator
 from tests import config
 

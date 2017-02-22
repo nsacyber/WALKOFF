@@ -1,7 +1,10 @@
 import unittest
-from core import controller, case, graphDecorator
+
+import core.case.database as case_database
+from core import controller, graphDecorator
 from tests import config
-from core.case import Subscription
+from core.case.subscription import Subscription
+import core.case.subscription as case_subscription
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -10,10 +13,10 @@ class TestExecutionEvents(unittest.TestCase):
     """
 
     def setUp(self):
-        case.initialize_case_db()
+        case_database.initialize()
 
     def tearDown(self):
-        case.case_database.session.rollback()
+        case_database.case_db.tearDown()
 
     @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
@@ -26,13 +29,14 @@ class TestExecutionEvents(unittest.TestCase):
                                       Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                            "NextStepFound", "WorkflowShutdown"])})}
 
-        case.set_subscriptions({'testExecutionEvents': case.CaseSubscriptions(subscriptions=subs)})
+        case_subscription.set_subscriptions(
+            {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow(name="multiactionWorkflow")
 
-        execution_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testExecutionEvents').one()
-        execution_event_history = execution_events_case.events
+        execution_events_case = case_database.case_db.session.query(case_database.Cases) \
+            .filter(case_database.Cases.name == 'testExecutionEvents').first()
+        execution_event_history = execution_events_case.events.all()
         self.assertTrue(len(execution_event_history) == 6)
 
     """
@@ -53,13 +57,14 @@ class TestExecutionEvents(unittest.TestCase):
                         events=["FunctionExecutionSuccess", "InputValidated",
                                 "ConditionalsExecuted"])})})}
 
-        case.set_subscriptions({'testStepExecutionEvents': case.CaseSubscriptions(subscriptions=subs)})
+        case_subscription.set_subscriptions(
+            {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow(name="helloWorldWorkflow")
 
-        step_execution_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testStepExecutionEvents').one()
-        step_execution_event_history = step_execution_events_case.events
+        step_execution_events_case = case_database.case_db.session.query(case_database.Cases) \
+            .filter(case_database.Cases.name == 'testStepExecutionEvents').first()
+        step_execution_event_history = step_execution_events_case.events.all()
         self.assertTrue(len(step_execution_event_history) == 3)
 
     """
@@ -82,13 +87,14 @@ class TestExecutionEvents(unittest.TestCase):
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
 
-        case.set_subscriptions({'testStepFFKEventsEvents': case.CaseSubscriptions(subscriptions=subs)})
+        case_subscription.set_subscriptions(
+            {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow(name="helloWorldWorkflow")
 
-        step_ffk_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testStepFFKEventsEvents').one()
-        step_ffk_event_history = step_ffk_events_case.events
+        step_ffk_events_case = case_database.case_db.session.query(case_database.Cases) \
+            .filter(case_database.Cases.name == 'testStepFFKEventsEvents').first()
+        step_ffk_event_history = step_ffk_events_case.events.all()
         self.assertTrue(len(step_ffk_event_history) == 6)
 
     @graphDecorator.callgraph(enabled=False)
@@ -104,19 +110,20 @@ class TestExecutionEvents(unittest.TestCase):
                                  {'helloWorldWorkflow':
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
-        global_subs = case.GlobalSubscriptions(step='*',
-                                               next_step=['NextStepTaken',
-                                                          'NextStepNotTaken'],
-                                               flag=['FlagArgsValid',
-                                                     'FlagArgsInvalid'],
-                                               filter=['FilterSuccess',
-                                                       'FilterError'])
-        case.set_subscriptions({'testStepFFKEventsEvents': case.CaseSubscriptions(subscriptions=subs,
-                                                                                  global_subscriptions=global_subs)})
+        global_subs = case_subscription.GlobalSubscriptions(step='*',
+                                                            next_step=['NextStepTaken',
+                                                                       'NextStepNotTaken'],
+                                                            flag=['FlagArgsValid',
+                                                                  'FlagArgsInvalid'],
+                                                            filter=['FilterSuccess',
+                                                                    'FilterError'])
+        case_subscription.set_subscriptions(
+            {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
+                                                                            global_subscriptions=global_subs)})
 
         c.executeWorkflow(name="helloWorldWorkflow")
 
-        step_ffk_events_case = case.case_database.session.query(case.Cases) \
-            .filter(case.Cases.name == 'testStepFFKEventsEvents').one()
-        step_ffk_event_history = step_ffk_events_case.events
+        step_ffk_events_case = case_database.case_db.session.query(case_database.Cases) \
+            .filter(case_database.Cases.name == 'testStepFFKEventsEvents').first()
+        step_ffk_event_history = step_ffk_events_case.events.all()
         self.assertTrue(len(step_ffk_event_history) == 5)

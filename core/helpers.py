@@ -1,3 +1,5 @@
+import importlib
+
 def returnCytoscapeData(steps):
     output = []
     for step in steps:
@@ -9,3 +11,13 @@ def returnCytoscapeData(steps):
                 node = {"group": "edges", "data": {"id": edgeId, "source": steps[step]["name"], "target": next["name"]}}
             output.append(node)
     return output
+
+
+def import_lib(dir, module_name):
+    module = None
+    try:
+        module = importlib.import_module('.'.join(['core', dir, module_name]))
+    except ImportError:
+        pass
+    finally:
+        return module

@@ -5,32 +5,33 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
 from core import workflow as wf
-from core import config, case
-from core.events import EventListener, Event
+from core import config
+from core.case import callbacks
+from core.events import EventListener
 from os import sep
 
 
 class SchedulerStatusListener(EventListener):
     def __init__(self, shared_log=None):
         EventListener.__init__(self, "schedulerStatus", shared_log=shared_log,
-                               events={EVENT_SCHEDULER_START: case.add_system_entry("Scheduler start"),
-                                       EVENT_SCHEDULER_SHUTDOWN: case.add_system_entry("Scheduler shutdown"),
-                                       EVENT_SCHEDULER_PAUSED: case.add_system_entry("Scheduler paused"),
-                                       EVENT_SCHEDULER_RESUMED: case.add_system_entry("Scheduler resumed")})
+                               events={EVENT_SCHEDULER_START: callbacks.add_system_entry("Scheduler start"),
+                                       EVENT_SCHEDULER_SHUTDOWN: callbacks.add_system_entry("Scheduler shutdown"),
+                                       EVENT_SCHEDULER_PAUSED: callbacks.add_system_entry("Scheduler paused"),
+                                       EVENT_SCHEDULER_RESUMED: callbacks.add_system_entry("Scheduler resumed")})
 
 
 class JobStatusListener(EventListener):
     def __init__(self, shared_log=None):
         EventListener.__init__(self, "jobStatus", shared_log,
-                               events={EVENT_JOB_ADDED: case.add_system_entry("Job added"),
-                                       EVENT_JOB_REMOVED: case.add_system_entry("Job removed")})
+                               events={EVENT_JOB_ADDED: callbacks.add_system_entry("Job added"),
+                                       EVENT_JOB_REMOVED: callbacks.add_system_entry("Job removed")})
 
 
 class JobExecutionListener(EventListener):
     def __init__(self, shared_log=None):
         EventListener.__init__(self, "jobExecution", shared_log,
-                               events={'JobExecuted': case.add_system_entry("Job executed"),
-                                       'JobError': case.add_system_entry("Job executed with error")})
+                               events={'JobExecuted': callbacks.add_system_entry("Job executed"),
+                                       'JobError': callbacks.add_system_entry("Job executed with error")})
 
     def execute_event(self, sender, event):
         if event.exception:
@@ -93,10 +94,10 @@ class Controller(object):
     def addWorkflowScheduledJobs(self):
         for workflow in self.workflows:
             if (self.workflows[workflow].options.enabled
-                and self.workflows[workflow].options.scheduler["autorun"] == "true"):
-                scheduleType = self.workflows[workflow].options.scheduler["type"]
+                    and self.workflows[workflow].options.scheduler["autorun"] == "true"):
+                schedule_type = self.workflows[workflow].options.scheduler["type"]
                 schedule = self.workflows[workflow].options.scheduler["args"]
-                self.scheduler.add_job(self.workflows[workflow].execute, trigger=scheduleType, replace_existing=True,
+                self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
                                        **schedule)
 
     def createWorkflowFromTemplate(self, name="emptyWorkflow"):
@@ -134,12 +135,12 @@ class Controller(object):
         self.scheduler.resume()
 
     # Pauses active execution of specific job
-    def pauseJob(self, jobId):
-        self.scheduler.pause_job(job_id=jobId)
+    def pauseJob(self, job_id):
+        self.scheduler.pause_job(job_id=job_id)
 
     # Resumes active execution of specific job
-    def resumeJob(self, jobId):
-        self.scheduler.resume_job(job_id=jobId)
+    def resumeJob(self, job_id):
+        self.scheduler.resume_job(job_id=job_id)
 
     # Returns jobs scheduled for active execution
     def getScheduledJobs(self):

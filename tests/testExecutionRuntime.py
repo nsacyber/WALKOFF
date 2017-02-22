@@ -1,20 +1,16 @@
 import unittest, ast
-from core import controller, case
+from core import controller
 from core import graphDecorator
-from core import config as coreConfig
+from core import config as core_config
 from os.path import isdir
 from os import mkdir
 from tests import config
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, \
-    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
         self.c = controller.Controller()
-        if not isdir(coreConfig.profileVisualizationsPath):
-            mkdir(coreConfig.profileVisualizationsPath)
+        if not isdir(core_config.profileVisualizationsPath):
+            mkdir(core_config.profileVisualizationsPath)
 
     """
         Tests the out templating function which replaces the value of an argument with the output from the workflow history.
@@ -51,7 +47,7 @@ class TestExecutionRuntime(unittest.TestCase):
         Tests a workflow that loops a few times
     """
 
-    @graphDecorator.callgraph(enabled=True)
+    @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("loopWorkflow")

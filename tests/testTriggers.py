@@ -1,8 +1,8 @@
-import unittest, json
+import unittest
+import json
 from server import flaskServer as server
 from server.triggers import Triggers
 from server.database import db
-import ast
 
 
 class TestTriggers(unittest.TestCase):

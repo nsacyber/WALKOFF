@@ -1,5 +1,6 @@
 from .app import app
 from . import database
+from .database import User
 from .triggers import Triggers
 import os
 import ssl
@@ -8,8 +9,10 @@ from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
-from core import forms, case
-from core.case import Subscription
+from core import forms
+from core.case import callbacks
+from core.case.subscription import Subscription
+import core.case.subscription as case_subscription
 
 user_datastore = database.user_datastore
 
@@ -17,11 +20,8 @@ urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/li
         "/roles", "/users"]
 
 default_urls = urls
-
 userRoles = database.userRoles
-
 database.initialize_userRoles(urls)
-
 db = database.db
 
 
@@ -55,7 +55,7 @@ subs = {'defaultController':
                          {'multiactionWorkflow':
                               Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                    "NextStepFound", "WorkflowShutdown"])})}
-case.set_subscriptions({'testExecutionEvents': case.CaseSubscriptions(subscriptions=subs)})
+case_subscription.set_subscriptions({'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 """
     URLS
 """
@@ -90,7 +90,7 @@ def workflow(name, format):
             output = workflowManager.workflows[name].returnCytoscapeData()
             return json.dumps(output)
         if format == "execute":
-            history = case.cases["testExecutionEvents"]
+            history = callbacks.cases["testExecutionEvents"]
             with history:
                 steps, instances = workflowManager.executeWorkflow(name=name, start="start")
 
@@ -100,7 +100,7 @@ def workflow(name, format):
                 response = str(history.history)
             else:
                 response = json.dumps(str(steps))
-            case.cases["testExecutionEvents"].clear_history()
+            callbacks.cases["testExecutionEvents"].clear_history()
             return response
 
 
@@ -255,6 +255,9 @@ def roleActions(action, name):
     return json.dumps({"status": "role does not exist"})
 
 
+
+
+
 # Controls non-specific users and roles
 @app.route('/users/<string:action>', methods=["POST"])
 @auth_token_required
@@ -281,9 +284,27 @@ def userNonSpecificActions(action):
         else:
             return json.dumps({"status": "invalid input"})
 
+# Controls non-specific users and roles
+@app.route('/users', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/users"])
+def displayAllUsers():
+    result = str(User.query.all())
+    return result
+
+# Controls non-specific users and roles
+@app.route('/users/<string:id_or_email>', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/users"])
+def displayUser(id_or_email):
+    user = user_datastore.get_user(id_or_email)
+    if user != None:
+        return json.dumps(user.display())
+    else:
+        return json.dumps({"status": "could not display user"})
 
 # Controls users and roles
-@app.route('/users/<string:action>/<string:id_or_email>', methods=["POST"])
+@app.route('/users/<string:id_or_email>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def userActions(action, id_or_email):

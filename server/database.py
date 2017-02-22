@@ -92,7 +92,7 @@ class User(Base, UserMixin):
                 print("HAS ROLE")
 
     def __repr__(self):
-        return '<User %r>' % self.email
+        return self.email
 
 
 # Setup Flask Security
