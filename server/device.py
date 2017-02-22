@@ -1,4 +1,4 @@
-import database
+from server import database
 import json
 
 db = database.db
