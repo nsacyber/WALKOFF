@@ -3,7 +3,7 @@ import json
 
 db = database.db
 
-class Device(db.Base):
+class Device(database.Base):
     __tablename__ = 'devices'
 
     name = db.Column(db.String(80), unique=True)
