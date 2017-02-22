@@ -59,7 +59,8 @@ class CaseDatabase(object):
         self.engine.dispose()
 
     def register_events(self, case_names):
-        self.session.add_all([Cases(name=case_name) for case_name in case_names])
+        self.session.add_all([Cases(name=case_name) for case_name in set(case_names)])
+        self.session.commit()
 
     def add_event(self, event, cases):
         event_log = EventLog(type=event.type,
