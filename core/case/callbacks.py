@@ -45,22 +45,8 @@ class EventEntry(object):
 
 
 def __add_entry_to_case_db(sender, event, message_name):
-    cases_to_add = []
-    for case in case_subscription.subscriptions:
-        current_subscriptions = case_subscription.subscriptions[case].subscriptions
-        for level, (ancestry_level_name, global_sub) in enumerate(zip(sender.ancestry,
-                                                                      case_subscription.subscriptions[
-                                                                          case].global_subscriptions)):
-            if current_subscriptions and ancestry_level_name in current_subscriptions:
-                if (level == len(sender.ancestry) - 1
-                    and current_subscriptions[ancestry_level_name].is_subscribed(message_name,
-                                                                                 global_subs=global_sub)):
-                    cases_to_add.append(case)
-                else:
-                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
-                    continue
-            else:
-                break
+    cases_to_add = [case for case in case_subscription.subscriptions
+                    if case_subscription.is_case_subscribed(case, sender.ancestry, message_name)]
     case_db.add_event(event, cases_to_add)
 
 
