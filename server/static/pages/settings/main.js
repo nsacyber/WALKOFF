@@ -3,8 +3,10 @@ $.ajax({
         headers:{"Authentication-Token":authKey},
         type:"POST",
         success: function(e){
-            data = JSON.parse(e);
-            console.log(data);
+            // data = json.parse(e);
+            for(i=0; i<e.length;i++){
+                $("#userList").append("<option value=i>"+ e + "</option>")
+            }
         },
         error: function(e){
            console.log(e);
@@ -37,20 +39,7 @@ $.ajax({
         $("#profileVisualizationsPath").val("Error");
     }
 });
-$.ajax({
-    url:'users/display/admin',
-    data:{},
-    headers:{"Authentication-Token":authKey},
-    type:"POST",
-    success: function(e){
-        data = JSON.parse(e);
-        console.log(data);
-        // $("#profi").val(data["profileVisualizationsPath"]);
-    },
-    error: function(e){
-        // $("#profileVisualizationsPath").val("Error");
-    }
-});
+
 $.ajax({
     url:'configuration/keywordsPath',
     data:{},

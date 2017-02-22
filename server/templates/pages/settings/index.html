@@ -1,6 +1,7 @@
+
 <div id="main" xmlns:padding="http://www.w3.org/1999/xhtml">
     <!--<p> This is the settings page </p> -->
-
+    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
     <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
     <head>
         <style>
@@ -33,8 +34,14 @@
     <!-- This div will contain keyword labels with textboxes that are
         auto-populated with the default setting -->
     <div id="settingsWrapper">
-        <h1 class="settingsHeader"> Settings </h1>
-        <div id="settingsForm">
+        <div id="settingsTabs">
+            <ul class="nav nav-tabs" role="tablist">
+                <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a> </li>
+                <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a> </li>
+            </ul>
+            <div id="systemSettings">
+                <h1 class="settingsHeader">System Settings </h1>
+                <div id="settingsForm">
             <form id="setForm">
                 <!-- use jinja and formhelpers.html to populate form -->
                 <!-- below is pulled from devices\index.html -->
@@ -64,6 +71,14 @@
                     </div>
                 <input id="formSubmit" type="submit" value="submit">
             </form>
+        </div>
+            </div>
+            <div id="userSettings">
+                <h1 class="settingsHeader">User Settings</h1>
+                <select class="form-control" id="userList">
+                    <option selected="selected" disabled>Select a user</option>
+                </select>
+            </div>
         </div>
     </div>
 </div>
