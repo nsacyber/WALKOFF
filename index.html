@@ -56,7 +56,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <header id="headerDiv" class="w3-container w3-black w3-center w3-padding-128">
   <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
   <p class="headerText w3-xlarge">Automation for All</p>
-  <button id="headerButton" class="headerText w3-btn w3-padding-16 w3-large w3-margin-top">Get Started</button>
+  <button id="headerButton" class="headerText w3-btn w3-padding-16 w3-large w3-margin-top" onclick="getStartedButton();">Get Started</button>
 </header>
 
 <!-- First Grid -->
@@ -154,6 +154,10 @@ function myFunction() {
     } else {
         x.className = x.className.replace(" w3-show", "");
     }
+}
+
+function getStartedButton(){
+    window.location='tutorials/index.html';
 }
 </script>
 
