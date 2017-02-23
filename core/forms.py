@@ -127,9 +127,5 @@ class settingsForm(Form):
     debug = StringField('debug', [validators.Optional()])
     defaultServer = StringField('defaultServer', [validators.Optional()])
     host = StringField('host', [validators.Optional()])
-<<<<<<< HEAD
     user = SelectField('User',[validators.optional], choices=[])
     port = StringField('port', [validators.Optional()])
-=======
-    port = StringField('port', [validators.Optional()])
->>>>>>> 67eb2477915b797d4bfd435c14bf7ddd48f67d97

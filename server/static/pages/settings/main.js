@@ -1,5 +1,5 @@
 $.ajax({
-        url:'users',
+        url:'/users',
         headers:{"Authentication-Token":authKey},
         type:"POST",
         success: function(e){
@@ -8,16 +8,28 @@ $.ajax({
             for(i=0; i<arr.length;i++){
                 $("#userList").append("<option value=" + i +">"+ arr[i] + "</option>")
             }
-
         },
         error: function(e){
            console.log(e);
         }
     });
-$("#userList")
-    .change(function () {
-        console.log($("#userList option:selected").text())
-    });
+ $("#userList")
+     .change(function () {
+        $.ajax({
+            url:"users/"+($("#userList option:selected").text()+"/display"),
+            data:{},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success: function(e){
+                console.log(e)
+            },
+            error: function(e){
+                console.log("failed")
+                $("#templatesPath").val("Error");
+            }
+        });
+         // console.log($("#userList option:selected").text())
+     });
 $.ajax({
     url:'configuration/templatesPath',
     data:{},
