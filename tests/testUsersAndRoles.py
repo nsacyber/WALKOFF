@@ -30,10 +30,10 @@ class TestUsersAndRoles(unittest.TestCase):
     def testAddRole(self):
         data = {"name" : self.name}
         response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["status"] == "role added " + self.name)
+        self.assertEqual(response["status"], "role added {0}".format(self.name))
 
         response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["status"] == "role exists")
+        self.assertEqual(response["status"], "role exists")
 
     def testEditRoleDescr(self):
         data = {"name": self.name}
@@ -41,8 +41,8 @@ class TestUsersAndRoles(unittest.TestCase):
 
         data = {"name" : self.name, "description" : self.description}
         response = json.loads(self.app.post('/roles/edit/'+self.name, data=data, headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["name"] == self.name)
-        self.assertTrue(response["description"] == self.description)
+        self.assertEqual(response["name"], self.name)
+        self.assertEqual(response["description"], self.description)
 
     def testAddUser(self):
         data = {"username": self.email, "password":self.password}
@@ -50,7 +50,7 @@ class TestUsersAndRoles(unittest.TestCase):
         self.assertTrue("user added" in response["status"])
 
         response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["status"] == "user exists")
+        self.assertEqual(response["status"], "user exists")
 
     def testEditUser(self):
         data = {"username": self.email, "password": self.password}
@@ -58,11 +58,11 @@ class TestUsersAndRoles(unittest.TestCase):
 
         data = {"password": self.password}
         response = json.loads(self.app.post('/users/'+self.email+'/edit', data=data, headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["username"] == self.email)
+        self.assertEqual(response["username"], self.email)
 
     def testRemoveUser(self):
         data = {"username": self.email, "password": self.password}
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
         response = json.loads(self.app.post('/users/'+self.email+'/remove', headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["status"] == "user removed")
+        self.assertEqual(response["status"], "user removed")

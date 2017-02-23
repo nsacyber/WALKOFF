@@ -4,6 +4,7 @@ from server import database
 
 db = database.db
 
+
 class Device(database.Base):
     __tablename__ = 'devices'
 
@@ -24,21 +25,21 @@ class Device(database.Base):
         self.other = other
 
     def editDevice(self, form):
-        if form.name.data != "" and form.name.data != None:
+        if form.name.data:
             self.name = form.name.data
 
-        if form.username.data != "" and form.username.data != None:
+        if form.username.data:
             self.username = form.username.data
 
-        if form.pw.data != "" and form.pw.data != None:
+        if form.pw.data:
             self.password = form.pw.data
 
-        if form.ipaddr.data != "" and form.ipaddr.data != None:
+        if form.ipaddr.data:
             self.ip = form.ipaddr.data
 
-        if form.port.data != "" and form.port.data != None:
+        if form.port.data:
             self.port = form.port.data
 
     def __repr__(self):
-        return json.dumps({"name" : self.name, "app" : self.app, "username" : self.username, "password" : self.password,
-                           "ip" : self.ip, "port" : str(self.port)})
+        return json.dumps({"name": self.name, "app": self.app, "username": self.username, "password": self.password,
+                           "ip": self.ip, "port": str(self.port)})

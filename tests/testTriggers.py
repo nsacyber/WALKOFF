@@ -33,11 +33,11 @@ class TestTriggers(unittest.TestCase):
         response = json.loads(
             self.app.post('/execution/listener/triggers/add', data=data, headers=self.headers).get_data(as_text=True))
 
-        self.assertTrue(response["status"] == "trigger successfully added")
+        self.assertEqual(response["status"], "trigger successfully added")
 
         response = json.loads(self.app.post('/execution/listener/triggers/' + self.testTriggerName + '/remove',
                                             headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["status"] == "removed trigger")
+        self.assertEqual(response["status"], "removed trigger")
 
     def test_trigger_execute(self):
         data = {"name": self.testTriggerName,
@@ -46,7 +46,7 @@ class TestTriggers(unittest.TestCase):
                 }
         response = json.loads(
             self.app.post('/execution/listener/triggers/add', data=data, headers=self.headers).get_data(as_text=True))
-        self.assertTrue(response["status"] == "trigger successfully added")
+        self.assertEqual(response["status"], "trigger successfully added")
 
         response = self.app.post('/execution/listener',
                                             data={"data": "hellohellohello"}, headers=self.headers).get_data(as_text=True)

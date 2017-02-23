@@ -54,7 +54,7 @@ class TestCaseDatabase(unittest.TestCase):
 
         # check cases to events is as expected
         for case_name, expected_events in expected_event_messages.items():
-            case = case_database.case_db.session.query(case_database.Cases)\
+            case = case_database.case_db.session.query(case_database.Cases) \
                 .filter(case_database.Cases.name == case_name).all()
             self.assertEqual(len(case), 1, 'There are more than one cases sharing a name {0}'.format(case_name))
 
@@ -71,14 +71,14 @@ class TestCaseDatabase(unittest.TestCase):
                           'message3': ['case2', 'case3', 'case4'],
                           'message4': ['case1']}
         for event_message, message_cases in expected_cases.items():
-            event = case_database.case_db.session.query(case_database.EventLog)\
-                     .filter(case_database.EventLog.message == event_message).all()
+            event = case_database.case_db.session.query(case_database.EventLog) \
+                .filter(case_database.EventLog.message == event_message).all()
 
-            self.assertEqual(len(event), 1, 'There are more than one events sharing a message {0}'.format(event_message))
+            self.assertEqual(len(event), 1,
+                             'There are more than one events sharing a message {0}'.format(event_message))
 
             event_cases = [case.name for case in event[0].cases.all()]
             self.assertEqual(len(event_cases), len(message_cases),
-                         'Unexpected number of cases encountered for messages {0}'.format(event_message))
+                             'Unexpected number of cases encountered for messages {0}'.format(event_message))
             self.assertSetEqual(set(event_cases), set(message_cases),
-                            'Expected cases does not equal received cases info for event {0}'.format(case_name))
-
+                                'Expected cases does not equal received cases info for event {0}'.format(event_message))

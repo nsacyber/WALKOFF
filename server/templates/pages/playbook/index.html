@@ -1,25 +1,30 @@
 <div id="main">
     <style>
         #body{
-            margin-bottom:20px;
+            margin-bottom: 20px;
+        }
+        #top {
+            width: 1450px;
+            height: 700px;
+            float: left
         }
         #cy {
-          display:inline-block;
-          vertical-align:top;
-          height: 700px;
-          width: 1000px;
-          position: relative;
-          left: 0;
-          border:solid;
-          background-color:white;
-          background-image:url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
-          margin-right:20px;
+            display: inline-block;
+            vertical-align: top;
+            height: 700px;
+            width: 1000px;
+            position: relative;
+            left: 0;
+            border: solid;
+            background-color: white;
+            background-image: url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
+            margin-right: 20px;
         }
         #parameters{
-            display:inline-block;
-            vertical-align:top;
+            display: inline-block;
+            vertical-align: top;
             height: 700px;
-            width:400px;
+            width: 400px;
         }
     </style>
 
@@ -37,8 +42,10 @@
     </script>
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 
-    <div id="cy">
+    <div id="top">
+        <div id="cy">
+        </div>
+        <pre id="parameters">
+        </pre>
     </div>
-    <pre id="parameters">
-    </pre>
 </div>

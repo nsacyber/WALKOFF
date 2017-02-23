@@ -2,6 +2,7 @@ import importlib
 import sys
 
 from core import forms
+from core.config import getApps
 
 
 def loadModule(name):
@@ -15,25 +16,31 @@ def loadModule(name):
     except ImportError:
         return None
 
+
 def loadApp(name, keys, values):
     module = loadModule(name)
-    args = dict(zip(keys,values))
+    args = dict(zip(keys, values))
 
     if module:
         return getattr(module, "load")(args)
     return {}
 
-#def devices():
-#    return {"apps" : getApps()}, forms.AddNewDeviceForm()
+
+def devices():
+    return {"apps": getApps()}, forms.AddNewDeviceForm()
+
 
 def settings():
     return {}, forms.settingsForm()
 
+
 def playbook():
-    return {"currentWorkflow" : "multiactionWorkflow"}, None
+    return {"currentWorkflow": "multiactionWorkflow"}, None
+
 
 def triggers():
     return {}, forms.addNewTriggerForm()
+
 
 def cases():
     return {"currentWorkflow": "multiactionWorkflow"}, None

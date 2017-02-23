@@ -34,7 +34,9 @@ class TestExecutionModes(unittest.TestCase):
 
         start_stop_event_history = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'startStop').first().events.all()
-        self.assertTrue(len(start_stop_event_history) == 2)
+        self.assertEqual(len(start_stop_event_history), 2,
+                         'Incorrect length of event history. '
+                         'Expected {0}, got {1}'.format(2, len(start_stop_event_history)))
 
     @graphDecorator.callgraph(enabled=False)
     def test_pauseResumeSchedulerExecution(self):
@@ -58,4 +60,6 @@ class TestExecutionModes(unittest.TestCase):
         pause_resume_events_case = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'pauseResume').first()
         pause_resume_event_history = pause_resume_events_case.events.all()
-        self.assertTrue(len(pause_resume_event_history) == 4)
+        self.assertEqual(len(pause_resume_event_history), 4,
+                        'Incorrect length of event history. '
+                        'Expected {0}, got {1}'.format(4, len(pause_resume_event_history)))
