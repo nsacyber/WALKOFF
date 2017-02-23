@@ -37,7 +37,9 @@ class TestExecutionEvents(unittest.TestCase):
         execution_events_case = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'testExecutionEvents').first()
         execution_event_history = execution_events_case.events.all()
-        self.assertTrue(len(execution_event_history) == 6)
+        self.assertEqual(len(execution_event_history), 6,
+                         'Incorrect length of event history. '
+                         'Expected {0}, got {1}'.format(6, len(execution_event_history)))
 
     """
         Tests execution events at the Step Level
@@ -65,7 +67,9 @@ class TestExecutionEvents(unittest.TestCase):
         step_execution_events_case = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'testStepExecutionEvents').first()
         step_execution_event_history = step_execution_events_case.events.all()
-        self.assertTrue(len(step_execution_event_history) == 3)
+        self.assertEqual(len(step_execution_event_history), 3,
+                         'Incorrect length of event history. '
+                         'Expected {0}, got {1}'.format(3, len(step_execution_event_history)))
 
     """
         Tests execution events at the Filter Flag and Keyword Level
@@ -95,7 +99,9 @@ class TestExecutionEvents(unittest.TestCase):
         step_ffk_events_case = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'testStepFFKEventsEvents').first()
         step_ffk_event_history = step_ffk_events_case.events.all()
-        self.assertTrue(len(step_ffk_event_history) == 6)
+        self.assertEqual(len(step_ffk_event_history), 6,
+                         'Incorrect length of event history. '
+                         'Expected {0}, got {1}'.format(6, len(step_ffk_event_history)))
 
     @graphDecorator.callgraph(enabled=False)
     def test_ffkExecutionEventsCase(self):
@@ -126,4 +132,6 @@ class TestExecutionEvents(unittest.TestCase):
         step_ffk_events_case = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'testStepFFKEventsEvents').first()
         step_ffk_event_history = step_ffk_events_case.events.all()
-        self.assertTrue(len(step_ffk_event_history) == 5)
+        self.assertEqual(len(step_ffk_event_history), 5,
+                         'Incorrect length of event history. '
+                         'Expected {0}, got {1}'.format(5, len(step_ffk_event_history)))

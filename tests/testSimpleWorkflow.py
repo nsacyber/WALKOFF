@@ -21,11 +21,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_SimpleWorkflowExecution(self):
         steps, instances = self.c.executeWorkflow("helloWorldWorkflow")
         instances = ast.literal_eval(instances)
-        self.assertTrue(len(steps) == 1)
-        self.assertTrue(steps[0].name == "start")
-        self.assertTrue(steps[0].output == "REPEATING: Hello World")
+        self.assertEqual(len(steps), 1)
+        self.assertEqual(steps[0].name, "start")
+        self.assertEqual(steps[0].output, "REPEATING: Hello World")
         # self.assertTrue(steps[0].nextUp == None)
-        self.assertTrue(instances["hwTest"]["state"] == '0')
+        self.assertEqual(instances["hwTest"]["state"], '0')
 
     """
         Tests workflow execution that has multiple steps.
@@ -35,14 +35,14 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_MultiActionWorkflow(self):
         steps, instances = self.c.executeWorkflow("multiactionWorkflow")
         instances = ast.literal_eval(instances)
-        self.assertTrue(len(steps) == 2)
-        self.assertTrue(steps[0].name == "start")
-        self.assertTrue(steps[0].output == {"message": "HELLO WORLD"})
-        self.assertTrue(steps[0].nextUp == "1")
-        self.assertTrue(steps[1].name == "1")
-        self.assertTrue(steps[1].output == "REPEATING: Hello World")
+        self.assertEqual(len(steps), 2)
+        self.assertEqual(steps[0].name, "start")
+        self.assertDictEqual(steps[0].output, {"message": "HELLO WORLD"})
+        self.assertEqual(steps[0].nextUp, "1")
+        self.assertEqual(steps[1].name, "1")
+        self.assertEqual(steps[1].output, "REPEATING: Hello World")
         self.assertIsNone(steps[1].nextUp)
-        self.assertTrue(instances["hwTest"]["state"] == '0')
+        self.assertEqual(instances["hwTest"]["state"], '0')
 
     """
             Tests workflow execution that has an error in the second step. Then moves to step "error" instead.
@@ -52,11 +52,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_ErrorWorkflow(self):
         steps, instances = self.c.executeWorkflow("multiactionErrorWorkflow")
         instances = ast.literal_eval(instances)
-        self.assertTrue(len(steps) == 3)
-        self.assertTrue(steps[0].name == "start")
-        self.assertTrue(steps[0].output == {"message": "HELLO WORLD"})
-        self.assertTrue(steps[0].nextUp == "1")
-        self.assertTrue(steps[1].nextUp == "error")
-        self.assertTrue(steps[2].name == "error")
-        self.assertTrue(steps[2].output == "REPEATING: Hello World")
-        self.assertTrue(instances["hwTest"]["state"] == '0')
+        self.assertEqual(len(steps), 3)
+        self.assertEqual(steps[0].name, "start")
+        self.assertDictEqual(steps[0].output, {"message": "HELLO WORLD"})
+        self.assertEqual(steps[0].nextUp, "1")
+        self.assertEqual(steps[1].nextUp, "error")
+        self.assertEqual(steps[2].name, "error")
+        self.assertEqual(steps[2].output, "REPEATING: Hello World")
+        self.assertEqual(instances["hwTest"]["state"], '0')

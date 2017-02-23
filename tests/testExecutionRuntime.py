@@ -24,14 +24,15 @@ class TestExecutionRuntime(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "templatedWorkflowTest.workflow")
         steps, instances = self.c.executeWorkflow("templatedWorkflow")
         instances = ast.literal_eval(instances)
-        self.assertTrue(len(steps) == 2)
-        self.assertTrue(steps[0].name == "start")
-        self.assertTrue(steps[0].output == {"message": "HELLO WORLD"})
-        self.assertTrue(steps[0].nextUp == "1")
-        self.assertTrue(steps[1].name == "1")
-        self.assertTrue(steps[1].output == "REPEATING: {'message': 'HELLO WORLD'}")
-        self.assertTrue(steps[1].nextUp == None)
-        self.assertTrue(instances["hwTest"]["state"] == '0')
+        self.assertEqual(len(steps), 2, 'Unexpected number of steps executed. '
+                                        'Expected {0}, got {1}'.format(2, len(steps)))
+        self.assertEqual(steps[0].name, "start")
+        self.assertDictEqual(steps[0].output, {"message": "HELLO WORLD"})
+        self.assertEqual(steps[0].nextUp, "1")
+        self.assertEqual(steps[1].name, "1")
+        self.assertEqual(steps[1].output, "REPEATING: {'message': 'HELLO WORLD'}")
+        self.assertIsNone(steps[1].nextUp)
+        self.assertEqual(instances["hwTest"]["state"], '0')
 
     """
         Tests the calling of nested workflows
@@ -42,9 +43,9 @@ class TestExecutionRuntime(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "tieredWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("parentWorkflow")
         output = [step.output for step in steps]
-        self.assertTrue(output[0] == "REPEATING: Parent Step One")
-        self.assertTrue(output[1] == "REPEATING: Child Step One")
-        self.assertTrue(output[2] == "REPEATING: Parent Step Two")
+        self.assertEqual(output[0], "REPEATING: Parent Step One")
+        self.assertEqual(output[1], "REPEATING: Child Step One")
+        self.assertEqual(output[2], "REPEATING: Parent Step Two")
 
     """
         Tests a workflow that loops a few times
@@ -55,4 +56,4 @@ class TestExecutionRuntime(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
         steps, instances = self.c.executeWorkflow("loopWorkflow")
         output = [step.output for step in steps]
-        self.assertTrue(len(output) == 5)
+        self.assertEqual(len(output), 5)
