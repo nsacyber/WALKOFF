@@ -1,32 +1,38 @@
+
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField, \
     SelectField
-
 
 class NewUserForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25), validators.required()])
     password = PasswordField('password', [validators.required()])
     role = FieldList(StringField('role', [validators.Length(min=4, max=25)]))
 
+
 class EditUserForm(Form):
     password = PasswordField('password')
     role = FieldList(StringField('role', [validators.Length(min=4, max=25)]))
+
 
 class NewRoleForm(Form):
     name = StringField('name', [validators.required()])
     description = StringField('description')
 
+
 class EditRoleForm(Form):
     description = StringField('description')
     pages = StringField('pages')
 
+
 class AddNewPlayForm(Form):
     name = StringField('name', [validators.Length(min=1, max=50), validators.required()])
+
 
 class EditPlayOptionsForm(Form):
     autoRun = BooleanField("autorun")
     s_sDT = DateTimeField("sDT")
     s_eDT = DateTimeField("eDT")
     s_interval = DecimalField("interval", places=2)
+
 
 class EditStepForm(Form):
     id = StringField('id', [validators.Optional()])
@@ -37,20 +43,25 @@ class EditStepForm(Form):
     input = StringField('input', [validators.Optional()])
     error = FieldList(StringField('error'), [validators.Optional()])
 
+
 class EditConfigForm(Form):
     key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
     value = StringField('value')
 
+
 class EditSingleConfigForm(Form):
     value = StringField('value')
 
+
 class RemoveConfigForm(Form):
     key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
+
 
 class RenderArgsForm(Form):
     page = StringField("page", [validators.required()])
     key = FieldList(StringField("key", [validators.Optional()]))
     value = FieldList(StringField("value", [validators.Optional()]))
+
 
 class AddNewDeviceForm(Form):
     name = StringField('name', [validators.Length(min=4, max=25), validators.required()])
@@ -59,6 +70,8 @@ class AddNewDeviceForm(Form):
     app = StringField('app', [validators.required()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+    other = StringField('other', [validators.Optional()])
+
 
 class EditDeviceForm(Form):
     name = StringField('name', [validators.Length(min=4, max=25), validators.Optional()])
@@ -67,31 +80,38 @@ class EditDeviceForm(Form):
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
 
+
 class LoginForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25)])
     password = PasswordField('password')
+
 
 class addNewTriggerForm(Form):
     name = StringField('name', [validators.Length(min=1, max=25), validators.required()])
     conditional = FieldList(StringField('conditional'), [validators.required()])
     play = StringField('play', [validators.Length(min=1, max=25), validators.required()])
 
+
 class editTriggerForm(Form):
     name = StringField('name', [validators.Length(min=1, max=25), validators.Optional()])
     conditional = FieldList(StringField('conditional'), [validators.Optional()])
     play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
 
+
 class conditionalArgsField(Form):
     key = StringField('key', [validators.Length(min=1, max=25), validators.Optional()])
     value = StringField('value', [validators.Length(min=1, max=25), validators.Optional()])
+
 
 class conditionalField(Form):
     name = StringField('flag', [validators.Length(min=1, max=25), validators.Optional()])
     args = FieldList(FormField(conditionalArgsField, [validators.Optional()]))
     play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
 
+
 class incomingDataForm(Form):
     data = StringField('data')
+
 
 class settingsForm(Form):
     templatesPath = StringField('templatesPath', [validators.Optional()])
@@ -107,5 +127,9 @@ class settingsForm(Form):
     debug = StringField('debug', [validators.Optional()])
     defaultServer = StringField('defaultServer', [validators.Optional()])
     host = StringField('host', [validators.Optional()])
+<<<<<<< HEAD
     user = SelectField('User',[validators.optional], choices=[])
     port = StringField('port', [validators.Optional()])
+=======
+    port = StringField('port', [validators.Optional()])
+>>>>>>> 67eb2477915b797d4bfd435c14bf7ddd48f67d97

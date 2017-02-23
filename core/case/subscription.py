@@ -35,12 +35,14 @@ class _SubscriptionEventList(object):
             if events == '*':
                 return _SubscriptionEventList(all=True)
             else:
+                if not isinstance(events, list):
+                    events = [events]
                 return _SubscriptionEventList(events=events)
         else:
             return _SubscriptionEventList()
 
     def __repr__(self):
-        return str({'all': str(self.all), 'events': str(self.events)})
+        return str({'all': self.all, 'events': self.events})
 
 
 class GlobalSubscriptions(object):
@@ -72,6 +74,14 @@ class GlobalSubscriptions(object):
         yield self.flag
         yield self.filter
 
+    def __repr__(self):
+        return str({'controller': self.controller,
+                    'workflow': self.workflow,
+                    'step': self.step,
+                    'next_step': self.next_step,
+                    'flag': self.flag,
+                    'filter': self.filter})
+
 
 class Subscription(object):
     """
@@ -95,14 +105,14 @@ class Subscription(object):
         :param global_subs: Global subscriptions for this level of execution
         :return (bool): Is the message subscribed to?
         """
-        global_subs = global_subs if global_subs is not None else []
-        return ((self.events.is_subscribed(message_name) or global_subs.is_subscribed(message_name))
+        global_subs_subscribed = global_subs.is_subscribed(message_name) if global_subs is not None else False
+        return ((self.events.is_subscribed(message_name) or global_subs_subscribed)
                 and not self.disabled.is_subscribed(message_name))
 
     def __repr__(self):
-        return str({'events': str(self.events),
-                    'disabled': str(self.disabled),
-                    'subscriptions': str(self.subscriptions)})
+        return str({'events': self.events,
+                    'disabled': self.disabled,
+                    'subscriptions': self.subscriptions})
 
 
 class CaseSubscriptions(object):
@@ -110,8 +120,22 @@ class CaseSubscriptions(object):
         self.subscriptions = subscriptions if subscriptions is not None else {}
         self.global_subscriptions = global_subscriptions if global_subscriptions is not None else GlobalSubscriptions()
 
+    def is_subscribed(self, ancestry, message_name):
+        current_subscriptions = self.subscriptions
+        for level, (ancestry_level_name, global_sub) in enumerate(zip(ancestry, self.global_subscriptions)):
+            if current_subscriptions and ancestry_level_name in current_subscriptions:
+                if (level == len(ancestry) - 1
+                    and current_subscriptions[ancestry_level_name].is_subscribed(message_name,
+                                                                                 global_subs=global_sub)):
+                    return True
+                else:
+                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                    continue
+            else:
+                return False
+
     def __repr__(self):
-        return str({'subscriptions': str(self.subscriptions),
+        return str({'subscriptions': self.subscriptions,
                     'global_subscriptions': self.global_subscriptions})
 
 
@@ -122,3 +146,7 @@ def set_subscriptions(new_subscriptions):
     global subscriptions
     subscriptions = new_subscriptions
     case_db.register_events(new_subscriptions.keys())
+
+
+def is_case_subscribed(case, ancestry, message_name):
+    return subscriptions[case].is_subscribed(ancestry, message_name)

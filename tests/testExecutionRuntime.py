@@ -1,10 +1,13 @@
-import unittest, ast
+import ast
+import unittest
+from os import mkdir
+from os.path import isdir
+
+from core import config as core_config
 from core import controller
 from core import graphDecorator
-from core import config as core_config
-from os.path import isdir
-from os import mkdir
 from tests import config
+
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):

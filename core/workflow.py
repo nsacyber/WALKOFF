@@ -1,15 +1,15 @@
-import sys
 import importlib
+import sys
+import xml.etree.cElementTree as et
+from os.path import join, isfile
 
-from core.step import Step
 from core import arguments
+from core import config
 from core import instance
 from core import options
 from core.case import callbacks
-from core import config
 from core.executionelement import ExecutionElement
-from os.path import join, isfile
-import xml.etree.cElementTree as et
+from core.step import Step
 
 
 class Workflow(ExecutionElement):
@@ -62,7 +62,7 @@ class Workflow(ExecutionElement):
             return True
         return False
 
-    def to_xml(self):
+    def to_xml(self, *args):
         root = self.workflowXML.find(".//steps")
         root.clear()
         for step in self.steps:

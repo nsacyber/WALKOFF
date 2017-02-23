@@ -1,9 +1,11 @@
-import core.case.database as case_database
-from server import flaskServer
-from gevent.wsgi import WSGIServer
-from core import config
 import ssl
 from os.path import isfile
+
+from gevent.wsgi import WSGIServer
+
+import core.case.database as case_database
+from core import config
+from server import flaskServer
 
 
 def get_ssl_context():

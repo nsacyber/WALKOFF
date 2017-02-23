@@ -1,12 +1,15 @@
+import sys
 import xml.etree.cElementTree as et
-from core.nextstep import Next
+
+from jinja2 import Template, Markup
+
 from core import arguments
+from core import contextDecorator
+from core import nextstep, config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core import nextstep, config
-from core import contextDecorator
-from jinja2 import Template, Markup
-import sys
+from core.nextstep import Next
+
 
 class InvalidStepArgumentsError(Exception):
     def __init__(self, message=''):

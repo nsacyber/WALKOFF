@@ -1,14 +1,15 @@
-import unittest, time
-
-import core.case.database as case_database
-from core import controller, graphDecorator
-from tests import config
+import time
+import unittest
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-from core.case.subscription import Subscription
+
+import core.case.database as case_database
 import core.case.subscription as case_subscription
+from core import controller, graphDecorator
+from core.case.subscription import Subscription
+from tests import config
 
 
 class TestExecutionModes(unittest.TestCase):

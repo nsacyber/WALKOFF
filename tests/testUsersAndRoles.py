@@ -1,7 +1,9 @@
-import unittest
 import json
-from server import flaskServer as server
+import unittest
+
 from server import database
+from server import flaskServer as server
+
 
 class TestUsersAndRoles(unittest.TestCase):
     def setUp(self):
