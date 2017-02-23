@@ -1,4 +1,6 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField, \
+    SelectField
+
 
 class NewUserForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25), validators.required()])
@@ -105,4 +107,5 @@ class settingsForm(Form):
     debug = StringField('debug', [validators.Optional()])
     defaultServer = StringField('defaultServer', [validators.Optional()])
     host = StringField('host', [validators.Optional()])
+    user = SelectField('User',[validators.optional], choices=[])
     port = StringField('port', [validators.Optional()])

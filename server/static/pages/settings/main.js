@@ -3,16 +3,21 @@ $.ajax({
         headers:{"Authentication-Token":authKey},
         type:"POST",
         success: function(e){
-            // data = json.parse(e);
-            for(i=0; i<e.length;i++){
-                $("#userList").append("<option value=i>"+ e + "</option>")
+            str = e.substring(1,e.length-1);
+            arr = str.split(",");
+            for(i=0; i<arr.length;i++){
+                $("#userList").append("<option value=" + i +">"+ arr[i] + "</option>")
             }
+
         },
         error: function(e){
            console.log(e);
         }
     });
-
+$("#userList")
+    .change(function () {
+        console.log($("#userList option:selected").text())
+    });
 $.ajax({
     url:'configuration/templatesPath',
     data:{},

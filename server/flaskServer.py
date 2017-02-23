@@ -1,3 +1,6 @@
+import row as row
+from flask import url_for
+
 from .app import app
 from . import database
 from .database import User
@@ -289,8 +292,10 @@ def userNonSpecificActions(action):
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def displayAllUsers():
-    result = str(User.query.all())
-    return result
+    form = forms.settingsForm(request.form)
+    # result = str(User.query.all())
+    form.user.choices = [(row.ID, row.Name) for row in User.query.all()]
+    return render_template(url_for(displayAllUsers))
 
 # Controls non-specific users and roles
 @app.route('/users/<string:id_or_email>', methods=["POST"])
