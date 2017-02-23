@@ -192,7 +192,7 @@ def triggerFunctions(action, name):
             Triggers.query.filter_by(name=name).delete()
             database.db.session.commit()
             return json.dumps({"status": "removed trigger"})
-        elif query == None:
+        elif query is None:
             json.dumps({"status": "trigger does not exist"})
         return json.dumps({"status": "could not remove trigger"})
 
@@ -215,7 +215,7 @@ def roleAddActions(action):
             if not database.Role.query.filter_by(name=form.name.data).first():
                 n = form.name.data
 
-                if form.description.data != None:
+                if form.description.data is not None:
                     d = form.description.data
                     user_datastore.create_role(name=n, description=d, pages=default_urls)
                 else:
@@ -239,14 +239,14 @@ def roleAddActions(action):
 def roleActions(action, name):
     role = database.Role.query.filter_by(name=name).first()
 
-    if role != None and role != []:
+    if role:
 
         if action == "edit":
             form = forms.EditRoleForm(request.form)
             if form.validate():
-                if form.description.data != "":
+                if form.description.data:
                     role.setDescription(form.description.data)
-                if form.pages.data != "" and form.pages.data != []:
+                if form.pages.data:
                     database.add_to_userRoles(name, form.pages)
             return json.dumps(role.display())
 
@@ -256,9 +256,6 @@ def roleActions(action, name):
             return json.dumps({"status": "invalid input"})
 
     return json.dumps({"status": "role does not exist"})
-
-
-
 
 
 # Controls non-specific users and roles
@@ -277,7 +274,7 @@ def userNonSpecificActions(action):
                 # Creates User
                 u = user_datastore.create_user(email=un, password=pw)
 
-                if form.role.entries != [] and form.role.entries != None:
+                if form.role.entries:
                     u.setRoles(form.role.entries)
 
                 db.session.commit()
@@ -287,6 +284,7 @@ def userNonSpecificActions(action):
         else:
             return json.dumps({"status": "invalid input"})
 
+
 # Controls non-specific users and roles
 @app.route('/users', methods=["POST"])
 @auth_token_required
@@ -295,16 +293,18 @@ def displayAllUsers():
     result = str(User.query.all())
     return result
 
+
 # Controls non-specific users and roles
 @app.route('/users/<string:id_or_email>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def displayUser(id_or_email):
     user = user_datastore.get_user(id_or_email)
-    if user != None:
+    if user:
         return json.dumps(user.display())
     else:
         return json.dumps({"status": "could not display user"})
+
 
 # Controls users and roles
 @app.route('/users/<string:id_or_email>/<string:action>', methods=["POST"])
@@ -312,7 +312,7 @@ def displayUser(id_or_email):
 @roles_accepted(*userRoles["/users"])
 def userActions(action, id_or_email):
     user = user_datastore.get_user(id_or_email)
-    if user != None and user != []:
+    if user:
         if action == "remove":
             if user != current_user:
                 user_datastore.delete_user(user)
@@ -324,18 +324,19 @@ def userActions(action, id_or_email):
         elif action == "edit":
             form = forms.EditUserForm(request.form)
             if form.validate():
-                if form.password != "":
+                if form.password:
                     verify_and_update_password(form.password.data, user)
-                if form.role.entries != []:
+                if form.role.entries:
                     user.setRoles(form.role.entries)
 
             return json.dumps(user.display())
 
         elif action == "display":
-            if user != None:
+            if user is not None:
                 return json.dumps(user.display())
             else:
                 return json.dumps({"status": "could not display user"})
+
 
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
@@ -346,22 +347,26 @@ def configDevicesConfig(app, action):
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
             if len(Device.query.filter_by(name=form.name.data).all()) > 0:
-                return json.dumps({"status" : "device could not be added"})
-            db.session.add(Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data,
-                                  ip = form.ipaddr.data, port=form.port.data, other=form.other.data))
+                return json.dumps({"status": "device could not be added"})
+            db.session.add(
+                Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data,
+                       ip=form.ipaddr.data, port=form.port.data, other=form.other.data))
             db.session.commit()
 
-            return json.dumps({"status" : "device successfully added"})
-        return json.dumps({"status" : "device could not be added"})
+            return json.dumps({"status": "device successfully added"})
+        return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(app=app).all()
+        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(
+            app=app).all()
         output = []
-        if query != None and query != []:
+        if query:
             for device in query:
-                output.append({"name": device[0], "username":device[1], "port":device[2], "ip": device[3], "app": device[4]})
+                output.append(
+                    {"name": device[0], "username": device[1], "port": device[2], "ip": device[3], "app": device[4]})
 
             return json.dumps(output)
-    return json.dumps({"status" : "could not display all devices"})
+    return json.dumps({"status": "could not display all devices"})
+
 
 # Controls the specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
@@ -371,33 +376,33 @@ def configDevicesConfigId(app, device, action):
     if action == "display":
         query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(
             app=app, name=device).first()
-        if query != None and query != []:
-            output = {"name":query[0], "username":query[1], "port":query[2], "ip":query[3], "app":query[4]}
+        if query:
+            output = {"name": query[0], "username": query[1], "port": query[2], "ip": query[3], "app": query[4]}
             return json.dumps(output)
-        return json.dumps({"status" : "could not display device"})
+        return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
         query = Device.query.filter_by(app=app, name=device).first()
-        if query != None and query != []:
+        if query:
             Device.query.filter_by(app=app, name=device).delete()
 
             db.session.commit()
-            return json.dumps({"status" : "removed device"})
-        return json.dumps({"status" : "could not remove device"})
+            return json.dumps({"status": "removed device"})
+        return json.dumps({"status": "could not remove device"})
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
         device = Device.query.filter_by(app=app, name=device).first()
-        if form.validate() and device != None:
+        if form.validate() and device is not None:
             # Ensures new name is unique
             if len(Device.query.filter_by(name=str(device)).all()) > 0:
-                return json.dumps({"status" : "device could not be edited"})
+                return json.dumps({"status": "device could not be edited"})
 
             device.editDevice(form)
 
             db.session.commit()
-            return json.dumps({"status" : "device successfully edited"})
-        return json.dumps({"status" : "device could not be edited"})
+            return json.dumps({"status": "device successfully edited"})
+        return json.dumps({"status": "device could not be edited"})
 
 
 # Start Flask

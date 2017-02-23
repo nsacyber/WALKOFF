@@ -41,7 +41,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertTrue(steps[0].nextUp == "1")
         self.assertTrue(steps[1].name == "1")
         self.assertTrue(steps[1].output == "REPEATING: Hello World")
-        self.assertTrue(steps[1].nextUp == None)
+        self.assertIsNone(steps[1].nextUp)
         self.assertTrue(instances["hwTest"]["state"] == '0')
 
     """
