@@ -3,6 +3,11 @@
         #body{
             margin-bottom:20px;
         }
+        #top {
+          width: 1450px;
+          height: 700px;
+          float: left
+        }
         #cy {
           display:inline-block;
           vertical-align:top;
@@ -37,8 +42,10 @@
     </script>
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 
-    <div id="cy">
+    <div id="top">
+        <div id="cy">
+        </div>
+        <pre id="parameters">
+        </pre>
     </div>
-    <pre id="parameters">
-    </pre>
 </div>
