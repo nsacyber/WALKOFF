@@ -12,7 +12,7 @@ setup(
 
     install_requires = ['blinker >= 1.4',
                         'Flask >= 0.10.0',
-                        'Flask_Login >= 0.3.2',
+                        'Flask_Login >= 0.3.2, < 0.4.0',
                         'Flask_Principal >= 0.4.0',
                         'Flask_SQLAlchemy >= 2.1',
                         'Flask_Security >= 1.7.5',
