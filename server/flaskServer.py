@@ -11,6 +11,7 @@ from core import config, interface, controller
 from core import forms
 from core.case import callbacks
 from core.case.subscription import Subscription
+import core.case.database as case_database
 from . import database
 from .app import app
 from .database import User
@@ -20,7 +21,7 @@ from .triggers import Triggers
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
-        "/roles", "/users", "/configuration"]
+        "/roles", "/users", "/configuration", '/cases']
 
 default_urls = urls
 userRoles = database.userRoles
@@ -106,6 +107,25 @@ def workflow(name, format):
             callbacks.cases["testExecutionEvents"].clear_history()
             return response
 
+
+@app.route('/cases', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_cases():
+    return json.dumps({'cases': [case.as_json(with_events=False)
+                                 for case in case_database.case_db.session.query(case_database.Cases).all()]})
+
+
+@app.route('/cases/<string:case_name>', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_case(case_name):
+    case = case_database.case_db.session.query(case_database.Cases)\
+        .filter(case_database.Cases.name == case_name).first()
+    if case:
+        return json.dumps({'case': case.as_json()})
+    else:
+        return json.dumps({'status': 'Case with given name does not exist'})
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required

@@ -10,7 +10,7 @@ from core import config
 _Base = declarative_base()
 
 
-class Case_Event(_Base):
+class _Case_Event(_Base):
     __tablename__ = 'case_event'
     case_id = Column(Integer, ForeignKey('cases.id'), primary_key=True)
     event_id = Column(Integer, ForeignKey('event_log.id'), primary_key=True)
@@ -22,6 +22,13 @@ class Cases(_Base):
     name = Column(String)
     events = relationship('EventLog', secondary='case_event', lazy='dynamic')
 
+    def as_json(self, with_events=True):
+        output = {'id': str(self.id),
+                  'name': self.name}
+        if with_events:
+            output['events'] = [event.as_json() for event in self.events]
+        return output
+
 
 class EventLog(_Base):
     __tablename__ = 'event_log'
@@ -31,6 +38,16 @@ class EventLog(_Base):
     ancestry = Column(String)
     message = Column(String)
     cases = relationship('Cases', secondary='case_event', lazy='dynamic')
+
+    def as_json(self, with_cases=False):
+        output = {'id': str(self.id),
+                'timestamp': str(self.timestamp),
+                'type': self.type,
+                'ancestry': self.ancestry,
+                'message': self.message}
+        if with_cases:
+            output['cases'] = str([case.as_json() for case in self.cases])
+        return output
 
     @staticmethod
     def create(sender, entry_message, entry_type):

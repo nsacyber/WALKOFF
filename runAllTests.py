@@ -11,6 +11,7 @@ from tests import testSimpleWorkflow as tsw
 from tests import testTriggers as ttr
 from tests import testUsersAndRoles as tur
 from tests import testWorkflowManipulation as twm
+from tests import testCaseServer as tcser
 
 loadWorkflow = unittest.TestLoader().loadTestsFromTestCase(ttw.TestLoadWorkflow)
 manipulateWorkflow = unittest.TestLoader().loadTestsFromTestCase(twm.TestWorkflowManipulation)
@@ -23,6 +24,7 @@ login = unittest.TestLoader().loadTestsFromTestCase(tsv.TestTriggers)
 usersAndRoles = unittest.TestLoader().loadTestsFromTestCase(tur.TestUsersAndRoles)
 caseSubs = unittest.TestLoader().loadTestsFromTestCase(tcs.TestCaseSubscriptions)
 caseDb = unittest.TestLoader().loadTestsFromTestCase(tdb.TestCaseDatabase)
+caseServer = unittest.TestLoader().loadTestsFromTestCase(tcser.TestCaseServer)
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(loadWorkflow)
     unittest.TextTestRunner(verbosity=2).run(manipulateWorkflow)
@@ -32,7 +34,9 @@ if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(executionEvents)
     unittest.TextTestRunner(verbosity=2).run(caseSubs)
     unittest.TextTestRunner(verbosity=2).run(caseDb)
+    unittest.TextTestRunner(verbosity=2).run(caseServer)
     unittest.TextTestRunner(verbosity=2).run(triggers)
     unittest.TextTestRunner(verbosity=2).run(login)
     unittest.TextTestRunner(verbosity=2).run(usersAndRoles)
+
 
