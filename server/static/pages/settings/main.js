@@ -1,16 +1,35 @@
 $.ajax({
-        url:'users',
+        url:'/users',
         headers:{"Authentication-Token":authKey},
         type:"POST",
         success: function(e){
-            data = JSON.parse(e);
-            console.log(data);
+            str = e.substring(1,e.length-1);
+            arr = str.split(",");
+            for(i=0; i<arr.length;i++){
+                $("#userList").append("<option value=" + i +">"+ arr[i] + "</option>")
+            }
         },
         error: function(e){
            console.log(e);
         }
     });
-
+ $("#userList")
+     .change(function () {
+        $.ajax({
+            url:"users/"+($("#userList option:selected").text()+"/display"),
+            data:{},
+            headers:{"Authentication-Token":authKey},
+            type:"POST",
+            success: function(e){
+                console.log(e)
+            },
+            error: function(e){
+                console.log("failed")
+                $("#templatesPath").val("Error");
+            }
+        });
+         // console.log($("#userList option:selected").text())
+     });
 $.ajax({
     url:'configuration/templatesPath',
     data:{},
@@ -37,6 +56,7 @@ $.ajax({
         $("#profileVisualizationsPath").val("Error");
     }
 });
+
 $.ajax({
     url:'configuration/keywordsPath',
     data:{},
@@ -168,6 +188,9 @@ $.ajax({
     error: function(e){
         $("#port").val("Error");
     }
+});
+$(function () {
+    $("#settingsTabs").tabs();
 });
 
 $("#setForm").on("submit", function(e){

@@ -1,16 +1,18 @@
-import json
+from .app import app
+from . import database
+from .database import User
+from .triggers import Triggers
 import os
 import ssl
-
+import json
 from flask import render_template, request
-from flask_security import login_required, auth_token_required, current_user, roles_accepted
+from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
-
-import core.case.subscription as case_subscription
 from core import config, interface, controller
 from core import forms
 from core.case import callbacks
 from core.case.subscription import Subscription
+
 import core.case.database as case_database
 from . import database
 from .app import app
@@ -18,10 +20,12 @@ from .database import User
 from .device import Device
 from .triggers import Triggers
 
+
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
         "/roles", "/users", "/configuration", '/cases']
+
 
 default_urls = urls
 userRoles = database.userRoles
@@ -358,6 +362,7 @@ def userActions(action, id_or_email):
                 return json.dumps({"status": "could not display user"})
 
 
+
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
 @auth_token_required
@@ -423,6 +428,7 @@ def configDevicesConfigId(app, device, action):
             db.session.commit()
             return json.dumps({"status": "device successfully edited"})
         return json.dumps({"status": "device could not be edited"})
+
 
 
 # Start Flask
