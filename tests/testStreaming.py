@@ -1,6 +1,5 @@
 import unittest
 import json
-import time
 from werkzeug.wsgi import ClosingIterator
 from server import flaskServer as flask_server
 
@@ -18,6 +17,9 @@ class TestStreaming(unittest.TestCase):
         self.headers = {"Authentication-Token": self.key}
 
     def test_stream_from_server(self):
-        resp = self.app.get('/stream', headers=self.headers)
-        self.assertEquals(resp.status_code, 200)
-        self.assertIsInstance(resp.response, ClosingIterator)
+        response = self.app.get('/apps/HelloWorld/stream/counter', headers=self.headers)
+        self.assertEquals(response.status_code, 200)
+        self.assertIsInstance(response.response, ClosingIterator)
+        response = self.app.get('/apps/HelloWorld/stream/random-number', headers=self.headers)
+        self.assertEquals(response.status_code, 200)
+        self.assertIsInstance(response.response, ClosingIterator)

@@ -90,17 +90,6 @@ def loginInfo():
         return {"status": "Could Not Log In."}
 
 
-@app.route('/stream')
-def stream():
-    def event():
-        count = 0
-        while True:
-            gevent.sleep(2)
-            yield 'data: %s\n\n' % count
-            count += 1
-    return Response(event(), mimetype='text/event-stream')
-
-
 @app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
@@ -122,8 +111,6 @@ def workflow(name, format):
                 response = json.dumps(str(steps))
             callbacks.cases["testExecutionEvents"].clear_history()
             return response
-
-
 
 
 @app.route('/cases', methods=['POST'])

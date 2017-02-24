@@ -249,8 +249,16 @@ $(function(){
 });
 
 $(function(){
-    sse = new EventSource('/stream');
-    var s = document.getElementById('stream')
+    sse = new EventSource('apps/HelloWorld/stream/counter');
+    var s = document.getElementById('counter_stream')
+    sse.onmessage = function(message) {
+        s.innerHTML = '<li>'+message.data+'</li>'
+    }
+})
+
+$(function(){
+    sse = new EventSource('apps/HelloWorld/stream/random-number');
+    var s = document.getElementById('rand_stream')
     sse.onmessage = function(message) {
         s.innerHTML = '<li>'+message.data+'</li>'
     }

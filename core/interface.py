@@ -20,10 +20,13 @@ def loadModule(name):
 def loadApp(name, keys, values):
     module = loadModule(name)
     args = dict(zip(keys, values))
+    return getattr(module, "load")(args) if module else {}
 
+
+def data_stream(app_name, stream_name):
+    module = loadModule(app_name)
     if module:
-        return getattr(module, "load")(args)
-    return {}
+        return getattr(module, 'stream_generator')(stream_name)
 
 
 def devices():
