@@ -1,7 +1,3 @@
-from .app import app
-from . import database
-from .database import User
-from .triggers import Triggers
 import os
 import ssl
 import json
@@ -11,7 +7,7 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
 from core import forms
 from core.case import callbacks
-from core.case.subscription import Subscription
+from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
 
 import core.case.database as case_database
 from . import database
@@ -63,7 +59,8 @@ subs = {'defaultController':
                          {'multiactionWorkflow':
                               Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                    "NextStepFound", "WorkflowShutdown"])})}
-case_subscription.set_subscriptions({'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
+set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
+
 """
     URLS
 """
