@@ -1,7 +1,7 @@
 import os
 import ssl
 import json
-from flask import render_template, request
+from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
@@ -16,6 +16,9 @@ from .database import User
 from .device import Device
 from .triggers import Triggers
 
+import gevent
+from gevent import monkey
+monkey.patch_all()
 
 user_datastore = database.user_datastore
 
@@ -87,6 +90,17 @@ def loginInfo():
         return {"status": "Could Not Log In."}
 
 
+@app.route('/stream')
+def stream():
+    def event():
+        count = 0
+        while True:
+            gevent.sleep(2)
+            yield 'data: %s\n\n' % count
+            count += 1
+    return Response(event(), mimetype='text/event-stream')
+
+
 @app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
@@ -108,6 +122,8 @@ def workflow(name, format):
                 response = json.dumps(str(steps))
             callbacks.cases["testExecutionEvents"].clear_history()
             return response
+
+
 
 
 @app.route('/cases', methods=['POST'])

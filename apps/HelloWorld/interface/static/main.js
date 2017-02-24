@@ -247,3 +247,11 @@ $(function(){
         ]
     });
 });
+
+$(function(){
+    sse = new EventSource('/stream');
+    var s = document.getElementById('stream')
+    sse.onmessage = function(message) {
+        s.innerHTML = '<li>'+message.data+'</li>'
+    }
+})
