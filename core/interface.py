@@ -44,3 +44,6 @@ def triggers():
 
 def cases():
     return {"currentWorkflow": "multiactionWorkflow"}, None
+
+def dashboard():
+    return {}, None

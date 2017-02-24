@@ -1,0 +1,32 @@
+
+<script src="{{ url_for('static', filename='pages/dashboard/jquery.gridly.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='pages/dashboard/jquery.gridly.css') }}" />
+<script src="{{ url_for('static', filename='pages/dashboard/main.js') }}"></script>
+
+<style type="text/css">
+  .gridly {
+    position: relative;
+    width: 960px;
+  }
+  .brick{
+    border:solid;
+  }
+  .brick.small {
+    width: 140px;
+    height: 140px;
+  }
+  .brick.large {
+    width: 300px;
+    height: 300px;
+  }
+</style>
+<div class="gridly">
+  <div class="brick small">HERE</div>
+  <div class="brick small"></div>
+  <div class="brick large"></div>
+  <div class="brick small"></div>
+  <div class="brick small"></div>
+  <div class="brick large"></div>
+</div>
+
+

@@ -2,7 +2,7 @@ import os
 import ssl
 import json
 from flask import render_template, request
-from flask_security import login_required, auth_token_required, current_user, roles_required, roles_accepted
+from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, interface, controller
 from core import forms
@@ -70,7 +70,8 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 @login_required
 def default():
     if current_user.is_authenticated:
-        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email}
+        default_page_name = "dashboard"
+        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
