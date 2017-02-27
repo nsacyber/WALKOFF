@@ -315,8 +315,11 @@ def userNonSpecificActions(action):
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def displayAllUsers():
+    form = forms.UserForm(request.form)
+
     result = str(User.query.all())
-    return result
+    form.state.choices = result;
+    return render_template('user.html', form=form)
 
 
 # Controls non-specific users and roles
