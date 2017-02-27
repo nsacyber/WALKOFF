@@ -1,11 +1,15 @@
 <div id="main" xmlns:padding="http://www.w3.org/1999/xhtml">
     <!--<p> This is the settings page </p> -->
-    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
-    <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"></script>
+
+    <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
+
     <head>
+      <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
         <style>
             #setForm input[type=text] {
                 width: 300px;
+                background-color: #F0F8FF;
             }
 
             #settingsForm {
@@ -14,25 +18,66 @@
 
             #pathConfig {
                 padding-left: 50px;
+                padding-top: 20px;
             }
 
             #authConfig {
                 padding-left: 50px;
+                padding-top: 20px;
             }
 
             #interfaceConfig {
                 padding-left: 50px;
+                padding-top: 20px;
             }
 
-            #formSubmit {
-                position: relative;
-                top: 25px;
+            #formSubmit{
+                position:relative;
+                top:50px;
+                padding:10px;
+                background-color: #45AA3B;
+                color: #fff;
+                text-transform: uppercase;
+                font-weight: bolder;
+                font-size: 20px;
+                border: none;
+                border-radius:5px;
+
             }
 
             h1 {
-                font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+                font-family: 'Source Sans Pro', sans-serif;
                 font-weight: bold;
-                font-variant: small-caps;
+                /*font-variant: small-caps;*/
+            }
+            h3 {
+              font-family: 'Source Sans Pro', sans-serif;
+              font-weight: bold;
+              padding-top: 30px;
+            }
+            .settings-hr {
+              border: 0.1rem solid #367fa9;
+              width: 11%;
+              float:left;
+              margin:0;
+            }
+            .pathconfig-hr {
+              border: 0.1rem solid #367fa9;
+              width: 18%;
+              float:left;
+              margin:0;
+            }
+            .authorizationconfig-hr {
+              border: 0.1rem solid #367fa9;
+              width: 26.5%;
+              float:left;
+              margin:0;
+            }
+            .interfaceconfig-hr {
+              border: 0.1rem solid #367fa9;
+              width: 22%;
+              float:left;
+              margin:0;
             }
         </style>
     </head>
@@ -46,38 +91,41 @@
                 <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
             </ul>
             <div id="systemSettings">
-                <h1 class="settingsHeader">System Settings </h1>
-                <div id="settingsForm">
-                    <form id="setForm">
-                        <!-- use jinja and formhelpers.html to populate form -->
-                        <!-- below is pulled from devices\index.html -->
-                        <h3><i> Path Configuration </i></h3>
-                        <div id="pathConfig">
-                            {% from "pages/_formhelpers.html" import render_field %}
-                            {{ render_field(form.templatesPath) }}
-                            {{ render_field(form.profileVisualizationsPath) }}
-                            {{ render_field(form.keywordsPath) }}
-                            {{ render_field(form.dbPath) }}
-                        </div>
-                        <h3><i> Authorization Configuration </i></h3>
-                        <div id="authConfig">
-                            {% from "pages/_formhelpers.html" import render_field %}
-                            {{ render_field(form.TLS_version) }}
-                            {{ render_field(form.certificatePath) }}
-                            {{ render_field(form.https) }}
-                            {{ render_field(form.privateKeyPath) }}
-                        </div>
-                        <h3><i> Interface Configuration </i></h3>
-                        <div id="interfaceConfig">
-                            {% from "pages/_formhelpers.html" import render_field %}
-                            {{ render_field(form.debug) }}
-                            {{ render_field(form.defaultServer) }}
-                            {{ render_field(form.host) }}
-                            {{ render_field(form.port) }}
-                        </div>
-                        <input id="formSubmit" type="submit" value="submit">
-                    </form>
-                </div>
+                <h1 class="settingsHeader"> Settings </h1>
+        <hr class="settings-hr">
+        <div id="settingsForm">
+            <form id="setForm">
+                <!-- use jinja and formhelpers.html to populate form -->
+                <!-- below is pulled from devices\index.html -->
+                <h3> Path Configuration </h3>
+                <hr class="pathconfig-hr">
+                    <div id="pathConfig">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(form.templatesPath) }}
+                        {{ render_field(form.profileVisualizationsPath) }}
+                        {{ render_field(form.keywordsPath) }}
+                        {{ render_field(form.dbPath) }}
+                    </div>
+                <h3> Authorization Configuration </h3>
+                  <hr class="authorizationconfig-hr">
+                    <div id="authConfig">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(form.TLS_version) }}
+                        {{ render_field(form.certificatePath) }}
+                        {{ render_field(form.https) }}
+                        {{ render_field(form.privateKeyPath) }}
+                    </div>
+                <h3> Interface Configuration </h3>
+                  <hr class="interfaceconfig-hr">
+                    <div id="interfaceConfig">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(form.debug) }}
+                        {{ render_field(form.defaultServer) }}
+                        {{ render_field(form.host) }}
+                        {{ render_field(form.port) }}
+                    </div>
+                <input id="formSubmit" type="submit" value="submit">
+            </form>
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
@@ -108,6 +156,7 @@
                     <!--<option selected="selected" disabled>Select a user</option>-->
                 <!--</select>-->
             </div>
+
         </div>
     </div>
 </div>
