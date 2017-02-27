@@ -92,6 +92,7 @@ class User(Base, UserMixin):
             else:
                 print("HAS ROLE")
 
+
     def __repr__(self):
         return self.email
 

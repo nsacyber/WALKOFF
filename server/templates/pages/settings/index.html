@@ -2,29 +2,35 @@
     <!--<p> This is the settings page </p> -->
 
     <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
+
     <head>
       <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
       <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
         <style>
-            #setForm input[type=text]{
+            #setForm input[type=text] {
                 width: 300px;
                 background-color: #F0F8FF;
             }
+
             #settingsForm {
                 padding-left: 50px;
             }
+
             #pathConfig {
                 padding-left: 50px;
                 padding-top: 20px;
             }
+
             #authConfig {
                 padding-left: 50px;
                 padding-top: 20px;
             }
+
             #interfaceConfig {
                 padding-left: 50px;
                 padding-top: 20px;
             }
+
             #formSubmit{
                 position:relative;
                 top:50px;
@@ -36,7 +42,9 @@
                 font-size: 20px;
                 border: none;
                 border-radius:5px;
+
             }
+
             h1 {
                 font-family: 'Source Sans Pro', sans-serif;
                 font-weight: bold;
@@ -76,7 +84,14 @@
     <!-- This div will contain keyword labels with textboxes that are
         auto-populated with the default setting -->
     <div id="settingsWrapper">
-        <h1 class="settingsHeader"> Settings </h1>
+        <div id="settingsTabs">
+            <ul class="nav nav-tabs" role="tablist">
+                <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System
+                    Settings</a></li>
+                <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+            </ul>
+            <div id="systemSettings">
+                <h1 class="settingsHeader"> Settings </h1>
         <hr class="settings-hr">
         <div id="settingsForm">
             <form id="setForm">
@@ -111,6 +126,37 @@
                     </div>
                 <input id="formSubmit" type="submit" value="submit">
             </form>
+            </div>
+            <div id="userSettings">
+                <h1 class="settingsHeader">User Settings</h1>
+                <div id="userForm">
+                    <form id="usForm">
+                        <!-- use jinja and formhelpers.html to populate form -->
+                        <!-- below is pulled from devices\index.html -->
+                        <h3><i> Path Configuration </i></h3>
+                        <div id="test">
+                            {% from "pages/_formhelpers.html" import render_field %}
+                            {{ render_field(form.username) }}
+                            {{ render_field(form.password) }}
+                            {{ render_field(form.email) }}
+                            {{ render_field(form.active)  }}
+                            {{ render_field(form.confirmed_at) }}
+                            {{ render_field(form.roles)  }}
+                            {{ render_field(form.last_login_at)  }}
+                            {{ render_field(form.current_login_at)  }}
+                            {{ render_field(form.last_login_ip) }}
+                            {{ render_field(form.current_login_ip)  }}
+                            {{ render_field(form.login_count) }}
+                        </div>
+
+                    </form>
+
+                </div>
+                <!--<select class="form-control" id="userList">-->
+                    <!--<option selected="selected" disabled>Select a user</option>-->
+                <!--</select>-->
+            </div>
+
         </div>
     </div>
 </div>

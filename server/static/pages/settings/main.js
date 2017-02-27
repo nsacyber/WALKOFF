@@ -1,18 +1,16 @@
 $.ajax({
-        url:'/users',
-        headers:{"Authentication-Token":authKey},
-        type:"POST",
-        success: function(e){
-            str = e.substring(1,e.length-1);
-            arr = str.split(",");
-            for(i=0; i<arr.length;i++){
-                $("#userList").append("<option value=" + i +">"+ arr[i] + "</option>")
-            }
-        },
-        error: function(e){
-           console.log(e);
+    url:'/users',
+    headers:{"Authentication-Token":authKey},
+    type:"POST",
+    success: function(e){
+        for(var x=0; x<e.length; x++){
+            $("#userList").append("<option value='" + x +"'>" + x + "</option>");
         }
-    });
+    },
+    error: function(e){
+       console.log(e);
+    }
+});
  $("#userList")
      .change(function () {
         $.ajax({
@@ -30,6 +28,7 @@ $.ajax({
         });
          // console.log($("#userList option:selected").text())
      });
+
 $.ajax({
     url:'configuration/templatesPath',
     data:{},
