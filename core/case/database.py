@@ -20,11 +20,13 @@ class Cases(_Base):
     __tablename__ = 'cases'
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    note = Column(String)
     events = relationship('EventLog', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_events=True):
         output = {'id': str(self.id),
-                  'name': self.name}
+                  'name': self.name,
+                  'note': self.note}
         if with_events:
             output['events'] = [event.as_json() for event in self.events]
         return output
@@ -37,14 +39,16 @@ class EventLog(_Base):
     type = Column(String)
     ancestry = Column(String)
     message = Column(String)
+    note = Column(String)
     cases = relationship('Cases', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_cases=False):
         output = {'id': str(self.id),
-                'timestamp': str(self.timestamp),
-                'type': self.type,
-                'ancestry': self.ancestry,
-                'message': self.message}
+                  'timestamp': str(self.timestamp),
+                  'type': self.type,
+                  'ancestry': self.ancestry,
+                  'message': self.message,
+                  'note': self.note}
         if with_cases:
             output['cases'] = str([case.as_json() for case in self.cases])
         return output
@@ -81,8 +85,8 @@ class CaseDatabase(object):
 
     def add_event(self, event, cases):
         event_log = EventLog(type=event.type,
-                                  ancestry=','.join(map(str, event.ancestry)),
-                                  message=event.message)
+                             ancestry=','.join(map(str, event.ancestry)),
+                             message=event.message)
         existing_cases = case_db.session.query(Cases).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
