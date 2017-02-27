@@ -3,7 +3,7 @@ import sys
 
 from core import forms
 from core.config import getApps
-
+from server.database import User
 
 def loadModule(name):
     module = "apps." + name + ".display"
@@ -34,7 +34,10 @@ def devices():
 
 
 def settings():
-    return {}, forms.settingsForm()
+    form = forms.settingsForm()
+    choices = [(obj.email, str(obj.email)) for obj in User.query.all()]
+    form.username.choices = choices
+    return {}, form
 
 
 def playbook():
