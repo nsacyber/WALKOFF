@@ -21,13 +21,19 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
     background-position:50% 50%;
 }
 
-.headerText{
-
+.topLevelList + ol{
+  display:none;
 }
 
-#headerButton{
-    background-color:#607d8b;
+.topLevelList + h5{
+  display:none;
 }
+
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+
 </style>
 <body>
 
@@ -62,7 +68,78 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   <div class="w3-content">
     <div class="w3-twothird">
       <h1>Version Two Tutorials</h1>
-      <h5 class="w3-padding-32">Coming Soon...</h5>
+      <h3><i> (Coming Soon...) </i></h3>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
+      <ol class="w3-medium">
+        <li>Installation</li>
+        <li>Overview</li>
+        <li>Run Your First Workflow</li>
+      </ol>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
+      <ol class="w3-medium">
+        <li>Workflow Overview</li>
+        <li>Basic Workflows</li>
+        <li>Advanced Workflows</li>
+      </ol>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> Workflow Components</h5>
+      <ol>
+        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Devices</h5>
+        <ol class="w3-medium">
+          <li>Device Overview</li>
+          <li>Manage Devices</li>
+        </ol>
+
+        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Next</h5>
+        <ol class="w3-medium">
+          <li>Flags</li>
+          <li>Filters</li>
+          <li>Error</li>
+        </ol>
+      </ol>
+
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
+      <ol class="w3-medium">
+        <li>App Overview</li>
+        <li>Installing an App</li>
+        <li>Develop an App</li>
+        <li>Develop an App Interface</li>
+      </ol>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> Cases</h5>
+      <ol class="w3-medium">
+        <li>Case Overview</li>
+        <li>View Cases</li>
+        <li>Manage Cases</li>
+      </ol>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> Execution</h5>
+      <ol>
+        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Manual Execution</h5>
+        <ol class="w3-medium">
+          <li>Manually running a workflow</li>
+        </ol>
+
+        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Active Execution</h5>
+        <ol class="w3-medium">
+          <li>Workflow schedules</li>
+        </ol>
+
+        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Passive Execution</h5>
+        <ol class="w3-medium">
+          <li>Triggers Overview</li>
+          <li>Manage Triggers</li>
+        </ol>
+      </ol>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
+      <ol class="w3-medium">
+        <li>Managing Users and Roles</li>
+        <li>HTTPS</li>
+      </ol>
     </div>
 
    <div class="w3-third w3-center">
@@ -96,6 +173,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
  <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
 </footer>
 
+<script src="../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
 <script>
 // Used to toggle the menu on small screens when clicking on the menu button
 function myFunction() {
@@ -106,7 +184,14 @@ function myFunction() {
         x.className = x.className.replace(" w3-show", "");
     }
 }
-</script>
 
+$(document).ready(function(){
+  $(".topLevelList").on("click", function(e){
+    $(this).find("i").toggleClass("fa-circle fa-circle-o");
+    $(this).next("ol").toggle();
+  });
+
+});
+</script>
 </body>
 </html>
