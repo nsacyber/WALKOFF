@@ -1,5 +1,4 @@
 from server import forms
-from .database import User
 from core.context import running_context
 
 def devices():
@@ -7,7 +6,7 @@ def devices():
 
 def settings():
     form = forms.settingsForm()
-    choices = [(obj.email, str(obj.email)) for obj in User.query.all()]
+    choices = [(obj.email, str(obj.email)) for obj in running_context.User.query.all()]
     form.username.choices = choices
     return {}, form
 

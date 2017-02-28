@@ -10,6 +10,13 @@ class Context(object):
         self.workflows = self.getWorkflowsFromFolder()
         self.apps = self.getApps()
 
+        from server.database import User, Role
+        from server.device import Device
+
+        self.User = User
+        self.Role = Role
+        self.Device = Device
+
     @staticmethod
     def getWorkflowsFromFolder(path=join(".", "data", "workflows")):
         workflows = [join(path, workflow) for workflow in listdir(path) if isfile(join(path, workflow)) and not splitext(workflow)[0] in ["__init__", "."]]
@@ -22,5 +29,8 @@ class Context(object):
     def getApps(path="apps"):
         apps = next(walk(path))[1]
         return apps
+
+    def set(self, key, value):
+        setattr(self, key, value)
 
 running_context = Context()
