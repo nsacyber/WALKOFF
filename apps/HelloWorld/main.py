@@ -1,11 +1,11 @@
-from core import app
+from server import appDevice
 
 #There is an associated Hello world test workflow which can be executed
 
-class Main(app.App):
+class Main(appDevice.App):
     def __init__(self, name=None, device=None):
         #The parent app constructor looks for a device configuration and returns that as a dictionary called self.config
-        app.App.__init__(self, name, device)
+        appDevice.App.__init__(self, name, device)
         #Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message":"HELLO WORLD"}
 

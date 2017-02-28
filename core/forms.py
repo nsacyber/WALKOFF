@@ -79,6 +79,7 @@ class EditDeviceForm(Form):
     pw = PasswordField('pw', [validators.Optional()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+    app = StringField('app', [validators.Optional()])
 
 
 class LoginForm(Form):

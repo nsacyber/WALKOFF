@@ -13,7 +13,7 @@ import core.case.database as case_database
 from . import database
 from .app import app
 from .database import User
-from .device import Device
+from .appDevice import App, Device
 from .triggers import Triggers
 
 import gevent
@@ -374,21 +374,23 @@ def configDevicesConfig(app, action):
         if form.validate():
             if len(Device.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device could not be added"})
-            db.session.add(
-                Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data,
-                       ip=form.ipaddr.data, port=form.port.data, other=form.other.data))
-            db.session.commit()
+
+            DeviceDatabase.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+                                      password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(
-            app=app).all()
+        query = Device.query.all()
         output = []
         if query:
             for device in query:
-                output.append(
-                    {"name": device[0], "username": device[1], "port": device[2], "ip": device[3], "app": device[4]})
+                for app_elem in device.apps:
+                    if app_elem.name == app:
+                        output.append(device.as_json())
+                        # output.append(
+                        #     {"name": device.name, "username": device.username, "port": device.port, "ip": device.ip,
+                        #      "apps": [ a.as_json() for a in device.apps ]})
 
             return json.dumps(output)
     return json.dumps({"status": "could not display all devices"})
@@ -400,36 +402,32 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(
-            app=app, name=device).first()
-        if query:
-            output = {"name": query[0], "username": query[1], "port": query[2], "ip": query[3], "app": query[4]}
-            return json.dumps(output)
+        dev = DeviceDatabase.filter_app_and_device(app_name=app, device_name=device)
+        if dev is not None:
+            return json.dumps(dev.as_json())
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        query = Device.query.filter_by(app=app, name=device).first()
-        if query:
-            Device.query.filter_by(app=app, name=device).delete()
-
+        dev = DeviceDatabase.filter_app_and_device(app_name=app, device_name=device)
+        if dev is not None:
+            dev.delete()
             db.session.commit()
             return json.dumps({"status": "removed device"})
         return json.dumps({"status": "could not remove device"})
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        device = Device.query.filter_by(app=app, name=device).first()
-        if form.validate() and device is not None:
+        dev = DeviceDatabase.filter_app_and_device(app_name=app, device_name=device)
+        if form.validate() and dev is not None:
             # Ensures new name is unique
             if len(Device.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status": "device could not be edited"})
 
-            device.editDevice(form)
+            dev.editDevice(form)
 
             db.session.commit()
             return json.dumps({"status": "device successfully edited"})
         return json.dumps({"status": "device could not be edited"})
-
 
 
 # Start Flask

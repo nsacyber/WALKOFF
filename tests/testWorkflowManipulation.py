@@ -4,9 +4,14 @@ import unittest
 from core import controller, graphDecorator
 from tests import config
 
+from server import flaskServer as flask_server
+
 
 class TestWorkflowManipulation(unittest.TestCase):
     def setUp(self):
+        self.app = flask_server.app.test_client(self)
+        self.app.testing = True
+        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = controller.Controller()
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "simpleDataManipulationWorkflow.workflow")
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
