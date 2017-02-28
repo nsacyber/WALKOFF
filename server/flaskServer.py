@@ -4,7 +4,10 @@ import json
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
+
 from core import config, controller
+from core.context import running_context
+
 from server import forms, interface
 from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
@@ -13,14 +16,26 @@ import core.case.database as case_database
 import core.case.subscription as case_subscription
 from . import database
 from .app import app
-from .database import User
-from .device import Device
 from .triggers import Triggers
 
 from gevent import monkey
 
 monkey.patch_all()
 
+
+# Temporary create controller
+workflowManager = controller.Controller()
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
+
+subs = {'defaultController':
+            Subscription(subscriptions=
+                         {'multiactionWorkflow':
+                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
+                                                   "NextStepFound", "WorkflowShutdown"])})}
+set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
+
+#Create user datastore
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
@@ -30,7 +45,6 @@ default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
-
 
 # Creates Test Data
 @app.before_first_request
@@ -52,17 +66,7 @@ def create_user():
         database.db.session.commit()
 
 
-# Temporary create controller
-workflowManager = controller.Controller()
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
-subs = {'defaultController':
-            Subscription(subscriptions=
-                         {'multiactionWorkflow':
-                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
-                                                   "NextStepFound", "WorkflowShutdown"])})}
-set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
 
 """
     URLS
@@ -74,8 +78,7 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email,
-                "default_page": default_page_name}
+        args = {"apps": running_context.apps, "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
@@ -254,7 +257,7 @@ def roleAddActions(action):
     if action == "add":
         form = forms.NewRoleForm(request.form)
         if form.validate():
-            if not database.Role.query.filter_by(name=form.name.data).first():
+            if not running_context.Role.query.filter_by(name=form.name.data).first():
                 n = form.name.data
 
                 if form.description.data is not None:
@@ -279,7 +282,7 @@ def roleAddActions(action):
 @auth_token_required
 @roles_accepted(*userRoles["/roles"])
 def roleActions(action, name):
-    role = database.Role.query.filter_by(name=name).first()
+    role = running_context.Role.query.filter_by(name=name).first()
 
     if role:
 
@@ -309,7 +312,7 @@ def userNonSpecificActions(action):
     if action == "add":
         form = forms.NewUserForm(request.form)
         if form.validate():
-            if not database.User.query.filter_by(email=form.username.data).first():
+            if not running_context.User.query.filter_by(email=form.username.data).first():
                 un = form.username.data
                 pw = encrypt_password(form.password.data)
 
@@ -332,7 +335,7 @@ def userNonSpecificActions(action):
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
 def displayAllUsers():
-    result = str(User.query.all())
+    result = str(running_context.User.query.all())
     return result
 
 
@@ -388,17 +391,17 @@ def configDevicesConfig(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
-            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+            if len(running_context.Device.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device could not be added"})
             db.session.add(
-                Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data,
+                running_context.Device(name=form.name.data, app=form.app.data, username=form.username.data, password=form.pw.data,
                        ip=form.ipaddr.data, port=form.port.data, other=form.other.data))
             db.session.commit()
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(
+        query = running_context.Device.query.with_entities(running_context.Device.name, running_context.Device.username, running_context.Device.port, running_context.Device.ip, running_context.Device.app).filter_by(
             app=app).all()
         output = []
         if query:
@@ -416,7 +419,7 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        query = Device.query.with_entities(Device.name, Device.username, Device.port, Device.ip, Device.app).filter_by(
+        query = running_context.Device.query.with_entities(running_context.Device.name, running_context.Device.username, running_context.Device.port, running_context.Device.ip, running_context.Device.app).filter_by(
             app=app, name=device).first()
         if query:
             output = {"name": query[0], "username": query[1], "port": query[2], "ip": query[3], "app": query[4]}
@@ -424,9 +427,9 @@ def configDevicesConfigId(app, device, action):
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        query = Device.query.filter_by(app=app, name=device).first()
+        query = running_context.Device.query.filter_by(app=app, name=device).first()
         if query:
-            Device.query.filter_by(app=app, name=device).delete()
+            running_context.Device.query.filter_by(app=app, name=device).delete()
 
             db.session.commit()
             return json.dumps({"status": "removed device"})
@@ -434,10 +437,10 @@ def configDevicesConfigId(app, device, action):
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        device = Device.query.filter_by(app=app, name=device).first()
+        device = running_context.Device.query.filter_by(app=app, name=device).first()
         if form.validate() and device is not None:
             # Ensures new name is unique
-            if len(Device.query.filter_by(name=str(device)).all()) > 0:
+            if len(running_context.Device.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status": "device could not be edited"})
 
             device.editDevice(form)

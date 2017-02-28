@@ -114,6 +114,7 @@ class incomingDataForm(Form):
 
 class settingsForm(Form):
     templatesPath = StringField('templatesPath', [validators.Optional()])
+    workflowsPath = StringField('workflowsPath', [validators.Optional()])
     profileVisualizationsPath = StringField('profileVisualizationsPath', [validators.Optional()])
     keywordsPath = StringField('keywordsPath', [validators.Optional()])
     dbPath = StringField('dbPath', [validators.Optional()])
