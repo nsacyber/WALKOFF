@@ -6,6 +6,7 @@ from core.case.subscription import set_subscriptions
 from core.executionelement import ExecutionElement
 from core.case.callbacks import EventEntry
 from server import flaskServer as flask_server
+from os.path import join
 
 
 class TestCaseServer(unittest.TestCase):
@@ -35,28 +36,34 @@ class TestCaseServer(unittest.TestCase):
 
     def test_display_cases_typical(self):
         cases = TestCaseServer.__basic_case_setup()
-        response = json.loads(self.app.post('/cases', headers=self.headers).get_data(as_text=True))
+        response = self.app.post('/cases', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
         expected_cases = set(cases.keys())
         received_cases = [case['name'] for case in response['cases']]
         self.assertEqual(len(expected_cases), len(received_cases), 'Received unexpected number of cases')
         self.assertSetEqual(expected_cases, set(received_cases), 'Received incorrect cases')
 
     def test_display_cases_none(self):
-        response = json.loads(self.app.post('/cases', headers=self.headers).get_data(as_text=True))
+        response = self.app.post('/cases', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
         expected_cases = []
         received_cases = [case['name'] for case in response['cases']]
         self.assertEqual(len(expected_cases), len(received_cases), 'Received unexpected number of cases')
         self.assertSetEqual(set(expected_cases), set(received_cases), 'Received incorrect cases')
 
     def test_display_case_not_found(self):
-        response = json.loads(self.app.post('/cases/hiThere', headers=self.headers).get_data(as_text=True))
+        response = self.app.post('/cases/hiThere', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
         with self.assertRaises(KeyError):
             _ = response['cases']
         self.assertEqual(response['status'], 'Case with given name does not exist',
                          'Received unexpected number of cases')
 
     def test_display_case(self):
-        cases = TestCaseServer.__basic_case_setup()
+        TestCaseServer.__basic_case_setup()
 
         elem1 = ExecutionElement(name='b', parent_name='a')
         elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
@@ -75,9 +82,9 @@ class TestCaseServer(unittest.TestCase):
 
         def create_event_logs(events):
             return [case_database.EventLog(type=event.type,
-                                      ancestry=','.join(map(str, event.ancestry)),
-                                      message=event.message)
-                for event in events]
+                                           ancestry=','.join(map(str, event.ancestry)),
+                                           message=event.message)
+                    for event in events]
 
         def event_logs_as_json(events):
             return [event.as_json() for event in create_event_logs(events)]
@@ -88,8 +95,9 @@ class TestCaseServer(unittest.TestCase):
         expected_events_collection = {case_name: event_logs_as_json(events) for case_name, events in case_events}
 
         for case_name, expected_events in expected_events_collection.items():
-            response = json.loads(self.app.post('/cases/{0}'.format(case_name),
-                                                headers=self.headers).get_data(as_text=True))
+            response = self.app.post('/cases/{0}'.format(case_name), headers=self.headers)
+            self.assertEqual(response.status_code, 200)
+            response = json.loads(response.get_data(as_text=True))
             self.assertEqual(case_name, response['case']['name'], 'Received case name differs from expected')
             received_events = [{key: event[key] for key in ['type', 'message', 'ancestry']}
                                for event in response['case']['events']]
@@ -98,3 +106,33 @@ class TestCaseServer(unittest.TestCase):
             self.assertEqual(len(received_events), len(expected_events), 'Unexpected number of events receieved')
             for event in expected_events:
                 self.assertTrue(event in received_events, 'Expected event is not in receieved events')
+
+    def test_display_possible_subscriptions(self):
+        with open(join('.', 'data', 'events.json')) as f:
+            expected_response = json.loads(f.read())
+
+        response = self.app.post('/cases/subscriptions/available', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_response)
+
+    def test_display_subscriptions(self):
+        case1, accept1 = construct_case1()
+        case2, accept2 = construct_case2()
+        case3, accept3 = construct_case1()
+        case4, accept4 = construct_case2()
+        cases = {'case1': case1, 'case2': case2, 'case3': case3, 'case4': case4}
+        set_subscriptions(cases)
+
+        expected_response = {key: case.as_json() for key, case in cases.items()}
+
+        response = self.app.post('/cases/subscriptions/', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(expected_response, response)
+
+
+
+
+        # test adding, removing, editing subscription
+        # test adding, removing, editing global sub

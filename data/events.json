@@ -1,0 +1,35 @@
+{
+  "controller": [
+    "Scheduler Start",
+    "Scheduler Shutdown",
+    "Scheduler Paused",
+    "Scheduler Resumed",
+    "Job Added",
+    "Job Removed",
+    "Job Executed",
+    "Job Error"
+  ],
+  "workflow": [
+    "Workflow Instance Created",
+    "Step Execution Success",
+    "Next Step Found",
+    "Workflow Shutdown"
+  ],
+  "step": [
+    "Function Execution Success",
+    "Input Validated",
+    "Conditionals Executed"
+  ],
+  "nextstep": [
+    "Next Step Taken",
+    "Next Step Not Taken"
+  ],
+  "flag": [
+    "Flag Arguments Valid",
+    "Flag Arguments Invalid"
+  ],
+  "filter": [
+    "Filter Success",
+    "Filter Error"
+  ]
+}

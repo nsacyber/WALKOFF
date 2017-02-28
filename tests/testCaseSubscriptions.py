@@ -33,6 +33,13 @@ class TestCaseSubscriptionList(unittest.TestCase):
                         'Some events subscribed to in _SubscriptionList are improperly subscribed to')
         self.assertFalse(subscription_list3.is_subscribed('ff'), 'event not subscribed to is claiming to be subscribed')
 
+    def test_json(self):
+        subscription_list1 = _SubscriptionEventList.construct('*')
+        subscription_list2 = _SubscriptionEventList.construct(['a', 'b', 'c', 'd'])
+        subscription_list3 = _SubscriptionEventList.construct('a')
+        self.assertDictEqual({"events": [], "all": True}, subscription_list1.as_json())
+        self.assertDictEqual({"events": ['a', 'b', 'c', 'd'], "all": False}, subscription_list2.as_json())
+        self.assertDictEqual({"events": ['a'], "all": False}, subscription_list3.as_json())
 
 class TestGlobalSubscriptions(unittest.TestCase):
     def setUp(self):
@@ -99,6 +106,16 @@ class TestGlobalSubscriptions(unittest.TestCase):
                         self.should_be_subscribed_message.format(self.filter_subs_events, 'filter'))
         self.assertFalse(filter_subs.is_subscribed('a'), self.should_not_be_subscribed_message.format('a', 'filter'))
 
+    def test_json(self):
+        expected_json = {"controller": {"events": ['a'], "all": False},
+                    "workflow": {"events": [], "all": False},
+                    "step": {"events": ['b', 'c'], "all": False},
+                    "next_step": {"events": [], "all": False},
+                    "flag": {"events": [], "all": True},
+                    "filter": {"events": ['d', 'e'], "all": False}}
+        self.assertDictEqual(expected_json, self.global_subs.as_json())
+
+
 class TestSubscription(unittest.TestCase):
     def setUp(self):
         self.sub1_events = ['a', 'b', 'c']
@@ -122,6 +139,7 @@ class TestSubscription(unittest.TestCase):
                                 for event_name in not_subscribed),
                         'Subscription of {0}, given global subscriptions {1}, is subscribed to'
                         'some of events in {2}'.format(self.sub1_events, self.global_sub1_events, not_subscribed))
+        self.assertDictEqual(sub1.subscriptions, {})
 
     def test_subscription_with_disabled(self):
         sub2 = Subscription(events=self.sub1_events, disabled=self.sub2_disabled)
@@ -151,6 +169,7 @@ class TestSubscription(unittest.TestCase):
         self.assertTrue(not any(sub3.is_subscribed(event_name, global_subs=self.global_sub1)
                                 for event_name in self.sub2_disabled),
                         'Subscription should not be subscribed to any events which are disabled')
+        self.assertDictEqual(sub3.subscriptions, {})
 
     def test_subscribed_with_all_enabled_all_disabled(self):
         sub4 = Subscription(events='*', disabled='*')
@@ -164,6 +183,52 @@ class TestSubscription(unittest.TestCase):
         self.assertTrue(not any(sub4.is_subscribed(event_name, global_subs=self.global_sub1)
                                 for event_name in self.sub2_disabled),
                         'Subscription should not be subscribed to any events which are disabled')
+        self.assertDictEqual(sub4.subscriptions, {})
+
+    def test_subscription_subscriptions(self):
+        subsub = Subscription(events='f')
+        sub5 = Subscription(events=self.sub1_events, disabled=self.sub2_disabled, subscriptions={'sub_element': subsub})
+        self.assertIsNotNone(sub5, 'Subscription initialized with event=list and disabled=list with subscriptions '
+                                   'should not be None')
+        valid_subs = set(self.sub1_events) - set(self.sub2_disabled)
+        self.assertTrue(all(sub5.is_subscribed(event_name) for event_name in valid_subs),
+                        'Subscription should be subscribed to all events which are not disabled')
+        self.assertTrue(all(sub5.is_subscribed(event_name, global_subs=self.global_sub1)
+                            for event_name in self.valid_with_global),
+                        'Subscription should be subscribed to all events in either self or global which '
+                        'are not disabled')
+        self.assertTrue(not any(sub5.is_subscribed(event_name, global_subs=self.global_sub1)
+                                for event_name in self.sub2_disabled),
+                        'Subscription should not be subscribed to any events which are disabled')
+        self.assertDictEqual({'sub_element': subsub}, sub5.subscriptions)
+
+    def as_json(self):
+        sub1 = Subscription(events=self.sub1_events)
+        sub2 = Subscription(events=self.sub1_events, disabled=self.sub2_disabled)
+        sub3 = Subscription(events=self.sub1_events, disabled='*')
+        sub4 = Subscription(events='*', disabled='*')
+        subsub = Subscription(events='f')
+        sub5 = Subscription(events=self.sub1_events, disabled=self.sub2_disabled, subscriptions={'sub_element': subsub})
+        sub1_expected_json = {"events": {"events": ['a', 'b', 'c'], "all": False},
+                              "disabled": {"events": [], "all": False},
+                              "subscriptions": {}}
+        sub2_expected_json = {"events": {"events": ['a', 'b', 'c'], "all": False},
+                              "disabled": {"events": ['a', 'd', 'f'], "all": False},
+                              "subscriptions": {}}
+        sub3_expected_json = {"events": {"events": ['a', 'b', 'c'], "all": False},
+                              "disabled": {"events": [], "all": True},
+                              "subscriptions": {}}
+        sub4_expected_json = {"events": {"events": [], "all": True},
+                              "disabled": {"events": [], "all": True},
+                              "subscriptions": {}}
+        sub5_expected_json = {"events": {"events": ['a', 'b', 'c'], "all": False},
+                              "disabled": {"events": ['a', 'd', 'f'], "all": False},
+                              "subscriptions": {"sub_element": {"events": ['f'], "all": False}}}
+        self.assertDictEqual(sub1_expected_json, sub1.as_json())
+        self.assertDictEqual(sub2_expected_json, sub2.as_json())
+        self.assertDictEqual(sub3_expected_json, sub3.as_json())
+        self.assertDictEqual(sub4_expected_json, sub4.as_json())
+        self.assertDictEqual(sub5_expected_json, sub5.as_json())
 
 
 class TestCaseSubscriptions(unittest.TestCase):
@@ -187,6 +252,13 @@ class TestCaseSubscriptions(unittest.TestCase):
             self.assertTrue(not any(case.is_subscribed(ancestry_combo['ancestry'], event_name)
                                     for event_name in ancestry_combo['rejected']),
                             rejection_error_message.format(ancestry_combo['ancestry'][-1], ancestry_combo['rejected']))
+
+    def test_case_subscriptions_json(self):
+        case1, _ = construct_case2()
+        global_subs = GlobalSubscriptions(controller='a', next_step=[4, 5], flag='*', filter='x')
+        expected_json ={"subscriptions": {"controller1": case1.subscriptions["controller1"].as_json()},
+                        "global_subscriptions": global_subs.as_json()}
+        self.assertDictEqual(expected_json, case1.as_json())
 
     def test_set_subscriptions(self):
         case1, acceptance1 = construct_case1()
@@ -217,3 +289,10 @@ class TestCaseSubscriptions(unittest.TestCase):
                                         for event_name in ancestry_combo['rejected']),
                                 rejection_error_message.format(case, ancestry_combo['ancestry'][-1],
                                                                ancestry_combo['rejected']))
+
+    def test_all_as_json(self):
+        case1, acceptance1 = construct_case1()
+        case2, acceptance2 = construct_case2()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        self.assertDictEqual({"case1": case1.as_json(), "case2": case2.as_json()}, subscriptions_as_json())

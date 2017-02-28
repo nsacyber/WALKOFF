@@ -41,6 +41,10 @@ class _SubscriptionEventList(object):
         else:
             return _SubscriptionEventList()
 
+    def as_json(self):
+        return {"events": self.events,
+                "all": self.all}
+
     def __repr__(self):
         return str({'all': self.all, 'events': self.events})
 
@@ -73,6 +77,14 @@ class GlobalSubscriptions(object):
         yield self.next_step
         yield self.flag
         yield self.filter
+
+    def as_json(self):
+        return {"controller": self.controller.as_json(),
+                "workflow": self.workflow.as_json(),
+                "step": self.step.as_json(),
+                "next_step": self.next_step.as_json(),
+                "flag": self.flag.as_json(),
+                "filter": self.filter.as_json()}
 
     def __repr__(self):
         return str({'controller': self.controller,
@@ -109,6 +121,12 @@ class Subscription(object):
         return ((self.events.is_subscribed(message_name) or global_subs_subscribed)
                 and not self.disabled.is_subscribed(message_name))
 
+    def as_json(self):
+        return {"events": self.events.as_json(),
+                "disabled": self.disabled.as_json(),
+                "subscriptions": {str(name): subscription.as_json()
+                                  for name, subscription in self.subscriptions.items()}}
+
     def __repr__(self):
         return str({'events': self.events,
                     'disabled': self.disabled,
@@ -134,6 +152,11 @@ class CaseSubscriptions(object):
             else:
                 return False
 
+    def as_json(self):
+        return {"subscriptions": {str(name): subscription.as_json()
+                                  for name, subscription in self.subscriptions.items()},
+                "global_subscriptions": self.global_subscriptions.as_json()}
+
     def __repr__(self):
         return str({'subscriptions': self.subscriptions,
                     'global_subscriptions': self.global_subscriptions})
@@ -150,3 +173,7 @@ def set_subscriptions(new_subscriptions):
 
 def is_case_subscribed(case, ancestry, message_name):
     return subscriptions[case].is_subscribed(ancestry, message_name)
+
+
+def subscriptions_as_json():
+    return {str(name): subscription.as_json() for name, subscription in subscriptions.items()}

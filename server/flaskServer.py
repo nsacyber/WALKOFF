@@ -10,21 +10,21 @@ from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
 
 import core.case.database as case_database
+import core.case.subscription as case_subscription
 from . import database
 from .app import app
 from .database import User
 from .device import Device
 from .triggers import Triggers
 
-import gevent
 from gevent import monkey
+
 monkey.patch_all()
 
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
         "/roles", "/users", "/configuration", '/cases']
-
 
 default_urls = urls
 userRoles = database.userRoles
@@ -74,7 +74,8 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
+        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email,
+                "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
@@ -125,12 +126,28 @@ def display_cases():
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
-    case = case_database.case_db.session.query(case_database.Cases)\
+    case = case_database.case_db.session.query(case_database.Cases) \
         .filter(case_database.Cases.name == case_name).first()
     if case:
         return json.dumps({'case': case.as_json()})
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
+
+
+@app.route('/cases/subscriptions/available', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_possible_subscriptions():
+    with open(os.path.join('.', 'data', 'events.json')) as f:
+        return f.read()
+
+
+@app.route('/cases/subscriptions/', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_subscriptions():
+    return json.dumps(case_subscription.subscriptions_as_json())
+
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required
@@ -363,7 +380,6 @@ def userActions(action, id_or_email):
                 return json.dumps({"status": "could not display user"})
 
 
-
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
 @auth_token_required
@@ -429,7 +445,6 @@ def configDevicesConfigId(app, device, action):
             db.session.commit()
             return json.dumps({"status": "device successfully edited"})
         return json.dumps({"status": "device could not be edited"})
-
 
 
 # Start Flask
