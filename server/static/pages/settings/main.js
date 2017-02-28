@@ -188,6 +188,7 @@ $.ajax({
         $("#port").val("Error");
     }
 });
+
 $(function () {
     $("#settingsTabs").tabs();
 });

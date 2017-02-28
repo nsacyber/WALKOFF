@@ -86,46 +86,46 @@
     <div id="settingsWrapper">
         <div id="settingsTabs">
             <ul class="nav nav-tabs" role="tablist">
-                <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System
-                    Settings</a></li>
+                <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
                 <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
             </ul>
             <div id="systemSettings">
                 <h1 class="settingsHeader"> Settings </h1>
-        <hr class="settings-hr">
-        <div id="settingsForm">
-            <form id="setForm">
-                <!-- use jinja and formhelpers.html to populate form -->
-                <!-- below is pulled from devices\index.html -->
-                <h3> Path Configuration </h3>
-                <hr class="pathconfig-hr">
-                    <div id="pathConfig">
-                    {% from "pages/_formhelpers.html" import render_field %}
-                        {{ render_field(form.templatesPath) }}
-                        {{ render_field(form.profileVisualizationsPath) }}
-                        {{ render_field(form.keywordsPath) }}
-                        {{ render_field(form.dbPath) }}
-                    </div>
-                <h3> Authorization Configuration </h3>
-                  <hr class="authorizationconfig-hr">
-                    <div id="authConfig">
-                    {% from "pages/_formhelpers.html" import render_field %}
-                        {{ render_field(form.TLS_version) }}
-                        {{ render_field(form.certificatePath) }}
-                        {{ render_field(form.https) }}
-                        {{ render_field(form.privateKeyPath) }}
-                    </div>
-                <h3> Interface Configuration </h3>
-                  <hr class="interfaceconfig-hr">
-                    <div id="interfaceConfig">
-                    {% from "pages/_formhelpers.html" import render_field %}
-                        {{ render_field(form.debug) }}
-                        {{ render_field(form.defaultServer) }}
-                        {{ render_field(form.host) }}
-                        {{ render_field(form.port) }}
-                    </div>
-                <input id="formSubmit" type="submit" value="submit">
-            </form>
+                <hr class="settings-hr">
+                <div id="settingsForm">
+                    <form id="setForm">
+                        <!-- use jinja and formhelpers.html to populate form -->
+                        <!-- below is pulled from devices\index.html -->
+                        <h3> Path Configuration </h3>
+                        <hr class="pathconfig-hr">
+                            <div id="pathConfig">
+                            {% from "pages/_formhelpers.html" import render_field %}
+                                {{ render_field(form.templatesPath) }}
+                                {{ render_field(form.profileVisualizationsPath) }}
+                                {{ render_field(form.keywordsPath) }}
+                                {{ render_field(form.dbPath) }}
+                            </div>
+                        <h3> Authorization Configuration </h3>
+                          <hr class="authorizationconfig-hr">
+                            <div id="authConfig">
+                            {% from "pages/_formhelpers.html" import render_field %}
+                                {{ render_field(form.TLS_version) }}
+                                {{ render_field(form.certificatePath) }}
+                                {{ render_field(form.https) }}
+                                {{ render_field(form.privateKeyPath) }}
+                            </div>
+                        <h3> Interface Configuration </h3>
+                          <hr class="interfaceconfig-hr">
+                            <div id="interfaceConfig">
+                            {% from "pages/_formhelpers.html" import render_field %}
+                                {{ render_field(form.debug) }}
+                                {{ render_field(form.defaultServer) }}
+                                {{ render_field(form.host) }}
+                                {{ render_field(form.port) }}
+                            </div>
+                        <input id="formSubmit" type="submit" value="submit">
+                    </form>
+                </div>
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
@@ -152,11 +152,10 @@
                     </form>
 
                 </div>
-                <!--<select class="form-control" id="userList">-->
-                    <!--<option selected="selected" disabled>Select a user</option>-->
-                <!--</select>-->
             </div>
-
         </div>
+        <!--<select class="form-control" id="userList">-->
+            <!--<option selected="selected" disabled>Select a user</option>-->
+        <!--</select>-->
     </div>
 </div>
