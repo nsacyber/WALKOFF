@@ -1,6 +1,5 @@
 import flask_sqlalchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
-
 from .app import app
 
 # Database Connection Object

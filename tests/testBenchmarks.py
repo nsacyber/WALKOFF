@@ -21,7 +21,7 @@ class TestExecutionLoads(unittest.TestCase):
         c = controller.Controller(name="benchmark1000Controller")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'basicWorkflowTest.workflow')
 
-        executionCase = case.Case(subscriptions={
+        executionCase = case.subscription.CaseSubscriptions(subscriptions={
             "helloWorldWorkflow:start": ["FunctionExecutedSuccessfully", "InputValidated", "ConditionalsExecuted"]},
             history=[])
 

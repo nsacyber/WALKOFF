@@ -1,8 +1,5 @@
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField, \
     SelectField,RadioField
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from server.database import User
-
 
 class NewUserForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25), validators.required()])

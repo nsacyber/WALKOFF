@@ -1,11 +1,11 @@
 import os
 import ssl
 import json
-from flask import render_template, request, Response
+from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
-from core import config, interface, controller
-from core import forms
+from core import config, controller
+from server import forms, interface
 from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
 
