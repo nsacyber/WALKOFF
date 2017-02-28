@@ -4,8 +4,8 @@ import json
 from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
-from core import config, interface, controller
-from core import forms
+from core import config, controller
+from . import forms, interface
 from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
 
@@ -13,7 +13,7 @@ import core.case.database as case_database
 from . import database
 from .app import app
 from .database import User
-from .appDevice import App, Device
+from .appDevice import Device
 from .triggers import Triggers
 
 import gevent
@@ -375,7 +375,7 @@ def configDevicesConfig(app, action):
             if len(Device.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device could not be added"})
 
-            DeviceDatabase.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+            Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
                                       password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
@@ -402,13 +402,13 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        dev = DeviceDatabase.filter_app_and_device(app_name=app, device_name=device)
+        dev = Device.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             return json.dumps(dev.as_json())
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        dev = DeviceDatabase.filter_app_and_device(app_name=app, device_name=device)
+        dev = Device.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             dev.delete()
             db.session.commit()
@@ -417,7 +417,7 @@ def configDevicesConfigId(app, device, action):
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        dev = DeviceDatabase.filter_app_and_device(app_name=app, device_name=device)
+        dev = Device.filter_app_and_device(app_name=app, device_name=device)
         if form.validate() and dev is not None:
             # Ensures new name is unique
             if len(Device.query.filter_by(name=str(device)).all()) > 0:
