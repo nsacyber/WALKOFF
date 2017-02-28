@@ -1,4 +1,3 @@
-from genericpath import isfile
 from os import remove
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, func, create_engine
@@ -50,7 +49,7 @@ class EventLog(_Base):
                   'message': self.message,
                   'note': self.note}
         if with_cases:
-            output['cases'] = str([case.as_json() for case in self.cases])
+            output['cases'] = [case.as_json() for case in self.cases]
         return output
 
     @staticmethod
@@ -103,11 +102,17 @@ class CaseDatabase(object):
 case_db = CaseDatabase()
 
 
+# Initialize Module
 def initialize():
-    if isfile(config.case_db_path):
-        if config.reinitialize_case_db_on_startup:
-            case_db.tearDown()
-            remove(config.case_db_path)
-            case_db.create()
-    else:
-        case_db.create()
+    case_db.tearDown()
+    remove(config.case_db_path)
+    case_db.create()
+
+
+# Teardown Module
+def tearDown():
+    case_db.session.close()
+    case_db.transaction.rollback()
+    case_db.connection.close()
+    case_db.engine.dispose()
+

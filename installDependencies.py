@@ -14,10 +14,10 @@ if __name__ == '__main__':
     apps = args.apps
 
     for app in apps:
-        print "Installing dependencies for " + app + " App..."
+        print("Installing dependencies for " + app + " App...")
         deps = []
         path = os.path.abspath('apps/' + app + '/setup.py')
         if os.path.isfile(path) is False:
-            print "No setup.py script found in "+app+" folder. Skipping..."
+            print("No setup.py script found in "+app+" folder. Skipping...")
             continue
         os.system("python "+path+" install")

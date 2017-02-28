@@ -1,6 +1,5 @@
 import flask_sqlalchemy
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin
-
 from .app import app
 
 # Database Connection Object
@@ -91,6 +90,7 @@ class User(Base, UserMixin):
                     print("ROLE DOES NOT EXIST")
             else:
                 print("HAS ROLE")
+
 
     def __repr__(self):
         return self.email

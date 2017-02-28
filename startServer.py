@@ -1,12 +1,9 @@
 import ssl
 from os.path import isfile
-
 from gevent.wsgi import WSGIServer
-
 import core.case.database as case_database
 from core import config
 from server import flaskServer
-
 
 def get_ssl_context():
     if config.https.lower() == "true":

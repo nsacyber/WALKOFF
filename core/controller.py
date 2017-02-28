@@ -4,7 +4,7 @@ from os import sep
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.gevent import GeventScheduler
 
 from core import config
 from core import workflow as wf
@@ -69,7 +69,7 @@ class Controller(object):
         self.schedulerStatusListener = SchedulerStatusListener(self.eventlog)
         self.jobStatusListener = JobStatusListener(self.eventlog)
         self.jobExecutionListener = JobExecutionListener(self.eventlog)
-        self.scheduler = BackgroundScheduler()
+        self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.schedulerStatusListener.callback(self),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
                                     | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED)

@@ -6,7 +6,6 @@ from core import controller, graphDecorator
 from core.case.subscription import Subscription
 from tests import config
 
-
 class TestExecutionEvents(unittest.TestCase):
     """
             Tests execution Events at the Workflow Level
@@ -16,7 +15,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.tearDown()
+        case_database.tearDown()
 
     @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
@@ -63,7 +62,6 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow(name="helloWorldWorkflow")
-
         step_execution_events_case = case_database.case_db.session.query(case_database.Cases) \
             .filter(case_database.Cases.name == 'testStepExecutionEvents').first()
         step_execution_event_history = step_execution_events_case.events.all()

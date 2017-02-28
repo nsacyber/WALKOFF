@@ -1,6 +1,7 @@
 from server import appDevice
 
-#There is an associated Hello world test workflow which can be executed
+
+# There is an associated Hello world test workflow which can be executed
 
 class Main(appDevice.App):
     def __init__(self, name=None, device=None):
@@ -9,23 +10,23 @@ class Main(appDevice.App):
         #Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message":"HELLO WORLD"}
 
-    #Every function in Main is an action that can be taken
-    #Every function needs to define an args argument which recieves a dictionary of input parameters
+    # Every function in Main is an action that can be taken
+    # Every function needs to define an args argument which recieves a dictionary of input parameters
     def helloWorld(self, args={}):
-        #LOOK AT YOUR CONSOLE WHEN EXECUTING
-        #print(self.introMessage)
+        # LOOK AT YOUR CONSOLE WHEN EXECUTING
+        # print(self.introMessage)
         return self.introMessage
 
-    #Example using arguments
-    #Repeats back the contents of the call argument
+    # Example using arguments
+    # Repeats back the contents of the call argument
     def repeatBackToMe(self, args={}):
-        #print("REPEATING: " + args["call"]())
+        # print("REPEATING: " + args["call"]())
         return "REPEATING: " + args["call"]()
 
-    #Increments number by one
+    # Increments number by one
     def returnPlusOne(self, args={}):
         return str(int(args["number"]()) + 1)
 
     def shutdown(self):
-        #print("SHUTTING DOWN")
+        # print("SHUTTING DOWN")
         return

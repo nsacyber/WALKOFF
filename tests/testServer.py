@@ -2,7 +2,8 @@ import unittest
 
 from server import flaskServer as server
 
-class TestTriggers(unittest.TestCase):
+
+class TestLogin(unittest.TestCase):
     def setUp(self):
         self.app = server.app.test_client(self)
         self.app.testing = True

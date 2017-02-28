@@ -17,7 +17,7 @@ class TestExecutionModes(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.session.rollback()
+        case_database.tearDown()
 
     @graphDecorator.callgraph(enabled=False)
     def test_startStopExecutionLoop(self):
