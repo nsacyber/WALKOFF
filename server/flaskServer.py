@@ -4,7 +4,10 @@ import json
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
+
 from core import config, controller
+from core.context import running_context
+
 from server import forms, interface
 from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
@@ -16,21 +19,32 @@ from .database import User
 from .device import Device
 from .triggers import Triggers
 
-import gevent
 from gevent import monkey
 monkey.patch_all()
 
+
+# Temporary create controller
+workflowManager = controller.Controller()
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
+workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
+
+subs = {'defaultController':
+            Subscription(subscriptions=
+                         {'multiactionWorkflow':
+                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
+                                                   "NextStepFound", "WorkflowShutdown"])})}
+set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
+
+#Create user datastore
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
         "/roles", "/users", "/configuration", '/cases']
 
-
 default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
-
 
 # Creates Test Data
 @app.before_first_request
@@ -52,17 +66,7 @@ def create_user():
         database.db.session.commit()
 
 
-# Temporary create controller
-workflowManager = controller.Controller()
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
 
-subs = {'defaultController':
-            Subscription(subscriptions=
-                         {'multiactionWorkflow':
-                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
-                                                   "NextStepFound", "WorkflowShutdown"])})}
-set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
 
 """
     URLS
@@ -74,7 +78,7 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
+        args = {"apps": running_context.apps, "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}

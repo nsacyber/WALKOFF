@@ -1,9 +1,9 @@
 from server import forms
-from core.config import getApps
 from .database import User
+from core.context import running_context
 
 def devices():
-    return {"apps": getApps()}, forms.AddNewDeviceForm()
+    return {"apps": running_context.getApps()}, forms.AddNewDeviceForm()
 
 def settings():
     form = forms.settingsForm()

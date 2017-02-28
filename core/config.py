@@ -39,6 +39,9 @@ profileVisualizationsPath = join('.', 'tests', 'profileVisualizations') + sep
 # Keyword folder path
 keywordsPath = join('.', 'core', 'keywords')
 
+#Workflows path
+workflowsPath = join('.', 'data', 'workflows')
+
 #Database Path
 dbPath = "data/walkoff.db"
 
@@ -84,12 +87,6 @@ try:
 
 except Exception as e:
     print(e)
-
-#Returns list of apps
-#Gets all the app instances
-def getApps(path="apps"):
-    apps = next(walk(path))[1]
-    return apps
 
 #Function to set config value
 def set(key, value):
