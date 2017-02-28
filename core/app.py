@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-
 class App(object):
     __metaclass__ = ABCMeta
 
