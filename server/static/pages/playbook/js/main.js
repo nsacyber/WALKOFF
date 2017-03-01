@@ -94,7 +94,7 @@ cy.layout({
     root:"#start"
  });
 
-cy.$('*').on('click', function(e){
+function onClick(e) {
   // This function displays info about a node/edge when clicked upon next to the graph
 
   function jsonStringifySort(obj) {
@@ -109,7 +109,9 @@ cy.$('*').on('click', function(e){
   var parameters = ele.data().parameters;
   var parametersAsJsonString = jsonStringifySort(parameters);
   $("#parameters").text(parametersAsJsonString);
-});
+}
+
+cy.$('node').on('click', onClick);
 
 function notifyMe() {
   if (!Notification) {
@@ -161,14 +163,36 @@ $(function(){
 
     // Add the node with the id just found to the graph in the location dropped
     // into by the mouse.
-    cy.add({
+    var newNode = cy.add({
       group: 'nodes',
       data: {
-        id: id.toString()
+        id: id.toString(),
+        parameters: {
+            action: id.toString(),
+            app: "None",
+            device: "None",
+            errors: [
+                {
+                  name: "None",
+                  nextStep: "None",
+                  flags: []
+                }
+            ],
+            input: {},            
+            name: id.toString(),
+            next: [
+                {
+                  name: "None",
+                  nextStep: "None",
+                  flags: []
+                }
+            ],
+        }
       },
       position: { x: x, y: y }
     });
 
+    newNode.on('click', onClick);
   }
 
   // Called to configure drag on nodes in palette
