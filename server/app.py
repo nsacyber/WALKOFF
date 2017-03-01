@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from jinja2 import Environment, FileSystemLoader
 from core import config
-from server import appBlueprint
+from . import appBlueprint
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 app.jinja_loader = FileSystemLoader(['server/templates'])

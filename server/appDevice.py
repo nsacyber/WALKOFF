@@ -38,7 +38,7 @@ class Device(database.Base):
 
     def add_device(self, name, apps, username, password, ip, port):
         device = Device(name=name, username=username, password=password, ip=ip, port=port)
-        existing_apps = db.session.query(apps).all()
+        existing_apps = db.session.query(App).all()
         existing_app_names = [app.app for app in existing_apps]
         for app in apps:
             if app in existing_app_names:
@@ -51,8 +51,7 @@ class Device(database.Base):
         db.session.commit()
 
     def filter_app_and_device(self, app_name, device_name):
-        # query = Device.query.all()
-        query = Device.query.filter_by(name=device_name).all()
+        query = db.session.query(Device).all()
         if query:
             for device in query:
                 if device.name == device_name:
@@ -78,7 +77,7 @@ class Device(database.Base):
             self.port = form.port.data
 
         if form.app.data:
-            query = App.query.all()
+            query = db.session.query.all(App)
             if query:
                 for app in query:
                     if app.app == form.app.data:

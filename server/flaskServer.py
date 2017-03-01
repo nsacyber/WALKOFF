@@ -5,6 +5,7 @@ from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, controller
+from core.context import running_context
 from . import forms, interface
 from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
@@ -74,7 +75,7 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
+        args = {"apps": running_context.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
@@ -388,9 +389,6 @@ def configDevicesConfig(app, action):
                 for app_elem in device.apps:
                     if app_elem.name == app:
                         output.append(device.as_json())
-                        # output.append(
-                        #     {"name": device.name, "username": device.username, "port": device.port, "ip": device.ip,
-                        #      "apps": [ a.as_json() for a in device.apps ]})
 
             return json.dumps(output)
     return json.dumps({"status": "could not display all devices"})
