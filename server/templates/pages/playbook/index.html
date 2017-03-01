@@ -1,12 +1,19 @@
 <div id="main">
+    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
     <style>
         #body{
             margin-bottom: 20px;
         }
         #top {
-            width: 1450px;
+            width: 2250px;
             height: 700px;
             float: left
+        }
+        #palette{
+            display: inline-block;
+            vertical-align: top;
+            height: 700px;
+            width: 400px;
         }
         #cy {
             display: inline-block;
@@ -43,6 +50,18 @@
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 
     <div id="top">
+        <div class="panel panel-default" id="palette">
+            <div class="panel-heading">Nodes</div>
+            <div class="panel-body">
+                <div class="row-fluid">
+                    <ul class="list-group">
+                        <a href="#" class="list-group-item" id="draggableNode" >
+                            <img src="{{ url_for('static', filename='pages/playbook/img/step-icon.png' ) }}" /> &nbsp; Step
+                        </a>
+                    </ul>
+                </div>
+            </div>
+        </div>
         <div id="cy">
         </div>
         <pre id="parameters">

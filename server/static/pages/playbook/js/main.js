@@ -131,3 +131,56 @@ function notifyMe() {
 
   }
 }
+
+// The following code sets up drag and drop on the graph
+$(function(){
+
+  // This is called while the user is dragging
+  function dragHelper( event ) {
+    // Return empty div for helper so that original dragged item does not move
+    return '<div></div>';
+  }
+
+  // This function is called when the user drops a new node onto the graph
+  function handleDropEvent( event, ui ) {
+    var draggable = ui.draggable;
+
+    // The following coordinates is where the user dropped relative to the
+    // top-left of the graph
+    var x = event.pageX - this.offsetLeft;
+    var y = event.pageY - this.offsetTop;
+
+    // Find next available id
+    var id = 1;
+    while (true) {
+        var element = cy.getElementById(id.toString());
+        if (element.length === 0)
+            break;
+        id += 1;
+    }
+
+    // Add the node with the id just found to the graph in the location dropped
+    // into by the mouse.
+    cy.add({
+      group: 'nodes',
+      data: {
+        id: id.toString()
+      },
+      position: { x: x, y: y }
+    });
+
+  }
+
+  // Called to configure drag on nodes in palette
+  $('#draggableNode').draggable( {
+    cursor: 'copy',
+    containment: 'document',
+    helper: dragHelper
+  } );
+
+  // Called to configure drops onto graph
+  $('#cy').droppable( {
+    drop: handleDropEvent
+  } );
+
+});
