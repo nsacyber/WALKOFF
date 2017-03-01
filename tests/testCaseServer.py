@@ -2,7 +2,7 @@ import unittest
 import json
 from tests.util.case import construct_case1, construct_case2
 import core.case.database as case_database
-from core.case.subscription import set_subscriptions
+from core.case.subscription import set_subscriptions, clear_subscriptions, CaseSubscriptions, _SubscriptionEventList, GlobalSubscriptions, subscriptions_as_json
 from core.executionelement import ExecutionElement
 from core.case.callbacks import EventEntry
 from server import flaskServer as flask_server
@@ -23,6 +23,7 @@ class TestCaseServer(unittest.TestCase):
 
     def tearDown(self):
         case_database.case_db.tearDown()
+        clear_subscriptions()
 
     @staticmethod
     def __basic_case_setup():
@@ -132,17 +133,54 @@ class TestCaseServer(unittest.TestCase):
         self.assertDictEqual(expected_response, response)
 
     def test_edit_global_subscription(self):
+        global_subs1 = {"controller-0": 'a',
+                       "controller-1": 'b',
+                       "controller-2": 'c',
+                       "controller-3": 'd',
+                       "workflow-0": 'e',
+                       "next_step-0": 'f',
+                       "filter-0": 'g',
+                       "filter-1": 'h',
+                       "filter-2": 'i'}
 
-        global_subs = {"controller": ['a', 'b', 'c', 'd'],
-                       "workflow": ['e'],
-                       "step": [],
-                       "next_step": ['f'],
-                       "flag": [],
-                       "filter": ['g', 'h', 'i']}
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        set_subscriptions({'case1': case1, 'case2': case2})
+        empty_global = GlobalSubscriptions().as_json()
+
+        response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs1, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        expected_global1 = GlobalSubscriptions(controller=['a', 'b', 'c', 'd'], workflow='e', next_step='f', filter=['g', 'h', 'i'])
+        expected_case1 = CaseSubscriptions(global_subscriptions=expected_global1)
+        expected_response = {'case1': expected_case1.as_json(), 'case2': case2.as_json()}
+        self.assertDictEqual(expected_response, response)
+        self.assertDictEqual(expected_response, subscriptions_as_json())
+
+    def test_edit_global_subscription_invalid_case(self):
+        global_subs = {"controller-0": 'a',
+                       "controller-1": 'b',
+                       "controller-2": 'c',
+                       "controller-3": 'd',
+                       "workflow-0": 'e',
+                       "next_step-0": 'f',
+                       "filter-0": 'g',
+                       "filter-1": 'h',
+                       "filter-2": 'i'}
+
 
         response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs, headers=self.headers)
         self.assertEqual(response.status_code, 200)
-        #self.assertEquals(response.get_data(as_text=True), "case1")
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual({u'status': u'Error: Case name case1 was not found'}, response)
+
+        case2 = CaseSubscriptions()
+        set_subscriptions({'case2': case2})
+        response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual({u'status': u'Error: Case name case1 was not found'}, response)
+
 
 
 

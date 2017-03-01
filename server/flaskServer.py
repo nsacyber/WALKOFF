@@ -20,13 +20,13 @@ from .triggers import Triggers
 
 import gevent
 from gevent import monkey
+
 monkey.patch_all()
 
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
         "/roles", "/users", "/configuration", '/cases']
-
 
 default_urls = urls
 userRoles = database.userRoles
@@ -76,7 +76,8 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": running_context.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
+        args = {"apps": running_context.getApps(), "authKey": current_user.get_auth_token(),
+                "currentUser": current_user.email, "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
@@ -127,7 +128,7 @@ def display_cases():
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
-    case = case_database.case_db.session.query(case_database.Cases)\
+    case = case_database.case_db.session.query(case_database.Cases) \
         .filter(case_database.Cases.name == case_name).first()
     if case:
         return json.dumps({'case': case.as_json()})
@@ -148,26 +149,21 @@ def display_possible_subscriptions():
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def edit_global_subscription(case_name):
-    if case_name in case_subscription.subscriptions:
-        return case_name
-        form = forms.EditGlobalSubscriptionForm(request.form)
-        '''
-        #print(form.data)
-        if form.validate():
-            #case_subscription.subscriptions[case_name].global_subscriptions = \
-                #case_subscription.GlobalSubscriptions(controller=form.getlist('controller', type=list),
-                #                                      workflow=form.getlist('workflow'),
-                #                                      step=form.getlist('step'),
-                #                                      next_step=form.getlist('next_step'),
-                #                                      flag=form.getlist('flag'),
-                #                                      filter=form.getlist('filter'))
+    form = forms.EditGlobalSubscriptionForm(request.form)
+    if form.validate():
+        global_sub = case_subscription.GlobalSubscriptions(controller=form.controller.data,
+                                                           workflow=form.workflow.data,
+                                                           step=form.step.data,
+                                                           next_step=form.next_step.data,
+                                                           flag=form.flag.data,
+                                                           filter=form.filter.data)
+        success = case_subscription.edit_global_subscription(case_name, global_sub)
+        if success:
             return json.dumps(case_subscription.subscriptions_as_json())
         else:
-            return json.dumps({"status": "Error: form invalid"})
+            return json.dumps({"status": "Error: Case name {0} was not found".format(case_name)})
     else:
-        return json.dumps({"status": "Error: Case name {0} not found".format(case_name)})
-        '''
-        return case_name
+        return json.dumps({"status": "Error: form invalid"})
 
 
 # UNTESTED!
@@ -176,7 +172,6 @@ def edit_global_subscription(case_name):
 @roles_accepted(*userRoles['/cases'])
 def crud_subscription(case_name, action):
     return case_name + ", " + action
-
 
 
 @app.route('/cases/subscriptions/', methods=['POST'])
@@ -417,7 +412,6 @@ def userActions(action, id_or_email):
                 return json.dumps({"status": "could not display user"})
 
 
-
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
 @auth_token_required
@@ -430,7 +424,7 @@ def configDevicesConfig(app, action):
                 return json.dumps({"status": "device could not be added"})
 
             Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
-                                      password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
+                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})

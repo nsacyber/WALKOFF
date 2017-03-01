@@ -186,6 +186,9 @@ def set_subscriptions(new_subscriptions):
 def get_subscriptions():
     return subscriptions
 
+def clear_subscriptions():
+    global subscriptions
+    subscriptions = {}
 
 def is_case_subscribed(case, ancestry, message_name):
     return subscriptions[case].is_subscribed(ancestry, message_name)
@@ -196,7 +199,10 @@ def subscriptions_as_json():
 
 
 def edit_global_subscription(case_name, global_subscriptions):
-    subscriptions[case_name].global_subscriptions = global_subscriptions
+    if case_name in subscriptions:
+        subscriptions[case_name].global_subscriptions = global_subscriptions
+        return True
+    return False
 
 
 def edit_subscription(case, ancestry, events):

@@ -3,6 +3,7 @@ import unittest
 import core.case.database as case_database
 from core.case.subscription import _SubscriptionEventList
 from tests.util.case import *
+from core.case.subscription import subscriptions as case_subs
 import copy
 
 
@@ -264,6 +265,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
 
     def tearDown(self):
         case_database.case_db.tearDown()
+        clear_subscriptions()
 
     def test_set_subscriptions(self):
         case1, acceptance1 = construct_case1()
@@ -308,13 +310,12 @@ class TestSubscriptionFunctions(unittest.TestCase):
         case2, acceptance2 = construct_case2()
         cases = {'case1': case1, 'case2': case2}
         set_subscriptions(cases)
-        edit_global_subscription('case1', global_subs)
+        self.assertTrue(edit_global_subscription('case1', global_subs))
         self.assertDictEqual(global_subs.as_json(), get_subscriptions()['case1'].global_subscriptions.as_json())
 
     def test_edit_global_subscription_invalid_case(self):
         global_subs = GlobalSubscriptions()
-        with self.assertRaises(KeyError):
-            edit_global_subscription('nonesense_case_name', global_subs)
+        self.assertFalse(edit_global_subscription('nonesense_case_name', global_subs))
 
     def test_edit_subscriptions(self):
         case1, acceptance1 = construct_case1()
