@@ -1,4 +1,5 @@
 from core.case.subscription import *
+from core.case.subscription import _SubscriptionEventList
 
 
 def construct_case1():
@@ -157,3 +158,15 @@ def all_valid_events(case_acceptance):
     for name, node in case_acceptance.items():
         __visit_node(node, paths, [name])
     return paths
+
+
+def construct_expected_json(subscription_tree):
+    return {key: {'disabled': _SubscriptionEventList().as_json(),
+                  'events': _SubscriptionEventList().as_json(),
+                  'subscriptions': construct_expected_json(subs) if subs else {}}
+            for key, subs in subscription_tree.items()}
+
+
+def construct_case_json(subscription_tree):
+    return {'global_subscriptions': GlobalSubscriptions().as_json(),
+            'subscriptions': construct_expected_json(subscription_tree)}

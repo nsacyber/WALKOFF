@@ -144,7 +144,6 @@ def display_possible_subscriptions():
         return f.read()
 
 
-# UNTESTED!
 @app.route('/cases/subscriptions/<string:case_name>/global/edit', methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
@@ -166,12 +165,30 @@ def edit_global_subscription(case_name):
         return json.dumps({"status": "Error: form invalid"})
 
 
-# UNTESTED!
 @app.route('/cases/subscriptions/<string:case_name>/subscription/<string:action>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def crud_subscription(case_name, action):
-    return case_name + ", " + action
+    if action == 'edit':
+        form = forms.EditSubscriptionForm(request.form)
+        if form.validate():
+            success = case_subscription.edit_subscription(case_name, form.ancestry.data, form.events.data)
+            if success:
+                return json.dumps(case_subscription.subscriptions_as_json())
+            else:
+                return json.dumps({"status": "Error occurred while editing subscription"})
+        else:
+            return json.dumps({"status": "Error: Case name {0} was not found".format(case_name)})
+    elif action == 'add':
+        form = forms.AddSubscriptionForm(request.form)
+        if form.validate():
+            case_subscription.add_subscription(case_name, form.ancestry.data, form.events.data)
+            return json.dumps(case_subscription.subscriptions_as_json())
+    elif action == 'delete':
+        form = forms.DeleteSubscriptionForm(request.form)
+        if form.validate():
+            case_subscription.remove_subscription_node(case_name, form.ancestry.data)
+            return json.dumps(case_subscription.subscriptions_as_json())
 
 
 @app.route('/cases/subscriptions/', methods=['POST'])

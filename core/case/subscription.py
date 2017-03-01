@@ -89,12 +89,12 @@ class GlobalSubscriptions(object):
     @staticmethod
     def from_json(json):
         if set(json.keys()) == set(list(['controller', 'workflow', 'step', 'next_step', 'flag', 'filter'])):
-             return GlobalSubscriptions(controller=json['controller'],
-                                 workflow=json['workflow'],
-                                 step=json['step'],
-                                 next_step=json['next_step'],
-                                 flag=json['flag'],
-                                 filter=json['filter'])
+            return GlobalSubscriptions(controller=json['controller'],
+                                       workflow=json['workflow'],
+                                       step=json['step'],
+                                       next_step=json['next_step'],
+                                       flag=json['flag'],
+                                       filter=json['filter'])
 
     def __repr__(self):
         return str({'controller': self.controller,
@@ -186,9 +186,11 @@ def set_subscriptions(new_subscriptions):
 def get_subscriptions():
     return subscriptions
 
+
 def clear_subscriptions():
     global subscriptions
     subscriptions = {}
+
 
 def is_case_subscribed(case, ancestry, message_name):
     return subscriptions[case].is_subscribed(ancestry, message_name)
@@ -246,11 +248,15 @@ def add_subscription(case, ancestry, events):
                 break
             elif ancestry_level_name not in current_subscriptions:
                 ancestry.append(ancestry_level_name)
-                current_subscriptions[ancestry_level_name] = __construct_subscription_from_ancestry(ancestry, events)[ancestry_level_name]
+                current_subscriptions[ancestry_level_name] = __construct_subscription_from_ancestry(ancestry, events)[
+                    ancestry_level_name]
                 break
             else:
                 current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
                 ancestry_level_name = ancestry.pop()
+        else:
+            #You failed to add anything if you get here
+            pass
 
 
 def remove_subscription_node(case, ancestry):

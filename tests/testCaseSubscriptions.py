@@ -427,15 +427,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         empty_global = GlobalSubscriptions().as_json()
         empty_sub_list = _SubscriptionEventList().as_json()
 
-        def construct_expected_json(tree):
-            return {key: {'disabled': empty_sub_list,
-                          'events': empty_sub_list,
-                          'subscriptions': construct_expected_json(subs) if subs else {}}
-                    for key, subs in tree.items()}
 
-        def construct_case_json(tree):
-            return {'global_subscriptions': empty_global,
-                    'subscriptions': construct_expected_json(tree)}
 
         tree1 = {'sub14': {'sub11': {'sub7': {'sub4': {'sub1': {},
                                                        'sub2': {}}},
