@@ -131,8 +131,20 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(expected_response, response)
 
+    def test_edit_global_subscription(self):
+
+        global_subs = {"controller": ['a', 'b', 'c', 'd'],
+                       "workflow": ['e'],
+                       "step": [],
+                       "next_step": ['f'],
+                       "flag": [],
+                       "filter": ['g', 'h', 'i']}
+
+        response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        #self.assertEquals(response.get_data(as_text=True), "case1")
 
 
 
         # test adding, removing, editing subscription
-        # test adding, removing, editing global sub
+

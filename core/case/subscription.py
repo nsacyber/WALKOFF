@@ -86,6 +86,16 @@ class GlobalSubscriptions(object):
                 "flag": self.flag.as_json(),
                 "filter": self.filter.as_json()}
 
+    @staticmethod
+    def from_json(json):
+        if set(json.keys()) == set(list(['controller', 'workflow', 'step', 'next_step', 'flag', 'filter'])):
+             return GlobalSubscriptions(controller=json['controller'],
+                                 workflow=json['workflow'],
+                                 step=json['step'],
+                                 next_step=json['next_step'],
+                                 flag=json['flag'],
+                                 filter=json['filter'])
+
     def __repr__(self):
         return str({'controller': self.controller,
                     'workflow': self.workflow,
@@ -151,6 +161,8 @@ class CaseSubscriptions(object):
                     continue
             else:
                 return False
+        else:
+            return False
 
     def as_json(self):
         return {"subscriptions": {str(name): subscription.as_json()
@@ -171,9 +183,81 @@ def set_subscriptions(new_subscriptions):
     case_db.register_events(new_subscriptions.keys())
 
 
+def get_subscriptions():
+    return subscriptions
+
+
 def is_case_subscribed(case, ancestry, message_name):
     return subscriptions[case].is_subscribed(ancestry, message_name)
 
 
 def subscriptions_as_json():
     return {str(name): subscription.as_json() for name, subscription in subscriptions.items()}
+
+
+def edit_global_subscription(case_name, global_subscriptions):
+    subscriptions[case_name].global_subscriptions = global_subscriptions
+
+
+def edit_subscription(case, ancestry, events):
+    if case in subscriptions:
+        current_subscriptions = subscriptions[case].subscriptions
+        for level, ancestry_level_name in enumerate(ancestry):
+            if current_subscriptions and ancestry_level_name in current_subscriptions:
+                if level == len(ancestry) - 1:
+                    current_subscriptions[ancestry_level_name].events = _SubscriptionEventList(events)
+                    return True
+                else:
+                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                    continue
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
+
+
+def __construct_subscription_from_ancestry(ancestry, events):
+    ancestry = list(ancestry[::-1])
+    name = ancestry.pop()
+    sub = {name: Subscription(events=events)}
+    while ancestry:
+        name = ancestry.pop()
+        sub = {name: Subscription(subscriptions=sub)}
+    return sub
+
+
+def add_subscription(case, ancestry, events):
+    if case in subscriptions:
+        ancestry = list(ancestry[::-1])
+        current_subscriptions = subscriptions[case].subscriptions
+        ancestry_level_name = ancestry.pop()
+        while ancestry_level_name:
+            if not current_subscriptions:
+                ancestry.append(ancestry_level_name)
+                current_subscriptions = __construct_subscription_from_ancestry(ancestry, events)
+                break
+            elif ancestry_level_name not in current_subscriptions:
+                ancestry.append(ancestry_level_name)
+                current_subscriptions[ancestry_level_name] = __construct_subscription_from_ancestry(ancestry, events)[ancestry_level_name]
+                break
+            else:
+                current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                ancestry_level_name = ancestry.pop()
+
+
+def remove_subscription_node(case, ancestry):
+    if case in subscriptions:
+        ancestry = list(ancestry[::-1])
+        current_subscriptions = subscriptions[case].subscriptions
+        ancestry_level_name = ancestry.pop()
+        while ancestry_level_name and ancestry_level_name in current_subscriptions:
+            if not ancestry:
+                del current_subscriptions[ancestry_level_name]
+                break
+            elif not current_subscriptions:
+                break
+            else:
+                current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                ancestry_level_name = ancestry.pop()
