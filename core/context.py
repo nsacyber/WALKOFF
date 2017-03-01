@@ -20,7 +20,6 @@ class Context(object):
     @staticmethod
     def getWorkflowsFromFolder(path=join(".", "data", "workflows")):
         workflows = [join(path, workflow) for workflow in listdir(path) if isfile(join(path, workflow)) and not splitext(workflow)[0] in ["__init__", "."]]
-        print(workflows)
         return workflows
 
     # Returns list of apps

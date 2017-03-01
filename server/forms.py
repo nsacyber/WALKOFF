@@ -108,9 +108,26 @@ class conditionalField(Form):
     args = FieldList(FormField(conditionalArgsField, [validators.Optional()]))
     play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
 
-
 class incomingDataForm(Form):
     data = StringField('data')
+
+
+class EditGlobalSubscriptionForm(Form):
+    controller = FieldList(StringField('controller'), [validators.Optional()])
+    workflow = FieldList(StringField('workflow'), [validators.Optional()])
+    step = FieldList(StringField('step'), [validators.Optional()])
+    next_step = FieldList(StringField('next_step'), [validators.Optional()])
+    flag = FieldList(StringField('flag'), [validators.Optional()])
+    filter = FieldList(StringField('filter'), [validators.Optional()])
+
+
+class EditSubscriptionForm(Form):
+    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
+    events = FieldList(StringField('events'), [validators.Optional()])
+
+
+class DeleteSubscriptionForm(Form):
+    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
 
 
 class settingsForm(Form):

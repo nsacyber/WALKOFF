@@ -11,6 +11,7 @@ from core.case import callbacks
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
 
 import core.case.database as case_database
+import core.case.subscription as case_subscription
 from . import database
 from .app import app
 from .database import User
@@ -132,6 +133,58 @@ def display_case(case_name):
         return json.dumps({'case': case.as_json()})
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
+
+
+@app.route('/cases/subscriptions/available', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_possible_subscriptions():
+    with open(os.path.join('.', 'data', 'events.json')) as f:
+        return f.read()
+
+
+# UNTESTED!
+@app.route('/cases/subscriptions/<string:case_name>/global/edit', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def edit_global_subscription(case_name):
+    if case_name in case_subscription.subscriptions:
+        return case_name
+        form = forms.EditGlobalSubscriptionForm(request.form)
+        '''
+        #print(form.data)
+        if form.validate():
+            #case_subscription.subscriptions[case_name].global_subscriptions = \
+                #case_subscription.GlobalSubscriptions(controller=form.getlist('controller', type=list),
+                #                                      workflow=form.getlist('workflow'),
+                #                                      step=form.getlist('step'),
+                #                                      next_step=form.getlist('next_step'),
+                #                                      flag=form.getlist('flag'),
+                #                                      filter=form.getlist('filter'))
+            return json.dumps(case_subscription.subscriptions_as_json())
+        else:
+            return json.dumps({"status": "Error: form invalid"})
+    else:
+        return json.dumps({"status": "Error: Case name {0} not found".format(case_name)})
+        '''
+        return case_name
+
+
+# UNTESTED!
+@app.route('/cases/subscriptions/<string:case_name>/subscription/<string:action>', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def crud_subscription(case_name, action):
+    return case_name + ", " + action
+
+
+
+@app.route('/cases/subscriptions/', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_subscriptions():
+    return json.dumps(case_subscription.subscriptions_as_json())
+
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required
