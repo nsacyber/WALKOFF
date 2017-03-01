@@ -1,7 +1,7 @@
 import os,sys,importlib
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
-from server import forms
+from . import forms
 
 appPage = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
