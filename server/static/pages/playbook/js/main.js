@@ -94,6 +94,27 @@ cy.layout({
     root:"#start"
  });
 
+
+// The following sets up undo/redo on the graph
+var ur = cy.undoRedo({});
+
+// The following ensures the graph has the focus whenever you click on it so
+// that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
+$(cy.container()).on("mouseup mousedown", function(){
+    $(cy.container()).focus();
+});
+
+// The following does the actual undo/redo when pressing Ctrl+Z/Ctrl+Y
+$(cy.container()).on("keydown", function (e) {
+    if (e.ctrlKey) {
+        if (e.which === 90) // 'Ctrl+Z'
+            ur.undo();
+        else if (e.which === 89) // 'Ctrl+Y'
+            ur.redo();
+    }
+});
+
+
 function onClick(e) {
   // This function displays info about a node/edge when clicked upon next to the graph
 
@@ -163,7 +184,7 @@ $(function(){
 
     // Add the node with the id just found to the graph in the location dropped
     // into by the mouse.
-    var newNode = cy.add({
+    var newNode = ur.do('add', {
       group: 'nodes',
       data: {
         id: id.toString(),

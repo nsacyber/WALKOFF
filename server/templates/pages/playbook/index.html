@@ -1,5 +1,4 @@
 <div id="main">
-    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
     <style>
         #body{
             margin-bottom: 20px;
@@ -42,12 +41,6 @@
         <h3 id="currentWorkflowText"></h3>
         <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
-    <script>
-        var currentWorkflow = "{{currentWorkflow}}";
-        $("#currentWorkflowText").text(currentWorkflow);
-    </script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 
     <div id="top">
         <div class="panel panel-default" id="palette">
@@ -62,9 +55,18 @@
                 </div>
             </div>
         </div>
-        <div id="cy">
+        <div id="cy" tabindex="0">
         </div>
         <pre id="parameters">
         </pre>
     </div>
+
+    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-undo-redo.js') }}"></script>
+    <script>
+        var currentWorkflow = "{{currentWorkflow}}";
+        $("#currentWorkflowText").text(currentWorkflow);
+    </script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 </div>
