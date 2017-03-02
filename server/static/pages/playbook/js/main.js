@@ -225,7 +225,7 @@ $(function(){
   } );
 
   // Called to configure drops onto graph
-  $('#cy').droppable( {
+  $(cy.container()).droppable( {
     drop: handleDropEvent
   } );
 
