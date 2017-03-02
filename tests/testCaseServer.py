@@ -109,6 +109,174 @@ class TestCaseServer(unittest.TestCase):
             for event in expected_events:
                 self.assertTrue(event in received_events, 'Expected event is not in receieved events')
 
+    def test_add_case_no_existing_cases(self):
+        response = self.app.post('/cases/case1/add', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, {'case1': CaseSubscriptions().as_json()})
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_add_case_existing_cases(self):
+        case1 = CaseSubscriptions()
+        set_subscriptions({'case1': case1})
+        response = self.app.post('/cases/case2/add', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, {'case1': CaseSubscriptions().as_json(),
+                                    'case2': CaseSubscriptions().as_json()})
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1', 'case2']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_add_case_duplicate_case(self):
+        global_subs = GlobalSubscriptions(controller=['a'])
+        case1 = CaseSubscriptions(global_subscriptions=global_subs)
+        set_subscriptions({'case1': case1})
+        expected_json = subscriptions_as_json()
+        response = self.app.post('/cases/case1/add', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, expected_json)
+
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_delete_case_only_case(self):
+        case1 = CaseSubscriptions()
+        set_subscriptions({'case1': case1})
+        response = self.app.post('/cases/case1/delete', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, {})
+
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = []
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_delete_case(self):
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        set_subscriptions({'case1': case1, 'case2': case2})
+        response = self.app.post('/cases/case1/delete', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, {'case2': case2.as_json()})
+
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case2']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_delete_case_invalid_case(self):
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        response = self.app.post('/cases/case3/delete', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, {name: case.as_json() for name, case in cases.items()})
+
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = list(cases.keys())
+        self.assertEqual(len(db_cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(db_cases))
+
+    def test_delete_case_no_cases(self):
+        response = self.app.post('/cases/case1/delete', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, {})
+
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = []
+        self.assertEqual(len(db_cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(db_cases))
+
+    def test_edit_case(self):
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        original_cases_json = case_database.case_db.cases_as_json()
+        data = {"name": "renamed",
+                "note": "note1"}
+        response = self.app.post('/cases/case1/edit', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+
+        for case in original_cases_json['cases']:
+            if case['name'] == 'case1':
+                case['name'] = 'renamed'
+                case['note'] = 'note1'
+        result_cases = case_database.case_db.cases_as_json()
+        self.assertDictEqual(result_cases, original_cases_json)
+        self.assertDictEqual(response, original_cases_json)
+
+    def test_edit_case_no_name(self):
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        original_cases_json = case_database.case_db.cases_as_json()
+        data = {"note": "note1"}
+        response = self.app.post('/cases/case2/edit', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+
+        for case in original_cases_json['cases']:
+            if case['name'] == 'case2':
+                case['note'] = 'note1'
+        result_cases = case_database.case_db.cases_as_json()
+        self.assertDictEqual(result_cases, original_cases_json)
+        self.assertDictEqual(response, original_cases_json)
+
+    def test_edit_case_no_note(self):
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        original_cases_json = case_database.case_db.cases_as_json()
+        data = {"name": "renamed"}
+        response = self.app.post('/cases/case1/edit', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+
+        for case in original_cases_json['cases']:
+            if case['name'] == 'case1':
+                case['name'] = 'renamed'
+        result_cases = case_database.case_db.cases_as_json()
+        self.assertDictEqual(result_cases, original_cases_json)
+        self.assertDictEqual(response, original_cases_json)
+
+    def test_edit_case_invalid_case(self):
+        case1 = CaseSubscriptions()
+        case2 = CaseSubscriptions()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        original_cases_json = case_database.case_db.cases_as_json()
+        data = {"name": "renamed"}
+        response = self.app.post('/cases/case3/edit', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+
+        result_cases = case_database.case_db.cases_as_json()
+        self.assertDictEqual(result_cases, original_cases_json)
+        self.assertDictEqual(response, original_cases_json)
+
+    def test_crud_case_invalid_action(self):
+        response = self.app.post('/cases/case3/junk', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual({"status": "Invalid operation junk"}, response)
+
     def test_display_possible_subscriptions(self):
         with open(join('.', 'data', 'events.json')) as f:
             expected_response = json.loads(f.read())

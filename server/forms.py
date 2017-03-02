@@ -1,5 +1,7 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField, \
-    SelectField,RadioField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
+    IntegerField, FormField, \
+    SelectField, RadioField
+
 
 class NewUserForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25), validators.required()])
@@ -107,8 +109,14 @@ class conditionalField(Form):
     args = FieldList(FormField(conditionalArgsField, [validators.Optional()]))
     play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
 
+
 class incomingDataForm(Form):
     data = StringField('data')
+
+
+class EditCaseForm(Form):
+    name = StringField('name', [validators.Optional()])
+    note = StringField('note', [validators.Optional()])
 
 
 class EditGlobalSubscriptionForm(Form):
@@ -157,7 +165,7 @@ class settingsForm(Form):
     email = StringField('email', [validators.DataRequired("Please enter your email address."),
                                   validators.Email("Please enter your email address.")])
     active = BooleanField()
-    confirmed_at = DateTimeField('confirmed_at',[validators.Optional()])
+    confirmed_at = DateTimeField('confirmed_at', [validators.Optional()])
     roles = SelectField('roles', choices=[])
     last_login_at = DateTimeField("last_login_at")
     current_login_at = DateTimeField("current_login_at")
@@ -166,11 +174,10 @@ class settingsForm(Form):
     login_count = IntegerField("login_count")
 
 
-
 class userForm(Form):
-    username = SelectField('username',[validators.Optional()], choices=[])
-    email = StringField('email',[validators.DataRequired("Please enter your email address."),
-    validators.Email("Please enter your email address.")])
+    username = SelectField('username', [validators.Optional()], choices=[])
+    email = StringField('email', [validators.DataRequired("Please enter your email address."),
+                                  validators.Email("Please enter your email address.")])
     password = PasswordField('password')
-    active = RadioField('active',choices =[])
+    active = RadioField('active', choices=[])
     # active = RadioField('active',choices = [ (h.key.id(),h.homename)for h in User.queryAll()])

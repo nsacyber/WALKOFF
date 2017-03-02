@@ -8,7 +8,7 @@ from core import config, controller
 from core.context import running_context
 from . import forms, interface
 from core.case import callbacks
-from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
+from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, get_subscriptions, add_cases, delete_cases, rename_case
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -124,8 +124,33 @@ def workflow(name, format):
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_cases():
-    return json.dumps({'cases': [case.as_json(with_events=False)
-                                 for case in case_database.case_db.session.query(case_database.Cases).all()]})
+    return json.dumps(case_database.case_db.cases_as_json())
+
+
+@app.route('/cases/<string:case_name>/<string:action>', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def crud_case(case_name, action):
+    if action == 'add':
+        case = CaseSubscriptions()
+        add_cases({"{0}".format(str(case_name)): case})
+        return json.dumps(case_subscription.subscriptions_as_json())
+    elif action == 'delete':
+        delete_cases([case_name])
+        return json.dumps(case_subscription.subscriptions_as_json())
+    elif action == 'edit':
+        form = forms.EditCaseForm(request.form)
+        if form.validate():
+            if form.name.data:
+                rename_case(case_name, form.name.data)
+                if form.note.data:
+                    case_database.case_db.edit_note(form.name.data, form.note.data)
+            elif form.note.data:
+                case_database.case_db.edit_note(case_name, form.note.data)
+            return json.dumps(case_database.case_db.cases_as_json())
+    else:
+        return json.dumps({"status": "Invalid operation {0}".format(action)})
+
 
 
 @app.route('/cases/<string:case_name>', methods=['POST'])
@@ -167,6 +192,7 @@ def edit_global_subscription(case_name):
             return json.dumps({"status": "Error: Case name {0} was not found".format(case_name)})
     else:
         return json.dumps({"status": "Error: form invalid"})
+
 
 
 @app.route('/cases/subscriptions/<string:case_name>/subscription/<string:action>', methods=['POST'])

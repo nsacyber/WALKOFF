@@ -164,12 +164,149 @@ class TestSubscriptionFunctions(unittest.TestCase):
         clear_subscriptions()
 
     def test_set_subscriptions(self):
-        case1, acceptance1 = construct_case1()
-        case2, acceptance2 = construct_case2()
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
         cases = {'case1': case1, 'case2': case2}
         set_subscriptions(cases)
         cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
         self.assertSetEqual(set(cases.keys()), set(cases_in_db), 'Not all cases were added to subscribed cases')
+
+    def test_add_case_no_existing_cases(self):
+        case1, _ = construct_case1()
+        add_cases({'case1': case1})
+        self.assertDictEqual(subscriptions_as_json(), {'case1': case1.as_json()})
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+        case2, _ = construct_case1()
+        case3, _ = construct_case2()
+        add_cases({'case2': case2, 'case3': case3})
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1', 'case2', 'case3']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_add_case_existing_cases(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        case3, _ = construct_case2()
+        add_cases({'case3': case3})
+        cases['case3'] = case3
+        self.assertDictEqual(subscriptions_as_json(), {case_name: case.as_json() for case_name, case in cases.items()})
+        resulting_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1', 'case2', 'case3']
+        self.assertEqual(len(resulting_cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(resulting_cases))
+
+        case4, _ = construct_case1()
+        case5, _ = construct_case2()
+        add_cases({'case4': case4, 'case5': case5})
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1', 'case2', 'case3', 'case4', 'case5']
+        self.assertEqual(len(cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(cases))
+
+    def test_add_case_duplicated_cases(self):
+        case1, _ = construct_case1()
+        set_subscriptions({'case1': case1})
+        expected_json = subscriptions_as_json()
+        add_cases({'case1': CaseSubscriptions()})
+        self.assertDictEqual(subscriptions_as_json(), expected_json)
+        resulting_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1']
+        self.assertEqual(len(resulting_cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(resulting_cases))
+
+        add_cases({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
+        self.assertDictEqual(subscriptions_as_json(), {'case1': case1.as_json(),
+                                                       'case2': CaseSubscriptions().as_json()})
+        resulting_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_cases = ['case1', 'case2']
+        self.assertEqual(len(resulting_cases), len(expected_cases))
+        self.assertSetEqual(set(expected_cases), set(resulting_cases))
+
+    def test_delete_cases(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        case3, _ = construct_case2()
+        case4, _ = construct_case1()
+        cases = {'case1': case1, 'case2': case2, 'case3': case3, 'case4': case4}
+        set_subscriptions(cases)
+        resulting_cases = {'case1': case1, 'case2': case2}
+        delete_cases(['case3', 'case4'])
+        self.assertEqual(len(get_subscriptions().keys()), 2)
+        self.assertDictEqual(subscriptions_as_json(), {case_name: case.as_json()
+                                                       for case_name, case in resulting_cases.items()})
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_case_names = list(resulting_cases.keys())
+        self.assertEqual(len(expected_case_names), len(db_cases))
+        self.assertSetEqual(set(db_cases), set(expected_case_names))
+
+    def test_delete_cases_invalid_case(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        case3, _ = construct_case2()
+        case4, _ = construct_case1()
+        cases = {'case1': case1, 'case2': case2, 'case3': case3, 'case4': case4}
+        set_subscriptions(cases)
+        resulting_cases = {'case1': case1, 'case2': case2, 'case4': case4}
+        delete_cases(['case3', 'case5'])
+        self.assertEqual(len(get_subscriptions().keys()), 3)
+        self.assertDictEqual(subscriptions_as_json(), {case_name: case.as_json()
+                                                       for case_name, case in resulting_cases.items()})
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_case_names = list(resulting_cases.keys())
+        self.assertEqual(len(expected_case_names), len(db_cases))
+        self.assertSetEqual(set(db_cases), set(expected_case_names))
+
+    def test_rename_case(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        rename_case('case1', 'renamed')
+        resulting_cases = {'renamed': case1, 'case2': case2}
+        self.assertEqual(len(get_subscriptions().keys()), 2)
+        self.assertDictEqual(subscriptions_as_json(), {case_name: case.as_json()
+                                                       for case_name, case in resulting_cases.items()})
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_case_names = list(resulting_cases.keys())
+        self.assertEqual(len(expected_case_names), len(db_cases))
+        self.assertSetEqual(set(db_cases), set(expected_case_names))
+
+    def test_rename_case_invalid_case(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        rename_case('case3', 'renamed')
+        resulting_cases = {'case1': case1, 'case2': case2}
+        self.assertEqual(len(get_subscriptions().keys()), 2)
+        self.assertDictEqual(subscriptions_as_json(), {case_name: case.as_json()
+                                                       for case_name, case in resulting_cases.items()})
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_case_names = list(resulting_cases.keys())
+        self.assertEqual(len(expected_case_names), len(db_cases))
+        self.assertSetEqual(set(db_cases), set(expected_case_names))
+
+    def test_rename_case_same_name(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        cases = {'case1': case1, 'case2': case2}
+        set_subscriptions(cases)
+        rename_case('case1', 'case1')
+        resulting_cases = {'case1': case1, 'case2': case2}
+        self.assertEqual(len(get_subscriptions().keys()), 2)
+        self.assertDictEqual(subscriptions_as_json(), {case_name: case.as_json()
+                                                       for case_name, case in resulting_cases.items()})
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        expected_case_names = list(resulting_cases.keys())
+        self.assertEqual(len(expected_case_names), len(db_cases))
+        self.assertSetEqual(set(db_cases), set(expected_case_names))
 
     def test_is_case_subscribed(self):
         case1, acceptance1 = construct_case1()
