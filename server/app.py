@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from jinja2 import Environment, FileSystemLoader
 from core import config
-from . import appBlueprint
+from . import appBlueprint, widgetBlueprint
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 app.jinja_loader = FileSystemLoader(['server/templates'])
@@ -27,3 +27,4 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 app.register_blueprint(appBlueprint.appPage, url_prefix='/apps/<app>')
+app.register_blueprint(widgetBlueprint.widgetPage, url_prefix='/apps/<app>/<widget>')

@@ -3,11 +3,11 @@
   $(function() {
     var brick;
     brick = "<div class='brick small'><div class='delete'>&times;</div></div>";
-    $(document).on("click touchend", ".gridly .brick", function(event) {
+    $(document).on("click touchend", ".gridly .header", function(event) {
       var $this, size;
       event.preventDefault();
       event.stopPropagation();
-      $this = $(this);
+      $this = $(this).parent();
       $this.toggleClass('small');
       $this.toggleClass('large');
       if ($this.hasClass('small')) {

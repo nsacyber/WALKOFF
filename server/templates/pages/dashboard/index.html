@@ -1,4 +1,3 @@
-
 <script src="{{ url_for('static', filename='pages/dashboard/jquery.gridly.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='pages/dashboard/jquery.gridly.css') }}" />
 <script src="{{ url_for('static', filename='pages/dashboard/rainbow.js') }}"></script>
@@ -13,23 +12,19 @@
     position: relative; }
     .example .brick .delete {
       display: block;
-      color: #FFF;
-      background: rgba(255, 255, 255, 0.2);
-      width: 40px;
-      height: 40px;
       top: 0;
       right: 0;
       position: absolute;
       text-align: center;
-      line-height: 40px; }
+      }
     .example .brick.small {
       width: 140px;
       height: 140px; }
     .example .brick.large {
-      width: 300px;
-      height: 300px; }
+      width: auto;
+      height: auto; }
     .example .brick.dragging {
-      opacity: 0.8; }
+      opacity: 1; }
     .example .brick:nth-child(20n + 1) {
       background: #1ABC9C; }
     .example .brick:nth-child(20n + 2) {
@@ -73,27 +68,10 @@
 </style>
 <section class='example'>
         <div class='gridly'>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
-          <div class='brick small'>
-            <a class='delete' href='#'>&times;</a>
-          </div>
+          {% from "pages/_widget.html" import displayWidget %}
+          {% for widget in widgets %}
+            {{displayWidget(widget)}}
+          {% endfor %}
         </div>
 </section>
 
