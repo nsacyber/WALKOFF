@@ -130,11 +130,14 @@
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
+                <hr class="settings-hr">
                 <div id="userForm">
                     <form id="usForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
-                        <h3><i> Path Configuration </i></h3>
+                        <h3><i> User Configuration </i></h3>
+                        <hr class="settings-hr">
+                        </br>
                         <div id="test">
                             {% from "pages/_formhelpers.html" import render_field %}
                             {{ render_field(form.username) }}
