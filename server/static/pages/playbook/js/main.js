@@ -174,6 +174,7 @@ $(function(){
   // Called to configure drag on nodes in palette
   $('#draggableNode').draggable( {
     cursor: 'copy',
+    cursorAt: { left: 0, top: 0 },
     containment: 'document',
     helper: dragHelper
   } );
