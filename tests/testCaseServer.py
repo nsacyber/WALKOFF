@@ -2,7 +2,7 @@ import unittest
 import json
 from tests.util.case import construct_case1, construct_case2, construct_case_json
 import core.case.database as case_database
-from core.case.subscription import set_subscriptions, clear_subscriptions, CaseSubscriptions, _SubscriptionEventList, \
+from core.case.subscription import set_subscriptions, clear_subscriptions, CaseSubscriptions, \
     GlobalSubscriptions, subscriptions_as_json, Subscription
 from core.executionelement import ExecutionElement
 from core.case.callbacks import EventEntry
@@ -147,12 +147,11 @@ class TestCaseServer(unittest.TestCase):
         case1 = CaseSubscriptions()
         case2 = CaseSubscriptions()
         set_subscriptions({'case1': case1, 'case2': case2})
-        empty_global = GlobalSubscriptions().as_json()
 
         response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs1, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        expected_global1 = GlobalSubscriptions(controller=['a', 'b', 'c', 'd'], workflow='e', next_step='f',
+        expected_global1 = GlobalSubscriptions(controller=['a', 'b', 'c', 'd'], workflow=['e'], next_step=['f'],
                                                filter=['g', 'h', 'i'])
         expected_case1 = CaseSubscriptions(global_subscriptions=expected_global1)
         expected_response = {'case1': expected_case1.as_json(), 'case2': case2.as_json()}
@@ -221,7 +220,7 @@ class TestCaseServer(unittest.TestCase):
         expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['sub5']['subscriptions']['sub3'][
             'events'] \
-            = _SubscriptionEventList(['a', 'b']).as_json()
+            = ['a', 'b']
 
         response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit1, headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -229,14 +228,14 @@ class TestCaseServer(unittest.TestCase):
         self.assertDictEqual(response, expected_cases_json)
 
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['sub4']['events'] \
-            = _SubscriptionEventList(['c', 'd', 'e']).as_json()
+            = ['c', 'd', 'e']
 
         response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit2, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
 
-        expected_cases_json['case2']['subscriptions']['sub8']['events'] = _SubscriptionEventList(['e']).as_json()
+        expected_cases_json['case2']['subscriptions']['sub8']['events'] = ['e']
 
         response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit3, headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -317,8 +316,8 @@ class TestCaseServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['add1'] = \
-            {'events': _SubscriptionEventList(['a', 'b']).as_json(),
-             'disabled': _SubscriptionEventList().as_json(),
+            {'events': ['a', 'b'],
+             'disabled': [],
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 
@@ -326,8 +325,8 @@ class TestCaseServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['add2'] = \
-            {'events': _SubscriptionEventList(['c', 'd', 'e']).as_json(),
-             'disabled': _SubscriptionEventList().as_json(),
+            {'events': ['c', 'd', 'e'],
+             'disabled': [],
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 
@@ -335,8 +334,8 @@ class TestCaseServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['add3'] = \
-            {'events': _SubscriptionEventList(['e']).as_json(),
-             'disabled': _SubscriptionEventList().as_json(),
+            {'events': ['e'],
+             'disabled': [],
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 

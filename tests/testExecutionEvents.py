@@ -6,6 +6,7 @@ from core import controller, graphDecorator
 from core.case.subscription import Subscription
 from tests import config
 
+
 class TestExecutionEvents(unittest.TestCase):
     """
             Tests execution Events at the Workflow Level
@@ -114,7 +115,9 @@ class TestExecutionEvents(unittest.TestCase):
                                  {'helloWorldWorkflow':
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
-        global_subs = case_subscription.GlobalSubscriptions(step='*',
+        global_subs = case_subscription.GlobalSubscriptions(step=['FunctionExecutionSuccess',
+                                                                  'InputValidated',
+                                                                  'ConditionalsExecuted'],
                                                             next_step=['NextStepTaken',
                                                                        'NextStepNotTaken'],
                                                             flag=['FlagArgsValid',
