@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+
+
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-graduation-cap,.fa-flask{font-size:200px}
+
+#headerDiv{
+    background-image:url("../files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
+
+.topLevelList + ol{
+  display:none;
+}
+
+.topLevelList + h5{
+  display:none;
+}
+
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+
+
+
+</style>
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+    <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red"
+           href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i
+                class="fa fa-bars"></i></a>
+        <a href="../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+        <a href="https://iadgov.github.io/WALKOFF/documentation.html"
+           class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Version One</a>
+        <a href="../documentationVersionTwo.html"
+           class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Version Two</a>
+        <a href="https://github.com/iadgov/WALKOFF"
+           class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+        <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+    </div>
+
+    <!-- Navbar on small screens -->
+    <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+        <a class="w3-padding-large" href="https://iadgov.github.io/WALKOFF/documentation.html">Version One</a>
+        <a class="w3-padding-large" href="../documentationVersionTwo.html">Version Two</a>
+        <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+        <a class="w3-padding-large" href="index.html">Tutorials</a>
+    </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
+    <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+    <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+</header>
+
+<!-- First Grid -->
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Case Overview</h1>
+            <p>WALKOFF contains a flexible, customizable logging system. It's better than your average,
+                fatal/error/warning/info/trace logging system -- it's a database-driven event subscription system which
+                allows you to visualize the workflow execution at any level of detail you feel is useful. You start by
+                creating and naming one or more "cases" which are collections of execution events you wish to log
+                together,
+                we call these the case's event subscriptions. As a workflow or collection of workflows is executed, the
+                events to which the case is subscribed to are logged. Each level of execution contains multiple events
+                which can be subscribed to. Currently the available event subscriptions are as follows:</p>
+
+            <h6>Controller</h6>
+            <ul style="list-style-type:circle">
+                <li>Scheduler Started</li>
+                <li>Scheduler Paused</li>
+                <li>Scheduler Resumed</li>
+                <li>Scheduler Shutdown</li>
+                <li>Job Added</li>
+                <li>Job Removed</li>
+                <li>Job Executed</li>
+                <li>Job Error</li>
+            </ul>
+
+            <h6>Workflow</h6>
+            <ul style="list-style-type:circle">
+                <li>New Workflow Created</li>
+                <li>Step Execution Success</li>
+                <li>Next Step Found</li>
+                <li>Workflow shutdown</li>
+            </ul>
+
+            <h6>Step</h6>
+            <ul style="list-style-type:circle">
+                <li>Function Execution Success</li>
+                <li>Input Validated</li>
+                <li>Conditionals Executed</li>
+            </ul>
+
+            <h6>Next Step</h6>
+            <ul style="list-style-type:circle">
+                <li>Next Step Taken</li>
+                <li>Next Step Not Taken</li>
+            </ul>
+
+
+            <h6>Flag</h6>
+            <ul style="list-style-type:circle">
+                <li>Flag Arguments Valid</li>
+                <li>Flag Arguments InValid</li>
+            </ul>
+
+            <h6>Filter</h6>
+            <ul style="list-style-type:circle">
+                <li>Filter Success</li>
+                <li>Filter Error</li>
+            </ul>
+
+
+            <p>Each case can be subscribed to multiple controllers which in turn can have multiple workflows which
+                can have multiple steps, and so on.
+                Each execution element can have multiple execution elements it manages, and for each execution
+                element instance, a case which can have an
+                inividualized set of events it is subscribed to. So if you want one step in one workflow to be log
+                the events Function Execution Success
+                and Conditionals Executed, but a different step in that same workflow to only log its Input
+                Validated event, you can specify these.</p>
+
+            <p>Additionally, each case has a set of global event subscriptions which apply to all events. So if you
+                want all workflows in a case to log
+                their Step Execution Success event, you can specify this. You can also disable these global
+                subscriptions for a given execution element
+                if you want to make an exeption.</p>
+
+            <p>Each event is logged with the following fields</p>
+            <dl>
+                <dt>Unique ID</dt>
+                <dt>Timestamp</dt>
+                <dt>Type</dt>
+                <dd> System, Workflow, Step, Next Step, Flag, Filter</dd>
+                <dt>Ancestry</dt>
+                <dd> A list of execution elements from controller to parent which caused this event</dd>
+                <dt>Message</dt>
+                <dd> The specific event that happened</dd>
+                <dt>Note</dt>
+                <dd> Field which can be modified to add notes</dd>
+            </dl>
+
+
+        </div>
+
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
+    </div>
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a></h1>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+    <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
+
+<script src="../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+
+
+</script>
+</body>
+</html>
