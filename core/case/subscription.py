@@ -64,34 +64,27 @@ class Subscription(object):
     Attributes:
         events (_SubscriptionEventList): A list of events this level is subscribed to
         subscriptions (dict{str: Subscription}): A list of subscriptions to execution events one level lower
-        disabled (_SubscriptionEventList): A list of events which should be ignored from the global subscriptions
     """
 
-    def __init__(self, events=None, subscriptions=None, disabled=None):
+    def __init__(self, events=None, subscriptions=None):
         self.events = events if events is not None else []
         self.subscriptions = subscriptions if subscriptions is not None else {}  # in form of {'name' => Subscription()}
-        self.disabled = disabled if disabled is not None else []
 
-    def is_subscribed(self, message_name, global_subs=None):
+    def is_subscribed(self, message_name):
         """
         Is the given message subscribed to in this level of execution?
         :param message_name: The given message
-        :param global_subs: Global subscriptions for this level of execution
         :return (bool): Is the message subscribed to?
         """
-        global_subs_subscribed = message_name in global_subs if global_subs is not None else False
-        return ((message_name in self.events or global_subs_subscribed)
-                and message_name not in self.disabled)
+        return message_name in self.events
 
     def as_json(self):
         return {"events": self.events,
-                "disabled": self.disabled,
                 "subscriptions": {str(name): subscription.as_json()
                                   for name, subscription in self.subscriptions.items()}}
 
     def __repr__(self):
         return str({'events': self.events,
-                    'disabled': self.disabled,
                     'subscriptions': self.subscriptions})
 
 
@@ -102,19 +95,15 @@ class CaseSubscriptions(object):
 
     def is_subscribed(self, ancestry, message_name):
         current_subscriptions = self.subscriptions
-        for level, (ancestry_level_name, global_sub) in enumerate(zip(ancestry, self.global_subscriptions)):
-            if current_subscriptions and ancestry_level_name in current_subscriptions:
-                if (level == len(ancestry) - 1
-                    and current_subscriptions[ancestry_level_name].is_subscribed(message_name,
-                                                                                 global_subs=global_sub)):
-                    return True
-                else:
-                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
-                    continue
+        ancestry = list(ancestry[::-1])
+        ancestry_level_name = ancestry.pop()
+        while ancestry_level_name and ancestry_level_name in current_subscriptions:
+            if not ancestry:
+                return current_subscriptions[ancestry_level_name].is_subscribed(message_name)
             else:
-                return False
-        else:
-            return False
+                current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                ancestry_level_name = ancestry.pop()
+        return False
 
     def as_json(self):
         return {"subscriptions": {str(name): subscription.as_json()
@@ -162,18 +151,16 @@ def edit_global_subscription(case_name, global_subscriptions):
 def edit_subscription(case, ancestry, events):
     if case in subscriptions:
         current_subscriptions = subscriptions[case].subscriptions
-        for level, ancestry_level_name in enumerate(ancestry):
-            if current_subscriptions and ancestry_level_name in current_subscriptions:
-                if level == len(ancestry) - 1:
-                    current_subscriptions[ancestry_level_name].events = events
-                    return True
-                else:
-                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
-                    continue
+        ancestry = list(ancestry[::-1])
+        ancestry_level_name = ancestry.pop()
+        while ancestry_level_name and ancestry_level_name in current_subscriptions:
+            if not ancestry:
+                current_subscriptions[ancestry_level_name].events = events
+                return True
             else:
-                return False
-        else:
-            return False
+                current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                ancestry_level_name = ancestry.pop()
+        return False
     else:
         return False
 

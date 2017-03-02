@@ -317,7 +317,6 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['add1'] = \
             {'events': ['a', 'b'],
-             'disabled': [],
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 
@@ -326,7 +325,6 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['add2'] = \
             {'events': ['c', 'd', 'e'],
-             'disabled': [],
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 
@@ -335,7 +333,6 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['add3'] = \
             {'events': ['e'],
-             'disabled': [],
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 

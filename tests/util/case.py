@@ -16,28 +16,28 @@ def construct_case1():
 
     global_subs = GlobalSubscriptions(controller=['a'], next_step=[4, 5], flag=['u', 'v', 'w'], filter=['x'])
 
-    filter_subs1 = Subscription(events=['y', 'z'], disabled=['x'])
-    filter_subs2 = Subscription(disabled=['x', 'y', 'z'])
-    filter_subs3 = Subscription(events=['y'])
+    filter_subs1 = Subscription(events=['y', 'z'])
+    filter_subs2 = Subscription()
+    filter_subs3 = Subscription(events=['x', 'y'])
     filter1_acceptance = {'events': ['y', 'z'], 'rejected': ['x'],
                           'subs': {}}  # simplified structure to use for testing
     filter2_acceptance = {'events': [], 'rejected': ['x', 'y', 'z'], 'subs': {}}
     filter3_acceptance = {'events': ['x', 'y'], 'rejected': ['z'], 'subs': {}}
 
-    flag_subs1 = Subscription(events=['u', 'v', 'w'], disabled=['v'], subscriptions={'filter1': filter_subs1})
-    flag_subs2 = Subscription(disabled=['u', 'w'], subscriptions={'filter2': filter_subs2,
+    flag_subs1 = Subscription(events=['u', 'w'], subscriptions={'filter1': filter_subs1})
+    flag_subs2 = Subscription(events=['v'], subscriptions={'filter2': filter_subs2,
                                                                   'filter3': filter_subs3})
-    flag_subs3 = Subscription(events=['w'], disabled=['v'])
-    flag_subs4 = Subscription()
+    flag_subs3 = Subscription(events=['u', 'w'])
+    flag_subs4 = Subscription(events=['u', 'v', 'w'])
     flag1_acceptance = {'events': ['u', 'w'], 'rejected': ['v'], 'subs': {'filter1': filter1_acceptance}}
     flag2_acceptance = {'events': ['v'], 'rejected': ['u', 'w'], 'subs': {'filter2': filter2_acceptance,
                                                                           'filter3': filter3_acceptance}}
     flag3_acceptance = {'events': ['u', 'w'], 'rejected': ['v'], 'subs': {}}
     flag4_acceptance = {'events': ['u', 'v', 'w'], 'rejected': [], 'subs': {}}
 
-    next_subs1 = Subscription(subscriptions={'flag1': flag_subs1})
-    next_subs2 = Subscription(disabled=[5], subscriptions={'flag2': flag_subs2, 'flag3': flag_subs3})
-    next_subs3 = Subscription(events=[6], disabled=[4], subscriptions={'flag4': flag_subs4})
+    next_subs1 = Subscription(events=[4, 5], subscriptions={'flag1': flag_subs1})
+    next_subs2 = Subscription(events=[4], subscriptions={'flag2': flag_subs2, 'flag3': flag_subs3})
+    next_subs3 = Subscription(events=[5, 6], subscriptions={'flag4': flag_subs4})
     next1_acceptance = {'events': [4, 5], 'rejected': [6], 'subs': {'flag1': flag1_acceptance}}
     next2_acceptance = {'events': [4], 'rejected': [5, 6], 'subs': {'flag2': flag2_acceptance,
                                                                     'flag3': flag3_acceptance}}
@@ -45,7 +45,7 @@ def construct_case1():
 
     step_subs1 = Subscription(events=[1, 2], subscriptions={'next1': next_subs1})
     step_subs2 = Subscription(subscriptions={'next2': next_subs2, 'next3': next_subs3})
-    step_subs3 = Subscription(events=[3], disabled=[1])
+    step_subs3 = Subscription(events=[3])
     step1_acceptance = {'events': [1, 2], 'rejected': [3], 'subs': {'next1': next1_acceptance}}
     step2_acceptance = {'events': [], 'rejected': [1, 2, 3], 'subs': {'next2': next2_acceptance,
                                                                       'next3': next3_acceptance}}
@@ -53,7 +53,7 @@ def construct_case1():
 
     workflow_subs1 = Subscription(events=['d'])
     workflow_subs2 = Subscription(events=['d', 'e', 'f'], subscriptions={'step1': step_subs1, 'step2': step_subs2})
-    workflow_subs3 = Subscription(events=['d', 'e', 'f'], disabled=['e'], subscriptions={'step3': step_subs3})
+    workflow_subs3 = Subscription(events=['d', 'f'], subscriptions={'step3': step_subs3})
     workflow1_acceptance = {'events': ['d'], 'rejected': ['e', 'f'], 'subs': {}}
     workflow2_acceptance = {'events': ['d', 'e', 'f'], 'rejected': [], 'subs': {'step1': step1_acceptance,
                                                                                 'step2': step2_acceptance}}
@@ -61,8 +61,8 @@ def construct_case1():
 
     controller_subs1 = Subscription(events=['a', 'b', 'c'], subscriptions={'workflow1': workflow_subs1,
                                                                'workflow2': workflow_subs2})
-    controller_subs2 = Subscription(events=['b', 'c'], disabled=['a'])
-    controller_subs3 = Subscription(subscriptions={'workflow3': workflow_subs3})
+    controller_subs2 = Subscription(events=['b', 'c'])
+    controller_subs3 = Subscription(events=['a'], subscriptions={'workflow3': workflow_subs3})
     controller1_acceptance = {'events': ['a', 'b', 'c'], 'rejected': [], 'subs': {'workflow1': workflow1_acceptance,
                                                                                   'workflow2': workflow2_acceptance}}
     controller2_acceptance = {'events': ['b', 'c'], 'rejected': ['a'], 'subs': {}}
@@ -95,22 +95,21 @@ def construct_case2():
 
     global_subs = GlobalSubscriptions(controller=['a'], next_step=[4, 5], flag=['u', 'v', 'w'], filter=['x'])
 
-    filter_subs1 = Subscription(events=['z'], disabled=['x'])
-    filter_subs2 = Subscription(disabled=['x', 'y', 'z'])
+    filter_subs1 = Subscription(events=['z'])
+    filter_subs2 = Subscription()
     filter1_acceptance = {'events': ['z'], 'rejected': ['x', 'y'],
                           'subs': {}}  # simplified structure to use for testing
     filter2_acceptance = {'events': [], 'rejected': ['x', 'y', 'z'], 'subs': {}}
 
-    flag_subs1 = Subscription(events=['u', 'v', 'w'], disabled=['v'], subscriptions={'filter1': filter_subs1,
-                                                                       'filter2': filter_subs2, })
-    flag_subs2 = Subscription(disabled=['w'])
+    flag_subs1 = Subscription(events=['u', 'w'], subscriptions={'filter1': filter_subs1, 'filter2': filter_subs2})
+    flag_subs2 = Subscription(events=['u', 'v'])
     flag1_acceptance = {'events': ['u', 'w'], 'rejected': ['v'], 'subs': {'filter1': filter1_acceptance,
                                                                           'filter2': filter2_acceptance}}
     flag2_acceptance = {'events': ['u', 'v'], 'rejected': ['w'], 'subs': {}}
 
-    next_subs1 = Subscription(disabled=[5])
-    next_subs2 = Subscription(subscriptions={'flag1': flag_subs1})
-    next_subs3 = Subscription(events=[6], disabled=[4], subscriptions={'flag2': flag_subs2})
+    next_subs1 = Subscription(events=[4])
+    next_subs2 = Subscription(events=[4, 5], subscriptions={'flag1': flag_subs1})
+    next_subs3 = Subscription(events=[5, 6], subscriptions={'flag2': flag_subs2})
     next1_acceptance = {'events': [4], 'rejected': [5, 6], 'subs': {}}
     next2_acceptance = {'events': [4, 5], 'rejected': [6], 'subs': {'flag1': flag1_acceptance}}
     next3_acceptance = {'events': [5, 6], 'rejected': [4], 'subs': {'flag2': flag2_acceptance}}
@@ -160,8 +159,7 @@ def all_valid_events(case_acceptance):
 
 
 def construct_expected_json(subscription_tree):
-    return {key: {'disabled': [],
-                  'events': [],
+    return {key: {'events': [],
                   'subscriptions': construct_expected_json(subs) if subs else {}}
             for key, subs in subscription_tree.items()}
 

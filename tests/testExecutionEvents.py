@@ -106,10 +106,15 @@ class TestExecutionEvents(unittest.TestCase):
     def test_ffkExecutionEventsCase(self):
         c = controller.Controller(name="testStepFFKEventsController")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
-        filter_sub = Subscription(disabled=['FilterSuccess'])
-        flag_sub = Subscription(subscriptions={'length': filter_sub})
-        next_sub = Subscription(subscriptions={'regMatch': flag_sub})
-        step_sub = Subscription(subscriptions={'1': next_sub})
+        filter_sub = Subscription(events=['FilterError'])
+        flag_sub = Subscription(events=['FlagArgsValid',
+                                        'FlagArgsInvalid'], subscriptions={'length': filter_sub})
+        next_sub = Subscription(events=['NextStepTaken',
+                                        'NextStepNotTaken'],
+                                subscriptions={'regMatch': flag_sub})
+        step_sub = Subscription(events=['FunctionExecutionSuccess',
+                                        'InputValidated',
+                                        'ConditionalsExecuted'], subscriptions={'1': next_sub})
         subs = {'testStepFFKEventsController':
                     Subscription(subscriptions=
                                  {'helloWorldWorkflow':
@@ -122,8 +127,7 @@ class TestExecutionEvents(unittest.TestCase):
                                                                        'NextStepNotTaken'],
                                                             flag=['FlagArgsValid',
                                                                   'FlagArgsInvalid'],
-                                                            filter=['FilterSuccess',
-                                                                    'FilterError'])
+                                                            filter=['FilterError'])
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
                                                                             global_subscriptions=global_subs)})
