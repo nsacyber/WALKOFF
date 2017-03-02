@@ -40,6 +40,7 @@ class Device(database.Base):
         device = Device(name=name, username=username, password=password, ip=ip, port=port)
         existing_apps = db.session.query(App).all()
         existing_app_names = [app.app for app in existing_apps]
+        print "inside class...?"
         for app in apps:
             if app in existing_app_names:
                 for app_elem in existing_apps:

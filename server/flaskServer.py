@@ -12,10 +12,9 @@ from core.case.subscription import Subscription, set_subscriptions, CaseSubscrip
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from . import database
+from . import database, appDevice
 from .app import app
 from .database import User
-from .appDevice import Device
 from .triggers import Triggers
 
 import gevent
@@ -33,12 +32,15 @@ userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
 
+devClass = appDevice.Device()
+
 
 # Creates Test Data
 @app.before_first_request
 def create_user():
     # db.drop_all()
     database.db.create_all()
+
     if not database.User.query.first():
         # Add Credentials to Splunk app
         # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
@@ -52,6 +54,15 @@ def create_user():
         user_datastore.add_role_to_user(u, adminRole)
 
         database.db.session.commit()
+
+    if database.db.session.query(appDevice.App).all() == []:
+        # initialize app table
+        path = os.path.abspath('apps/')
+        for name in os.listdir(path):
+            if (os.path.isdir(os.path.join(path, name))) and ('cache' not in name):
+                database.db.session.add(appDevice.App(app=name, devices=[]))
+
+
 
 
 # Temporary create controller
@@ -437,16 +448,16 @@ def configDevicesConfig(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
-            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
+            if len(devClass.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device could not be added"})
 
-            Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+            devClass.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
                               password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = Device.query.all()
+        query = devClass.query.all()
         output = []
         if query:
             for device in query:
@@ -464,13 +475,13 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        dev = Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = devClass.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             return json.dumps(dev.as_json())
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        dev = Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = devClass.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             dev.delete()
             db.session.commit()
@@ -479,10 +490,10 @@ def configDevicesConfigId(app, device, action):
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        dev = Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = devClass.filter_app_and_device(app_name=app, device_name=device)
         if form.validate() and dev is not None:
             # Ensures new name is unique
-            if len(Device.query.filter_by(name=str(device)).all()) > 0:
+            if len(devClass.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status": "device could not be edited"})
 
             dev.editDevice(form)

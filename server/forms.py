@@ -66,10 +66,9 @@ class AddNewDeviceForm(Form):
     name = StringField('name', [validators.Length(min=4, max=25), validators.required()])
     username = StringField('username', [validators.Optional()])
     pw = PasswordField('pw', [validators.Optional()])
-    app = StringField('app', [validators.required()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
+    apps = StringField('apps', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
-    other = StringField('other', [validators.Optional()])
 
 
 class EditDeviceForm(Form):
