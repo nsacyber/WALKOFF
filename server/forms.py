@@ -152,7 +152,7 @@ class settingsForm(Form):
 
     email = StringField('email', [validators.DataRequired("Please enter your email address."),
                                   validators.Email("Please enter your email address.")])
-    active = RadioField('active', choices=[])
+    active = BooleanField()
     confirmed_at = DateTimeField('confirmed_at',[validators.Optional()])
     roles = SelectField('roles', choices=[])
     last_login_at = DateTimeField("last_login_at")
