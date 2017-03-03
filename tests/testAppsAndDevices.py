@@ -31,14 +31,28 @@ class TestUsersAndRoles(unittest.TestCase):
         # appDevice.App.query.filter_by(email=self.email).delete()
         # database.db.session.commit()
 
-    def testAddDevice(self):
-        data = {"name" : self.name, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : self.port}
-        response = json.loads(self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(as_text=True))
-        print response
+    # THIS IS THE TEST I AM WORKING THROUGH
+    # def testAddDevice(self):
+    #     data = {"name" : self.name, "username" : self.username, "pw" : self.password, "ipaddr" : self.ip, "port" : self.port,
+    #             "app-0" : "appOne", "app-1" : "appTwo"}
+    #     response = json.loads(self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(as_text=True))
+    #     print response
         #self.assertEqual(response["status"], "role added {0}".format(self.name))
 
         #response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
         #self.assertEqual(response["status"], "role exists")
+
+    # def testEditDevice(self):
+    #     data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip,
+    #             "port": self.port}
+    #     response = json.loads(
+    #         self.app.post('/configuration/HelloWorld/devices/testDevice/edit', data=data, headers=self.headers).get_data(
+    #             as_text=True))
+    #     print response
+        # self.assertEqual(response["status"], "role added {0}".format(self.name))
+
+        # response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
+        # self.assertEqual(response["status"], "role exists")
 
     # def testEditRoleDescr(self):
     #     data = {"name": self.name}

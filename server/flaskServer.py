@@ -470,8 +470,8 @@ def configDevicesConfig(app, action):
             if len(devClass.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device could not be added"})
 
-            devClass.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
-                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
+            devClass.add_device(name=form.name.data, apps=form.app.data, username=form.username.data,
+                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data, app_server=app)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})

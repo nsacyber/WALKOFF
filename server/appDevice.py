@@ -24,7 +24,7 @@ class Device(database.Base):
 
     def __init__(self, name="", app="", username="", password="", ip="0.0.0.0", port=0, apps=[]):
         self.name = name
-        self.apps = apps
+        self.apps = apps if apps is not None else []
         self.username = username
         self.password = password
         self.ip = ip
@@ -36,18 +36,16 @@ class Device(database.Base):
             output['apps'] = [app.as_json() for app in self.apps]
         return output
 
-    def add_device(self, name, apps, username, password, ip, port):
+    def add_device(self, name, apps, username, password, ip, port, app_server):
+        apps.append(app_server)
         device = Device(name=name, username=username, password=password, ip=ip, port=port)
         existing_apps = db.session.query(App).all()
         existing_app_names = [app.app for app in existing_apps]
-        print("inside class...?")
         for app in apps:
             if app in existing_app_names:
                 for app_elem in existing_apps:
                     if app_elem in existing_apps:
                         device.apps.append(app_elem)
-            else:
-                print("ERROR: App is not tracked")
         db.session.add(device)
         db.session.commit()
 
