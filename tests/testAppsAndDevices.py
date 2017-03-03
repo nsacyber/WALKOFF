@@ -69,5 +69,3 @@ class TestUsersAndRoles(unittest.TestCase):
                           headers=self.headers).get_data(
                 as_text=True))
         self.assertEqual(response["status"], "device successfully edited")
-
-

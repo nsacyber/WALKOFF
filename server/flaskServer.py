@@ -144,13 +144,12 @@ def crud_case(case_name, action):
             if form.name.data:
                 rename_case(case_name, form.name.data)
                 if form.note.data:
-                    case_database.case_db.edit_note(form.name.data, form.note.data)
+                    case_database.case_db.edit_case_note(form.name.data, form.note.data)
             elif form.note.data:
-                case_database.case_db.edit_note(case_name, form.note.data)
+                case_database.case_db.edit_case_note(case_name, form.note.data)
             return json.dumps(case_database.case_db.cases_as_json())
     else:
         return json.dumps({"status": "Invalid operation {0}".format(action)})
-
 
 
 @app.route('/cases/<string:case_name>', methods=['POST'])
@@ -164,6 +163,22 @@ def display_case(case_name):
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
 
+
+@app.route('/cases/event/<int:event_id>/edit', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def edit_event_note(event_id):
+    form = forms.EditEventForm(request.form)
+    if form.validate():
+        if form.note.data:
+            case_database.case_db.edit_event_note(event_id, form.note.data)
+            valid = case_database.case_db.session.query(case_database.EventLog).filter(case_database.EventLog.id == event_id).all()
+            if valid:
+                return json.dumps(case_database.case_db.event_as_json(event_id))
+            else:
+                return json.dumps({"status": "invalid event"})
+    else:
+        return json.dumps({"status": "Invalid form"})
 
 @app.route('/cases/subscriptions/available', methods=['POST'])
 @auth_token_required

@@ -119,6 +119,10 @@ class EditCaseForm(Form):
     note = StringField('note', [validators.Optional()])
 
 
+class EditEventForm(Form):
+    note = StringField('note', [validators.Optional()])
+
+
 class EditGlobalSubscriptionForm(Form):
     controller = FieldList(StringField('controller'), [validators.Optional()])
     workflow = FieldList(StringField('workflow'), [validators.Optional()])
