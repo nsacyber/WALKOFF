@@ -63,14 +63,14 @@ class TestCaseDatabase(unittest.TestCase):
 
     def test_add_case_note(self):
         TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.edit_note('case1', 'Note1')
+        case_database.case_db.edit_case_note('case1', 'Note1')
         case = case_database.case_db.session.query(case_database.Cases).\
                 filter(case_database.Cases.name == 'case1').first()
         self.assertEqual(case.note, 'Note1')
 
     def test_add_case_note_empty_case_name(self):
         TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.edit_note('', 'Note1')
+        case_database.case_db.edit_case_note('', 'Note1')
         case = case_database.case_db.session.query(case_database.Cases).\
                 filter(case_database.Cases.name == 'case1').first()
         self.assertIsNone(case.note)
@@ -79,7 +79,7 @@ class TestCaseDatabase(unittest.TestCase):
         TestCaseDatabase.__construct_basic_db()
         original_cases_in_db = case_database.case_db.session.query(case_database.Cases).all()
         original_notes = [case.note for case in original_cases_in_db]
-        case_database.case_db.edit_note('case5', 'Note1')
+        case_database.case_db.edit_case_note('case5', 'Note1')
         result_cases_in_db = case_database.case_db.session.query(case_database.Cases).all()
         result_notes = [case.note for case in original_cases_in_db]
         self.assertEqual(len(original_cases_in_db), len(result_cases_in_db))
@@ -140,10 +140,3 @@ class TestCaseDatabase(unittest.TestCase):
                              'Unexpected number of cases encountered for messages {0}'.format(event_message))
             self.assertSetEqual(set(event_cases), set(message_cases),
                                 'Expected cases does not equal received cases info for event {0}'.format(event_message))
-
-    def test_cases_as_json(self):
-        cases = {'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()}
-        set_subscriptions(cases)
-        self.assertDictEqual(case_database.case_db.cases_as_json(),
-                             {'cases': [{'note': None, 'id': '1', 'name': u'case1'},
-                                        {'note': None, 'id': '2', 'name': u'case2'}]})
