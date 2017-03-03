@@ -1,7 +1,7 @@
 import os
 import ssl
 import json
-from flask import render_template, request, Response
+from flask import render_template, request, Response, jsonify
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, controller
@@ -16,8 +16,6 @@ from . import database, appDevice
 from .app import app
 from .database import User
 from .triggers import Triggers
-
-import gevent
 from gevent import monkey
 
 monkey.patch_all()
@@ -31,7 +29,6 @@ default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
-
 devClass = appDevice.Device()
 
 
@@ -55,13 +52,13 @@ def create_user():
 
         database.db.session.commit()
 
+
     if database.db.session.query(appDevice.App).all() == []:
         # initialize app table
         path = os.path.abspath('apps/')
         for name in os.listdir(path):
             if (os.path.isdir(os.path.join(path, name))) and ('cache' not in name):
                 database.db.session.add(appDevice.App(app=name, devices=[]))
-
 
 
 
@@ -113,18 +110,14 @@ def workflow(name, format):
             output = workflowManager.workflows[name].returnCytoscapeData()
             return json.dumps(output)
         if format == "execute":
-            history = callbacks.cases["testExecutionEvents"]
-            with history:
-                steps, instances = workflowManager.executeWorkflow(name=name, start="start")
-
+            steps, instances = workflowManager.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
                 # response = json.dumps(helpers.returnCytoscapeData(steps=steps))
-                response = str(history.history)
+                response = str(steps)
             else:
                 response = json.dumps(str(steps))
-            callbacks.cases["testExecutionEvents"].clear_history()
-            return response
+            return Response(response, mimetype="application/json")
 
 
 @app.route('/cases', methods=['POST'])

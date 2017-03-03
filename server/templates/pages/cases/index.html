@@ -1,45 +1,116 @@
-<div id="main">
+<div id="main" class="content">
     <style>
-        #body{
-            margin-bottom:20px;
+        #header{
+            margin-bottom:30px;
+        }
+
+        #sidebar{
+            width:275px;
+            margin-right:20px;
+            border:solid;
+            background-color:#2b6688;
+            padding-left:10px;
+            padding-right:10px;
+            padding-bottom:10px;
+            text-align:center;
         }
         #cy {
-          display:inline-block;
-          vertical-align:top;
-          height: 700px;
-          width: 1000px;
+          height: 150px;
+          width: 250px;
           position: relative;
           left: 0;
           border:solid;
           background-color:white;
           background-image:url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
-          margin-right:20px;
+          float:center;
+
         }
         #parameters{
-            display:inline-block;
             vertical-align:top;
-            height: 700px;
-            width:500px;
+            margin-top:10px;
+            height: 500px;
+            width:250px;
+            border:solid;
+            background-color:white;
+
+        }
+        #sidebarTitle{
+            color:white;
+        }
+        #logTable{
+        }
+        .box{
+            height:700px;
+        }
+        .box-header{
+
+        }
+        .box-title{
 
         }
     </style>
-
-    <div id="header">
-        <h3> Case Log </h3>
-    </div>
-    <div id="body">
-        <h3 id="currentWorkflowText"></h3>
-        <button id="executeWorkflowButton">Execute Workflow</button>
-    </div>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
     <script>
         var currentWorkflow = "{{currentWorkflow}}";
         $("#currentWorkflowText").text(currentWorkflow);
     </script>
-    <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
 
-    <div id="cy"></div>
-    <div id="parameters">
-        Parameters go Here
+    <div id="header">
+        <h3> Case Log </h3>
+        <h3 id="currentWorkflowText"></h3>
+        <button id="executeWorkflowButton">Execute Workflow</button>
+    </div>
+    <div class="row">
+        <div id="sidebar" class="col-xs-2" >
+            <h3 id="sidebarTitle">Sidebar</h3>
+            <div id="cy"></div>
+            <div id="parameters">
+                Parameters go Here
+            </div>
+        </div>
+
+        <div class="col-xs-10">
+          <div class="box ">
+            <div class="box-header">
+              <h3 class="box-title">Events</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="logDataTable" class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                    <th data-field="name">Name</th>
+                    <th data-field="app">App</th>
+                    <th data-field="device">Device</th>
+                    <th data-field="nextUp">Next Up</th>
+                    <th data-field="action">Action</th>
+                    <th data-field="output">Output</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>start</td>
+                    <td>HelloWorld</td>
+                    <td>testDevice</td>
+                    <td>Workflow End</td>
+                    <td>HelloWorld</td>
+                    <td>"Hello World"</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                 <tr>
+                    <th>Name</th>
+                    <th>NextUp</th>
+                    <th>Action</th>
+                    <th>Output</th>
+                </tr>
+                </tfoot>
+              </table>
+            </div>
+            <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+        </div>
     </div>
 </div>
