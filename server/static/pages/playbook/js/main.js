@@ -94,7 +94,28 @@ cy.layout({
     root:"#start"
  });
 
-cy.$('*').on('click', function(e){
+
+// The following sets up undo/redo on the graph
+var ur = cy.undoRedo({});
+
+// The following ensures the graph has the focus whenever you click on it so
+// that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
+$(cy.container()).on("mouseup mousedown", function(){
+    $(cy.container()).focus();
+});
+
+// The following does the actual undo/redo when pressing Ctrl+Z/Ctrl+Y
+$(cy.container()).on("keydown", function (e) {
+    if (e.ctrlKey) {
+        if (e.which === 90) // 'Ctrl+Z'
+            ur.undo();
+        else if (e.which === 89) // 'Ctrl+Y'
+            ur.redo();
+    }
+});
+
+
+function onClick(e) {
   // This function displays info about a node/edge when clicked upon next to the graph
 
   function jsonStringifySort(obj) {
@@ -109,7 +130,9 @@ cy.$('*').on('click', function(e){
   var parameters = ele.data().parameters;
   var parametersAsJsonString = jsonStringifySort(parameters);
   $("#parameters").text(parametersAsJsonString);
-});
+}
+
+cy.$('node').on('click', onClick);
 
 function notifyMe() {
   if (!Notification) {
@@ -161,14 +184,36 @@ $(function(){
 
     // Add the node with the id just found to the graph in the location dropped
     // into by the mouse.
-    cy.add({
+    var newNode = ur.do('add', {
       group: 'nodes',
       data: {
-        id: id.toString()
+        id: id.toString(),
+        parameters: {
+            action: id.toString(),
+            app: "None",
+            device: "None",
+            errors: [
+                {
+                  name: "None",
+                  nextStep: "None",
+                  flags: []
+                }
+            ],
+            input: {},            
+            name: id.toString(),
+            next: [
+                {
+                  name: "None",
+                  nextStep: "None",
+                  flags: []
+                }
+            ],
+        }
       },
       position: { x: x, y: y }
     });
 
+    newNode.on('click', onClick);
   }
 
   // Called to configure drag on nodes in palette
@@ -180,7 +225,7 @@ $(function(){
   } );
 
   // Called to configure drops onto graph
-  $('#cy').droppable( {
+  $(cy.container()).droppable( {
     drop: handleDropEvent
   } );
 
