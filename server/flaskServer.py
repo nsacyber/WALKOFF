@@ -512,8 +512,9 @@ def configDevicesConfigId(app, device, action):
         dev = devClass.filter_app_and_device(app_name=app, device_name=device)
         if form.validate() and dev is not None:
             # Ensures new name is unique
-            if len(devClass.query.filter_by(name=str(device)).all()) > 0:
-                return json.dumps({"status": "device could not be edited"})
+            if form.name.data != "":
+                if len(devClass.query.filter_by(name=str(device)).all()) > 0:
+                    return json.dumps({"status": "device could not be edited"})
 
             dev.editDevice(form)
 

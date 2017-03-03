@@ -6,17 +6,21 @@ from sqlalchemy.orm import relationship
 
 db = database.db
 
-class _App_Device(database.Base):
-    __tablename__ = 'app_device'
-    app_id = db.Column(Integer, ForeignKey('app.id'), primary_key=True)
-    device_id = db.Column(Integer, ForeignKey('device.id'), primary_key=True)
+# class _App_Device(db):
+#     __tablename__ = 'app_device'
+#     app_id = db.Column(Integer, ForeignKey('app.id'), primary_key=True)
+#     device_id = db.Column(Integer, ForeignKey('device.id'), primary_key=True)
+
+app_device = db.Table('_app_device',
+                      db.Column('app_id', db.Integer, db.ForeignKey('app.id')),
+                      db.Column('device_id', db.Integer, db.ForeignKey('device.id')))
 
 class Device(database.Base):
     __tablename__ = 'device'
 
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
-    apps = relationship('App', secondary='app_device', lazy='dynamic')
+    apps = db.relationship('App', secondary=app_device, lazy='dynamic')
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
     ip = db.Column(db.String(15))
@@ -92,7 +96,7 @@ class App(database.Base, object):
     __tablename__ = 'app'
     id = db.Column(Integer, primary_key=True)
     app = db.Column(String)
-    devices = relationship('Device', secondary='app_device', lazy='dynamic')
+    devices = db.relationship('Device', secondary=app_device, lazy='dynamic')
 
     def as_json(self, with_devices=False):
         output = {'id' : str(self.id), 'app' : self.app}
