@@ -11,6 +11,7 @@ from core.executionelement import ExecutionElement
 from core.nextstep import Next
 from core.helpers import load_function_aliases, load_app_function
 
+
 class InvalidStepArgumentsError(Exception):
     def __init__(self, message=''):
         super(InvalidStepArgumentsError, self).__init__(message)
