@@ -101,6 +101,15 @@ def loginInfo():
         return {"status": "Could Not Log In."}
 
 
+@app.route("/workflow", methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def display_available_workflows():
+    files = [os.path.splitext(workflow)[0]
+             for workflow in os.listdir(config.workflowsPath) if workflow.endswith('.workflow')]
+    return json.dumps({"workflows": files})
+
+
 @app.route("/workflow/<string:name>/<string:format>", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
@@ -118,6 +127,8 @@ def workflow(name, format):
             else:
                 response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")
+
+
 
 
 @app.route('/cases', methods=['POST'])

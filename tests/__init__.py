@@ -16,4 +16,5 @@ __all__ = ['testBenchmarks',
            'testTriggers',
            'testUsersAndRoles',
            'testAppsAndDevices',
-           'testWorkflowManipulation']
+           'testWorkflowManipulation',
+           'testWorkflowServer']
