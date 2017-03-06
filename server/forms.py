@@ -72,6 +72,7 @@ class AddNewDeviceForm(Form):
     apps = FieldList(StringField('apps'), [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
     submit = SubmitField('submit')
+    extraFields = StringField('extraFields', [validators.Optional()])
 
 
 class EditDeviceForm(Form):
@@ -82,6 +83,7 @@ class EditDeviceForm(Form):
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
     apps = FieldList(StringField('apps'), [validators.Optional()])
     submit = SubmitField('submit')
+    extraFields = StringField('extraFields', [validators.Optional()])
 
 
 class LoginForm(Form):

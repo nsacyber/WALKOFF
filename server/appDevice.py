@@ -1,8 +1,8 @@
 import json
 from abc import abstractmethod
 from . import database
-from sqlalchemy import Integer, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, String
+import ast
 
 db = database.db
 
@@ -23,27 +23,26 @@ class Device(database.Base):
     apps = db.relationship('App', secondary=app_device, lazy='dynamic')
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
-    ip = db.Column(db.String(15))
     port = db.Column(db.Integer())
+    ip = db.Column(db.String(15))
+    extra_fields = db.Column(db.String(80))
 
-    def __init__(self, name="", app="", username="", password="", ip="0.0.0.0", port=0, apps=[]):
+    def __init__(self, name="", app="", username="", password="", ip="0.0.0.0", port=0, apps=[], extraFields=""):
         self.name = name
         self.apps = apps if apps is not None else []
         self.username = username
         self.password = password
         self.ip = ip
         self.port = port
-
-    def as_json(self, with_apps=True):
-        output = {'id' : str(self.id), 'name' : self.name, 'username' : self.username, 'ip' : self.ip, 'port' : str(self.port)}
-        if with_apps:
-            output['apps'] = [app.as_json() for app in self.apps]
-        return output
+        if self.extra_fields != "":
+            self.extra_fields = extraFields.replace("\'", "\"")
+        else:
+            self.extra_fields = extraFields
 
     @staticmethod
-    def add_device(name, apps, username, password, ip, port, app_server):
+    def add_device(name, apps, username, password, ip, port, extraFields, app_server):
         apps.append(app_server)
-        device = Device(name=name, username=username, password=password, ip=ip, port=port)
+        device = Device(name=name, username=username, password=password, ip=ip, port=port, extraFields=extraFields)
         existing_apps = db.session.query(App).all()
         existing_app_names = [app.app for app in existing_apps]
         for app in apps:
@@ -81,12 +80,31 @@ class Device(database.Base):
         if form.port.data:
             self.port = form.port.data
 
+        if form.extraFields.data:
+            fieldsDict = json.loads(form.extraFields.data.replace("\'", "\""))
+            if self.extra_fields == "":
+                self.extra_fields = form.extraFields.data
+            else:
+                extra_fields = json.loads(self.extra_fields)
+                for field in fieldsDict:
+                    extra_fields[field] = fieldsDict[field]
+                self.extra_fields = json.dumps(extra_fields)
+
         # if form.apps.data:
         #     query = db.session.query.all(App)
         #     if query:
         #         for app in query:
         #             if app.app == form.apps.data:
-        #                 self.apps.append(app)
+
+    def as_json(self, with_apps=True):
+        output = {'id' : str(self.id), 'name' : self.name, 'username' : self.username, 'ip' : self.ip, 'port' : str(self.port)}
+        if with_apps:
+            output['apps'] = [app.as_json() for app in self.apps]
+        if self.extra_fields != "":
+            exFields = json.loads(self.extra_fields)
+            for field in exFields:
+                output[field] = exFields[field]
+        return output
 
     def __repr__(self):
         return json.dumps({"name": self.name, "username": self.username, "password": self.password,

@@ -496,7 +496,8 @@ def configDevicesConfig(app, action):
                 return json.dumps({"status": "device could not be added"})
 
             running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
-                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data, app_server=app)
+                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data, app_server=app,
+                                              extraFields=form.extraFields.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
