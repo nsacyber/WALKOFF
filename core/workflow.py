@@ -1,11 +1,9 @@
-import importlib
-import sys
 import xml.etree.cElementTree as et
 from os.path import join, isfile
 
 from core import arguments
 from core import config
-from core import instance
+from core.instance import Instance
 from core import options
 from core.case import callbacks
 from core.executionelement import ExecutionElement
@@ -43,7 +41,10 @@ class Workflow(ExecutionElement):
     def assignChild(self, name="", workflow=None):
         self.children[name] = workflow
 
-    def createStep(self, id="", action="", app="", device="", input={}, next=[], errors=[]):
+    def createStep(self, id="", action="", app="", device="", input=None, next=None, errors=None):
+        input = input if input is not None else {}
+        next = next if next is not None else []
+        errors = errors if errors is not None else []
         # Creates new step object
         input = {input[key]["tag"]: arguments.Argument(key=input[key]["tag"], value=input[key]["value"],
                                                        format=input[key]["format"]) for key in input}
@@ -70,22 +71,6 @@ class Workflow(ExecutionElement):
 
         return self.workflowXML
 
-    def importApp(self, app=""):
-        module = "apps." + app + ".main"
-        try:
-            return sys.modules[module]
-        except KeyError:
-            pass
-        try:
-            return importlib.import_module(module, 'Main')
-        except ImportError:
-            pass
-
-    def createInstance(self, app="", device=""):
-        imported = self.importApp(app)
-        if imported:
-            return instance.Instance(instance=getattr(imported, "Main")(name=app, device=device), state=instance.OK)
-
     def goToNextStep(self, current="", nextUp=""):
         if nextUp not in self.steps:
             self.steps[current].nextUp = None
@@ -103,7 +88,7 @@ class Workflow(ExecutionElement):
             if step:
                 self.event_handler.execute_event_code(self, 'NextStepFound')
                 if step.device not in instances:
-                    instances[step.device] = self.createInstance(app=step.app, device=step.device)
+                    instances[step.device] = Instance.create(step.app, step.device)
                     self.event_handler.execute_event_code(self, 'InstanceCreated')
 
                 # for arg in step.input:

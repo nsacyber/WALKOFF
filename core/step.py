@@ -15,8 +15,10 @@ class InvalidStepArgumentsError(Exception):
     def __init__(self, message=''):
         super(InvalidStepArgumentsError, self).__init__(message)
 
+
 class Step(ExecutionElement):
-    def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
+    def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None,
+                 parent_name="",
                  ancestry=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.rawXML = xml
@@ -68,7 +70,7 @@ class Step(ExecutionElement):
         if sys.version_info[0] > 2:
             content = et.tostring(self.rawXML, encoding="unicode", method="xml")
         else:
-            content = et.tostring(self.rawXML,  method="xml")
+            content = et.tostring(self.rawXML, method="xml")
 
         t = Template(Markup(content).unescape(), autoescape=True)
         xml = t.render(config.JINJA_GLOBALS, **kwargs)
@@ -155,15 +157,12 @@ class Step(ExecutionElement):
 
     def as_json(self):
         output = {"name": str(self.name),
-                "action": str(self.name),
-                "app": str(self.app),
-                "device": str(self.device),
-                "input": {str(key): str(self.input[key]) for key in self.input},
-                "next": [next.as_json() for next in self.conditionals],
-                "errors": [error.as_json() for error in self.errors]}
+                  "action": str(self.name),
+                  "app": str(self.app),
+                  "device": str(self.device),
+                  "input": {str(key): str(self.input[key]) for key in self.input},
+                  "next": [next.as_json() for next in self.conditionals],
+                  "errors": [error.as_json() for error in self.errors]}
         if self.output:
             output["output"] = str(self.output)
         return output
-
-
-

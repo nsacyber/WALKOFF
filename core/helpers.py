@@ -1,4 +1,5 @@
 import importlib
+import sys
 
 def returnCytoscapeData(steps):
     output = []
@@ -21,3 +22,15 @@ def import_lib(dir, module_name):
         pass
     finally:
         return module
+
+
+def import_app_main(app_name):
+    module = "apps." + app_name + ".main"
+    try:
+        return sys.modules[module]
+    except KeyError:
+        pass
+    try:
+        return importlib.import_module(module, 'Main')
+    except ImportError:
+        pass
