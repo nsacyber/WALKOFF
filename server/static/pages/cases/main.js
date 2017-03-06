@@ -1,3 +1,21 @@
+var cases = function () {
+    var tmp = null;
+    $.ajax({
+        'async': false,
+        'type': "POST",
+        'global': false,
+        'data':{"format":"cytoscape"},
+        'headers':{"Authentication-Token":authKey},
+        'url': "/cases",
+        'success': function (data) {
+            tmp = data;
+            console.log(data);
+        }
+    });
+    return tmp;
+}();
+
+
 $("#executeWorkflowButton").on("click", function(e){
     var result = function () {
         var tmp = null;
@@ -9,14 +27,15 @@ $("#executeWorkflowButton").on("click", function(e){
             'headers':{"Authentication-Token":authKey},
             'url': "/workflow/" + currentWorkflow + "/execute",
             'success': function (data) {
+                console.log(data);
                 tmp = data;
             }
         });
         return tmp;
     }();
-    console.log(JSON.parse(result));
+    console.log(result.output);
 
-    cy.add(JSON.parse(result));
+    cy.add(result);
     cy.layout({
         name: 'breadthfirst',
         fit:true,

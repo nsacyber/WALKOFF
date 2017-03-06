@@ -6,6 +6,7 @@ from core import controller, graphDecorator
 from core.case.subscription import Subscription
 from tests import config
 
+
 class TestExecutionEvents(unittest.TestCase):
     """
             Tests execution Events at the Workflow Level
@@ -105,22 +106,28 @@ class TestExecutionEvents(unittest.TestCase):
     def test_ffkExecutionEventsCase(self):
         c = controller.Controller(name="testStepFFKEventsController")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
-        filter_sub = Subscription(disabled=['FilterSuccess'])
-        flag_sub = Subscription(subscriptions={'length': filter_sub})
-        next_sub = Subscription(subscriptions={'regMatch': flag_sub})
-        step_sub = Subscription(subscriptions={'1': next_sub})
+        filter_sub = Subscription(events=['FilterError'])
+        flag_sub = Subscription(events=['FlagArgsValid',
+                                        'FlagArgsInvalid'], subscriptions={'length': filter_sub})
+        next_sub = Subscription(events=['NextStepTaken',
+                                        'NextStepNotTaken'],
+                                subscriptions={'regMatch': flag_sub})
+        step_sub = Subscription(events=['FunctionExecutionSuccess',
+                                        'InputValidated',
+                                        'ConditionalsExecuted'], subscriptions={'1': next_sub})
         subs = {'testStepFFKEventsController':
                     Subscription(subscriptions=
                                  {'helloWorldWorkflow':
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
-        global_subs = case_subscription.GlobalSubscriptions(step='*',
+        global_subs = case_subscription.GlobalSubscriptions(step=['FunctionExecutionSuccess',
+                                                                  'InputValidated',
+                                                                  'ConditionalsExecuted'],
                                                             next_step=['NextStepTaken',
                                                                        'NextStepNotTaken'],
                                                             flag=['FlagArgsValid',
                                                                   'FlagArgsInvalid'],
-                                                            filter=['FilterSuccess',
-                                                                    'FilterError'])
+                                                            filter=['FilterError'])
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
                                                                             global_subscriptions=global_subs)})

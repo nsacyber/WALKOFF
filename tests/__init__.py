@@ -11,4 +11,5 @@ __all__ = ['testBenchmarks',
            'testStreaming',
            'testTriggers',
            'testUsersAndRoles',
+           'testAppsAndDevices',
            'testWorkflowManipulation']

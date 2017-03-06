@@ -249,17 +249,28 @@ $(function(){
 });
 
 $(function(){
-    sse = new EventSource('apps/HelloWorld/stream/counter');
-    var s = document.getElementById('counter_stream')
-    sse.onmessage = function(message) {
-        s.innerHTML = '<li>'+message.data+'</li>'
-    }
+
 })
 
 $(function(){
-    sse = new EventSource('apps/HelloWorld/stream/random-number');
-    var s = document.getElementById('rand_stream')
-    sse.onmessage = function(message) {
+    sse1 = new EventSource('apps/HelloWorld/stream/counter');
+    sse2 = new EventSource('apps/HelloWorld/stream/random-number');
+
+    var s = document.getElementById('counter_stream')
+    sse1.onmessage = function(message) {
         s.innerHTML = '<li>'+message.data+'</li>'
+    }
+    sse1.onerror = function(){
+        sse1.close();
+        sse2.close();
+    }
+
+    var s = document.getElementById('rand_stream')
+    sse2.onmessage = function(message) {
+        s.innerHTML = '<li>'+message.data+'</li>'
+    }
+    sse2.onerror = function(){
+        sse1.close();
+        sse2.close();
     }
 })

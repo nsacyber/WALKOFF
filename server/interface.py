@@ -22,7 +22,7 @@ def cases():
     return {"currentWorkflow": "multiactionWorkflow"}, None
 
 def dashboard():
-    return {}, None
+    return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}, None
 
 def debug():
     return {}, None

@@ -130,33 +130,31 @@
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
+                <hr class="settings-hr">
                 <div id="userForm">
                     <form id="usForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
-                        <h3><i> Path Configuration </i></h3>
+                        <h3><i> User Configuration </i></h3>
+                        <hr class="settings-hr">
+                        </br>
                         <div id="test">
                             {% from "pages/_formhelpers.html" import render_field %}
                             {{ render_field(form.username) }}
                             {{ render_field(form.password) }}
                             {{ render_field(form.email) }}
                             {{ render_field(form.active)  }}
-                            {{ render_field(form.confirmed_at) }}
+{#                            {{ render_field(form.confirmed_at) }}#}
                             {{ render_field(form.roles)  }}
-                            {{ render_field(form.last_login_at)  }}
-                            {{ render_field(form.current_login_at)  }}
-                            {{ render_field(form.last_login_ip) }}
-                            {{ render_field(form.current_login_ip)  }}
-                            {{ render_field(form.login_count) }}
+{#                            {{ render_field(form.last_login_at)  }}#}
+{#                            {{ render_field(form.current_login_at)  }}#}
+{#                            {{ render_field(form.last_login_ip) }}#}
+{#                            {{ render_field(form.current_login_ip)  }}#}
+{#                            {{ render_field(form.login_count) }}#}
                         </div>
-
                     </form>
-
                 </div>
             </div>
         </div>
-        <!--<select class="form-control" id="userList">-->
-            <!--<option selected="selected" disabled>Select a user</option>-->
-        <!--</select>-->
     </div>
 </div>

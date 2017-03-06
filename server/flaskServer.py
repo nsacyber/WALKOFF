@@ -5,19 +5,18 @@ from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, controller
+from core.context import running_context
 from . import forms, interface
-from core.case import callbacks
-from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions
+from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, rename_case
 
 import core.case.database as case_database
-from . import database
+import core.case.subscription as case_subscription
+from . import database, appDevice
 from .app import app
 from .database import User
-from .appDevice import Device
 from .triggers import Triggers
-
-import gevent
 from gevent import monkey
+
 monkey.patch_all()
 
 user_datastore = database.user_datastore
@@ -25,11 +24,11 @@ user_datastore = database.user_datastore
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
         "/roles", "/users", "/configuration", '/cases']
 
-
 default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
+#devClass = appDevice.Device()
 
 
 # Creates Test Data
@@ -37,6 +36,7 @@ db = database.db
 def create_user():
     # db.drop_all()
     database.db.create_all()
+
     if not database.User.query.first():
         # Add Credentials to Splunk app
         # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
@@ -52,6 +52,15 @@ def create_user():
         database.db.session.commit()
 
 
+    if database.db.session.query(appDevice.App).all() == []:
+        # initialize app table
+        path = os.path.abspath('apps/')
+        for name in os.listdir(path):
+            if (os.path.isdir(os.path.join(path, name))) and ('cache' not in name):
+                database.db.session.add(appDevice.App(app=name, devices=[]))
+
+
+
 # Temporary create controller
 workflowManager = controller.Controller()
 workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
@@ -64,6 +73,7 @@ subs = {'defaultController':
                                                    "NextStepFound", "WorkflowShutdown"])})}
 set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
 
+
 """
     URLS
 """
@@ -74,7 +84,8 @@ set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)}
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": config.getApps(), "authKey": current_user.get_auth_token(), "currentUser": current_user.email, "default_page":default_page_name}
+        args = {"apps": running_context.getApps(), "authKey": current_user.get_auth_token(),
+                "currentUser": current_user.email, "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
@@ -99,38 +110,123 @@ def workflow(name, format):
             output = workflowManager.workflows[name].returnCytoscapeData()
             return json.dumps(output)
         if format == "execute":
-            history = callbacks.cases["testExecutionEvents"]
-            with history:
-                steps, instances = workflowManager.executeWorkflow(name=name, start="start")
-
+            steps, instances = workflowManager.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
                 # response = json.dumps(helpers.returnCytoscapeData(steps=steps))
-                response = str(history.history)
+                response = str(steps)
             else:
                 response = json.dumps(str(steps))
-            callbacks.cases["testExecutionEvents"].clear_history()
-            return response
+            return Response(response, mimetype="application/json")
 
 
 @app.route('/cases', methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_cases():
-    return json.dumps({'cases': [case.as_json(with_events=False)
-                                 for case in case_database.case_db.session.query(case_database.Cases).all()]})
+    return json.dumps(case_database.case_db.cases_as_json())
+
+
+@app.route('/cases/<string:case_name>/<string:action>', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def crud_case(case_name, action):
+    if action == 'add':
+        case = CaseSubscriptions()
+        add_cases({"{0}".format(str(case_name)): case})
+        return json.dumps(case_subscription.subscriptions_as_json())
+    elif action == 'delete':
+        delete_cases([case_name])
+        return json.dumps(case_subscription.subscriptions_as_json())
+    elif action == 'edit':
+        form = forms.EditCaseForm(request.form)
+        if form.validate():
+            if form.name.data:
+                rename_case(case_name, form.name.data)
+                if form.note.data:
+                    case_database.case_db.edit_note(form.name.data, form.note.data)
+            elif form.note.data:
+                case_database.case_db.edit_note(case_name, form.note.data)
+            return json.dumps(case_database.case_db.cases_as_json())
+    else:
+        return json.dumps({"status": "Invalid operation {0}".format(action)})
+
 
 
 @app.route('/cases/<string:case_name>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
-    case = case_database.case_db.session.query(case_database.Cases)\
+    case = case_database.case_db.session.query(case_database.Cases) \
         .filter(case_database.Cases.name == case_name).first()
     if case:
         return json.dumps({'case': case.as_json()})
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
+
+
+@app.route('/cases/subscriptions/available', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_possible_subscriptions():
+    with open(os.path.join('.', 'data', 'events.json')) as f:
+        return f.read()
+
+
+@app.route('/cases/subscriptions/<string:case_name>/global/edit', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def edit_global_subscription(case_name):
+    form = forms.EditGlobalSubscriptionForm(request.form)
+    if form.validate():
+        global_sub = case_subscription.GlobalSubscriptions(controller=form.controller.data,
+                                                           workflow=form.workflow.data,
+                                                           step=form.step.data,
+                                                           next_step=form.next_step.data,
+                                                           flag=form.flag.data,
+                                                           filter=form.filter.data)
+        success = case_subscription.edit_global_subscription(case_name, global_sub)
+        if success:
+            return json.dumps(case_subscription.subscriptions_as_json())
+        else:
+            return json.dumps({"status": "Error: Case name {0} was not found".format(case_name)})
+    else:
+        return json.dumps({"status": "Error: form invalid"})
+
+
+
+@app.route('/cases/subscriptions/<string:case_name>/subscription/<string:action>', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def crud_subscription(case_name, action):
+    if action == 'edit':
+        form = forms.EditSubscriptionForm(request.form)
+        if form.validate():
+            success = case_subscription.edit_subscription(case_name, form.ancestry.data, form.events.data)
+            if success:
+                return json.dumps(case_subscription.subscriptions_as_json())
+            else:
+                return json.dumps({"status": "Error occurred while editing subscription"})
+        else:
+            return json.dumps({"status": "Error: Case name {0} was not found".format(case_name)})
+    elif action == 'add':
+        form = forms.AddSubscriptionForm(request.form)
+        if form.validate():
+            case_subscription.add_subscription(case_name, form.ancestry.data, form.events.data)
+            return json.dumps(case_subscription.subscriptions_as_json())
+    elif action == 'delete':
+        form = forms.DeleteSubscriptionForm(request.form)
+        if form.validate():
+            case_subscription.remove_subscription_node(case_name, form.ancestry.data)
+            return json.dumps(case_subscription.subscriptions_as_json())
+
+
+@app.route('/cases/subscriptions/', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def display_subscriptions():
+    return json.dumps(case_subscription.subscriptions_as_json())
+
 
 @app.route("/configuration/<string:key>", methods=['POST'])
 @auth_token_required
@@ -362,6 +458,14 @@ def userActions(action, id_or_email):
             else:
                 return json.dumps({"status": "could not display user"})
 
+# Controls the non-specific app device configuration
+@app.route('/configuration/<string:app>/devices', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/configuration"])
+def listDevices(app):
+    result = str(running_context.Device.query.all())
+    print(result)
+    return result
 
 
 # Controls the non-specific app device configuration
@@ -372,25 +476,22 @@ def configDevicesConfig(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
-            if len(Device.query.filter_by(name=form.name.data).all()) > 0:
-                return json.dumps({"status": "device could not be added"})
+            if len(running_context.Device.query.filter_by(name=form.name.data).all()) > 0:
+                return json.dumps({"status": "device already exists"})
 
-            Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
-                                      password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
+            running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+                          password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = Device.query.all()
+        query = running_context.Device.query.all()
         output = []
         if query:
             for device in query:
                 for app_elem in device.apps:
                     if app_elem.name == app:
                         output.append(device.as_json())
-                        # output.append(
-                        #     {"name": device.name, "username": device.username, "port": device.port, "ip": device.ip,
-                        #      "apps": [ a.as_json() for a in device.apps ]})
 
             return json.dumps(output)
     return json.dumps({"status": "could not display all devices"})
@@ -402,13 +503,13 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        dev = Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             return json.dumps(dev.as_json())
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        dev = Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             dev.delete()
             db.session.commit()
@@ -417,10 +518,10 @@ def configDevicesConfigId(app, device, action):
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        dev = Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if form.validate() and dev is not None:
             # Ensures new name is unique
-            if len(Device.query.filter_by(name=str(device)).all()) > 0:
+            if len(running_context.Device.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status": "device could not be edited"})
 
             dev.editDevice(form)

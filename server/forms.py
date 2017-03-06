@@ -1,5 +1,7 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, IntegerField, FormField, \
-    SelectField,RadioField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
+    IntegerField, FormField, \
+    SelectField, RadioField, SubmitField
+
 
 class NewUserForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25), validators.required()])
@@ -66,10 +68,10 @@ class AddNewDeviceForm(Form):
     name = StringField('name', [validators.Length(min=4, max=25), validators.required()])
     username = StringField('username', [validators.Optional()])
     pw = PasswordField('pw', [validators.Optional()])
-    app = StringField('app', [validators.required()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
+    app = FieldList(StringField('app'), [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
-    other = StringField('other', [validators.Optional()])
+    submit = SubmitField('submit')
 
 
 class EditDeviceForm(Form):
@@ -78,7 +80,8 @@ class EditDeviceForm(Form):
     pw = PasswordField('pw', [validators.Optional()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
-    app = StringField('app', [validators.Optional()])
+    app = FieldList(StringField('app'), [validators.Optional()])
+    submit = SubmitField('submit')
 
 
 class LoginForm(Form):
@@ -113,6 +116,38 @@ class incomingDataForm(Form):
     data = StringField('data')
 
 
+class EditCaseForm(Form):
+    name = StringField('name', [validators.Optional()])
+    note = StringField('note', [validators.Optional()])
+
+
+class EditEventForm(Form):
+    note = StringField('note', [validators.Optional()])
+
+
+class EditGlobalSubscriptionForm(Form):
+    controller = FieldList(StringField('controller'), [validators.Optional()])
+    workflow = FieldList(StringField('workflow'), [validators.Optional()])
+    step = FieldList(StringField('step'), [validators.Optional()])
+    next_step = FieldList(StringField('next_step'), [validators.Optional()])
+    flag = FieldList(StringField('flag'), [validators.Optional()])
+    filter = FieldList(StringField('filter'), [validators.Optional()])
+
+
+class EditSubscriptionForm(Form):
+    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
+    events = FieldList(StringField('events'), [validators.Optional()])
+
+
+class AddSubscriptionForm(Form):
+    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
+    events = FieldList(StringField('events'), [validators.Optional()])
+
+
+class DeleteSubscriptionForm(Form):
+    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
+
+
 class settingsForm(Form):
     templatesPath = StringField('templatesPath', [validators.Optional()])
     workflowsPath = StringField('workflowsPath', [validators.Optional()])
@@ -135,8 +170,8 @@ class settingsForm(Form):
 
     email = StringField('email', [validators.DataRequired("Please enter your email address."),
                                   validators.Email("Please enter your email address.")])
-    active = RadioField('active', choices=[])
-    confirmed_at = DateTimeField('confirmed_at',[validators.Optional()])
+    active = BooleanField()
+    confirmed_at = DateTimeField('confirmed_at', [validators.Optional()])
     roles = SelectField('roles', choices=[])
     last_login_at = DateTimeField("last_login_at")
     current_login_at = DateTimeField("current_login_at")
@@ -145,11 +180,10 @@ class settingsForm(Form):
     login_count = IntegerField("login_count")
 
 
-
 class userForm(Form):
-    username = SelectField('username',[validators.Optional()], choices=[])
-    email = StringField('email',[validators.DataRequired("Please enter your email address."),
-    validators.Email("Please enter your email address.")])
+    username = SelectField('username', [validators.Optional()], choices=[])
+    email = StringField('email', [validators.DataRequired("Please enter your email address."),
+                                  validators.Email("Please enter your email address.")])
     password = PasswordField('password')
-    active = RadioField('active',choices =[])
+    active = RadioField('active', choices=[])
     # active = RadioField('active',choices = [ (h.key.id(),h.homename)for h in User.queryAll()])
