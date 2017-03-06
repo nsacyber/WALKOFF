@@ -458,6 +458,15 @@ def userActions(action, id_or_email):
             else:
                 return json.dumps({"status": "could not display user"})
 
+# Controls the non-specific app device configuration
+@app.route('/configuration/<string:app>/devices', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/configuration"])
+def listDevices(app):
+    result = str(running_context.Device.query.all())
+    print(result)
+    return result
+
 
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
@@ -470,8 +479,8 @@ def configDevicesConfig(app, action):
             if len(running_context.Device.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device already exists"})
 
-                running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
-                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
+            running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+                          password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})

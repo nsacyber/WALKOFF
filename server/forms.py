@@ -1,6 +1,6 @@
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
     IntegerField, FormField, \
-    SelectField, RadioField
+    SelectField, RadioField, SubmitField
 
 
 class NewUserForm(Form):
@@ -71,6 +71,7 @@ class AddNewDeviceForm(Form):
     ipaddr = StringField('ipaddr', [validators.Optional()])
     app = FieldList(StringField('app'), [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+    submit = SubmitField('submit')
 
 
 class EditDeviceForm(Form):
@@ -80,6 +81,7 @@ class EditDeviceForm(Form):
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
     app = FieldList(StringField('app'), [validators.Optional()])
+    submit = SubmitField('submit')
 
 
 class LoginForm(Form):
