@@ -69,7 +69,7 @@ class AddNewDeviceForm(Form):
     username = StringField('username', [validators.Optional()])
     pw = PasswordField('pw', [validators.Optional()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
-    app = FieldList(StringField('app'), [validators.Optional()])
+    apps = FieldList(StringField('apps'), [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
     submit = SubmitField('submit')
 
@@ -80,7 +80,7 @@ class EditDeviceForm(Form):
     pw = PasswordField('pw', [validators.Optional()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
     port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
-    app = FieldList(StringField('app'), [validators.Optional()])
+    apps = FieldList(StringField('apps'), [validators.Optional()])
     submit = SubmitField('submit')
 
 
