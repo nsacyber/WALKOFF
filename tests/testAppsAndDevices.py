@@ -6,7 +6,7 @@ from server import appDevice
 from server import flaskServer as server
 
 
-class TestAppsAndDevices(unittest.TestCase):
+class TestUsersAndRoles(unittest.TestCase):
     def setUp(self):
         self.app = server.app.test_client(self)
         self.app.testing = True
@@ -24,50 +24,48 @@ class TestAppsAndDevices(unittest.TestCase):
 
 
     def tearDown(self):
-        print("")
         appDevice.Device.query.filter_by(name=self.name).delete()
         database.db.session.commit()
 
-        # appDevice.App.query.filter_by(email=self.email).delete()
-        # database.db.session.commit()
-
     def testAddDevice(self):
-        data = {"name" : self.name, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : self.port}
+        data = {"name" : self.name, "username" : self.username, "pw" : self.password, "ipaddr" : self.ip, "port" : self.port}
         response = json.loads(self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(as_text=True))
-        print(response)
-        #self.assertEqual(response["status"], "role added {0}".format(self.name))
+        self.assertEqual(response["status"], "device successfully added")
 
-        #response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
-        #self.assertEqual(response["status"], "role exists")
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["status"], "device could not be added")
 
-    # def testEditRoleDescr(self):
-    #     data = {"name": self.name}
-    #     json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
-    #
-    #     data = {"name" : self.name, "description" : self.description}
-    #     response = json.loads(self.app.post('/roles/edit/'+self.name, data=data, headers=self.headers).get_data(as_text=True))
-    #     self.assertEqual(response["name"], self.name)
-    #     self.assertEqual(response["description"], self.description)
-    #
-    # def testAddUser(self):
-    #     data = {"username": self.email, "password":self.password}
-    #     response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
-    #     self.assertTrue("user added" in response["status"])
-    #
-    #     response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
-    #     self.assertEqual(response["status"], "user exists")
-    #
-    # def testEditUser(self):
-    #     data = {"username": self.email, "password": self.password}
-    #     json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
-    #
-    #     data = {"password": self.password}
-    #     response = json.loads(self.app.post('/users/'+self.email+'/edit', data=data, headers=self.headers).get_data(as_text=True))
-    #     self.assertEqual(response["username"], self.email)
-    #
-    # def testRemoveUser(self):
-    #     data = {"username": self.email, "password": self.password}
-    #     json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
-    #
-    #     response = json.loads(self.app.post('/users/'+self.email+'/remove', headers=self.headers).get_data(as_text=True))
-    #     self.assertEqual(response["status"], "user removed")
+    def testDisplayDevice(self):
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port}
+        json.loads(
+            self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(
+                as_text=True))
+
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["username"], self.username)
+        self.assertEqual(response["name"], self.name)
+        self.assertEqual(response["ip"], self.ip)
+        self.assertEqual(response["port"], str(self.port))
+
+    def testEditDevice(self):
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port}
+        json.loads(
+            self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(
+                as_text=True))
+
+        data = {"ipaddr" : "192.168.196.1"}
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/testDevice/edit', data=data, headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["status"], "device successfully edited")
+
+        data = {"port": 6001}
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/testDevice/edit', data=data,
+                          headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["status"], "device successfully edited")

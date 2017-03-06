@@ -144,13 +144,12 @@ def crud_case(case_name, action):
             if form.name.data:
                 rename_case(case_name, form.name.data)
                 if form.note.data:
-                    case_database.case_db.edit_note(form.name.data, form.note.data)
+                    case_database.case_db.edit_case_note(form.name.data, form.note.data)
             elif form.note.data:
-                case_database.case_db.edit_note(case_name, form.note.data)
+                case_database.case_db.edit_case_note(case_name, form.note.data)
             return json.dumps(case_database.case_db.cases_as_json())
     else:
         return json.dumps({"status": "Invalid operation {0}".format(action)})
-
 
 
 @app.route('/cases/<string:case_name>', methods=['POST'])
@@ -163,6 +162,24 @@ def display_case(case_name):
         return json.dumps({'case': case.as_json()})
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
+
+
+@app.route('/cases/event/<int:event_id>/edit', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def edit_event_note(event_id):
+    form = forms.EditEventForm(request.form)
+    if form.validate():
+        if form.note.data:
+            valid_event_id = case_database.case_db.session.query(case_database.EventLog)\
+                .filter(case_database.EventLog.id == event_id).all()
+            if valid_event_id:
+                case_database.case_db.edit_event_note(event_id, form.note.data)
+                return json.dumps(case_database.case_db.event_as_json(event_id))
+            else:
+                return  json.dumps({"status": "invalid event"})
+    else:
+        return json.dumps({"status": "Invalid form"})
 
 
 @app.route('/cases/subscriptions/available', methods=['POST'])
@@ -467,7 +484,6 @@ def listDevices(app):
     print(result)
     return result
 
-
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
 @auth_token_required
@@ -477,10 +493,10 @@ def configDevicesConfig(app, action):
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
             if len(running_context.Device.query.filter_by(name=form.name.data).all()) > 0:
-                return json.dumps({"status": "device already exists"})
+                return json.dumps({"status": "device could not be added"})
 
             running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
-                          password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
+                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data, app_server=app)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
@@ -521,8 +537,8 @@ def configDevicesConfigId(app, device, action):
         dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if form.validate() and dev is not None:
             # Ensures new name is unique
-            if len(running_context.Device.query.filter_by(name=str(device)).all()) > 0:
-                return json.dumps({"status": "device could not be edited"})
+            # if len(devClass.query.filter_by(name=str(device)).all()) > 0:
+            #     return json.dumps({"status": "device could not be edited"})
 
             dev.editDevice(form)
 

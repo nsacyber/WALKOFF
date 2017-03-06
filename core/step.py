@@ -9,15 +9,17 @@ from core import nextstep, config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.nextstep import Next
-
+from core.helpers import load_function_aliases, load_app_function
 
 class InvalidStepArgumentsError(Exception):
     def __init__(self, message=''):
         super(InvalidStepArgumentsError, self).__init__(message)
 
+
 class Step(ExecutionElement):
-    def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None, parent_name="",
-                 ancestry=None):
+    def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None,
+                 parent_name="",
+                 ancestry=None, function_aliases=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.rawXML = xml
 
@@ -31,7 +33,7 @@ class Step(ExecutionElement):
             self.conditionals = next if next is not None else []
             self.errors = errors if errors is not None else []
             self.rawXML = self.to_xml()
-
+        self.function_aliases = function_aliases if function_aliases is not None else load_function_aliases(self.app)
         self.output = None
         self.nextUp = None
         super(Step, self)._register_event_callbacks(
@@ -68,7 +70,7 @@ class Step(ExecutionElement):
         if sys.version_info[0] > 2:
             content = et.tostring(self.rawXML, encoding="unicode", method="xml")
         else:
-            content = et.tostring(self.rawXML,  method="xml")
+            content = et.tostring(self.rawXML, method="xml")
 
         t = Template(Markup(content).unescape(), autoescape=True)
         xml = t.render(config.JINJA_GLOBALS, **kwargs)
@@ -78,10 +80,18 @@ class Step(ExecutionElement):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
                 else True)
 
+    def __lookup_function(self):
+        aliases = load_function_aliases(self.app)
+        if aliases:
+            for function, alias_list in aliases.items():
+                if self.action == function or self.action in alias_list:
+                    return function
+        return None
+
     def execute(self, instance=None):
         if self.validateInput():
             self.event_handler.execute_event_code(self, 'InputValidated')
-            result = getattr(instance, self.action)(args=self.input)
+            result = load_app_function(instance, self.__lookup_function())(args=self.input)
             self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result
@@ -155,15 +165,12 @@ class Step(ExecutionElement):
 
     def as_json(self):
         output = {"name": str(self.name),
-                "action": str(self.name),
-                "app": str(self.app),
-                "device": str(self.device),
-                "input": {str(key): str(self.input[key]) for key in self.input},
-                "next": [next.as_json() for next in self.conditionals],
-                "errors": [error.as_json() for error in self.errors]}
+                  "action": str(self.name),
+                  "app": str(self.app),
+                  "device": str(self.device),
+                  "input": {str(key): str(self.input[key]) for key in self.input},
+                  "next": [next.as_json() for next in self.conditionals],
+                  "errors": [error.as_json() for error in self.errors]}
         if self.output:
             output["output"] = str(self.output)
         return output
-
-
-

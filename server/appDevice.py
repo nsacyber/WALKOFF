@@ -40,7 +40,8 @@ class Device(database.Base):
             output['apps'] = [app.as_json() for app in self.apps]
         return output
 
-    def add_device(self, name, apps, username, password, ip, port, app_server):
+    @staticmethod
+    def add_device(name, apps, username, password, ip, port, app_server):
         apps.append(app_server)
         device = Device(name=name, username=username, password=password, ip=ip, port=port)
         existing_apps = db.session.query(App).all()
@@ -53,7 +54,8 @@ class Device(database.Base):
         db.session.add(device)
         db.session.commit()
 
-    def filter_app_and_device(self, app_name, device_name):
+    @staticmethod
+    def filter_app_and_device(app_name, device_name):
         query = db.session.query(Device).all()
         if query:
             for device in query:
@@ -79,12 +81,12 @@ class Device(database.Base):
         if form.port.data:
             self.port = form.port.data
 
-        if form.app.data:
-            query = db.session.query.all(App)
-            if query:
-                for app in query:
-                    if app.app == form.app.data:
-                        self.apps.append(app)
+        # if form.apps.data:
+        #     query = db.session.query.all(App)
+        #     if query:
+        #         for app in query:
+        #             if app.app == form.apps.data:
+        #                 self.apps.append(app)
 
     def __repr__(self):
         return json.dumps({"name": self.name, "username": self.username, "password": self.password,
