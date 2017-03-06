@@ -9,7 +9,7 @@ from core import nextstep, config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.nextstep import Next
-
+from core.helpers import load_function_aliases, load_app_function
 
 class InvalidStepArgumentsError(Exception):
     def __init__(self, message=''):
@@ -19,7 +19,7 @@ class InvalidStepArgumentsError(Exception):
 class Step(ExecutionElement):
     def __init__(self, xml=None, name="", action="", app="", device="", input=None, next=None, errors=None,
                  parent_name="",
-                 ancestry=None):
+                 ancestry=None, function_aliases=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.rawXML = xml
 
@@ -33,7 +33,7 @@ class Step(ExecutionElement):
             self.conditionals = next if next is not None else []
             self.errors = errors if errors is not None else []
             self.rawXML = self.to_xml()
-
+        self.function_aliases = function_aliases if function_aliases is not None else load_function_aliases(self.app)
         self.output = None
         self.nextUp = None
         super(Step, self)._register_event_callbacks(
@@ -80,10 +80,18 @@ class Step(ExecutionElement):
         return (all(self.input[arg].validate(action=self.action, io="input") for arg in self.input) if self.input
                 else True)
 
+    def __lookup_function(self):
+        aliases = load_function_aliases(self.app)
+        if aliases:
+            for function, alias_list in aliases.items():
+                if self.action == function or self.action in alias_list:
+                    return function
+        return None
+
     def execute(self, instance=None):
         if self.validateInput():
             self.event_handler.execute_event_code(self, 'InputValidated')
-            result = getattr(instance, self.action)(args=self.input)
+            result = load_app_function(instance, self.__lookup_function())(args=self.input)
             self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
             self.output = result
             return result

@@ -1,0 +1,5 @@
+{
+  "helloWorld": ["helloworld", "hello world", "hello", "greeting", "HelloWorld", "hello_world"],
+  "repeatBackToMe": ["parrot", "Parrot", "RepeatBackToMe", "repeat_back_to_me", "repeat"],
+  "returnPlusOne" : ["plus one", "PlusOne", "plus_one", "plusone", "++", "increment"]
+}
