@@ -6,7 +6,7 @@ from server import appDevice
 from server import flaskServer as server
 
 
-class TestUsersAndRoles(unittest.TestCase):
+class TestAppsAndDevices(unittest.TestCase):
     def setUp(self):
         self.app = server.app.test_client(self)
         self.app.testing = True
@@ -24,9 +24,9 @@ class TestUsersAndRoles(unittest.TestCase):
 
 
     def tearDown(self):
-        print ""
-        # appDevice.Device.query.filter_by(name=self.name).delete()
-        # database.db.session.commit()
+        print("")
+        appDevice.Device.query.filter_by(name=self.name).delete()
+        database.db.session.commit()
 
         # appDevice.App.query.filter_by(email=self.email).delete()
         # database.db.session.commit()
@@ -34,7 +34,7 @@ class TestUsersAndRoles(unittest.TestCase):
     def testAddDevice(self):
         data = {"name" : self.name, "username" : self.username, "password" : self.password, "ip" : self.ip, "port" : self.port}
         response = json.loads(self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(as_text=True))
-        print response
+        print(response)
         #self.assertEqual(response["status"], "role added {0}".format(self.name))
 
         #response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))

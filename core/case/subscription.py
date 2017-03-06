@@ -1,6 +1,5 @@
 from core.case.database import case_db
 
-
 class GlobalSubscriptions(object):
     """
     Specifies the events which are subscribed to by all types of a execution level

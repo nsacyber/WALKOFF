@@ -1,14 +1,13 @@
 import os
 import ssl
 import json
-from flask import render_template, request, Response, jsonify
+from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, controller
 from core.context import running_context
 from . import forms, interface
-from core.case import callbacks
-from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, get_subscriptions, add_cases, delete_cases, rename_case
+from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, rename_case
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -29,7 +28,7 @@ default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
-devClass = appDevice.Device()
+#devClass = appDevice.Device()
 
 
 # Creates Test Data
@@ -73,6 +72,7 @@ subs = {'defaultController':
                               Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                    "NextStepFound", "WorkflowShutdown"])})}
 set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
+
 
 """
     URLS
@@ -467,16 +467,16 @@ def configDevicesConfig(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
-            if len(devClass.query.filter_by(name=form.name.data).all()) > 0:
-                return json.dumps({"status": "device could not be added"})
+            if len(running_context.Device.query.filter_by(name=form.name.data).all()) > 0:
+                return json.dumps({"status": "device already exists"})
 
-            devClass.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+                running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
                               password=form.pw.data, ip=form.ipaddr.data, port=form.port.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = devClass.query.all()
+        query = running_context.Device.query.all()
         output = []
         if query:
             for device in query:
@@ -494,13 +494,13 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        dev = devClass.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             return json.dumps(dev.as_json())
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        dev = devClass.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if dev is not None:
             dev.delete()
             db.session.commit()
@@ -509,10 +509,10 @@ def configDevicesConfigId(app, device, action):
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        dev = devClass.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
         if form.validate() and dev is not None:
             # Ensures new name is unique
-            if len(devClass.query.filter_by(name=str(device)).all()) > 0:
+            if len(running_context.Device.query.filter_by(name=str(device)).all()) > 0:
                 return json.dumps({"status": "device could not be edited"})
 
             dev.editDevice(form)
