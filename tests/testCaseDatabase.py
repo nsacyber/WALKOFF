@@ -63,14 +63,14 @@ class TestCaseDatabase(unittest.TestCase):
 
     def test_add_case_note(self):
         TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.edit_note('case1', 'Note1')
+        case_database.case_db.edit_case_note('case1', 'Note1')
         case = case_database.case_db.session.query(case_database.Cases).\
                 filter(case_database.Cases.name == 'case1').first()
         self.assertEqual(case.note, 'Note1')
 
     def test_add_case_note_empty_case_name(self):
         TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.edit_note('', 'Note1')
+        case_database.case_db.edit_case_note('', 'Note1')
         case = case_database.case_db.session.query(case_database.Cases).\
                 filter(case_database.Cases.name == 'case1').first()
         self.assertIsNone(case.note)
@@ -79,7 +79,7 @@ class TestCaseDatabase(unittest.TestCase):
         TestCaseDatabase.__construct_basic_db()
         original_cases_in_db = case_database.case_db.session.query(case_database.Cases).all()
         original_notes = [case.note for case in original_cases_in_db]
-        case_database.case_db.edit_note('case5', 'Note1')
+        case_database.case_db.edit_case_note('case5', 'Note1')
         result_cases_in_db = case_database.case_db.session.query(case_database.Cases).all()
         result_notes = [case.note for case in original_cases_in_db]
         self.assertEqual(len(original_cases_in_db), len(result_cases_in_db))
@@ -141,9 +141,68 @@ class TestCaseDatabase(unittest.TestCase):
             self.assertSetEqual(set(event_cases), set(message_cases),
                                 'Expected cases does not equal received cases info for event {0}'.format(event_message))
 
-    def test_cases_as_json(self):
-        cases = {'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()}
-        set_subscriptions(cases)
-        self.assertDictEqual(case_database.case_db.cases_as_json(),
-                             {'cases': [{'note': None, 'id': '1', 'name': u'case1'},
-                                        {'note': None, 'id': '2', 'name': u'case2'}]})
+    def test_edit_note(self):
+        TestCaseDatabase.__construct_basic_db()
+
+        elem1 = ExecutionElement(name='b', parent_name='a')
+        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
+        elem3 = ExecutionElement(name='d', parent_name='c')
+        elem4 = ExecutionElement()
+
+        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = EventEntry(elem3, 'message3', 'STEP')
+        event4 = EventEntry(elem4, 'message4', 'NEXT')
+
+        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event4, cases=['case1'])
+
+        events = case_db.session.query(case_database.EventLog).all()
+        smallest_id = min([event.id for event in events])
+        expected_json_list = [event.as_json() for event in events]
+        for event in expected_json_list:
+            if event['id'] == str(smallest_id):
+                event['note'] = 'Note1'
+
+        case_db.edit_event_note(smallest_id, 'Note1')
+        events = case_db.session.query(case_database.EventLog).all()
+        result_json_list = [event.as_json() for event in events]
+        self.assertEqual(len(result_json_list), len(expected_json_list))
+        self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
+
+    def test_edit_note_invalid_id(self):
+        TestCaseDatabase.__construct_basic_db()
+
+        elem1 = ExecutionElement(name='b', parent_name='a')
+        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
+        elem3 = ExecutionElement(name='d', parent_name='c')
+        elem4 = ExecutionElement()
+
+        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = EventEntry(elem3, 'message3', 'STEP')
+        event4 = EventEntry(elem4, 'message4', 'NEXT')
+
+        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event4, cases=['case1'])
+
+        events = case_db.session.query(case_database.EventLog).all()
+        expected_json_list = [event.as_json() for event in events]
+
+        case_db.edit_event_note(None, 'Note1')
+        events = case_db.session.query(case_database.EventLog).all()
+        result_json_list = [event.as_json() for event in events]
+        self.assertEqual(len(result_json_list), len(expected_json_list))
+        self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
+
+        invalid_id = max([event.id for event in events]) + 1
+        case_db.edit_event_note(invalid_id, 'Note1')
+        events = case_db.session.query(case_database.EventLog).all()
+        result_json_list = [event.as_json() for event in events]
+        self.assertEqual(len(result_json_list), len(expected_json_list))
+        self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
+

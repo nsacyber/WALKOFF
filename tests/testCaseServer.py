@@ -687,6 +687,78 @@ class TestCaseServer(unittest.TestCase):
         test_junk_path('case1', ['sub21'])
         test_junk_path('case2', ["sub22", "sub20", "sub17"])
 
+    def test_edit_event_note(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        case3, _ = construct_case1()
+        case4, _ = construct_case2()
+        cases = {'case1': case1, 'case2': case2, 'case3': case3, 'case4': case4}
+        set_subscriptions(cases)
 
+        elem1 = ExecutionElement(name='b', parent_name='a')
+        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
+        elem3 = ExecutionElement(name='d', parent_name='c')
+        elem4 = ExecutionElement()
 
+        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = EventEntry(elem3, 'message3', 'STEP')
+        event4 = EventEntry(elem4, 'message4', 'NEXT')
+
+        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event4, cases=['case1'])
+
+        events = case_database.case_db.session.query(case_database.EventLog).all()
+        smallest_id = min([event.id for event in events])
+        altered_event = [event for event in events if event.id == smallest_id]
+        expected_event = altered_event[0].as_json()
+        expected_event['note'] = 'Note1'
+
+        data = {"note": 'Note1'}
+        response = self.app.post('/cases/event/{0}/edit'.format(smallest_id), data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_event)
+
+        expected_event['note'] = 'Note2'
+
+        data = {"note": 'Note2'}
+        response = self.app.post('/cases/event/{0}/edit'.format(smallest_id), data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_event)
+
+    def test_edit_event_note_invalid_event_id(self):
+        case1, _ = construct_case1()
+        case2, _ = construct_case2()
+        case3, _ = construct_case1()
+        case4, _ = construct_case2()
+        cases = {'case1': case1, 'case2': case2, 'case3': case3, 'case4': case4}
+        set_subscriptions(cases)
+
+        elem1 = ExecutionElement(name='b', parent_name='a')
+        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
+        elem3 = ExecutionElement(name='d', parent_name='c')
+        elem4 = ExecutionElement()
+
+        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = EventEntry(elem3, 'message3', 'STEP')
+        event4 = EventEntry(elem4, 'message4', 'NEXT')
+
+        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event4, cases=['case1'])
+
+        events = case_database.case_db.session.query(case_database.EventLog).all()
+        invalid_id = max([event.id for event in events]) + 1
+
+        data = {"note": 'Note2'}
+        response = self.app.post('/cases/event/{0}/edit'.format(invalid_id), data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {"status": "invalid event"})
 

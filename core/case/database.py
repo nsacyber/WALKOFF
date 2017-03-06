@@ -87,7 +87,7 @@ class CaseDatabase(object):
         if case_names:
             cases = self.session.query(Cases).filter(Cases.name.in_(case_names)).all()
             for case in cases:
-                self.session.delete(case) #There is a more efficient way to delete all items
+                self.session.delete(case)  # There is a more efficient way to delete all items
             self.session.commit()
 
     def rename_case(self, old_case_name, new_case_name):
@@ -97,11 +97,18 @@ class CaseDatabase(object):
                 case.name = new_case_name
                 self.session.commit()
 
-    def edit_note(self, case_name, note):
+    def edit_case_note(self, case_name, note):
         if case_name:
             case = self.session.query(Cases).filter(Cases.name == case_name).first()
             if case:
                 case.note = note
+                self.session.commit()
+
+    def edit_event_note(self, event_id, note):
+        if event_id:
+            event = self.session.query(EventLog).filter(EventLog.id == event_id).first()
+            if event:
+                event.note = note
                 self.session.commit()
 
     def add_event(self, event, cases):
@@ -123,6 +130,9 @@ class CaseDatabase(object):
     def cases_as_json(self):
         return {'cases': [case.as_json(with_events=False)
                           for case in self.session.query(Cases).all()]}
+
+    def event_as_json(self, event_id):
+        return self.session.query(EventLog).filter(EventLog.id == event_id).first().as_json()
 
 case_db = CaseDatabase()
 
