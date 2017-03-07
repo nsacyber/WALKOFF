@@ -122,9 +122,17 @@ $(function(){
         // The edge hendles extension is not integrated into the undo/redo extension.
         // So in order that adding edges is contained in the undo stack,
         // remove the edge just added and add back in again using the undo/redo
-        // extension.
+        // extension. Also add info to edge which is displayed when user clicks on it.
+        for (var i=0; i<targetNodes.length; ++i) {
+            addedEntities[i].data('parameters', {
+              flags: [],
+              name: targetNodes[i].data().parameters.name,
+              nextStep: targetNodes[i].data().parameters.name
+            });
+        }
         cy.remove(addedEntities); // Remove NOT using undo/redo extension
-        ur.do('add',addedEntities); // Added back in using undo/redo extension
+        var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension
+        newEdges.on('click', onClick);
       },
   });
 
