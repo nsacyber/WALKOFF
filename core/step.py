@@ -87,7 +87,7 @@ class Step(ExecutionElement):
             for function, alias_list in aliases.items():
                 if self.action == function or self.action in alias_list:
                     return function
-        return None
+        return self.action
 
     def execute(self, instance=None):
         if self.validateInput():
