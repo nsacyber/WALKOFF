@@ -69,7 +69,7 @@ $(function(){
 
     boxSelectionEnabled: false,
     autounselectify: false,
-    userZoomingEnabled:false,
+    wheelSensitivity: 0.1,
     style: [
       {
         selector: 'node',
