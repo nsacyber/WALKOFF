@@ -290,6 +290,13 @@ $(function(){
             cy.clipboard().copy(cy.$(":selected"));
           else if (e.which == 86) // Ctrl + V, Paste
             ur.do("paste");
+          else if (e.which == 88) { // Ctrl + X, Cut
+            var selecteds = cy.$(":selected");
+            if (selecteds.length > 0) {
+              cy.clipboard().copy(selecteds);
+              ur.do("remove", selecteds);
+            }
+          }
           else if (e.which == 65) { // 'Ctrl+A', Select All
             cy.elements().select();
             e.preventDefault();
