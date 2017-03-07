@@ -8,17 +8,17 @@ from core import config
 class Argument(object):
     def __init__(self, key=None, value=None, format="str"):
         self.key = key
-        self.value = value
-        self.templated = None
         self.format = format
-        self.value = self.convertTo(value=self.value, type=self.format)
+        self.value = Argument.convertTo(value=value, type=self.format)
+        self.templated = None
 
     def __call__(self):
         if self.templated:
             return self.templated
         return self.value
 
-    def convertTo(self, value=None, type="str"):
+    @staticmethod
+    def convertTo(value=None, type="str"):
         output = value
         if any(type == string_type for string_type in ['str', 'string', 'unicode']):
             try:
@@ -29,6 +29,8 @@ class Argument(object):
             try:
                 output = int(output)
             except ValueError as e:
+                return output
+            except TypeError:  # for NoneTypes
                 return output
         return output
 
@@ -50,10 +52,12 @@ class Argument(object):
         return str(output)
 
     def validate(self, action=None, io="input"):
+        if not config.functionConfig[action]["args"]:
+            return True
         for x in config.functionConfig[action]["args"]:
             if x["type"] != self.format:
                 try:
-                    self.value = self.convertTo(value=self.value, type=x["type"])
+                    self.value = Argument.convertTo(value=self.value, type=x["type"])
                 except:
                     return False
         return any(x["name"] == self.key and x["type"] == self.format for x in config.functionConfig[action]["args"])

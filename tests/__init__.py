@@ -1,4 +1,5 @@
-__all__ = ['testBenchmarks',
+__all__ = ['testArgument',
+           'testBenchmarks',
            'testCaseDatabase',
            'testCaseServer',
            'testCaseSubscriptions',
