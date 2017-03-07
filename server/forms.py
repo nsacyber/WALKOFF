@@ -24,8 +24,13 @@ class EditRoleForm(Form):
     pages = StringField('pages')
 
 
-class AddNewPlayForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=50), validators.required()])
+class SavePlayForm(Form):
+    play = StringField('play', [validators.Optional()])
+
+
+class EditPlayNameForm(Form):
+    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.required()])
+
 
 
 class EditPlayOptionsForm(Form):

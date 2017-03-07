@@ -3,10 +3,14 @@ import unittest
 
 from core import controller, graphDecorator
 from tests import config
+from server import flaskServer as server
 
 
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
+        self.app = server.app.test_client(self)
+        self.app.testing = True
+        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = controller.Controller()
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")

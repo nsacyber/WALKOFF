@@ -1,7 +1,8 @@
 import unittest
 from core.helpers import *
-from apps.HelloWorld.main import Main
+
 from core.instance import Instance
+from tests.config import testWorkflowsPath
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -30,3 +31,17 @@ class TestHelperFunctions(unittest.TestCase):
     def test_load_app_function_invalid_function(self):
         instance = Instance.create('HelloWorld', 'default_device_name')
         self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
+
+    def test_load_workflows(self):
+        expected_workflows = ['basicWorkflowTest.workflow',
+                              'loopWorkflow.workflow',
+                              'multiactionWorkflowTest.workflow',
+                              'multistepError.workflow',
+                              'simpleDataManipulationWorkflow.workflow',
+                              'templatedWorkflowTest.workflow',
+                              'testExecutionWorkflow.workflow',
+                              'testScheduler.workflow',
+                              'tieredWorkflow.workflow']
+        received_workflows = locate_workflows_in_directory(testWorkflowsPath)
+        self.assertEqual(len(received_workflows), len(expected_workflows))
+        self.assertSetEqual(set(received_workflows), set(expected_workflows))

@@ -7,11 +7,13 @@ from os.path import join, isfile, splitext
 
 class Context(object):
     def __init__(self):
-        self.workflows = self.getWorkflowsFromFolder()
+        #self.workflows = self.getWorkflowsFromFolder()
         self.apps = self.getApps()
 
         from server.database import User, Role
         from server.appDevice import Device
+        from core.controller import controller
+        self.controller = controller
 
         self.User = User
         self.Role = Role

@@ -28,9 +28,7 @@ class Argument(object):
         elif type == "int":
             try:
                 output = int(output)
-            except ValueError as e:
-                return output
-            except TypeError:  # for NoneTypes
+            except (ValueError, TypeError):
                 return output
         return output
 
