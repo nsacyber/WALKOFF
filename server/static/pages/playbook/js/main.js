@@ -288,8 +288,10 @@ $(function(){
             ur.redo();
           else if (e.which == 67) // Ctrl + C, Copy
             cy.clipboard().copy(cy.$(":selected"));
-          else if (e.which == 86) // Ctrl + V, Paste
-            ur.do("paste");
+          else if (e.which == 86) { // Ctrl + V, Paste
+            var newNodes = ur.do("paste");
+            newNodes.on('click', onClick);
+          }
           else if (e.which == 88) { // Ctrl + X, Cut
             var selecteds = cy.$(":selected");
             if (selecteds.length > 0) {
