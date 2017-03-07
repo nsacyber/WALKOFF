@@ -14,11 +14,12 @@ var systemPage = function(sandbox){
     return{
         init: function(opt){
               //Load default page
+             page_url = (opt.preface || 'interface') + '/' + opt.page + '/display';
              module = function(){
                 var tmp = null;
                   $.ajax({
-                      url:'interface/' + opt.page + '/display',
-                      data:{},
+                      url:page_url,
+                      data:opt.data || {},
                       headers:{"Authentication-Token":authKey},
                       type:"POST",
                       'async':false,
@@ -34,6 +35,7 @@ var systemPage = function(sandbox){
                 return tmp;
               }();
               $("#ss_main").html(module);
+              $("#main").resize();
 
         },
         destroy: function(){

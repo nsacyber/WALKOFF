@@ -83,18 +83,12 @@ $(document).ready(function(){
 
     $(".installedApp").on("click", function(e){
         app = e["target"]["childNodes"][1]["data"].trim()
-        $.ajax({
-            url:'/apps/' + app + '/display',
-            data:{"page": "index.html", "key-0":"name", "value-0":"testing"},
-			headers:{"Authentication-Token":authKey},
-            type:"POST",
-            success: function(e){
-                data = e;
-                $("#ss_main").html(e);
-                $("#main").resize();
-            },
-            error: function(e){
-                $("#ss_main").html("<p> Interface could not be Loaded! </p>");
+        core.stop();
+        core.start("systemPage", {
+            options: {
+                preface:"apps",
+                page:app,
+                data:{"page": "index.html", "key-0":"name", "value-0":"testing"},
             }
         });
     });
