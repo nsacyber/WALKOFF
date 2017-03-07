@@ -14,8 +14,8 @@ class Filter(ExecutionElement):
             ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
             self.action = action
             args = args if args is not None else {}
-            self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
-                         for arg in args}
+            self.args = {arg_name: arguments.Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
+                         for arg_name, arg_value in args.items()}
         super(Filter, self)._register_event_callbacks({'FilterSuccess': callbacks.add_filter_entry('Filter success'),
                                                        'FilterError': callbacks.add_filter_entry('Filter error')})
 
@@ -33,7 +33,6 @@ class Filter(ExecutionElement):
         args_element = et.SubElement(elem, "args")
         for arg in self.args:
             args_element.append(self.args[arg].to_xml())
-
         return elem
 
     def __call__(self, output=None):

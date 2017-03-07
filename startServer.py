@@ -34,6 +34,7 @@ if __name__ == "__main__":
             server = WSGIServer((host, port), application=flaskServer.app, ssl_context=ssl_context)
         else:
             server = WSGIServer((host, port), application=flaskServer.app)
+        print('Listening on host '+host+' and port '+str(port)+'...')
         server.serve_forever()
     except ValueError:
         print('Invalid port {0}. Port must be an integer'.format(config.port))

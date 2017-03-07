@@ -22,13 +22,16 @@ class TestUsersAndRoles(unittest.TestCase):
         self.ip = "127.0.0.1"
         self.port = 6000
 
+        self.extraFields = {"extraFieldOne" : "extraNameOne", "extraFieldTwo" : "extraNameTwo"}
+
 
     def tearDown(self):
         appDevice.Device.query.filter_by(name=self.name).delete()
         database.db.session.commit()
 
     def testAddDevice(self):
-        data = {"name" : self.name, "username" : self.username, "pw" : self.password, "ipaddr" : self.ip, "port" : self.port}
+        data = {"name" : self.name, "username" : self.username, "pw" : self.password, "ipaddr" : self.ip, "port" : self.port,
+                "extraFields" : json.dumps(self.extraFields)}
         response = json.loads(self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["status"], "device successfully added")
 
@@ -38,7 +41,8 @@ class TestUsersAndRoles(unittest.TestCase):
         self.assertEqual(response["status"], "device could not be added")
 
     def testDisplayDevice(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port}
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
+                "extraFields": str(self.extraFields)}
         json.loads(
             self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(
                 as_text=True))
@@ -50,9 +54,12 @@ class TestUsersAndRoles(unittest.TestCase):
         self.assertEqual(response["name"], self.name)
         self.assertEqual(response["ip"], self.ip)
         self.assertEqual(response["port"], str(self.port))
+        self.assertEqual(response["extraFieldOne"], "extraNameOne")
+        self.assertEqual(response["extraFieldTwo"], "extraNameTwo")
 
     def testEditDevice(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port}
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
+                "extraFields": str(self.extraFields)}
         json.loads(
             self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(
                 as_text=True))
@@ -69,3 +76,16 @@ class TestUsersAndRoles(unittest.TestCase):
                           headers=self.headers).get_data(
                 as_text=True))
         self.assertEqual(response["status"], "device successfully edited")
+
+
+        data = {"extraFields": json.dumps({"extraFieldOne" : "extraNameOneOne"})}
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/testDevice/edit', data=data,
+                          headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["status"], "device successfully edited")
+
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["extraFieldOne"], "extraNameOneOne")

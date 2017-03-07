@@ -47,6 +47,7 @@ def load_function_aliases(app_name):
 
 def load_app_function(app_instance, function_name):
     try:
-        return getattr(app_instance, function_name)
+        fn = getattr(app_instance, function_name)
+        return fn
     except AttributeError:
         return None

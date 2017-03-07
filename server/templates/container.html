@@ -235,6 +235,8 @@ desired effect
     var authKey = '{{ authKey|safe }}';
     var default_page = '{{default_page | safe}}';
 </script>
+<script src="{{ url_for('static', filename='scaleApp.js' ) }}"></script>
+<script src="{{ url_for('static', filename='modules.js' ) }}"></script>
 <script src="{{ url_for('static', filename='pageSetup.js' ) }}"></script>
 <script src="{{ url_for('static', filename='main.js' ) }}"></script>
 </body>

@@ -1,6 +1,6 @@
 def main(args, value):
     try:
-        if type(value) == 'int':
+        if type(value) == int:
             return value
         else:
             result = len(value)
