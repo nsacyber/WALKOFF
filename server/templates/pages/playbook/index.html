@@ -1,4 +1,5 @@
 <div id="main">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/cytoscape.js-panzoom.css' ) }}">
     <style>
         #body{
             margin-bottom: 20px;
@@ -42,6 +43,18 @@
         <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
 
+    <div class=bs-example data-example-id=simple-button-toolbar>
+        <div class=btn-toolbar role=toolbar>
+            <div class=btn-group role=group>
+                <button id="remove-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+            </div>
+            <div class=btn-group role=group>
+                <button id="undo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span></button>
+                <button id="redo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
+            </div>
+        </div>
+    </div>
+
     <div id="top">
         <div class="panel panel-default" id="palette">
             <div class="panel-heading">Nodes</div>
@@ -64,6 +77,9 @@
     <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-undo-redo.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-panzoom.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-edgehandles.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-clipboard.js') }}"></script>
     <script>
         var currentWorkflow = "{{currentWorkflow}}";
         $("#currentWorkflowText").text(currentWorkflow);

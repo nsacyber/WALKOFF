@@ -40,8 +40,8 @@ var cy = cytoscape({
   container: document.getElementById('cy'),
   
   boxSelectionEnabled: false,
-  autounselectify: true,
-  zoomingEnabled:false,
+  autounselectify: false,
+  userZoomingEnabled:false,
   style: [
     {
       selector: 'node',
@@ -71,21 +71,36 @@ var cy = cytoscape({
         'target-arrow-shape': 'triangle',
         'curve-style': 'bezier',
       }
-    },
-    {
-      selector: ':selected',
-      css: {
-        'background-color': 'black',
-        'line-color': 'black',
-        'target-arrow-color': 'black',
-        'source-arrow-color': 'black'
-      }
     }
-  ],
-
+  ]
 
 });
 
+
+// The following sets up various Cytoscape extensions
+// Undo/Redo extension
+var ur = cy.undoRedo({});
+
+// Panzoom extension
+cy.panzoom({});
+
+// Extension for drawing edges
+cy.edgehandles({
+    preview: false,
+    toggleOffOnLeave: true,
+    complete: function( sourceNode, targetNodes, addedEntities ) {
+        // In order so that adding edges is contained in the undo stack,
+        // Remove the edge just added and added back again using the undo/redo
+        // extension.
+        cy.remove(addedEntities); // Remove NOT using undo/redo extension
+        ur.do('add',addedEntities); // Added back in using undo/redo extension
+    },
+});
+
+// Extension for copy and paste
+cy.clipboard();
+
+// Load the data and setup the layout
 cy.add(JSON.parse(workflowData));
 cy.layout({
     name: 'breadthfirst',
@@ -94,25 +109,6 @@ cy.layout({
     root:"#start"
  });
 
-
-// The following sets up undo/redo on the graph
-var ur = cy.undoRedo({});
-
-// The following ensures the graph has the focus whenever you click on it so
-// that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
-$(cy.container()).on("mouseup mousedown", function(){
-    $(cy.container()).focus();
-});
-
-// The following does the actual undo/redo when pressing Ctrl+Z/Ctrl+Y
-$(cy.container()).on("keydown", function (e) {
-    if (e.ctrlKey) {
-        if (e.which === 90) // 'Ctrl+Z'
-            ur.undo();
-        else if (e.which === 89) // 'Ctrl+Y'
-            ur.redo();
-    }
-});
 
 
 function onClick(e) {
@@ -132,7 +128,7 @@ function onClick(e) {
   $("#parameters").text(parametersAsJsonString);
 }
 
-cy.$('node').on('click', onClick);
+cy.$('*').on('click', onClick);
 
 function notifyMe() {
   if (!Notification) {
@@ -155,7 +151,7 @@ function notifyMe() {
   }
 }
 
-// The following code sets up drag and drop on the graph
+// Configure the graph
 $(function(){
 
   // This is called while the user is dragging
@@ -210,7 +206,7 @@ $(function(){
             ],
         }
       },
-      position: { x: x, y: y }
+      renderedPosition: { x: x, y: y }
     });
 
     newNode.on('click', onClick);
@@ -229,4 +225,48 @@ $(function(){
     drop: handleDropEvent
   } );
 
+  $( "#undo-button" ).click(function() {
+    ur.undo();
+  });
+
+  $( "#redo-button" ).click(function() {
+    ur.redo();
+  });
+
+  $( "#remove-button" ).click(function() {
+    removeSelectedNodes();
+  });
+
+  // The following ensures the graph has the focus whenever you click on it so
+  // that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
+  $(cy.container()).on("mouseup mousedown", function(){
+      $(cy.container()).focus();
+  });
+
+  // The following does the actual undo/redo when pressing Ctrl+Z/Ctrl+Y
+  $(cy.container()).on("keydown", function (e) {
+      if(e.which === 46) { // Delete
+          removeSelectedNodes();
+      }
+      else if (e.ctrlKey) {
+          if (e.which === 90) // 'Ctrl+Z', Undo
+            ur.undo();
+          else if (e.which === 89) // 'Ctrl+Y', Redo
+            ur.redo();
+          else if (e.which == 67) // Ctrl + C, Copy
+            cy.clipboard().copy(cy.$(":selected"));
+          else if (e.which == 86) // Ctrl + V, Paste
+            ur.do("paste");
+          else if (e.which == 65) { // 'Ctrl+A', Select All
+            cy.elements().select();
+            e.preventDefault();
+          }
+      }
+  });
+
+  function removeSelectedNodes() {
+      var selecteds = cy.$(":selected");
+      if (selecteds.length > 0)
+          ur.do("remove", selecteds);
+  }
 });
