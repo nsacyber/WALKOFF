@@ -102,14 +102,14 @@ def loginInfo():
         return {"status": "Could Not Log In."}
 
 
-@app.route("/workflow", methods=['POST'])
+@app.route("/workflows", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflows():
     workflowss = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory()]
     return json.dumps({"workflows": workflowss})
 
-@app.route("/workflow/templates", methods=['POST'])
+@app.route("/workflows/templates", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflow_templates():

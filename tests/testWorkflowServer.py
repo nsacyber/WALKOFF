@@ -25,7 +25,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_workflows(self):
         expected_workflows = ['test']
-        response = self.app.post('/workflow', headers=self.headers)
+        response = self.app.post('/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(len(expected_workflows), len(response['workflows']))
@@ -33,7 +33,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_available_workflow_templates(self):
         expected_workflows = ['basicWorkflow', 'emptyWorkflow']
-        response = self.app.post('/workflow/templates', headers=self.headers)
+        response = self.app.post('/workflows/templates', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(len(expected_workflows), len(response['templates']))
