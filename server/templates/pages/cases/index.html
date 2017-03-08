@@ -1,5 +1,32 @@
 <div id="main" class="content">
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
     <style>
+    h3 {
+      font-family: 'Lato', sans-serif;
+      font-weight: bold;
+    }
+    .box-title {
+      font-family: 'Lato', sans-serif;
+      font-weight: bold;
+    }
+    .box {
+      margin-top: 40px;
+    }
+    button, input, select, textarea {
+      background-color: #45AA3B;
+      color: #fff;
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 20px;
+      border: none;
+      border-radius:5px;
+    }
+    .caselog-hr {
+      border: 0.1rem solid #367fa9;
+      width: 8%;
+      float:left;
+      margin:0;
+    }
         #header{
             margin-bottom:30px;
         }
@@ -48,6 +75,14 @@
         .box-title{
 
         }
+        th {
+          color: #367fa9;
+          background-color: #eaf2f6;
+        }
+        .box-header>.fa, .box-header>.glyphicon, .box-header>.ion, .box-header .box-title {
+          font-size: 24px;
+          font-family: 'Lato', sans-serif;
+        }
     </style>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
@@ -58,6 +93,7 @@
 
     <div id="header">
         <h3> Case Log </h3>
+          <hr class="caselog-hr">
         <h3 id="currentWorkflowText"></h3>
         <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
