@@ -32,7 +32,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertSetEqual(set(expected_workflows), set(response['workflows']))
 
     def test_add_workflow(self):
-        initial_workflows = flask_server.running_context.controller.workflows.keys()
+        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
         workflow_name = 'test_name'
         response = self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -54,7 +54,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response, {'status': 'success'})
 
         self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
-        self.assertEqual(flask_server.running_context.controller.workflows.keys()[0], 'test_name')
+        self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], 'test_name')
 
     def test_edit_workflow_invalid_workflow(self):
         workflow_name = 'test_name'
@@ -71,7 +71,8 @@ class TestWorkflowServer(unittest.TestCase):
         with open(path.join(testWorkflowsPath, 'basicWorkflowTest.workflow'), 'r') as workflow_in:
             workflow_xml_string = workflow_in.read()
 
-        data = {"play": workflow_xml_string}
+        data = {"play": workflow_xml_string,
+                "enabled": ''}
         workflow_name = 'testtestest'
         response = self.app.post('/workflow/{0}/save'.format(workflow_name), data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
