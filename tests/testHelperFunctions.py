@@ -5,6 +5,7 @@ from core.instance import Instance
 from tests.config import testWorkflowsPath
 
 
+
 class TestHelperFunctions(unittest.TestCase):
     def test_load_function_aliases(self):
         aliases = load_function_aliases('HelloWorld')
@@ -45,3 +46,10 @@ class TestHelperFunctions(unittest.TestCase):
         received_workflows = locate_workflows_in_directory(testWorkflowsPath)
         self.assertEqual(len(received_workflows), len(expected_workflows))
         self.assertSetEqual(set(received_workflows), set(expected_workflows))
+
+    def test_list_app_functions(self):
+        expected_functions = ['as_json', 'getConfig', 'helloWorld', 'query_class', 'repeatBackToMe',
+                              'returnPlusOne', 'shutdown']
+        received_functions = list_app_functions('HelloWorld')
+        self.assertEqual(len(received_functions), len(expected_functions))
+        self.assertSetEqual(set(received_functions), set(expected_functions))
