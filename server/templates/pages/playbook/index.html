@@ -1,6 +1,11 @@
 <div id="main">
     <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/cytoscape.js-panzoom.css' ) }}">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
     <style>
+        h3{
+            font-family: 'Lato', sans-serif;
+            font-weight: bold;
+        }
         #body{
             margin-bottom: 20px;
         }
@@ -33,10 +38,36 @@
             height: 700px;
             width: 400px;
         }
+        button, input, select, textarea {
+          background-color: #45AA3B;
+          color: #fff;
+          margin-top: 20px;
+          font-weight: bold;
+          font-size: 20px;
+          border: none;
+          border-radius:5px;
+        }
+        .panel-default>.panel-heading  {
+          background-color: #eaf2f6;
+          font-weight: bolder;
+        }
+        .workflow-hr {
+          border: 0.1rem solid #367fa9;
+          width: 14.5%;
+          float:left;
+          margin:0;
+        }
+        .list-group-item:last-child{
+          background-color: #d6e5ed;
+        }
+        .list-group-item:first-child{
+          background-color: #aecbdc;
+        }
     </style>
 
     <div id="header">
         <h3> Workflow Editor </h3>
+        <hr class="workflow-hr">
     </div>
     <div id="body">
         <h3 id="currentWorkflowText"></h3>
