@@ -1,4 +1,5 @@
 var activeApp = undefined;
+var activeDevice = undefined;
 
 function displayNameList(devices){
     for(device in devices){
@@ -17,8 +18,15 @@ function addNewDevice(){
 
 function displayDevices(data){
     for(device in data){
-        console.log(data[device]);
         $("#deviceList").append($('<option>', {device : data[device]["name"]}).text(data[device]["name"]));
+    }
+}
+
+function displayDeviceForm(data){
+    for(param in data){
+        if(data[param] != "None"){
+            $("#deviceForm input[name='" + param + "']").val(data[param]);
+        }
     }
 }
 
@@ -28,7 +36,7 @@ for(var app in apps){
 
 $("#appList").on("change", function(data){
     var result;
-
+    $("#deviceList").empty();
     activeApp = data.currentTarget[data.currentTarget.selectedIndex].innerHTML;
     if(activeApp != undefined){
          $.ajax({
@@ -46,6 +54,21 @@ $("#appList").on("change", function(data){
 
 });
 
+$("#deviceList").on("change", function(data){
+    activeDevice = data.currentTarget[data.currentTarget.selectedIndex].innerHTML;
+    $.ajax({
+        'async': false,
+        'type': "POST",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/display",
+        'success': function (data) {
+            var result = JSON.parse(data);
+            displayDeviceForm(result);
+        }
+    });
+});
+
 $("#addNewDevice").on("click", function(){
     formData = addNewDevice();
     if(activeApp){
@@ -56,6 +79,22 @@ $("#addNewDevice").on("click", function(){
             'data':formData,
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/add",
+            'success': function (data) {
+                console.log(data);
+            }
+        });
+    }
+
+});
+
+$("#removeDevice").on("click", function(){
+    if(activeApp && activeDevice){
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
             'success': function (data) {
                 console.log(data);
             }

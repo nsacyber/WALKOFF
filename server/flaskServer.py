@@ -492,7 +492,6 @@ def userActions(action, id_or_email):
 @roles_accepted(*userRoles["/configuration"])
 def listDevices(app):
     query = running_context.Device.query.all()
-    print(query)
     output = []
     if query:
         for device in query:
