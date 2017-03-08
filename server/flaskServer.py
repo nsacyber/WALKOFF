@@ -9,7 +9,7 @@ from core.context import running_context
 from core.helpers import locate_workflows_in_directory
 from . import forms, interface
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, rename_case
-
+from core.options import Options
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from . import database, appDevice
@@ -106,8 +106,15 @@ def loginInfo():
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflows():
-    files = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory()]
-    return json.dumps({"workflows": files})
+    workflowss = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory()]
+    return json.dumps({"workflows": workflowss})
+
+@app.route("/workflow/templates", methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def display_available_workflow_templates():
+    templates = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory(config.templatesPath)]
+    return json.dumps({"templates": templates})
 
 
 @app.route("/workflow/<string:name>/<string:action>", methods=['POST'])
@@ -115,22 +122,35 @@ def display_available_workflows():
 @roles_accepted(*userRoles["/workflow"])
 def workflow(name, action):
     if action == 'add':
-        # TODO: add ability to create from template name passed in
-        running_context.controller.createWorkflowFromTemplate(workflow_name=name)
+        form = forms.AddPlayForm(request.form)
+        if form.validate():
+            if form.template.data:
+                running_context.controller.createWorkflowFromTemplate(workflow_name=name,
+                                                                      template_name=form.template.data)
+            else:
+                running_context.controller.createWorkflowFromTemplate(workflow_name=name)
         if name in running_context.controller.workflows:
             return json.dumps({'status': 'success'})
         else:
             return json.dumps({'status': 'error'})
+
     elif action == 'edit':
         if name in running_context.controller.workflows:
             form = forms.EditPlayNameForm(request.form)
-            if form.validate() and form.new_name.data:
-                running_context.controller.updateWorkflowName(oldName=name, newName=form.new_name.data)
+            if form.validate():
+                enabled = form.enabled.data if form.enabled.data else False
+                scheduler = {'type': form.scheduler_type.data if form.scheduler_type.data else 'chron',
+                             'autoRun': str(form.autoRun.data).lower() if form.autoRun.data else 'false',
+                             'args': json.loads(form.scheduler_args.data) if form.scheduler_args.data else {}}
+                running_context.controller.workflows[name].options = Options(scheduler=scheduler, enabled=enabled)
+                if form.new_name.data:
+                    running_context.controller.updateWorkflowName(oldName=name, newName=form.new_name.data)
                 return json.dumps({'status': 'success'})
             else:
                 return json.dumps({'status': 'error: invalid form'})
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
+
     if name in workflowManager.workflows:
         if action == "cytoscape":
             output = workflowManager.workflows[name].returnCytoscapeData()

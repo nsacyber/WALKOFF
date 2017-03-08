@@ -28,9 +28,16 @@ class SavePlayForm(Form):
     play = StringField('play', [validators.Optional()])
 
 
-class EditPlayNameForm(Form):
-    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.required()])
+class AddPlayForm(Form):
+    template = StringField('new_name', [validators.Length(min=1, max=50), validators.Optional()])
 
+
+class EditPlayNameForm(Form):
+    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.Optional()])
+    enabled = BooleanField('enabled', [validators.Optional()])
+    scheduler_type = StringField('scheduler_type', [validators.Optional()])
+    autoRun = BooleanField('autorun', [validators.Optional()])
+    scheduler_args = StringField('scheduler_options', [validators.Optional()])
 
 
 class EditPlayOptionsForm(Form):

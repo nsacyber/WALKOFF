@@ -31,6 +31,14 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertEqual(len(expected_workflows), len(response['workflows']))
         self.assertSetEqual(set(expected_workflows), set(response['workflows']))
 
+    def test_display_available_workflow_templates(self):
+        expected_workflows = ['basicWorkflow', 'emptyWorkflow']
+        response = self.app.post('/workflow/templates', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(len(expected_workflows), len(response['templates']))
+        self.assertSetEqual(set(expected_workflows), set(response['templates']))
+
     def test_add_workflow(self):
         initial_workflows = list(flask_server.running_context.controller.workflows.keys())
         workflow_name = 'test_name'
@@ -45,7 +53,7 @@ class TestWorkflowServer(unittest.TestCase):
         added_workflow = set(final_workflows) - set(initial_workflows)
         self.assertEqual(list(added_workflow)[0], workflow_name)
 
-    def test_edit_workflow(self):
+    def test_edit_workflow_name_only(self):
         workflow_name = 'test_name'
         data = {"new_name": workflow_name}
         response = self.app.post('/workflow/helloWorldWorkflow/edit', data=data, headers=self.headers)
@@ -54,7 +62,45 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response, {'status': 'success'})
 
         self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
-        self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], 'test_name')
+        self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], workflow_name)
+
+    def test_edit_workflow_options_only(self):
+        expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
+        data = {"enabled": "true",
+                "scheduler_type": "test_scheduler",
+                "autoRun": 'true',
+                "scheduler_args": expected_args}
+        response = self.app.post('/workflow/helloWorldWorkflow/edit', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'success'})
+
+        options = flask_server.running_context.controller.workflows['helloWorldWorkflow'].options
+        self.assertTrue(options.enabled)
+        self.assertEqual(options.scheduler['type'], 'test_scheduler')
+        self.assertEqual(options.scheduler['autoRun'], 'true')
+        self.assertEqual(options.scheduler['args'], json.loads(expected_args))
+        self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], 'helloWorldWorkflow')
+
+    def test_edit_workflow_(self):
+        expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
+        workflow_name = 'test_name'
+        data = {"new_name": workflow_name,
+                "enabled": "true",
+                "scheduler_type": "test_scheduler",
+                "autoRun": 'true',
+                "scheduler_args": expected_args}
+        response = self.app.post('/workflow/helloWorldWorkflow/edit', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'success'})
+
+        options = flask_server.running_context.controller.workflows[workflow_name].options
+        self.assertTrue(options.enabled)
+        self.assertEqual(options.scheduler['type'], 'test_scheduler')
+        self.assertEqual(options.scheduler['autoRun'], 'true')
+        self.assertEqual(options.scheduler['args'], json.loads(expected_args))
+        self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], workflow_name)
 
     def test_edit_workflow_invalid_workflow(self):
         workflow_name = 'test_name'
@@ -66,6 +112,9 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response, {'status': 'error: workflow junkworkflow is not valid'})
         final_workflows = flask_server.running_context.controller.workflows.keys()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
+
+    def test_delete_workflow(self):
+        workflow_name = 'test_workflow'
 
     def test_save_workflow(self):
         with open(path.join(testWorkflowsPath, 'basicWorkflowTest.workflow'), 'r') as workflow_in:
