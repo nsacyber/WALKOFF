@@ -5,11 +5,20 @@ import json
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
 from . import forms
-from core.helpers import list_app_functions, list_class_functions, load_function_aliases
+from core.helpers import list_app_functions, list_class_functions, load_function_aliases, list_apps
 
 appPage = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
 base_app_functions = None
+
+
+def get_base_app_functions():
+    global base_app_functions
+    if not base_app_functions:
+        from server.appDevice import App as BaseApp
+        base_app_functions = set(list_class_functions(BaseApp))
+    return base_app_functions
+
 
 @appPage.url_value_preprocessor
 def staticRequestHandler(endpoint, values):
@@ -36,6 +45,7 @@ def stream_app_data(stream_name):
     if stream_generator and stream_type:
         return Response(stream_generator(), mimetype=stream_type)
 
+
 def loadModule(name):
     module = "apps." + name + ".display"
     try:
@@ -47,10 +57,12 @@ def loadModule(name):
     except ImportError:
         return None
 
+
 def loadApp(name, keys, values):
     module = loadModule(name)
     args = dict(zip(keys, values))
     return getattr(module, "load")(args) if module else {}
+
 
 def data_stream(app_name, stream_name):
     module = loadModule(app_name)
@@ -62,10 +74,7 @@ def data_stream(app_name, stream_name):
 @auth_token_required
 @roles_required('admin')
 def list_app_actions():
-    global base_app_functions
-    if not base_app_functions:
-        from server.appDevice import App as BaseApp
-        base_app_functions = set(list_class_functions(BaseApp))
+    get_base_app_functions()
     functions = set(list_app_functions(g.app)) - base_app_functions
     return json.dumps({"actions": list(functions)})
 
@@ -75,3 +84,6 @@ def list_app_actions():
 @roles_required('admin')
 def list_app_function_aliases():
     return json.dumps(load_function_aliases(g.app))
+
+
+

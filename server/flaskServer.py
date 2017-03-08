@@ -7,6 +7,7 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config, controller
 from core.context import running_context
 from core.helpers import locate_workflows_in_directory
+from core import helpers
 from . import forms, interface
 from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, rename_case
 from core.options import Options
@@ -17,13 +18,14 @@ from .app import app
 from .database import User
 from .triggers import Triggers
 from gevent import monkey
+from server.appBlueprint import get_base_app_functions
 
 monkey.patch_all()
 
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
-        "/roles", "/users", "/configuration", '/cases']
+        "/roles", "/users", "/configuration", '/cases', '/apps']
 
 default_urls = urls
 userRoles = database.userRoles
@@ -100,6 +102,21 @@ def loginInfo():
         return json.dumps({"auth_token": current_user.get_auth_token()})
     else:
         return {"status": "Could Not Log In."}
+
+
+@app.route('/apps/', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/apps"])
+def list_all_apps():
+    return json.dumps({"apps": helpers.list_apps()})
+
+
+@app.route('/apps/actions', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/apps"])
+def list_all_apps_and_actions():
+    apps = helpers.list_apps()
+    return json.dumps({app: list((set(helpers.list_app_functions(app)) - get_base_app_functions())) for app in apps})
 
 
 @app.route("/workflows", methods=['POST'])
