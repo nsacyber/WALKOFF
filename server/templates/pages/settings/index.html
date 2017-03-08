@@ -12,6 +12,10 @@
                 background-color: #F0F8FF;
             }
 
+            #usForm input[type=text] {
+              background-color: #F0F8FF;
+            }
+
             #settingsForm {
                 padding-left: 50px;
             }
@@ -32,9 +36,10 @@
             }
 
             #formSubmit{
-                position:relative;
+                position:static;
                 top:50px;
                 padding:10px;
+                margin-top:30px;
                 background-color: #45AA3B;
                 color: #fff;
                 text-transform: uppercase;
@@ -42,7 +47,11 @@
                 font-size: 20px;
                 border: none;
                 border-radius:5px;
+            }
 
+          .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{
+              background-color: #367fa9;
+              color: #fff;
             }
 
             h1 {
@@ -76,6 +85,18 @@
             .interfaceconfig-hr {
               border: 0.1rem solid #367fa9;
               width: 22%;
+              float:left;
+              margin:0;
+            }
+            .usersettings-hr {
+              border: 0.1rem solid #367fa9;
+              width: 18%;
+              float:left;
+              margin:0;
+            }
+            .userconfig-hr {
+              border: 0.1rem solid #367fa9;
+              width: 16%;
               float:left;
               margin:0;
             }
@@ -130,13 +151,13 @@
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
-                <hr class="settings-hr">
+                <hr class="usersettings-hr">
                 <div id="userForm">
                     <form id="usForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
                         <h3><i> User Configuration </i></h3>
-                        <hr class="settings-hr">
+                        <hr class="userconfig-hr">
                         </br>
                         <div id="test">
                             {% from "pages/_formhelpers.html" import render_field %}
