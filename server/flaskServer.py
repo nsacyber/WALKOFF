@@ -491,9 +491,15 @@ def userActions(action, id_or_email):
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def listDevices(app):
-    result = str(running_context.Device.query.all())
-    print(result)
-    return result
+    query = running_context.Device.query.all()
+    print(query)
+    output = []
+    if query:
+        for device in query:
+            for app_elem in device.apps:
+                if app_elem.app == app:
+                    output.append(device.as_json())
+    return json.dumps(output)
 
 # Controls the non-specific app device configuration
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
