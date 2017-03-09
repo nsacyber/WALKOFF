@@ -331,8 +331,8 @@ def configValues(key):
 @roles_accepted(*userRoles["/interface"])
 def systemPages(name):
     if current_user.is_authenticated and name:
-        args, form = getattr(interface, name)()
-        return render_template("pages/" + name + "/index.html", form=form, **args)
+        args = getattr(interface, name)()
+        return render_template("pages/" + name + "/index.html", **args)
     else:
         return {"status": "Could Not Log In."}
 
