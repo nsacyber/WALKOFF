@@ -121,29 +121,29 @@
                         <hr class="pathconfig-hr">
                             <div id="pathConfig">
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(form.templatesPath) }}
-                                {{ render_field(form.workflowsPath) }}
-                                {{ render_field(form.profileVisualizationsPath) }}
-                                {{ render_field(form.keywordsPath) }}
-                                {{ render_field(form.dbPath) }}
+                                {{ render_field(systemForm.templatesPath) }}
+                                {{ render_field(systemForm.workflowsPath) }}
+                                {{ render_field(systemForm.profileVisualizationsPath) }}
+                                {{ render_field(systemForm.keywordsPath) }}
+                                {{ render_field(systemForm.dbPath) }}
                             </div>
                         <h3> Authorization Configuration </h3>
                           <hr class="authorizationconfig-hr">
                             <div id="authConfig">
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(form.TLS_version) }}
-                                {{ render_field(form.certificatePath) }}
-                                {{ render_field(form.https) }}
-                                {{ render_field(form.privateKeyPath) }}
+                                {{ render_field(systemForm.TLS_version) }}
+                                {{ render_field(systemForm.certificatePath) }}
+                                {{ render_field(systemForm.https) }}
+                                {{ render_field(systemForm.privateKeyPath) }}
                             </div>
                         <h3> Interface Configuration </h3>
                           <hr class="interfaceconfig-hr">
                             <div id="interfaceConfig">
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(form.debug) }}
-                                {{ render_field(form.defaultServer) }}
-                                {{ render_field(form.host) }}
-                                {{ render_field(form.port) }}
+                                {{ render_field(systemForm.debug) }}
+                                {{ render_field(systemForm.defaultServer) }}
+                                {{ render_field(systemForm.host) }}
+                                {{ render_field(systemForm.port) }}
                             </div>
                         <input id="formSubmit" type="submit" value="submit">
                     </form>
@@ -152,8 +152,8 @@
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
                 <hr class="usersettings-hr">
-                <div id="userForm">
-                    <form id="usForm">
+                <div >
+                    <form id="userForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
                         <h3><i> User Configuration </i></h3>
@@ -161,12 +161,12 @@
                         </br>
                         <div id="test">
                             {% from "pages/_formhelpers.html" import render_field %}
-                            {{ render_field(form.username) }}
-                            {{ render_field(form.password) }}
-                            {{ render_field(form.email) }}
-                            {{ render_field(form.active)  }}
-{#                            {{ render_field(form.confirmed_at) }}#}
-                            {{ render_field(form.roles)  }}
+                            {{ render_field(userForm.username) }}
+                            {{ render_field(userForm.password) }}
+                            {{ render_field(userForm.email) }}
+                            {{ render_field(userForm.active)  }}
+{#                            {{ render_field(userForm.confirmed_at) }}#}
+                            {{ render_field(userForm.roles)  }}
 {#                            {{ render_field(form.last_login_at)  }}#}
 {#                            {{ render_field(form.current_login_at)  }}#}
 {#                            {{ render_field(form.last_login_ip) }}#}
