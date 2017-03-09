@@ -506,20 +506,18 @@ def configDevicesConfig(app, action):
             if len(running_context.Device.query.filter_by(name=form.name.data).all()) > 0:
                 return json.dumps({"status": "device could not be added"})
 
-            running_context.Device.add_device(name=form.name.data, apps=form.apps.data, username=form.username.data,
+            running_context.Device.add_device(name=form.name.data, username=form.username.data,
                                               password=form.pw.data, ip=form.ipaddr.data, port=form.port.data, app_server=app,
                                               extraFields=form.extraFields.data)
 
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
-        query = running_context.Device.query.all()
+        query = running_context.App.query.filter_by(name=app).first()
         output = []
         if query:
-            for device in query:
-                for app_elem in device.apps:
-                    if app_elem.name == app:
-                        output.append(device.as_json())
+            for device in query.devices:
+                output.append(device.as_json())
 
             return json.dumps(output)
     return json.dumps({"status": "could not display all devices"})
@@ -531,13 +529,13 @@ def configDevicesConfig(app, action):
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
     if action == "display":
-        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
             return json.dumps(dev.as_json())
         return json.dumps({"status": "could not display device"})
 
     elif action == "remove":
-        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
             dev.delete()
             db.session.commit()
@@ -546,7 +544,7 @@ def configDevicesConfigId(app, device, action):
 
     elif action == "edit":
         form = forms.EditDeviceForm(request.form)
-        dev = running_context.Device.filter_app_and_device(app_name=app, device_name=device)
+        dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
             # Ensures new name is unique
             # if len(devClass.query.filter_by(name=str(device)).all()) > 0:

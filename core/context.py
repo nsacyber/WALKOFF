@@ -11,11 +11,12 @@ class Context(object):
         self.apps = self.getApps()
 
         from server.database import User, Role
-        from server.appDevice import Device
+        from server.appDevice import Device, App
 
         self.User = User
         self.Role = Role
         self.Device = Device
+        self.App = App
 
     @staticmethod
     def getWorkflowsFromFolder(path=join(".", "data", "workflows")):
