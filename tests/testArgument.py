@@ -1,5 +1,6 @@
 import unittest
 import copy
+from xml.etree import ElementTree
 
 from core.arguments import Argument
 from core import config
@@ -124,9 +125,24 @@ class TestArgument(unittest.TestCase):
                 self.assertTrue(arg.validate(action=action))
 
         test_funcs = {'func_name2': {'args': []},
-                           'func_name3': {'args': [{'name': 'junk_name1', 'type': 'junk_type1'},
-                                                   {'name': 'junk_name2', 'type': 'junk_type2'}]}}
+                      'func_name3': {'args': [{'name': 'junk_name1', 'type': 'junk_type1'},
+                                              {'name': 'junk_name2', 'type': 'junk_type2'}]}}
         for action, args in test_funcs.items():
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
                 self.assertFalse(arg.validate(action=action))
+
+    def test_to_xml(self):
+        arg = Argument()
+        xml = arg.to_xml()
+        self.assertIsNone(xml)
+
+        input_args = [Argument(key='test'),
+                      Argument(key='test', value='val'),
+                      Argument(key='test', format='int'),
+                      Argument(key='test', format='int', value='6')]
+
+        for arg in input_args:
+            arg_xml = arg.to_xml()
+            derived_arg = Argument(key=arg_xml.tag, value=arg_xml.text, format=arg_xml.get("format"))
+            self.assertDictEqual(derived_arg.as_json(), arg.as_json())

@@ -174,7 +174,8 @@ def workflow(name, action):
         if name in running_context.controller.workflows:
             try:
                 with open(os.path.join(config.workflowsPath, '{0}.workflow'.format(name)), 'w') as workflow_out:
-                    workflow_out.write(ElementTree.tostring(running_context.controller.workflows[name].to_xml()))
+                    xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
+                    workflow_out.write(str(xml))
                 return json.dumps({"status": "success"})
             except (OSError, IOError) as e:
                 return json.dumps({"status": "Error: {0}".format(e.message)})

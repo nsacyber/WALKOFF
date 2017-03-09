@@ -22,6 +22,13 @@ class TestWorkflowServer(unittest.TestCase):
 
     def tearDown(self):
         flask_server.running_context.controller.workflows = {}
+        workflows = [path.splitext(workflow)[0]
+                     for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
+        matching_workflows = [workflow for workflow in workflows if workflow == 'test_name']
+
+        # cleanup
+        if matching_workflows:
+            os.remove(path.join(coreWorkflows, '{0}.workflow'.format('test_name')))
 
     def test_display_workflows(self):
         expected_workflows = ['test']
