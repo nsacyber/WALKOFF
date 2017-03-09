@@ -78,7 +78,7 @@ class TestWorkflowServer(unittest.TestCase):
         options = flask_server.running_context.controller.workflows['helloWorldWorkflow'].options
         self.assertTrue(options.enabled)
         self.assertEqual(options.scheduler['type'], 'test_scheduler')
-        self.assertEqual(options.scheduler['autoRun'], 'true')
+        self.assertEqual(options.scheduler['autorun'], 'true')
         self.assertEqual(options.scheduler['args'], json.loads(expected_args))
         self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], 'helloWorldWorkflow')
 
@@ -98,7 +98,7 @@ class TestWorkflowServer(unittest.TestCase):
         options = flask_server.running_context.controller.workflows[workflow_name].options
         self.assertTrue(options.enabled)
         self.assertEqual(options.scheduler['type'], 'test_scheduler')
-        self.assertEqual(options.scheduler['autoRun'], 'true')
+        self.assertEqual(options.scheduler['autorun'], 'true')
         self.assertEqual(options.scheduler['args'], json.loads(expected_args))
         self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], workflow_name)
 
@@ -113,27 +113,67 @@ class TestWorkflowServer(unittest.TestCase):
         final_workflows = flask_server.running_context.controller.workflows.keys()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
-    def test_delete_workflow(self):
-        workflow_name = 'test_workflow'
-
     def test_save_workflow(self):
-        with open(path.join(testWorkflowsPath, 'basicWorkflowTest.workflow'), 'r') as workflow_in:
-            workflow_xml_string = workflow_in.read()
-
-        data = {"play": workflow_xml_string,
-                "enabled": ''}
-        workflow_name = 'testtestest'
-        response = self.app.post('/workflow/{0}/save'.format(workflow_name), data=data, headers=self.headers)
+        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
+        workflow_name = 'test_name'
+        response = self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {"status": "Success"})
+        self.assertDictEqual(response, {'status': 'success'})
+
+        final_workflows = flask_server.running_context.controller.workflows.keys()
+        self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
+
+        added_workflow = set(final_workflows) - set(initial_workflows)
+        self.assertEqual(list(added_workflow)[0], workflow_name)
+
+        response = self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'success'})
 
         workflows = [path.splitext(workflow)[0]
                      for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
         matching_workflows = [workflow for workflow in workflows if workflow == workflow_name]
         self.assertEqual(len(matching_workflows), 1)
 
-        #cleanup
+        # cleanup
         os.remove(path.join(coreWorkflows, '{0}.workflow'.format(workflow_name)))
+
+    def test_save_workflow_invalid_name(self):
+        response = self.app.post('/workflow/junkworkflowname/save', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'error: workflow junkworkflowname is not valid'})
+
+    def test_delete_workflow(self):
+        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
+        workflow_name = 'test_name'
+        response = self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'success'})
+
+        response = self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'success'})
+
+        response = self.app.post('/workflow/{0}/delete'.format(workflow_name), headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'success'})
+
+        workflows = [path.splitext(workflow)[0]
+                     for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
+        matching_workflows = [workflow for workflow in workflows if workflow == workflow_name]
+        self.assertEqual(len(matching_workflows), 0)
+
+    def test_delete_workflow_invalid(self):
+        workflow_name = 'junkworkflowname'
+        response = self.app.post('/workflow/{0}/delete'.format(workflow_name), headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {'status': 'error: workflow {0} is not valid'.format(workflow_name)})
 
 

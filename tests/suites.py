@@ -18,7 +18,7 @@ execution_suite = TestSuite()
 execution_suite.addTests([TestLoader().loadTestsFromModule(test_module)
                           for test_module in __execution_tests])
 
-__workflow_tests = [testLoadWorkflow, testSimpleWorkflow, testWorkflowManipulation]
+__workflow_tests = [testLoadWorkflow, testSimpleWorkflow, testWorkflowManipulation, testWorkflowOptions]
 workflow_suite = TestSuite()
 workflow_suite.addTests([TestLoader().loadTestsFromModule(test_module)
                          for test_module in __workflow_tests])
