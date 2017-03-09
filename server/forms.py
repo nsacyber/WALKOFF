@@ -24,10 +24,6 @@ class EditRoleForm(Form):
     pages = StringField('pages')
 
 
-class SavePlayForm(Form):
-    play = StringField('play', [validators.Optional()])
-
-
 class AddPlayForm(Form):
     template = StringField('new_name', [validators.Length(min=1, max=50), validators.Optional()])
 
@@ -38,13 +34,6 @@ class EditPlayNameForm(Form):
     scheduler_type = StringField('scheduler_type', [validators.Optional()])
     autoRun = BooleanField('autorun', [validators.Optional()])
     scheduler_args = StringField('scheduler_options', [validators.Optional()])
-
-
-class EditPlayOptionsForm(Form):
-    autoRun = BooleanField("autorun")
-    s_sDT = DateTimeField("sDT")
-    s_eDT = DateTimeField("eDT")
-    s_interval = DecimalField("interval", places=2)
 
 
 class EditStepForm(Form):

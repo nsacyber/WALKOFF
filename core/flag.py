@@ -52,7 +52,7 @@ class Flag(ExecutionElement):
             self.filters.append(Filter(action=action, args=(args if args is not None else {})))
         return True
 
-    def removeFilter(self, index=None):
+    def removeFilter(self, index=-1):
         try:
             del self.filters[index]
         except IndexError:

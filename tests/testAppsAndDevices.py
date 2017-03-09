@@ -27,6 +27,7 @@ class TestUsersAndRoles(unittest.TestCase):
 
     def tearDown(self):
         appDevice.Device.query.filter_by(name=self.name).delete()
+        appDevice.Device.query.filter_by(name="testDeviceTwo").delete()
         database.db.session.commit()
 
     def testAddDevice(self):
@@ -89,3 +90,24 @@ class TestUsersAndRoles(unittest.TestCase):
             self.app.post('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
                 as_text=True))
         self.assertEqual(response["extraFieldOne"], "extraNameOneOne")
+
+    def testAddAndDisplayMultipleDevices(self):
+        data = {"name" : self.name, "username" : self.username, "pw" : self.password, "ipaddr" : self.ip, "port" : self.port,
+                "extraFields" : json.dumps(self.extraFields)}
+        response = json.loads(self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(as_text=True))
+        self.assertEqual(response["status"], "device successfully added")
+
+        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/add', data=data, headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(response["status"], "device successfully added")
+
+        response = json.loads(
+            self.app.post('/configuration/HelloWorld/devices/all', headers=self.headers).get_data(
+                as_text=True))
+        self.assertEqual(len(response), 2)
+        self.assertEqual(response[0]["name"], self.name)
+        self.assertEqual(response[1]["name"], "testDeviceTwo")
+        self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])

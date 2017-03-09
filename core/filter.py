@@ -22,10 +22,8 @@ class Filter(ExecutionElement):
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
-        args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format")) for arg in
-                xml_element.findall("args/*")}
-        self.args = {arg: arguments.Argument(key=arg, value=args[arg], format=type(args[arg]).__name__)
-                     for arg in args}
+        self.args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
+                     for arg in xml_element.findall("args/*")}
 
     def to_xml(self, *args):
         elem = et.Element("filter")

@@ -12,13 +12,14 @@ class Context(object):
         self.apps = self.getApps()
 
         from server.database import User, Role
-        from server.appDevice import Device
+        from server.appDevice import Device, App
         from core.controller import controller
         self.controller = controller
 
         self.User = User
         self.Role = Role
         self.Device = Device
+        self.App = App
 
     # Returns list of apps
     # Gets all the app instances
