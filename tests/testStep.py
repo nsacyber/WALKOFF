@@ -24,7 +24,7 @@ class TestStep(unittest.TestCase):
     def test_function_alias_lookup_invalid(self):
         app = 'HelloWorld'
         step = Step(action='JunkAction1', app=app)
-        self.assertIsNone(step._Step__lookup_function(), 'JunkAction1')
+        self.assertEqual(step._Step__lookup_function(), 'JunkAction1')
 
 
 

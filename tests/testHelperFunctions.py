@@ -1,8 +1,10 @@
 import unittest
 from core.helpers import *
-from apps.HelloWorld.main import Main
-from core.instance import Instance
 
+from core.instance import Instance
+from tests.config import testWorkflowsPath
+
+from tests.util.assertwrappers import orderless_list_comapre
 
 class TestHelperFunctions(unittest.TestCase):
     def test_load_function_aliases(self):
@@ -30,3 +32,26 @@ class TestHelperFunctions(unittest.TestCase):
     def test_load_app_function_invalid_function(self):
         instance = Instance.create('HelloWorld', 'default_device_name')
         self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
+
+    def test_load_workflows(self):
+        expected_workflows = ['basicWorkflowTest.workflow',
+                              'loopWorkflow.workflow',
+                              'multiactionWorkflowTest.workflow',
+                              'multistepError.workflow',
+                              'simpleDataManipulationWorkflow.workflow',
+                              'templatedWorkflowTest.workflow',
+                              'testExecutionWorkflow.workflow',
+                              'testScheduler.workflow',
+                              'tieredWorkflow.workflow']
+        received_workflows = locate_workflows_in_directory(testWorkflowsPath)
+        orderless_list_comapre(self, received_workflows, expected_workflows)
+
+    def test_list_app_functions(self):
+        expected_functions = ['as_json', 'getConfig', 'helloWorld', 'query_class', 'repeatBackToMe',
+                              'returnPlusOne', 'shutdown']
+        received_functions = list_app_functions('HelloWorld')
+        orderless_list_comapre(self, received_functions, expected_functions)
+
+    def test_list_apps(self):
+        expected_apps = ['HelloWorld']
+        orderless_list_comapre(self, expected_apps, list_apps())

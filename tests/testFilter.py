@@ -1,5 +1,5 @@
 import unittest
-
+import sys
 from core.filter import Filter
 from core.executionelement import ExecutionElement
 
@@ -29,8 +29,13 @@ class TestFilter(unittest.TestCase):
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
         expected_args_json = {'arg1': {'key': 'arg1', 'value': 'a', 'format': 'str'},
-                              'arg2': {'key': 'arg2', 'value': '3', 'format': 'int'},
-                              'arg3': {'key': 'arg3', 'value': 'abc', 'format': 'unicode'}}
+                              'arg2': {'key': 'arg2', 'value': '3', 'format': 'int'}}
+
+        if sys.version_info < (3, 0):
+            expected_args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'unicode'}
+        else:
+            expected_args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'str'}
+
         filter = Filter(ancestry=['a', 'b'], action="test", args=args)
         self.compare_init(filter, 'test', '', ['a', 'b', 'test'], args=expected_args_json)
 
@@ -43,13 +48,15 @@ class TestFilter(unittest.TestCase):
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
         expected_args_json = {'arg1': {'key': 'arg1', 'value': 'a', 'format': 'str'},
-                              'arg2': {'key': 'arg2', 'value': '3', 'format': 'int'},
-                              'arg3': {'key': 'arg3', 'value': 'abc', 'format': 'unicode'}}
+                              'arg2': {'key': 'arg2', 'value': '3', 'format': 'int'}}
+        if sys.version_info < (3, 0):
+            expected_args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'unicode'}
+        else:
+            expected_args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'str'}
+
+        expected_filter_json = {'action':  'test', 'args': expected_args_json}
         filter = Filter(ancestry=['a', 'b'], action="test", args=args)
-        self.assertDictEqual(filter.as_json(), {'action': 'test',
-                                                'args': {'arg1': {'key': 'arg1', 'value': 'a', 'format': 'str'},
-                                                         'arg2': {'key': 'arg2', 'value': '3', 'format': 'int'},
-                                                          'arg3': {'key': 'arg3', 'value': 'abc', 'format': 'unicode'}}})
+        self.assertDictEqual(filter.as_json(), expected_filter_json)
         self.compare_init(filter, 'test', '', ['a', 'b', 'test'], args=expected_args_json)
 
     def test_length_filter(self):

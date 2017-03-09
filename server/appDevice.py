@@ -1,8 +1,9 @@
 import json
 from abc import abstractmethod
-from . import database
+
 from sqlalchemy import Integer, String
-import ast
+
+from . import database
 
 db = database.db
 

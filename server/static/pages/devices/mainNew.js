@@ -1,7 +1,31 @@
+var activeApp = undefined;
+var activeDevice = undefined;
+
 function displayNameList(devices){
     for(device in devices){
         if(devices[device]["name"] != undefined){
             $("#deviceList").append($('<option>', {device:devices[device]}).text(device[devices]));
+        }
+    }
+}
+
+function addNewDevice(){
+    if($("#name").val() == ""){
+        $("#name").val(activeApp + "_newDevice");
+    }
+    return $("#name").serialize();
+}
+
+function displayDevices(data){
+    for(device in data){
+        $("#deviceList").append($('<option>', {device : data[device]["name"]}).text(data[device]["name"]));
+    }
+}
+
+function displayDeviceForm(data){
+    for(param in data){
+        if(data[param] != "None"){
+            $("#deviceForm input[name='" + param + "']").val(data[param]);
         }
     }
 }
@@ -12,15 +36,69 @@ for(var app in apps){
 
 $("#appList").on("change", function(data){
     var result;
-    console.log(data);
+    $("#deviceList").empty();
+    activeApp = data.currentTarget[data.currentTarget.selectedIndex].innerHTML;
+    if(activeApp != undefined){
+         $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/configuration/" + activeApp + "/devices",
+            'success': function (data) {
+                var result = JSON.parse(data);
+                displayDevices(result);
+            }
+        });
+    }
+
+});
+
+$("#deviceList").on("change", function(data){
+    activeDevice = data.currentTarget[data.currentTarget.selectedIndex].innerHTML;
     $.ajax({
         'async': false,
         'type': "POST",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/configuration/" + data.value + "/devices",
+        'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/display",
         'success': function (data) {
-            console.log(data);
+            var result = JSON.parse(data);
+            displayDeviceForm(result);
         }
     });
+});
+
+$("#addNewDevice").on("click", function(){
+    formData = addNewDevice();
+    if(activeApp){
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'data':formData,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/configuration/" + activeApp + "/devices/add",
+            'success': function (data) {
+                console.log(data);
+            }
+        });
+    }
+
+});
+
+$("#removeDevice").on("click", function(){
+    if(activeApp && activeDevice){
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
+            'success': function (data) {
+                console.log(data);
+            }
+        });
+    }
+
 });

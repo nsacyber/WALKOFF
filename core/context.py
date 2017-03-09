@@ -1,4 +1,5 @@
 from os import listdir, walk
+from core.helpers import list_apps
 from os.path import join, isfile, splitext
 
 #
@@ -7,28 +8,24 @@ from os.path import join, isfile, splitext
 
 class Context(object):
     def __init__(self):
-        self.workflows = self.getWorkflowsFromFolder()
+        #self.workflows = self.getWorkflowsFromFolder()
         self.apps = self.getApps()
 
         from server.database import User, Role
         from server.appDevice import Device, App
+        from core.controller import controller
+        self.controller = controller
 
         self.User = User
         self.Role = Role
         self.Device = Device
         self.App = App
 
-    @staticmethod
-    def getWorkflowsFromFolder(path=join(".", "data", "workflows")):
-        workflows = [join(path, workflow) for workflow in listdir(path) if isfile(join(path, workflow)) and not splitext(workflow)[0] in ["__init__", "."]]
-        return workflows
-
     # Returns list of apps
     # Gets all the app instances
     @staticmethod
     def getApps(path="apps"):
-        apps = next(walk(path))[1]
-        return apps
+        return list_apps()
 
     def set(self, key, value):
         setattr(self, key, value)

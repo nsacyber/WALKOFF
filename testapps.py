@@ -2,6 +2,7 @@ import unittest
 import os
 import argparse
 import importlib
+from core.helpers import list_apps
 
 
 def cmd_line():
@@ -11,12 +12,6 @@ def cmd_line():
     parser.add_argument('-A', '--all', action='store_true', help='Test all apps')
     args = parser.parse_args()
     return args
-
-
-def available_apps():
-    return [f for f in os.listdir(os.path.join('.', 'apps')) if (os.path.isdir(os.path.join('.', 'apps', f))
-                                                                 and not f.startswith('__'))]
-
 
 def get_tests(app_name):
     tests_path = os.path.join('.', 'apps', app_name, 'test')
@@ -45,7 +40,7 @@ def test_app(app_name):
 
 if __name__ == '__main__':
     cmd_args = cmd_line()
-    all_apps = available_apps()
+    all_apps = list_apps()
     if cmd_args.all:
         for app in all_apps:
             test_app(app)
