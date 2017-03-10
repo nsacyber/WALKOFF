@@ -243,6 +243,23 @@ $(function(){
           ur.do("remove", selecteds);
   }
 
+  function cut() {
+      var selecteds = cy.$(":selected");
+      if (selecteds.length > 0) {
+          cy.clipboard().copy(selecteds);
+          ur.do("remove", selecteds);
+      }
+  }
+
+  function copy() {
+      cy.clipboard().copy(cy.$(":selected"));
+  }
+
+  function paste() {
+      var newNodes = ur.do("paste");
+      newNodes.on('click', onClick);
+  }
+
   //-------------------------
   // Configure event handlers
   //-------------------------
@@ -278,6 +295,21 @@ $(function(){
     removeSelectedNodes();
   });
 
+  // Handle cut button press
+  $( "#cut-button" ).click(function() {
+      cut();
+  });
+
+  // Handle cut button press
+  $( "#copy-button" ).click(function() {
+      copy();
+  });
+
+  // Handle cut button press
+  $( "#paste-button" ).click(function() {
+      paste();
+  });
+
   // The following handler ensures the graph has the focus whenever you click on it so
   // that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
   $(cy.container()).on("mouseup mousedown", function(){
@@ -295,18 +327,11 @@ $(function(){
           else if (e.which === 89) // 'Ctrl+Y', Redo
             ur.redo();
           else if (e.which == 67) // Ctrl + C, Copy
-            cy.clipboard().copy(cy.$(":selected"));
-          else if (e.which == 86) { // Ctrl + V, Paste
-            var newNodes = ur.do("paste");
-            newNodes.on('click', onClick);
-          }
-          else if (e.which == 88) { // Ctrl + X, Cut
-            var selecteds = cy.$(":selected");
-            if (selecteds.length > 0) {
-              cy.clipboard().copy(selecteds);
-              ur.do("remove", selecteds);
-            }
-          }
+            copy();
+          else if (e.which == 86) // Ctrl + V, Paste
+              paste();
+          else if (e.which == 88) // Ctrl + X, Cut
+              cut();
           else if (e.which == 65) { // 'Ctrl+A', Select All
             cy.elements().select();
             e.preventDefault();
