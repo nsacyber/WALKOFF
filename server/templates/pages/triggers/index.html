@@ -11,9 +11,8 @@
 
     <style>
         .selectColumn{
-            height:600px;
             display:inline-block;
-            background-color:#f8f8f8;
+{#            background-color:#f8f8f8;#}
         }
 
         .selectColumn > h2{
@@ -148,8 +147,8 @@
                 display:left;
             }
     </style>
-    <div id="deviceWrapper">
-        <div id="deviceSelect" class="selectColumn">
+    <div id="deviceWrapper" class="row">
+        <div class="selectColumn col-md-4" >
             <h2> Triggers </h2>
             <div class="vertScrollBar">
                 <div class="handle">
@@ -174,8 +173,18 @@
                 </p>
             </div>
         </div>
-
-        <div id="parameterSelect" class="selectColumn">
+        <div id="parameterEdit" class="col-md-4">
+            <h2>Edit Form</h2>
+            <form id="editDeviceForm">
+                {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
+                {{ render_field(editForm.name) }}
+                {{ render_multi_field(editForm.args) }}
+                {{ render_field(editForm.play) }}
+                <input id="editformSubmit" type="submit" value="submit">
+            </form>
+            </form>
+        </div>
+        <div  class="selectColumn col-md-4">
             <h2> Parameters </h2>
             <form id="deviceForm">
                 {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
