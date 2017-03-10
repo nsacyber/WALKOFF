@@ -5,16 +5,16 @@ def devices():
     return {"apps": running_context.getApps(), "form":forms.AddNewDeviceForm()}
 
 def settings():
-    form = forms.settingsForm()
+    userForm = forms.userForm()
     choices = [(obj.email, str(obj.email)) for obj in running_context.User.query.all()]
-    form.username.choices = choices
-    return {"form":form}
+    userForm.username.choices = choices
+    return {"systemForm":forms.settingsForm(), "userForm": userForm }
 
 def playbook():
     return {"currentWorkflow": "multiactionWorkflow"}
 
 def triggers():
-    return {"form": forms.addNewTriggerForm()}
+    return {"form": forms.addNewTriggerForm(), "editForm":forms.editTriggerForm()}
 
 def cases():
     return {"currentWorkflow": "multiactionWorkflow"}
