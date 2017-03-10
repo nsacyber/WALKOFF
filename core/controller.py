@@ -1,5 +1,6 @@
 import xml.etree.cElementTree as et
 from os import sep
+import os
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, \
@@ -10,6 +11,7 @@ from core import config
 from core import workflow as wf
 from core.case import callbacks
 from core.events import EventListener
+from core.helpers import locate_workflows_in_directory
 
 
 class SchedulerStatusListener(EventListener):
@@ -63,6 +65,7 @@ class Controller(object):
     def __init__(self, name="defaultController"):
         self.name = name
         self.workflows = {}
+        self.load_all_workflows_from_directory()
         self.instances = {}
         self.tree = None
         self.eventlog = []
@@ -77,13 +80,17 @@ class Controller(object):
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
-    def loadWorkflowsFromFile(self, path):
+    def loadWorkflowsFromFile(self, path, name_override=None):
         self.tree = et.ElementTree(file=path)
         for workflow in self.tree.iter(tag="workflow"):
-            name = workflow.get("name")
+            name = name_override if name_override else workflow.get("name")
             self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow, parent_name=self.name)
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
+
+    def load_all_workflows_from_directory(self, path=config.workflowsPath):
+        for workflow in locate_workflows_in_directory():
+            self.loadWorkflowsFromFile(os.path.join(config.workflowsPath, workflow))
 
     def addChildWorkflows(self):
         for workflow in self.workflows:
@@ -101,8 +108,9 @@ class Controller(object):
                 self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
                                        **schedule)
 
-    def createWorkflowFromTemplate(self, name="emptyWorkflow"):
-        self.loadWorkflowsFromFile(path=config.templatesPath + sep + name + ".workflow")
+    def createWorkflowFromTemplate(self, template_name="emptyWorkflow", workflow_name=None):
+        self.loadWorkflowsFromFile(path=config.templatesPath + sep + template_name + ".workflow",
+                                   name_override=workflow_name)
 
     def removeWorkflow(self, name=""):
         if name in self.workflows:
@@ -146,3 +154,5 @@ class Controller(object):
     # Returns jobs scheduled for active execution
     def getScheduledJobs(self):
         self.scheduler.get_jobs()
+
+controller = Controller()

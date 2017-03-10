@@ -13,10 +13,10 @@ class Options(ExecutionElement):
 
     def _from_xml(self, xml_element, options_name='Default', workflow_name=''):
         ExecutionElement.__init__(self, name=options_name, parent_name=workflow_name)
-        self.scheduler = {"autorun": xml_element.find(".//scheduler").get("autorun"),
+        self.scheduler = {"autorun": bool(xml_element.find(".//scheduler").get("autorun")),
                           "type": xml_element.find(".//scheduler").get("type"),
                           "args": {option.tag: option.text for option in xml_element.findall(".//scheduler/*")}}
-        self.enabled = xml_element.find(".//enabled").text
+        self.enabled = bool(xml_element.find(".//enabled").text)
         self.children = {child.text: None for child in xml_element.findall(".//children/child")}
 
     def __repr__(self):

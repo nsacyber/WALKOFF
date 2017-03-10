@@ -79,6 +79,7 @@ class Workflow(ExecutionElement):
             current = nextUp
         return current
 
+
     def execute(self, start="start", data=None):
         total_steps = []
         instances = {}
