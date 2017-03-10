@@ -25,7 +25,7 @@ class EditRoleForm(Form):
 
 
 class AddPlayForm(Form):
-    template = StringField('new_name', [validators.Length(min=1, max=50), validators.Optional()])
+    template = StringField('template', [validators.Length(min=1, max=50), validators.Optional()])
 
 
 class EditPlayNameForm(Form):
@@ -36,7 +36,7 @@ class EditPlayNameForm(Form):
     scheduler_args = StringField('scheduler_options', [validators.Optional()])
 
 
-class EditStepForm(Form):
+class AddEditStepForm(Form):
     id = StringField('id', [validators.Optional()])
     to = FieldList(StringField('to-id'), [validators.Optional()])
     app = StringField('app', [validators.Optional()])

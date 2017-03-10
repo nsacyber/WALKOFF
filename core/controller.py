@@ -108,7 +108,7 @@ class Controller(object):
                 self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
                                        **schedule)
 
-    def createWorkflowFromTemplate(self, template_name="emptyWorkflow", workflow_name=None):
+    def create_workflow_from_template(self, template_name="emptyWorkflow", workflow_name=None):
         self.loadWorkflowsFromFile(path=config.templatesPath + sep + template_name + ".workflow",
                                    name_override=workflow_name)
 

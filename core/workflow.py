@@ -29,7 +29,7 @@ class Workflow(ExecutionElement):
             for workflow in tree.iter(tag="workflow"):
                 name = workflow.get("name")
                 return Workflow(name=name, workflowConfig=workflow)
-            # TODO: Make this work with child workflows
+                # TODO: Make this work with child workflows
 
     def _from_xml(self, xml_element, *args):
         self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)
@@ -156,15 +156,17 @@ class Workflow(ExecutionElement):
         except Exception:
             pass
 
-    def returnCytoscapeData(self):
+    def get_cytoscape_data(self):
         output = []
         for step in self.steps:
-            node = {"group":"nodes", "data":{"id":self.steps[step].name, "parameters":self.steps[step].as_json()}}
+            node = {"group": "nodes", "data": {"id": self.steps[step].name, "parameters": self.steps[step].as_json()}}
             output.append(node)
-            for next in self.steps[step].conditionals:
-                edgeId = str(self.steps[step].name) + str(next.name)
-                if next.name in self.steps:
-                    node = {"group":"edges", "data":{"id": edgeId, "source": self.steps[step].name, "target": next.name, "parameters": next.as_json()}}
+            for next_step in self.steps[step].conditionals:
+                edge_id = str(self.steps[step].name) + str(next_step.name)
+                if next_step.name in self.steps:
+                    node = {"group": "edges",
+                            "data": {"id": edge_id, "source": self.steps[step].name, "target": next_step.name,
+                                     "parameters": next_step.as_json()}}
                     output.append(node)
         return output
 

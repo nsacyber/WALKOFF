@@ -39,7 +39,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_createWorkflow(self):
         self.assertEqual(len(self.c.workflows), 1)
         # Create Empty Workflow
-        self.c.createWorkflowFromTemplate()
+        self.c.create_workflow_from_template()
         self.assertEqual(len(self.c.workflows), 2)
         self.assertEqual(self.c.workflows["emptyWorkflow"].steps, {})
 
@@ -48,7 +48,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_removeWorkflow(self):
-        self.c.createWorkflowFromTemplate()
+        self.c.create_workflow_from_template()
         self.assertEqual(len(self.c.workflows), 2)
 
         success = self.c.removeWorkflow("emptyWorkflow")
@@ -58,7 +58,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_updateWorkflow(self):
-        self.c.createWorkflowFromTemplate()
+        self.c.create_workflow_from_template()
         self.c.updateWorkflowName(oldName="emptyWorkflow", newName="newWorkflowName")
 
         self.assertEqual(len(self.c.workflows), 2)
