@@ -220,7 +220,7 @@ def workflow(name, action):
             steps, instances = workflowManager.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
-                # response = json.dumps(helpers.returnCytoscapeData(steps=steps))
+                response = json.dumps(helpers.returnCytoscapeData(steps=steps))
                 response = str(steps)
             else:
                 response = json.dumps(str(steps))
