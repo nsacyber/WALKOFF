@@ -13,6 +13,9 @@ from core.case import callbacks
 from core.events import EventListener
 from core.helpers import locate_workflows_in_directory
 
+import multiprocessing
+from multiprocessing import freeze_support
+
 
 class SchedulerStatusListener(EventListener):
     def __init__(self, shared_log=None):
@@ -80,6 +83,11 @@ class Controller(object):
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
+        # MULTIPROCESSING
+        # self.pool = multiprocessing.Pool(processes=5)
+        # self.manager = multiprocessing.Manager()
+        # self.queue = self.manager.SimpleQueue()
+
     def loadWorkflowsFromFile(self, path, name_override=None):
         self.tree = et.ElementTree(file=path)
         for workflow in self.tree.iter(tag="workflow"):
@@ -108,7 +116,7 @@ class Controller(object):
                 self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
                                        **schedule)
 
-    def createWorkflowFromTemplate(self, template_name="emptyWorkflow", workflow_name=None):
+    def create_workflow_from_template(self, template_name="emptyWorkflow", workflow_name=None):
         self.loadWorkflowsFromFile(path=config.templatesPath + sep + template_name + ".workflow",
                                    name_override=workflow_name)
 
@@ -122,8 +130,22 @@ class Controller(object):
         self.workflows[newName] = self.workflows.pop(oldName)
         self.workflows[newName].name = newName
 
+    # def executeWorkflowWorker(self):
+    #
+    #     print("Thread " + str(os.getpid()) + " starting up...")
+    #
+    #     while (True):
+    #         while (self.queue.empty()):
+    #             continue
+    #         name,start,data = self.queue.get()
+    #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
+    #         steps, instances = self.workflows[name].execute(start=start, data=data)
+
+
     def executeWorkflow(self, name, start="start", data=None):
         steps, instances = self.workflows[name].execute(start=start, data=data)
+        #print("Boss thread putting "+name+" workflow on queue...:")
+        #self.queue.put((name, start, data))
         self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
         return steps, instances
 
@@ -156,3 +178,7 @@ class Controller(object):
         self.scheduler.get_jobs()
 
 controller = Controller()
+
+# if __name__ == '__main__':
+#     freeze_support()
+

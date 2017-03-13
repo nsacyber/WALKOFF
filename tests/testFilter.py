@@ -1,5 +1,6 @@
 import unittest
 import sys
+from xml.etree import ElementTree
 from core.filter import Filter
 from core.executionelement import ExecutionElement
 
@@ -58,6 +59,15 @@ class TestFilter(unittest.TestCase):
         filter = Filter(ancestry=['a', 'b'], action="test", args=args)
         self.assertDictEqual(filter.as_json(), expected_filter_json)
         self.compare_init(filter, 'test', '', ['a', 'b', 'test'], args=expected_args_json)
+
+    def test_to_from_xml(self):
+        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
+        input_output = [Filter(), Filter(action='test_action'), Filter(ancestry=['a', 'b'], action="test", args=args)]
+
+        for filter_element in input_output:
+            original_json = filter_element.as_json()
+            derived_json = Filter(xml=filter_element.to_xml()).as_json()
+            self.assertEqual(original_json, derived_json)
 
     def test_length_filter(self):
         filter = Filter(action='length')

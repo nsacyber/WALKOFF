@@ -2,27 +2,25 @@ from server import forms
 from core.context import running_context
 
 def devices():
-    return {"apps": running_context.getApps()}, forms.AddNewDeviceForm()
+    return {"apps": running_context.getApps(), "form":forms.AddNewDeviceForm()}
 
 def settings():
-    form = forms.settingsForm()
+    userForm = forms.userForm()
     choices = [(obj.email, str(obj.email)) for obj in running_context.User.query.all()]
-    form.username.choices = choices
-    return {}, form
+    userForm.username.choices = choices
+    return {"systemForm":forms.settingsForm(), "userForm": userForm }
 
 def playbook():
-    return {"currentWorkflow": "multiactionWorkflow"}, None
-
+    return {"currentWorkflow": "multiactionWorkflow"}
 
 def triggers():
-    return {}, forms.addNewTriggerForm()
-
+    return {"form": forms.addNewTriggerForm(), "editForm":forms.editTriggerForm()}
 
 def cases():
-    return {"currentWorkflow": "multiactionWorkflow"}, None
+    return {"currentWorkflow": "multiactionWorkflow"}
 
 def dashboard():
-    return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}, None
+    return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}
 
 def debug():
-    return {}, None
+    return {}

@@ -1,6 +1,7 @@
 import unittest
 import json
 from server import flaskServer as flask_server
+from tests.util.assertwrappers import orderless_list_comapre
 
 
 class TestAppBlueprint(unittest.TestCase):
@@ -19,8 +20,7 @@ class TestAppBlueprint(unittest.TestCase):
         response = self.app.post('/apps/HelloWorld/actions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertEqual(len(response['actions']), len(expected_actions))
-        self.assertSetEqual(set(response['actions']), set(expected_actions))
+        orderless_list_comapre(self, response['actions'], expected_actions)
 
     def test_function_aliases(self):
         expected_json = {"helloWorld": ["helloworld", "hello world", "hello", "greeting", "HelloWorld", "hello_world"],
@@ -31,4 +31,3 @@ class TestAppBlueprint(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_json)
-

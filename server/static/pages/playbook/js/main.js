@@ -1,3 +1,10 @@
+$(function(){
+    $(".nav-tabs a").click(function(){
+        $(this).tab('show');
+    });
+
+});
+
 $("#executeWorkflowButton").on("click", function(e){
     var result = function () {
         var tmp = null;
@@ -187,7 +194,11 @@ $(function(){
   // This function is called when the user drops a new node onto the graph
   function handleDropEvent( event, ui ) {
     var draggable = ui.draggable;
-
+    var draggableId   = draggable.attr('id');
+    var draggableNode = $('#actions').jstree(true).get_node(draggableId);
+    var app = draggableNode.data.app;
+    var action = draggableNode.text;
+      
     // The following coordinates is where the user dropped relative to the
     // top-left of the graph
     var x = event.pageX - this.offsetLeft;
@@ -209,8 +220,8 @@ $(function(){
       data: {
         id: id.toString(),
         parameters: {
-            action: id.toString(),
-            app: "None",
+            action: action,
+            app: app,
             device: "None",
             errors: [
                 {
@@ -220,7 +231,7 @@ $(function(){
                 }
             ],
             input: {},            
-            name: id.toString(),
+            name: action,
             next: [
                 {
                   name: "None",
@@ -243,20 +254,29 @@ $(function(){
           ur.do("remove", selecteds);
   }
 
+  function cut() {
+      var selecteds = cy.$(":selected");
+      if (selecteds.length > 0) {
+          cy.clipboard().copy(selecteds);
+          ur.do("remove", selecteds);
+      }
+  }
+
+  function copy() {
+      cy.clipboard().copy(cy.$(":selected"));
+  }
+
+  function paste() {
+      var newNodes = ur.do("paste");
+      newNodes.on('click', onClick);
+  }
+
   //-------------------------
   // Configure event handlers
   //-------------------------
 
   // Configure handler when user clicks on node or edge
   cy.$('*').on('click', onClick);
-
-  // Configure handler for drag on nodes in palette
-  $('#draggableNode').draggable( {
-    cursor: 'copy',
-    cursorAt: { left: 0, top: 0 },
-    containment: 'document',
-    helper: dragHelper
-  } );
 
   // Called to configure drops onto graph
   $(cy.container()).droppable( {
@@ -278,6 +298,21 @@ $(function(){
     removeSelectedNodes();
   });
 
+  // Handle cut button press
+  $( "#cut-button" ).click(function() {
+      cut();
+  });
+
+  // Handle cut button press
+  $( "#copy-button" ).click(function() {
+      copy();
+  });
+
+  // Handle cut button press
+  $( "#paste-button" ).click(function() {
+      paste();
+  });
+
   // The following handler ensures the graph has the focus whenever you click on it so
   // that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
   $(cy.container()).on("mouseup mousedown", function(){
@@ -295,22 +330,64 @@ $(function(){
           else if (e.which === 89) // 'Ctrl+Y', Redo
             ur.redo();
           else if (e.which == 67) // Ctrl + C, Copy
-            cy.clipboard().copy(cy.$(":selected"));
-          else if (e.which == 86) { // Ctrl + V, Paste
-            var newNodes = ur.do("paste");
-            newNodes.on('click', onClick);
-          }
-          else if (e.which == 88) { // Ctrl + X, Cut
-            var selecteds = cy.$(":selected");
-            if (selecteds.length > 0) {
-              cy.clipboard().copy(selecteds);
-              ur.do("remove", selecteds);
-            }
-          }
+            copy();
+          else if (e.which == 86) // Ctrl + V, Paste
+              paste();
+          else if (e.which == 88) // Ctrl + X, Cut
+              cut();
           else if (e.which == 65) { // 'Ctrl+A', Select All
             cy.elements().select();
             e.preventDefault();
           }
       }
   });
+
+    // Reformat the JSON data returned from the /apps/actions endpoint
+    // into a format that jsTree can understand.
+    function formatAppsActionJsonDataForJsTree(data) {
+        data = JSON.parse(data);
+        var jstreeData = [];
+        $.each(data, function( key, value ) {
+            var appName = key;
+            var actionNames = data[key];
+            var app = {};
+            app.text = key;
+            app.children = [];
+            for (var i=0; i<actionNames.length; ++i) {
+                app.children.push({text: actionNames[i], data: {app: appName}});
+            }
+            jstreeData.push(app);
+        });
+        return jstreeData;
+    }
+
+    // Download all actions in all apps for display in the Actions tree
+    $.ajax({
+        'async': true,
+        'type': "POST",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/apps/actions",
+        'success': function (data) {
+            $('#actions').jstree({
+                'core' : {
+                    'data' : formatAppsActionJsonDataForJsTree(data)
+                }
+            })
+            .bind("ready.jstree", function (event, data) {
+                $(this).jstree("open_all"); // Expand all
+
+                // Make each leaf node draggable onto the graph
+                $('.jstree-leaf').each(function(){
+                    $(this).draggable( {
+                        cursor: 'copy',
+                        cursorAt: { left: 0, top: 0 },
+                        containment: 'document',
+                        helper: dragHelper
+                    });
+                });
+            });
+        }
+    });
+
 });

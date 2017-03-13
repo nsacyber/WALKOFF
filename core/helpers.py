@@ -40,6 +40,11 @@ def import_app_main(app_name):
         pass
 
 
+def list_apps(path=os.path.join('.', 'apps')):
+    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join('.', 'apps', f))
+                                            and not f.startswith('__'))]
+
+
 def load_function_aliases(app_name):
     alias_file = os.path.join('.', 'apps', app_name, 'functionAliases.json')
     if os.path.isfile(alias_file):

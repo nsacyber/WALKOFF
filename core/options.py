@@ -1,4 +1,5 @@
 from core.executionelement import ExecutionElement
+import xml.etree.cElementTree as elementtree
 
 
 class Options(ExecutionElement):
@@ -13,11 +14,32 @@ class Options(ExecutionElement):
 
     def _from_xml(self, xml_element, options_name='Default', workflow_name=''):
         ExecutionElement.__init__(self, name=options_name, parent_name=workflow_name)
-        self.scheduler = {"autorun": bool(xml_element.find(".//scheduler").get("autorun")),
-                          "type": xml_element.find(".//scheduler").get("type"),
-                          "args": {option.tag: option.text for option in xml_element.findall(".//scheduler/*")}}
-        self.enabled = bool(xml_element.find(".//enabled").text)
-        self.children = {child.text: None for child in xml_element.findall(".//children/child")}
+        self.scheduler = {'autorun': xml_element.find('.//scheduler').get('autorun'),
+                          'type': xml_element.find('.//scheduler').get('type'),
+                          'args': {option.tag: option.text for option in xml_element.findall('.//scheduler/*')}}
+        self.enabled = bool(xml_element.find('.//enabled').text)
+        self.children = {child.text: None for child in xml_element.findall('.//children/child')}
+
+    def to_xml(self, *args):
+        options = elementtree.Element('options')
+
+        enabled = elementtree.SubElement(options, 'enabled')
+        enabled.text = str(self.enabled).lower()
+
+        scheduler = elementtree.SubElement(options, 'scheduler')
+        scheduler.set('type', self.scheduler['type'])
+        scheduler.set('autorun', self.scheduler['autorun'])
+
+        for arg, value in self.scheduler['args'].items():
+            name = elementtree.SubElement(scheduler, arg)
+            name.text = value
+
+        return options
+
+    def as_json(self):
+        return {'scheduler': self.scheduler,
+                'enabled': str(self.enabled),
+                'children': self.children}
 
     def __repr__(self):
         result = {'scheduler': str(self.scheduler),

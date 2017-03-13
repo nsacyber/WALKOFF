@@ -24,12 +24,8 @@ class EditRoleForm(Form):
     pages = StringField('pages')
 
 
-class SavePlayForm(Form):
-    play = StringField('play', [validators.Optional()])
-
-
 class AddPlayForm(Form):
-    template = StringField('new_name', [validators.Length(min=1, max=50), validators.Optional()])
+    template = StringField('template', [validators.Length(min=1, max=50), validators.Optional()])
 
 
 class EditPlayNameForm(Form):
@@ -40,14 +36,7 @@ class EditPlayNameForm(Form):
     scheduler_args = StringField('scheduler_options', [validators.Optional()])
 
 
-class EditPlayOptionsForm(Form):
-    autoRun = BooleanField("autorun")
-    s_sDT = DateTimeField("sDT")
-    s_eDT = DateTimeField("eDT")
-    s_interval = DecimalField("interval", places=2)
-
-
-class EditStepForm(Form):
+class AddEditStepForm(Form):
     id = StringField('id', [validators.Optional()])
     to = FieldList(StringField('to-id'), [validators.Optional()])
     app = StringField('app', [validators.Optional()])
@@ -179,11 +168,15 @@ class settingsForm(Form):
     host = StringField('host', [validators.Optional()])
     port = StringField('port', [validators.Optional()])
 
-    password = PasswordField('password')
-    username = SelectField('username', [validators.Optional()])
 
+
+
+
+class userForm(Form):
+    username = SelectField('username', [validators.Optional()], choices=[])
     email = StringField('email', [validators.DataRequired("Please enter your email address."),
                                   validators.Email("Please enter your email address.")])
+    password = PasswordField('password')
     active = BooleanField()
     confirmed_at = DateTimeField('confirmed_at', [validators.Optional()])
     roles = SelectField('roles', choices=[])
@@ -192,12 +185,4 @@ class settingsForm(Form):
     last_login_ip = StringField("last_login_ip")
     current_login_ip = StringField("current_login_ip")
     login_count = IntegerField("login_count")
-
-
-class userForm(Form):
-    username = SelectField('username', [validators.Optional()], choices=[])
-    email = StringField('email', [validators.DataRequired("Please enter your email address."),
-                                  validators.Email("Please enter your email address.")])
-    password = PasswordField('password')
-    active = RadioField('active', choices=[])
     # active = RadioField('active',choices = [ (h.key.id(),h.homename)for h in User.queryAll()])

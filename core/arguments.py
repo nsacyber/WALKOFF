@@ -38,10 +38,13 @@ class Argument(object):
         return self.templated
 
     def to_xml(self):
-        elem = et.Element(self.key)
-        elem.text = str(self.value)
-        elem.set("format", self.format)
-        return elem
+        if self.key:
+            elem = et.Element(self.key)
+            elem.text = str(self.value)
+            elem.set("format", self.format)
+            return elem
+        else:
+            return None
 
     def __repr__(self):
         output = {'key': self.key,
