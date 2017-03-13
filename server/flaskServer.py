@@ -65,23 +65,9 @@ def create_user():
             if (os.path.isdir(os.path.join(path, name))) and ('cache' not in name):
                 database.db.session.add(appDevice.App(app=name, devices=[]))
 
-
-# Temporary create controller
-workflowManager = controller.Controller()
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
-
-subs = {'defaultController':
-            Subscription(subscriptions=
-                         {'multiactionWorkflow':
-                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
-                                                   "NextStepFound", "WorkflowShutdown"])})}
-set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
-
 """
     URLS
 """
-
 
 @app.route("/")
 @login_required
@@ -212,26 +198,19 @@ def workflow(name, action):
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if name in workflowManager.workflows:
+    if name in running_context.controller.workflows:
         if action == "cytoscape":
-            output = workflowManager.workflows[name].returnCytoscapeData()
+            output = running_context.controller.workflows[name].get_cytoscape_data()
             return json.dumps(output)
         if action == "execute":
-            steps, instances = workflowManager.executeWorkflow(name=name, start="start")
+            steps, instances = running_context.controller.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
-                response = json.dumps(helpers.returnCytoscapeData(steps=steps))
+                response = json.dumps(helpers.get_cytoscape_data(steps=steps))
                 response = str(steps)
             else:
                 response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")
-
-
-@app.route("/workflow/<string:workflow_name>/<string:step_name>/<string:action>", methods=['POST'])
-@auth_token_required
-@roles_accepted(*userRoles["/workflow"])
-def crud_workflow_step(workflow_name, step_name, action):
-    pass
 
 
 @app.route('/cases', methods=['POST'])

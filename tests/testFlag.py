@@ -187,3 +187,43 @@ class TestFlag(unittest.TestCase):
                         }
         for input, expected in input_output.items():
             self.assertDictEqual(input.as_json(), expected)
+
+    def test_from_json(self):
+        filters = [Filter(action='test_filter_action'), Filter()]
+        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
+        args = {arg_name: Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
+                for arg_name, arg_value in args.items()}
+        input_output = {Flag(): ('', ['']),
+                        Flag(parent_name='test_parent'): ('test_parent', ['test_parent']),
+                        Flag(action='test_action'): ('', ['']),
+                        Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b']): ('test_parent', ['a', 'b']),
+
+                        Flag(action='test_action', args=args): ('', [''])}
+
+        flag1, expected1 = Flag(action='test_action'), ('', [''])
+        filters1 = [Filter(parent_name=flag1.name, ancestry=flag1.ancestry),
+                    Filter(action='test_filter_action', parent_name=flag1.name, ancestry=flag1.ancestry)]
+        flag1.filters = filters1
+
+        flag2, expected2 = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters,
+                                args=args), ('test_parent', ['a', 'b'])
+        filters2 = [Filter(parent_name=flag2.name, ancestry=flag2.ancestry),
+                    Filter(action='test_filter_action', parent_name=flag2.name, ancestry=flag2.ancestry)]
+        flag2.filters = filters2
+
+        input_output[flag1] = expected1
+        input_output[flag2] = expected2
+
+        for flag, (parent_name, ancestry) in input_output.items():
+            flag_json = flag.as_json()
+            original_filter_ancestries = [list(filter_element.ancestry) for filter_element in flag.filters]
+            derived_flag = Flag.from_json(flag_json, parent_name=parent_name, ancestry=ancestry)
+            derived_filters_ancestries = [list(filter_element.ancestry) for filter_element in derived_flag.filters]
+            self.assertEqual(len(derived_filters_ancestries), len(original_filter_ancestries))
+            for derived_filter_ancestry, original_filter_ancestry in zip(derived_filters_ancestries,
+                                                                         original_filter_ancestries):
+                self.assertListEqual(derived_filter_ancestry, original_filter_ancestry)
+            self.assertDictEqual(derived_flag.as_json(), flag_json)
+            self.assertEqual(flag.parent_name, derived_flag.parent_name)
+            self.assertListEqual(flag.ancestry, derived_flag.ancestry)
+

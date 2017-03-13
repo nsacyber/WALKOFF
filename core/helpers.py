@@ -6,7 +6,7 @@ import os
 from core.config import workflowsPath
 
 
-def returnCytoscapeData(steps):
+def get_cytoscape_data(steps):
     output = []
     for step in steps:
         node = {"group": "nodes", "data": {"id": steps[step]["name"]}}

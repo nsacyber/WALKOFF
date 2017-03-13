@@ -25,7 +25,7 @@ class Context(object):
     # Gets all the app instances
     @staticmethod
     def getApps(path="apps"):
-        return list_apps()
+        return list_apps(path=path)
 
     def set(self, key, value):
         setattr(self, key, value)

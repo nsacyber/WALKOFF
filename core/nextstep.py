@@ -6,7 +6,7 @@ from core.flag import Flag
 
 
 class Next(ExecutionElement):
-    def __init__(self, xml=None, parent_name="", name="", nextWorkflow="", flags=None, ancestry=None):
+    def __init__(self, xml=None, parent_name='', name='', nextWorkflow='', flags=None, ancestry=None):
         if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
@@ -16,14 +16,14 @@ class Next(ExecutionElement):
                                                      'NextStepNotTaken': callbacks.add_next_step_entry('Step not taken')})
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
-        name = xml_element.get("step")
+        name = xml_element.get('step')
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.flags = [Flag(xml=flag_element, parent_name=self.name, ancestry=self.ancestry)
-                      for flag_element in xml_element.findall("flag")]
+                      for flag_element in xml_element.findall('flag')]
 
-    def to_xml(self, tag="next"):
+    def to_xml(self, tag='next'):
         elem = et.Element(tag)
-        elem.set("next", self.name)
+        elem.set('next', self.name)
         for flag in self.flags:
             elem.append(flag.to_xml())
         return elem
@@ -67,4 +67,10 @@ class Next(ExecutionElement):
                 "flags": [flag.as_json() for flag in self.flags],
                 "name": str(self.name)}
 
+    @staticmethod
+    def from_json(json, parent_name='', ancestry=None):
+        next_step = Next(name=json['name'], parent_name=parent_name, ancestry=ancestry)
+        next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
+                           for flag in json['flags']]
+        return next_step
 

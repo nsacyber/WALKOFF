@@ -1,6 +1,6 @@
 import ast
 import unittest
-
+from os import path
 from core import controller, graphDecorator
 from tests import config
 
@@ -13,11 +13,11 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "simpleDataManipulationWorkflow.workflow")
+        self.c.loadWorkflowsFromFile(path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
 
     def tearDown(self):
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "simpleDataManipulationWorkflow.workflow")
+        self.c.loadWorkflowsFromFile(path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
 
     def executionTest(self):
@@ -319,6 +319,17 @@ class TestWorkflowManipulation(unittest.TestCase):
         conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].filters.__repr__())
         self.assertEqual(len(conditional), 1)
         self.assertEqual(conditional[0]["action"], "length")
+
+    def test_to_from_cytoscape_data(self):
+        self.c.loadWorkflowsFromFile(path=path.join(config.testWorkflowsPath, 'multiactionWorkflowTest.workflow'))
+        original_steps = {step_name: step.as_json()
+                          for step_name, step in self.c.workflows['multiactionWorkflow'].steps.items()}
+        cytoscape_data = self.c.workflows['multiactionWorkflow'].get_cytoscape_data()
+        self.c.workflows['multiactionWorkflow'].steps = {}
+        self.c.workflows['multiactionWorkflow'].from_cytoscape_data(cytoscape_data)
+        derived_steps = {step_name: step.as_json()
+                         for step_name, step in self.c.workflows['multiactionWorkflow'].steps.items()}
+        self.assertDictEqual(derived_steps, original_steps)
 
     """
         CRUD - Options

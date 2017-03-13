@@ -4,6 +4,7 @@ import sys
 from os import listdir, walk, sep, environ, pathsep
 from os.path import isfile, join, splitext
 
+
 def loadConfig():
     self = sys.modules[__name__]
     with open("./data/walkoff.config") as f:
@@ -12,7 +13,11 @@ def loadConfig():
             if hasattr(self, key):
                 setattr(self, key, config[key])
 
-def writeValuesToFile(values=["graphVizPath", "templatesPath", "profileVisualizationsPath", "keywordsPath", "dbPath", "TLS_version", "certificatePath", "https", "privateKeyPath", "debug", "defaultServer", "host", "port"]):
+
+def writeValuesToFile(values=None):
+    if values is None:
+        values = ["graphVizPath", "templatesPath", "profileVisualizationsPath", "keywordsPath", "dbPath", "TLS_version",
+                  "certificatePath", "https", "privateKeyPath", "debug", "defaultServer", "host", "port"]
     self = sys.modules[__name__]
     f = open("./data/walkoff.config", "r")
     parsed = json.loads(f.read())
