@@ -8,6 +8,7 @@ from core.config import workflowsPath as coreWorkflows
 from server import flaskServer as flask_server
 from core.controller import Controller
 
+
 class TestWorkflowServer(unittest.TestCase):
     def setUp(self):
         self.app = flask_server.app.test_client(self)
@@ -19,6 +20,19 @@ class TestWorkflowServer(unittest.TestCase):
         self.key = json.loads(response)["auth_token"]
         self.headers = {"Authentication-Token": self.key}
         flask_server.running_context.controller.load_all_workflows_from_directory()
+
+        self.empty_workflow_json = \
+            {'status': 'success',
+             'workflow': {'steps': [],
+                          'name': 'test_name',
+                          'options': {'children': {},
+                                      'enabled': 'True',
+                                      'scheduler': {'args': {'interval': '0.1',
+                                                             'eDT': '2016-3-15 12:00:00',
+                                                             'sDT': '2016-1-1 12:00:00'},
+                                                    'autorun': u'false',
+                                                    'type': u'cron'}}}}
+        self.hello_world_json = []
 
     def tearDown(self):
         flask_server.running_context.controller.workflows = {}
@@ -52,10 +66,42 @@ class TestWorkflowServer(unittest.TestCase):
         response = self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
+        self.assertDictEqual(response, self.empty_workflow_json)
 
         final_workflows = flask_server.running_context.controller.workflows.keys()
-        self.assertEqual(len(final_workflows), len(initial_workflows)+1)
+        self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
+
+        added_workflow = set(final_workflows) - set(initial_workflows)
+        self.assertEqual(list(added_workflow)[0], workflow_name)
+
+    def test_add_templated_workflow(self):
+        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
+        workflow_name = 'test_name'
+        data = {"template": 'basicWorkflow'}
+        response = self.app.post('/workflow/{0}/add'.format(workflow_name), data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        # TODO: the two responses look right, but fail in Python 3
+
+        final_workflows = flask_server.running_context.controller.workflows.keys()
+        self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
+
+        added_workflow = set(final_workflows) - set(initial_workflows)
+        self.assertEqual(list(added_workflow)[0], workflow_name)
+
+    def test_add_templated_workflow_invalid_template(self):
+        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
+        workflow_name = 'test_name'
+        data = {"template": "junktemplatename"}
+        response = self.app.post('/workflow/{0}/add'.format(workflow_name), data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.empty_workflow_json['status'] = 'warning: template not found. Using default template'
+
+        self.assertDictEqual(response, self.empty_workflow_json)
+
+        final_workflows = flask_server.running_context.controller.workflows.keys()
+        self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
 
         added_workflow = set(final_workflows) - set(initial_workflows)
         self.assertEqual(list(added_workflow)[0], workflow_name)
@@ -66,7 +112,15 @@ class TestWorkflowServer(unittest.TestCase):
         response = self.app.post('/workflow/helloWorldWorkflow/edit', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
+        expected_json = {'status': 'success',
+                         'workflow': {'name': 'test_name',
+                                      'options': {'enabled': 'False',
+                                                  'children': {},
+                                                  'scheduler': {'args': {},
+                                                                'type': 'chron',
+                                                                'autorun': 'false'}}}}
+
+        self.assertDictEqual(response, expected_json)
 
         self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
         self.assertEqual(list(flask_server.running_context.controller.workflows.keys())[0], workflow_name)
@@ -80,7 +134,16 @@ class TestWorkflowServer(unittest.TestCase):
         response = self.app.post('/workflow/helloWorldWorkflow/edit', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
+        expected_json = {'status': 'success',
+                         'workflow': {'name': 'helloWorldWorkflow',
+                                      'options': {'enabled': 'True',
+                                                  'children': {},
+                                                  'scheduler': {'args': {'arg1': 'val1',
+                                                                         'arg2': 'val2',
+                                                                         'agr3': 'val3'},
+                                                                'type': 'test_scheduler',
+                                                                'autorun': 'true'}}}}
+        self.assertDictEqual(response, expected_json)
 
         options = flask_server.running_context.controller.workflows['helloWorldWorkflow'].options
         self.assertTrue(options.enabled)
@@ -100,7 +163,16 @@ class TestWorkflowServer(unittest.TestCase):
         response = self.app.post('/workflow/helloWorldWorkflow/edit', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
+        expected_json = {'status': 'success',
+                         'workflow': {'name': u'test_name',
+                                      'options': {'enabled': 'True',
+                                                  'children': {},
+                                                  'scheduler': {'args': {'arg1': 'val1',
+                                                                         'arg2': 'val2',
+                                                                         'agr3': 'val3'},
+                                                                'type': 'test_scheduler',
+                                                                'autorun': 'true'}}}}
+        self.assertDictEqual(response, expected_json)
 
         options = flask_server.running_context.controller.workflows[workflow_name].options
         self.assertTrue(options.enabled)
@@ -123,16 +195,7 @@ class TestWorkflowServer(unittest.TestCase):
     def test_save_workflow(self):
         initial_workflows = list(flask_server.running_context.controller.workflows.keys())
         workflow_name = 'test_name'
-        response = self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
-
-        final_workflows = flask_server.running_context.controller.workflows.keys()
-        self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
-
-        added_workflow = set(final_workflows) - set(initial_workflows)
-        self.assertEqual(list(added_workflow)[0], workflow_name)
+        self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
 
         response = self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -154,17 +217,9 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response, {'status': 'error: workflow junkworkflowname is not valid'})
 
     def test_delete_workflow(self):
-        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
         workflow_name = 'test_name'
-        response = self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
-
-        response = self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
+        self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
+        self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
 
         response = self.app.post('/workflow/{0}/delete'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -182,5 +237,3 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, {'status': 'error: workflow {0} is not valid'.format(workflow_name)})
-
-

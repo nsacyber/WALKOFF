@@ -9,7 +9,8 @@ from core.context import running_context
 from core.helpers import locate_workflows_in_directory
 from core import helpers
 from . import forms, interface
-from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, rename_case
+from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, \
+    rename_case
 from core.options import Options
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -32,7 +33,9 @@ default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
-#devClass = appDevice.Device()
+
+
+# devClass = appDevice.Device()
 
 
 # Creates Test Data
@@ -55,14 +58,12 @@ def create_user():
 
         database.db.session.commit()
 
-
     if database.db.session.query(appDevice.App).all() == []:
         # initialize app table
         path = os.path.abspath('apps/')
         for name in os.listdir(path):
             if (os.path.isdir(os.path.join(path, name))) and ('cache' not in name):
                 database.db.session.add(appDevice.App(app=name, devices=[]))
-
 
 
 # Temporary create controller
@@ -76,7 +77,6 @@ subs = {'defaultController':
                               Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                    "NextStepFound", "WorkflowShutdown"])})}
 set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
-
 
 """
     URLS
@@ -143,15 +143,30 @@ def workflow(name, action):
     if action == 'add':
         form = forms.AddPlayForm(request.form)
         if form.validate():
-            if form.template.data:
-                running_context.controller.createWorkflowFromTemplate(workflow_name=name,
-                                                                      template_name=form.template.data)
+            status = 'success'
+            template = form.template.data
+            if template:
+                if template in [os.path.splitext(workflow)[0]
+                                for workflow in locate_workflows_in_directory(config.templatesPath)]:
+                    running_context.controller.create_workflow_from_template(workflow_name=name,
+                                                                             template_name=template)
+                else:
+                    running_context.controller.create_workflow_from_template(workflow_name=name)
+                    status = 'warning: template not found. Using default template'
             else:
-                running_context.controller.createWorkflowFromTemplate(workflow_name=name)
-        if name in running_context.controller.workflows:
-            return json.dumps({'status': 'success'})
+                running_context.controller.create_workflow_from_template(workflow_name=name)
+
+            if name in running_context.controller.workflows:
+
+                return json.dumps(
+                    {'workflow': {'name': name,
+                                  'steps': running_context.controller.workflows[name].get_cytoscape_data(),
+                                  'options': running_context.controller.workflows[name].options.as_json()},
+                     'status': status})
+            else:
+                json.dumps({'status': 'error: could not add workflow'})
         else:
-            return json.dumps({'status': 'error'})
+            return json.dumps({'status': 'error: invalid form'})
 
     elif action == 'edit':
         if name in running_context.controller.workflows:
@@ -164,7 +179,12 @@ def workflow(name, action):
                 running_context.controller.workflows[name].options = Options(scheduler=scheduler, enabled=enabled)
                 if form.new_name.data:
                     running_context.controller.updateWorkflowName(oldName=name, newName=form.new_name.data)
-                return json.dumps({'status': 'success'})
+                    name = form.new_name.data
+
+                return json.dumps(
+                        {'workflow': {'name': name,
+                                      'options': running_context.controller.workflows[name].options.as_json()},
+                         'status': 'success'})
             else:
                 return json.dumps({'status': 'error: invalid form'})
         else:
@@ -184,14 +204,13 @@ def workflow(name, action):
 
     if action == 'delete':
         workflow = [workflow for workflow in helpers.locate_workflows_in_directory()
-                     if '{0}.workflow'.format(name) == workflow]
+                    if '{0}.workflow'.format(name) == workflow]
         if workflow:
             workflow = workflow[0]
             os.remove(os.path.join(config.workflowsPath, workflow))
             return json.dumps({'status': 'success'})
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
-
 
     if name in workflowManager.workflows:
         if action == "cytoscape":
@@ -201,11 +220,18 @@ def workflow(name, action):
             steps, instances = workflowManager.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
-                # response = json.dumps(helpers.returnCytoscapeData(steps=steps))
+                response = json.dumps(helpers.returnCytoscapeData(steps=steps))
                 response = str(steps)
             else:
                 response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")
+
+
+@app.route("/workflow/<string:workflow_name>/<string:step_name>/<string:action>", methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def crud_workflow_step(workflow_name, step_name, action):
+    pass
 
 
 @app.route('/cases', methods=['POST'])
@@ -259,7 +285,7 @@ def edit_event_note(event_id):
     form = forms.EditEventForm(request.form)
     if form.validate():
         if form.note.data:
-            valid_event_id = case_database.case_db.session.query(case_database.EventLog)\
+            valid_event_id = case_database.case_db.session.query(case_database.EventLog) \
                 .filter(case_database.EventLog.id == event_id).all()
             if valid_event_id:
                 case_database.case_db.edit_event_note(event_id, form.note.data)
@@ -590,7 +616,8 @@ def configDevicesConfig(app, action):
                 return json.dumps({"status": "device could not be added"})
 
             running_context.Device.add_device(name=form.name.data, username=form.username.data,
-                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data, app_server=app,
+                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
+                                              app_server=app,
                                               extraFields=form.extraFields.data)
 
             return json.dumps({"status": "device successfully added"})

@@ -36,6 +36,11 @@ class Options(ExecutionElement):
 
         return options
 
+    def as_json(self):
+        return {'scheduler': self.scheduler,
+                'enabled': str(self.enabled),
+                'children': self.children}
+
     def __repr__(self):
         result = {'scheduler': str(self.scheduler),
                   'enabled': str(self.enabled),
