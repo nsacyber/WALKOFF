@@ -110,16 +110,18 @@ def list_all_apps_and_actions():
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflows():
-    workflowss = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory()]
-    return json.dumps({"workflows": workflowss})
+    workflow_names = [helpers.get_workflow_name_from_file(os.path.join(config.workflowsPath, workflow))
+                      for workflow in locate_workflows_in_directory()]
+    return json.dumps({"workflows": workflow_names})
 
 
 @app.route("/workflows/templates", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflow_templates():
-    templates = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory(config.templatesPath)]
-    return json.dumps({"templates": templates})
+    template_names = [helpers.get_workflow_name_from_file(os.path.join(config.templatesPath, workflow))
+                      for workflow in locate_workflows_in_directory(config.templatesPath)]
+    return json.dumps({"templates": template_names})
 
 
 @app.route("/workflow/<string:name>/<string:action>", methods=['POST'])

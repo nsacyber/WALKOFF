@@ -2,6 +2,7 @@ import importlib
 import sys
 import json
 import os
+from xml.etree import ElementTree
 
 from core.config import workflowsPath
 
@@ -79,3 +80,9 @@ def load_app_function(app_instance, function_name):
 def locate_workflows_in_directory(path=workflowsPath):
     return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                           and workflow.endswith('.workflow'))]
+
+
+def get_workflow_name_from_file(filename):
+    if os.path.isfile(filename):
+        tree = ElementTree.ElementTree(file=filename)
+        return [workflow.get('name') for workflow in tree.iter(tag="workflow")][0]
