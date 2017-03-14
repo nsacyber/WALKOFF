@@ -3,6 +3,7 @@ import json
 from os import path
 import os
 
+from tests.config import testWorkflowsPath
 from tests.util.assertwrappers import orderless_list_comapre
 from core.config import workflowsPath as coreWorkflows
 from server import flaskServer as flask_server
@@ -60,6 +61,25 @@ class TestWorkflowServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(len(expected_workflows), len(response['templates']))
         self.assertSetEqual(set(expected_workflows), set(response['templates']))
+
+    def test_display_workflow(self):
+        workflow_filename = os.path.join(testWorkflowsPath, 'multiactionWorkflowTest.workflow')
+        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        steps_data = flask_server.running_context.controller.workflows['multiactionWorkflow'].get_cytoscape_data()
+        options_data = flask_server.running_context.controller.workflows['multiactionWorkflow'].options.as_json()
+        expected_response = {'status': 'success',
+                             'steps': steps_data,
+                             'options': options_data}
+        response = self.app.get('/workflow/multiactionWorkflow', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_response)
+
+    def test_display_workflow_invalid_name(self):
+        response = self.app.get('/workflow/multiactionWorkflow', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {"status": "error: name multiactionWorkflow not found"})
 
     def test_add_workflow(self):
         initial_workflows = list(flask_server.running_context.controller.workflows.keys())

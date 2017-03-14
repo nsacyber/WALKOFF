@@ -124,6 +124,19 @@ def display_available_workflow_templates():
     return json.dumps({"templates": template_names})
 
 
+@app.route("/workflow/<string:name>", methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def display_workflow(name):
+    if name in running_context.controller.workflows:
+        return json.dumps({"status": "success",
+                           "steps": running_context.controller.workflows[name].get_cytoscape_data(),
+                           'options': running_context.controller.workflows[name].options.as_json()})
+    else:
+        return json.dumps({"status": "error: name {0} not found".format(name)})
+
+
+
 @app.route("/workflow/<string:name>/<string:action>", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
