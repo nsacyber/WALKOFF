@@ -364,7 +364,7 @@ $(function(){
     // Download all actions in all apps for display in the Actions tree
     $.ajax({
         'async': true,
-        'type': "POST",
+        'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
         'url': "/apps/actions",

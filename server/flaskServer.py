@@ -65,23 +65,9 @@ def create_user():
             if (os.path.isdir(os.path.join(path, name))) and ('cache' not in name):
                 database.db.session.add(appDevice.App(app=name, devices=[]))
 
-
-# Temporary create controller
-workflowManager = controller.Controller()
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/basicWorkflowTest.workflow")
-workflowManager.loadWorkflowsFromFile(path="tests/testWorkflows/multiactionWorkflowTest.workflow")
-
-subs = {'defaultController':
-            Subscription(subscriptions=
-                         {'multiactionWorkflow':
-                              Subscription(events=["InstanceCreated", "StepExecutionSuccess",
-                                                   "NextStepFound", "WorkflowShutdown"])})}
-set_subscriptions({'testExecutionEvents': CaseSubscriptions(subscriptions=subs)})
-
 """
     URLS
 """
-
 
 @app.route("/")
 @login_required
@@ -105,14 +91,14 @@ def loginInfo():
         return {"status": "Could Not Log In."}
 
 
-@app.route('/apps/', methods=['POST'])
+@app.route('/apps/', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/apps"])
 def list_all_apps():
     return json.dumps({"apps": helpers.list_apps()})
 
 
-@app.route('/apps/actions', methods=['POST'])
+@app.route('/apps/actions', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/apps"])
 def list_all_apps_and_actions():
@@ -120,20 +106,35 @@ def list_all_apps_and_actions():
     return json.dumps({app: list((set(helpers.list_app_functions(app)) - get_base_app_functions())) for app in apps})
 
 
-@app.route("/workflows", methods=['POST'])
+@app.route("/workflows", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflows():
-    workflowss = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory()]
-    return json.dumps({"workflows": workflowss})
+    workflow_names = [helpers.get_workflow_name_from_file(os.path.join(config.workflowsPath, workflow))
+                      for workflow in locate_workflows_in_directory()]
+    return json.dumps({"workflows": workflow_names})
 
 
-@app.route("/workflows/templates", methods=['POST'])
+@app.route("/workflows/templates", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflow_templates():
-    templates = [os.path.splitext(workflow)[0] for workflow in locate_workflows_in_directory(config.templatesPath)]
-    return json.dumps({"templates": templates})
+    template_names = [helpers.get_workflow_name_from_file(os.path.join(config.templatesPath, workflow))
+                      for workflow in locate_workflows_in_directory(config.templatesPath)]
+    return json.dumps({"templates": template_names})
+
+
+@app.route("/workflow/<string:name>", methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def display_workflow(name):
+    if name in running_context.controller.workflows:
+        return json.dumps({"status": "success",
+                           "steps": running_context.controller.workflows[name].get_cytoscape_data(),
+                           'options': running_context.controller.workflows[name].options.as_json()})
+    else:
+        return json.dumps({"status": "error: name {0} not found".format(name)})
+
 
 
 @app.route("/workflow/<string:name>/<string:action>", methods=['POST'])
@@ -190,19 +191,29 @@ def workflow(name, action):
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if action == 'save':
+    elif action == 'save':
         if name in running_context.controller.workflows:
-            try:
-                with open(os.path.join(config.workflowsPath, '{0}.workflow'.format(name)), 'w') as workflow_out:
-                    xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
-                    workflow_out.write(str(xml))
-                return json.dumps({"status": "success"})
-            except (OSError, IOError) as e:
-                return json.dumps({"status": "Error: {0}".format(e.message)})
+            form = forms.SavePlayForm(request.form)
+            if form.validate():
+                running_context.controller.workflows[name].from_cytoscape_data(json.loads(form.cytoscape.data))
+                filename = name
+                if form.filename.data:
+                    filename = form.filename.data
+                try:
+                    with open(os.path.join(config.workflowsPath, '{0}.workflow'.format(filename)), 'w') as workflow_out:
+                        xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
+                        workflow_out.write(str(xml))
+                    return json.dumps(
+                        {"status": "success",
+                         "steps": running_context.controller.workflows[name].get_cytoscape_data()})
+                except (OSError, IOError) as e:
+                    return json.dumps(
+                        {"status": "Error saving: {0}".format(e.message),
+                         "steps": running_context.controller.workflows[name].get_cytoscape_data()})
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if action == 'delete':
+    elif action == 'delete':
         workflow = [workflow for workflow in helpers.locate_workflows_in_directory()
                     if '{0}.workflow'.format(name) == workflow]
         if workflow:
@@ -212,29 +223,24 @@ def workflow(name, action):
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if name in workflowManager.workflows:
+    elif name in running_context.controller.workflows:
         if action == "cytoscape":
-            output = workflowManager.workflows[name].returnCytoscapeData()
+            output = running_context.controller.workflows[name].get_cytoscape_data()
             return json.dumps(output)
         if action == "execute":
-            steps, instances = workflowManager.executeWorkflow(name=name, start="start")
+            steps, instances = running_context.controller.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
-                response = json.dumps(helpers.returnCytoscapeData(steps=steps))
+                response = json.dumps(helpers.get_cytoscape_data(steps=steps))
                 response = str(steps)
             else:
                 response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")
+    else:
+        return json.dumps({"status": "error"})
 
 
-@app.route("/workflow/<string:workflow_name>/<string:step_name>/<string:action>", methods=['POST'])
-@auth_token_required
-@roles_accepted(*userRoles["/workflow"])
-def crud_workflow_step(workflow_name, step_name, action):
-    pass
-
-
-@app.route('/cases', methods=['POST'])
+@app.route('/cases', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_cases():
@@ -266,7 +272,7 @@ def crud_case(case_name, action):
         return json.dumps({"status": "Invalid operation {0}".format(action)})
 
 
-@app.route('/cases/<string:case_name>', methods=['POST'])
+@app.route('/cases/<string:case_name>', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
@@ -296,7 +302,7 @@ def edit_event_note(event_id):
         return json.dumps({"status": "Invalid form"})
 
 
-@app.route('/cases/subscriptions/available', methods=['POST'])
+@app.route('/cases/subscriptions/available', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_possible_subscriptions():
@@ -351,7 +357,7 @@ def crud_subscription(case_name, action):
             return json.dumps(case_subscription.subscriptions_as_json())
 
 
-@app.route('/cases/subscriptions/', methods=['POST'])
+@app.route('/cases/subscriptions/', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_subscriptions():
@@ -389,7 +395,7 @@ def listener():
     return json.dumps(listener_output)
 
 
-@app.route('/execution/listener/triggers', methods=["POST"])
+@app.route('/execution/listener/triggers', methods=["GET"])
 @auth_token_required
 @roles_accepted(*userRoles["/execution/listener/triggers"])
 def displayAllTriggers():

@@ -50,21 +50,20 @@ class TestArgument(unittest.TestCase):
         self.assertIsNone(arg.templated)
         self.assertEqual(arg.value, 6)
 
-    def test_as_json(self):
-        arg = Argument()
-        self.assertDictEqual(arg.as_json(), {'key': 'None', 'value': 'None', 'format': 'str'})
-
-        arg = Argument(key='test')
-        self.assertDictEqual(arg.as_json(), {'key': 'test', 'value': 'None', 'format': 'str'})
-
-        arg = Argument(key='test', value='val')
-        self.assertDictEqual(arg.as_json(), {'key': 'test', 'value': 'val', 'format': 'str'})
-
-        arg = Argument(key='test', format='int')
-        self.assertDictEqual(arg.as_json(), {'key': 'test', 'value': 'None', 'format': 'int'})
+    def test_to_from_json(self):
+        input_output = {Argument(): {'key': 'None', 'value': 'None', 'format': 'str'},
+                        Argument(key='test'): {'key': 'test', 'value': 'None', 'format': 'str'},
+                        Argument(key='test', value='val'): {'key': 'test', 'value': 'val', 'format': 'str'},
+                        Argument(key='test', format='int'): {'key': 'test', 'value': 'None', 'format': 'int'},
+                        Argument(key='test', format='int', value='6'): {'key': 'test', 'value': '6', 'format': 'int'}}
+        for arg, expected_json in input_output.items():
+            original_json = arg.as_json()
+            self.assertDictEqual(original_json, expected_json)
+            self.assertDictEqual(Argument.from_json(original_json).as_json(), expected_json)
 
         arg = Argument(key='test', format='int', value='6')
-        self.assertDictEqual(arg.as_json(), {'key': 'test', 'value': '6', 'format': 'int'})
+        arg2 = Argument.from_json(arg.as_json())
+        self.assertEqual(arg2.value, 6)
 
     def test_convert_to_string(self):
         self.assertEqual(Argument.convertTo(), 'None')

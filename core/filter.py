@@ -7,7 +7,7 @@ from core.helpers import import_lib
 
 
 class Filter(ExecutionElement):
-    def __init__(self, xml=None, parent_name="", action="", args=None, ancestry=None):
+    def __init__(self, xml=None, parent_name="", action="", args=None, arg_json=None, ancestry=None):
         if xml:
             self._from_xml(xml, parent_name, ancestry)
         else:
@@ -53,3 +53,13 @@ class Filter(ExecutionElement):
     def as_json(self):
         return {"action": self.action,
                 "args": {arg: self.args[arg].as_json() for arg in self.args}}
+
+    @staticmethod
+    def from_json(json, parent_name='', ancestry=None):
+        args = {arg_name: arguments.Argument.from_json(arg_json) for arg_name, arg_json in json['args'].items()}
+        out_filter = Filter(action=json['action'],
+                            args=args,
+                            parent_name=parent_name,
+                            ancestry=ancestry)
+        out_filter.args = args
+        return out_filter

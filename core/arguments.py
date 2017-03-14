@@ -67,3 +67,7 @@ class Argument(object):
         return {"key": str(self.key),
                 "value": str(self.value),
                 "format": str(self.format)}
+
+    @staticmethod
+    def from_json(json):
+        return Argument(key=json['key'], value=json['value'], format=json['format'])

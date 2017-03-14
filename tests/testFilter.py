@@ -58,7 +58,20 @@ class TestFilter(unittest.TestCase):
         expected_filter_json = {'action':  'test', 'args': expected_args_json}
         filter = Filter(ancestry=['a', 'b'], action="test", args=args)
         self.assertDictEqual(filter.as_json(), expected_filter_json)
-        self.compare_init(filter, 'test', '', ['a', 'b', 'test'], args=expected_args_json)
+
+    def test_from_json(self):
+        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
+        input_output = {Filter(): ('', ['']),
+                        Filter(action='test_action'): ('', ['']),
+                        Filter(action='test_action', parent_name='test_parent'):
+                            ('test_parent', ['test_parent']),
+                        Filter(ancestry=['a', 'b'], action="test", args=args): ('', ['a', 'b'])}
+        for filter_element, (parent_name, ancestry) in input_output.items():
+            filter_json = filter_element.as_json()
+            derived_filter = Filter.from_json(filter_json, parent_name=parent_name, ancestry=ancestry)
+            self.assertDictEqual(derived_filter.as_json(), filter_json)
+            self.assertEqual(filter_element.parent_name, derived_filter.parent_name)
+            self.assertListEqual(filter_element.ancestry, derived_filter.ancestry)
 
     def test_to_from_xml(self):
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
