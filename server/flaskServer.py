@@ -91,14 +91,14 @@ def loginInfo():
         return {"status": "Could Not Log In."}
 
 
-@app.route('/apps/', methods=['POST'])
+@app.route('/apps/', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/apps"])
 def list_all_apps():
     return json.dumps({"apps": helpers.list_apps()})
 
 
-@app.route('/apps/actions', methods=['POST'])
+@app.route('/apps/actions', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/apps"])
 def list_all_apps_and_actions():
@@ -106,7 +106,7 @@ def list_all_apps_and_actions():
     return json.dumps({app: list((set(helpers.list_app_functions(app)) - get_base_app_functions())) for app in apps})
 
 
-@app.route("/workflows", methods=['POST'])
+@app.route("/workflows", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflows():
@@ -115,7 +115,7 @@ def display_available_workflows():
     return json.dumps({"workflows": workflow_names})
 
 
-@app.route("/workflows/templates", methods=['POST'])
+@app.route("/workflows/templates", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflow_templates():
@@ -178,7 +178,7 @@ def workflow(name, action):
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if action == 'save':
+    elif action == 'save':
         if name in running_context.controller.workflows:
             form = forms.SavePlayForm(request.form)
             if form.validate():
@@ -200,7 +200,7 @@ def workflow(name, action):
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if action == 'delete':
+    elif action == 'delete':
         workflow = [workflow for workflow in helpers.locate_workflows_in_directory()
                     if '{0}.workflow'.format(name) == workflow]
         if workflow:
@@ -210,7 +210,7 @@ def workflow(name, action):
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
-    if name in running_context.controller.workflows:
+    elif name in running_context.controller.workflows:
         if action == "cytoscape":
             output = running_context.controller.workflows[name].get_cytoscape_data()
             return json.dumps(output)
@@ -223,9 +223,11 @@ def workflow(name, action):
             else:
                 response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")
+    else:
+        return json.dumps({"status": "error"})
 
 
-@app.route('/cases', methods=['POST'])
+@app.route('/cases', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_cases():
@@ -257,7 +259,7 @@ def crud_case(case_name, action):
         return json.dumps({"status": "Invalid operation {0}".format(action)})
 
 
-@app.route('/cases/<string:case_name>', methods=['POST'])
+@app.route('/cases/<string:case_name>', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
@@ -287,7 +289,7 @@ def edit_event_note(event_id):
         return json.dumps({"status": "Invalid form"})
 
 
-@app.route('/cases/subscriptions/available', methods=['POST'])
+@app.route('/cases/subscriptions/available', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_possible_subscriptions():
@@ -342,7 +344,7 @@ def crud_subscription(case_name, action):
             return json.dumps(case_subscription.subscriptions_as_json())
 
 
-@app.route('/cases/subscriptions/', methods=['POST'])
+@app.route('/cases/subscriptions/', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_subscriptions():
@@ -380,7 +382,7 @@ def listener():
     return json.dumps(listener_output)
 
 
-@app.route('/execution/listener/triggers', methods=["POST"])
+@app.route('/execution/listener/triggers', methods=["GET"])
 @auth_token_required
 @roles_accepted(*userRoles["/execution/listener/triggers"])
 def displayAllTriggers():

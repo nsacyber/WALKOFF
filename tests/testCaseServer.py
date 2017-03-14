@@ -38,7 +38,7 @@ class TestCaseServer(unittest.TestCase):
 
     def test_display_cases_typical(self):
         cases = TestCaseServer.__basic_case_setup()
-        response = self.app.post('/cases', headers=self.headers)
+        response = self.app.get('/cases', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = set(cases.keys())
@@ -47,7 +47,7 @@ class TestCaseServer(unittest.TestCase):
         self.assertSetEqual(expected_cases, set(received_cases), 'Received incorrect cases')
 
     def test_display_cases_none(self):
-        response = self.app.post('/cases', headers=self.headers)
+        response = self.app.get('/cases', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = []
@@ -56,7 +56,7 @@ class TestCaseServer(unittest.TestCase):
         self.assertSetEqual(set(expected_cases), set(received_cases), 'Received incorrect cases')
 
     def test_display_case_not_found(self):
-        response = self.app.post('/cases/hiThere', headers=self.headers)
+        response = self.app.get('/cases/hiThere', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         with self.assertRaises(KeyError):
@@ -97,7 +97,7 @@ class TestCaseServer(unittest.TestCase):
         expected_events_collection = {case_name: event_logs_as_json(events) for case_name, events in case_events}
 
         for case_name, expected_events in expected_events_collection.items():
-            response = self.app.post('/cases/{0}'.format(case_name), headers=self.headers)
+            response = self.app.get('/cases/{0}'.format(case_name), headers=self.headers)
             self.assertEqual(response.status_code, 200)
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(case_name, response['case']['name'], 'Received case name differs from expected')
@@ -281,7 +281,7 @@ class TestCaseServer(unittest.TestCase):
         with open(join('.', 'data', 'events.json')) as f:
             expected_response = json.loads(f.read())
 
-        response = self.app.post('/cases/subscriptions/available', headers=self.headers)
+        response = self.app.get('/cases/subscriptions/available', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_response)
@@ -296,7 +296,7 @@ class TestCaseServer(unittest.TestCase):
 
         expected_response = {key: case.as_json() for key, case in cases.items()}
 
-        response = self.app.post('/cases/subscriptions/', headers=self.headers)
+        response = self.app.get('/cases/subscriptions/', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(expected_response, response)

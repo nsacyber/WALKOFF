@@ -23,14 +23,14 @@ class TestLogin(unittest.TestCase):
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld']
-        response = self.app.post('/apps/', headers=self.headers)
+        response = self.app.get('/apps/', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_comapre(self, response['apps'], expected_apps)
 
     def test_get_all_list_actions(self):
         expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne']}
-        response = self.app.post('/apps/actions', headers=self.headers)
+        response = self.app.get('/apps/actions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_comapre(self, response.keys(), expected_json.keys())

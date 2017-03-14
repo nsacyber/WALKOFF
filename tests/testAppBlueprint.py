@@ -17,7 +17,7 @@ class TestAppBlueprint(unittest.TestCase):
 
     def test_list_functions(self):
         expected_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne']
-        response = self.app.post('/apps/HelloWorld/actions', headers=self.headers)
+        response = self.app.get('/apps/HelloWorld/actions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_comapre(self, response['actions'], expected_actions)
@@ -27,7 +27,7 @@ class TestAppBlueprint(unittest.TestCase):
                          "repeatBackToMe": ["parrot", "Parrot", "RepeatBackToMe", "repeat_back_to_me", "repeat"],
                          "returnPlusOne": ["plus one", "PlusOne", "plus_one", "plusone", "++", "increment"]}
 
-        response = self.app.post('/apps/HelloWorld/actions/aliases', headers=self.headers)
+        response = self.app.get('/apps/HelloWorld/actions/aliases', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_json)

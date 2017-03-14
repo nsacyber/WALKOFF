@@ -70,7 +70,7 @@ def data_stream(app_name, stream_name):
         return getattr(module, 'stream_generator')(stream_name)
 
 
-@appPage.route('/actions', methods=['POST'])
+@appPage.route('/actions', methods=['GET'])
 @auth_token_required
 @roles_required('admin')
 def list_app_actions():
@@ -79,7 +79,7 @@ def list_app_actions():
     return json.dumps({"actions": list(functions)})
 
 
-@appPage.route('/actions/aliases', methods=['POST'])
+@appPage.route('/actions/aliases', methods=['GET'])
 @auth_token_required
 @roles_required('admin')
 def list_app_function_aliases():
