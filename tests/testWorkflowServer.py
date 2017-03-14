@@ -194,7 +194,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_save_workflow(self):
-        workflow_name = flask_server.running_context.controller.workflows.keys()[0]
+        workflow_name = list(flask_server.running_context.controller.workflows.keys())[0]
         initial_workflow = flask_server.running_context.controller.workflows[workflow_name]
         initial_steps = dict(initial_workflow.steps)
         initial_workflow_cytoscape = list(initial_workflow.get_cytoscape_data())
@@ -231,7 +231,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertEqual(len(matching_workflows), 1)
 
     def test_save_workflow_no_filename(self):
-        workflow_name = flask_server.running_context.controller.workflows.keys()[0]
+        workflow_name = list(flask_server.running_context.controller.workflows.keys())[0]
         initial_workflow = flask_server.running_context.controller.workflows[workflow_name]
         initial_steps = dict(initial_workflow.steps)
         initial_workflow_cytoscape = list(initial_workflow.get_cytoscape_data())
@@ -273,10 +273,10 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response, {'status': 'error: workflow junkworkflowname is not valid'})
 
     def test_delete_workflow(self):
-        '''
-        workflow_name = 'test_name'
+        workflow_name = 'test_name2'
         self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
-        self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
+        data = {'cytoscape': str(flask_server.running_context.controller.workflows[workflow_name].get_cytoscape_data())}
+        self.app.post('/workflow/{0}/save'.format(workflow_name), data=data, headers=self.headers)
 
         response = self.app.post('/workflow/{0}/delete'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -287,7 +287,6 @@ class TestWorkflowServer(unittest.TestCase):
                      for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
         matching_workflows = [workflow for workflow in workflows if workflow == workflow_name]
         self.assertEqual(len(matching_workflows), 0)
-        '''
 
     def test_delete_workflow_invalid(self):
         workflow_name = 'junkworkflowname'
