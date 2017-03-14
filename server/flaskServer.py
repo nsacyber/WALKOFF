@@ -178,13 +178,23 @@ def workflow(name, action):
 
     if action == 'save':
         if name in running_context.controller.workflows:
-            try:
-                with open(os.path.join(config.workflowsPath, '{0}.workflow'.format(name)), 'w') as workflow_out:
-                    xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
-                    workflow_out.write(str(xml))
-                return json.dumps({"status": "success"})
-            except (OSError, IOError) as e:
-                return json.dumps({"status": "Error: {0}".format(e.message)})
+            form = forms.SavePlayForm(request.form)
+            if form.validate():
+                running_context.controller.workflows[name].from_cytoscape_data(json.loads(form.cytoscape.data))
+                filename = name
+                if form.filename.data:
+                    filename = form.filename.data
+                try:
+                    with open(os.path.join(config.workflowsPath, '{0}.workflow'.format(filename)), 'w') as workflow_out:
+                        xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
+                        workflow_out.write(str(xml))
+                    return json.dumps(
+                        {"status": "success",
+                         "steps": running_context.controller.workflows[name].get_cytoscape_data()})
+                except (OSError, IOError) as e:
+                    return json.dumps(
+                        {"status": "Error saving: {0}".format(e.message),
+                         "steps": running_context.controller.workflows[name].get_cytoscape_data()})
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 

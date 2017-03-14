@@ -10,8 +10,7 @@
         </scheduler>
     </options>
     <steps>
-        <step>
-            <id>start</id>
+        <step id = "start">
             <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
@@ -28,8 +27,7 @@
             </next>
             <error next="1"></error>
         </step>
-        <step>
-            <id>1</id>
+        <step id = "1">
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>

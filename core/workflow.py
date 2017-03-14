@@ -159,6 +159,7 @@ class Workflow(ExecutionElement):
     def get_cytoscape_data(self):
         output = []
         for step in self.steps:
+            node_id = self.steps[step].name if self.steps[step].name is not None else 'None'
             node = {"group": "nodes", "data": {"id": self.steps[step].name, "parameters": self.steps[step].as_json()}}
             output.append(node)
             for next_step in self.steps[step].conditionals:
