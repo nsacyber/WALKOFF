@@ -27,12 +27,12 @@ class EventHandler(object):
         for event_name, callback in events.items():
             self.events[event_name] = EventSignal(callback, name=event_name)
 
-    def execute_event(self, sender, event):
-        self.execute_code(sender, event.code)
+    def execute_event(self, sender, event, data=''):
+        self.execute_code(sender, event.code, data)
 
-    def execute_event_code(self, sender, event_code):
+    def execute_event_code(self, sender, event_code, data=''):
         if event_code in self.events:
-            self.events[event_code].send(sender)
+            self.events[event_code].send(sender, data)
             self.eventlog.append({self.event_type: event_code})
         else:
             self.eventlog.append({self.event_type: "Unknown!"})

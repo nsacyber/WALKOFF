@@ -1,6 +1,6 @@
 import sys
 import xml.etree.cElementTree as et
-
+import json
 from jinja2 import Template, Markup
 
 from core import arguments
@@ -93,7 +93,9 @@ class Step(ExecutionElement):
         if self.validateInput():
             self.event_handler.execute_event_code(self, 'InputValidated')
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
-            self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
+            self.event_handler.execute_event_code(self,
+                                                  'FunctionExecutionSuccess',
+                                                  data=json.dumps({"result": str(result)}))
             self.output = result
             return result
         raise InvalidStepArgumentsError()

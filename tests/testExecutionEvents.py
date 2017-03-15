@@ -1,4 +1,5 @@
 import unittest
+import json
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -140,3 +141,9 @@ class TestExecutionEvents(unittest.TestCase):
         self.assertEqual(len(step_ffk_event_history), 5,
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(5, len(step_ffk_event_history)))
+        step_json = [step.as_json() for step in step_ffk_event_history if step.as_json()['message'] == 'STEP']
+        for step in step_json:
+            if step['type'] == 'Function executed successfully':
+                self.assertDictEqual(step['data'], {'result': 'REPEATING: Hello World'})
+            else:
+                self.assertEqual(step['data'], '')
