@@ -32,6 +32,7 @@ class Workflow(ExecutionElement):
                 # TODO: Make this work with child workflows
 
     def _from_xml(self, xml_element, *args):
+
         self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)
         self.steps = {}
         for step_xml in xml_element.findall(".//steps/*"):
@@ -64,8 +65,10 @@ class Workflow(ExecutionElement):
         return False
 
     def to_xml(self, *args):
+        self.workflowXML.set('name', self.name)
         root = self.workflowXML.find(".//steps")
-        root.clear()
+        if list(iter(root)):
+            root.clear()
         for step in self.steps:
             root.append(self.steps[step].to_xml())
 

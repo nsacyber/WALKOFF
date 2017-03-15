@@ -25,7 +25,7 @@
 
                 </flag>
             </next>
-            <error next="1"></error>
+            <error></error>
         </step>
         <step id = "1">
             <action>repeatBackToMe</action>
@@ -36,7 +36,7 @@
             </input>
             <next>
             </next>
-            <error next="1"></error>
+            <error></error>
         </step>
     </steps>
 </workflow>

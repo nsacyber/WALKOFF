@@ -1,6 +1,7 @@
 import os
 import ssl
 import json
+import sys
 from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
@@ -194,15 +195,19 @@ def workflow(name, action):
     elif action == 'save':
         if name in running_context.controller.workflows:
             form = forms.SavePlayForm(request.form)
-            if form.validate():
-                running_context.controller.workflows[name].from_cytoscape_data(json.loads(form.cytoscape.data))
+            if request.get_json():
+                if 'cytoscape' in request.get_json():
+                    running_context.controller.workflows[name].from_cytoscape_data(
+                        json.loads(request.get_json()['cytoscape']))
                 filename = name
-                if form.filename.data:
-                    filename = form.filename.data
+                if 'filename' in request.get_json() and request.get_json()['filename']:
+                    filename = request.get_json()['filename']
                 try:
-                    with open(os.path.join(config.workflowsPath, '{0}.workflow'.format(filename)), 'w') as workflow_out:
+                    write_format = 'w' if sys.version_info[0] == 2 else 'wb'
+                    workflow_filename = os.path.join(config.workflowsPath, '{0}.workflow'.format(filename))
+                    with open(workflow_filename, write_format) as workflow_out:
                         xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
-                        workflow_out.write(str(xml))
+                        workflow_out.write(xml)
                     return json.dumps(
                         {"status": "success",
                          "steps": running_context.controller.workflows[name].get_cytoscape_data()})
@@ -210,18 +215,28 @@ def workflow(name, action):
                     return json.dumps(
                         {"status": "Error saving: {0}".format(e.message),
                          "steps": running_context.controller.workflows[name].get_cytoscape_data()})
+            else:
+                return json.dumps({"status": "malformed json!"})
         else:
             return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
 
     elif action == 'delete':
-        workflow = [workflow for workflow in helpers.locate_workflows_in_directory()
-                    if '{0}.workflow'.format(name) == workflow]
-        if workflow:
-            workflow = workflow[0]
-            os.remove(os.path.join(config.workflowsPath, workflow))
-            return json.dumps({'status': 'success'})
-        else:
-            return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
+        workflow_names = {workflow: helpers.get_workflow_name_from_file(os.path.join(config.workflowsPath, workflow))
+                          for workflow in locate_workflows_in_directory()}
+        # TODO: pass in filename to delete
+        matching_workflows = [workflow_filename
+                              for workflow_filename, workflow_name in workflow_names.items() if workflow_name == name]
+        status = 'success'
+        if matching_workflows:
+            try:
+                for workflow in matching_workflows:
+                    os.remove(os.path.join(config.workflowsPath, workflow))
+            except OSError:
+                status = 'error deleting files'
+        if name in running_context.controller.workflows:
+            running_context.controller.removeWorkflow(name)
+        return json.dumps({'status': status,
+                           'workflows': list(running_context.controller.workflows.keys())})
 
     elif name in running_context.controller.workflows:
         if action == "cytoscape":

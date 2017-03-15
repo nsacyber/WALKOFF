@@ -84,5 +84,7 @@ def locate_workflows_in_directory(path=workflowsPath):
 
 def get_workflow_name_from_file(filename):
     if os.path.isfile(filename):
+        #with open(filename, 'r') as f:
+         #   print(f.read())
         tree = ElementTree.ElementTree(file=filename)
         return [workflow.get('name') for workflow in tree.iter(tag="workflow")][0]

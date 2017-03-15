@@ -1,4 +1,5 @@
 from os import remove
+import json
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, func, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -39,6 +40,7 @@ class Event(_Base):
     ancestry = Column(String)
     message = Column(String)
     note = Column(String)
+    data = Column(String)
     cases = relationship('Case', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_cases=False):
@@ -47,14 +49,20 @@ class Event(_Base):
                   'type': self.type,
                   'ancestry': self.ancestry,
                   'message': self.message,
+                  'data': self.data,
                   'note': self.note}
+        if self.data:
+            try:
+                output = json.loads(self.data)
+            except (ValueError, TypeError):
+                output = self.data
         if with_cases:
             output['cases'] = [case.as_json() for case in self.cases]
         return output
 
     @staticmethod
-    def create(sender, entry_message, entry_type):
-        return Event(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message)
+    def create(sender, entry_message, entry_type, data=''):
+        return Event(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message, data=data)
 
 
 class CaseDatabase(object):
@@ -114,7 +122,8 @@ class CaseDatabase(object):
     def add_event(self, event, cases):
         event_log = Event(type=event.type,
                           ancestry=','.join(map(str, event.ancestry)),
-                          message=event.message)
+                          message=event.message,
+                          data=event.data)
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:

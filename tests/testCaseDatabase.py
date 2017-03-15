@@ -1,4 +1,5 @@
 import unittest
+import json
 
 import core.case.database as case_database
 from core.case.callbacks import EventEntry
@@ -205,4 +206,29 @@ class TestCaseDatabase(unittest.TestCase):
         result_json_list = [event.as_json() for event in events]
         self.assertEqual(len(result_json_list), len(expected_json_list))
         self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
+
+    def test_data_json_field(self):
+        TestCaseDatabase.__construct_basic_db()
+
+        elem1 = ExecutionElement(name='b', parent_name='a')
+        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
+        elem3 = ExecutionElement(name='d', parent_name='c')
+        elem4 = ExecutionElement()
+
+        event4_data = {"a": 4, "b": [1,2,3], "c": "Some_String"}
+        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = EventEntry(elem2, 'message2', 'WORKFLOW', data='some_string')
+        event3 = EventEntry(elem3, 'message3', 'STEP', data=6)
+        event4 = EventEntry(elem4, 'message4', 'NEXT', data=json.dumps(event4_data))
+
+        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event4, cases=['case1'])
+
+        events = case_db.session.query(case_database.Event).all()
+        expected_json_list = [event.as_json() for event in events]
+
+        input_output ={}
+
 

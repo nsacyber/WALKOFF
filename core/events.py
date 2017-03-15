@@ -8,8 +8,8 @@ class Event:
         self.callback = callback(name)  # needed b/c blinker cannot use weak references for callbacks
         self.signal.connect(self.callback)
 
-    def send(self, sender):
-        self.signal.send(sender)
+    def send(self, sender, data=''):
+        self.signal.send(sender, data=data)
 
 
 class EventHandler(object):
