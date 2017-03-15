@@ -1,0 +1,28 @@
+<link rel="stylesheet" href="{{ url_for('appPage.static', app=g.app, filename='lib/c3/c3.min.css' ) }}">
+<link rel="stylesheet" href="{{ url_for('appPage.static', app=g.app, filename='lib/jvectormap/jquery-jvectormap-1.2.2.css' ) }}" media="screen">
+
+<script src="{{ url_for('appPage.static', app=g.app, filename='lib/d3/d3.min.js') }}"></script>
+<script src="{{ url_for('appPage.static', app=g.app, filename='lib/c3/c3.min.js') }}"></script>
+<script src="{{ url_for('appPage.static', app=g.app, filename='lib/jvectormap/jquery-jvectormap-1.2.2.min.js') }}"></script>
+<script src="{{ url_for('appPage.static', app=g.app, filename='lib/jvectormap/jquery-jvectormap-world-mill-en.js') }}"></script>
+<script src="{{ url_for('widgetPage.static', app=g.app, widget=g.widget, filename='main.js') }}"></script>
+
+<style>
+    #main button{
+        text-align:center;
+    }
+</style>
+
+<div id="main" class="container-fluid">
+    <div id="content">
+        <button id="toggleStreamButton"> Turn Stream Off </button>
+        <div class="panel panel-default">
+            <div class="panel-heading">Chart 1 Title</div>
+            <div class="panel-body">
+                <div class="chart" id="chart1"></div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
