@@ -18,9 +18,7 @@ $(function() {
             headers: {"Authentication-Token": authKey},
             type: "POST",
             success: function (e) {
-                console.log(e);
                 e = JSON.parse(e);
-                console.log(typeof(e))
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                     $('#password').val("admin");
@@ -43,9 +41,7 @@ $("#username")
             headers: {"Authentication-Token": authKey},
             type: "POST",
             success: function (e) {
-                console.log(e);
                 e = JSON.parse(e);
-                console.log(typeof(e))
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                 }
