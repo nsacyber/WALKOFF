@@ -215,7 +215,7 @@ class TestCaseDatabase(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event4_data = {"a": 4, "b": [1,2,3], "c": "Some_String"}
+        event4_data = {"a": 4, "b": [1, 2, 3], "c": "Some_String"}
         event1 = EventEntry(elem1, 'message1', 'SYSTEM')
         event2 = EventEntry(elem2, 'message2', 'WORKFLOW', data='some_string')
         event3 = EventEntry(elem3, 'message3', 'STEP', data=6)
@@ -227,8 +227,17 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_db.session.query(case_database.Event).all()
-        expected_json_list = [event.as_json() for event in events]
+        event_json_list = [event.as_json() for event in events]
 
-        input_output ={}
+        input_output ={'message1': '',
+                       'message2': 'some_string',
+                       'message3': 6,
+                       'message4': event4_data}
+
+        self.assertEqual(len(event_json_list), len(list(input_output.keys())))
+        for event in event_json_list:
+            self.assertIn(event['message'], input_output)
+            self.assertEqual(event['data'], input_output[event['message']])
+
 
 

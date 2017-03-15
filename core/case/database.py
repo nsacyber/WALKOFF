@@ -53,9 +53,11 @@ class Event(_Base):
                   'note': self.note}
         if self.data:
             try:
-                output = json.loads(self.data)
+                output['data'] = json.loads(self.data)
             except (ValueError, TypeError):
-                output = self.data
+                output['data'] = self.data
+        else:
+            output['data'] = ''
         if with_cases:
             output['cases'] = [case.as_json() for case in self.cases]
         return output
