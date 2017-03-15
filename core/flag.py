@@ -88,3 +88,12 @@ class Flag(ExecutionElement):
         return {"action": self.action,
                 "args": {arg: self.args[arg].as_json() for arg in self.args},
                 "filters": [filter.as_json() for filter in self.filters]}
+
+    @staticmethod
+    def from_json(json, parent_name='', ancestry=None):
+        args = {arg_name: arguments.Argument.from_json(arg_json) for arg_name, arg_json in json['args'].items()}
+        flag = Flag(action=json['action'], args=args, parent_name=parent_name, ancestry=ancestry)
+        filters = [Filter.from_json(filter_element, parent_name=flag.name, ancestry=flag.ancestry)
+                   for filter_element in json['filters']]
+        flag.filters = filters
+        return flag

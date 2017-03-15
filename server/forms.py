@@ -36,6 +36,11 @@ class EditPlayNameForm(Form):
     scheduler_args = StringField('scheduler_options', [validators.Optional()])
 
 
+class SavePlayForm(Form):
+    filename = StringField('filename', [validators.Length(min=1, max=50), validators.Optional()])
+    cytoscape = StringField('cytoscape', [validators.Optional()])
+
+
 class AddEditStepForm(Form):
     id = StringField('id', [validators.Optional()])
     to = FieldList(StringField('to-id'), [validators.Optional()])

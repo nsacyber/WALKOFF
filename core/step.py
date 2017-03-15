@@ -50,9 +50,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [nextstep.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+        self.errors = [nextstep.Next(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     def _update_xml(self, step_xml):
@@ -61,9 +61,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=id, ancestry=self.ancestry)
+        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [nextstep.Next(xml=error_step_element, parent_name=id, ancestry=self.ancestry)
+        self.errors = [nextstep.Next(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     @contextDecorator.context
@@ -166,12 +166,29 @@ class Step(ExecutionElement):
 
     def as_json(self):
         output = {"name": str(self.name),
-                  "action": str(self.name),
+                  "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
-                  "input": {str(key): str(self.input[key]) for key in self.input},
+                  "input": {str(key): self.input[key].as_json() for key in self.input},
                   "next": [next.as_json() for next in self.conditionals],
                   "errors": [error.as_json() for error in self.errors]}
         if self.output:
             output["output"] = str(self.output)
         return output
+
+    @staticmethod
+    def from_json(json, parent_name='', ancestry=None):
+        step = Step(name=json['name'],
+                    action=json['action'],
+                    app=json['app'],
+                    device=json['device'],
+                    input={arg_name: arguments.Argument.from_json(arg_element)
+                           for arg_name, arg_element in json['input'].items()},
+                    parent_name=parent_name,
+                    ancestry=ancestry)
+
+        step.conditionals = [Next.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+                             for next_step in json['next']]
+        step.errors = [Next.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+                       for next_step in json['errors']]
+        return step

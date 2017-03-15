@@ -4,6 +4,7 @@ from os import path
 import os
 
 from tests.config import testWorkflowsPath
+from tests.util.assertwrappers import orderless_list_comapre
 from core.config import workflowsPath as coreWorkflows
 from server import flaskServer as flask_server
 from core.controller import Controller
@@ -38,27 +39,47 @@ class TestWorkflowServer(unittest.TestCase):
         flask_server.running_context.controller.workflows = {}
         workflows = [path.splitext(workflow)[0]
                      for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
-        matching_workflows = [workflow for workflow in workflows if workflow == 'test_name']
+        matching_workflows = [workflow for workflow in workflows if (workflow == 'test_name'
+                                                                     or workflow == 'helloWorldWorkflow')]
 
         # cleanup
-        if matching_workflows:
-            os.remove(path.join(coreWorkflows, '{0}.workflow'.format('test_name')))
+        for workflow in matching_workflows:
+            os.remove(path.join(coreWorkflows, '{0}.workflow'.format(workflow)))
 
     def test_display_workflows(self):
-        expected_workflows = ['test']
-        response = self.app.post('/workflows', headers=self.headers)
+        expected_workflows = ['helloWorldWorkflow']
+        response = self.app.get('/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(len(expected_workflows), len(response['workflows']))
         self.assertSetEqual(set(expected_workflows), set(response['workflows']))
 
     def test_display_available_workflow_templates(self):
-        expected_workflows = ['basicWorkflow', 'emptyWorkflow']
-        response = self.app.post('/workflows/templates', headers=self.headers)
+        expected_workflows = ['emptyWorkflow', 'helloWorldWorkflow']
+        response = self.app.get('/workflows/templates', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(len(expected_workflows), len(response['templates']))
         self.assertSetEqual(set(expected_workflows), set(response['templates']))
+
+    def test_display_workflow(self):
+        workflow_filename = os.path.join(testWorkflowsPath, 'multiactionWorkflowTest.workflow')
+        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        steps_data = flask_server.running_context.controller.workflows['multiactionWorkflow'].get_cytoscape_data()
+        options_data = flask_server.running_context.controller.workflows['multiactionWorkflow'].options.as_json()
+        expected_response = {'status': 'success',
+                             'steps': steps_data,
+                             'options': options_data}
+        response = self.app.get('/workflow/multiactionWorkflow', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_response)
+
+    def test_display_workflow_invalid_name(self):
+        response = self.app.get('/workflow/multiactionWorkflow', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {"status": "error: name multiactionWorkflow not found"})
 
     def test_add_workflow(self):
         initial_workflows = list(flask_server.running_context.controller.workflows.keys())
@@ -193,22 +214,77 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_save_workflow(self):
-        initial_workflows = list(flask_server.running_context.controller.workflows.keys())
-        workflow_name = 'test_name'
-        self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
+        workflow_name = list(flask_server.running_context.controller.workflows.keys())[0]
+        initial_workflow = flask_server.running_context.controller.workflows[workflow_name]
+        initial_steps = dict(initial_workflow.steps)
+        initial_workflow_cytoscape = list(initial_workflow.get_cytoscape_data())
+        added_step_cytoscape = {'data': {'id': 'new_id',
+                                         'parameters': {'errors': [],
+                                                        'name': 'new_id',
+                                                        'app': 'new_app',
+                                                        'next': [],
+                                                        'device': 'new_device',
+                                                        'action': 'new_action',
+                                                        'input': {}}},
+                                'group': 'nodes'}
+        initial_workflow_cytoscape.insert(0, added_step_cytoscape)
+        data = {"filename": "test_name",
+                "cytoscape": json.dumps(initial_workflow_cytoscape)}
 
-        response = self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
+        response = self.app.post('/workflow/{0}/save'.format(workflow_name), data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {'status': 'success'})
+        self.assertEqual(response['status'], 'success')
 
+        resulting_workflow = flask_server.running_context.controller.workflows[workflow_name]
+
+        # compare the steps in initial and final workflow
+        self.assertEqual(len(resulting_workflow.steps.keys()), len(list(initial_steps.keys()))+1)
+        for step_name, initial_step in initial_steps.items():
+            self.assertIn(step_name, resulting_workflow.steps.keys())
+            self.assertDictEqual(initial_step.as_json(), resulting_workflow.steps[step_name].as_json())
+
+        # assert that the file has been saved properly
+        workflows = [path.splitext(workflow)[0]
+                     for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
+        matching_workflows = [workflow for workflow in workflows if workflow == 'test_name']
+        self.assertEqual(len(matching_workflows), 1)
+
+    def test_save_workflow_no_filename(self):
+        workflow_name = list(flask_server.running_context.controller.workflows.keys())[0]
+        initial_workflow = flask_server.running_context.controller.workflows[workflow_name]
+        initial_steps = dict(initial_workflow.steps)
+        initial_workflow_cytoscape = list(initial_workflow.get_cytoscape_data())
+        added_step_cytoscape = {'data': {'id': 'new_id',
+                                         'parameters': {'errors': [],
+                                                        'name': 'new_id',
+                                                        'app': 'new_app',
+                                                        'next': [],
+                                                        'device': 'new_device',
+                                                        'action': 'new_action',
+                                                        'input': {}}},
+                                'group': 'nodes'}
+        initial_workflow_cytoscape.insert(0, added_step_cytoscape)
+        data = {"cytoscape": json.dumps(initial_workflow_cytoscape)}
+
+        response = self.app.post('/workflow/{0}/save'.format(workflow_name), data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response['status'], 'success')
+
+        resulting_workflow = flask_server.running_context.controller.workflows[workflow_name]
+
+        # compare the steps in initial and final workflow
+        self.assertEqual(len(resulting_workflow.steps.keys()), len(list(initial_steps.keys())) + 1)
+        for step_name, initial_step in initial_steps.items():
+            self.assertIn(step_name, resulting_workflow.steps.keys())
+            self.assertDictEqual(initial_step.as_json(), resulting_workflow.steps[step_name].as_json())
+
+        # assert that the file has been saved properly
         workflows = [path.splitext(workflow)[0]
                      for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
         matching_workflows = [workflow for workflow in workflows if workflow == workflow_name]
         self.assertEqual(len(matching_workflows), 1)
-
-        # cleanup
-        os.remove(path.join(coreWorkflows, '{0}.workflow'.format(workflow_name)))
 
     def test_save_workflow_invalid_name(self):
         response = self.app.post('/workflow/junkworkflowname/save', headers=self.headers)
@@ -217,9 +293,10 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response, {'status': 'error: workflow junkworkflowname is not valid'})
 
     def test_delete_workflow(self):
-        workflow_name = 'test_name'
+        workflow_name = 'test_name2'
         self.app.post('/workflow/{0}/add'.format(workflow_name), headers=self.headers)
-        self.app.post('/workflow/{0}/save'.format(workflow_name), headers=self.headers)
+        data = {'cytoscape': str(flask_server.running_context.controller.workflows[workflow_name].get_cytoscape_data())}
+        self.app.post('/workflow/{0}/save'.format(workflow_name), data=data, headers=self.headers)
 
         response = self.app.post('/workflow/{0}/delete'.format(workflow_name), headers=self.headers)
         self.assertEqual(response.status_code, 200)
