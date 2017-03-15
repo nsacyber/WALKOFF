@@ -11,16 +11,16 @@ _Base = declarative_base()
 
 class _Case_Event(_Base):
     __tablename__ = 'case_event'
-    case_id = Column(Integer, ForeignKey('cases.id'), primary_key=True)
-    event_id = Column(Integer, ForeignKey('event_log.id'), primary_key=True)
+    case_id = Column(Integer, ForeignKey('case.id'), primary_key=True)
+    event_id = Column(Integer, ForeignKey('event.id'), primary_key=True)
 
 
-class Cases(_Base):
-    __tablename__ = 'cases'
+class Case(_Base):
+    __tablename__ = 'case'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     note = Column(String)
-    events = relationship('EventLog', secondary='case_event', lazy='dynamic')
+    events = relationship('Event', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_events=True):
         output = {'id': str(self.id),
@@ -31,15 +31,15 @@ class Cases(_Base):
         return output
 
 
-class EventLog(_Base):
-    __tablename__ = 'event_log'
+class Event(_Base):
+    __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=func.now())
     type = Column(String)
     ancestry = Column(String)
     message = Column(String)
     note = Column(String)
-    cases = relationship('Cases', secondary='case_event', lazy='dynamic')
+    cases = relationship('Case', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_cases=False):
         output = {'id': str(self.id),
@@ -54,7 +54,7 @@ class EventLog(_Base):
 
     @staticmethod
     def create(sender, entry_message, entry_type):
-        return EventLog(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message)
+        return Event(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message)
 
 
 class CaseDatabase(object):
@@ -79,43 +79,43 @@ class CaseDatabase(object):
         self.engine.dispose()
 
     def register_events(self, case_names):
-        additions = [Cases(name=case_name) for case_name in set(case_names)]
+        additions = [Case(name=case_name) for case_name in set(case_names)]
         self.session.add_all(additions)
         self.session.commit()
 
     def delete_cases(self, case_names):
         if case_names:
-            cases = self.session.query(Cases).filter(Cases.name.in_(case_names)).all()
+            cases = self.session.query(Case).filter(Case.name.in_(case_names)).all()
             for case in cases:
                 self.session.delete(case)  # There is a more efficient way to delete all items
             self.session.commit()
 
     def rename_case(self, old_case_name, new_case_name):
         if old_case_name and new_case_name:
-            case = self.session.query(Cases).filter(Cases.name == old_case_name).first()
+            case = self.session.query(Case).filter(Case.name == old_case_name).first()
             if case:
                 case.name = new_case_name
                 self.session.commit()
 
     def edit_case_note(self, case_name, note):
         if case_name:
-            case = self.session.query(Cases).filter(Cases.name == case_name).first()
+            case = self.session.query(Case).filter(Case.name == case_name).first()
             if case:
                 case.note = note
                 self.session.commit()
 
     def edit_event_note(self, event_id, note):
         if event_id:
-            event = self.session.query(EventLog).filter(EventLog.id == event_id).first()
+            event = self.session.query(Event).filter(Event.id == event_id).first()
             if event:
                 event.note = note
                 self.session.commit()
 
     def add_event(self, event, cases):
-        event_log = EventLog(type=event.type,
-                             ancestry=','.join(map(str, event.ancestry)),
-                             message=event.message)
-        existing_cases = case_db.session.query(Cases).all()
+        event_log = Event(type=event.type,
+                          ancestry=','.join(map(str, event.ancestry)),
+                          message=event.message)
+        existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
             if case in existing_case_names:
@@ -129,10 +129,10 @@ class CaseDatabase(object):
 
     def cases_as_json(self):
         return {'cases': [case.as_json(with_events=False)
-                          for case in self.session.query(Cases).all()]}
+                          for case in self.session.query(Case).all()]}
 
     def event_as_json(self, event_id):
-        return self.session.query(EventLog).filter(EventLog.id == event_id).first().as_json()
+        return self.session.query(Event).filter(Event.id == event_id).first().as_json()
 
 case_db = CaseDatabase()
 

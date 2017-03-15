@@ -276,8 +276,8 @@ def crud_case(case_name, action):
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
-    case = case_database.case_db.session.query(case_database.Cases) \
-        .filter(case_database.Cases.name == case_name).first()
+    case = case_database.case_db.session.query(case_database.Case) \
+        .filter(case_database.Case.name == case_name).first()
     if case:
         return json.dumps({'case': case.as_json()})
     else:
@@ -291,8 +291,8 @@ def edit_event_note(event_id):
     form = forms.EditEventForm(request.form)
     if form.validate():
         if form.note.data:
-            valid_event_id = case_database.case_db.session.query(case_database.EventLog) \
-                .filter(case_database.EventLog.id == event_id).all()
+            valid_event_id = case_database.case_db.session.query(case_database.Event) \
+                .filter(case_database.Event.id == event_id).all()
             if valid_event_id:
                 case_database.case_db.edit_event_note(event_id, form.note.data)
                 return json.dumps(case_database.case_db.event_as_json(event_id))
