@@ -1,7 +1,7 @@
 from blinker import Signal
 
 
-class Event:
+class EventSignal:
     def __init__(self, callback, name=''):
         self.signal = Signal()
         self.name = name
@@ -14,7 +14,7 @@ class Event:
 
 class EventHandler(object):
     def __init__(self, event_type, shared_log=None, events=None):
-        self.events = ({event_name: Event(callback, name=event_name) for event_name, callback in events.items()}
+        self.events = ({event_name: EventSignal(callback, name=event_name) for event_name, callback in events.items()}
                        if events is not None else {})
         self.eventlog = [] if shared_log is None else shared_log
         self.event_type = event_type
@@ -25,7 +25,7 @@ class EventHandler(object):
         where the key is a unique identifier and the value is the callback
         """
         for event_name, callback in events.items():
-            self.events[event_name] = Event(callback, name=event_name)
+            self.events[event_name] = EventSignal(callback, name=event_name)
 
     def execute_event(self, sender, event):
         self.execute_code(sender, event.code)
