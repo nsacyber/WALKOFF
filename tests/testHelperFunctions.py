@@ -35,6 +35,7 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_locate_workflows(self):
         expected_workflows = ['basicWorkflowTest.workflow',
+                              'DailyQuote.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
                               'multistepError.workflow',
@@ -62,5 +63,5 @@ class TestHelperFunctions(unittest.TestCase):
         orderless_list_compare(self, received_functions, expected_functions)
 
     def test_list_apps(self):
-        expected_apps = ['HelloWorld']
+        expected_apps = ['HelloWorld', 'DailyQuote']
         orderless_list_compare(self, expected_apps, list_apps())

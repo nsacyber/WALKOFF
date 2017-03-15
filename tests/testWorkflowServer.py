@@ -7,7 +7,6 @@ from tests.config import testWorkflowsPath
 from tests.util.assertwrappers import orderless_list_compare
 from core.config import workflowsPath as coreWorkflows
 from server import flaskServer as flask_server
-from core.controller import Controller
 from core import helpers
 
 
