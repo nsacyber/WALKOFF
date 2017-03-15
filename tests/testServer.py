@@ -29,7 +29,7 @@ class TestLogin(unittest.TestCase):
         orderless_list_comapre(self, response['apps'], expected_apps)
 
     def test_get_all_list_actions(self):
-        expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne']}
+        expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause']}
         response = self.app.get('/apps/actions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))

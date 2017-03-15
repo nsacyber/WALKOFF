@@ -16,7 +16,7 @@ class TestAppBlueprint(unittest.TestCase):
         self.headers = {"Authentication-Token": self.key}
 
     def test_list_functions(self):
-        expected_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne']
+        expected_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause']
         response = self.app.get('/apps/HelloWorld/actions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))

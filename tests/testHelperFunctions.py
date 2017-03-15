@@ -55,10 +55,9 @@ class TestHelperFunctions(unittest.TestCase):
         workflows = get_workflow_name_from_file(os.path.join(testWorkflowsPath, 'junkfileName.workflow'))
         self.assertIsNone(workflows)
 
-
     def test_list_app_functions(self):
         expected_functions = ['as_json', 'getConfig', 'helloWorld', 'query_class', 'repeatBackToMe',
-                              'returnPlusOne', 'shutdown']
+                              'returnPlusOne', 'shutdown', 'pause']
         received_functions = list_app_functions('HelloWorld')
         orderless_list_comapre(self, received_functions, expected_functions)
 
