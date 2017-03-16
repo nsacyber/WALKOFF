@@ -163,6 +163,7 @@ $(function(){
             group: 'nodes',
             data: {
                 id: id.toString(),
+                label: action,
                 parameters: {
                     action: action,
                     app: app,
@@ -288,7 +289,7 @@ $(function(){
                 {
                     selector: 'node',
                     css: {
-                        'content': 'data(id)',
+                        'content': 'data(label)',
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'width':'50',
@@ -353,7 +354,17 @@ $(function(){
 
 
         // Load the data into the graph
-        cy.add(JSON.parse(workflowData));
+        workflowData = JSON.parse(workflowData);
+        // If a node does not have a label field, set it to
+        // the action. The label is what is displayed in the graph.
+        workflowData = workflowData.map(function(value) {
+            if (!value.data.hasOwnProperty("label")) {
+                value.data.label = value.data.parameters.action;
+            }
+            return value;
+        });
+
+        cy.add(workflowData);
 
         // Setup the layout.
         // Setting up the layout must be done after loading the data. Otherwise
