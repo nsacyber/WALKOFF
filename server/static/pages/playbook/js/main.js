@@ -1,3 +1,6 @@
+var cy;
+var currentWorkflow;
+
 $(function(){
     $(".nav-tabs a").click(function(){
         $(this).tab('show');
@@ -116,6 +119,9 @@ $(function(){
                 var workflowName = node.text;
 
                 // do something
+                if (currentWorkflow)
+                    saveWorkflow(currentWorkflow);
+                
                 loadWorkflow(workflowName);
             });
         }
@@ -166,9 +172,6 @@ function notifyMe() {
 }
 
 
-var cy = null;
-
-
 function newWorkflow(workflowName) {
     $.ajax({
         'async': false,
@@ -184,12 +187,14 @@ function newWorkflow(workflowName) {
 
 
 function saveWorkflow(workflowName) {
-    if (cy !== null) {
-        var workflowData = {filename: "", cytoscape: cy.elements().jsons()};
+    if (cy) {
+        var workflowData = JSON.stringify({filename: "", cytoscape: JSON.stringify(cy.elements().jsons())});
         $.ajax({
             'async': false,
             'type': "POST",
             'global': false,
+            'dataType': 'json',
+            'contentType': 'application/json; charset=utf-8',
             'headers':{"Authentication-Token":authKey},
             'url': "/workflow/" + workflowName + "/save",
             'data': workflowData,
@@ -201,9 +206,8 @@ function saveWorkflow(workflowName) {
 
 
 function loadWorkflow(workflowName) {
-    saveWorkflow(workflowName);
 
-    var currentWorkflow = workflowName;
+    currentWorkflow = workflowName;
     $("#currentWorkflowText").text(currentWorkflow);
 
     if(currentWorkflow){
