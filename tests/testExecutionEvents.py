@@ -1,4 +1,5 @@
 import unittest
+import json
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -34,8 +35,8 @@ class TestExecutionEvents(unittest.TestCase):
 
         c.executeWorkflow(name="multiactionWorkflow")
 
-        execution_events_case = case_database.case_db.session.query(case_database.Cases) \
-            .filter(case_database.Cases.name == 'testExecutionEvents').first()
+        execution_events_case = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'testExecutionEvents').first()
         execution_event_history = execution_events_case.events.all()
         self.assertEqual(len(execution_event_history), 6,
                          'Incorrect length of event history. '
@@ -63,8 +64,8 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow(name="helloWorldWorkflow")
-        step_execution_events_case = case_database.case_db.session.query(case_database.Cases) \
-            .filter(case_database.Cases.name == 'testStepExecutionEvents').first()
+        step_execution_events_case = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'testStepExecutionEvents').first()
         step_execution_event_history = step_execution_events_case.events.all()
         self.assertEqual(len(step_execution_event_history), 3,
                          'Incorrect length of event history. '
@@ -95,8 +96,8 @@ class TestExecutionEvents(unittest.TestCase):
 
         c.executeWorkflow(name="helloWorldWorkflow")
 
-        step_ffk_events_case = case_database.case_db.session.query(case_database.Cases) \
-            .filter(case_database.Cases.name == 'testStepFFKEventsEvents').first()
+        step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
         step_ffk_event_history = step_ffk_events_case.events.all()
         self.assertEqual(len(step_ffk_event_history), 6,
                          'Incorrect length of event history. '
@@ -134,9 +135,15 @@ class TestExecutionEvents(unittest.TestCase):
 
         c.executeWorkflow(name="helloWorldWorkflow")
 
-        step_ffk_events_case = case_database.case_db.session.query(case_database.Cases) \
-            .filter(case_database.Cases.name == 'testStepFFKEventsEvents').first()
+        step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
         step_ffk_event_history = step_ffk_events_case.events.all()
         self.assertEqual(len(step_ffk_event_history), 5,
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(5, len(step_ffk_event_history)))
+        step_json = [step.as_json() for step in step_ffk_event_history if step.as_json()['message'] == 'STEP']
+        for step in step_json:
+            if step['type'] == 'Function executed successfully':
+                self.assertDictEqual(step['data'], {'result': 'REPEATING: Hello World'})
+            else:
+                self.assertEqual(step['data'], '')

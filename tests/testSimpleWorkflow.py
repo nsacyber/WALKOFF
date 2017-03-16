@@ -52,7 +52,6 @@ class TestSimpleWorkflow(unittest.TestCase):
             Tests workflow execution that has an error in the second step. Then moves to step "error" instead.
     """
 
-    @graphDecorator.callgraph(enabled=False)
     def test_ErrorWorkflow(self):
         steps, instances = self.c.executeWorkflow("multiactionErrorWorkflow")
         instances = ast.literal_eval(instances)

@@ -83,9 +83,9 @@ class TestCaseServer(unittest.TestCase):
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         def create_event_logs(events):
-            return [case_database.EventLog(type=event.type,
-                                           ancestry=','.join(map(str, event.ancestry)),
-                                           message=event.message)
+            return [case_database.Event(type=event.type,
+                                        ancestry=','.join(map(str, event.ancestry)),
+                                        message=event.message)
                     for event in events]
 
         def event_logs_as_json(events):
@@ -114,7 +114,7 @@ class TestCaseServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json()})
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         self.assertEqual(len(cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(cases))
@@ -127,7 +127,7 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json(),
                                     'case2': CaseSubscriptions().as_json()})
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1', 'case2']
         self.assertEqual(len(cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(cases))
@@ -142,7 +142,7 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, expected_json)
 
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         self.assertEqual(len(cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(cases))
@@ -155,7 +155,7 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {})
 
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
         self.assertEqual(len(cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(cases))
@@ -169,7 +169,7 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case2': case2.as_json()})
 
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case2']
         self.assertEqual(len(cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(cases))
@@ -184,7 +184,7 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {name: case.as_json() for name, case in cases.items()})
 
-        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = list(cases.keys())
         self.assertEqual(len(db_cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(db_cases))
@@ -195,7 +195,7 @@ class TestCaseServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {})
 
-        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Cases).all()]
+        db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
         self.assertEqual(len(db_cases), len(expected_cases))
         self.assertSetEqual(set(expected_cases), set(db_cases))
@@ -710,7 +710,7 @@ class TestCaseServer(unittest.TestCase):
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
-        events = case_database.case_db.session.query(case_database.EventLog).all()
+        events = case_database.case_db.session.query(case_database.Event).all()
         smallest_id = min([event.id for event in events])
         altered_event = [event for event in events if event.id == smallest_id]
         expected_event = altered_event[0].as_json()
@@ -753,7 +753,7 @@ class TestCaseServer(unittest.TestCase):
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
-        events = case_database.case_db.session.query(case_database.EventLog).all()
+        events = case_database.case_db.session.query(case_database.Event).all()
         invalid_id = max([event.id for event in events]) + 1
 
         data = {"note": 'Note2'}

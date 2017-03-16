@@ -4,7 +4,7 @@ from core.helpers import *
 from core.instance import Instance
 from tests.config import testWorkflowsPath
 
-from tests.util.assertwrappers import orderless_list_comapre
+from tests.util.assertwrappers import orderless_list_compare
 
 class TestHelperFunctions(unittest.TestCase):
     def test_load_function_aliases(self):
@@ -35,6 +35,7 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_locate_workflows(self):
         expected_workflows = ['basicWorkflowTest.workflow',
+                              'DailyQuote.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
                               'multistepError.workflow',
@@ -44,7 +45,7 @@ class TestHelperFunctions(unittest.TestCase):
                               'testScheduler.workflow',
                               'tieredWorkflow.workflow']
         received_workflows = locate_workflows_in_directory(testWorkflowsPath)
-        orderless_list_comapre(self, received_workflows, expected_workflows)
+        orderless_list_compare(self, received_workflows, expected_workflows)
 
         self.assertListEqual(locate_workflows_in_directory('.'), [])
 
@@ -55,13 +56,12 @@ class TestHelperFunctions(unittest.TestCase):
         workflows = get_workflow_name_from_file(os.path.join(testWorkflowsPath, 'junkfileName.workflow'))
         self.assertIsNone(workflows)
 
-
     def test_list_app_functions(self):
         expected_functions = ['as_json', 'getConfig', 'helloWorld', 'query_class', 'repeatBackToMe',
-                              'returnPlusOne', 'shutdown']
+                              'returnPlusOne', 'shutdown', 'pause']
         received_functions = list_app_functions('HelloWorld')
-        orderless_list_comapre(self, received_functions, expected_functions)
+        orderless_list_compare(self, received_functions, expected_functions)
 
     def test_list_apps(self):
-        expected_apps = ['HelloWorld']
-        orderless_list_comapre(self, expected_apps, list_apps())
+        expected_apps = ['HelloWorld', 'DailyQuote']
+        orderless_list_compare(self, expected_apps, list_apps())

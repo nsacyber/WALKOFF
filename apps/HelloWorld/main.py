@@ -1,17 +1,18 @@
 from server import appDevice
+import gevent
 
 
 # There is an associated Hello world test workflow which can be executed
 
 class Main(appDevice.App):
     def __init__(self, name=None, device=None):
-        #The parent app constructor looks for a device configuration and returns that as a dictionary called self.config
+        # The parent app constructor looks for a device configuration and returns that as a dict called self.config
         appDevice.App.__init__(self, name, device)
-        #Functions and Variables that are designed to exist across functions go here
-        self.introMessage = {"message":"HELLO WORLD"}
+        # Functions and Variables that are designed to exist across functions go here
+        self.introMessage = {"message": "HELLO WORLD"}
 
     # Every function in Main is an action that can be taken
-    # Every function needs to define an args argument which recieves a dictionary of input parameters
+    # Every function needs to define an args argument which receives a dictionary of input parameters
     def helloWorld(self, args={}):
         # LOOK AT YOUR CONSOLE WHEN EXECUTING
         # print(self.introMessage)
@@ -26,6 +27,9 @@ class Main(appDevice.App):
     # Increments number by one
     def returnPlusOne(self, args={}):
         return str(int(args["number"]()) + 1)
+
+    def pause(self, args={}):
+        gevent.sleep(args['seconds']())
 
     def shutdown(self):
         # print("SHUTTING DOWN")

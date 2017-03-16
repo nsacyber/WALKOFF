@@ -7,6 +7,44 @@
             font-family: 'Lato', sans-serif;
             font-weight: bold;
         }
+        #main {
+          overflow-x:auto;
+        }
+        .content {
+          padding-right: 0;
+        }
+        .btn-default {
+          background-color: #aecbdc;
+          border-color: #aecbdc;
+        }
+        .btn-default:hover {
+          background-color: #eaf2f6;
+          border-color: #eaf2f6;
+          margin: 0;
+          border-radius: 0;
+        }
+        .btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
+          margin-left: 0;
+        }
+        .btn-group>.btn:first-child {
+          margin: 0;
+          padding: 10px;
+        }
+        /*#remove-button:hover {
+          background-color: red;
+        }*/
+        .btn-toolbar {
+          background-color: #aecbdc;
+          margin-left: 0;
+          /*margin-right: -20px;*/
+          border: 1px solid #8b9aa3;
+        }
+        .btn-group {
+          border-right: 1px solid #8b9aa3;
+        }
+        h3#currentWorkflowText {
+          font-size: 18px;
+        }
         #body{
             margin-bottom: 20px;
         }
@@ -54,7 +92,7 @@
         }
         .workflow-hr {
           border: 0.1rem solid #367fa9;
-          width: 14.5%;
+          width: 16%;
           float:left;
           margin:0;
         }
@@ -75,22 +113,34 @@
         <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
 
-    <div class=bs-example data-example-id=simple-button-toolbar>
+    <!-- <div class=bs-example data-example-id=simple-button-toolbar> -->
         <div class=btn-toolbar role=toolbar>
+            <div class=btn-group role=group>
+                <button id="new-button" type=button class="btn btn-default"><i class="fa fa-file-o"></i></button>
+            </div>
+            <div class=btn-group role=group>
+                <button id="save-button" type=button class="btn btn-default"><i class="fa fa-save"></i></button>
+            </div>
             <div class=btn-group role=group>
                 <button id="remove-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
             </div>
             <div class=btn-group role=group>
                 <button id="undo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span></button>
+            </div>
+            <div class=btn-group role=group>
                 <button id="redo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
             </div>
             <div class=btn-group role=group>
                 <button id="cut-button" type=button class="btn btn-default"><i class="fa fa-cut" style="transform: rotate(-90deg);"></i></button>
+            </div>
+            <div class=btn-group role=group>
                 <button id="copy-button" type=button class="btn btn-default"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class=btn-group role=group>
                 <button id="paste-button" type=button class="btn btn-default"><i class="fa fa-paste"></i></button>
             </div>
         </div>
-    </div>
+    <!-- </div> -->
 
     <div id="top">
         <div id="palette">
@@ -118,9 +168,5 @@
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-edgehandles.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-clipboard.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
-    <script>
-        var currentWorkflow = "{{currentWorkflow}}";
-        $("#currentWorkflowText").text(currentWorkflow);
-    </script>
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 </div>
