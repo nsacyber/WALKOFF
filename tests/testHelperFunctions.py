@@ -50,10 +50,13 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(locate_workflows_in_directory('.'), [])
 
     def test_get_workflow_names_from_file(self):
-        workflows = get_workflow_name_from_file(os.path.join(testWorkflowsPath, 'basicWorkflowTest.workflow'))
-        self.assertEqual(workflows, 'helloWorldWorkflow')
+        workflows = get_workflow_names_from_file(os.path.join(testWorkflowsPath, 'basicWorkflowTest.workflow'))
+        self.assertListEqual(workflows, ['helloWorldWorkflow'])
 
-        workflows = get_workflow_name_from_file(os.path.join(testWorkflowsPath, 'junkfileName.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(testWorkflowsPath, 'tieredWorkflow.workflow'))
+        self.assertListEqual(workflows, ['parentWorkflow', 'childWorkflow'])
+
+        workflows = get_workflow_names_from_file(os.path.join(testWorkflowsPath, 'junkfileName.workflow'))
         self.assertIsNone(workflows)
 
     def test_list_app_functions(self):
@@ -65,3 +68,25 @@ class TestHelperFunctions(unittest.TestCase):
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
         orderless_list_compare(self, expected_apps, list_apps())
+
+    def test_construct_workflow_name_key(self):
+        input_output = {('',''): '-',
+                        ('', 'test_workflow'): '-test_workflow',
+                        ('test_playbook', 'test_workflow'): 'test_playbook-test_workflow',
+                        ('-test_playbook', 'test_workflow'): 'test_playbook-test_workflow'}
+        for (playbook, workflow), expected_result in input_output.items():
+            self.assertEqual(construct_workflow_name_key(playbook, workflow), expected_result)
+
+    def test_extract_workflow_name(self):
+        wx = construct_workflow_name_key('www', 'xxx')
+        xy = construct_workflow_name_key('xxx', 'yyy')
+        yz = construct_workflow_name_key('yyy', 'zzz')
+        xyyz = construct_workflow_name_key(xy, yz)
+        input_output = {(wx, ''): 'xxx',
+                        (wx, 'www'): 'xxx',
+                        (wx, 'xxx'): 'xxx',
+                        (xyyz, ''): '{0}'.format(construct_workflow_name_key('yyy', yz)),
+                        (xyyz, 'xxx'): '{0}'.format(construct_workflow_name_key('yyy', yz)),
+                        (xyyz, xy): yz}
+        for (workflow_key, playbook_name), expected_workflow in input_output.items():
+            self.assertEqual(extract_workflow_name(workflow_key, playbook_name=playbook_name), expected_workflow)

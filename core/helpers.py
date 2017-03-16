@@ -82,9 +82,26 @@ def locate_workflows_in_directory(path=workflowsPath):
                                                           and workflow.endswith('.workflow'))]
 
 
-def get_workflow_name_from_file(filename):
+def get_workflow_names_from_file(filename):
     if os.path.isfile(filename):
-        #with open(filename, 'r') as f:
-         #   print(f.read())
         tree = ElementTree.ElementTree(file=filename)
-        return [workflow.get('name') for workflow in tree.iter(tag="workflow")][0]
+        return [workflow.get('name') for workflow in tree.iter(tag="workflow")]
+
+
+__workflow_key_seperator = '-'
+
+
+def construct_workflow_name_key(playbook, workflow):
+    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_seperator), __workflow_key_seperator, workflow)
+
+
+def extract_workflow_name(workflow_key, playbook_name=''):
+    if playbook_name and workflow_key.startswith(playbook_name):
+        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_seperator)):]
+    else:
+        return __workflow_key_seperator.join(workflow_key.split(__workflow_key_seperator)[1:])
+
+
+
+
+

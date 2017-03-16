@@ -1,6 +1,7 @@
 import unittest
 
 from core import controller, graphDecorator
+from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
@@ -29,9 +30,10 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleWorkflowExecution(self):
-        setup_subscriptions_for_step('helloWorldWorkflow', ['start'])
-        self.c.executeWorkflow('helloWorldWorkflow')
-        steps = executed_steps('defaultController', 'helloWorldWorkflow', self.start, datetime.utcnow())
+        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
+        setup_subscriptions_for_step(workflow_name, ['start'])
+        self.c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
         step = steps[0]
         ancestry = step['ancestry'].split(',')
@@ -44,10 +46,10 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_MultiActionWorkflow(self):
-        workflow_name = 'multiactionWorkflow'
+        workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow(workflow_name)
+        self.c.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
         names = [step['ancestry'].split(',')[-1] for step in steps]
@@ -67,10 +69,10 @@ class TestSimpleWorkflow(unittest.TestCase):
     """
 
     def test_ErrorWorkflow(self):
-        workflow_name = 'multiactionErrorWorkflow'
+        workflow_name = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
         step_names = ['start', '1', 'error']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow(workflow_name)
+        self.c.executeWorkflow('multistepError', 'multiactionErrorWorkflow')
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
         names = [step['ancestry'].split(',')[-1] for step in steps]

@@ -45,7 +45,7 @@
   "regMatch":{
     "description":"Matches a regular expression to the output",
     "type":"flag",
-    "run":"flags.regmatch.main",
+    "run":"flags.regMatch.main",
     "highlight":"",
     "highlight_reverse":"",
     "input_type":"str",
@@ -57,7 +57,6 @@
       }
     ]
   }
-
 }
 
 

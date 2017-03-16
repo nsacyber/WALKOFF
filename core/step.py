@@ -145,13 +145,15 @@ class Step(ExecutionElement):
         input = et.SubElement(step, "input")
         for i in self.input:
             input.append(self.input[i].to_xml())
-
         for next in self.conditionals:
-            step.append(next.to_xml())
+            next_xml = next.to_xml()
+            if next_xml is not None:
+                step.append(next.to_xml())
 
         for error in self.errors:
-            step.append(error.to_xml(tag="error"))
-
+            error_xml = error.to_xml()
+            if error_xml is not None:
+                step.append(error.to_xml(tag="error"))
         return step
 
     def __repr__(self):
@@ -173,8 +175,8 @@ class Step(ExecutionElement):
                   "app": str(self.app),
                   "device": str(self.device),
                   "input": {str(key): self.input[key].as_json() for key in self.input},
-                  "next": [next.as_json() for next in self.conditionals],
-                  "errors": [error.as_json() for error in self.errors]}
+                  "next": [next.as_json() for next in self.conditionals if next.name is not None],
+                  "errors": [error.as_json() for error in self.errors if error.name is not None]}
         if self.output:
             output["output"] = str(self.output)
         return output

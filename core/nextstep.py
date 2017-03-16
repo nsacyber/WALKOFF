@@ -22,11 +22,12 @@ class Next(ExecutionElement):
                       for flag_element in xml_element.findall('flag')]
 
     def to_xml(self, tag='next'):
-        elem = et.Element(tag)
-        elem.set('next', self.name)
-        for flag in self.flags:
-            elem.append(flag.to_xml())
-        return elem
+        if self.name is not None:
+            elem = et.Element(tag)
+            elem.set('next', self.name)
+            for flag in self.flags:
+                elem.append(flag.to_xml())
+            return elem
 
     def createFlag(self, action="", args=None, filters=None):
         new_flag = Flag(action=action,
