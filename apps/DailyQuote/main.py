@@ -7,27 +7,22 @@ class Main(appDevice.App):
     def __init__(self, name=None, device=None):
         #The parent app constructor looks for a device configuration and returns that as a dictionary called self.config
         appDevice.App.__init__(self, name, device)
-        #Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message":"Quote App"}
         self.baseUrl = "http://quotes.rest/qod.json?category=inspire"
         self.s = requests.Session()
 
-    # Every function in Main is an action that can be taken
-    # Every function needs to define an args argument which recieves a dictionary of input parameters
+    # Returns the message defined in init above
     def quoteIntro(self, args={}):
         # LOOK AT YOUR CONSOLE WHEN EXECUTING
-        # print(self.introMessage)
         print("testing quote intro")
         return self.introMessage
 
-    # Example using arguments
-    # Repeats back the contents of the call argument
+    # Returns the argument that was passed to it. Used to test passing arguments
     def repeatBackToMe(self, args={}):
         # print("REPEATING: " + args["call"]())
         return "REPEATING: " + args["call"]()
 
-    # Get quote from different sourcce.
-    # Used to test passing arguments to app
+    #Uses argument passed to function to make an api request
     def forismaticQuote(self, args={}):
         headers = {'content-type': 'application/json'}
         url = args["url"]()
@@ -37,7 +32,7 @@ class Main(appDevice.App):
         jsonResult['success'] = True
         return jsonResult
 
-    # Test the getQuote api request
+    # Uses the url defined in _init to make a getQuote api call and returns the quote
     def getQuote(self, args={}):
         headers = {'content-type': 'application/json'}
         url = self.baseUrl
