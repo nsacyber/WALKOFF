@@ -39,20 +39,20 @@ class JobExecutionListener(EventListener):
                                events={'JobExecuted': callbacks.add_system_entry("Job executed"),
                                        'JobError': callbacks.add_system_entry("Job executed with error")})
 
-    def execute_event(self, sender, event):
+    def execute_event(self, sender, event, data=''):
         if event.exception:
-            self.events['JobError'].send(sender)
+            self.events['JobError'].send(sender, data)
             self.eventlog.append({"jobError": event.retval})
         else:
             self.events['JobExecuted'].send(sender)
             self.eventlog.append({"jobExecuted": event.retval})
 
-    def execute_event_code(self, sender, event_code):
+    def execute_event_code(self, sender, event_code, data=''):
         if event_code == 'JobExecuted':
-            self.events[event_code].send(sender)
+            self.events[event_code].send(sender, data)
             self.eventlog.append({"jobExecuted": 'Success'})
         elif event_code == 'JobError':
-            self.events[event_code].send(sender)
+            self.events[event_code].send(sender, data)
             self.eventlog.append({"jobError": 'Error'})
         else:
             self.eventlog.append({event_code: 'Unsupported!'})
@@ -143,11 +143,10 @@ class Controller(object):
 
 
     def executeWorkflow(self, name, start="start", data=None):
-        steps, instances = self.workflows[name].execute(start=start, data=data)
+        self.workflows[name].execute(start=start, data=data)
         #print("Boss thread putting "+name+" workflow on queue...:")
         #self.queue.put((name, start, data))
         self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
-        return steps, instances
 
     # Starts active execution
     def start(self):

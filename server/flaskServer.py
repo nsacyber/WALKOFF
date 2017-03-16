@@ -243,11 +243,11 @@ def workflow(name, action):
             output = running_context.controller.workflows[name].get_cytoscape_data()
             return json.dumps(output)
         if action == "execute":
-            steps, instances = running_context.controller.executeWorkflow(name=name, start="start")
+            running_context.controller.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
             if responseFormat == "cytoscape":
-                response = json.dumps(helpers.get_cytoscape_data(steps=steps))
-                response = str(steps)
+                #response = json.dumps(helpers.get_cytoscape_data(steps=steps))
+                response = json.dumps({"status": "success"})
             else:
                 response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")

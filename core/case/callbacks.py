@@ -25,7 +25,7 @@ class EventEntry(object):
 
     def __init__(self, sender, entry_type, entry_message, data=None, name=""):
         self.uuid = str(uuid.uuid4())
-        self.timestamp = str(datetime.datetime.utcnow())
+        self.timestamp = datetime.datetime.utcnow()
         self.type = entry_type
         self.caller = (sender.name if hasattr(sender, "name") else sender.id) if not name else name
         self.ancestry = list(sender.ancestry)
@@ -45,10 +45,10 @@ class EventEntry(object):
 
 
 def __add_entry_to_case_db(sender, event, message_name):
-    #print('__add_entry_to_case_db event {0}'.format(event))
     cases_to_add = [case for case in case_subscription.subscriptions
                     if case_subscription.is_case_subscribed(case, sender.ancestry, message_name)]
-    case_db.add_event(event, cases_to_add)
+    if cases_to_add:
+        case_db.add_event(event, cases_to_add)
 
 
 def __add_entry_to_case_wrapper(sender, event_type, message_name, entry_message, data):

@@ -32,7 +32,6 @@ class Workflow(ExecutionElement):
                 # TODO: Make this work with child workflows
 
     def _from_xml(self, xml_element, *args):
-
         self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)
         self.steps = {}
         for step_xml in xml_element.findall(".//steps/*"):
@@ -50,7 +49,7 @@ class Workflow(ExecutionElement):
         input = {input[key]["tag"]: arguments.Argument(key=input[key]["tag"], value=input[key]["value"],
                                                        format=input[key]["format"]) for key in input}
         ancestry = list(self.ancestry)
-        ancestry.append(id)
+        #ancestry.append(id)
         self.steps[id] = Step(name=id, action=action, app=app, device=device, input=input, next=next,
                               errors=errors, ancestry=ancestry, parent_name=self.name)
         stepXML = self.steps[id].to_xml()
@@ -83,10 +82,9 @@ class Workflow(ExecutionElement):
         return current
 
     def execute(self, start="start", data=None):
-        total_steps = []
         instances = {}
+        total_steps = []
         steps = self.__steps(start=start)
-
         for step in steps:
             if step:
                 self.event_handler.execute_event_code(self, 'NextStepFound')
@@ -103,7 +101,6 @@ class Workflow(ExecutionElement):
                 total_steps.append(step)
                 steps.send(error_flag)
         self.__shutdown(instances)
-        return total_steps, str(instances)
 
     def __steps(self, start="start"):
         initial_step_name = start
