@@ -559,28 +559,19 @@ $(function(){
                     'data' : formatAppsActionJsonDataForJsTree(data)
                 }
             })
-                .bind("ready.jstree", function (event, data) {
-                    $(this).jstree("open_all"); // Expand all
-
-                    // Make each leaf node draggable onto the graph
-                    $('.jstree-leaf').each(function(){
-                        $(this).draggable( {
-                            cursor: 'copy',
-                            cursorAt: { left: 0, top: 0 },
-                            containment: 'document',
-                            helper: dragHelper
-                        });
+            .bind("ready.jstree", function (event, data) {
+                $(this).jstree("open_all"); // Expand all
+            })
+            .on('after_open.jstree', function (e, data) {
+                for(var i = 0; i < data.node.children.length; i++) {
+                    $("#"+data.node.children[i]).draggable( {
+                        cursor: 'copy',
+                        cursorAt: { left: 0, top: 0 },
+                        containment: 'document',
+                        helper: dragHelper
                     });
-                }).
-                on('after_open.jstree', function (e, data) {
-                    console.log(e);
-                    console.log(data);
-                    //var i, j, r = [];
-                    //for(i = 0, j = data.selected.length; i < j; i++) {
-                    //    r.push(data.instance.get_node(data.selected[i]).text);
-                    //}
-                    //$('#event_result').html('Selected: ' + r.join(', '));
-                });
+                }
+            });
         }
     });
 
