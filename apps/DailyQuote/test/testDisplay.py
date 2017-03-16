@@ -7,6 +7,3 @@ class TestDisplay(TestCase):
 
     def test_load(self):
         self.assertDictEqual(display.load(), {})
-
-    # def testQuote(self):
-    #     self.assertDictEqual()

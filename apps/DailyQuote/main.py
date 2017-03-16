@@ -1,7 +1,7 @@
 from server import appDevice
 import requests, json
 
-# There is an associated Hello world test workflow which can be executed
+# There is an associated Daily Quote test workflow which can be executed
 
 class Main(appDevice.App):
     def __init__(self, name=None, device=None):
@@ -46,5 +46,4 @@ class Main(appDevice.App):
 
 
     def shutdown(self):
-        # print("SHUTTING DOWN")
         return
