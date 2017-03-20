@@ -49,8 +49,8 @@ class Triggers(Base):
                     trigger_results = workflow_to_be_executed.execute()
                 else:
                     return json.dumps({"status": "trigger error: play could not be found"})
-                listener_output[trigger.name] = [step.as_json() for step in trigger_results[0]]
-        return listener_output
+                #listener_output[trigger.name] = [step.as_json() for step in trigger_results[0]]
+        return {}#listener_output
 
     @staticmethod
     def __execute_trigger(conditional, data_in):

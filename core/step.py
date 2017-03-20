@@ -90,12 +90,13 @@ class Step(ExecutionElement):
         return self.action
 
     def execute(self, instance=None):
+
         if self.validateInput():
             self.event_handler.execute_event_code(self, 'InputValidated')
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
             self.event_handler.execute_event_code(self,
                                                   'FunctionExecutionSuccess',
-                                                  data=json.dumps({"result": str(result)}))
+                                                  data=json.dumps({"result": result}))
             self.output = result
             return result
         raise InvalidStepArgumentsError()
@@ -115,7 +116,7 @@ class Step(ExecutionElement):
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        new_conditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
+        new_conditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=list(self.ancestry))
         if any(conditional == new_conditional for conditional in self.conditionals):
             return False
         self.conditionals.append(new_conditional)

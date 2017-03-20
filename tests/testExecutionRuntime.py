@@ -1,4 +1,4 @@
-import ast
+from datetime import datetime
 import unittest
 from os import mkdir
 from os.path import isdir
@@ -7,13 +7,23 @@ from core import config as core_config
 from core import controller
 from core import graphDecorator
 from tests import config
+import core.case.subscription as case_subscription
+import core.case.database as case_database
+from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.assertwrappers import orderless_list_compare
 
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
+        case_database.initialize()
         self.c = controller.Controller()
         if not isdir(core_config.profileVisualizationsPath):
             mkdir(core_config.profileVisualizationsPath)
+        self.start = datetime.utcnow()
+
+    def tearDown(self):
+        case_database.case_db.tearDown()
+        case_subscription.clear_subscriptions()
 
     """
         Tests the out templating function which replaces the value of an argument with the output from the workflow history.
@@ -21,18 +31,27 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "templatedWorkflowTest.workflow")
-        steps, instances = self.c.executeWorkflow("templatedWorkflow")
-        instances = ast.literal_eval(instances)
+        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'templatedWorkflowTest.workflow')
+        workflow_name = 'templatedWorkflow'
+        step_names = ['start', '1']
+        setup_subscriptions_for_step(workflow_name, step_names)
+        self.c.executeWorkflow(workflow_name)
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+
         self.assertEqual(len(steps), 2, 'Unexpected number of steps executed. '
                                         'Expected {0}, got {1}'.format(2, len(steps)))
-        self.assertEqual(steps[0].name, "start")
-        self.assertDictEqual(steps[0].output, {"message": "HELLO WORLD"})
-        self.assertEqual(steps[0].nextUp, "1")
-        self.assertEqual(steps[1].name, "1")
-        self.assertEqual(steps[1].output, "REPEATING: {'message': 'HELLO WORLD'}")
-        self.assertIsNone(steps[1].nextUp)
-        self.assertEqual(instances["hwTest"]["state"], '0')
+        names = [step['ancestry'].split(',')[-1] for step in steps]
+        orderless_list_compare(self, names, step_names)
+        name_result = {'start': {"message": "HELLO WORLD"},
+                       '1': "REPEATING: {'message': 'HELLO WORLD'}"}
+
+        for step in steps:
+            name = step['ancestry'].split(',')[-1]
+            self.assertIn(name, name_result)
+            if type(name_result[name]) == dict:
+                self.assertDictEqual(step['data']['result'], name_result[name])
+            else:
+                self.assertEqual(step['data']['result'], name_result[name])
 
     """
         Tests the calling of nested workflows
@@ -40,12 +59,30 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "tieredWorkflow.workflow")
-        steps, instances = self.c.executeWorkflow("parentWorkflow")
-        output = [step.output for step in steps]
-        self.assertEqual(output[0], "REPEATING: Parent Step One")
-        self.assertEqual(output[1], "REPEATING: Child Step One")
-        self.assertEqual(output[2], "REPEATING: Parent Step Two")
+        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'tieredWorkflow.workflow')
+        workflow_name = 'parentWorkflow'
+        step_names = ['start', '1']
+        setup_subscriptions_for_step([workflow_name, 'childWorkflow'], step_names)
+        self.c.executeWorkflow("parentWorkflow")
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        steps.extend(executed_steps('defaultController', 'childWorkflow', self.start, datetime.utcnow()))
+        ancestries = [step['ancestry'].split(',') for step in steps]
+        name_ids = [(ancestry[-2], ancestry[-1]) for ancestry in ancestries]
+        expected_ids = [('parentWorkflow', 'start'), ('parentWorkflow', '1'), ('childWorkflow', 'start')]
+        orderless_list_compare(self, name_ids, expected_ids)
+
+        name_result = {('parentWorkflow', 'start'): "REPEATING: Parent Step One",
+                       ('childWorkflow', 'start'): "REPEATING: Child Step One",
+                       ('parentWorkflow', '1'): "REPEATING: Parent Step Two"}
+
+        for step in steps:
+            ancestry = step['ancestry'].split(',')
+            name_id = (ancestry[-2], ancestry[-1])
+            self.assertIn(name_id, name_result)
+            if type(name_result[name_id]) == dict:
+                self.assertDictEqual(step['data']['result'], name_result[name_id])
+            else:
+                self.assertEqual(step['data']['result'], name_result[name_id])
 
     """
         Tests a workflow that loops a few times
@@ -53,7 +90,20 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
-        self.c.loadWorkflowsFromFile(path="tests/testWorkflows/loopWorkflow.workflow")
-        steps, instances = self.c.executeWorkflow("loopWorkflow")
-        output = [step.output for step in steps]
-        self.assertEqual(len(output), 5)
+        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath +'loopWorkflow.workflow')
+        workflow_name = 'loopWorkflow'
+        step_names = ['start', '1']
+        setup_subscriptions_for_step(workflow_name, step_names)
+        self.c.executeWorkflow(workflow_name)
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        names = [step['ancestry'].split(',')[-1] for step in steps]
+        expected_steps = ['start', 'start', 'start', 'start', '1']
+        self.assertListEqual(names, expected_steps)
+        self.assertEqual(len(steps), 5)
+
+        input_output = [('start', 1), ('start', 2), ('start', 3), ('start', 4), ('1', 'REPEATING: 5')]
+        for step_name, output in input_output:
+            for step in steps:
+                name = step['ancestry'].split(',')
+                if name == step_name:
+                    self.assertEqual(step['data']['result'], output)

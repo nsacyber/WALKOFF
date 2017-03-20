@@ -1,5 +1,6 @@
 from os import remove
 import json
+from datetime import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, func, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -35,7 +36,7 @@ class Case(_Base):
 class Event(_Base):
     __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=func.now())
+    timestamp = Column(DateTime, default=datetime.utcnow())
     type = Column(String)
     ancestry = Column(String)
     message = Column(String)
@@ -63,8 +64,8 @@ class Event(_Base):
         return output
 
     @staticmethod
-    def create(sender, entry_message, entry_type, data=''):
-        return Event(type=entry_type, ancestry=','.join(map(str, sender.ancestry)), message=entry_message, data=data)
+    def create(sender, timestamp, entry_message, entry_type, data=''):
+        return Event(type=entry_type, timestamp=timestamp, ancestry=','.join(map(str, sender.ancestry)), message=entry_message, data=data)
 
 
 class CaseDatabase(object):
@@ -123,6 +124,7 @@ class CaseDatabase(object):
 
     def add_event(self, event, cases):
         event_log = Event(type=event.type,
+                          timestamp=event.timestamp,
                           ancestry=','.join(map(str, event.ancestry)),
                           message=event.message,
                           data=event.data)

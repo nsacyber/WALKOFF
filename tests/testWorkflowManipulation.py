@@ -1,35 +1,51 @@
 import ast
 import unittest
+from datetime import datetime
 from os import path
 from core import controller, graphDecorator
+import core.case.database as case_database
+import core.case.subscription as case_subscription
 from tests import config
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.case_db_help import *
 
 from server import flaskServer as flask_server
 
 
 class TestWorkflowManipulation(unittest.TestCase):
     def setUp(self):
+        case_database.initialize()
         self.app = flask_server.app.test_client(self)
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
+        self.c.loadWorkflowsFromFile(
+            path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
 
     def tearDown(self):
-        self.c.loadWorkflowsFromFile(path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
+        self.c.loadWorkflowsFromFile(
+            path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
+        case_database.case_db.tearDown()
+        case_subscription.clear_subscriptions()
 
     def executionTest(self):
+        step_names = ['start', '1']
+        setup_subscriptions_for_step(self.testWorkflow.name, step_names)
+        start = datetime.utcnow()
         # Check that the workflow executed correctly post-manipulation
-        steps, instances = self.c.executeWorkflow(self.testWorkflow.name)
-        instances = ast.literal_eval(instances)
+        self.c.executeWorkflow(self.testWorkflow.name)
+        steps = executed_steps('defaultController', self.testWorkflow.name, start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
-        self.assertEqual(len(instances), 1)
-        self.assertEqual(steps[0].name, "start")
-        self.assertEqual(steps[0].output, "REPEATING: Hello World")
-        self.assertEqual(steps[1].name, "1")
-        self.assertEqual(steps[1].output, "REPEATING: This is a test.")
+        names = [step['ancestry'].split(',')[-1] for step in steps]
+        orderless_list_compare(self, names, step_names)
+        name_result = {'start': "REPEATING: Hello World",
+                       '1': "REPEATING: This is a test."}
+        for step in steps:
+            name = step['ancestry'].split(',')[-1]
+            self.assertIn(name, name_result)
+            self.assertEqual(step['data']['result'], name_result[name])
 
     """
         CRUD - Workflow
@@ -296,7 +312,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         # Check XML
         self.assertEqual(len(
             xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter")), 2)
-        self.assertEqual (len(xml.findall(
+        self.assertEqual(len(xml.findall(
             ".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[1]/args/test2")), 1)
         self.assertEqual(len(xml.findall(
             ".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[2]/args/test")), 1)
