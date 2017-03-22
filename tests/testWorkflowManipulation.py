@@ -274,13 +274,13 @@ class TestWorkflowManipulation(unittest.TestCase):
         conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
         self.assertEqual(len(conditional.filters), 1)
 
-        conditional.addFilter(action="length", args={"test": "test"})
+        conditional.add_filter(action="length", args={"test": "test"})
         self.assertEqual(len(conditional.filters), 2)
         self.assertEqual(conditional.filters[1].action, "length")
         self.assertTrue(conditional.filters[1].args["test"])
 
         # Tests adding a filter at index
-        conditional.addFilter(action="length", args={"test2": "test2"}, index=1)
+        conditional.add_filter(action="length", args={"test2": "test2"}, index=1)
         self.assertEqual(len(conditional.filters), 3)
         self.assertEqual(conditional.filters[1].action, "length")
         self.assertTrue(conditional.filters[1].args["test2"])
@@ -300,11 +300,11 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_removeFilter(self):
         conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
-        conditional.addFilter(action="length", args={"test": "test"})
-        conditional.addFilter(action="length", args={"test2": "test2"}, index=1)
+        conditional.add_filter(action="length", args={"test": "test"})
+        conditional.add_filter(action="length", args={"test2": "test2"}, index=1)
         self.assertEqual(len(conditional.filters), 3)
 
-        conditional.removeFilter(index=0)
+        conditional.remove_filter(index=0)
         self.assertEqual(len(conditional.filters), 2)
         self.assertEqual(conditional.filters[1].action, "length")
         self.assertTrue(conditional.filters[1].args["test"])

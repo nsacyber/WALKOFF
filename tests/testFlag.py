@@ -87,32 +87,32 @@ class TestFlag(unittest.TestCase):
         filters = [Filter(action='test_filter_action'), Filter()]
         filters_cpy = list(filters)
         flag = Flag(action='test_action', filters=filters)
-        flag.addFilter()
+        flag.add_filter()
         self.assertEqual(len(flag.filters), len(filters_cpy) + 1)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='', args={}).as_json())
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        flag.addFilter(action='test_add', args=args)
+        flag.add_filter(action='test_add', args=args)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 2)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add', args=args).as_json())
 
-        flag.addFilter(action='test_add2', index=0)
+        flag.add_filter(action='test_add2', index=0)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 3)
         self.assertDictEqual(flag.filters[0].as_json(), Filter(action='test_add2', args={}).as_json())
 
-        flag.addFilter(action='test_add3', index=len(filters_cpy) + 3)
+        flag.add_filter(action='test_add3', index=len(filters_cpy) + 3)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 4)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add3', args={}).as_json())
 
-        flag.addFilter(action='test_add4', index=1000)
+        flag.add_filter(action='test_add4', index=1000)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 5)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add4', args={}).as_json())
 
-        flag.addFilter(action='test_add5', index=-1)
+        flag.add_filter(action='test_add5', index=-1)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 6)
         self.assertDictEqual(flag.filters[-2].as_json(), Filter(action='test_add5', args={}).as_json())
 
-        flag.addFilter(action='test_add6', index=-100)
+        flag.add_filter(action='test_add6', index=-100)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 7)
         self.assertDictEqual(flag.filters[0].as_json(), Filter(action='test_add6', args={}).as_json())
 
@@ -123,32 +123,32 @@ class TestFlag(unittest.TestCase):
                    Filter(action='b'),
                    Filter(action='c')]
         flag = Flag(action='test_action', filters=filters)
-        self.assertTrue(flag.removeFilter())
+        self.assertTrue(flag.remove_filter())
         self.assertEqual(len(flag.filters), 4)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='b').as_json())
 
-        self.assertTrue(flag.removeFilter(1))
+        self.assertTrue(flag.remove_filter(1))
         self.assertEqual(len(flag.filters), 3)
         self.assertDictEqual(flag.filters[1].as_json(), Filter(action='a').as_json())
 
-        self.assertTrue(flag.removeFilter(-2))
+        self.assertTrue(flag.remove_filter(-2))
         self.assertEqual(len(flag.filters), 2)
         self.assertDictEqual(flag.filters[-2].as_json(), Filter(action='test_filter_action').as_json())
 
-        self.assertFalse(flag.removeFilter(1000))
+        self.assertFalse(flag.remove_filter(1000))
         self.assertEqual(len(flag.filters), 2)
-        self.assertFalse(flag.removeFilter(-1000))
+        self.assertFalse(flag.remove_filter(-1000))
         self.assertEqual(len(flag.filters), 2)
 
-        self.assertTrue(flag.removeFilter(0))
+        self.assertTrue(flag.remove_filter(0))
         self.assertEqual(len(flag.filters), 1)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='b').as_json())
 
-        self.assertTrue(flag.removeFilter(-1))
+        self.assertTrue(flag.remove_filter(-1))
         self.assertEqual(len(flag.filters), 0)
         self.assertListEqual(flag.filters, [])
 
-        self.assertFalse(flag.removeFilter())
+        self.assertFalse(flag.remove_filter())
         self.assertListEqual(flag.filters, [])
 
     def test_validate_args(self):

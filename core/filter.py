@@ -1,4 +1,4 @@
-from xml.etree import cElementTree as et
+from xml.etree import cElementTree
 
 from core import arguments
 from core.case import callbacks
@@ -7,7 +7,7 @@ from core.helpers import import_lib
 
 
 class Filter(ExecutionElement):
-    def __init__(self, xml=None, parent_name="", action="", args=None, arg_json=None, ancestry=None):
+    def __init__(self, xml=None, parent_name="", action="", args=None, ancestry=None):
         if xml:
             self._from_xml(xml, parent_name, ancestry)
         else:
@@ -26,9 +26,9 @@ class Filter(ExecutionElement):
                      for arg in xml_element.findall("args/*")}
 
     def to_xml(self, *args):
-        elem = et.Element("filter")
+        elem = cElementTree.Element("filter")
         elem.set("action", self.action)
-        args_element = et.SubElement(elem, "args")
+        args_element = cElementTree.SubElement(elem, "args")
         for arg in self.args:
             args_element.append(self.args[arg].to_xml())
         return elem
