@@ -52,7 +52,7 @@ class Workflow(ExecutionElement):
                                                        format=input[key]["format"]) for key in input}
         ancestry = list(self.ancestry)
         #ancestry.append(id)
-        self.steps[id] = Step(name=id, action=action, app=app, device=device, input=input, next=next,
+        self.steps[id] = Step(name=id, action=action, app=app, device=device, inputs=input, next_steps=next,
                               errors=errors, ancestry=ancestry, parent_name=self.name)
         stepXML = self.steps[id].to_xml()
         self.workflowXML.find(".//steps").append(stepXML)
@@ -96,7 +96,7 @@ class Workflow(ExecutionElement):
                 # for arg in step.input:
                 #     step.input[arg].template(steps=total_steps)
 
-                step.renderStep(steps=total_steps)
+                step.render_step(steps=total_steps)
 
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
@@ -109,7 +109,7 @@ class Workflow(ExecutionElement):
         current = self.steps[current_name]
         while current:
             error_flag = yield current
-            next_step = current.nextStep(error=error_flag)
+            next_step = current.get_next_step(error=error_flag)
 
             # Check for call to child workflow
             if next_step and next_step[0] == '@':

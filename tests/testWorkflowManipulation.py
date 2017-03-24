@@ -179,7 +179,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_createNext(self):
-        self.testWorkflow.steps["start"].createNext(nextStep="2", flags=[])
+        self.testWorkflow.steps["start"].add_next_step(next_step_name="2", flags=[])
         step = self.testWorkflow.steps["start"]
         self.assertEqual(len(step.conditionals), 2)
         self.assertEqual(step.conditionals[1].name, "2")
@@ -193,7 +193,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_removeNext(self):
         step = self.testWorkflow.steps["start"]
         self.assertEqual(len(step.conditionals), 1)
-        success = step.removeNext("1")
+        success = step.remove_next_step("1")
         self.assertTrue(success)
         self.assertEqual(len(step.conditionals), 0)
 
