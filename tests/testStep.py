@@ -1,11 +1,12 @@
 import unittest
 from core.step import Step
-from core.nextstep import Next
-from apps.HelloWorld.main import Main
+from core.nextstep import NextStep
 from core.helpers import load_function_aliases
 
 
 class TestStep(unittest.TestCase):
+
+
     def test_function_alias_lookup_same_function(self):
         existing_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne']
         app = 'HelloWorld'
@@ -62,9 +63,9 @@ class TestStep(unittest.TestCase):
                         action=input_params['action'],
                         app=input_params['app'],
                         device=input_params['device'])
-            step.conditionals = [Next(name=name, parent_name=step.name, ancestry=list(step.ancestry))
+            step.conditionals = [NextStep(name=name, parent_name=step.name, ancestry=list(step.ancestry))
                                  for name in input_params['next']]
-            step.errors = [Next(name=name, parent_name=step.name, ancestry=list(step.ancestry))
+            step.errors = [NextStep(name=name, parent_name=step.name, ancestry=list(step.ancestry))
                            for name in input_params['error']]
             step_json = step.as_json()
             derived_step = Step.from_json(step_json, parent_name=step.parent_name, ancestry=list(step.ancestry)[:-1])

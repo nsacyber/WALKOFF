@@ -1,6 +1,5 @@
 import unittest
 import copy
-from xml.etree import ElementTree
 
 from core.arguments import Argument
 from core import config
@@ -89,8 +88,8 @@ class TestArgument(unittest.TestCase):
                 self.assertEqual(Argument.convert(value=attempt, conversion_type=input_type), attempt)
 
     def test_template(self):
-        def test_help(template_expected, key, value, format):
-            arg = Argument(key=key, value=value, format=format)
+        def test_help(template_expected, key, value, arg_format):
+            arg = Argument(key=key, value=value, format=arg_format)
             self.assertEqual(arg.template(), template_expected)
             self.assertEqual(arg.templated, template_expected)
 
@@ -103,8 +102,8 @@ class TestArgument(unittest.TestCase):
             test_help(*case)
 
     def test_call(self):
-        def test_help(template_expected, key, value, format, expected_value):
-            arg = Argument(key=key, value=value, format=format)
+        def test_help(template_expected, key, value, arg_format, expected_value):
+            arg = Argument(key=key, value=value, format=arg_format)
             self.assertEqual(arg(), expected_value)
             self.assertEqual(arg.template(), template_expected)
             self.assertEqual(arg(), template_expected)
@@ -130,6 +129,14 @@ class TestArgument(unittest.TestCase):
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
                 self.assertFalse(arg.validate(action=action))
+
+    def test_validate_against_invalid_action(self):
+        for action, args in self.test_funcs.items():
+            for arg_pair in args['args']:
+                arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
+                with self.assertRaises(KeyError):
+                    self.assertTrue(arg.validate(action='junkName'))
+
 
     def test_to_xml(self):
         arg = Argument()

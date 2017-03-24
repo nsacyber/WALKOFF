@@ -40,18 +40,18 @@ class TestWorkflowServer(unittest.TestCase):
         self.hello_world_json = \
             {'steps': [{'group': 'nodes',
                         'data': {'id': 'start',
-                                 'parameters': {'errors': [{'nextStep': '1',
-                                                            'flags': [],
-                                                            'name': '1'}],
+                                 'parameters': {'errors': [{'flags': [], 'name': '1'}],
                                                 'name': 'start',
                                                 'app': 'HelloWorld',
-                                                'next': [{'nextStep': '1',
-                                                          'flags': [{'action': 'regMatch',
-                                                                     'args': {'regex': {'key': 'regex',
-                                                                                        'value': '(.*)',
-                                                                                        'format': 'str'}},
-                                                                     'filters': [{'action': 'length',
-                                                                                  'args': {}}]}],
+                                                'next': [{'flags': [{'action': 'regMatch',
+                                                                     'args': {
+                                                                         'regex': {
+                                                                             'key': 'regex',
+                                                                             'value': '(.*)',
+                                                                             'format': 'str'}},
+                                                                     'filters': [{
+                                                                         'action': 'length',
+                                                                         'args': {}}]}],
                                                           'name': '1'}],
                                                 'action': 'repeatBackToMe',
                                                 'device': 'hwTest',
@@ -61,10 +61,7 @@ class TestWorkflowServer(unittest.TestCase):
              'name': 'test_name',
              'options': {'enabled': 'True',
                          'children': {},
-                         'scheduler': {'args': {'hours': '*',
-                                                'minutes': '*/0.1',
-                                                'day': '*',
-                                                'month': '11-12'},
+                         'scheduler': {'args': {'hours': '*', 'minutes': '*/0.1', 'day': '*', 'month': '11-12'},
                                        'type': 'cron',
                                        'autorun': 'false'}}}
 
@@ -483,7 +480,8 @@ class TestWorkflowServer(unittest.TestCase):
     def test_delete_workflow(self):
         workflow_name = 'test_name2'
         self.app.post('/playbook/test/{0}/add'.format(workflow_name), headers=self.headers)
-        cytoscape_data = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').get_cytoscape_data()
+        cytoscape_data = flask_server.running_context.controller.get_workflow('test',
+                                                                              'helloWorldWorkflow').get_cytoscape_data()
         data = {'cytoscape': json.dumps(cytoscape_data)}
         self.app.post('/playbook/test/{0}/save'.format(workflow_name),
                       data=json.dumps(data),

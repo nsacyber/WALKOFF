@@ -8,7 +8,7 @@ from core import contextDecorator
 from core import nextstep, config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.nextstep import Next
+from core.nextstep import NextStep
 from core.helpers import load_function_aliases, load_app_function
 
 
@@ -50,9 +50,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [nextstep.Next(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     def _update_xml(self, step_xml):
@@ -61,9 +61,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [nextstep.Next(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     @contextDecorator.context
@@ -116,7 +116,7 @@ class Step(ExecutionElement):
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        new_conditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=list(self.ancestry))
+        new_conditional = NextStep(parent_name=self.name, name=nextStep, flags=flags, ancestry=list(self.ancestry))
         if any(conditional == new_conditional for conditional in self.conditionals):
             return False
         self.conditionals.append(new_conditional)
@@ -192,8 +192,8 @@ class Step(ExecutionElement):
                     parent_name=parent_name,
                     ancestry=ancestry)
 
-        step.conditionals = [Next.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+        step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                              for next_step in json['next']]
-        step.errors = [Next.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+        step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                        for next_step in json['errors']]
         return step

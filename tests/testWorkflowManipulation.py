@@ -187,7 +187,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         # Check XML
         xml = self.testWorkflow.to_xml()
         self.assertEqual(len(xml.findall(".//steps/step/[@id='start']/next")), 2)
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@next='2']").get("next"), "2")
+        self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@step='2']").get("step"), "2")
 
     @graphDecorator.callgraph(enabled=False)
     def test_removeNext(self):
@@ -212,13 +212,13 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.testWorkflow.to_xml()
 
         # Check XML
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next").get("next"), "2")
+        self.assertEqual(xml.find(".//steps/step/[@id='start']/next").get("step"), "2")
 
     @graphDecorator.callgraph(enabled=False)
     def test_displayNext(self):
         conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].__repr__())
         self.assertTrue(conditional["flags"])
-        self.assertEqual(conditional["nextStep"], "1")
+        self.assertEqual(conditional["name"], "1")
 
     """
         CRUD - Flag
@@ -228,7 +228,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_createFlag(self):
         nextStep = self.testWorkflow.steps["start"].conditionals[0]
         self.assertEqual(len(nextStep.flags), 1)
-        nextStep.createFlag(action="count", args={"operator": "ge", "threshold": "1"}, filters=[])
+        nextStep.create_flag(action="count", args={"operator": "ge", "threshold": "1"}, filters=[])
         self.assertEqual(len(nextStep.flags), 2)
         self.assertEqual(nextStep.flags[1].action, "count")
         self.assertDictEqual(nextStep.flags[1].args, {"operator": "ge", "threshold": "1"})
@@ -238,7 +238,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_removeFlag(self):
         nextStep = self.testWorkflow.steps["start"].conditionals[0]
         self.assertEqual(len(nextStep.flags), 1)
-        success = nextStep.removeFlag(index=0)
+        success = nextStep.remove_flag(index=0)
         self.assertTrue(success)
         self.assertEqual(len(nextStep.flags), 0)
 
@@ -257,7 +257,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         # Check the XML output
         xml = self.testWorkflow.to_xml()
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag[1]").get("action"), "count")
+        self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@step='1']/flag[1]").get("action"), "count")
 
     @graphDecorator.callgraph(enabled=False)
     def test_displayFlag(self):
@@ -291,11 +291,11 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         # Check XML
         self.assertEqual(len(
-            xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter")), 3)
+            xml.findall(".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter")), 3)
         self.assertEqual(len(xml.findall(
-            ".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[2]/args/test2")), 1)
+            ".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[2]/args/test2")), 1)
         self.assertEqual(len(xml.findall(
-            ".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[3]/args/test")), 1)
+            ".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[3]/args/test")), 1)
 
     @graphDecorator.callgraph(enabled=False)
     def test_removeFilter(self):
@@ -315,11 +315,11 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         # Check XML
         self.assertEqual(len(
-            xml.findall(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter")), 2)
+            xml.findall(".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter")), 2)
         self.assertEqual(len(xml.findall(
-            ".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[1]/args/test2")), 1)
+            ".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[1]/args/test2")), 1)
         self.assertEqual(len(xml.findall(
-            ".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[2]/args/test")), 1)
+            ".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[2]/args/test")), 1)
 
     @graphDecorator.callgraph(enabled=False)
     def test_updateFilter(self):
@@ -331,7 +331,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.testWorkflow.to_xml()
         # Check XML
         self.assertEqual(
-            xml.find(".//steps/step/[@id='start']/next/[@next='1']/flag/[@action='regMatch']/filters/filter[1]").get(
+            xml.find(".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[1]").get(
                 "action"), "combine")
 
     @graphDecorator.callgraph(enabled=False)
