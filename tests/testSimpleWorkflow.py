@@ -1,32 +1,29 @@
 import unittest
 
-from core import controller, graphDecorator
+from core import graphDecorator
 from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
-from server import flaskServer
-
+from server.flaskServer import app, running_context
 
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
-        self.app = flaskServer.app.test_client(self)
+        self.app = app.test_client(self)
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.c = flaskServer.running_context.controller
+        self.c = running_context.controller
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multistepError.workflow")
         self.start = datetime.utcnow()
-        print("about to init...")
-        controller.initialize_threading()
-        print("past")
+        #flaskServer.running_context.init_threads()
 
     def tearDown(self):
         case_database.case_db.tearDown()
         case_subscription.clear_subscriptions()
-        controller.shutdown_pool()
+        running_context.shutdown_threads()
 
     """
         Tests simple workflow execution with a single action with an argument and no jumps.

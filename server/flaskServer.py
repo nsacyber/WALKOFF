@@ -3,7 +3,7 @@ import ssl
 import json
 import sys
 
-from flask import render_template, request, Response
+from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
 
@@ -38,7 +38,6 @@ default_urls = urls
 userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
-
 
 # devClass = appDevice.Device()
 

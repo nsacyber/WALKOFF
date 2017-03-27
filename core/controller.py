@@ -11,12 +11,17 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
 from apscheduler.schedulers.gevent import GeventScheduler
 
 from core import config
+from core import workflow as wf
 from core.case import callbacks
 from core.events import EventListener
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
+from gevent import monkey
+
 import multiprocessing
 import dill
+
+monkey.patch_all(thread=False, socket=False)
 
 NUM_PROCESSES = 2
 queue = None
@@ -135,6 +140,8 @@ class Controller(object):
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
+        initialize_threading()
+
     def loadWorkflowsFromFile(self, path, name_override=None, playbook_override=None):
         self.tree = et.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
@@ -241,27 +248,9 @@ class Controller(object):
         print("Boss thread putting " + workflow_name + " workflow on queue...:")
         # self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
         workFl = self.workflows[_WorkflowKey(playbook_name, workflow_name)]
-        for k, v in workFl.steps.items():
-            # print(k)
-            # print()
-            # for a, b in v.__dict__.items():
-            #     print(a)
-            #     if (a == "event_handler"):
-            #         for c,d in b.__dict__.items():
-            #             print (c)
-            #             for e, f in d.items():
-            #                 print(e)
-            #                 for g, h in f.__dict__.items():
-            #                     print(g)
-            #                     dill.dumps(h)
-            #                 dill.dumps(f)
-            #             dill.dumps(d)
-            #     dill.dumps(b)
-            # dill.dumps(v)
-            workFl.steps[k].rawXML = str(workFl.steps[k].rawXML)
-        workFl.workflowXML = str(workFl.workflowXML)
-        pickled_workflow = dill.dumps(workFl)
-        queue.put((pickled_workflow, start, data))
+        # CAN'T PICKLE STEPS (conditionals, errors -- both nextStep objects (eventHandler)), OPTIONS (children (tieredWorkflow-childWorkflow))
+        #pickled_workflow = dill.dumps(workFl)
+        #queue.put((pickled_workflow, start, data))
         #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
 
     def get_workflow(self, playbook_name, workflow_name):
@@ -307,6 +296,5 @@ class Controller(object):
     # Returns jobs scheduled for active execution
     def getScheduledJobs(self):
         self.scheduler.get_jobs()
-
 
 controller = Controller()
