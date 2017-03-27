@@ -22,17 +22,21 @@
 
             #pathConfig {
                 padding-left: 50px;
-                padding-top: 20px;
+                padding-top: 15px;
             }
 
             #authConfig {
                 padding-left: 50px;
-                padding-top: 20px;
+                padding-top: 15px;
             }
 
             #interfaceConfig {
                 padding-left: 50px;
-                padding-top: 20px;
+                padding-top: 15px;
+            }
+            #test {
+              padding-left: 100px;
+              padding-top: 10px;
             }
 
             #formSubmit{
@@ -40,6 +44,7 @@
                 top:50px;
                 padding:10px;
                 margin-top:30px;
+                margin-left: 50px;
                 background-color: #45AA3B;
                 color: #fff;
                 text-transform: uppercase;
@@ -55,50 +60,32 @@
             }
 
             h1 {
-                font-family: 'Source Sans Pro', sans-serif;
+                font-family: 'Lato', sans-serif;
                 font-weight: bold;
+                font-size: 30px;
+                color: #255876;
                 /*font-variant: small-caps;*/
             }
             h3 {
-              font-family: 'Source Sans Pro', sans-serif;
+              font-family: 'Lato', sans-serif;
               font-weight: bold;
-              padding-top: 30px;
+              font-size: 24px;
+              /*padding-top: 30px;*/
             }
-            .settings-hr {
+            /*.usersettings-hr {
               border: 0.1rem solid #367fa9;
-              width: 11%;
+              width: 30%;
               float:left;
               margin:0;
+            }*/
+            input {
+              border: none;
             }
-            .pathconfig-hr {
-              border: 0.1rem solid #367fa9;
-              width: 18%;
-              float:left;
-              margin:0;
+            select#username {
+              border: none;
             }
-            .authorizationconfig-hr {
-              border: 0.1rem solid #367fa9;
-              width: 26.5%;
-              float:left;
-              margin:0;
-            }
-            .interfaceconfig-hr {
-              border: 0.1rem solid #367fa9;
-              width: 22%;
-              float:left;
-              margin:0;
-            }
-            .usersettings-hr {
-              border: 0.1rem solid #367fa9;
-              width: 18%;
-              float:left;
-              margin:0;
-            }
-            .userconfig-hr {
-              border: 0.1rem solid #367fa9;
-              width: 16%;
-              float:left;
-              margin:0;
+            select#roles {
+              border: none;
             }
         </style>
     </head>
@@ -112,14 +99,13 @@
             </ul>
             <div id="systemSettings">
                 <h1 class="settingsHeader"> Settings </h1>
-                <hr class="settings-hr">
                 <div id="settingsForm">
                     <form id="setForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
-                        <h3> Path Configuration </h3>
-                        <hr class="pathconfig-hr">
+
                             <div id="pathConfig">
+                                <h3> Path Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                                 {{ render_field(systemForm.templatesPath) }}
                                 {{ render_field(systemForm.workflowsPath) }}
@@ -127,18 +113,16 @@
                                 {{ render_field(systemForm.keywordsPath) }}
                                 {{ render_field(systemForm.dbPath) }}
                             </div>
-                        <h3> Authorization Configuration </h3>
-                          <hr class="authorizationconfig-hr">
                             <div id="authConfig">
+                              <h3> Authorization Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                                 {{ render_field(systemForm.TLS_version) }}
                                 {{ render_field(systemForm.certificatePath) }}
                                 {{ render_field(systemForm.https) }}
                                 {{ render_field(systemForm.privateKeyPath) }}
                             </div>
-                        <h3> Interface Configuration </h3>
-                          <hr class="interfaceconfig-hr">
                             <div id="interfaceConfig">
+                              <h3> Interface Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                                 {{ render_field(systemForm.debug) }}
                                 {{ render_field(systemForm.defaultServer) }}
@@ -151,15 +135,13 @@
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
-                <hr class="usersettings-hr">
                 <div >
                     <form id="userForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
-                        <h3><i> User Configuration </i></h3>
-                        <hr class="userconfig-hr">
-                        </br>
+
                         <div id="test">
+                          <h3> User Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                             {{ render_field(userForm.username) }}
                             {{ render_field(userForm.password) }}

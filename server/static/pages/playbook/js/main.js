@@ -71,6 +71,115 @@ $(function(){
     }
 
 
+    console.log(workflowData);
+
+    //---------------------------
+    // Create the Cytoscape graph
+    //---------------------------
+
+    cy = cytoscape({
+        container: document.getElementById('cy'),
+
+        boxSelectionEnabled: false,
+        autounselectify: false,
+        wheelSensitivity: 0.1,
+        style: [
+            {
+                selector: 'node',
+                css: {
+                    'content': 'data(id)',
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'shape': 'roundrectangle',
+                    'background-color': '#aecbdc',
+                    'font-family': 'Oswald',
+                    'font-weight': 'lighter',
+                    'font-size': '15px',
+                    'width':'40',
+                    'height':'40'
+                }
+            },
+            {
+                selector: '$node > node',
+                css: {
+                    'padding-top': '10px',
+                    'padding-left': '10px',
+                    'padding-bottom': '10px',
+                    'padding-right': '10px',
+                    'text-valign': 'top',
+                    'text-halign': 'center',
+                    'background-color': '#bbb'
+                }
+            },
+            {
+                selector: 'edge',
+                css: {
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                }
+            }
+        ]
+    });
+
+
+    //------------------------------------
+    // Enable various Cytoscape extensions
+    //------------------------------------
+
+    // Undo/Redo extension
+    var ur = cy.undoRedo({});
+
+    // Panzoom extension
+    cy.panzoom({});
+
+    // Extension for drawing edges
+    cy.edgehandles({
+        preview: false,
+        toggleOffOnLeave: true,
+        complete: function( sourceNode, targetNodes, addedEntities ) {
+            // The edge hendles extension is not integrated into the undo/redo extension.
+            // So in order that adding edges is contained in the undo stack,
+            // remove the edge just added and add back in again using the undo/redo
+            // extension. Also add info to edge which is displayed when user clicks on it.
+            for (var i=0; i<targetNodes.length; ++i) {
+                addedEntities[i].data('parameters', {
+                    flags: [],
+                    name: targetNodes[i].data().parameters.name,
+                    nextStep: targetNodes[i].data().parameters.name
+                });
+            }
+            cy.remove(addedEntities); // Remove NOT using undo/redo extension
+            var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension
+            newEdges.on('click', onClick);
+        },
+    });
+
+    // Extension for copy and paste
+    cy.clipboard();
+
+
+    //-----------------------------
+    // Load the data into the graph
+    //-----------------------------
+    cy.add(JSON.parse(workflowData));
+
+    //-----------------
+    // Setup the layout
+    //-----------------
+    // Setting up the layout must be done after loading the data. Otherwise
+    // nodes will not be positioned correctly.
+    cy.layout({
+        name: 'breadthfirst',
+        fit:true,
+        padding: 5,
+        root:"#start"
+    });
+
+    //--------------------------------
+    // Define various helper functions
+    //--------------------------------
+
+
     function onClickNew(e) {
         var ele = e.cyTarget;
         var parameters = ele.data().parameters;
