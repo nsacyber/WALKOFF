@@ -1,5 +1,6 @@
 import json
 
+
 def main(args, value):
     if not args["type"] or args["type"] == "json":
         var = len(json.loads(value))

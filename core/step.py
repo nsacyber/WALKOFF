@@ -46,7 +46,7 @@ class Step(ExecutionElement):
             self.raw_xml = self.to_xml()
         self.function_aliases = function_aliases if function_aliases is not None else load_function_aliases(self.app)
         self.output = None
-        self.nextUp = None
+        self.next_up = None
         super(Step, self)._register_event_callbacks(
             {'FunctionExecutionSuccess': callbacks.add_step_entry('Function executed successfully'),
              'InputValidated': callbacks.add_step_entry('Input successfully validated'),
@@ -100,7 +100,6 @@ class Step(ExecutionElement):
         return self.action
 
     def execute(self, instance=None):
-
         if self.validate_input():
             self.event_handler.execute_event_code(self, 'InputValidated')
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
@@ -117,7 +116,7 @@ class Step(ExecutionElement):
         for n in next_steps:
             next_step = n(output=self.output)
             if next_step:
-                self.nextUp = next_step
+                self.next_up = next_step
                 self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
                 return next_step
 
@@ -177,7 +176,7 @@ class Step(ExecutionElement):
                   'input': {key: self.input[key] for key in self.input},
                   'next': [next_step for next_step in self.conditionals],
                   'errors': [error for error in self.errors],
-                  'nextUp': self.nextUp}
+                  'nextUp': self.next_up}
         if self.output:
             output["output"] = self.output
         return str(output)

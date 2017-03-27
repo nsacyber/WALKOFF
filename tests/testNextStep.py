@@ -5,6 +5,7 @@ from core.flag import Flag
 from core.filter import Filter
 from core.arguments import Argument
 
+
 class TestNextStep(unittest.TestCase):
 
     def __compare_init(self, elem, name, parent_name, flags, ancestry):
@@ -124,17 +125,37 @@ class TestNextStep(unittest.TestCase):
                 if i == j:
                     self.assertEqual(next_steps[i], next_steps[j])
                 else:
-                    self.assertNotEquals(next_steps[i], next_steps[j])
+                    self.assertNotEqual(next_steps[i], next_steps[j])
 
     def test_call(self):
-        # structure of {(NextStep, input): T/F expect name?}
-        pass
+
+        flags1 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
+        flags2 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')}),
+                  Flag(action='regMatch', args={'regex': Argument(key='regex', value='a', format='str')})]
+        flags3 = [Flag(action='invalidName', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
+        flags4 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')}),
+                  Flag(action='invalidName', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
+        inputs = [('name1', [], 'aaaa', True),
+                  ('name2', flags1, 'anyString', True),
+                  ('name3', flags2, 'anyString', True),
+                  ('name4', flags2, 'bbbb', False),
+                  ('name5', flags3, 'anyString', False),
+                  ('name6', flags4, 'anyString', False)]
+
+        for name, flags, input_str, expect_name in inputs:
+            next_step = NextStep(name=name, flags=flags)
+            if expect_name:
+                expected_name = next_step.name
+                self.assertEqual(next_step(input_str), expected_name)
+            else:
+                self.assertIsNone(next_step(input_str))
 
     def test_to_from_json(self):
         filter_params = ['test_filter_action', '']
         flags_params = [('', []), ('test_action', []), ('test_action', filter_params)]
         input_params = [('', '', None, []), ('test_name', '', None, []), ('test_name', 'test_parent', None, []),
-                        ('test_name', 'test_parent', ['a', 'b'], []), ('test_name', 'test_parent', ['a', 'b'], flags_params)]
+                        ('test_name', 'test_parent', ['a', 'b'], []),
+                        ('test_name', 'test_parent', ['a', 'b'], flags_params)]
 
         for (name, parent_name, ancestry, flag_params) in input_params:
             next_step = NextStep(name=name, parent_name=parent_name, ancestry=ancestry)

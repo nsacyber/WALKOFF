@@ -17,7 +17,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertDictEqual(aliases, expected_aliases)
 
     def test_load_function_aliases_invalid_app(self):
-        self.assertIsNone(load_function_aliases('JunkAppName'))
+        self.assertDictEqual(load_function_aliases('JunkAppName'), {})
 
     def test_load_app_function(self):
 
