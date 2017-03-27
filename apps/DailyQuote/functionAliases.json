@@ -1,5 +1,6 @@
 {
-  "helloWorld": ["helloworld", "hello world", "hello", "greeting", "HelloWorld", "hello_world"],
+  "guoteIntro": ["quoteintro", "quote_intro", "quoteGreetings", "QuoteIntro"],
   "repeatBackToMe": ["parrot", "Parrot", "RepeatBackToMe", "repeat_back_to_me", "repeat"],
-  "returnPlusOne" : ["plus one", "PlusOne", "plus_one", "plusone", "++", "increment"]
+  "forismaticQuote" : ["forismaticquote", "otherquote", "new_quote", "forismatic_quote"]
+  "getQuote" : ["getquote","get_quote","fetch_quote"]
 }

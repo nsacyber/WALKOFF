@@ -2,7 +2,7 @@ import unittest
 import json
 
 from server import flaskServer as server
-from tests.util.assertwrappers import orderless_list_comapre
+from tests.util.assertwrappers import orderless_list_compare
 
 
 class TestLogin(unittest.TestCase):
@@ -22,17 +22,18 @@ class TestLogin(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_list_apps(self):
-        expected_apps = ['HelloWorld']
+        expected_apps = ['HelloWorld', 'DailyQuote']
         response = self.app.get('/apps/', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_comapre(self, response['apps'], expected_apps)
+        orderless_list_compare(self, response['apps'], expected_apps)
 
     def test_get_all_list_actions(self):
-        expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne']}
+        expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause'],
+                         'DailyQuote': ['getQuote', 'quoteIntro', 'forismaticQuote', 'repeatBackToMe']}
         response = self.app.get('/apps/actions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_comapre(self, response.keys(), expected_json.keys())
+        orderless_list_compare(self, response.keys(), expected_json.keys())
         for app, functions in response.items():
-            orderless_list_comapre(self, functions, expected_json[app])
+            orderless_list_compare(self, functions, expected_json[app])

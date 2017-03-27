@@ -12,8 +12,7 @@ class TestMain(TestCase):
 
     def test_quote_message(self):
         quote = self.app.getQuote()
-        print(quote["success"])
-        self.assertEqual(quote["success"], { "total": 1 })
+        self.assertEqual(quote["success"], {"total": 1})
 
     # def test_quote_with_args(selfself):
     def test_other_quote(self):

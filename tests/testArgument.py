@@ -1,6 +1,5 @@
 import unittest
 import copy
-from xml.etree import ElementTree
 
 from core.arguments import Argument
 from core import config
@@ -66,31 +65,31 @@ class TestArgument(unittest.TestCase):
         self.assertEqual(arg2.value, 6)
 
     def test_convert_to_string(self):
-        self.assertEqual(Argument.convertTo(), 'None')
+        self.assertEqual(Argument.convert(), 'None')
         string_types = ['str', 'string', 'unicode']
         string_converted_attempts = (6, 'a', None, 4.56, {6: "this_string"}, ['a', 'b'])
         for string_type in string_types:
-            self.assertEqual(Argument.convertTo(type=string_type), 'None')
+            self.assertEqual(Argument.convert(conversion_type=string_type), 'None')
         for string_type in string_types:
             for attempt in string_converted_attempts:
-                self.assertEqual(Argument.convertTo(value=attempt, type=string_type), str(attempt))
+                self.assertEqual(Argument.convert(value=attempt, conversion_type=string_type), str(attempt))
 
     def test_convert_to_int(self):
-        self.assertIsNone(Argument.convertTo(type='int'))
+        self.assertIsNone(Argument.convert(conversion_type='int'))
         int_convert_attempts = ((6, 6), (4.5, 4), ('6', 6), ('4.5', '4.5'))
         for int_type, expected in int_convert_attempts:
-            self.assertEqual(Argument.convertTo(value=int_type, type='int'), expected)
+            self.assertEqual(Argument.convert(value=int_type, conversion_type='int'), expected)
 
     def test_convert_to_unspecified_type(self):
         unknown_types = ['list', 'dict', 'float', 'tuple', 'set', 'junk']
         attempts = (6, 'a', None, 4.56, {6: "this_string"}, ['a', 'b'])
         for input_type in unknown_types:
             for attempt in attempts:
-                self.assertEqual(Argument.convertTo(value=attempt, type=input_type), attempt)
+                self.assertEqual(Argument.convert(value=attempt, conversion_type=input_type), attempt)
 
     def test_template(self):
-        def test_help(template_expected, key, value, format):
-            arg = Argument(key=key, value=value, format=format)
+        def test_help(template_expected, key, value, arg_format):
+            arg = Argument(key=key, value=value, format=arg_format)
             self.assertEqual(arg.template(), template_expected)
             self.assertEqual(arg.templated, template_expected)
 
@@ -103,8 +102,8 @@ class TestArgument(unittest.TestCase):
             test_help(*case)
 
     def test_call(self):
-        def test_help(template_expected, key, value, format, expected_value):
-            arg = Argument(key=key, value=value, format=format)
+        def test_help(template_expected, key, value, arg_format, expected_value):
+            arg = Argument(key=key, value=value, format=arg_format)
             self.assertEqual(arg(), expected_value)
             self.assertEqual(arg.template(), template_expected)
             self.assertEqual(arg(), template_expected)
@@ -130,6 +129,14 @@ class TestArgument(unittest.TestCase):
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
                 self.assertFalse(arg.validate(action=action))
+
+    def test_validate_against_invalid_action(self):
+        for action, args in self.test_funcs.items():
+            for arg_pair in args['args']:
+                arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
+                with self.assertRaises(KeyError):
+                    self.assertTrue(arg.validate(action='junkName'))
+
 
     def test_to_xml(self):
         arg = Argument()

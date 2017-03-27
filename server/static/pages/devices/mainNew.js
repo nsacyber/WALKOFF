@@ -44,10 +44,15 @@ $("#appList").on("change", function(data){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/configuration/" + activeApp + "/devices",
+            'url': "/configuration/" + activeApp + "/devices/all",
             'success': function (data) {
+                console.log(data);
                 var result = JSON.parse(data);
                 displayDevices(result);
+            },
+            'error': function (data){
+                console.log('applist failed');
+                console.log(data);
             }
         });
     }
@@ -98,6 +103,28 @@ $("#removeDevice").on("click", function(){
             'success': function (data) {
                 console.log(data);
             }
+        });
+    }
+
+});
+$("#editDevice").on("click", function(){
+    console.log(activeApp);
+    console.log(activeDevice);
+    if(activeApp && activeDevice){
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
+            'success': function (data) {
+                console.log(data);
+            },
+            'errro':function(data){
+                console.log('edit device failed');
+                console.log(data);
+            }
+
         });
     }
 

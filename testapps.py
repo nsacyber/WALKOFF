@@ -13,6 +13,7 @@ def cmd_line():
     args = parser.parse_args()
     return args
 
+
 def get_tests(app_name):
     tests_path = os.path.join('.', 'apps', app_name, 'test')
     if os.path.isdir(tests_path):
@@ -20,7 +21,6 @@ def get_tests(app_name):
                       for f in os.listdir(tests_path) if (os.path.isfile(os.path.join(tests_path, f))
                                                           and f.endswith('.py')
                                                           and f != '__init__.py')]
-        print(test_files)
         test_modules = [importlib.import_module('apps.{0}.test.{1}'.format(app_name, test_module))
                         for test_module in test_files]
         return test_modules
@@ -29,6 +29,7 @@ def get_tests(app_name):
 
 
 def test_app(app_name):
+    print('Testing app: {0}'.format(app))
     test_modules = get_tests(app_name)
     if test_modules:
         suite = unittest.TestSuite()

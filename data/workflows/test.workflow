@@ -15,7 +15,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input></input>
-            <next next="1">
+            <next step="1">
                 <flag action="regMatch">
                     <args>
                         <regex format="regex">(.*)</regex>
@@ -25,7 +25,7 @@
 
                 </flag>
             </next>
-            <error next="1"></error>
+            <error></error>
         </step>
         <step id = "1">
             <action>repeatBackToMe</action>
@@ -36,7 +36,7 @@
             </input>
             <next>
             </next>
-            <error next="1"></error>
+            <error></error>
         </step>
     </steps>
 </workflow>

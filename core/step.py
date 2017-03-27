@@ -1,6 +1,6 @@
 import sys
 import xml.etree.cElementTree as et
-
+import json
 from jinja2 import Template, Markup
 
 from core import arguments
@@ -8,7 +8,7 @@ from core import contextDecorator
 from core import nextstep, config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.nextstep import Next
+from core.nextstep import NextStep
 from core.helpers import load_function_aliases, load_app_function
 
 
@@ -50,9 +50,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [nextstep.Next(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     def _update_xml(self, step_xml):
@@ -61,9 +61,9 @@ class Step(ExecutionElement):
         self.device = step_xml.find("device").text
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get("format"))
                       for arg in step_xml.findall("input/*")}
-        self.conditionals = [nextstep.Next(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall("next")]
-        self.errors = [nextstep.Next(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
+        self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall("error")]
 
     @contextDecorator.context
@@ -90,10 +90,13 @@ class Step(ExecutionElement):
         return self.action
 
     def execute(self, instance=None):
+
         if self.validateInput():
             self.event_handler.execute_event_code(self, 'InputValidated')
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
-            self.event_handler.execute_event_code(self, 'FunctionExecutionSuccess')
+            self.event_handler.execute_event_code(self,
+                                                  'FunctionExecutionSuccess',
+                                                  data=json.dumps({"result": result}))
             self.output = result
             return result
         raise InvalidStepArgumentsError()
@@ -113,7 +116,7 @@ class Step(ExecutionElement):
 
     def createNext(self, nextStep="", flags=None):
         flags = flags if flags is not None else []
-        new_conditional = Next(parent_name=self.name, name=nextStep, flags=flags, ancestry=self.ancestry)
+        new_conditional = NextStep(parent_name=self.name, name=nextStep, flags=flags, ancestry=list(self.ancestry))
         if any(conditional == new_conditional for conditional in self.conditionals):
             return False
         self.conditionals.append(new_conditional)
@@ -142,13 +145,15 @@ class Step(ExecutionElement):
         input = et.SubElement(step, "input")
         for i in self.input:
             input.append(self.input[i].to_xml())
-
         for next in self.conditionals:
-            step.append(next.to_xml())
+            next_xml = next.to_xml()
+            if next_xml is not None:
+                step.append(next.to_xml())
 
         for error in self.errors:
-            step.append(error.to_xml(tag="error"))
-
+            error_xml = error.to_xml()
+            if error_xml is not None:
+                step.append(error.to_xml(tag="error"))
         return step
 
     def __repr__(self):
@@ -170,8 +175,8 @@ class Step(ExecutionElement):
                   "app": str(self.app),
                   "device": str(self.device),
                   "input": {str(key): self.input[key].as_json() for key in self.input},
-                  "next": [next.as_json() for next in self.conditionals],
-                  "errors": [error.as_json() for error in self.errors]}
+                  "next": [next.as_json() for next in self.conditionals if next.name is not None],
+                  "errors": [error.as_json() for error in self.errors if error.name is not None]}
         if self.output:
             output["output"] = str(self.output)
         return output
@@ -187,8 +192,8 @@ class Step(ExecutionElement):
                     parent_name=parent_name,
                     ancestry=ancestry)
 
-        step.conditionals = [Next.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+        step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                              for next_step in json['next']]
-        step.errors = [Next.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+        step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                        for next_step in json['errors']]
         return step

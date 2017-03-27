@@ -2,7 +2,7 @@ from server import forms
 from core.context import running_context
 
 def devices():
-    return {"apps": running_context.getApps(), "form":forms.AddNewDeviceForm()}
+    return {"apps": running_context.getApps(), "form":forms.AddNewDeviceForm(), "editDeviceform": forms.EditDeviceForm()}
 
 def settings():
     userForm = forms.userForm()
