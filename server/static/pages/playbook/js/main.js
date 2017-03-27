@@ -242,8 +242,13 @@ function loadWorkflow(workflowName) {
                     'content': 'data(id)',
                     'text-valign': 'center',
                     'text-halign': 'center',
-                    'width':'50',
-                    'height':'50'
+                    'shape': 'roundrectangle',
+                    'background-color': '#aecbdc',
+                    'font-family': 'Oswald',
+                    'font-weight': 'lighter',
+                    'font-size': '15px',
+                    'width':'40',
+                    'height':'40'
                 }
             },
             {
