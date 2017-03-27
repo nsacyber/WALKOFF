@@ -2,20 +2,68 @@ import xml.etree.cElementTree as et
 from os import sep
 import os
 
+import time
+
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.gevent import GeventScheduler
 
 from core import config
-from core import workflow as wf
+from core.workflow import Workflow
 from core.case import callbacks
 from core.events import EventListener
 from core.helpers import locate_workflows_in_directory
 
 import multiprocessing
-from multiprocessing import freeze_support
+import dill
 
+NUM_PROCESSES = 2
+queue = None
+pool = None
+results = {}
+
+def initialize_threading():
+    global queue
+    global pool
+    global results
+
+    manager = multiprocessing.Manager()
+    queue = manager.Queue()
+
+    print("Initializing thread pool...")
+    pool = multiprocessing.Pool(processes=NUM_PROCESSES)
+    print("Initialized pool.")
+    for i in range(0, NUM_PROCESSES):
+        results[i] = pool.apply_async(executeWorkflowWorker, (queue,))
+    print("Initialized")
+
+def shutdown_pool():
+    global pool
+    global results
+    global queue
+
+    # for i in range(0, NUM_PROCESSES):
+    #     while (results[i].ready() is not True):
+    #         continue
+
+    time.sleep(2)
+
+    pool.terminate()
+
+def executeWorkflowWorker(queue):
+
+    print("Thread " + str(os.getpid()) + " starting up...")
+
+    while (True):
+        #while (queue.empty()):
+        #    continue
+        print("Thread waiting...")
+        pickled_workflow,start,data = queue.get(block=True)
+        print("Thread popped something off")
+        workflow = dill.loads(pickled_workflow)
+        #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
+        #steps, instances = workflow.execute(start=start, data=data)
 
 class SchedulerStatusListener(EventListener):
     def __init__(self, shared_log=None):
@@ -63,8 +111,8 @@ class JobExecutionListener(EventListener):
 
         return execution
 
-
 class Controller(object):
+
     def __init__(self, name="defaultController"):
         self.name = name
         self.workflows = {}
@@ -83,16 +131,11 @@ class Controller(object):
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
-        # MULTIPROCESSING
-        # self.pool = multiprocessing.Pool(processes=5)
-        # self.manager = multiprocessing.Manager()
-        # self.queue = self.manager.SimpleQueue()
-
     def loadWorkflowsFromFile(self, path, name_override=None):
         self.tree = et.ElementTree(file=path)
         for workflow in self.tree.iter(tag="workflow"):
             name = name_override if name_override else workflow.get("name")
-            self.workflows[name] = wf.Workflow(name=name, workflowConfig=workflow, parent_name=self.name)
+            self.workflows[name] = Workflow(name=name, workflowConfig=workflow, parent_name=self.name)
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
@@ -130,23 +173,33 @@ class Controller(object):
         self.workflows[newName] = self.workflows.pop(oldName)
         self.workflows[newName].name = newName
 
-    # def executeWorkflowWorker(self):
-    #
-    #     print("Thread " + str(os.getpid()) + " starting up...")
-    #
-    #     while (True):
-    #         while (self.queue.empty()):
-    #             continue
-    #         name,start,data = self.queue.get()
-    #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
-    #         steps, instances = self.workflows[name].execute(start=start, data=data)
-
-
     def executeWorkflow(self, name, start="start", data=None):
-        self.workflows[name].execute(start=start, data=data)
-        #print("Boss thread putting "+name+" workflow on queue...:")
-        #self.queue.put((name, start, data))
-        self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
+        global queue
+        #self.workflows[name].execute(start=start, data=data)
+        print("Boss thread putting "+name+" workflow on queue...:")
+        workFl = self.workflows[name]
+        for k, v in workFl.steps.items():
+            #print(k)
+            # print()
+            # for a, b in v.__dict__.items():
+            #     print(a)
+            #     if (a == "event_handler"):
+            #         for c,d in b.__dict__.items():
+            #             print (c)
+            #             for e, f in d.items():
+            #                 print(e)
+            #                 for g, h in f.__dict__.items():
+            #                     print(g)
+            #                     dill.dumps(h)
+            #                 dill.dumps(f)
+            #             dill.dumps(d)
+            #     dill.dumps(b)
+            # dill.dumps(v)
+            workFl.steps[k].rawXML = str(workFl.steps[k].rawXML)
+        workFl.workflowXML = str(workFl.workflowXML)
+        pickled_workflow = dill.dumps(workFl)
+        queue.put((pickled_workflow, start, data))
+        #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
 
     # Starts active execution
     def start(self):
@@ -176,8 +229,5 @@ class Controller(object):
     def getScheduledJobs(self):
         self.scheduler.get_jobs()
 
+
 controller = Controller()
-
-# if __name__ == '__main__':
-#     freeze_support()
-

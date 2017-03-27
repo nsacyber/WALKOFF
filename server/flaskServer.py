@@ -2,16 +2,17 @@ import os
 import ssl
 import json
 import sys
+
 from flask import render_template, request, Response
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
-from core import config, controller
+
+from core import config
 from core.context import running_context
 from core.helpers import locate_workflows_in_directory
 from core import helpers
 from . import forms, interface
-from core.case.subscription import Subscription, set_subscriptions, CaseSubscriptions, add_cases, delete_cases, \
-    rename_case
+from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, rename_case
 from core.options import Options
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -245,11 +246,14 @@ def workflow(name, action):
         if action == "execute":
             running_context.controller.executeWorkflow(name=name, start="start")
             responseFormat = request.form.get("format")
-            if responseFormat == "cytoscape":
-                #response = json.dumps(helpers.get_cytoscape_data(steps=steps))
-                response = json.dumps({"status": "success"})
-            else:
-                response = json.dumps(str(steps))
+
+            response = json.dumps({"status": "success"})
+
+            # if responseFormat == "cytoscape":
+            #     #response = json.dumps(helpers.get_cytoscape_data(steps=steps))
+            #     response = json.dumps({"status": "success"})
+            # else:
+            #     response = json.dumps(str(steps))
             return Response(response, mimetype="application/json")
     else:
         return json.dumps({"status": "error"})

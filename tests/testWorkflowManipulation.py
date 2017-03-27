@@ -22,6 +22,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.c.loadWorkflowsFromFile(
             path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
+        controller.initialize_threading()
 
     def tearDown(self):
         self.c.loadWorkflowsFromFile(
@@ -29,6 +30,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.testWorkflow = self.c.workflows["helloWorldWorkflow"]
         case_database.case_db.tearDown()
         case_subscription.clear_subscriptions()
+        controller.shutdown_pool()
 
     def executionTest(self):
         step_names = ['start', '1']
