@@ -1,3 +1,6 @@
+<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+
+
 <script type="app/javascript">
         var apps = {{apps|safe}};
     </script>
@@ -8,11 +11,57 @@
         height:800px;
     }
     #appList{
-        width:200px;
+        width:130px;
+        background-color: #F0F8FF;
+        border: none;
     }
     #deviceList{
-        width:200px;
+        width:130px;
+        background-color: #F0F8FF;
+        border: none;
     }
+
+    h2 {
+      font-family: 'Lato', sans-serif;
+      font-weight: bold;
+      font-size: 30px;
+      color: #255876;
+      /*font-size: 24px;*/
+    }
+    h3 {
+      font-family: 'Lato', sans-serif;
+      font-weight: bold;
+      /*font-size: 20px;*/
+    }
+    input {
+      background-color: #F0F8FF;
+      border: none;
+    }
+    input#submit {
+      background-color: #45AA3B;
+      color: #fff;
+    }
+    button#addNewDevice {
+      background-color: #367fa9;
+      color: #fff;
+      border: none;
+    }
+    button#removeDevice {
+      background-color: #102632;
+      color: #fff;
+      border: none;
+    }
+    button {
+      display: block;
+      margin-top: 10px;
+    }
+    .selectColumn {
+      border: none;
+    }
+    .col-xs-2 {
+      width: 30%;
+    }
+
 </style>
 
 <div class="row content" id="main">
@@ -41,6 +90,7 @@
             {{ render_field(form.submit) }}
         </form>
     </div>
+
     <div class="col-xs-2">
         <h3>Edit Device configuration</h3>
         <form id="editDeviceForm">
@@ -56,3 +106,4 @@
 
     </div>
 </div>
+
