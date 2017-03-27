@@ -5,6 +5,9 @@ function displayNameList(devices){
         }
     }
 }
+$(function() {
+    console.log("this main does not run");
+});
 
 for(var app in apps){
     $("#appList").append("<li>" + apps[app] + "</li>");

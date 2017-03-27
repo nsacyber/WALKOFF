@@ -6,10 +6,10 @@ from core import config
 
 
 class Argument(object):
-    def __init__(self, key=None, value=None, format="str"):
+    def __init__(self, key=None, value=None, format='str'):
         self.key = key
         self.format = format
-        self.value = Argument.convertTo(value=value, type=self.format)
+        self.value = Argument.convert(value=value, conversion_type=self.format)
         self.templated = None
 
     def __call__(self):
@@ -18,14 +18,14 @@ class Argument(object):
         return self.value
 
     @staticmethod
-    def convertTo(value=None, type="str"):
+    def convert(value=None, conversion_type='str'):
         output = value
-        if any(type == string_type for string_type in ['str', 'string', 'unicode']):
+        if any(conversion_type == string_type for string_type in ['str', 'string', 'unicode']):
             try:
                 output = str(output)
             except ValueError:
                 return output
-        elif type == "int":
+        elif conversion_type == 'int':
             try:
                 output = int(output)
             except (ValueError, TypeError):
@@ -52,16 +52,16 @@ class Argument(object):
                   'type': self.format}
         return str(output)
 
-    def validate(self, action=None, io="input"):
-        if not config.functionConfig[action]["args"]:
+    def validate(self, action=None, io='input'):
+        if not config.functionConfig[action]['args']:
             return True
-        for x in config.functionConfig[action]["args"]:
-            if x["type"] != self.format:
+        for x in config.functionConfig[action]['args']:
+            if x['type'] != self.format:
                 try:
-                    self.value = Argument.convertTo(value=self.value, type=x["type"])
+                    self.value = Argument.convert(value=self.value, conversion_type=x['type'])
                 except:
                     return False
-        return any(x["name"] == self.key and x["type"] == self.format for x in config.functionConfig[action]["args"])
+        return any(x['name'] == self.key and x['type'] == self.format for x in config.functionConfig[action]['args'])
 
     def as_json(self):
         return {"key": str(self.key),

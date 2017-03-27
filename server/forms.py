@@ -24,8 +24,17 @@ class EditRoleForm(Form):
     pages = StringField('pages')
 
 
-class AddPlayForm(Form):
+class AddWorkflowForm(Form):
+    playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
     template = StringField('template', [validators.Length(min=1, max=50), validators.Optional()])
+
+
+class AddPlaybookForm(Form):
+    playbook_template = StringField('playbook_template', [validators.Length(min=1, max=50), validators.Optional()])
+
+
+class EditPlaybookForm(Form):
+    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.required()])
 
 
 class EditPlayNameForm(Form):
@@ -172,9 +181,6 @@ class settingsForm(Form):
     defaultServer = StringField('defaultServer', [validators.Optional()])
     host = StringField('host', [validators.Optional()])
     port = StringField('port', [validators.Optional()])
-
-
-
 
 
 class userForm(Form):

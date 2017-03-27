@@ -1,13 +1,27 @@
 import unittest
 import sys
+import copy
 
+from core import config
 from core.flag import Flag
 from core.filter import Filter
 from core.arguments import Argument
 
 
 class TestFlag(unittest.TestCase):
-    def compare_init(self, flag, action, parent_name, ancestry, filters, args):
+    def setUp(self):
+        self.original_functions = copy.deepcopy(config.functionConfig)
+        self.test_funcs = {'func_name1': {'args': []},
+                           'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
+                           'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
+                                                   {'name': 'arg_name2', 'type': 'arg_type2'}]}}
+        for func_name, arg_dict in self.test_funcs.items():
+            config.functionConfig[func_name] = arg_dict
+
+    def tearDown(self):
+        config.functionConfig = self.original_functions
+
+    def __compare_init(self, flag, action, parent_name, ancestry, filters, args):
         self.assertEqual(flag.action, action)
         self.assertEqual(flag.parent_name, parent_name)
         self.assertListEqual(flag.ancestry, ancestry)
@@ -16,30 +30,30 @@ class TestFlag(unittest.TestCase):
 
     def test_init(self):
         flag = Flag()
-        self.compare_init(flag, '', '', ['', ''], [], {})
+        self.__compare_init(flag, '', '', ['', ''], [], {})
 
         flag = Flag(parent_name='test_parent')
-        self.compare_init(flag, '', 'test_parent', ['test_parent', ''], [], {})
+        self.__compare_init(flag, '', 'test_parent', ['test_parent', ''], [], {})
 
         flag = Flag(action='test_action')
-        self.compare_init(flag, 'test_action', '', ['', 'test_action'], [], {})
+        self.__compare_init(flag, 'test_action', '', ['', 'test_action'], [], {})
 
         flag = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'])
-        self.compare_init(flag, 'test_action', 'test_parent', ['a', 'b', 'test_action'], [], {})
+        self.__compare_init(flag, 'test_action', 'test_parent', ['a', 'b', 'test_action'], [], {})
 
         filters = [Filter(action='test_filter_action'), Filter()]
         flag = Flag(action='test_action', filters=filters)
-        self.compare_init(flag, 'test_action', '', ['', 'test_action'], filters, {})
+        self.__compare_init(flag, 'test_action', '', ['', 'test_action'], filters, {})
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
         args = {arg_name: Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
                 for arg_name, arg_value in args.items()}
         expected_arg_json = {arg_name: arg_value.as_json() for arg_name, arg_value in args.items()}
         flag = Flag(action='test_action', args=args)
-        self.compare_init(flag, 'test_action', '', ['', 'test_action'], [], expected_arg_json)
+        self.__compare_init(flag, 'test_action', '', ['', 'test_action'], [], expected_arg_json)
 
         flag = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters, args=args)
-        self.compare_init(flag, 'test_action', 'test_parent', ['a', 'b', 'test_action'], filters, expected_arg_json)
+        self.__compare_init(flag, 'test_action', 'test_parent', ['a', 'b', 'test_action'], filters, expected_arg_json)
 
     def test_set(self):
         filters = [Filter(action='test_filter_action'), Filter()]
@@ -87,32 +101,32 @@ class TestFlag(unittest.TestCase):
         filters = [Filter(action='test_filter_action'), Filter()]
         filters_cpy = list(filters)
         flag = Flag(action='test_action', filters=filters)
-        flag.addFilter()
+        flag.add_filter()
         self.assertEqual(len(flag.filters), len(filters_cpy) + 1)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='', args={}).as_json())
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        flag.addFilter(action='test_add', args=args)
+        flag.add_filter(action='test_add', args=args)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 2)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add', args=args).as_json())
 
-        flag.addFilter(action='test_add2', index=0)
+        flag.add_filter(action='test_add2', index=0)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 3)
         self.assertDictEqual(flag.filters[0].as_json(), Filter(action='test_add2', args={}).as_json())
 
-        flag.addFilter(action='test_add3', index=len(filters_cpy) + 3)
+        flag.add_filter(action='test_add3', index=len(filters_cpy) + 3)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 4)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add3', args={}).as_json())
 
-        flag.addFilter(action='test_add4', index=1000)
+        flag.add_filter(action='test_add4', index=1000)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 5)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add4', args={}).as_json())
 
-        flag.addFilter(action='test_add5', index=-1)
+        flag.add_filter(action='test_add5', index=-1)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 6)
         self.assertDictEqual(flag.filters[-2].as_json(), Filter(action='test_add5', args={}).as_json())
 
-        flag.addFilter(action='test_add6', index=-100)
+        flag.add_filter(action='test_add6', index=-100)
         self.assertEqual(len(flag.filters), len(filters_cpy) + 7)
         self.assertDictEqual(flag.filters[0].as_json(), Filter(action='test_add6', args={}).as_json())
 
@@ -123,37 +137,70 @@ class TestFlag(unittest.TestCase):
                    Filter(action='b'),
                    Filter(action='c')]
         flag = Flag(action='test_action', filters=filters)
-        self.assertTrue(flag.removeFilter())
+        self.assertTrue(flag.remove_filter())
         self.assertEqual(len(flag.filters), 4)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='b').as_json())
 
-        self.assertTrue(flag.removeFilter(1))
+        self.assertTrue(flag.remove_filter(1))
         self.assertEqual(len(flag.filters), 3)
         self.assertDictEqual(flag.filters[1].as_json(), Filter(action='a').as_json())
 
-        self.assertTrue(flag.removeFilter(-2))
+        self.assertTrue(flag.remove_filter(-2))
         self.assertEqual(len(flag.filters), 2)
         self.assertDictEqual(flag.filters[-2].as_json(), Filter(action='test_filter_action').as_json())
 
-        self.assertFalse(flag.removeFilter(1000))
+        self.assertFalse(flag.remove_filter(1000))
         self.assertEqual(len(flag.filters), 2)
-        self.assertFalse(flag.removeFilter(-1000))
+        self.assertFalse(flag.remove_filter(-1000))
         self.assertEqual(len(flag.filters), 2)
 
-        self.assertTrue(flag.removeFilter(0))
+        self.assertTrue(flag.remove_filter(0))
         self.assertEqual(len(flag.filters), 1)
         self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='b').as_json())
 
-        self.assertTrue(flag.removeFilter(-1))
+        self.assertTrue(flag.remove_filter(-1))
         self.assertEqual(len(flag.filters), 0)
         self.assertListEqual(flag.filters, [])
 
-        self.assertFalse(flag.removeFilter())
+        self.assertFalse(flag.remove_filter())
         self.assertListEqual(flag.filters, [])
 
     def test_validate_args(self):
-        # TODO: Complete this test!!!!!
-        pass
+        flag = Flag()
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(action='count')
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(action='junkName')
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                          for arg in self.test_funcs['func_name1']['args']})
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(action='func_name1', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                               for arg in self.test_funcs['func_name1']['args']})
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                             for arg in self.test_funcs['func_name1']['args']})
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(action='func_name2', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                               for arg in self.test_funcs['func_name2']['args']})
+        self.assertTrue(flag.validate_args())
+
+        flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                             for arg in self.test_funcs['func_name2']['args']})
+        with self.assertRaises(KeyError):
+            flag.validate_args()
+
+    def test_call_invalid_flag(self):
+        flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                             for arg in self.test_funcs['func_name2']['args']})
+        self.assertIsNone(flag())
+        self.assertIsNone(flag(output=6))
 
     def test_as_json(self):
         filters = [Filter(action='test_filter_action'), Filter()]
@@ -185,8 +232,8 @@ class TestFlag(unittest.TestCase):
                                           'filters': [{'args': {}, 'action': 'test_filter_action'},
                                                       {'args': {}, 'action': ''}]}
                         }
-        for input, expected in input_output.items():
-            self.assertDictEqual(input.as_json(), expected)
+        for input_flag, expected in input_output.items():
+            self.assertDictEqual(input_flag.as_json(), expected)
 
     def test_from_json(self):
         filters = [Filter(action='test_filter_action'), Filter()]
@@ -196,8 +243,9 @@ class TestFlag(unittest.TestCase):
         input_output = {Flag(): ('', ['']),
                         Flag(parent_name='test_parent'): ('test_parent', ['test_parent']),
                         Flag(action='test_action'): ('', ['']),
-                        Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b']): ('test_parent', ['a', 'b']),
-
+                        Flag(parent_name='test_parent',
+                             action='test_action',
+                             ancestry=['a', 'b']): ('test_parent', ['a', 'b']),
                         Flag(action='test_action', args=args): ('', [''])}
 
         flag1, expected1 = Flag(action='test_action'), ('', [''])
@@ -226,4 +274,3 @@ class TestFlag(unittest.TestCase):
             self.assertDictEqual(derived_flag.as_json(), flag_json)
             self.assertEqual(flag.parent_name, derived_flag.parent_name)
             self.assertListEqual(flag.ancestry, derived_flag.ancestry)
-

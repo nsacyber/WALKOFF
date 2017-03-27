@@ -17,7 +17,7 @@
 
 <div class="row content" id="main">
     <h2>Device Management</h2>
-    <div id="deviceSelect" class="col-xs-2 selectColumn">
+    <div id="deviceSelect" class="col-xs-2">
         <h3> Apps </h3>
         <select id="appList" size="10" multiple></select>
         <h3> Devices </h3>
@@ -25,10 +25,11 @@
         <div>
             <button id="addNewDevice">Add New Device</button>
             <button id="removeDevice">Remove Device</button>
+            <button id="editDevice">Edit Device</button>
         </div>
 
     </div>
-    <div id="parameterSelect" class="col-xs-2 selectColumn">
+    <div id="parameterSelect" class="col-xs-2 ">
         <h3> Parameters </h3>
         <form id="deviceForm">
             {% from "pages/_formhelpers.html" import render_field %}
@@ -39,5 +40,19 @@
             {{ render_field(form.port) }}
             {{ render_field(form.submit) }}
         </form>
+    </div>
+    <div class="col-xs-2">
+        <h3>Edit Device configuration</h3>
+        <form id="editDeviceForm">
+            {% from "pages/_formhelpers.html" import render_field %}
+            {% from "pages/_formhelpers.html" import render_field %}
+            {{ render_field(form.name) }}
+            {{ render_field(form.username) }}
+            {{ render_field(form.pw) }}
+            {{ render_field(form.ipaddr) }}
+            {{ render_field(form.port) }}
+        </form>
+
+
     </div>
 </div>

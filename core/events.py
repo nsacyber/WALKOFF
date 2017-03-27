@@ -28,7 +28,7 @@ class EventHandler(object):
             self.events[event_name] = EventSignal(callback, name=event_name)
 
     def execute_event(self, sender, event, data=''):
-        self.execute_code(sender, event.code, data)
+        self.execute_event_code(sender, event.code, data=data)
 
     def execute_event_code(self, sender, event_code, data=''):
         if event_code in self.events:

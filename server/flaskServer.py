@@ -10,6 +10,8 @@ from flask_security.utils import encrypt_password, verify_and_update_password
 from core import config
 from core.context import running_context
 from core.helpers import locate_workflows_in_directory
+import core.flags
+import core.filters
 from core import helpers
 from . import forms, interface
 from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, rename_case
@@ -23,6 +25,7 @@ from .triggers import Triggers
 from gevent import monkey
 from server.appBlueprint import get_base_app_functions
 from xml.etree import ElementTree
+import pkgutil
 
 monkey.patch_all()
 
@@ -108,156 +111,248 @@ def list_all_apps_and_actions():
     return json.dumps({app: list((set(helpers.list_app_functions(app)) - get_base_app_functions())) for app in apps})
 
 
-@app.route("/workflows", methods=['GET'])
+@app.route("/playbook", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
-def display_available_workflows():
-    workflow_names = [helpers.get_workflow_name_from_file(os.path.join(config.workflowsPath, workflow))
-                      for workflow in locate_workflows_in_directory()]
-    return json.dumps({"workflows": workflow_names})
+def display_available_playbooks():
+    try:
+        workflows = {os.path.splitext(workflow)[0]:
+                     helpers.get_workflow_names_from_file(os.path.join(config.workflowsPath, workflow))
+                      for workflow in locate_workflows_in_directory()}
+        return json.dumps({"status": "success",
+                           "playbooks": workflows})
+    except Exception as e:
+        return json.dumps({"status": "error: {0}".format(e)})
 
 
-@app.route("/workflows/templates", methods=['GET'])
+@app.route("/playbook/<string:name>", methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def display_playbook_workflows(name):
+    try:
+        workflows = {os.path.splitext(workflow)[0]:
+                     helpers.get_workflow_names_from_file(os.path.join(config.workflowsPath, workflow))
+                      for workflow in locate_workflows_in_directory()}
+        if name in workflows:
+            return json.dumps({"status": "success",
+                               "workflows": workflows[name]})
+        else:
+            return json.dumps({"status": "error: name not found"})
+    except Exception as e:
+        return json.dumps({"status": "error: {0}".format(e)})
+
+
+@app.route("/playbook/templates", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflow_templates():
-    template_names = [helpers.get_workflow_name_from_file(os.path.join(config.templatesPath, workflow))
-                      for workflow in locate_workflows_in_directory(config.templatesPath)]
-    return json.dumps({"templates": template_names})
+    templates = {os.path.splitext(workflow)[0]:
+                     helpers.get_workflow_names_from_file(os.path.join(config.templatesPath, workflow))
+                 for workflow in locate_workflows_in_directory(config.templatesPath)}
+    return json.dumps({"templates": templates})
 
 
-@app.route("/workflow/<string:name>", methods=['GET'])
+@app.route("/playbook/<string:playbook_name>/<string:workflow_name>/display", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
-def display_workflow(name):
-    if name in running_context.controller.workflows:
+def display_workflow(playbook_name, workflow_name):
+    if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
         return json.dumps({"status": "success",
-                           "steps": running_context.controller.workflows[name].get_cytoscape_data(),
-                           'options': running_context.controller.workflows[name].options.as_json()})
+                           "steps": running_context.controller.get_workflow(playbook_name, workflow_name).get_cytoscape_data(),
+                           'options': running_context.controller.get_workflow(playbook_name, workflow_name).options.as_json()})
     else:
-        return json.dumps({"status": "error: name {0} not found".format(name)})
+        return json.dumps({"status": "error: name not found"})
 
 
-
-@app.route("/workflow/<string:name>/<string:action>", methods=['POST'])
+@app.route("/playbook/<string:playbook_name>/<string:action>", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
-def workflow(name, action):
+def crud_playbook(playbook_name, action):
     if action == 'add':
-        form = forms.AddPlayForm(request.form)
+        form = forms.AddPlaybookForm(request.form)
         if form.validate():
             status = 'success'
-            template = form.template.data
-            if template:
-                if template in [os.path.splitext(workflow)[0]
-                                for workflow in locate_workflows_in_directory(config.templatesPath)]:
-                    running_context.controller.create_workflow_from_template(workflow_name=name,
-                                                                             template_name=template)
+            template_playbook = form.playbook_template.data
+            if template_playbook:
+                if template_playbook in [os.path.splitext(workflow)[0]
+                                         for workflow in locate_workflows_in_directory(config.templatesPath)]:
+                    running_context.controller.create_playbook_from_template(playbook_name=playbook_name,
+                                                                             template_playbook=template_playbook)
                 else:
-                    running_context.controller.create_workflow_from_template(workflow_name=name)
-                    status = 'warning: template not found. Using default template'
+                    running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
+                    status = 'warning: template playbook not found. Using default template'
             else:
-                running_context.controller.create_workflow_from_template(workflow_name=name)
+                running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
+            return json.dumps({"status": status,
+                               "playbooks": running_context.controller.get_all_workflows()})
 
-            if name in running_context.controller.workflows:
+        else:
+            return json.dumps({'status': 'error: invalid form'})
+    elif action == 'edit':
+        if running_context.controller.is_playbook_registerd(playbook_name):
+            form = forms.EditPlaybookForm(request.form)
+            if form.validate():
+                new_name = form.new_name.data
+                if new_name:
+                    running_context.controller.update_playbook_name(playbook_name, new_name)
+                    saved_playbooks = [os.path.splitext(playbook)[0] for playbook in locate_workflows_in_directory()]
+                    if playbook_name in saved_playbooks:
 
-                return json.dumps(
-                    {'workflow': {'name': name,
-                                  'steps': running_context.controller.workflows[name].get_cytoscape_data(),
-                                  'options': running_context.controller.workflows[name].options.as_json()},
-                     'status': status})
+                        os.rename(os.path.join(config.workflowsPath, '{0}.workflow'.format(playbook_name)),
+                                  os.path.join(config.workflowsPath, '{0}.workflow'.format(new_name)))
+                    return json.dumps({"status": 'success',
+                                       "playbooks": running_context.controller.get_all_workflows()})
+                else:
+                    return json.dumps({"status": 'error: no name provided',
+                                       "playbooks": running_context.controller.get_all_workflows()})
             else:
-                json.dumps({'status': 'error: could not add workflow'})
+                return json.dumps({"status": 'error: invalid form',
+                                   "playbooks": running_context.controller.get_all_workflows()})
+        else:
+            return json.dumps({"status": 'error: playbook name not found',
+                               "playbooks": running_context.controller.get_all_workflows()})
+    elif action == 'delete':
+        status = 'success'
+        if running_context.controller.is_playbook_registerd(playbook_name):
+            running_context.controller.remove_playbook(playbook_name)
+        if playbook_name in [os.path.splitext(playbook)[0] for playbook in locate_workflows_in_directory()]:
+            try:
+                os.remove(os.path.join(config.workflowsPath, '{0}.workflow'.format(playbook_name)))
+            except OSError as e:
+                status = 'error: error occurred while remove playbook file: {0}'.format(e)
+
+        return json.dumps({'status': status, 'playbooks': running_context.controller.get_all_workflows()})
+    else:
+        return json.dumps({"status": 'error: invalid operation'})
+
+
+
+def add_default_template(playbook_name, workflow_name):
+    running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
+                                                             workflow_name=workflow_name)
+
+
+@app.route("/playbook/<string:playbook_name>/<string:workflow_name>/<string:action>", methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/workflow"])
+def workflow(playbook_name, workflow_name, action):
+    if action == 'add':
+        form = forms.AddWorkflowForm(request.form)
+        if form.validate():
+            status = 'success'
+            template_playbook = form.playbook.data
+            template = form.template.data
+            if template and template_playbook:
+                if template_playbook in [os.path.splitext(workflow)[0]
+                                         for workflow in locate_workflows_in_directory(config.templatesPath)]:
+                    res = running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
+                                                                                   workflow_name=workflow_name,
+                                                                                   template_playbook=template_playbook,
+                                                                                   template_name=template)
+                    if not res:
+                        add_default_template(playbook_name, workflow_name)
+                        status = 'warning: template not found in playbook. Using default template'
+                else:
+                    add_default_template(playbook_name, workflow_name)
+                    status = 'warning: template playbook not found. Using default template'
+            else:
+                add_default_template(playbook_name, workflow_name)
+            if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                return json.dumps({'workflow': {'name': workflow_name,
+                                                'steps': workflow.get_cytoscape_data(),
+                                                'options': workflow.options.as_json()},
+                                   'status': status})
+            else:
+                return json.dumps({'status': 'error: could not add workflow'})
         else:
             return json.dumps({'status': 'error: invalid form'})
 
     elif action == 'edit':
-        if name in running_context.controller.workflows:
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             form = forms.EditPlayNameForm(request.form)
             if form.validate():
                 enabled = form.enabled.data if form.enabled.data else False
                 scheduler = {'type': form.scheduler_type.data if form.scheduler_type.data else 'chron',
                              'autorun': str(form.autoRun.data).lower() if form.autoRun.data else 'false',
                              'args': json.loads(form.scheduler_args.data) if form.scheduler_args.data else {}}
-                running_context.controller.workflows[name].options = Options(scheduler=scheduler, enabled=enabled)
+                running_context.controller.get_workflow(playbook_name, workflow_name).options = \
+                    Options(scheduler=scheduler, enabled=enabled)
                 if form.new_name.data:
-                    running_context.controller.updateWorkflowName(oldName=name, newName=form.new_name.data)
-                    name = form.new_name.data
-
-                return json.dumps(
-                        {'workflow': {'name': name,
-                                      'options': running_context.controller.workflows[name].options.as_json()},
-                         'status': 'success'})
+                    running_context.controller.update_workflow_name(playbook_name,
+                                                                    workflow_name,
+                                                                    playbook_name,
+                                                                    form.new_name.data)
+                    workflow_name = form.new_name.data
+                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                if workflow:
+                    return json.dumps({'workflow': {'name': workflow_name, 'options': workflow.options.as_json()},
+                                       'status': 'success'})
+                else:
+                    json.dumps({'status': 'error: altered workflow can no longer be located'})
             else:
                 return json.dumps({'status': 'error: invalid form'})
         else:
-            return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
+            return json.dumps({'status': 'error: workflow name is not valid'})
 
     elif action == 'save':
-        if name in running_context.controller.workflows:
-            form = forms.SavePlayForm(request.form)
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             if request.get_json():
                 if 'cytoscape' in request.get_json():
-                    running_context.controller.workflows[name].from_cytoscape_data(
-                        json.loads(request.get_json()['cytoscape']))
-                filename = name
-                if 'filename' in request.get_json() and request.get_json()['filename']:
-                    filename = request.get_json()['filename']
-                try:
-                    write_format = 'w' if sys.version_info[0] == 2 else 'wb'
-                    workflow_filename = os.path.join(config.workflowsPath, '{0}.workflow'.format(filename))
-                    with open(workflow_filename, write_format) as workflow_out:
-                        xml = ElementTree.tostring(running_context.controller.workflows[name].to_xml())
-                        workflow_out.write(xml)
-                    return json.dumps(
-                        {"status": "success",
-                         "steps": running_context.controller.workflows[name].get_cytoscape_data()})
-                except (OSError, IOError) as e:
-                    return json.dumps(
-                        {"status": "Error saving: {0}".format(e.message),
-                         "steps": running_context.controller.workflows[name].get_cytoscape_data()})
+                    workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                    workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+                    try:
+                        write_format = 'w' if sys.version_info[0] == 2 else 'wb'
+                        workflow_filename = os.path.join(config.workflowsPath, '{0}.workflow'.format(playbook_name))
+                        with open(workflow_filename, write_format) as workflow_out:
+                            xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
+                            workflow_out.write(xml)
+                        return json.dumps({"status": "success", "steps": workflow.get_cytoscape_data()})
+                    except (OSError, IOError) as e:
+                        return json.dumps(
+                            {"status": "Error saving: {0}".format(e.message),
+                             "steps": workflow.get_cytoscape_data()})
+                else:
+                    return json.dumps({"status": "error: malformed json"})
             else:
-                return json.dumps({"status": "malformed json!"})
+                return json.dumps({"status": "error: no information received"})
         else:
-            return json.dumps({'status': 'error: workflow {0} is not valid'.format(name)})
+            return json.dumps({'status': 'error: workflow name is not valid'})
 
     elif action == 'delete':
-        workflow_names = {workflow: helpers.get_workflow_name_from_file(os.path.join(config.workflowsPath, workflow))
-                          for workflow in locate_workflows_in_directory()}
-        # TODO: pass in filename to delete
-        matching_workflows = [workflow_filename
-                              for workflow_filename, workflow_name in workflow_names.items() if workflow_name == name]
-        status = 'success'
-        if matching_workflows:
-            try:
-                for workflow in matching_workflows:
-                    os.remove(os.path.join(config.workflowsPath, workflow))
-            except OSError:
-                status = 'error deleting files'
-        if name in running_context.controller.workflows:
-            running_context.controller.removeWorkflow(name)
-        return json.dumps({'status': status,
-                           'workflows': list(running_context.controller.workflows.keys())})
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            running_context.controller.removeWorkflow(playbook_name, workflow_name)
+            status = 'success'
+        else:
+            status = 'error: invalid workflow name'
+        return json.dumps({"status": status,
+                           "playbooks": running_context.controller.get_all_workflows()})
 
-    elif name in running_context.controller.workflows:
-        if action == "cytoscape":
-            output = running_context.controller.workflows[name].get_cytoscape_data()
-            return json.dumps(output)
-        if action == "execute":
-            running_context.controller.executeWorkflow(name=name, start="start")
-            responseFormat = request.form.get("format")
+    elif action =='execute':
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            running_context.controller.executeWorkflow(playbook_name, workflow_name)
+            status = 'success'
+        else:
+            status = 'error: invalid workflow name'
+        return json.dumps({"status": status})
 
-            response = json.dumps({"status": "success"})
-
-            # if responseFormat == "cytoscape":
-            #     #response = json.dumps(helpers.get_cytoscape_data(steps=steps))
-            #     response = json.dumps({"status": "success"})
-            # else:
-            #     response = json.dumps(str(steps))
-            return Response(response, mimetype="application/json")
     else:
-        return json.dumps({"status": "error"})
+        return json.dumps({"status": 'error: invalid operation'})
 
+@app.route('/flags', methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles['/workflow'])
+def display_flags():
+    return json.dumps({"status": "success",
+                       "flags": [name for _, name, _ in pkgutil.iter_modules([os.path.dirname(core.flags.__file__)])]})
+
+@app.route('/filters', methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles['/workflow'])
+def display_filters():
+    return json.dumps({"status": "success",
+                       "filters": [name
+                                   for _, name, _ in pkgutil.iter_modules([os.path.dirname(core.filters.__file__)])]})
 
 @app.route('/cases', methods=['GET'])
 @auth_token_required

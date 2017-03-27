@@ -4,16 +4,16 @@ import os
 
 import time
 
+from collections import namedtuple
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.gevent import GeventScheduler
 
 from core import config
-from core.workflow import Workflow
 from core.case import callbacks
 from core.events import EventListener
-from core.helpers import locate_workflows_in_directory
+from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
 import multiprocessing
 import dill
@@ -22,6 +22,8 @@ NUM_PROCESSES = 2
 queue = None
 pool = None
 results = {}
+
+_WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
 def initialize_threading():
     global queue
@@ -81,6 +83,8 @@ class JobStatusListener(EventListener):
                                        EVENT_JOB_REMOVED: callbacks.add_system_entry("Job removed")})
 
 
+
+
 class JobExecutionListener(EventListener):
     def __init__(self, shared_log=None):
         EventListener.__init__(self, "jobExecution", shared_log,
@@ -131,24 +135,32 @@ class Controller(object):
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
-    def loadWorkflowsFromFile(self, path, name_override=None):
+    def loadWorkflowsFromFile(self, path, name_override=None, playbook_override=None):
         self.tree = et.ElementTree(file=path)
-        for workflow in self.tree.iter(tag="workflow"):
-            name = name_override if name_override else workflow.get("name")
-            self.workflows[name] = Workflow(name=name, workflowConfig=workflow, parent_name=self.name)
+        playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
+        for workflow in self.tree.iter(tag='workflow'):
+            workflow_name = name_override if name_override else workflow.get('name')
+            name = construct_workflow_name_key(playbook_name, workflow_name)
+            key = _WorkflowKey(playbook_name, workflow_name)
+            self.workflows[key] = wf.Workflow(name=name,
+                                              workflowConfig=workflow,
+                                              parent_name=self.name,
+                                              filename=playbook_name)
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
     def load_all_workflows_from_directory(self, path=config.workflowsPath):
-        for workflow in locate_workflows_in_directory():
+        for workflow in locate_workflows_in_directory(path):
             self.loadWorkflowsFromFile(os.path.join(config.workflowsPath, workflow))
 
     def addChildWorkflows(self):
         for workflow in self.workflows:
+            playbook_name = workflow.playbook
             children = self.workflows[workflow].options.children
             for child in children:
-                if child in self.workflows:
-                    children[child] = self.workflows[child]
+                workflow_key = _WorkflowKey(playbook_name, extract_workflow_name(child, playbook_name=playbook_name))
+                if workflow_key in self.workflows:
+                    children[child] = self.workflows[workflow_key]
 
     def addWorkflowScheduledJobs(self):
         for workflow in self.workflows:
@@ -159,27 +171,78 @@ class Controller(object):
                 self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
                                        **schedule)
 
-    def create_workflow_from_template(self, template_name="emptyWorkflow", workflow_name=None):
-        self.loadWorkflowsFromFile(path=config.templatesPath + sep + template_name + ".workflow",
-                                   name_override=workflow_name)
+    def create_workflow_from_template(self,
+                                      playbook_name,
+                                      workflow_name,
+                                      template_playbook='emptyWorkflow',
+                                      template_name='emptyWorkflow'):
+        path = '{0}{1}{2}.workflow'.format(config.templatesPath, sep, template_playbook)
+        return self.load_workflow_from_file(path=path,
+                                            workflow_name=template_name,
+                                            name_override=workflow_name,
+                                            playbook_override=playbook_name)
 
-    def removeWorkflow(self, name=""):
+    def create_playbook_from_template(self, playbook_name,
+                                      template_playbook='emptyWorkflow'):
+        #TODO: Need a handler for returning workflow key and status
+        path = '{0}{1}{2}.workflow'.format(config.templatesPath, sep, template_playbook)
+        self.loadWorkflowsFromFile(path=path, playbook_override=playbook_name)
+
+    def removeWorkflow(self, playbook_name, workflow_name):
+        name = _WorkflowKey(playbook_name, workflow_name)
         if name in self.workflows:
             del self.workflows[name]
             return True
         return False
 
-    def updateWorkflowName(self, oldName="", newName=""):
-        self.workflows[newName] = self.workflows.pop(oldName)
-        self.workflows[newName].name = newName
+    def remove_playbook(self, playbook_name):
+        for name in [workflow for workflow in self.workflows if workflow.playbook == playbook_name]:
+            del self.workflows[name]
+            return True
+        return False
 
-    def executeWorkflow(self, name, start="start", data=None):
+    def get_all_workflows(self):
+        result = {}
+        for key in self.workflows.keys():
+            if key.playbook not in result:
+                result[key.playbook] = []
+            result[key.playbook].append(key.workflow)
+        return result
+
+    def is_workflow_registered(self, playbook_name, workflow_name):
+        return _WorkflowKey(playbook_name, workflow_name) in self.workflows
+
+    def is_playbook_registerd(self, playbook_name):
+        return any(workflow_key.playbook == playbook_name for workflow_key in self.workflows)
+
+    def update_workflow_name(self, old_playbook, old_workflow, new_playbook, new_workflow):
+        old_key = _WorkflowKey(old_playbook, old_workflow)
+        new_key = _WorkflowKey(new_playbook, new_workflow)
+        self.workflows[new_key] = self.workflows.pop(old_key)
+        self.workflows[new_key].name = construct_workflow_name_key(new_playbook, new_workflow)
+
+    def update_playbook_name(self, old_playbook, new_playbook):
+        for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
+            self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
+
+    # def executeWorkflowWorker(self):
+    #
+    #     print("Thread " + str(os.getpid()) + " starting up...")
+    #
+    #     while (True):
+    #         while (self.queue.empty()):
+    #             continue
+    #         name,start,data = self.queue.get()
+    #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
+    #         steps, instances = self.workflows[name].execute(start=start, data=data)
+
+    def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
         global queue
-        #self.workflows[name].execute(start=start, data=data)
-        print("Boss thread putting "+name+" workflow on queue...:")
-        workFl = self.workflows[name]
+        print("Boss thread putting " + workflow_name + " workflow on queue...:")
+        # self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
+        workFl = self.workflows[_WorkflowKey(playbook_name, workflow_name)]
         for k, v in workFl.steps.items():
-            #print(k)
+            # print(k)
             # print()
             # for a, b in v.__dict__.items():
             #     print(a)
@@ -200,6 +263,22 @@ class Controller(object):
         pickled_workflow = dill.dumps(workFl)
         queue.put((pickled_workflow, start, data))
         #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
+
+    def get_workflow(self, playbook_name, workflow_name):
+        key = _WorkflowKey(playbook_name, workflow_name)
+        if key in self.workflows:
+            return self.workflows[key]
+        return None
+
+    def playbook_to_xml(self, playbook_name):
+        workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
+        if workflows:
+            xml = et.Element("workflows")
+            for workflow in workflows:
+                xml.append(workflow.to_xml())
+            return xml
+        else:
+            return None
 
     # Starts active execution
     def start(self):

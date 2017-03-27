@@ -1,13 +1,13 @@
 import unittest
 import json
 from werkzeug.wsgi import ClosingIterator
-from server import flaskServer as flask_server
+from server import flaskServer as server
 
 
 class TestStreaming(unittest.TestCase):
 
     def setUp(self):
-        self.app = flask_server.app.test_client(self)
+        self.app = server.app.test_client(self)
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         response = self.app.post('/key', data=dict(email='admin', password='admin'),

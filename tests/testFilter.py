@@ -1,8 +1,6 @@
 import unittest
 import sys
-from xml.etree import ElementTree
 from core.filter import Filter
-from core.executionelement import ExecutionElement
 
 
 class TestFilter(unittest.TestCase):
@@ -81,6 +79,11 @@ class TestFilter(unittest.TestCase):
             original_json = filter_element.as_json()
             derived_json = Filter(xml=filter_element.to_xml()).as_json()
             self.assertEqual(original_json, derived_json)
+
+    def test_invalid_filter(self):
+        filter = Filter(action='junkAction')
+        self.assertIsNone(filter())
+        self.assertEqual(filter(output=6), 6)
 
     def test_length_filter(self):
         filter = Filter(action='length')

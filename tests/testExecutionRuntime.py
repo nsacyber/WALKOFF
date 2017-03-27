@@ -6,6 +6,7 @@ from os.path import isdir
 from core import config as core_config
 from core import controller
 from core import graphDecorator
+from core.helpers import construct_workflow_name_key
 from tests import config
 import core.case.subscription as case_subscription
 import core.case.database as case_database
@@ -34,10 +35,10 @@ class TestExecutionRuntime(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'templatedWorkflowTest.workflow')
-        workflow_name = 'templatedWorkflow'
+        workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow(workflow_name)
+        self.c.executeWorkflow('templatedWorkflowTest', 'templatedWorkflow')
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
 
         self.assertEqual(len(steps), 2, 'Unexpected number of steps executed. '
@@ -62,20 +63,21 @@ class TestExecutionRuntime(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'tieredWorkflow.workflow')
-        workflow_name = 'parentWorkflow'
+        workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
+        workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
-        setup_subscriptions_for_step([workflow_name, 'childWorkflow'], step_names)
-        self.c.executeWorkflow("parentWorkflow")
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
-        steps.extend(executed_steps('defaultController', 'childWorkflow', self.start, datetime.utcnow()))
+        setup_subscriptions_for_step([workflow_name1, workflow_name2], step_names)
+        self.c.executeWorkflow('tieredWorkflow', 'parentWorkflow')
+        steps = executed_steps('defaultController', workflow_name1, self.start, datetime.utcnow())
+        steps.extend(executed_steps('defaultController', workflow_name2, self.start, datetime.utcnow()))
         ancestries = [step['ancestry'].split(',') for step in steps]
         name_ids = [(ancestry[-2], ancestry[-1]) for ancestry in ancestries]
-        expected_ids = [('parentWorkflow', 'start'), ('parentWorkflow', '1'), ('childWorkflow', 'start')]
+        expected_ids = [(workflow_name1, 'start'), (workflow_name1, '1'), (workflow_name2, 'start')]
         orderless_list_compare(self, name_ids, expected_ids)
 
-        name_result = {('parentWorkflow', 'start'): "REPEATING: Parent Step One",
-                       ('childWorkflow', 'start'): "REPEATING: Child Step One",
-                       ('parentWorkflow', '1'): "REPEATING: Parent Step Two"}
+        name_result = {(workflow_name1, 'start'): "REPEATING: Parent Step One",
+                       (workflow_name2, 'start'): "REPEATING: Child Step One",
+                       (workflow_name1, '1'): "REPEATING: Parent Step Two"}
 
         for step in steps:
             ancestry = step['ancestry'].split(',')
@@ -93,10 +95,10 @@ class TestExecutionRuntime(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath +'loopWorkflow.workflow')
-        workflow_name = 'loopWorkflow'
+        workflow_name = construct_workflow_name_key('loopWorkflow', 'loopWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow(workflow_name)
+        self.c.executeWorkflow('loopWorkflow', 'loopWorkflow')
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         names = [step['ancestry'].split(',')[-1] for step in steps]
         expected_steps = ['start', 'start', 'start', 'start', '1']
