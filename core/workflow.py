@@ -8,12 +8,14 @@ from core import options
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.step import Step
+from core.helpers import construct_workflow_name_key, extract_workflow_name
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name="", workflowConfig=None, children=None, parent_name=""):
+    def __init__(self, name="", workflowConfig=None, children=None, parent_name="", filename=''):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
         self.workflowXML = workflowConfig
+        self.filename = filename
         self._from_xml(self.workflowXML)
         self.children = children if (children is not None) else {}
         super(Workflow, self)._register_event_callbacks(
@@ -32,7 +34,7 @@ class Workflow(ExecutionElement):
                 # TODO: Make this work with child workflows
 
     def _from_xml(self, xml_element, *args):
-        self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name)
+        self.options = options.Options(xml=xml_element.find(".//options"), workflow_name=self.name, filename=self.filename)
         self.steps = {}
         for step_xml in xml_element.findall(".//steps/*"):
             step = Step(xml=step_xml, parent_name=self.name, ancestry=self.ancestry)
@@ -64,13 +66,12 @@ class Workflow(ExecutionElement):
         return False
 
     def to_xml(self, *args):
-        self.workflowXML.set('name', self.name)
+        self.workflowXML.set('name', extract_workflow_name(self.name))
         root = self.workflowXML.find(".//steps")
         if list(iter(root)):
             root.clear()
         for step in self.steps:
             root.append(self.steps[step].to_xml())
-
         return self.workflowXML
 
     def goToNextStep(self, current="", nextUp=""):
@@ -141,6 +142,7 @@ class Workflow(ExecutionElement):
         params = tiered_step_str.split(':')
         if len(params) == 3:
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
+            child_name = construct_workflow_name_key(self.filename, child_name)
             if (child_name in self.options.children
                 and type(self.options.children[child_name]).__name__ == 'Workflow'):
                 child_step_generator = self.options.children[child_name].__steps(start=child_start)

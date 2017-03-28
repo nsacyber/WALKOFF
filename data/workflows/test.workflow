@@ -15,7 +15,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input></input>
-            <next next="1">
+            <next step="1">
                 <flag action="regMatch">
                     <args>
                         <regex format="regex">(.*)</regex>

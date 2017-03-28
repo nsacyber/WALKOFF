@@ -5,6 +5,7 @@ import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core import controller, graphDecorator
 from core.case.subscription import Subscription
+from core.helpers import construct_workflow_name_key
 from tests import config
 
 
@@ -21,19 +22,20 @@ class TestExecutionEvents(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
+        workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         c = controller.Controller(name="testExecutionEventsController")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
 
         subs = {'testExecutionEventsController':
                     Subscription(subscriptions=
-                                 {'multiactionWorkflow':
+                                 {workflow_name:
                                       Subscription(events=["InstanceCreated", "StepExecutionSuccess",
                                                            "NextStepFound", "WorkflowShutdown"])})}
 
         case_subscription.set_subscriptions(
             {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.executeWorkflow(name="multiactionWorkflow")
+        c.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         execution_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testExecutionEvents').first()
@@ -48,12 +50,13 @@ class TestExecutionEvents(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_stepExecutionEvents(self):
+        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = controller.Controller(name="testStepExecutionEventsController")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
 
         subs = {'testStepExecutionEventsController':
             Subscription(subscriptions=
-            {'helloWorldWorkflow':
+            {workflow_name:
                 Subscription(subscriptions=
                 {'start':
                     Subscription(
@@ -63,7 +66,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.executeWorkflow(name="helloWorldWorkflow")
+        c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
         step_execution_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepExecutionEvents').first()
         step_execution_event_history = step_execution_events_case.events.all()
@@ -77,6 +80,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_ffkExecutionEvents(self):
+        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = controller.Controller(name="testStepFFKEventsController")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
 
@@ -87,14 +91,14 @@ class TestExecutionEvents(unittest.TestCase):
                                 subscriptions={'1': next_sub})
         subs = {'testStepFFKEventsController':
                     Subscription(subscriptions=
-                                 {'helloWorldWorkflow':
+                                 {workflow_name:
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
 
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.executeWorkflow(name="helloWorldWorkflow")
+        c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
@@ -107,6 +111,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_ffkExecutionEventsCase(self):
         c = controller.Controller(name="testStepFFKEventsController")
         c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
+        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         filter_sub = Subscription(events=['FilterError'])
         flag_sub = Subscription(events=['FlagArgsValid',
                                         'FlagArgsInvalid'], subscriptions={'length': filter_sub})
@@ -118,7 +123,7 @@ class TestExecutionEvents(unittest.TestCase):
                                         'ConditionalsExecuted'], subscriptions={'1': next_sub})
         subs = {'testStepFFKEventsController':
                     Subscription(subscriptions=
-                                 {'helloWorldWorkflow':
+                                 {workflow_name:
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
         global_subs = case_subscription.GlobalSubscriptions(step=['FunctionExecutionSuccess',
@@ -133,7 +138,7 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
                                                                             global_subscriptions=global_subs)})
 
-        c.executeWorkflow(name="helloWorldWorkflow")
+        c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
