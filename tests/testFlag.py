@@ -11,12 +11,12 @@ from core.arguments import Argument
 class TestFlag(unittest.TestCase):
     def setUp(self):
         self.original_functions = copy.deepcopy(config.functionConfig)
-        self.test_funcs = {'func_name1': {'args': []},
-                           'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
-                           'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
-                                                   {'name': 'arg_name2', 'type': 'arg_type2'}]}}
-        for func_name, arg_dict in self.test_funcs.items():
-            config.functionConfig[func_name] = arg_dict
+        self.test_funcs = {'flags': {'func_name1': {'args': []},
+                                     'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
+                                     'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
+                                                             {'name': 'arg_name2', 'type': 'arg_type2'}]}}}
+        for func_name, arg_dict in self.test_funcs['flags'].items():
+            config.functionConfig['flags'][func_name] = arg_dict
 
     def tearDown(self):
         config.functionConfig = self.original_functions
@@ -176,29 +176,29 @@ class TestFlag(unittest.TestCase):
         self.assertTrue(flag.validate_args())
 
         flag = Flag(args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                          for arg in self.test_funcs['func_name1']['args']})
+                          for arg in self.test_funcs['flags']['func_name1']['args']})
         self.assertTrue(flag.validate_args())
 
         flag = Flag(action='func_name1', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                               for arg in self.test_funcs['func_name1']['args']})
+                                               for arg in self.test_funcs['flags']['func_name1']['args']})
         self.assertTrue(flag.validate_args())
 
         flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                             for arg in self.test_funcs['func_name1']['args']})
+                                             for arg in self.test_funcs['flags']['func_name1']['args']})
         self.assertTrue(flag.validate_args())
 
         flag = Flag(action='func_name2', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                               for arg in self.test_funcs['func_name2']['args']})
+                                               for arg in self.test_funcs['flags']['func_name2']['args']})
         self.assertTrue(flag.validate_args())
 
         flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                             for arg in self.test_funcs['func_name2']['args']})
-        with self.assertRaises(KeyError):
-            flag.validate_args()
+                                             for arg in self.test_funcs['flags']['func_name2']['args']})
+
+        self.assertFalse(flag.validate_args())
 
     def test_call_invalid_flag(self):
         flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                             for arg in self.test_funcs['func_name2']['args']})
+                                             for arg in self.test_funcs['flags']['func_name2']['args']})
         self.assertIsNone(flag())
         self.assertIsNone(flag(output=6))
 

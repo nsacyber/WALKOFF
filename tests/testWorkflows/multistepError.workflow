@@ -57,7 +57,6 @@
             </input>
             <next>
             </next>
-            <error step="1"></error>
         </step>
     </steps>
 </workflow>

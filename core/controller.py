@@ -13,9 +13,6 @@ from core.case import callbacks
 from core.events import EventListener
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
-import multiprocessing
-from multiprocessing import freeze_support
-
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
 class SchedulerStatusListener(EventListener):
@@ -68,10 +65,10 @@ class JobExecutionListener(EventListener):
 
 
 class Controller(object):
-    def __init__(self, name="defaultController"):
+    def __init__(self, name="defaultController", appPath=None):
         self.name = name
         self.workflows = {}
-        self.load_all_workflows_from_directory()
+        self.load_all_workflows_from_directory(path=appPath)
         self.instances = {}
         self.tree = None
         self.eventlog = []
@@ -85,11 +82,6 @@ class Controller(object):
         self.scheduler.add_listener(self.jobStatusListener.callback(self), EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
-
-        # MULTIPROCESSING
-        # self.pool = multiprocessing.Pool(processes=5)
-        # self.manager = multiprocessing.Manager()
-        # self.queue = self.manager.SimpleQueue()
 
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         self.tree = et.ElementTree(file=path)
@@ -128,8 +120,10 @@ class Controller(object):
         self.addWorkflowScheduledJobs()
 
     def load_all_workflows_from_directory(self, path=config.workflowsPath):
+        if not path:
+            path = config.workflowsPath
         for workflow in locate_workflows_in_directory(path):
-            self.loadWorkflowsFromFile(os.path.join(config.workflowsPath, workflow))
+            self.loadWorkflowsFromFile(os.path.join(path, workflow))
 
     def addChildWorkflows(self):
         for workflow in self.workflows:

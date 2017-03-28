@@ -33,9 +33,12 @@ class Filter(ExecutionElement):
             args_element.append(self.args[arg].to_xml())
         return elem
 
+    def validate_args(self):
+        return all(arg.validate_filter_args(self.action) for arg in self.args.values())
+
     def __call__(self, output=None):
         module = import_lib('filters', self.action)
-        if module:
+        if module and self.validate_args():
             try:
                 result = getattr(module, "main")(args=self.args, value=output)
                 self.event_handler.execute_event_code(self, 'FilterSuccess')

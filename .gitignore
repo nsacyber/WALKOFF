@@ -12,6 +12,6 @@ data/walkoff.db
 data/events.db
 tests/profileVisualizations/*
 build/*
-.idea/dictionaries/aheibel.xml
+.idea/dictionaries/*.xml
 .idea/inspectionProfiles/Project_Default.xml
 *.egg

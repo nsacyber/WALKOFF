@@ -116,11 +116,14 @@ class TestArgument(unittest.TestCase):
         for case in test_cases:
             test_help(*case)
 
-    def test_validate(self):
-        for action, args in self.test_funcs.items():
+    def test_validate_filter_args(self):
+        self.test_funcs = {'filters': self.test_funcs}
+        config.functionConfig = self.test_funcs
+        for action, args in self.test_funcs['filters'].items():
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
-                self.assertTrue(arg.validate(action=action))
+                self.assertTrue(arg.validate_filter_args(action))
+                self.assertFalse(arg.validate_filter_args('invalidAction'))
 
         test_funcs = {'func_name2': {'args': []},
                       'func_name3': {'args': [{'name': 'junk_name1', 'type': 'junk_type1'},
@@ -128,15 +131,51 @@ class TestArgument(unittest.TestCase):
         for action, args in test_funcs.items():
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
-                self.assertFalse(arg.validate(action=action))
+                self.assertFalse(arg.validate_filter_args(action))
+                self.assertFalse(arg.validate_filter_args('invalidAction'))
 
-    def test_validate_against_invalid_action(self):
-        for action, args in self.test_funcs.items():
+    def test_validate_flag_args(self):
+        self.test_funcs = {'flags': self.test_funcs}
+        config.functionConfig = self.test_funcs
+        for action, args in self.test_funcs['flags'].items():
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
-                with self.assertRaises(KeyError):
-                    self.assertTrue(arg.validate(action='junkName'))
+                self.assertTrue(arg.validate_flag_args(action))
+                self.assertFalse(arg.validate_flag_args('invalidAction'))
 
+        test_funcs = {'func_name2': {'args': []},
+                      'func_name3': {'args': [{'name': 'junk_name1', 'type': 'junk_type1'},
+                                              {'name': 'junk_name2', 'type': 'junk_type2'}]}}
+        for action, args in test_funcs.items():
+            for arg_pair in args['args']:
+                arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
+                self.assertFalse(arg.validate_flag_args(action))
+                self.assertFalse(arg.validate_flag_args('invalidAction'))
+
+    def test_validate_function_args(self):
+        apps = ['app1', 'app2', 'app3']
+        self.test_funcs = {'apps': {app: copy.deepcopy(self.test_funcs) for app in apps}}
+        config.functionConfig = self.test_funcs
+        for app, actions in self.test_funcs['apps'].items():
+            for action, args in actions.items():
+                for arg_pair in args['args']:
+                    arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
+                    self.assertTrue(arg.validate_function_args(app, action))
+                    self.assertFalse(arg.validate_function_args(app, 'invalidAction'))
+                    self.assertFalse(arg.validate_function_args('invalidApp', action))
+                    self.assertFalse(arg.validate_function_args('invalidApp', 'invalidAction'))
+
+        test_funcs = {'func_name2': {'args': []},
+                      'func_name3': {'args': [{'name': 'junk_name1', 'type': 'junk_type1'},
+                                              {'name': 'junk_name2', 'type': 'junk_type2'}]}}
+        for app in apps:
+            for action, args in test_funcs.items():
+                for arg_pair in args['args']:
+                    arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
+                    self.assertFalse(arg.validate_function_args(app, action))
+                    self.assertFalse(arg.validate_function_args(app, 'invalidAction'))
+                    self.assertFalse(arg.validate_function_args('invalidApp', action))
+                    self.assertFalse(arg.validate_function_args('invalidApp', 'invalidAction'))
 
     def test_to_xml(self):
         arg = Argument()

@@ -52,6 +52,7 @@ class Argument(object):
                   'type': self.format}
         return str(output)
 
+    '''
     def validate(self, action=None, io='input'):
         if not config.functionConfig[action]['args']:
             return True
@@ -62,6 +63,33 @@ class Argument(object):
                 except:
                     return False
         return any(x['name'] == self.key and x['type'] == self.format for x in config.functionConfig[action]['args'])
+    '''
+
+    def __validate(self, possible_args):
+        if not possible_args:
+            return True
+        for arg in possible_args:
+            if arg['type'] != self.format:
+                try:
+                    self.value = Argument.convert(value=self.value, conversion_type=arg['type'])
+                except:
+                    return False
+        return any(arg['name'] == self.key and arg['type'] == self.format for arg in possible_args)
+
+    def validate_filter_args(self, action):
+        if action in config.functionConfig['filters']:
+            return self.__validate(config.functionConfig['filters'][action]['args'])
+        return False
+
+    def validate_flag_args(self, action):
+        if action in config.functionConfig['flags']:
+            return self.__validate(config.functionConfig['flags'][action]['args'])
+        return False
+
+    def validate_function_args(self, app, action):
+        if app in config.functionConfig['apps'] and action in config.functionConfig['apps'][app]:
+            return self.__validate(config.functionConfig['apps'][app][action]['args'])
+        return False
 
     def as_json(self):
         return {"key": str(self.key),
