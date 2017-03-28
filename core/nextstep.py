@@ -51,10 +51,10 @@ class NextStep(ExecutionElement):
 
     def __call__(self, output=None):
         if all(flag(output=output) for flag in self.flags):
-            #self.event_handler.execute_event_code(self, 'NextStepTaken')
+            self.event_handler.execute_event_code(self, 'NextStepTaken')
             return self.name
         else:
-            #self.event_handler.execute_event_code(self, 'NextStepNotTaken')
+            self.event_handler.execute_event_code(self, 'NextStepNotTaken')
             return None
 
     def __repr__(self):

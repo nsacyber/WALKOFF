@@ -16,61 +16,63 @@ from core.case import callbacks
 from core.events import EventListener
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
-from gevent import monkey
-
-import multiprocessing
-import dill
-
-monkey.patch_all(thread=False, socket=False)
+from gevent.pool import Pool
 
 NUM_PROCESSES = 2
-queue = None
-pool = None
-results = {}
+threads = []
+pool = Pool(NUM_PROCESSES)
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
-def initialize_threading():
-    global queue
-    global pool
-    global results
-
-    manager = multiprocessing.Manager()
-    queue = manager.Queue()
-
-    print("Initializing thread pool...")
-    pool = multiprocessing.Pool(processes=NUM_PROCESSES)
-    print("Initialized pool.")
-    for i in range(0, NUM_PROCESSES):
-        results[i] = pool.apply_async(executeWorkflowWorker, (queue,))
-    print("Initialized")
+# def initialize_threading():
+#     global queue
+#     global threads
+#     global pool
+#
+#     # manager = multiprocessing.Manager()
+#     # queue = manager.Queue()
+#
+#     # print("Initializing thread pool...")
+#     # pool = multiprocessing.Pool(processes=NUM_PROCESSES)
+#     # print("Initialized pool.")
+#     # for i in range(0, NUM_PROCESSES):
+#     #     results[i] = pool.apply_async(executeWorkflowWorker, (queue,))
+#     # print("Initialized")
+#
+#     # for i in range(0,NUM_PROCESSES):
+#     #     threads.append(gevent.spawn(executeWorkflowWorker))
+#
+#     pool = Pool(NUM_PROCESSES)
 
 def shutdown_pool():
     global pool
-    global results
-    global queue
 
-    # for i in range(0, NUM_PROCESSES):
-    #     while (results[i].ready() is not True):
-    #         continue
+    #gevent.joinall(threads)
+    pool.join()
 
     time.sleep(2)
 
-    pool.terminate()
-
-def executeWorkflowWorker(queue):
-
-    print("Thread " + str(os.getpid()) + " starting up...")
-
-    while (True):
-        #while (queue.empty()):
-        #    continue
-        print("Thread waiting...")
-        pickled_workflow,start,data = queue.get(block=True)
-        print("Thread popped something off")
-        workflow = dill.loads(pickled_workflow)
-        #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
-        #steps, instances = workflow.execute(start=start, data=data)
+# def executeWorkflowWorker(workflow, start, data):
+#     #global queue
+#
+#     print("Thread " + str(os.getpid()) + " starting up...")
+#
+#     #workflow = dill.loads(pickled_workflow)
+#
+#     print("Thread executing "+workflow.filename+"...")
+#
+#     workflow.execute(start=start, data=data)
+#
+#     # while (True):
+#     #     while not queue.empty():
+#     #         print("Queue not empty...trying to pop")
+#     #         pickled_workflow,start,data = queue.get()
+#     #         workflow = dill.loads(pickled_workflow)
+#     #         print("Thread popped "+workflow.filename+" off queue...")
+#         # pickled_workflow,start,data = queue.get(block=True)
+#         # workflow = dill.loads(pickled_workflow)
+#         #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
+#         #steps, instances = workflow.execute(start=start, data=data)
 
 class SchedulerStatusListener(EventListener):
     def __init__(self, shared_log=None):
@@ -140,7 +142,7 @@ class Controller(object):
         self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
-        initialize_threading()
+        #initialize_threading()
 
     def loadWorkflowsFromFile(self, path, name_override=None, playbook_override=None):
         self.tree = et.ElementTree(file=path)
@@ -243,14 +245,41 @@ class Controller(object):
     #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
     #         steps, instances = self.workflows[name].execute(start=start, data=data)
 
+    def executeWorkflowWorker(self, workflow, start, data):
+        # global queue
+
+        print("Thread " + str(os.getpid()) + " starting up...")
+
+        # workflow = dill.loads(pickled_workflow)
+
+        print("Thread executing " + workflow.filename + "...")
+
+        workflow.execute(start=start, data=data)
+
+        self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
+
+        # while (True):
+        #     while not queue.empty():
+        #         print("Queue not empty...trying to pop")
+        #         pickled_workflow,start,data = queue.get()
+        #         workflow = dill.loads(pickled_workflow)
+        #         print("Thread popped "+workflow.filename+" off queue...")
+        # pickled_workflow,start,data = queue.get(block=True)
+        # workflow = dill.loads(pickled_workflow)
+        # print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
+        # steps, instances = workflow.execute(start=start, data=data)
+
     def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
-        global queue
         print("Boss thread putting " + workflow_name + " workflow on queue...:")
         # self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
         workFl = self.workflows[_WorkflowKey(playbook_name, workflow_name)]
         # CAN'T PICKLE STEPS (conditionals, errors -- both nextStep objects (eventHandler)), OPTIONS (children (tieredWorkflow-childWorkflow))
+        #workFl.steps = None
+        #workFl.options = None
         #pickled_workflow = dill.dumps(workFl)
         #queue.put((pickled_workflow, start, data))
+        pool.apply_async(self.executeWorkflowWorker, args=(workFl, start, data))
+        print("Boss continuing...")
         #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
 
     def get_workflow(self, playbook_name, workflow_name):

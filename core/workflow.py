@@ -18,11 +18,11 @@ class Workflow(ExecutionElement):
         self.filename = filename
         self._from_xml(self.workflowXML)
         self.children = children if (children is not None) else {}
-        # super(Workflow, self)._register_event_callbacks(
-        #     {'InstanceCreated': callbacks.add_workflow_entry("New workflow instance Created"),
-        #      'StepExecutionSuccess': callbacks.add_workflow_entry('Step executed successfully'),
-        #      'NextStepFound': callbacks.add_workflow_entry('Next step found'),
-        #      'WorkflowShutdown': callbacks.add_workflow_entry("Workflow shut down")})
+        super(Workflow, self)._register_event_callbacks(
+            {'InstanceCreated': callbacks.add_workflow_entry("New workflow instance Created"),
+             'StepExecutionSuccess': callbacks.add_workflow_entry('Step executed successfully'),
+             'NextStepFound': callbacks.add_workflow_entry('Next step found'),
+             'WorkflowShutdown': callbacks.add_workflow_entry("Workflow shut down")})
 
     @staticmethod
     def get_workflow(workflow_name):
@@ -88,10 +88,10 @@ class Workflow(ExecutionElement):
         steps = self.__steps(start=start)
         for step in steps:
             if step:
-                #self.event_handler.execute_event_code(self, 'NextStepFound')
+                self.event_handler.execute_event_code(self, 'NextStepFound')
                 if step.device not in instances:
                     instances[step.device] = Instance.create(step.app, step.device)
-                    #self.event_handler.execute_event_code(self, 'InstanceCreated')
+                    self.event_handler.execute_event_code(self, 'InstanceCreated')
 
                 # for arg in step.input:
                 #     step.input[arg].template(steps=total_steps)
@@ -101,7 +101,6 @@ class Workflow(ExecutionElement):
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
                 steps.send(error_flag)
-                print("done")
         self.__shutdown(instances)
 
     def __steps(self, start="start"):
@@ -132,7 +131,7 @@ class Workflow(ExecutionElement):
         error_flag = False
         try:
             step.execute(instance=instance())
-            #self.event_handler.execute_event_code(self, 'StepExecutionSuccess')
+            self.event_handler.execute_event_code(self, 'StepExecutionSuccess')
         except Exception as e:
             error_flag = True
             step.output = str(e)
@@ -155,7 +154,7 @@ class Workflow(ExecutionElement):
             # Upon finishing shuts down instances
             for instance in instances:
                 instances[instance].shutdown()
-            #self.event_handler.execute_event_code(self, 'WorkflowShutdown')
+            self.event_handler.execute_event_code(self, 'WorkflowShutdown')
         except Exception:
             pass
 

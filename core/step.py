@@ -37,10 +37,10 @@ class Step(ExecutionElement):
         self.function_aliases = function_aliases if function_aliases is not None else load_function_aliases(self.app)
         self.output = None
         self.nextUp = None
-        # super(Step, self)._register_event_callbacks(
-        #     {'FunctionExecutionSuccess': callbacks.add_step_entry('Function executed successfully'),
-        #      'InputValidated': callbacks.add_step_entry('Input successfully validated'),
-        #      'ConditionalsExecuted': callbacks.add_step_entry('Conditionals executed')})
+        super(Step, self)._register_event_callbacks(
+            {'FunctionExecutionSuccess': callbacks.add_step_entry('Function executed successfully'),
+             'InputValidated': callbacks.add_step_entry('Input successfully validated'),
+             'ConditionalsExecuted': callbacks.add_step_entry('Conditionals executed')})
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get("id")
@@ -92,11 +92,11 @@ class Step(ExecutionElement):
     def execute(self, instance=None):
 
         if self.validateInput():
-            #self.event_handler.execute_event_code(self, 'InputValidated')
+            self.event_handler.execute_event_code(self, 'InputValidated')
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
-            #self.event_handler.execute_event_code(self,
-                                                  # 'FunctionExecutionSuccess',
-                                                  # data=json.dumps({"result": result}))
+            self.event_handler.execute_event_code(self,
+                                                    'FunctionExecutionSuccess',
+                                                    data=json.dumps({"result": result}))
             self.output = result
             return result
         raise InvalidStepArgumentsError()
@@ -108,7 +108,7 @@ class Step(ExecutionElement):
             next_step = n(output=self.output)
             if next_step:
                 self.nextUp = next_step
-                #self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
+                self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
                 return next_step
 
     def set(self, attribute=None, value=None):

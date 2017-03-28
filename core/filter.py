@@ -16,8 +16,8 @@ class Filter(ExecutionElement):
             args = args if args is not None else {}
             self.args = {arg_name: arguments.Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
                          for arg_name, arg_value in args.items()}
-        # super(Filter, self)._register_event_callbacks({'FilterSuccess': callbacks.add_filter_entry('Filter success'),
-        #                                                'FilterError': callbacks.add_filter_entry('Filter error')})
+        super(Filter, self)._register_event_callbacks({'FilterSuccess': callbacks.add_filter_entry('Filter success'),
+                                                       'FilterError': callbacks.add_filter_entry('Filter error')})
 
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')
@@ -38,7 +38,7 @@ class Filter(ExecutionElement):
         if module:
             try:
                 result = getattr(module, "main")(args=self.args, value=output)
-                #self.event_handler.execute_event_code(self, 'FilterSuccess')
+                self.event_handler.execute_event_code(self, 'FilterSuccess')
                 return result
             except:
                 self.event_handler.execute_event_code(self, 'FilterError')

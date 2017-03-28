@@ -21,7 +21,7 @@ class TestExecutionRuntime(unittest.TestCase):
         if not isdir(core_config.profileVisualizationsPath):
             mkdir(core_config.profileVisualizationsPath)
         self.start = datetime.utcnow()
-        controller.initialize_threading()
+        #controller.initialize_threading()
 
     def tearDown(self):
         case_database.case_db.tearDown()
