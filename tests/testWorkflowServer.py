@@ -25,7 +25,7 @@ class TestWorkflowServer(unittest.TestCase):
         config.workflowsPath = os.path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows")
         flask_server.running_context.controller.load_all_workflows_from_directory(path=config.workflowsPath)
         copy2(os.path.join(config.workflowsPath, 'test.workflow'),
-                  os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'))
+              os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'))
         self.empty_workflow_json = \
             {'status': 'success',
              'workflow': {'steps': [],
@@ -81,7 +81,7 @@ class TestWorkflowServer(unittest.TestCase):
                       path.join(config.workflowsPath, 'test.workflow'))
 
         os.rename(os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'),
-              os.path.join(config.workflowsPath, 'test.workflow'))
+                  os.path.join(config.workflowsPath, 'test.workflow'))
 
     def test_display_all_playbooks(self):
         response = self.app.get('/playbook', headers=self.headers)
@@ -449,7 +449,8 @@ class TestWorkflowServer(unittest.TestCase):
 
         self.assertFalse(flask_server.running_context.controller.is_playbook_registerd('test'))
 
-        playbooks = [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory(config.workflowsPath)]
+        playbooks = [os.path.splitext(playbook)[0]
+                     for playbook in helpers.locate_workflows_in_directory(config.workflowsPath)]
         self.assertEqual(len(playbooks), 0)
 
     def test_delete_playbook_no_file(self):

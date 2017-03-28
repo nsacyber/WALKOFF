@@ -34,7 +34,7 @@ class Filter(ExecutionElement):
         return elem
 
     def validate_args(self):
-        return all(arg.validate_filter_args(self.action) for arg in self.args.values())
+        return all(arg.validate_filter_args(self.action, len(list(self.args.keys()))) for arg in self.args.values())
 
     def __call__(self, output=None):
         module = import_lib('filters', self.action)

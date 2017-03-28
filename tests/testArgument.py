@@ -120,19 +120,25 @@ class TestArgument(unittest.TestCase):
         self.test_funcs = {'filters': self.test_funcs}
         config.functionConfig = self.test_funcs
         for action, args in self.test_funcs['filters'].items():
+            num_args = len(args['args'])
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
-                self.assertTrue(arg.validate_filter_args(action))
-                self.assertFalse(arg.validate_filter_args('invalidAction'))
+                self.assertTrue(arg.validate_filter_args(action, num_args))
+                self.assertFalse(arg.validate_filter_args(action, num_args+1))
+                self.assertFalse(arg.validate_filter_args('invalidAction', num_args))
+                self.assertFalse(arg.validate_filter_args('invalidAction', num_args+1))
 
         test_funcs = {'func_name2': {'args': []},
                       'func_name3': {'args': [{'name': 'junk_name1', 'type': 'junk_type1'},
                                               {'name': 'junk_name2', 'type': 'junk_type2'}]}}
         for action, args in test_funcs.items():
             for arg_pair in args['args']:
+                num_args = len(args)
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
-                self.assertFalse(arg.validate_filter_args(action))
-                self.assertFalse(arg.validate_filter_args('invalidAction'))
+                self.assertFalse(arg.validate_filter_args(action, num_args))
+                self.assertFalse(arg.validate_filter_args(action, num_args+1))
+                self.assertFalse(arg.validate_filter_args('invalidAction', num_args))
+                self.assertFalse(arg.validate_filter_args('invalidAction', num_args+1))
 
     def test_validate_flag_args(self):
         self.test_funcs = {'flags': self.test_funcs}

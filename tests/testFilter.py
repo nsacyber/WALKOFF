@@ -1,9 +1,23 @@
 import unittest
 import sys
+import copy
 from core.filter import Filter
+from core import config
 
 
 class TestFilter(unittest.TestCase):
+    def setUp(self):
+        self.original_functions = copy.deepcopy(config.functionConfig)
+        self.test_funcs = {'filters': {'func_name1': {'args': []},
+                                       'func_name2': {'args': [{'name': 'arg_name1', 'type': 'str'}]},
+                                       'func_name3': {'args': [{'name': 'arg_name1', 'type': 'str'},
+                                                               {'name': 'arg_name2', 'type': 'int'}]}}}
+        for func_name, arg_dict in self.test_funcs['filters'].items():
+            config.functionConfig['filters'][func_name] = arg_dict
+
+    def tearDown(self):
+        config.functionConfig = self.original_functions
+
     def compare_init(self, elem, action, parent_name, ancestry, args=None):
         args = args if args is not None else {}
         self.assertEqual(elem.action, action)
@@ -14,17 +28,17 @@ class TestFilter(unittest.TestCase):
         self.assertEqual(elem.event_handler.event_type, 'FilterEventHandler')
 
     def test_init(self):
-        filter = Filter()
-        self.compare_init(filter, '', '', ['', ''])
+        filter_elem = Filter()
+        self.compare_init(filter_elem, '', '', ['', ''])
 
-        filter = Filter(action='test_action')
-        self.compare_init(filter, 'test_action', '', ['', 'test_action'])
+        filter_elem = Filter(action='test_action')
+        self.compare_init(filter_elem, 'test_action', '', ['', 'test_action'])
 
-        filter = Filter(parent_name='test_parent', action='test_action')
-        self.compare_init(filter, 'test_action', 'test_parent', ['test_parent', 'test_action'])
+        filter_elem = Filter(parent_name='test_parent', action='test_action')
+        self.compare_init(filter_elem, 'test_action', 'test_parent', ['test_parent', 'test_action'])
 
-        filter = Filter(ancestry=['a', 'b'], action="test")
-        self.compare_init(filter, 'test', '', ['a', 'b', 'test'])
+        filter_elem = Filter(ancestry=['a', 'b'], action="test")
+        self.compare_init(filter_elem, 'test', '', ['a', 'b', 'test'])
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
         expected_args_json = {'arg1': {'key': 'arg1', 'value': 'a', 'format': 'str'},
@@ -35,15 +49,15 @@ class TestFilter(unittest.TestCase):
         else:
             expected_args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'str'}
 
-        filter = Filter(ancestry=['a', 'b'], action="test", args=args)
-        self.compare_init(filter, 'test', '', ['a', 'b', 'test'], args=expected_args_json)
+        filter_elem = Filter(ancestry=['a', 'b'], action="test", args=args)
+        self.compare_init(filter_elem, 'test', '', ['a', 'b', 'test'], args=expected_args_json)
 
     def test_as_json(self):
-        filter = Filter()
-        self.assertDictEqual(filter.as_json(), {'action': '', 'args': {}})
+        filter_elem = Filter()
+        self.assertDictEqual(filter_elem.as_json(), {'action': '', 'args': {}})
 
-        filter = Filter(action='test_action')
-        self.assertDictEqual(filter.as_json(), {'action': 'test_action', 'args': {}})
+        filter_elem = Filter(action='test_action')
+        self.assertDictEqual(filter_elem.as_json(), {'action': 'test_action', 'args': {}})
 
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
         expected_args_json = {'arg1': {'key': 'arg1', 'value': 'a', 'format': 'str'},
@@ -53,9 +67,9 @@ class TestFilter(unittest.TestCase):
         else:
             expected_args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'str'}
 
-        expected_filter_json = {'action':  'test', 'args': expected_args_json}
-        filter = Filter(ancestry=['a', 'b'], action="test", args=args)
-        self.assertDictEqual(filter.as_json(), expected_filter_json)
+        expected_filter_json = {'action': 'test', 'args': expected_args_json}
+        filter_elem = Filter(ancestry=['a', 'b'], action="test", args=args)
+        self.assertDictEqual(filter_elem.as_json(), expected_filter_json)
 
     def test_from_json(self):
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
@@ -80,15 +94,49 @@ class TestFilter(unittest.TestCase):
             derived_json = Filter(xml=filter_element.to_xml()).as_json()
             self.assertEqual(original_json, derived_json)
 
+    def test_validate_args(self):
+        filter_elem = Filter()
+        self.assertTrue(filter_elem.validate_args())
+
+        filter_elem = Filter(action='length')
+        self.assertTrue(filter_elem.validate_args())
+
+        filter_elem = Filter(action='junkName')
+        self.assertTrue(filter_elem.validate_args())
+
+        self.test_funcs = {'filters': {'func_name1': {'args': []},
+                                       'func_name2': {'args': [{'name': 'arg_name1', 'type': 'str'}]},
+                                       'func_name3': {'args': [{'name': 'arg_name1', 'type': 'str'},
+                                                               {'name': 'arg_name2', 'type': 'int'}]}}}
+        corresponding_args = {'func_name1': {},
+                              'func_name2': {'arg_name1': 'test_string'},
+                              'func_name3': {'arg_name1': 'test_string', 'arg_name2': 6}}
+        actions = ['func_name1', 'func_name2', 'func_name3', 'invalid_name']
+        for action in actions:
+            for arg_action, args in corresponding_args.items():
+                filter_elem = Filter(action=action, args=args)
+                if not args:
+                    self.assertTrue(filter_elem.validate_args())
+
+                elif action == 'invalid_name':
+                    self.assertFalse(filter_elem.validate_args())
+                elif action == arg_action:
+                    if len(list(args.keys())) == len(list(self.test_funcs['filters'][action]['args'])):
+                        self.assertTrue(filter_elem.validate_args())
+                    else:
+                        self.assertFalse(filter_elem.validate_args())
+                else:
+                    self.assertFalse(filter_elem.validate_args())
+
     def test_invalid_filter(self):
-        filter = Filter(action='junkAction')
-        self.assertIsNone(filter())
-        self.assertEqual(filter(output=6), 6)
+        filter_elem = Filter(action='junkAction')
+        self.assertIsNone(filter_elem())
+        self.assertEqual(filter_elem(output=6), 6)
 
     def test_length_filter(self):
-        filter = Filter(action='length')
-        self.assertIsNone(filter())
-        self.assertEqual(filter(output=6), 6)
-        self.assertEqual(filter(output=5.5), None)
-        self.assertEqual(filter(output=[3,4,5]), 3)
-        self.assertEqual(filter(output='aaab'), 4)
+        filter_elem = Filter(action='length')
+        self.assertIsNone(filter_elem())
+        self.assertEqual(filter_elem(output=6), 6)
+        self.assertEqual(filter_elem(output=5.5), None)
+        self.assertEqual(filter_elem(output=[3, 4, 5]), 3)
+        self.assertEqual(filter_elem(output='aaab'), 4)
