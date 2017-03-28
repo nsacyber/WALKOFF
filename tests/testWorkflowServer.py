@@ -10,6 +10,7 @@ from shutil import copy2
 
 from core import config
 
+
 class TestWorkflowServer(unittest.TestCase):
     def setUp(self):
         self.app = flask_server.app.test_client(self)
@@ -21,10 +22,10 @@ class TestWorkflowServer(unittest.TestCase):
         self.key = json.loads(response)["auth_token"]
         self.headers = {"Authentication-Token": self.key}
 
-        #coreWorkflows = "./tests/testWorkflows/testGeneratedWorkflows"
         config.workflowsPath = os.path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows")
         flask_server.running_context.controller.load_all_workflows_from_directory(path=config.workflowsPath)
-
+        copy2(os.path.join(config.workflowsPath, 'test.workflow'),
+                  os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'))
         self.empty_workflow_json = \
             {'status': 'success',
              'workflow': {'steps': [],
@@ -75,14 +76,12 @@ class TestWorkflowServer(unittest.TestCase):
         for workflow in matching_workflows:
             os.remove(path.join(config.workflowsPath, '{0}.workflow'.format(workflow)))
 
-
         if 'editedPlaybookName' in workflows:
             os.rename(path.join(config.workflowsPath, 'editedPlaybookName.workflow'),
                       path.join(config.workflowsPath, 'test.workflow'))
-        copy2(os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'), os.path.join(config.workflowsPath, 'test.workflow'))
 
-
-
+        os.rename(os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'),
+              os.path.join(config.workflowsPath, 'test.workflow'))
 
     def test_display_all_playbooks(self):
         response = self.app.get('/playbook', headers=self.headers)
@@ -116,7 +115,6 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_workflow(self):
         workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
-        workflow_name = helpers.construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
         workflow = flask_server.running_context.controller.get_workflow('multiactionWorkflowTest',
                                                                         'multiactionWorkflow')
@@ -138,6 +136,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_add_playbook_default(self):
         expected_playbooks = flask_server.running_context.controller.get_all_workflows()
+        original_length = len(list(expected_playbooks.keys()))
         response = self.app.post('/playbook/test_playbook/add', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
@@ -147,7 +146,7 @@ class TestWorkflowServer(unittest.TestCase):
         expected_playbooks['test_playbook'] = ['emptyWorkflow']
         self.assertDictEqual(response['playbooks'], expected_playbooks)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_playbooks)
-        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
+        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), original_length+1)
 
     def test_add_playbook_template(self):
         expected_playbooks = flask_server.running_context.controller.get_all_workflows()
@@ -423,7 +422,8 @@ class TestWorkflowServer(unittest.TestCase):
 
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.loadWorkflowsFromFile(os.path.join(config.workflowsPath, 'test.workflow'))
+        flask_server.running_context.controller.loadWorkflowsFromFile(os.path.join(config.workflowsPath,
+                                                                                   'test.workflow'))
         orderless_list_compare(self,
                                [key.workflow for key in flask_server.running_context.controller.workflows.keys()],
                                ['helloWorldWorkflow'])
@@ -449,7 +449,7 @@ class TestWorkflowServer(unittest.TestCase):
 
         self.assertFalse(flask_server.running_context.controller.is_playbook_registerd('test'))
 
-        playbooks = [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]
+        playbooks = [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory(config.workflowsPath)]
         self.assertEqual(len(playbooks), 0)
 
     def test_delete_playbook_no_file(self):

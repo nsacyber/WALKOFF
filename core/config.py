@@ -94,7 +94,6 @@ try:
     app_funcs = {}
     for app in list_apps():
         with open(join('.', 'apps', app, 'functions.json')) as function_file:
-            print('loading:' + app)
             app_funcs[app] = json.loads(function_file.read())
     functionConfig['apps'] = app_funcs
 
