@@ -4,7 +4,7 @@ import uuid
 from functools import partial
 
 import core.case.subscription as case_subscription
-from core.case.database import case_db
+from core.case.database import case_db, Event
 
 logging.basicConfig()  # needed so apscheduler can log to console when an error occurs
 
@@ -49,7 +49,6 @@ def __add_entry_to_case_db(sender, event, message_name):
                     if case_subscription.is_case_subscribed(case, sender.ancestry, message_name)]
     if cases_to_add:
         case_db.add_event(event, cases_to_add)
-
 
 def __add_entry_to_case_wrapper(sender, event_type, message_name, entry_message, data):
     __add_entry_to_case_db(sender, EventEntry(sender, event_type, entry_message, data), message_name)

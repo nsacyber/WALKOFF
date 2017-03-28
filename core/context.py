@@ -28,10 +28,6 @@ class Context(object):
     def set(self, key, value):
         setattr(self, key, value)
 
-    def init_threads(self):
-        from core.controller import initialize_threading
-        initialize_threading()
-
     def shutdown_threads(self):
         from core.controller import shutdown_pool
         shutdown_pool()

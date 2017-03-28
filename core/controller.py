@@ -12,11 +12,12 @@ from apscheduler.schedulers.gevent import GeventScheduler
 
 from core import config
 from core import workflow as wf
-from core.case import callbacks
+from core.case import callbacks, subscription
 from core.events import EventListener
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
 from gevent.pool import Pool
+from copy import deepcopy
 
 NUM_PROCESSES = 2
 threads = []
@@ -268,8 +269,11 @@ class Controller(object):
     #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
     #         steps, instances = self.workflows[name].execute(start=start, data=data)
 
-    def executeWorkflowWorker(self, workflow, start, data):
+    def executeWorkflowWorker(self, workflow, start, data, subs):
         # global queue
+
+        #print(id(subscription.subscriptions))
+        subscription.set_subscriptions(subs)
 
         print("Thread " + str(os.getpid()) + " starting up...")
 
@@ -280,6 +284,11 @@ class Controller(object):
         workflow.execute(start=start, data=data)
 
         self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
+
+        workflow.is_completed = True
+
+        # from core.case.database import case_db, Event
+        # print(case_db.session.query(Event).all())
 
         # while (True):
         #     while not queue.empty():
@@ -295,13 +304,17 @@ class Controller(object):
     def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
         print("Boss thread putting " + workflow_name + " workflow on queue...:")
         # self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
+        key = _WorkflowKey(playbook_name, workflow_name)
         workFl = self.workflows[_WorkflowKey(playbook_name, workflow_name)]
         # CAN'T PICKLE STEPS (conditionals, errors -- both nextStep objects (eventHandler)), OPTIONS (children (tieredWorkflow-childWorkflow))
         #workFl.steps = None
         #workFl.options = None
         #pickled_workflow = dill.dumps(workFl)
         #queue.put((pickled_workflow, start, data))
-        pool.apply_async(self.executeWorkflowWorker, args=(workFl, start, data))
+        from core.case.database import case_db
+        #print (id(subscription.subscriptions))
+        subs = deepcopy(subscription.subscriptions)
+        pool.apply_async(self.executeWorkflowWorker, args=(workFl, start, data, subs))
         print("Boss continuing...")
         #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
 

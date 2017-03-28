@@ -18,6 +18,7 @@ class Workflow(ExecutionElement):
         self.filename = filename
         self._from_xml(self.workflowXML)
         self.children = children if (children is not None) else {}
+        self.is_completed = False
         super(Workflow, self)._register_event_callbacks(
             {'InstanceCreated': callbacks.add_workflow_entry("New workflow instance Created"),
              'StepExecutionSuccess': callbacks.add_workflow_entry('Step executed successfully'),
