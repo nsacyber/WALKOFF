@@ -1,62 +1,51 @@
 {
-  "helloWorld":{
-    "description":"Prints a generic str for debugging purposes",
-    "type":"action",
-    "run":"HelloWorld.main.Main.helloWorld",
-    "highlight":"",
-    "highlight_reverse":"",
-    "input_type":"str",
-    "output_type":"str",
-    "args":[]
+  "flags": {
+    "regMatch": {
+      "description": "Matches a regular expression to the output",
+      "run": "flags.regMatch.main",
+      "highlight": "",
+      "highlight_reverse": "",
+      "input_type": "str",
+      "output_type": "boolean",
+      "args": [
+        {
+          "name": "regex",
+          "type": "str"
+        }
+      ]
+    },
+    "count": {
+      "description": "Compares the length of an input to a value",
+      "run": "flags.count.main",
+      "highlight": "",
+      "highlight_reverse": "",
+      "input_type": "list",
+      "output_type": "boolean",
+      "args": [
+        {
+          "name": "type",
+          "type": "str"
+        },
+        {
+          "name": "threshold",
+          "type": "int"
+        },
+        {
+          "name": "operator",
+          "type": "str"
+        }
+      ]
+    }
   },
-
-  "repeatBackToMe":{
-    "description":"Prints a generic str with the call argument appended.  For debugging purposes",
-    "type":"action",
-    "run":"HelloWorld.main.Main.repeatBackToMe",
-    "highlight":"",
-    "highlight_reverse":"",
-    "input_type":"str",
-    "output_type":"str",
-    "args":[
-      {
-        "name":"call",
-        "type":"str"
-      }
-    ]
-  },
-
-    "returnPlusOne":{
-    "description":"Increments a passed number by one.  For debugging purposes",
-    "type":"action",
-    "run":"HelloWorld.main.Main.returnPlusOne",
-    "highlight":"",
-    "highlight_reverse":"",
-    "input_type":"int",
-    "output_type":"str",
-    "args":[
-      {
-        "name":"number",
-        "type":"str"
-      }
-    ]
-  },
-
-  "regMatch":{
-    "description":"Matches a regular expression to the output",
-    "type":"flag",
-    "run":"flags.regMatch.main",
-    "highlight":"",
-    "highlight_reverse":"",
-    "input_type":"str",
-    "output_type":"boolean",
-    "args":[
-      {
-        "name":"regex",
-        "type":"str"
-      }
-    ]
+  "filters": {
+    "length": {
+      "description": "Gets the length of the input",
+      "run": "filters.length.main",
+      "highlight": "",
+      "highlight_reverse": "",
+      "input_type": "list",
+      "output_type": "int",
+      "args": []
+    }
   }
 }
-
-

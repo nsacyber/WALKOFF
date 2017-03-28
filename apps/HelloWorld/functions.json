@@ -1,0 +1,43 @@
+{
+  "helloWorld":{
+    "description":"Prints a generic str for debugging purposes",
+    "run":"HelloWorld.main.Main.helloWorld",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"str",
+    "output_type":"str",
+    "args":[]
+  },
+
+  "repeatBackToMe":{
+    "description":"Prints a generic str with the call argument appended.  For debugging purposes",
+    "run":"HelloWorld.main.Main.repeatBackToMe",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"str",
+    "output_type":"str",
+    "args":[
+      {
+        "name":"call",
+        "type":"str"
+      }
+    ]
+  },
+
+    "returnPlusOne":{
+    "description":"Increments a passed number by one.  For debugging purposes",
+    "run":"HelloWorld.main.Main.returnPlusOne",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"int",
+    "output_type":"str",
+    "args":[
+      {
+        "name":"number",
+        "type":"str"
+      }
+    ]
+  }
+}
+
+

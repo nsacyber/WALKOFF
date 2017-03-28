@@ -123,11 +123,10 @@ class JobExecutionListener(EventListener):
         return execution
 
 class Controller(object):
-
-    def __init__(self, name="defaultController"):
+    def __init__(self, name="defaultController", appPath=None):
         self.name = name
         self.workflows = {}
-        self.load_all_workflows_from_directory()
+        self.load_all_workflows_from_directory(path=appPath)
         self.instances = {}
         self.tree = None
         self.eventlog = []
@@ -144,6 +143,28 @@ class Controller(object):
 
         #initialize_threading()
 
+    def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
+        self.tree = et.ElementTree(file=path)
+        playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
+        for workflow in self.tree.iter(tag="workflow"):
+            current_workflow_name = workflow.get('name')
+            if current_workflow_name == workflow_name:
+                if name_override:
+                    workflow_name = name_override
+                name = construct_workflow_name_key(playbook_name, workflow_name)
+                key = _WorkflowKey(playbook_name, workflow_name)
+                self.workflows[key] = wf.Workflow(name=name,
+                                                  workflowConfig=workflow,
+                                                  parent_name=self.name,
+                                                  filename=playbook_name)
+                break
+        else:
+            return False
+
+        self.addChildWorkflows()
+        self.addWorkflowScheduledJobs()
+        return True
+
     def loadWorkflowsFromFile(self, path, name_override=None, playbook_override=None):
         self.tree = et.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
@@ -159,8 +180,10 @@ class Controller(object):
         self.addWorkflowScheduledJobs()
 
     def load_all_workflows_from_directory(self, path=config.workflowsPath):
+        if not path:
+            path = config.workflowsPath
         for workflow in locate_workflows_in_directory(path):
-            self.loadWorkflowsFromFile(os.path.join(config.workflowsPath, workflow))
+            self.loadWorkflowsFromFile(os.path.join(path, workflow))
 
     def addChildWorkflows(self):
         for workflow in self.workflows:

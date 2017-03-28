@@ -14,7 +14,9 @@ import core.flags
 import core.filters
 from core import helpers
 from . import forms, interface
-from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, rename_case
+
+from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
+    rename_case
 from core.options import Options
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -117,7 +119,7 @@ def display_available_playbooks():
     try:
         workflows = {os.path.splitext(workflow)[0]:
                      helpers.get_workflow_names_from_file(os.path.join(config.workflowsPath, workflow))
-                      for workflow in locate_workflows_in_directory()}
+                      for workflow in locate_workflows_in_directory(config.workflowsPath)}
         return json.dumps({"status": "success",
                            "playbooks": workflows})
     except Exception as e:
@@ -131,7 +133,8 @@ def display_playbook_workflows(name):
     try:
         workflows = {os.path.splitext(workflow)[0]:
                      helpers.get_workflow_names_from_file(os.path.join(config.workflowsPath, workflow))
-                      for workflow in locate_workflows_in_directory()}
+                      for workflow in locate_workflows_in_directory(config.workflowsPath)}
+
         if name in workflows:
             return json.dumps({"status": "success",
                                "workflows": workflows[name]})
@@ -182,6 +185,7 @@ def crud_playbook(playbook_name, action):
                     status = 'warning: template playbook not found. Using default template'
             else:
                 running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
+
             return json.dumps({"status": status,
                                "playbooks": running_context.controller.get_all_workflows()})
 
@@ -194,9 +198,8 @@ def crud_playbook(playbook_name, action):
                 new_name = form.new_name.data
                 if new_name:
                     running_context.controller.update_playbook_name(playbook_name, new_name)
-                    saved_playbooks = [os.path.splitext(playbook)[0] for playbook in locate_workflows_in_directory()]
+                    saved_playbooks = [os.path.splitext(playbook)[0] for playbook in locate_workflows_in_directory(config.workflowsPath)]
                     if playbook_name in saved_playbooks:
-
                         os.rename(os.path.join(config.workflowsPath, '{0}.workflow'.format(playbook_name)),
                                   os.path.join(config.workflowsPath, '{0}.workflow'.format(new_name)))
                     return json.dumps({"status": 'success',

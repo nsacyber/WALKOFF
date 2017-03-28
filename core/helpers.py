@@ -51,6 +51,7 @@ def load_function_aliases(app_name):
     if os.path.isfile(alias_file):
         with open(alias_file, 'r') as aliases:
             return json.loads(aliases.read())
+    return {}
 
 
 def list_class_functions(class_name):

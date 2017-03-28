@@ -1,13 +1,14 @@
 import re
 
+
 def main(args, value):
     regex = args["regex"]()
 
-    #Accounts for python wildcard bug
+    # Accounts for python wildcard bug
     if regex == "*":
         regex = "(.*)"
     pattern = re.compile(regex)
-    matchObj = pattern.search(str(value))
-    if matchObj:
+    match_obj = pattern.search(str(value))
+    if match_obj:
         return True
     return False
