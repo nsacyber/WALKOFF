@@ -88,8 +88,8 @@ class Step(ExecutionElement):
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
     def validate_input(self):
-        return (all(self.input[arg].validate(action=self.action, io='input') for arg in self.input) if self.input
-                else True)
+        return (all(self.input[arg].validate_function_args(self.app, self.action) for arg in self.input)
+                if self.input else True)
 
     def __lookup_function(self):
         aliases = load_function_aliases(self.app)

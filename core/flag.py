@@ -59,7 +59,7 @@ class Flag(ExecutionElement):
         return True
 
     def validate_args(self):
-        return all(arg.validate(action=self.action, io='input') for arg in self.args.values())
+        return all(arg.validate_flag_args(self.action) for arg in self.args.values())
 
     def __call__(self, output=None):
         data = output

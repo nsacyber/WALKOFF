@@ -5,6 +5,7 @@ from os import listdir, sep, environ, pathsep
 from os.path import isfile, join, splitext
 
 
+
 def loadConfig():
     self = sys.modules[__name__]
     with open("./data/walkoff.config") as f:
@@ -87,13 +88,22 @@ functionConfigPath = join('.', 'data', 'functions.json')
 functionConfig = None
 
 try:
+    from core.helpers import list_apps
     with open(functionConfigPath) as f:
         functionConfig = json.loads(f.read())
+    app_funcs = {}
+    for app in list_apps():
+        with open(join('.', 'apps', app, 'functions.json')) as function_file:
+            print('loading:' + app)
+            app_funcs[app] = json.loads(function_file.read())
+    functionConfig['apps'] = app_funcs
 
 except Exception as e:
+    print("caught!")
     print(e)
 
-#Function to set config value
+
+# Function to set config value
 def set(key, value):
     self = sys.modules[__name__]
     if hasattr(self, key):
