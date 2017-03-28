@@ -19,7 +19,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.app = flask_server.app.test_client(self)
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.c = controller.Controller()
+        self.c = controller.Controller(appPath=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
         self.c.loadWorkflowsFromFile(
             path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')

@@ -3,14 +3,12 @@ import json
 from os import path
 import os
 
-from tests.config import testWorkflowsPath
 from tests.util.assertwrappers import orderless_list_compare
-from core.config import workflowsPath as coreWorkflows
 from server import flaskServer as flask_server
 from core import helpers
 from shutil import copy2
-import pkgutil
 
+from core import config
 
 class TestWorkflowServer(unittest.TestCase):
     def setUp(self):
@@ -22,9 +20,10 @@ class TestWorkflowServer(unittest.TestCase):
 
         self.key = json.loads(response)["auth_token"]
         self.headers = {"Authentication-Token": self.key}
-        flask_server.running_context.controller.load_all_workflows_from_directory()
 
-        copy2(os.path.join(coreWorkflows, 'test.workflow'), os.path.join(coreWorkflows, 'test_copy.workflow_bkup'))
+        #coreWorkflows = "./tests/testWorkflows/testGeneratedWorkflows"
+        config.workflowsPath = os.path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows")
+        flask_server.running_context.controller.load_all_workflows_from_directory(path=config.workflowsPath)
 
         self.empty_workflow_json = \
             {'status': 'success',
@@ -68,20 +67,22 @@ class TestWorkflowServer(unittest.TestCase):
     def tearDown(self):
         flask_server.running_context.controller.workflows = {}
         workflows = [path.splitext(workflow)[0]
-                     for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
+                     for workflow in os.listdir(config.workflowsPath) if workflow.endswith('.workflow')]
         matching_workflows = [workflow for workflow in workflows if
                               workflow in ['test_name', 'test_name2', 'helloWorldWorkflow']]
 
         # cleanup
         for workflow in matching_workflows:
-            os.remove(path.join(coreWorkflows, '{0}.workflow'.format(workflow)))
+            os.remove(path.join(config.workflowsPath, '{0}.workflow'.format(workflow)))
+
 
         if 'editedPlaybookName' in workflows:
-            os.rename(path.join(coreWorkflows, 'editedPlaybookName.workflow'),
-                      path.join(coreWorkflows, 'test.workflow'))
+            os.rename(path.join(config.workflowsPath, 'editedPlaybookName.workflow'),
+                      path.join(config.workflowsPath, 'test.workflow'))
+        copy2(os.path.join(config.workflowsPath, 'test_copy.workflow_bkup'), os.path.join(config.workflowsPath, 'test.workflow'))
 
-        os.rename(path.join(coreWorkflows, 'test_copy.workflow_bkup'),
-                  path.join(coreWorkflows, 'test.workflow'))
+
+
 
     def test_display_all_playbooks(self):
         response = self.app.get('/playbook', headers=self.headers)
@@ -114,7 +115,7 @@ class TestWorkflowServer(unittest.TestCase):
                                                      'emptyWorkflow': ['emptyWorkflow']})
 
     def test_display_workflow(self):
-        workflow_filename = os.path.join(testWorkflowsPath, 'multiactionWorkflowTest.workflow')
+        workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
         workflow_name = helpers.construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
         workflow = flask_server.running_context.controller.get_workflow('multiactionWorkflowTest',
@@ -246,8 +247,8 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
 
-        self.assertTrue(os.path.isfile(os.path.join(coreWorkflows, 'editedPlaybookName.workflow')))
-        self.assertFalse(os.path.isfile(os.path.join(coreWorkflows, 'test.workflow')))
+        self.assertTrue(os.path.isfile(os.path.join(config.workflowsPath, 'editedPlaybookName.workflow')))
+        self.assertFalse(os.path.isfile(os.path.join(config.workflowsPath, 'test.workflow')))
 
     def test_edit_playbook_no_name(self):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
@@ -259,7 +260,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertIn('playbooks', response)
         self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
-        self.assertTrue(os.path.isfile(os.path.join(coreWorkflows, 'test.workflow')))
+        self.assertTrue(os.path.isfile(os.path.join(config.workflowsPath, 'test.workflow')))
 
     def test_edit_playbook_invalid_name(self):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
@@ -272,8 +273,8 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
 
-        self.assertFalse(os.path.isfile(os.path.join(coreWorkflows, 'junkPlaybookName.workflow')))
-        self.assertTrue(os.path.isfile(os.path.join(coreWorkflows, 'test.workflow')))
+        self.assertFalse(os.path.isfile(os.path.join(config.workflowsPath, 'junkPlaybookName.workflow')))
+        self.assertTrue(os.path.isfile(os.path.join(config.workflowsPath, 'test.workflow')))
 
     def test_edit_playbook_no_file(self):
         self.app.post('/playbook/test2/add', headers=self.headers)
@@ -290,9 +291,9 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
 
-        self.assertFalse(os.path.isfile(os.path.join(coreWorkflows, 'test2.workflow')))
-        self.assertFalse(os.path.isfile(os.path.join(coreWorkflows, 'editedPlaybookName.workflow')))
-        self.assertTrue(os.path.isfile(os.path.join(coreWorkflows, 'test.workflow')))
+        self.assertFalse(os.path.isfile(os.path.join(config.workflowsPath, 'test2.workflow')))
+        self.assertFalse(os.path.isfile(os.path.join(config.workflowsPath, 'editedPlaybookName.workflow')))
+        self.assertTrue(os.path.isfile(os.path.join(config.workflowsPath, 'test.workflow')))
 
     def test_edit_workflow_name_only(self):
         workflow_name = 'test_name'
@@ -416,13 +417,13 @@ class TestWorkflowServer(unittest.TestCase):
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]
-                     for workflow in os.listdir(coreWorkflows) if workflow.endswith('.workflow')]
+                     for workflow in os.listdir(config.workflowsPath) if workflow.endswith('.workflow')]
         matching_workflows = [workflow for workflow in workflows if workflow == 'test']
         self.assertEqual(len(matching_workflows), 1)
 
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.loadWorkflowsFromFile(os.path.join(coreWorkflows, 'test.workflow'))
+        flask_server.running_context.controller.loadWorkflowsFromFile(os.path.join(config.workflowsPath, 'test.workflow'))
         orderless_list_compare(self,
                                [key.workflow for key in flask_server.running_context.controller.workflows.keys()],
                                ['helloWorldWorkflow'])

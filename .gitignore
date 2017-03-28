@@ -15,3 +15,4 @@ build/*
 .idea/dictionaries/aheibel.xml
 .idea/inspectionProfiles/Project_Default.xml
 *.egg
+tests/testWorkflows/testGeneratedWorkflows/*

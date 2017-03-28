@@ -1,6 +1,4 @@
-from os import listdir, walk
 from core.helpers import list_apps
-from os.path import join, isfile, splitext
 
 #
 # Act as an interface for objects to access other event specific variables that might be needed
