@@ -23,4 +23,7 @@ def dashboard():
     return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}
 
 def controller():
-    return {}
+    return {
+        "currentController": str(running_context.controller.name),
+        "loadedWorkflows":running_context.controller.get_all_workflows()
+    }

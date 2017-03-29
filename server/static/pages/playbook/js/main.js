@@ -49,26 +49,7 @@ $(function(){
     }
 
 
-    function notifyMe() {
-        if (!Notification) {
-            console.log('Desktop notifications not available in your browser. Try Chromium.');
-            return;
-        }
 
-        if (Notification.permission !== "granted")
-            Notification.requestPermission();
-        else {
-            var notification = new Notification('WALKOFF event', {
-                icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
-                body: currentWorkflow + " was executed!",
-            });
-
-            notification.onclick = function () {
-                window.open("https://github.com/iadgov");
-            };
-
-        }
-    }
 
 
     console.log(workflowData);
@@ -385,7 +366,6 @@ $(function(){
             }();
         }
 
-        console.log(workflowData);
 
         // Create the Cytoscape graph
         cy = cytoscape({
@@ -598,29 +578,6 @@ $(function(){
             }
         }
     });
-
-
-    $("#executeWorkflowButton").on("click", function(e){
-        if (cy === null)
-            return;
-
-        var result = function () {
-            var tmp = null;
-            $.ajax({
-                'async': false,
-                'type': "POST",
-                'global': false,
-                'headers':{"Authentication-Token":authKey},
-                'url': "/workflow/" + currentWorkflow + "/execute",
-                'success': function (data) {
-                    tmp = data;
-                }
-            });
-            return tmp;
-        }();
-        console.log(JSON.parse(result));
-        notifyMe();
-    })
 
     //--------------------
     // Setup Workflow list

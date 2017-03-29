@@ -1,8 +1,35 @@
-<div id="executeWorkflowTest">
-    <div id="selectWorkflowWrapper">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
+<style>
+    #loadedWorkflowsDiv{
+        height:700px;
+        background-color:white;
 
-    </div>
-    <div id="outputWrapper">
-
-    </div>
+    }
+    #loadedWorkflowsTreeDiv{
+        height:400px;
+        border:solid;
+        padding:10px;
+        margin:5px;
+    }
+</style>
+<div id="header">
+    <h2> Controller Management </h2>
+    <h3>{{currentController}}</h3>
 </div>
+<div id="loadedWorkflowsDiv" class="col-xs-2">
+    <div id="loadedWorkflowsTreeDiv">
+        <h4>Loaded Workflows</h4>
+        <div id="loadedPlaybooksTree"></div>
+    </div>
+    <div id="loadWorkflowDiv">
+        <h4>Load a Workflow</h4>
+    </div>
+
+</div>
+
+<script type="application/javascript">
+    loadedWorkflows = {{loadedWorkflows | safe}};
+</script>
+
+<script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+<script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
