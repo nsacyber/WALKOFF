@@ -498,6 +498,28 @@ def systemPages(name):
     else:
         return {"status": "Could Not Log In."}
 
+# Controls execution triggers
+@app.route('/execution/scheduler/<string:action>', methods=["POST"])
+@auth_token_required
+#@roles_accepted(*userRoles["/execution/listener"])
+def schedulerActions(action):
+    if action == "start":
+        status = running_context.controller.start()
+        return json.dumps({"status": status})
+    elif action == "stop":
+        status = running_context.controller.stop()
+        return json.dumps({"status": status})
+    elif action == "pause":
+        status = running_context.controller.pause()
+        return json.dumps({"status": status})
+    return json.dumps({"status" : "invalid command"})
+
+# Controls execution triggers
+@app.route('/execution/scheduler/jobs', methods=["POST"])
+@auth_token_required
+# @roles_accepted(*userRoles["/execution/listener"])
+def scheduler():
+    return running_context.controller.getScheduledJobs()
 
 # Controls execution triggers
 @app.route('/execution/listener', methods=["POST"])

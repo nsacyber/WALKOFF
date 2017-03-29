@@ -233,18 +233,24 @@ class Controller(object):
     # Starts active execution
     def start(self):
         self.scheduler.start()
+        return self.scheduler.state
+
 
     # Stops active execution
     def stop(self, wait=True):
         self.scheduler.shutdown(wait=wait)
+        return self.scheduler.state
+
 
     # Pauses active execution
     def pause(self):
         self.scheduler.pause()
+        return self.scheduler.state
 
     # Resumes active execution
     def resume(self):
         self.scheduler.resume()
+        return self.scheduler.state
 
     # Pauses active execution of specific job
     def pauseJob(self, job_id):

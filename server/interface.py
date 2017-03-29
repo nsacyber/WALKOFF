@@ -25,5 +25,6 @@ def dashboard():
 def controller():
     return {
         "currentController": str(running_context.controller.name),
-        "loadedWorkflows":running_context.controller.get_all_workflows()
+        "loadedWorkflows":running_context.controller.get_all_workflows(),
+        "schedulerStatus":running_context.controller.scheduler.state
     }
