@@ -74,10 +74,10 @@ $(document).ready(function(){
         });
     });
 
-    $("#ss_debug").on("click", function(e){
+    $("#ss_controller").on("click", function(e){
         core.stop();
         core.start("systemPage", {
-            options: {page: "debug"}
+            options: {page: "controller"}
         });
     });
 

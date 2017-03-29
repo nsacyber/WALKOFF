@@ -22,5 +22,5 @@ def cases():
 def dashboard():
     return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}
 
-def debug():
+def controller():
     return {}
