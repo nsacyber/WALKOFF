@@ -7,30 +7,20 @@ from . import database
 
 db = database.db
 
-# class _App_Device(db):
-#     __tablename__ = 'app_device'
-#     app_id = db.Column(Integer, ForeignKey('app.id'), primary_key=True)
-#     device_id = db.Column(Integer, ForeignKey('device.id'), primary_key=True)
-
-# app_device = db.Table('_app_device',
-#                       db.Column('app_id', db.Integer, db.ForeignKey('app.id')),
-#                       db.Column('device_id', db.Integer, db.ForeignKey('device.id')))
 
 class App(database.Base, object):
-    #__metaclass__ = ABCMeta
 
     __tablename__ = 'app'
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
-    #devices = db.relationship('Device', secondary=app_device, lazy='dynamic')
+    # devices = db.relationship('Device', secondary=app_device, lazy='dynamic')
     devices = db.relationship("Device", back_populates="app")
 
     def as_json(self, with_devices=False):
-        output = {'id' : str(self.id), 'name' : self.name}
+        output = {'id': str(self.id), 'name': self.name}
         if with_devices:
             output['devices'] = [device.as_json() for device in self.devices]
         return output
-
 
     def __init__(self, app=None, devices=None):
         self.name = app
@@ -52,19 +42,19 @@ class App(database.Base, object):
     def shutdown(self):
         return
 
+
 class Device(database.Base):
     __tablename__ = 'device'
 
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
-    #apps = db.relationship('App', secondary=app_device, lazy='dynamic')
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
     ip = db.Column(db.String(15))
     port = db.Column(db.Integer())
     extra_fields = db.Column(db.String)
     app_id = db.Column(db.String, db.ForeignKey('app.name'))
-    #app = db.relationship(App, backref=db.backref('app_devs', uselist=True, cascade='delete,all'))
+    # app = db.relationship(App, backref=db.backref('app_devs', uselist=True, cascade='delete,all'))
     app = db.relationship(App, back_populates="devices")
 
     def __init__(self, name="", username="", password="", ip="0.0.0.0", port=0, extraFields="", app_id=""):
@@ -81,7 +71,8 @@ class Device(database.Base):
 
     @staticmethod
     def add_device(name, username, password, ip, port, extraFields, app_server):
-        device = Device(name=name, username=username, password=password, ip=ip, port=port, extraFields=extraFields, app_id=app_server)
+        device = Device(name=name, username=username, password=password, ip=ip, port=port, extraFields=extraFields,
+                        app_id=app_server)
         db.session.add(device)
         db.session.commit()
 
@@ -112,7 +103,8 @@ class Device(database.Base):
                 self.extra_fields = json.dumps(extra_fields)
 
     def as_json(self, with_apps=True):
-        output = {'id' : str(self.id), 'name' : self.name, 'username' : self.username, 'ip' : self.ip, 'port' : str(self.port)}
+        output = {'id': str(self.id), 'name': self.name, 'username': self.username, 'ip': self.ip,
+                  'port': str(self.port)}
         if with_apps:
             output['app'] = self.app.as_json()
         else:
@@ -126,5 +118,6 @@ class Device(database.Base):
     def __repr__(self):
         return json.dumps({"name": self.name, "username": self.username, "password": self.password,
                            "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})
+
 
 dev_class = Device()

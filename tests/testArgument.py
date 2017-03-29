@@ -2,7 +2,7 @@ import unittest
 import copy
 
 from core.arguments import Argument
-from core import config
+from core.config import config
 
 
 class TestArgument(unittest.TestCase):

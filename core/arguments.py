@@ -2,7 +2,7 @@ import xml.etree.cElementTree as et
 
 from jinja2 import Template
 
-from core import config
+from core.config import config
 
 
 class Argument(object):

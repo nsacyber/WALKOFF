@@ -1,9 +1,11 @@
-import json
 import importlib
+import json
 import sys
-from os import listdir, sep, environ, pathsep
+from os import listdir, environ, pathsep
 from os.path import isfile, join, splitext
+from core.config import paths
 
+from core.config.paths import keywords_path, graphviz_path
 
 
 def loadConfig():
@@ -35,29 +37,15 @@ loadConfig()
 notifications = "True"
 
 #Path to graphviz location
-graphVizPath = "C:/Program Files (x86)/Graphviz2.38/bin"
-environ["PATH"] += (pathsep+graphVizPath)
-
-# Folder path for new templates
-templatesPath = join('.', 'data', 'templates')
-profileVisualizationsPath = join('.', 'tests', 'profileVisualizations') + sep
-
-# Keyword folder path
-keywordsPath = join('.', 'core', 'keywords')
-
-#Workflows path
-workflowsPath = join('.', 'data', 'workflows')
+environ["PATH"] += (pathsep + graphviz_path)
 
 #Database Path
-dbPath = "data/walkoff.db"
 
-case_db_path = join('data', 'events.db')
 reinitialize_case_db_on_startup = True
 
 TLS_version = "1.2"
-certificatePath = "data/auth/shortstop.public.pem"
 https = "false"
-privateKeyPath = "data/auth/shortstop.private.pem"
+
 
 debug = "True"
 defaultServer = "True"
@@ -67,7 +55,7 @@ port = "5000"
 #Loads the keywords into the environment filter for use
 #[jinja2.filters.FILTERS.update({splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")}) for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] == "__init__"]
 JINJA_GLOBALS = {splitext(fn)[0]:getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
-                 for fn in listdir(keywordsPath) if isfile(join(keywordsPath, fn)) and not splitext(fn)[0] in ["__init__", "."]}
+                 for fn in listdir(keywords_path) if isfile(join(keywords_path, fn)) and not splitext(fn)[0] in ["__init__", "."]}
 
 # Active Execution (Workflows called from constant loop) settings.
 # secondsDelay - delay in seconds between execution loops
@@ -84,12 +72,12 @@ logSettings = {
 }
 
 # Function Dict Paths/Initialization
-functionConfigPath = join('.', 'data', 'functions.json')
+
 functionConfig = None
 
 try:
     from core.helpers import list_apps
-    with open(functionConfigPath) as f:
+    with open(paths.function_info_path) as f:
         functionConfig = json.loads(f.read())
     app_funcs = {}
     for app in list_apps():

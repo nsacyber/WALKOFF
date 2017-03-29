@@ -2,7 +2,7 @@ import unittest
 import sys
 import copy
 
-from core import config
+from core.config import config
 from core.flag import Flag
 from core.filter import Filter
 from core.arguments import Argument

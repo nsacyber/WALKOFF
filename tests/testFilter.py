@@ -2,7 +2,7 @@ import unittest
 import sys
 import copy
 from core.filter import Filter
-from core import config
+from core.config import config
 
 
 class TestFilter(unittest.TestCase):
