@@ -7,16 +7,16 @@ from core.config import config
 
 class TestFilter(unittest.TestCase):
     def setUp(self):
-        self.original_functions = copy.deepcopy(config.functionConfig)
+        self.original_functions = copy.deepcopy(config.function_info)
         self.test_funcs = {'filters': {'func_name1': {'args': []},
                                        'func_name2': {'args': [{'name': 'arg_name1', 'type': 'str'}]},
                                        'func_name3': {'args': [{'name': 'arg_name1', 'type': 'str'},
                                                                {'name': 'arg_name2', 'type': 'int'}]}}}
         for func_name, arg_dict in self.test_funcs['filters'].items():
-            config.functionConfig['filters'][func_name] = arg_dict
+            config.function_info['filters'][func_name] = arg_dict
 
     def tearDown(self):
-        config.functionConfig = self.original_functions
+        config.function_info = self.original_functions
 
     def compare_init(self, elem, action, parent_name, ancestry, args=None):
         args = args if args is not None else {}

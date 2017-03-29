@@ -12,17 +12,20 @@ def get_cytoscape_data(steps):
     for step in steps:
         node = {"group": "nodes", "data": {"id": steps[step]["name"]}}
         output.append(node)
-        for next in steps[step].conditionals:
-            edgeId = str(steps[step]["name"]) + str(next["name"])
-            if next["name"] in steps:
-                node = {"group": "edges", "data": {"id": edgeId, "source": steps[step]["name"], "target": next["name"]}}
+        for next_step in steps[step].conditionals:
+            edge_id = str(steps[step]["name"]) + str(next_step["name"])
+            if next_step["name"] in steps:
+                node = {"group": "edges", "data": {"id": edge_id,
+                                                   "source": steps[step]["name"],
+                                                   "target": next_step["name"]}}
             output.append(node)
     return output
 
-def import_lib(dir, module_name):
+
+def import_lib(directory, module_name):
     module = None
     try:
-        module = importlib.import_module('.'.join(['core', dir, module_name]))
+        module = importlib.import_module('.'.join(['core', directory, module_name]))
     except ImportError:
         pass
     finally:
@@ -89,20 +92,15 @@ def get_workflow_names_from_file(filename):
         return [workflow.get('name') for workflow in tree.iter(tag="workflow")]
 
 
-__workflow_key_seperator = '-'
+__workflow_key_separator = '-'
 
 
 def construct_workflow_name_key(playbook, workflow):
-    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_seperator), __workflow_key_seperator, workflow)
+    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_separator), __workflow_key_separator, workflow)
 
 
 def extract_workflow_name(workflow_key, playbook_name=''):
     if playbook_name and workflow_key.startswith(playbook_name):
-        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_seperator)):]
+        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_separator)):]
     else:
-        return __workflow_key_seperator.join(workflow_key.split(__workflow_key_seperator)[1:])
-
-
-
-
-
+        return __workflow_key_separator.join(workflow_key.split(__workflow_key_separator)[1:])
