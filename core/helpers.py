@@ -33,6 +33,7 @@ def import_lib(directory, module_name):
 
 
 def import_app_main(app_name):
+    module_name = ""
     module = "apps." + app_name + ".main"
     try:
         return sys.modules[module]
