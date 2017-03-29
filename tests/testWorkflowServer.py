@@ -24,8 +24,14 @@ class TestWorkflowServer(unittest.TestCase):
 
         paths.workflows_path = os.path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows")
         flask_server.running_context.controller.load_all_workflows_from_directory(path=paths.workflows_path)
-        copy2(os.path.join(paths.workflows_path, 'test.workflow'),
-              os.path.join(paths.workflows_path, 'test_copy.workflow_bkup'))
+        if ('test.workflow' in os.listdir(paths.workflows_path)
+                and 'test_copy.workflow_bkup' not in os.listdir(paths.workflows_path)):
+            copy2(os.path.join(paths.workflows_path, 'test.workflow'),
+                  os.path.join(paths.workflows_path, 'test_copy.workflow_bkup'))
+        elif 'test_copy.workflow_bkup' in os.listdir(paths.workflows_path):
+            copy2(os.path.join(paths.workflows_path, 'test_copy.workflow_bkup'),
+                  os.path.join(paths.workflows_path, 'test.workflow'))
+
         self.empty_workflow_json = \
             {'status': 'success',
              'workflow': {'steps': [],
@@ -79,7 +85,8 @@ class TestWorkflowServer(unittest.TestCase):
         if 'editedPlaybookName' in workflows:
             os.rename(path.join(paths.workflows_path, 'editedPlaybookName.workflow'),
                       path.join(paths.workflows_path, 'test.workflow'))
-
+        if 'test.workflow' in os.listdir(paths.workflows_path):
+            os.remove(os.path.join(paths.workflows_path, 'test.workflow'))
         os.rename(os.path.join(paths.workflows_path, 'test_copy.workflow_bkup'),
                   os.path.join(paths.workflows_path, 'test.workflow'))
 
