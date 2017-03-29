@@ -29,7 +29,7 @@ from server.appBlueprint import get_base_app_functions
 from xml.etree import ElementTree
 import pkgutil
 
-monkey.patch_all()
+#monkey.patch_all()
 
 user_datastore = database.user_datastore
 
