@@ -11,7 +11,7 @@ from core.controller import _WorkflowKey
 class TestLoadWorkflow(unittest.TestCase):
     def setUp(self):
         self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'basicWorkflowTest.workflow')
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'basicWorkflowTest.workflow')
         self.workflow_name = _WorkflowKey('basicWorkflowTest', 'helloWorldWorkflow')
         self.testWorkflow = self.c.workflows[self.workflow_name]
 

@@ -3,6 +3,7 @@ import os
 import argparse
 import importlib
 from core.helpers import list_apps
+from core.config.paths import apps_path
 
 
 def cmd_line():
@@ -15,7 +16,7 @@ def cmd_line():
 
 
 def get_tests(app_name):
-    tests_path = os.path.join('.', 'apps', app_name, 'test')
+    tests_path = os.path.join(apps_path, app_name, 'test')
     if os.path.isdir(tests_path):
         test_files = [os.path.splitext(f)[0]
                       for f in os.listdir(tests_path) if (os.path.isfile(os.path.join(tests_path, f))

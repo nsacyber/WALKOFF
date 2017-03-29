@@ -4,7 +4,7 @@ import json
 import os
 from xml.etree import ElementTree
 
-from core.config.paths import workflows_path
+import core.config.paths
 
 
 def get_cytoscape_data(steps):
@@ -22,6 +22,17 @@ def get_cytoscape_data(steps):
     return output
 
 
+def import_py_file(path_to_file):
+    if sys.version_info[0] == 2:
+        from imp import load_source
+        imported = load_source('module.name', os.path.abspath(path_to_file))
+    else:
+        from importlib import machinery
+        loader = machinery.SourceFileLoader('module', os.path.abspath(path_to_file))
+        imported = loader.load_module('module')
+    return imported
+
+
 def import_lib(directory, module_name):
     module = None
     try:
@@ -33,25 +44,29 @@ def import_lib(directory, module_name):
 
 
 def import_app_main(app_name):
-    module_name = ""
-    module = "apps." + app_name + ".main"
+    module_name = 'apps.{0}.main'.format(app_name)
+
     try:
-        return sys.modules[module]
+        return sys.modules[module_name]
     except KeyError:
         pass
     try:
-        return importlib.import_module(module, 'Main')
-    except ImportError:
+        module = import_py_file(os.path.join(core.config.paths.apps_path, app_name, 'main.py'))
+        sys.modules[module_name] = module
+        return module
+    except (ImportError, OSError):
         pass
 
 
-def list_apps(path=os.path.join('.', 'apps')):
-    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join('.', 'apps', f))
+def list_apps(path=None):
+    if path is None:
+        path = core.config.paths.apps_path
+    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join(core.config.paths.apps_path, f))
                                             and not f.startswith('__'))]
 
 
 def load_function_aliases(app_name):
-    alias_file = os.path.join('.', 'apps', app_name, 'functionAliases.json')
+    alias_file = os.path.join(core.config.paths.apps_path, app_name, 'functionAliases.json')
     if os.path.isfile(alias_file):
         with open(alias_file, 'r') as aliases:
             return json.loads(aliases.read())
@@ -82,7 +97,7 @@ def load_app_function(app_instance, function_name):
         return None
 
 
-def locate_workflows_in_directory(path=workflows_path):
+def locate_workflows_in_directory(path=core.config.paths.workflows_path):
     return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                           and workflow.endswith('.workflow'))]
 

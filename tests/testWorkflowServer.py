@@ -4,6 +4,7 @@ from os import path
 import os
 
 from tests.util.assertwrappers import orderless_list_compare
+from tests.config import test_apps_path
 from server import flaskServer as flask_server
 from core import helpers
 from shutil import copy2
@@ -23,6 +24,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.headers = {"Authentication-Token": self.key}
 
         paths.workflows_path = os.path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows")
+        paths.apps_path = test_apps_path
         flask_server.running_context.controller.load_all_workflows_from_directory(path=paths.workflows_path)
         if ('test.workflow' in os.listdir(paths.workflows_path)
                 and 'test_copy.workflow_bkup' not in os.listdir(paths.workflows_path)):

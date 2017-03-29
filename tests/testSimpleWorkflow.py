@@ -15,9 +15,9 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = controller.Controller()
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multistepError.workflow")
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "multistepError.workflow")
         self.start = datetime.utcnow()
 
     def tearDown(self):
