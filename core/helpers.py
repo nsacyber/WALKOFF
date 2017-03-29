@@ -61,7 +61,7 @@ def import_app_main(app_name):
 def list_apps(path=None):
     if path is None:
         path = core.config.paths.apps_path
-    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join(core.config.paths.apps_path, f))
+    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join(path, f))
                                             and not f.startswith('__'))]
 
 

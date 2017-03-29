@@ -535,11 +535,13 @@ class TestWorkflowServer(unittest.TestCase):
         response = self.app.get('/flags', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {"status": 'success', "flags": expected_flags})
+        self.assertEqual(response['status'], 'success')
+        orderless_list_compare(self, list(response['flags'].keys()), expected_flags)
 
     def test_display_filters(self):
         expected_flags = ['length']
         response = self.app.get('/filters', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {"status": 'success', "filters": expected_flags})
+        self.assertEqual(response['status'], 'success')
+        orderless_list_compare(self, list(response['filters'].keys()), expected_flags)
