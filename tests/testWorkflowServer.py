@@ -4,6 +4,7 @@ from os import path
 import os
 
 from tests.util.assertwrappers import orderless_list_compare
+from tests.config import test_apps_path
 from server import flaskServer as flask_server
 from core import helpers
 from shutil import copy2
@@ -23,6 +24,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.headers = {"Authentication-Token": self.key}
 
         paths.workflows_path = os.path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows")
+        paths.apps_path = test_apps_path
         flask_server.running_context.controller.load_all_workflows_from_directory(path=paths.workflows_path)
         if ('test.workflow' in os.listdir(paths.workflows_path)
                 and 'test_copy.workflow_bkup' not in os.listdir(paths.workflows_path)):
@@ -533,11 +535,13 @@ class TestWorkflowServer(unittest.TestCase):
         response = self.app.get('/flags', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {"status": 'success', "flags": expected_flags})
+        self.assertEqual(response['status'], 'success')
+        orderless_list_compare(self, list(response['flags'].keys()), expected_flags)
 
     def test_display_filters(self):
         expected_flags = ['length']
         response = self.app.get('/filters', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, {"status": 'success', "filters": expected_flags})
+        self.assertEqual(response['status'], 'success')
+        orderless_list_compare(self, list(response['filters'].keys()), expected_flags)

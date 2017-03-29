@@ -21,7 +21,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = controller.Controller(appPath=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
         self.c.loadWorkflowsFromFile(
-            path=path.join(config.testWorkflowsPath, 'simpleDataManipulationWorkflow.workflow'))
+            path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.workflow'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.workflow_name = construct_workflow_name_key(*self.id_tuple)
         self.testWorkflow = self.c.get_workflow(*self.id_tuple)
@@ -342,7 +342,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(conditional[0]["action"], "length")
 
     def test_to_from_cytoscape_data(self):
-        self.c.loadWorkflowsFromFile(path=path.join(config.testWorkflowsPath, 'multiactionWorkflowTest.workflow'))
+        self.c.loadWorkflowsFromFile(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))
         workflow = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         original_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
         cytoscape_data = workflow.get_cytoscape_data()

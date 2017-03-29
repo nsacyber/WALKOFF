@@ -6,8 +6,8 @@ import sys
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
-
-from core.config import paths, config
+import core.config.paths
+import core.config.config
 from core.context import running_context
 from core.helpers import locate_workflows_in_directory
 import core.flags
@@ -106,8 +106,8 @@ def list_all_apps():
 @auth_token_required
 @roles_accepted(*userRoles["/apps"])
 def list_all_apps_and_actions():
-    apps = helpers.list_apps()
-    return json.dumps({app: list((set(helpers.list_app_functions(app)) - get_base_app_functions())) for app in apps})
+    core.config.config.load_function_info()
+    return json.dumps(core.config.config.function_info['apps'])
 
 
 @app.route("/playbook", methods=['GET'])
@@ -116,8 +116,8 @@ def list_all_apps_and_actions():
 def display_available_playbooks():
     try:
         workflows = {os.path.splitext(workflow)[0]:
-                     helpers.get_workflow_names_from_file(os.path.join(paths.workflows_path, workflow))
-                      for workflow in locate_workflows_in_directory(paths.workflows_path)}
+                     helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
+                      for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
         return json.dumps({"status": "success",
                            "playbooks": workflows})
     except Exception as e:
@@ -130,8 +130,8 @@ def display_available_playbooks():
 def display_playbook_workflows(name):
     try:
         workflows = {os.path.splitext(workflow)[0]:
-                     helpers.get_workflow_names_from_file(os.path.join(paths.workflows_path, workflow))
-                      for workflow in locate_workflows_in_directory(paths.workflows_path)}
+                     helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
+                      for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
 
         if name in workflows:
             return json.dumps({"status": "success",
@@ -147,8 +147,8 @@ def display_playbook_workflows(name):
 @roles_accepted(*userRoles["/workflow"])
 def display_available_workflow_templates():
     templates = {os.path.splitext(workflow)[0]:
-                     helpers.get_workflow_names_from_file(os.path.join(paths.templates_path, workflow))
-                 for workflow in locate_workflows_in_directory(paths.templates_path)}
+                     helpers.get_workflow_names_from_file(os.path.join(core.config.paths.templates_path, workflow))
+                 for workflow in locate_workflows_in_directory(core.config.paths.templates_path)}
     return json.dumps({"templates": templates})
 
 
@@ -175,7 +175,7 @@ def crud_playbook(playbook_name, action):
             template_playbook = form.playbook_template.data
             if template_playbook:
                 if template_playbook in [os.path.splitext(workflow)[0]
-                                         for workflow in locate_workflows_in_directory(paths.templates_path)]:
+                                         for workflow in locate_workflows_in_directory(core.config.paths.templates_path)]:
                     running_context.controller.create_playbook_from_template(playbook_name=playbook_name,
                                                                              template_playbook=template_playbook)
                 else:
@@ -197,10 +197,10 @@ def crud_playbook(playbook_name, action):
                 if new_name:
                     running_context.controller.update_playbook_name(playbook_name, new_name)
                     saved_playbooks = [os.path.splitext(playbook)[0]
-                                       for playbook in locate_workflows_in_directory(paths.workflows_path)]
+                                       for playbook in locate_workflows_in_directory(core.config.paths.workflows_path)]
                     if playbook_name in saved_playbooks:
-                        os.rename(os.path.join(paths.workflows_path, '{0}.workflow'.format(playbook_name)),
-                                  os.path.join(paths.workflows_path, '{0}.workflow'.format(new_name)))
+                        os.rename(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)),
+                                  os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(new_name)))
                     return json.dumps({"status": 'success',
                                        "playbooks": running_context.controller.get_all_workflows()})
                 else:
@@ -218,14 +218,13 @@ def crud_playbook(playbook_name, action):
             running_context.controller.remove_playbook(playbook_name)
         if playbook_name in [os.path.splitext(playbook)[0] for playbook in locate_workflows_in_directory()]:
             try:
-                os.remove(os.path.join(paths.workflows_path, '{0}.workflow'.format(playbook_name)))
+                os.remove(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)))
             except OSError as e:
                 status = 'error: error occurred while remove playbook file: {0}'.format(e)
 
         return json.dumps({'status': status, 'playbooks': running_context.controller.get_all_workflows()})
     else:
         return json.dumps({"status": 'error: invalid operation'})
-
 
 
 def add_default_template(playbook_name, workflow_name):
@@ -245,7 +244,8 @@ def workflow(playbook_name, workflow_name, action):
             template = form.template.data
             if template and template_playbook:
                 if template_playbook in [os.path.splitext(workflow)[0]
-                                         for workflow in locate_workflows_in_directory(paths.templates_path)]:
+                                         for workflow in
+                                         locate_workflows_in_directory(core.config.paths.templates_path)]:
                     res = running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
                                                                                    workflow_name=workflow_name,
                                                                                    template_playbook=template_playbook,
@@ -304,7 +304,8 @@ def workflow(playbook_name, workflow_name, action):
                     workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
                     try:
                         write_format = 'w' if sys.version_info[0] == 2 else 'wb'
-                        workflow_filename = os.path.join(paths.workflows_path, '{0}.workflow'.format(playbook_name))
+                        workflow_filename = os.path.join(core.config.paths.workflows_path,
+                                                         '{0}.workflow'.format(playbook_name))
                         with open(workflow_filename, write_format) as workflow_out:
                             xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
                             workflow_out.write(xml)
@@ -344,16 +345,16 @@ def workflow(playbook_name, workflow_name, action):
 @auth_token_required
 @roles_accepted(*userRoles['/workflow'])
 def display_flags():
+    core.config.config.load_function_info()
     return json.dumps({"status": "success",
-                       "flags": [name for _, name, _ in pkgutil.iter_modules([os.path.dirname(core.flags.__file__)])]})
+                       "flags": core.config.config.function_info['flags']})
 
 @app.route('/filters', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/workflow'])
 def display_filters():
     return json.dumps({"status": "success",
-                       "filters": [name
-                                   for _, name, _ in pkgutil.iter_modules([os.path.dirname(core.filters.__file__)])]})
+                       "filters": core.config.config.function_info['filters']})
 
 @app.route('/cases', methods=['GET'])
 @auth_token_required
@@ -484,8 +485,8 @@ def display_subscriptions():
 @roles_accepted(*userRoles["/configuration"])
 def configValues(key):
     if current_user.is_authenticated and key:
-        if hasattr(config, key):
-            return json.dumps({str(key): str(getattr(config, key))})
+        if hasattr(core.config.config, key):
+            return json.dumps({str(key): str(getattr(core.config.config, key))})
 
 
 # Returns System-Level Interface Pages
@@ -813,23 +814,25 @@ def configDevicesConfigId(app, device, action):
 def start(config_type=None):
     global db, env
 
-    if config.https.lower() == "true":
+    if core.config.config.https.lower() == "true":
         # Sets up HTTPS
-        if config.TLS_version == "1.2":
+        if core.config.config.TLS_version == "1.2":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        elif config.TLS_version == "1.1":
+        elif core.config.config.TLS_version == "1.1":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
         else:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
         # Provide user with informative error message
-        displayIfFileNotFound(paths.certificate_path)
-        displayIfFileNotFound(paths.private_key_path)
+        displayIfFileNotFound(core.config.paths.certificate_path)
+        displayIfFileNotFound(core.config.paths.private_key_path)
 
-        context.load_cert_chain(paths.certificate_path, paths.private_key_path)
-        app.run(debug=config.debug, ssl_context=context, host=config.host, port=int(config.port), threaded=True)
+        context.load_cert_chain(core.config.paths.certificate_path, core.config.paths.private_key_path)
+        app.run(debug=core.config.config.debug, ssl_context=context,
+                host=core.config.config.host, port=int(core.config.config.port), threaded=True)
     else:
-        app.run(debug=config.debug, host=config.host, port=int(config.port), threaded=True)
+        app.run(debug=core.config.config.debug, host=core.config.config.host,
+                port=int(core.config.config.port), threaded=True)
 
 
 def displayIfFileNotFound(filepath):

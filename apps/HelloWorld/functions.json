@@ -24,7 +24,7 @@
     ]
   },
 
-    "returnPlusOne":{
+  "returnPlusOne":{
     "description":"Increments a passed number by one.  For debugging purposes",
     "run":"HelloWorld.main.Main.returnPlusOne",
     "highlight":"",
@@ -35,6 +35,21 @@
       {
         "name":"number",
         "type":"str"
+      }
+    ]
+  },
+
+    "pause":{
+    "description":"Pauses workflow execution for a given number of seconds",
+    "run":"HelloWorld.main.Main.pause",
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"int",
+    "output_type":"None",
+    "args":[
+      {
+        "name":"seconds",
+        "type":"int"
       }
     ]
   }

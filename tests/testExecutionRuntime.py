@@ -34,7 +34,7 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'templatedWorkflowTest.workflow')
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'templatedWorkflowTest.workflow')
         workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
@@ -78,7 +78,7 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + 'tieredWorkflow.workflow')
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'tieredWorkflow.workflow')
         workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
         workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
@@ -110,7 +110,7 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath +'loopWorkflow.workflow')
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'loopWorkflow.workflow')
         workflow_name = construct_workflow_name_key('loopWorkflow', 'loopWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
