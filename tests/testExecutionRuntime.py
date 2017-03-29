@@ -21,7 +21,7 @@ class TestExecutionRuntime(unittest.TestCase):
         if not isdir(profile_visualizations_path):
             mkdir(profile_visualizations_path)
         self.start = datetime.utcnow()
-        #controller.initialize_threading()
+        controller.initialize_threading()
 
     def tearDown(self):
         case_database.case_db.tearDown()
@@ -42,15 +42,15 @@ class TestExecutionRuntime(unittest.TestCase):
 
         workflow = self.c.get_workflow('templatedWorkflowTest', 'templatedWorkflow')
 
-        print("about to spin")
-        while (workflow.is_completed == False):
-            continue
-
-        print("Workflow should be completed!")
+        # print("about to spin")
+        # while (workflow.is_completed == False):
+        #     continue
+        #
+        # print("Workflow should be completed!")
 
         # import time
         # print("sleeping")
-        # time.sleep(30)
+        # time.sleep(3)
         # print("awake")
 
         from core.case.database import case_db, Event

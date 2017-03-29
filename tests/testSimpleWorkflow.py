@@ -18,7 +18,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
         self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multistepError.workflow")
         self.start = datetime.utcnow()
-        #flaskServer.running_context.init_threads()
+        running_context.init_threads()
 
     def tearDown(self):
         case_database.case_db.tearDown()
@@ -35,6 +35,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_step(workflow_name, ['start'])
         self.c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+
         self.assertEqual(len(steps), 1)
         step = steps[0]
         ancestry = step['ancestry'].split(',')
