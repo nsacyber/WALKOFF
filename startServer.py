@@ -2,7 +2,7 @@ import ssl
 from os.path import isfile
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
-from core import config
+from core.config import config
 from server import flaskServer
 
 from tornado.wsgi import WSGIContainer

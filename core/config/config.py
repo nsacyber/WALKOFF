@@ -1,0 +1,99 @@
+import importlib
+import json
+import sys
+from os import listdir, environ, pathsep
+from os.path import isfile, join, splitext
+from core.config import paths
+from core.helpers import list_apps
+from core.config.paths import keywords_path, graphviz_path
+
+
+def load_config():
+    self = sys.modules[__name__]
+    with open(paths.config_path) as f:
+        config = json.loads(f.read())
+        for key in list(config.keys()):
+            if hasattr(self, key):
+                setattr(self, key, config[key])
+
+
+def write_values_to_file(values=None):
+    if values is None:
+        values = ["graphviz_path", "templates_path", "profile_visualizations_path", "keywords_path", "db_path",
+                  "TLS_version",
+                  "certificate_path", "https", "privateKey_path", "debug", "default_server", "host", "port"]
+    self = sys.modules[__name__]
+    f = open(paths.config_path, "r")
+    parsed = json.loads(f.read())
+    f.close()
+    for key in values:
+        parsed[key] = getattr(self, key)
+
+    with open(paths.config_path, "w") as f:
+        json.dump(parsed, f)
+
+
+load_config()
+
+# Enables/Disables Browser Notifications
+notifications = "True"
+
+# Path to graphviz location
+environ["PATH"] += (pathsep + graphviz_path)
+
+# Database Path
+
+reinitialize_case_db_on_startup = True
+
+TLS_version = "1.2"
+https = "false"
+
+debug = "True"
+default_server = "True"
+host = "127.0.0.1"
+port = "5000"
+
+# Loads the keywords into the environment filter for use
+JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
+                 for fn in listdir(keywords_path) if
+                 isfile(join(keywords_path, fn)) and not splitext(fn)[0] in ["__init__", "."]}
+
+# Active Execution (Workflows called from constant loop) settings.
+# secondsDelay - delay in seconds between execution loops
+# maxJobs - maximum number of jobs to be run at once
+execution_settings = {
+    "secondsDelay": 0.1,
+    "maxJobs": 2
+}
+
+# Function Dict Paths/Initialization
+
+function_info = None
+
+
+def load_function_info():
+    global function_info
+    try:
+        with open(paths.function_info_path) as f:
+            function_info = json.loads(f.read())
+        app_funcs = {}
+        for app in list_apps():
+            with open(join(paths.apps_path, app, 'functions.json')) as function_file:
+                app_funcs[app] = json.loads(function_file.read())
+        function_info['apps'] = app_funcs
+
+    except Exception as e:
+        print("caught!")
+        print(e)
+
+
+load_function_info()
+
+
+# Function to set config value
+def set(key, value):
+    self = sys.modules[__name__]
+    if hasattr(self, key):
+        setattr(self, key, value)
+        return True
+    return False

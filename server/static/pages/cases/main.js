@@ -2,7 +2,7 @@ var cases = function () {
     var tmp = null;
     $.ajax({
         'async': false,
-        'type': "POST",
+        'type': "GET",
         'global': false,
         'data':{"format":"cytoscape"},
         'headers':{"Authentication-Token":authKey},
@@ -45,57 +45,12 @@ $("#executeWorkflowButton").on("click", function(e){
     notifyMe();
 })
 
-var cy = cytoscape({
-  container: document.getElementById('cy'),
-
-  boxSelectionEnabled: false,
-  autounselectify: true,
-  zoomingEnabled:false,
-  style: [
-    {
-      selector: 'node',
-      css: {
-        'content': 'data(id)',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'width':'50',
-        'height':'50'
-      }
-    },
-    {
-      selector: '$node > node',
-      css: {
-        'padding-top': '10px',
-        'padding-left': '10px',
-        'padding-bottom': '10px',
-        'padding-right': '10px',
-        'text-valign': 'top',
-        'text-halign': 'center',
-        'background-color': '#bbb'
-      }
-    },
-    {
-      selector: 'edge',
-      css: {
-        'target-arrow-shape': 'triangle',
-        'curve-style': 'bezier',
-      }
-    },
-    {
-      selector: ':selected',
-      css: {
-        'background-color': 'black',
-        'line-color': 'black',
-        'target-arrow-color': 'black',
-        'source-arrow-color': 'black'
-      }
+$("#innerSidebar").accordion({
+        collapsible: true,
+        active: 'none',
+        heightStyle: 'fill'
     }
-  ],
-
-
-});
-
-
+);
 
 function notifyMe() {
   if (!Notification) {

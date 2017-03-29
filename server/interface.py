@@ -22,5 +22,9 @@ def cases():
 def dashboard():
     return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}
 
-def debug():
-    return {}
+def controller():
+    return {
+        "currentController": str(running_context.controller.name),
+        "loadedWorkflows":running_context.controller.get_all_workflows(),
+        "schedulerStatus":running_context.controller.scheduler.state
+    }

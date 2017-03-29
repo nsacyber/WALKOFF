@@ -2,7 +2,7 @@ import xml.etree.cElementTree as et
 
 from jinja2 import Template
 
-from core import config
+from core.config import config
 
 
 class Argument(object):
@@ -66,19 +66,19 @@ class Argument(object):
         return any(self.__test_validation_match(arg) for arg in possible_args)
 
     def validate_filter_args(self, action, num_args):
-        if action in config.functionConfig['filters']:
-            possible_args = config.functionConfig['filters'][action]['args']
+        if action in config.function_info['filters']:
+            possible_args = config.function_info['filters'][action]['args']
             return len(list(possible_args)) == num_args and self.__validate(possible_args)
         return False
 
     def validate_flag_args(self, action):
-        if action in config.functionConfig['flags']:
-            return self.__validate(config.functionConfig['flags'][action]['args'])
+        if action in config.function_info['flags']:
+            return self.__validate(config.function_info['flags'][action]['args'])
         return False
 
     def validate_function_args(self, app, action):
-        if app in config.functionConfig['apps'] and action in config.functionConfig['apps'][app]:
-            return self.__validate(config.functionConfig['apps'][app][action]['args'])
+        if app in config.function_info['apps'] and action in config.function_info['apps'][app]:
+            return self.__validate(config.function_info['apps'][app][action]['args'])
         return False
 
     def as_json(self):

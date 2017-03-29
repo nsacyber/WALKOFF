@@ -35,7 +35,7 @@ class TestUsersAndRoles(unittest.TestCase):
         response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["status"], "role exists")
 
-    def testEditRoleDescr(self):
+    def testEditRoleDescription(self):
         data = {"name": self.name}
         json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
 

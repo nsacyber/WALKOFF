@@ -2,11 +2,11 @@ from os import remove
 import json
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, func, create_engine
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
-from core import config
+from core.config.paths import case_db_path
 
 _Base = declarative_base()
 
@@ -65,7 +65,11 @@ class Event(_Base):
 
     @staticmethod
     def create(sender, timestamp, entry_message, entry_type, data=''):
-        return Event(type=entry_type, timestamp=timestamp, ancestry=','.join(map(str, sender.ancestry)), message=entry_message, data=data)
+        return Event(type=entry_type,
+                     timestamp=timestamp,
+                     ancestry=','.join(map(str, sender.ancestry)),
+                     message=entry_message,
+                     data=data)
 
 
 class CaseDatabase(object):
@@ -73,7 +77,7 @@ class CaseDatabase(object):
         self.create()
 
     def create(self):
-        self.engine = create_engine('sqlite:///' + config.case_db_path)
+        self.engine = create_engine('sqlite:///' + case_db_path)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -150,11 +154,10 @@ class CaseDatabase(object):
 case_db = CaseDatabase()
 
 
-
 # Initialize Module
 def initialize():
     case_db.tearDown()
-    remove(config.case_db_path)
+    remove(case_db_path)
     case_db.create()
 
 

@@ -5,7 +5,7 @@ import json
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
 from . import forms
-from core.helpers import list_app_functions, list_class_functions, load_function_aliases, list_apps
+from core.helpers import list_app_functions, list_class_functions, load_function_aliases
 
 appPage = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 

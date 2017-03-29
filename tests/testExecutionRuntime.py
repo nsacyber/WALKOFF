@@ -3,7 +3,7 @@ import unittest
 from os import mkdir
 from os.path import isdir
 
-from core import config as core_config
+from core.config.paths import profile_visualizations_path
 from core import controller
 from core import graphDecorator
 from core.helpers import construct_workflow_name_key
@@ -18,8 +18,8 @@ class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
         self.c = controller.Controller()
-        if not isdir(core_config.profileVisualizationsPath):
-            mkdir(core_config.profileVisualizationsPath)
+        if not isdir(profile_visualizations_path):
+            mkdir(profile_visualizations_path)
         self.start = datetime.utcnow()
         #controller.initialize_threading()
 

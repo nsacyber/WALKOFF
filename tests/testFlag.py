@@ -2,7 +2,7 @@ import unittest
 import sys
 import copy
 
-from core import config
+from core.config import config
 from core.flag import Flag
 from core.filter import Filter
 from core.arguments import Argument
@@ -10,16 +10,16 @@ from core.arguments import Argument
 
 class TestFlag(unittest.TestCase):
     def setUp(self):
-        self.original_functions = copy.deepcopy(config.functionConfig)
+        self.original_functions = copy.deepcopy(config.function_info)
         self.test_funcs = {'flags': {'func_name1': {'args': []},
                                      'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
                                      'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
                                                              {'name': 'arg_name2', 'type': 'arg_type2'}]}}}
         for func_name, arg_dict in self.test_funcs['flags'].items():
-            config.functionConfig['flags'][func_name] = arg_dict
+            config.function_info['flags'][func_name] = arg_dict
 
     def tearDown(self):
-        config.functionConfig = self.original_functions
+        config.function_info = self.original_functions
 
     def __compare_init(self, flag, action, parent_name, ancestry, filters, args):
         self.assertEqual(flag.action, action)
