@@ -16,8 +16,6 @@ class Flag(ExecutionElement):
             self.action = action
             self.args = args if args is not None else {}
             self.filters = filters if filters is not None else []
-        super(Flag, self)._register_event_callbacks({'FlagArgsValid': callbacks.add_flag_entry('Flag args valid'),
-                                                     'FlagArgsInvalid': callbacks.add_flag_entry('Flag args invalid')})
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get('action')
@@ -71,10 +69,10 @@ class Flag(ExecutionElement):
             result = None
             if self.validate_args():
                 result = getattr(module, 'main')(args=self.args, value=data)
-                self.event_handler.execute_event_code(self, 'FlagArgsValid')
+                callbacks.FlagArgsValid.send(self)
             else:
                 print("ARGS INVALID")
-                self.event_handler.execute_event_code(self, 'FlagArgsInvalid')
+                callbacks.FlagArgsInvalid.send(self)
             return result
 
     def __repr__(self):

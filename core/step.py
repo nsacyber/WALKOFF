@@ -52,10 +52,6 @@ class Step(ExecutionElement):
             self.raw_xml = self.to_xml()
         self.output = None
         self.next_up = None
-        super(Step, self)._register_event_callbacks(
-            {'FunctionExecutionSuccess': callbacks.add_step_entry('Function executed successfully'),
-             'InputValidated': callbacks.add_step_entry('Input successfully validated'),
-             'ConditionalsExecuted': callbacks.add_step_entry('Conditionals executed')})
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get('id')
@@ -108,11 +104,9 @@ class Step(ExecutionElement):
 
     def execute(self, instance=None):
         if self.validate_input():
-            self.event_handler.execute_event_code(self, 'InputValidated')
+            callbacks.StepInputValidated.send(self)
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
-            self.event_handler.execute_event_code(self,
-                                                  'FunctionExecutionSuccess',
-                                                  data=json.dumps({"result": result}))
+            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
             self.output = result
             return result
         raise InvalidStepArgumentsError()
@@ -124,7 +118,7 @@ class Step(ExecutionElement):
             next_step = n(output=self.output)
             if next_step:
                 self.next_up = next_step
-                self.event_handler.execute_event_code(self, 'ConditionalsExecuted')
+                callbacks.ConditionalsExecuted.send(self)
                 return next_step
 
     def set(self, attribute=None, value=None):

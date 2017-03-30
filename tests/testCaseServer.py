@@ -5,7 +5,7 @@ import core.case.database as case_database
 from core.case.subscription import set_subscriptions, clear_subscriptions, CaseSubscriptions, \
     GlobalSubscriptions, subscriptions_as_json, Subscription
 from core.executionelement import ExecutionElement
-from core.case.callbacks import EventEntry
+from core.case.callbacks import _EventEntry
 from server import flaskServer as flask_server
 from os.path import join
 
@@ -72,10 +72,10 @@ class TestCaseServer(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
-        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
-        event3 = EventEntry(elem3, 'message3', 'STEP')
-        event4 = EventEntry(elem4, 'message4', 'NEXT')
+        event1 = _EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = _EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = _EventEntry(elem3, 'message3', 'STEP')
+        event4 = _EventEntry(elem4, 'message4', 'NEXT')
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
@@ -700,10 +700,10 @@ class TestCaseServer(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
-        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
-        event3 = EventEntry(elem3, 'message3', 'STEP')
-        event4 = EventEntry(elem4, 'message4', 'NEXT')
+        event1 = _EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = _EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = _EventEntry(elem3, 'message3', 'STEP')
+        event4 = _EventEntry(elem4, 'message4', 'NEXT')
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
@@ -743,10 +743,10 @@ class TestCaseServer(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event1 = EventEntry(elem1, 'message1', 'SYSTEM')
-        event2 = EventEntry(elem2, 'message2', 'WORKFLOW')
-        event3 = EventEntry(elem3, 'message3', 'STEP')
-        event4 = EventEntry(elem4, 'message4', 'NEXT')
+        event1 = _EventEntry(elem1, 'message1', 'SYSTEM')
+        event2 = _EventEntry(elem2, 'message2', 'WORKFLOW')
+        event3 = _EventEntry(elem3, 'message3', 'STEP')
+        event4 = _EventEntry(elem4, 'message4', 'NEXT')
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])

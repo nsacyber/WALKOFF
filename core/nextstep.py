@@ -12,9 +12,6 @@ class NextStep(ExecutionElement):
         else:
             ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
             self.flags = flags if flags is not None else []
-        super(NextStep, self)._register_event_callbacks(
-            {'NextStepTaken': callbacks.add_next_step_entry('Step taken'),
-             'NextStepNotTaken': callbacks.add_next_step_entry('Step not taken')})
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         name = xml_element.get('step')
@@ -51,10 +48,10 @@ class NextStep(ExecutionElement):
 
     def __call__(self, output=None):
         if all(flag(output=output) for flag in self.flags):
-            self.event_handler.execute_event_code(self, 'NextStepTaken')
+            callbacks.NextStepTaken.send(self)
             return self.name
         else:
-            self.event_handler.execute_event_code(self, 'NextStepNotTaken')
+            callbacks.NextStepNotTaken.send(self)
             return None
 
     def __repr__(self):
