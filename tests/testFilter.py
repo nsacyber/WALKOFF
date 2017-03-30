@@ -25,7 +25,6 @@ class TestFilter(unittest.TestCase):
         self.assertEqual(elem.name, elem.action)
         self.assertEqual(elem.parent_name, parent_name)
         self.assertListEqual(elem.ancestry, ancestry)
-        self.assertEqual(elem.event_handler.event_type, 'FilterEventHandler')
 
     def test_init(self):
         filter_elem = Filter()

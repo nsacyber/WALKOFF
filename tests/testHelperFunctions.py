@@ -14,18 +14,6 @@ class TestHelperFunctions(unittest.TestCase):
     def tearDown(self):
         core.config.paths.apps_path = self.original_apps_path
 
-    def test_load_function_aliases(self):
-        aliases = load_function_aliases('HelloWorld')
-        expected_aliases = {
-            "helloWorld": ["helloworld", "hello world", "hello", "greeting", "HelloWorld", "hello_world"],
-            "repeatBackToMe": ["parrot", "Parrot", "RepeatBackToMe", "repeat_back_to_me", "repeat"],
-            "returnPlusOne": ["plus one", "PlusOne", "plus_one", "plusone", "++", "increment"]
-        }
-        self.assertDictEqual(aliases, expected_aliases)
-
-    def test_load_function_aliases_invalid_app(self):
-        self.assertDictEqual(load_function_aliases('JunkAppName'), {})
-
     def test_load_app_function(self):
 
         app = 'HelloWorld'

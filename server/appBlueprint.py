@@ -5,7 +5,7 @@ import json
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
 from . import forms
-from core.helpers import list_app_functions, list_class_functions, load_function_aliases
+from core.helpers import list_class_functions
 import core.config.config
 
 appPage = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
@@ -81,13 +81,6 @@ def list_app_actions():
                            'actions': core.config.config.function_info['apps'][g.app]})
     else:
         return json.dumps({'status': 'error: app name not found'})
-
-
-@appPage.route('/actions/aliases', methods=['GET'])
-@auth_token_required
-@roles_required('admin')
-def list_app_function_aliases():
-    return json.dumps(load_function_aliases(g.app))
 
 
 

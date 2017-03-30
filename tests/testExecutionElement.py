@@ -9,22 +9,18 @@ class TestExecutionElement(unittest.TestCase):
         elem = ExecutionElement()
         self.assertEqual(elem.name, '')
         self.assertEqual(elem.parent_name, '')
-        self.assertEqual(elem.event_handler.event_type, 'ExecutionElementEventHandler')
 
         elem = ExecutionElement(name='test')
         self.assertEqual(elem.name, 'test')
         self.assertEqual(elem.parent_name, '')
-        self.assertEqual(elem.event_handler.event_type, 'ExecutionElementEventHandler')
 
         elem = ExecutionElement(parent_name='parent_test')
         self.assertEqual(elem.name, '')
         self.assertEqual(elem.parent_name, 'parent_test')
-        self.assertEqual(elem.event_handler.event_type, 'ExecutionElementEventHandler')
 
         elem = ExecutionElement(ancestry=['a', 'b', 'c'])
         self.assertEqual(elem.name, '')
         self.assertEqual(elem.parent_name, '')
-        self.assertEqual(elem.event_handler.event_type, 'ExecutionElementEventHandler')
 
     def test_construct_ancestry(self):
         elem = ExecutionElement()

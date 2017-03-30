@@ -19,11 +19,6 @@ class Workflow(ExecutionElement):
         self._from_xml(self.workflowXML)
         self.children = children if (children is not None) else {}
         self.is_completed = False
-        super(Workflow, self)._register_event_callbacks(
-            {'InstanceCreated': callbacks.add_workflow_entry("New workflow instance Created"),
-             'StepExecutionSuccess': callbacks.add_workflow_entry('Step executed successfully'),
-             'NextStepFound': callbacks.add_workflow_entry('Next step found'),
-             'WorkflowShutdown': callbacks.add_workflow_entry("Workflow shut down")})
 
     @staticmethod
     def get_workflow(workflow_name):
@@ -52,7 +47,6 @@ class Workflow(ExecutionElement):
         input = {input[key]["tag"]: arguments.Argument(key=input[key]["tag"], value=input[key]["value"],
                                                        format=input[key]["format"]) for key in input}
         ancestry = list(self.ancestry)
-        #ancestry.append(id)
         self.steps[id] = Step(name=id, action=action, app=app, device=device, inputs=input, next_steps=next,
                               errors=errors, ancestry=ancestry, parent_name=self.name)
         stepXML = self.steps[id].to_xml()
@@ -89,13 +83,10 @@ class Workflow(ExecutionElement):
         steps = self.__steps(start=start)
         for step in steps:
             if step:
-                self.event_handler.execute_event_code(self, 'NextStepFound')
+                callbacks.NextStepFound.send(self)
                 if step.device not in instances:
                     instances[step.device] = Instance.create(step.app, step.device)
-                    self.event_handler.execute_event_code(self, 'InstanceCreated')
-
-                # for arg in step.input:
-                #     step.input[arg].template(steps=total_steps)
+                    callbacks.AppInstanceCreated.send(self)
 
                 step.render_step(steps=total_steps)
 
@@ -132,7 +123,7 @@ class Workflow(ExecutionElement):
         error_flag = False
         try:
             step.execute(instance=instance())
-            self.event_handler.execute_event_code(self, 'StepExecutionSuccess')
+            callbacks.StepExecutionSuccess.send(self)
         except Exception as e:
             error_flag = True
             step.output = str(e)
@@ -145,7 +136,7 @@ class Workflow(ExecutionElement):
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
             child_name = construct_workflow_name_key(self.filename, child_name)
             if (child_name in self.options.children
-                and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                    and type(self.options.children[child_name]).__name__ == 'Workflow'):
                 child_step_generator = self.options.children[child_name].__steps(start=child_start)
                 return child_step_generator, child_next
         return None, None
@@ -155,7 +146,7 @@ class Workflow(ExecutionElement):
             # Upon finishing shuts down instances
             for instance in instances:
                 instances[instance].shutdown()
-            self.event_handler.execute_event_code(self, 'WorkflowShutdown')
+            callbacks.WorkflowShutdown.send(self)
         except Exception:
             pass
 

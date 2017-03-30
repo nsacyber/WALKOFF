@@ -5,15 +5,15 @@ import os
 import time
 
 from collections import namedtuple
+
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, \
-    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+    EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.tornado import TornadoScheduler
 
 from core.config import paths
 from core import workflow as wf
-from core.case import callbacks, subscription
-from core.events import EventListener
+from core.case import subscription
+from core.case import callbacks
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
 from multiprocessing import Pool
@@ -90,71 +90,21 @@ def executeWorkflowWorker(queue, subs):
 #         #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
 #         #steps, instances = workflow.execute(start=start, data=data)
 
-class SchedulerStatusListener(EventListener):
-    def __init__(self, shared_log=None):
-        EventListener.__init__(self, "schedulerStatus", shared_log=shared_log,
-                               events={EVENT_SCHEDULER_START: callbacks.add_system_entry("Scheduler start"),
-                                       EVENT_SCHEDULER_SHUTDOWN: callbacks.add_system_entry("Scheduler shutdown"),
-                                       EVENT_SCHEDULER_PAUSED: callbacks.add_system_entry("Scheduler paused"),
-                                       EVENT_SCHEDULER_RESUMED: callbacks.add_system_entry("Scheduler resumed")})
-
-
-class JobStatusListener(EventListener):
-    def __init__(self, shared_log=None):
-        EventListener.__init__(self, "jobStatus", shared_log,
-                               events={EVENT_JOB_ADDED: callbacks.add_system_entry("Job added"),
-                                       EVENT_JOB_REMOVED: callbacks.add_system_entry("Job removed")})
-
-
-
-
-class JobExecutionListener(EventListener):
-    def __init__(self, shared_log=None):
-        EventListener.__init__(self, "jobExecution", shared_log,
-                               events={'JobExecuted': callbacks.add_system_entry("Job executed"),
-                                       'JobError': callbacks.add_system_entry("Job executed with error")})
-
-    def execute_event(self, sender, event, data=''):
-        if event.exception:
-            self.events['JobError'].send(sender, data)
-            self.eventlog.append({"jobError": event.retval})
-        else:
-            self.events['JobExecuted'].send(sender)
-            self.eventlog.append({"jobExecuted": event.retval})
-
-    def execute_event_code(self, sender, event_code, data=''):
-        if event_code == 'JobExecuted':
-            self.events[event_code].send(sender, data)
-            self.eventlog.append({"jobExecuted": 'Success'})
-        elif event_code == 'JobError':
-            self.events[event_code].send(sender, data)
-            self.eventlog.append({"jobError": 'Error'})
-        else:
-            self.eventlog.append({event_code: 'Unsupported!'})
-
-    def callback(self, sender):
-        def execution(event):
-            self.execute_event(sender, event)
-
-        return execution
-
 class Controller(object):
+
     def __init__(self, name="defaultController", appPath=None):
         self.name = name
         self.workflows = {}
         self.load_all_workflows_from_directory(path=appPath)
         self.instances = {}
         self.tree = None
-        self.eventlog = []
-        self.schedulerStatusListener = SchedulerStatusListener(self.eventlog)
-        self.jobStatusListener = JobStatusListener(self.eventlog)
-        self.jobExecutionListener = JobExecutionListener(self.eventlog)
+
         self.scheduler = TornadoScheduler()
-        self.scheduler.add_listener(self.schedulerStatusListener.callback(self),
+        self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
-                                    | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED)
-        self.scheduler.add_listener(self.jobStatusListener.callback(self), EVENT_JOB_ADDED | EVENT_JOB_REMOVED)
-        self.scheduler.add_listener(self.jobExecutionListener.callback(self), EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+                                    | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
+                                    | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
+                                    | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
         #initialize_threading()
@@ -331,6 +281,7 @@ class Controller(object):
         pickled_workflow = dill.dumps(workFl)
         queue.put((pickled_workflow, start, data))
         #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
+        #callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
         key = _WorkflowKey(playbook_name, workflow_name)
@@ -381,5 +332,23 @@ class Controller(object):
     # Returns jobs scheduled for active execution
     def getScheduledJobs(self):
         self.scheduler.get_jobs()
+
+    def __scheduler_listener(self):
+        event_selector_map = {EVENT_SCHEDULER_START: (lambda: callbacks.SchedulerStart.send(self)),
+                              EVENT_SCHEDULER_SHUTDOWN: (lambda: callbacks.SchedulerShutdown.send(self)),
+                              EVENT_SCHEDULER_PAUSED: (lambda: callbacks.SchedulerPaused.send(self)),
+                              EVENT_SCHEDULER_RESUMED: (lambda: callbacks.SchedulerResumed.send(self)),
+                              EVENT_JOB_ADDED: (lambda: callbacks.SchedulerJobAdded.send(self)),
+                              EVENT_JOB_REMOVED: (lambda: callbacks.SchedulerJobRemoved.send(self)),
+                              EVENT_JOB_EXECUTED: (lambda: callbacks.SchedulerJobExecuted.send(self)),
+                              EVENT_JOB_ERROR: (lambda: callbacks.SchedulerJobError.send(self))}
+
+        def event_selector(event):
+            try:
+                event_selector_map[event.code]()
+            except KeyError:
+                print("Error: Unknown event sent!")
+
+        return event_selector
 
 controller = Controller()
