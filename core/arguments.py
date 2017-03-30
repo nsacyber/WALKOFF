@@ -2,7 +2,7 @@ import xml.etree.cElementTree as et
 
 from jinja2 import Template
 
-from core.config import config
+import core.config.config
 
 
 class Argument(object):
@@ -34,7 +34,7 @@ class Argument(object):
 
     def template(self, **kwargs):
         template = Template(str(self.value))
-        self.templated = template.render(config.JINJA_GLOBALS, **kwargs)
+        self.templated = template.render(core.config.config.JINJA_GLOBALS, **kwargs)
         return self.templated
 
     def to_xml(self):
@@ -60,25 +60,19 @@ class Argument(object):
                 return False
         return arg['name'] == self.key and arg['type'] == self.format
 
-    def __validate(self, possible_args):
+    def validate(self, possible_args):
         if not possible_args:
             return True
         return any(self.__test_validation_match(arg) for arg in possible_args)
 
-    def validate_filter_args(self, action, num_args):
-        if action in config.function_info['filters']:
-            possible_args = config.function_info['filters'][action]['args']
-            return len(list(possible_args)) == num_args and self.__validate(possible_args)
-        return False
-
     def validate_flag_args(self, action):
-        if action in config.function_info['flags']:
-            return self.__validate(config.function_info['flags'][action]['args'])
+        if action in core.config.config.function_info['flags']:
+            return self.validate(core.config.config.function_info['flags'][action]['args'])
         return False
 
     def validate_function_args(self, app, action):
-        if app in config.function_info['apps'] and action in config.function_info['apps'][app]:
-            return self.__validate(config.function_info['apps'][app][action]['args'])
+        if app in core.config.config.function_info['apps'] and action in core.config.config.function_info['apps'][app]:
+            return self.validate(core.config.config.function_info['apps'][app][action]['args'])
         return False
 
     def as_json(self):
