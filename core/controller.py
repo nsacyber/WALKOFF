@@ -36,11 +36,10 @@ def initialize_threading():
     print("Initializing thread pool...")
     pool = Pool(processes=NUM_PROCESSES)
     print("Initialized pool.")
-    subs = deepcopy(subscription.subscriptions)
     for i in range(0, NUM_PROCESSES):
-        pool.apply_async(executeWorkflowWorker, (queue,subs))
+        pool.apply_async(executeWorkflowWorker, (queue,))
     # print("Initialized")
-    dill.settings["byref"] = True
+    #dill.settings["byref"] = True
 
 def shutdown_pool():
     global pool
@@ -48,22 +47,22 @@ def shutdown_pool():
     #pool.join()
 
 #def executeWorkflowWorker(queue, subs):
-def executeWorkflowWorker(queue, subs):
-    subscription.set_subscriptions(subs)
+def executeWorkflowWorker(queue):
+    #subscription.set_subscriptions(subs)
 
     print("Thread " + str(os.getpid()) + " starting up...")
-
 
     while (True):
         while not queue.empty():
             print("Queue not empty...trying to pop")
-            pickled_workflow,start,data = queue.get()
+            pickled_workflow,start,data,subs = queue.get()
             print("popped!")
+            subscription.set_subscriptions(subs)
             workflow = dill.loads(pickled_workflow) #this line takes forever...can we use something like json instead?
             #print("Thread popped "+workflow.filename+" off queue...")
             print(workflow.filename)
             #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
-            #steps, instances = workflow.execute(start=start, data=data)
+            workflow.execute(start=start, data=data)
             workflow.is_completed = True
             print(workflow.is_completed)
             print("done")
@@ -272,15 +271,15 @@ class Controller(object):
         print("Boss thread putting " + workflow_name + " workflow on queue...:")
         # self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
         key = _WorkflowKey(playbook_name, workflow_name)
-        workFl = self.workflows[_WorkflowKey(playbook_name, workflow_name)]
+        workFl = self.workflows[key]
         # CAN'T PICKLE STEPS (conditionals, errors -- both nextStep objects (eventHandler)), OPTIONS (children (tieredWorkflow-childWorkflow))
         #pool.apply(executeWorkflowWorker, (workFl, start, data))
-        workFl.event_handler = None
-        workFl.options = None
-        workFl.steps = None
+        #workFl.event_handler = None
+        #workFl.options = None
+        #workFl.steps = None
         pickled_workflow = dill.dumps(workFl)
-        queue.put((pickled_workflow, start, data))
-        #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
+        subs = deepcopy(subscription.subscriptions)
+        queue.put((pickled_workflow, start, data, subs))
         #callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
