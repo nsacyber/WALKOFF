@@ -1,6 +1,5 @@
 import importlib
 import sys
-import json
 import os
 from xml.etree import ElementTree
 
@@ -63,14 +62,6 @@ def list_apps(path=None):
         path = core.config.paths.apps_path
     return [f for f in os.listdir(path) if (os.path.isdir(os.path.join(path, f))
                                             and not f.startswith('__'))]
-
-
-def load_function_aliases(app_name):
-    alias_file = os.path.join(core.config.paths.apps_path, app_name, 'functionAliases.json')
-    if os.path.isfile(alias_file):
-        with open(alias_file, 'r') as aliases:
-            return json.loads(aliases.read())
-    return {}
 
 
 def list_class_functions(class_name):

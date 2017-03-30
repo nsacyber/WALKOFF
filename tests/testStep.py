@@ -1,47 +1,53 @@
 import unittest
 from core.arguments import Argument
 from core.flag import Flag
-from core.step import Step
+from core.step import Step, InvalidStepActionError
 from core.nextstep import NextStep
-from core.helpers import load_function_aliases
+import core.config.config
+import core.config.paths
+from tests.util.assertwrappers import assert_raises_with_error
+from tests.config import test_apps_path
 
 
 class TestStep(unittest.TestCase):
-    def __compare_init(self, elem, name, parent_name, action, app, device, inputs, nexts, errors, ancestry, f_aliases):
+    def setUp(self):
+        core.config.paths.apps_path = test_apps_path
+        core.config.config.load_function_info()
+
+    def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, errors, ancestry):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.parent_name, parent_name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device, device)
         self.assertDictEqual({key: input_element.as_json() for key, input_element in elem.input.items()}, inputs)
-        self.assertListEqual([conditional.as_json() for conditional in elem.conditionals], nexts)
+        self.assertListEqual([conditional.as_json() for conditional in elem.conditionals], next_steps)
         self.assertListEqual([error.as_json() for error in elem.errors], errors)
         self.assertListEqual(elem.ancestry, ancestry)
-        self.assertDictEqual(elem.function_aliases, f_aliases)
         self.assertIsNone(elem.output)
 
     def test_init(self):
         step = Step()
-        self.__compare_init(step, '', '', '', '', '', {}, [], [], ['', ''], {})
+        self.__compare_init(step, '', '', '', '', '', {}, [], [], ['', ''])
 
         step = Step(name='name')
-        self.__compare_init(step, 'name', '', '', '', '', {}, [], [], ['', 'name'], {})
+        self.__compare_init(step, 'name', '', '', '', '', {}, [], [], ['', 'name'])
 
         step = Step(name='name', parent_name='parent_name')
-        self.__compare_init(step, 'name', 'parent_name', '', '', '', {}, [], [], ['parent_name', 'name'], {})
+        self.__compare_init(step, 'name', 'parent_name', '', '', '', {}, [], [], ['parent_name', 'name'])
 
         step = Step(name='name', parent_name='parent_name', action='action')
-        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'], {})
+        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'])
 
         step = Step(name='name', parent_name='parent_name', action='action')
-        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'], {})
+        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'])
 
         step = Step(name='name', parent_name='parent_name', action='action', app='app')
-        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'], {})
+        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'])
 
         step = Step(name='name', parent_name='parent_name', action='action', app='app', device='device')
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
-                            {}, [], [], ['parent_name', 'name'], {})
+                            {}, [], [], ['parent_name', 'name'])
 
         inputs = {'in1': 'a', 'in2': 3, 'in3': u'abc'}
         inputs = {arg_name: Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
@@ -49,7 +55,7 @@ class TestStep(unittest.TestCase):
 
         step = Step(name='name', parent_name='parent_name', action='action', app='app', device='device', inputs=inputs)
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
-                            {key: input_.as_json() for key, input_ in inputs.items()}, [], [], ['parent_name', 'name'], {})
+                            {key: input_.as_json() for key, input_ in inputs.items()}, [], [], ['parent_name', 'name'])
 
         flags = [Flag(), Flag(action='action')]
         nexts = [NextStep(),
@@ -60,7 +66,7 @@ class TestStep(unittest.TestCase):
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
                             {key: input_.as_json() for key, input_ in inputs.items()},
                             [next_.as_json() for next_ in nexts],
-                            [], ['parent_name', 'name'], {})
+                            [], ['parent_name', 'name'])
 
         error_flags = [Flag(), Flag(action='action'), Flag()]
         errors = [NextStep(),
@@ -71,15 +77,7 @@ class TestStep(unittest.TestCase):
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
                             {key: input_.as_json() for key, input_ in inputs.items()},
                             [next_.as_json() for next_ in nexts],
-                            [error.as_json() for error in errors], ['parent_name', 'name'], {})
-
-        aliases = {'a': ['A', 'aa', '_a'], 'b': ['B', 'bb', '_b']}
-        step = Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
-                    inputs=inputs, next_steps=nexts, errors=errors, function_aliases=aliases)
-        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
-                            {key: input_.as_json() for key, input_ in inputs.items()},
-                            [next_.as_json() for next_ in nexts],
-                            [error.as_json() for error in errors], ['parent_name', 'name'], aliases)
+                            [error.as_json() for error in errors], ['parent_name', 'name'])
 
     def test_function_alias_lookup_same_function(self):
         existing_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne']
@@ -90,7 +88,8 @@ class TestStep(unittest.TestCase):
 
     def test_function_alias_lookup(self):
         app = 'HelloWorld'
-        function_aliases = load_function_aliases(app)
+        function_aliases = {action: info['aliases']
+                            for action, info in core.config.config.function_info['apps']['HelloWorld'].items()}
         self.assertIsNotNone(function_aliases)
         for function, aliases in function_aliases.items():
             for alias in aliases:
@@ -100,7 +99,10 @@ class TestStep(unittest.TestCase):
     def test_function_alias_lookup_invalid(self):
         app = 'HelloWorld'
         step = Step(action='JunkAction1', app=app)
-        self.assertEqual(step._Step__lookup_function(), 'JunkAction1')
+        assert_raises_with_error(self,
+                                 InvalidStepActionError,
+                                 'Error: Step action JunkAction1 not found for app HelloWorld',
+                                 step._Step__lookup_function)
 
     def test_from_json(self):
         next_step_names = ['next1', 'next2']

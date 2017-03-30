@@ -10,13 +10,19 @@ from core import nextstep
 from core.config import config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import load_function_aliases, load_app_function
+from core.helpers import load_app_function
 from core.nextstep import NextStep
 
 
 class InvalidStepArgumentsError(Exception):
     def __init__(self, message=''):
         super(InvalidStepArgumentsError, self).__init__(message)
+
+
+class InvalidStepActionError(Exception):
+    def __init__(self, app, action):
+        super(InvalidStepActionError, self).__init__()
+        self.message = 'Error: Step action {0} not found for app {1}'.format(action, app)
 
 
 class Step(ExecutionElement):
@@ -30,8 +36,7 @@ class Step(ExecutionElement):
                  next_steps=None,
                  errors=None,
                  parent_name='',
-                 ancestry=None,
-                 function_aliases=None):
+                 ancestry=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.raw_xml = xml
 
@@ -45,7 +50,6 @@ class Step(ExecutionElement):
             self.conditionals = next_steps if next_steps is not None else []
             self.errors = errors if errors is not None else []
             self.raw_xml = self.to_xml()
-        self.function_aliases = function_aliases if function_aliases is not None else load_function_aliases(self.app)
         self.output = None
         self.next_up = None
         super(Step, self)._register_event_callbacks(
@@ -93,12 +97,14 @@ class Step(ExecutionElement):
                 if self.input else True)
 
     def __lookup_function(self):
-        aliases = load_function_aliases(self.app)
-        if aliases:
-            for function, alias_list in aliases.items():
-                if self.action == function or self.action in alias_list:
-                    return function
-        return self.action
+        if self.app in config.function_info['apps']:
+            for action, info in config.function_info['apps'][self.app].items():
+                if action == self.action:
+                    return self.action
+                else:
+                    if 'aliases' in info and self.action in info['aliases']:
+                        return action
+        raise InvalidStepActionError(self.app, self.action)
 
     def execute(self, instance=None):
         if self.validate_input():
