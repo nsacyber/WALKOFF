@@ -2,7 +2,7 @@ import xml.etree.cElementTree as et
 
 from jinja2 import Template
 
-from core import config
+from core.config import config
 
 
 class Argument(object):
@@ -52,33 +52,23 @@ class Argument(object):
                   'type': self.format}
         return str(output)
 
-    '''
-    def validate(self, action=None, io='input'):
-        if not config.functionConfig[action]['args']:
-            return True
-        for x in config.functionConfig[action]['args']:
-            if x['type'] != self.format:
-                try:
-                    self.value = Argument.convert(value=self.value, conversion_type=x['type'])
-                except:
-                    return False
-        return any(x['name'] == self.key and x['type'] == self.format for x in config.functionConfig[action]['args'])
-    '''
+    def __test_validation_match(self, arg):
+        if arg['type'] != self.format:
+            try:
+                self.value = Argument.convert(value=self.value, conversion_type=arg['type'])
+            except:
+                return False
+        return arg['name'] == self.key and arg['type'] == self.format
 
     def __validate(self, possible_args):
         if not possible_args:
             return True
-        for arg in possible_args:
-            if arg['type'] != self.format:
-                try:
-                    self.value = Argument.convert(value=self.value, conversion_type=arg['type'])
-                except:
-                    return False
-        return any(arg['name'] == self.key and arg['type'] == self.format for arg in possible_args)
+        return any(self.__test_validation_match(arg) for arg in possible_args)
 
-    def validate_filter_args(self, action):
+    def validate_filter_args(self, action, num_args):
         if action in config.functionConfig['filters']:
-            return self.__validate(config.functionConfig['filters'][action]['args'])
+            possible_args = config.functionConfig['filters'][action]['args']
+            return len(list(possible_args)) == num_args and self.__validate(possible_args)
         return False
 
     def validate_flag_args(self, action):

@@ -7,7 +7,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.gevent import GeventScheduler
 
-from core import config
+from core.config import paths
 from core import workflow as wf
 from core.case import callbacks
 from core.events import EventListener
@@ -119,9 +119,9 @@ class Controller(object):
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
-    def load_all_workflows_from_directory(self, path=config.workflowsPath):
+    def load_all_workflows_from_directory(self, path=paths.workflows_path):
         if not path:
-            path = config.workflowsPath
+            path = paths.workflows_path
         for workflow in locate_workflows_in_directory(path):
             self.loadWorkflowsFromFile(os.path.join(path, workflow))
 
@@ -148,7 +148,7 @@ class Controller(object):
                                       workflow_name,
                                       template_playbook='emptyWorkflow',
                                       template_name='emptyWorkflow'):
-        path = '{0}{1}{2}.workflow'.format(config.templatesPath, sep, template_playbook)
+        path = '{0}{1}{2}.workflow'.format(paths.templates_path, sep, template_playbook)
         return self.load_workflow_from_file(path=path,
                                             workflow_name=template_name,
                                             name_override=workflow_name,
@@ -157,7 +157,7 @@ class Controller(object):
     def create_playbook_from_template(self, playbook_name,
                                       template_playbook='emptyWorkflow'):
         #TODO: Need a handler for returning workflow key and status
-        path = '{0}{1}{2}.workflow'.format(config.templatesPath, sep, template_playbook)
+        path = '{0}{1}{2}.workflow'.format(paths.templates_path, sep, template_playbook)
         self.loadWorkflowsFromFile(path=path, playbook_override=playbook_name)
 
     def removeWorkflow(self, playbook_name, workflow_name):
@@ -233,18 +233,24 @@ class Controller(object):
     # Starts active execution
     def start(self):
         self.scheduler.start()
+        return self.scheduler.state
+
 
     # Stops active execution
     def stop(self, wait=True):
         self.scheduler.shutdown(wait=wait)
+        return self.scheduler.state
+
 
     # Pauses active execution
     def pause(self):
         self.scheduler.pause()
+        return self.scheduler.state
 
     # Resumes active execution
     def resume(self):
         self.scheduler.resume()
+        return self.scheduler.state
 
     # Pauses active execution of specific job
     def pauseJob(self, job_id):

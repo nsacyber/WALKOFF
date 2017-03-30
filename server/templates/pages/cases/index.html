@@ -1,37 +1,35 @@
 <div id="main" class="content">
-  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pages/cases/jquery-ui.theme.min.css' ) }}">
     <style>
-    h1 {
-        font-family: 'Lato', sans-serif;
-        font-weight: bold;
-        font-size: 30px;
-        color: #255876;
-    }
-    h3 {
-      font-family: 'Lato', sans-serif;
-      font-weight: bold;
-    }
-    h3#currentWorkflowText {
-      font-size: 18px;
-    }
-    .box-title {
-      font-family: 'Lato', sans-serif;
-      font-weight: bold;
-    }
-    .box {
-      margin-top: 40px;
-    }
-    button, input, select, textarea {
-      background-color: #45AA3B;
-      color: #fff;
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 20px;
-      border: none;
-      border-radius:5px;
-    }
-        #header{
-            margin-bottom:30px;
+        h1 {
+            font-family: 'Lato', sans-serif;
+            font-weight: bold;
+            font-size: 30px;
+            color: #255876;
+        }
+        h3 {
+          font-family: 'Lato', sans-serif;
+          font-weight: bold;
+        }
+        h3#currentWorkflowText {
+          font-size: 18px;
+        }
+        .box-title {
+          font-family: 'Lato', sans-serif;
+          font-weight: bold;
+        }
+        .box {
+          margin-top: 40px;
+        }
+        button, input, select, textarea {
+          background-color: #45AA3B;
+          color: #fff;
+          margin-top: 20px;
+          font-weight: bold;
+          font-size: 20px;
+          border: none;
+          border-radius:5px;
         }
 
         #sidebar{
@@ -39,31 +37,10 @@
             margin-right:20px;
             border:solid;
             background-color:#2b6688;
-            padding-left:10px;
-            padding-right:10px;
-            padding-bottom:10px;
+            padding:10px;
             text-align:center;
         }
-        #cy {
-          height: 150px;
-          width: 250px;
-          position: relative;
-          left: 0;
-          border:solid;
-          background-color:white;
-          background-image:url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
-          float:center;
 
-        }
-        #parameters{
-            vertical-align:top;
-            margin-top:10px;
-            height: 500px;
-            width:250px;
-            border:solid;
-            background-color:white;
-
-        }
         #sidebarTitle{
             color:white;
         }
@@ -86,8 +63,15 @@
           font-size: 24px;
           font-family: 'Lato', sans-serif;
         }
+
+        .innerSidebar{
+            background-color:white;
+            height:100%;
+            text-align:left;
+            padding:5px;
+        }
     </style>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
     <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
     <script>
         var currentWorkflow = "{{currentWorkflow}}";
@@ -96,19 +80,26 @@
 
     <div id="header">
         <h1> Case Log </h1>
-        <h3 id="currentWorkflowText"></h3>
-        <button id="executeWorkflowButton">Execute Workflow</button>
     </div>
     <div class="row">
-        <div id="sidebar" class="col-xs-2" >
-            <h3 id="sidebarTitle">Sidebar</h3>
-            <div id="cy"></div>
-            <div id="parameters">
-                Parameters go Here
+        <div id="sidebar" class="col-xs-4 box" >
+            <div id="innerSidebar" class="innerSidebar">
+                <h3>Cases</h3>
+                <div id="casesDiv">
+                    Cases Here
+                </div>
+                <h3>Workflows</h3>
+                <div id="workflowsDiv">
+                    Workflows Here
+                </div>
+                <h3>Events</h3>
+                <div id="eventsDiv">
+                    Events Here
+                </div>
             </div>
         </div>
 
-        <div class="col-xs-10">
+        <div class="col-xs-8">
           <div class="box ">
             <div class="box-header">
               <h3 class="box-title">Events</h3>
@@ -138,10 +129,12 @@
                 </tbody>
                 <tfoot>
                  <tr>
-                    <th>Name</th>
-                    <th>NextUp</th>
-                    <th>Action</th>
-                    <th>Output</th>
+                    <th data-field="name">Name</th>
+                    <th data-field="app">App</th>
+                    <th data-field="device">Device</th>
+                    <th data-field="nextUp">Next Up</th>
+                    <th data-field="action">Action</th>
+                    <th data-field="output">Output</th>
                 </tr>
                 </tfoot>
               </table>

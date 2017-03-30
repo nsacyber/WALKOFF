@@ -1,0 +1,59 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
+<div id="main">
+    <style>
+
+
+        #loadedWorkflowsTreeDiv{
+            height:400px;
+            border:solid;
+            padding:10px;
+            margin:5px;
+        }
+
+         .controllerCol{
+            height:700px;
+            background-color:white;
+            margin-left:20px;
+
+        }
+
+        #schedulerDiv{
+            padding:20px;
+        }
+    </style>
+    <div id="header">
+        <h2> Controller Management </h2>
+        <h3>{{currentController}}</h3>
+    </div>
+    <div class="row">
+        <div id="loadedWorkflowsDiv" class="controllerCol col-xs-2 ">
+            <div id="loadedWorkflowsTreeDiv">
+                <h4>Loaded Workflows</h4>
+                <div id="loadedPlaybooksTree"></div>
+            </div>
+            <div id="loadWorkflowDiv">
+            </div>
+
+        </div>
+        <div id="schedulerColumn" class="controllerCol col-xs-2 ">
+            <div id="schedulerDiv">
+                <h4>Scheduler Control</h4>
+                <div id="schedulerStatus">
+                    <h4>Scheduler Currently: <span id="status"></span></h4>
+                </div>
+                <button id="startSchedulerBtn">Start</button>
+                <button id="pauseSchedulerBtn">Pause</button>
+                <button id="stopSchedulerBtn">Stop</button>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="application/javascript">
+        loadedWorkflows = {{loadedWorkflows | safe}};
+        schedulerStatusNo = {{schedulerStatus}};
+    </script>
+
+    <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
+</div>

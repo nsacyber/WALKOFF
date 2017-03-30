@@ -2,7 +2,7 @@ import xml.etree.cElementTree as et
 from os.path import join, isfile
 
 from core import arguments
-from core import config
+from core.config import paths
 from core.instance import Instance
 from core import options
 from core.case import callbacks
@@ -26,8 +26,8 @@ class Workflow(ExecutionElement):
 
     @staticmethod
     def get_workflow(workflow_name):
-        if isfile(join(config.templatesPath, workflow_name)):
-            tree = et.ElementTree(file=join(config.templatesPath, workflow_name))
+        if isfile(join(paths.templates_path, workflow_name)):
+            tree = et.ElementTree(file=join(paths.templates_path, workflow_name))
             for workflow in tree.iter(tag="workflow"):
                 name = workflow.get("name")
                 return Workflow(name=name, workflowConfig=workflow)

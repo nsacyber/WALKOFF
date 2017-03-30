@@ -4,7 +4,7 @@ import json
 import os
 from xml.etree import ElementTree
 
-from core.config import workflowsPath
+from core.config.paths import workflows_path
 
 
 def get_cytoscape_data(steps):
@@ -78,7 +78,7 @@ def load_app_function(app_instance, function_name):
         return None
 
 
-def locate_workflows_in_directory(path=workflowsPath):
+def locate_workflows_in_directory(path=workflows_path):
     return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                           and workflow.endswith('.workflow'))]
 
