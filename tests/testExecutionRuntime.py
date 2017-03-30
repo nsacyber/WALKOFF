@@ -42,11 +42,11 @@ class TestExecutionRuntime(unittest.TestCase):
 
         workflow = self.c.get_workflow('templatedWorkflowTest', 'templatedWorkflow')
 
-        # print("about to spin")
-        # while (workflow.is_completed == False):
-        #     continue
-        #
-        # print("Workflow should be completed!")
+        print("about to spin")
+        while (workflow.is_completed == False):
+            continue
+
+        print("Workflow should be completed!")
 
         # import time
         # print("sleeping")
@@ -84,6 +84,15 @@ class TestExecutionRuntime(unittest.TestCase):
         step_names = ['start', '1']
         setup_subscriptions_for_step([workflow_name1, workflow_name2], step_names)
         self.c.executeWorkflow('tieredWorkflow', 'parentWorkflow')
+
+        workflow = self.c.get_workflow('tieredWorkflow', 'parentWorkflow')
+
+        print("about to spin")
+        while (workflow.is_completed == False):
+            continue
+
+        print("Workflow should be completed!")
+
         steps = executed_steps('defaultController', workflow_name1, self.start, datetime.utcnow())
         steps.extend(executed_steps('defaultController', workflow_name2, self.start, datetime.utcnow()))
         ancestries = [step['ancestry'].split(',') for step in steps]
@@ -115,6 +124,19 @@ class TestExecutionRuntime(unittest.TestCase):
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
         self.c.executeWorkflow('loopWorkflow', 'loopWorkflow')
+
+        workflow = self.c.get_workflow('loopWorkflow', 'loopWorkflow')
+
+        import time
+        time.sleep(5)
+        print (workflow.is_completed)
+
+        print("about to spin")
+        while (workflow.is_completed == False):
+            continue
+
+        print("Workflow should be completed!")
+
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         names = [step['ancestry'].split(',')[-1] for step in steps]
         expected_steps = ['start', 'start', 'start', 'start', '1']

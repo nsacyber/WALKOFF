@@ -40,6 +40,7 @@ def initialize_threading():
     for i in range(0, NUM_PROCESSES):
         pool.apply_async(executeWorkflowWorker, (queue,subs))
     # print("Initialized")
+    dill.settings["byref"] = True
 
 def shutdown_pool():
     global pool
@@ -60,9 +61,12 @@ def executeWorkflowWorker(queue, subs):
             print("popped!")
             workflow = dill.loads(pickled_workflow) #this line takes forever...can we use something like json instead?
             #print("Thread popped "+workflow.filename+" off queue...")
-            print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
+            print(workflow.filename)
+            #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
             #steps, instances = workflow.execute(start=start, data=data)
             workflow.is_completed = True
+            print(workflow.is_completed)
+            print("done")
 
 # def executeWorkflowWorker(workflow, start, data):
 #     #global queue
@@ -326,11 +330,6 @@ class Controller(object):
         workFl.steps = None
         pickled_workflow = dill.dumps(workFl)
         queue.put((pickled_workflow, start, data))
-        print("Boss continuing...")
-        import time
-        print("sleeping")
-        time.sleep(3)
-        print("awake")
         #self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
 
     def get_workflow(self, playbook_name, workflow_name):
