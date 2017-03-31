@@ -1,3 +1,4 @@
+from flask_security.forms import Required, EqualTo
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
     IntegerField, FormField, \
     SelectField, RadioField, SubmitField
@@ -185,8 +186,7 @@ class settingsForm(Form):
 
 class userForm(Form):
     username = SelectField('username', [validators.Optional()], choices=[])
-    email = StringField('email', [validators.DataRequired("Please enter your email address."),
-                                  validators.Email("Please enter your email address.")])
+    email = StringField('email', [validators.DataRequired("Please enter your email address.")])
     password = PasswordField('password')
     active = BooleanField()
     confirmed_at = DateTimeField('confirmed_at', [validators.Optional()])
@@ -197,3 +197,10 @@ class userForm(Form):
     current_login_ip = StringField("current_login_ip")
     login_count = IntegerField("login_count")
     # active = RadioField('active',choices = [ (h.key.id(),h.homename)for h in User.queryAll()])
+
+class addUserForm(Form):
+    username = StringField('username', [validators.required(message='Enter a user name')])
+    password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat Password')
+    roles = SelectField('roles', choices=[])
+    email = StringField('email', [validators.DataRequired("Please enter your email address.")])
