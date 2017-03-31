@@ -1,4 +1,6 @@
 import unittest
+import copy
+
 from core.arguments import Argument
 from core.flag import Flag
 from core.step import Step, InvalidStepActionError
@@ -13,6 +15,18 @@ class TestStep(unittest.TestCase):
     def setUp(self):
         core.config.paths.apps_path = test_apps_path
         core.config.config.load_function_info()
+        self.original_functions = copy.deepcopy(core.config.config.function_info)
+        self.test_funcs = {'func_name1': {'args': []},
+                           'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
+                           'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
+                                                   {'name': 'arg_name2', 'type': 'arg_type2'}]}}
+        apps = ['app1', 'app2', 'app3']
+
+        for app in apps:
+            core.config.config.function_info['apps'][app] = copy.deepcopy(self.test_funcs)
+
+    def tearDown(self):
+        core.config.config.function_info = self.original_functions
 
     def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, errors, ancestry):
         self.assertEqual(elem.name, name)
@@ -103,6 +117,41 @@ class TestStep(unittest.TestCase):
                                  InvalidStepActionError,
                                  'Error: Step action JunkAction1 not found for app HelloWorld',
                                  step._Step__lookup_function)
+
+    def test_validate_input(self):
+        apps = ['app1', 'app2', 'app3', 'invalid_app']
+        actions = ['func_name1', 'func_name2', 'func_name3', 'invalid_action']
+
+        for app in apps:
+            for action in actions:
+                for arg_action, args in self.test_funcs.items():
+                    test_args = {arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                 for arg in args['args']}
+                    step = Step(app=app, action=action, inputs=test_args)
+                    if app == 'invalid_app' or action == 'invalid_action':
+                        self.assertFalse(step.validate_input())
+                    elif action == arg_action or not self.test_funcs[action]['args']:
+                        self.assertTrue(step.validate_input())
+                    else:
+                        self.assertFalse(step.validate_input())
+
+    '''
+        for action in actions:
+            for arg_action, args in self.test_funcs['flags'].items():
+                flag = Flag(action=action, args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                                 for arg in self.test_funcs['flags'][arg_action]['args']})
+                if action == 'invalid_name':
+                    self.assertFalse(flag.validate_args())
+                elif not self.test_funcs['flags'][action]['args']:
+                    self.assertTrue(flag.validate_args())
+                elif action == arg_action:
+                    if len(list(args['args'])) == len(list(self.test_funcs['flags'][action]['args'])):
+                        self.assertTrue(flag.validate_args())
+                    else:
+                        self.assertFalse(flag.validate_args())
+                else:
+                    self.assertFalse(flag.validate_args())
+        '''
 
     def test_from_json(self):
         next_step_names = ['next1', 'next2']
