@@ -86,6 +86,9 @@ $("#addNewDevice").on("click", function(){
             'url': "/configuration/" + activeApp + "/devices/add",
             'success': function (data) {
                 console.log(data);
+            },
+            'error': function(data){
+                console.log("error adding devices");
             }
         });
     }

@@ -114,7 +114,7 @@ class addNewTriggerForm(Form):
 
 class editTriggerForm(Form):
     name = StringField('name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = FieldList(StringField('conditional'), [validators.Optional()])
+    conditional = FieldList(FormField('conditionalArgsField'), [validators.Optional()])
     play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
 
 
