@@ -2,22 +2,17 @@ import unittest
 from core.helpers import *
 
 from core.instance import Instance
-from tests.config import testWorkflowsPath
-
+from tests.config import test_workflows_path, test_apps_path
+import core.config.paths
 from tests.util.assertwrappers import orderless_list_compare
 
 class TestHelperFunctions(unittest.TestCase):
-    def test_load_function_aliases(self):
-        aliases = load_function_aliases('HelloWorld')
-        expected_aliases = {
-            "helloWorld": ["helloworld", "hello world", "hello", "greeting", "HelloWorld", "hello_world"],
-            "repeatBackToMe": ["parrot", "Parrot", "RepeatBackToMe", "repeat_back_to_me", "repeat"],
-            "returnPlusOne": ["plus one", "PlusOne", "plus_one", "plusone", "++", "increment"]
-        }
-        self.assertDictEqual(aliases, expected_aliases)
+    def setUp(self):
+        self.original_apps_path = core.config.paths.apps_path
+        core.config.paths.apps_path = test_apps_path
 
-    def test_load_function_aliases_invalid_app(self):
-        self.assertDictEqual(load_function_aliases('JunkAppName'), {})
+    def tearDown(self):
+        core.config.paths.apps_path = self.original_apps_path
 
     def test_load_app_function(self):
 
@@ -44,19 +39,19 @@ class TestHelperFunctions(unittest.TestCase):
                               'testExecutionWorkflow.workflow',
                               'testScheduler.workflow',
                               'tieredWorkflow.workflow']
-        received_workflows = locate_workflows_in_directory(testWorkflowsPath)
+        received_workflows = locate_workflows_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 
         self.assertListEqual(locate_workflows_in_directory('.'), [])
 
     def test_get_workflow_names_from_file(self):
-        workflows = get_workflow_names_from_file(os.path.join(testWorkflowsPath, 'basicWorkflowTest.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.workflow'))
         self.assertListEqual(workflows, ['helloWorldWorkflow'])
 
-        workflows = get_workflow_names_from_file(os.path.join(testWorkflowsPath, 'tieredWorkflow.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'tieredWorkflow.workflow'))
         self.assertListEqual(workflows, ['parentWorkflow', 'childWorkflow'])
 
-        workflows = get_workflow_names_from_file(os.path.join(testWorkflowsPath, 'junkfileName.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.workflow'))
         self.assertIsNone(workflows)
 
     def test_list_app_functions(self):
@@ -66,7 +61,7 @@ class TestHelperFunctions(unittest.TestCase):
         orderless_list_compare(self, received_functions, expected_functions)
 
     def test_list_apps(self):
-        expected_apps = ['HelloWorld', 'DailyQuote']
+        expected_apps = ['HelloWorld']
         orderless_list_compare(self, expected_apps, list_apps())
 
     def test_construct_workflow_name_key(self):

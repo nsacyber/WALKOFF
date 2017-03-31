@@ -2,7 +2,7 @@ import unittest
 import json
 
 import core.case.database as case_database
-from core.case.callbacks import EventEntry
+from core.case.callbacks import _EventEntry
 from core.executionelement import ExecutionElement
 from tests.util.case import *
 
@@ -96,10 +96,10 @@ class TestCaseDatabase(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event1 = EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = EventEntry(elem2, 'WORKFLOW', 'message2')
-        event3 = EventEntry(elem3, 'STEP', 'message3')
-        event4 = EventEntry(elem4, 'NEXT', 'message4')
+        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
+        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2')
+        event3 = _EventEntry(elem3, 'STEP', 'message3')
+        event4 = _EventEntry(elem4, 'NEXT', 'message4')
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
@@ -150,10 +150,10 @@ class TestCaseDatabase(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event1 = EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = EventEntry(elem2, 'WORKFLOW', 'message2')
-        event3 = EventEntry(elem3, 'STEP', 'message3')
-        event4 = EventEntry(elem4, 'NEXT', 'message4')
+        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
+        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2')
+        event3 = _EventEntry(elem3, 'STEP', 'message3')
+        event4 = _EventEntry(elem4, 'NEXT', 'message4')
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
@@ -181,10 +181,10 @@ class TestCaseDatabase(unittest.TestCase):
         elem3 = ExecutionElement(name='d', parent_name='c')
         elem4 = ExecutionElement()
 
-        event1 = EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = EventEntry(elem2, 'WORKFLOW', 'message2')
-        event3 = EventEntry(elem3, 'STEP', 'message3')
-        event4 = EventEntry(elem4, 'NEXT', 'message4')
+        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
+        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2')
+        event3 = _EventEntry(elem3, 'STEP', 'message3')
+        event4 = _EventEntry(elem4, 'NEXT', 'message4')
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
@@ -216,10 +216,10 @@ class TestCaseDatabase(unittest.TestCase):
         elem4 = ExecutionElement()
 
         event4_data = {"a": 4, "b": [1, 2, 3], "c": "Some_String"}
-        event1 = EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = EventEntry(elem2, 'WORKFLOW', 'message2', data='some_string')
-        event3 = EventEntry(elem3, 'STEP', 'message3', data=6)
-        event4 = EventEntry(elem4, 'NEXT', 'message4', data=json.dumps(event4_data))
+        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
+        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2', data='some_string')
+        event3 = _EventEntry(elem3, 'STEP', 'message3', data=6)
+        event4 = _EventEntry(elem4, 'NEXT', 'message4', data=json.dumps(event4_data))
 
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])

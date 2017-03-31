@@ -7,16 +7,16 @@ from core.config import config
 
 class TestArgument(unittest.TestCase):
     def setUp(self):
-        self.original_functions = copy.deepcopy(config.functionConfig)
+        self.original_functions = copy.deepcopy(config.function_info)
         self.test_funcs = {'func_name1': {'args': []},
                            'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
                            'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
                                                    {'name': 'arg_name2', 'type': 'arg_type2'}]}}
         for func_name, arg_dict in self.test_funcs.items():
-            config.functionConfig[func_name] = arg_dict
+            config.function_info[func_name] = arg_dict
 
     def tearDown(self):
-        config.functionConfig = self.original_functions
+        config.function_info = self.original_functions
 
     def test_init(self):
         arg = Argument()
@@ -118,7 +118,7 @@ class TestArgument(unittest.TestCase):
 
     def test_validate_filter_args(self):
         self.test_funcs = {'filters': self.test_funcs}
-        config.functionConfig = self.test_funcs
+        config.function_info = self.test_funcs
         for action, args in self.test_funcs['filters'].items():
             num_args = len(args['args'])
             for arg_pair in args['args']:
@@ -142,7 +142,7 @@ class TestArgument(unittest.TestCase):
 
     def test_validate_flag_args(self):
         self.test_funcs = {'flags': self.test_funcs}
-        config.functionConfig = self.test_funcs
+        config.function_info = self.test_funcs
         for action, args in self.test_funcs['flags'].items():
             for arg_pair in args['args']:
                 arg = Argument(key=arg_pair['name'], format=arg_pair['type'])
@@ -161,7 +161,7 @@ class TestArgument(unittest.TestCase):
     def test_validate_function_args(self):
         apps = ['app1', 'app2', 'app3']
         self.test_funcs = {'apps': {app: copy.deepcopy(self.test_funcs) for app in apps}}
-        config.functionConfig = self.test_funcs
+        config.function_info = self.test_funcs
         for app, actions in self.test_funcs['apps'].items():
             for action, args in actions.items():
                 for arg_pair in args['args']:

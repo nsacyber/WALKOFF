@@ -1,10 +1,9 @@
 import importlib
 import sys
-import json
 import os
 from xml.etree import ElementTree
 
-from core.config.paths import workflows_path
+import core.config.paths
 
 
 def get_cytoscape_data(steps):
@@ -12,17 +11,31 @@ def get_cytoscape_data(steps):
     for step in steps:
         node = {"group": "nodes", "data": {"id": steps[step]["name"]}}
         output.append(node)
-        for next in steps[step].conditionals:
-            edgeId = str(steps[step]["name"]) + str(next["name"])
-            if next["name"] in steps:
-                node = {"group": "edges", "data": {"id": edgeId, "source": steps[step]["name"], "target": next["name"]}}
+        for next_step in steps[step].conditionals:
+            edge_id = str(steps[step]["name"]) + str(next_step["name"])
+            if next_step["name"] in steps:
+                node = {"group": "edges", "data": {"id": edge_id,
+                                                   "source": steps[step]["name"],
+                                                   "target": next_step["name"]}}
             output.append(node)
     return output
 
-def import_lib(dir, module_name):
+
+def import_py_file(path_to_file):
+    if sys.version_info[0] == 2:
+        from imp import load_source
+        imported = load_source('module.name', os.path.abspath(path_to_file))
+    else:
+        from importlib import machinery
+        loader = machinery.SourceFileLoader('module', os.path.abspath(path_to_file))
+        imported = loader.load_module('module')
+    return imported
+
+
+def import_lib(directory, module_name):
     module = None
     try:
-        module = importlib.import_module('.'.join(['core', dir, module_name]))
+        module = importlib.import_module('.'.join(['core', directory, module_name]))
     except ImportError:
         pass
     finally:
@@ -30,28 +43,25 @@ def import_lib(dir, module_name):
 
 
 def import_app_main(app_name):
-    module = "apps." + app_name + ".main"
+    module_name = 'apps.{0}.main'.format(app_name)
+
     try:
-        return sys.modules[module]
+        return sys.modules[module_name]
     except KeyError:
         pass
     try:
-        return importlib.import_module(module, 'Main')
-    except ImportError:
+        module = import_py_file(os.path.join(core.config.paths.apps_path, app_name, 'main.py'))
+        sys.modules[module_name] = module
+        return module
+    except (ImportError, OSError):
         pass
 
 
-def list_apps(path=os.path.join('.', 'apps')):
-    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join('.', 'apps', f))
+def list_apps(path=None):
+    if path is None:
+        path = core.config.paths.apps_path
+    return [f for f in os.listdir(path) if (os.path.isdir(os.path.join(path, f))
                                             and not f.startswith('__'))]
-
-
-def load_function_aliases(app_name):
-    alias_file = os.path.join('.', 'apps', app_name, 'functionAliases.json')
-    if os.path.isfile(alias_file):
-        with open(alias_file, 'r') as aliases:
-            return json.loads(aliases.read())
-    return {}
 
 
 def list_class_functions(class_name):
@@ -78,7 +88,7 @@ def load_app_function(app_instance, function_name):
         return None
 
 
-def locate_workflows_in_directory(path=workflows_path):
+def locate_workflows_in_directory(path=core.config.paths.workflows_path):
     return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                           and workflow.endswith('.workflow'))]
 
@@ -89,20 +99,15 @@ def get_workflow_names_from_file(filename):
         return [workflow.get('name') for workflow in tree.iter(tag="workflow")]
 
 
-__workflow_key_seperator = '-'
+__workflow_key_separator = '-'
 
 
 def construct_workflow_name_key(playbook, workflow):
-    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_seperator), __workflow_key_seperator, workflow)
+    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_separator), __workflow_key_separator, workflow)
 
 
 def extract_workflow_name(workflow_key, playbook_name=''):
     if playbook_name and workflow_key.startswith(playbook_name):
-        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_seperator)):]
+        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_separator)):]
     else:
-        return __workflow_key_seperator.join(workflow_key.split(__workflow_key_seperator)[1:])
-
-
-
-
-
+        return __workflow_key_separator.join(workflow_key.split(__workflow_key_separator)[1:])
