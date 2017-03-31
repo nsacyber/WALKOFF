@@ -43,6 +43,26 @@ $(function() {
         $("#currentUserInfo").hide();
         $("#createUser").show();
     });
+    $("#deleteUser").click(function(){
+       user = $("#username option:selected").val();
+       if(user != 'admin'){
+            $.ajax({
+                url: 'users/' + user + '/remove',
+                data: {},
+                headers: {"Authentication-Token": authKey},
+                type: "POST",
+                success: function (e) {
+                    data = JSON.parse(e);
+                    alert("user removed");
+                },
+                error: function (e) {
+                    $("#templatesPath").val("Error");
+                }
+                });
+       }else{
+            alert('cannot delete admin user');
+       }
+    });
 });
 $("#username")
     .change(function () {
