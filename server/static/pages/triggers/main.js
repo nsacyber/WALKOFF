@@ -6,9 +6,7 @@
             headers:{"Authentication-Token":authKey},
             type:"GET",
             success:function(data){
-                console.log('success getting triggers');
                 result = JSON.parse(data);
-                console.log(result);
                 for(i=0;i<result.length;i++){
                     $("#trigger").append("<option value="+ i  + ">"+ result[i]['name'] + "</option>");
                 }
@@ -39,8 +37,6 @@
 
     $('.add').on('click', function () {
         err = {"name":""+ $slidee.children().length, "play":"", "conditions":[]};
-        console.log(err);
-        console.log("getting ready to add triggers");
         var defaultValues = {"name":"trigger" + "-" + $slidee.children().length, "play":"", "conditions":[]};
         $(this).closest('#deviceForm').find("input[type=text]").val("");
         for(key in defaultValues){
@@ -90,8 +86,6 @@
         if($("#trigger option:selected").attr('value') == 'none'){
             alert("Select a trigger");
         }else{
-        console.log('editdeviceform')
-        console.log($("#editDeviceForm").serialize());
             name = $("#trigger option:selected").text();
              $.ajax({
             url:'execution/listener/triggers/'+ name + '/edit' ,

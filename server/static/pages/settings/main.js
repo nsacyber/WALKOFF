@@ -12,6 +12,8 @@
 //     }
 // });
 $(function() {
+    $("#createUser").hide();
+
     $.ajax({
             url: "users/" + ($("#username option:selected").text() + "/display"),
             data: {},
@@ -32,6 +34,35 @@ $(function() {
                 $("#templatesPath").val("Error");
             }
         });
+
+     $("#editUser").click(function(){
+        $("#currentUserInfo").hide();
+        $("#createUser").show();
+     });
+    $("#addUser").click(function(){
+        $("#currentUserInfo").hide();
+        $("#createUser").show();
+    });
+    $("#deleteUser").click(function(){
+       user = $("#username option:selected").val();
+       if(user != 'admin'){
+            $.ajax({
+                url: 'users/' + user + '/remove',
+                data: {},
+                headers: {"Authentication-Token": authKey},
+                type: "POST",
+                success: function (e) {
+                    data = JSON.parse(e);
+                    alert("user removed");
+                },
+                error: function (e) {
+                    $("#templatesPath").val("Error");
+                }
+                });
+       }else{
+            alert('cannot delete admin user');
+       }
+    });
 });
 $("#username")
     .change(function () {
@@ -42,6 +73,7 @@ $("#username")
             type: "POST",
             success: function (e) {
                 e = JSON.parse(e);
+                console.log(e);
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                 }
@@ -54,6 +86,25 @@ $("#username")
             }
         });
     });
+
+$("#saveNewUser").click(function(){
+    $.ajax({
+        url: 'users/add',
+        data: $("#addUserForm").serialize(),
+        headers: {"Authentication-Token": authKey},
+        type: "POST",
+        success: function (e) {
+            data = JSON.parse(e);
+            alert("new user added");
+            $("#currentUserInfo").show();
+            $("#createUser").hide();
+        },
+        error: function (e) {
+            $("#templatesPath").val("Error");
+        }
+    });
+});
+
 
 $.ajax({
     url: 'configuration/templatesPath',
@@ -68,6 +119,7 @@ $.ajax({
         $("#templatesPath").val("Error");
     }
 });
+
 $.ajax({
     url: 'configuration/profileVisualizationsPath',
     data: {},
