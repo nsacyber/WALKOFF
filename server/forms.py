@@ -167,21 +167,21 @@ class DeleteSubscriptionForm(Form):
 
 
 class settingsForm(Form):
-    templatesPath = StringField('templatesPath', [validators.Optional()])
-    workflowsPath = StringField('workflowsPath', [validators.Optional()])
-    profileVisualizationsPath = StringField('profileVisualizationsPath', [validators.Optional()])
-    keywordsPath = StringField('keywordsPath', [validators.Optional()])
-    dbPath = StringField('dbPath', [validators.Optional()])
+    templates_path = StringField('Templates Path', [validators.Optional()])
+    workflows_path = StringField('Workflows Path', [validators.Optional()])
+    profile_visualizations_path = StringField('Profile Visualizations Path', [validators.Optional()])
+    keywords_path = StringField('Keywords Path', [validators.Optional()])
+    db_path = StringField('Database Path', [validators.Optional()])
 
-    TLS_version = StringField('TLS_version', [validators.Optional()])
-    certificatePath = StringField('certificatePath', [validators.Optional()])
-    https = StringField('https', [validators.Optional()])
-    privateKeyPath = StringField('privateKeyPath', [validators.Optional()])
+    tls_version = StringField('TLS Version', [validators.Optional()])
+    certificate_path = StringField('Certificate Path', [validators.Optional()])
+    https = StringField('HTTPS Enabled', [validators.Optional()])
+    private_key_path = StringField('Private Key Path', [validators.Optional()])
 
-    debug = StringField('debug', [validators.Optional()])
-    defaultServer = StringField('defaultServer', [validators.Optional()])
-    host = StringField('host', [validators.Optional()])
-    port = StringField('port', [validators.Optional()])
+    debug = StringField('Debug', [validators.Optional()])
+    default_server = StringField('Default Server', [validators.Optional()])
+    host = StringField('Host', [validators.Optional()])
+    port = StringField('Port', [validators.Optional()])
 
 
 class userForm(Form):

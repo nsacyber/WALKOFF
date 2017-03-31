@@ -107,25 +107,25 @@
                             <div id="pathConfig">
                                 <h3> Path Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.templatesPath) }}
-                                {{ render_field(systemForm.workflowsPath) }}
-                                {{ render_field(systemForm.profileVisualizationsPath) }}
-                                {{ render_field(systemForm.keywordsPath) }}
-                                {{ render_field(systemForm.dbPath) }}
+                                {{ render_field(systemForm.templates_path) }}
+                                {{ render_field(systemForm.workflows_path) }}
+                                {{ render_field(systemForm.profile_visualizations_path) }}
+                                {{ render_field(systemForm.keywords_path) }}
+                                {{ render_field(systemForm.db_path) }}
                             </div>
                             <div id="authConfig">
                               <h3> Authorization Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.TLS_version) }}
-                                {{ render_field(systemForm.certificatePath) }}
+                                {{ render_field(systemForm.tls_version) }}
+                                {{ render_field(systemForm.certificate_path) }}
                                 {{ render_field(systemForm.https) }}
-                                {{ render_field(systemForm.privateKeyPath) }}
+                                {{ render_field(systemForm.private_key_path) }}
                             </div>
                             <div id="interfaceConfig">
                               <h3> Interface Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                                 {{ render_field(systemForm.debug) }}
-                                {{ render_field(systemForm.defaultServer) }}
+                                {{ render_field(systemForm.default_server) }}
                                 {{ render_field(systemForm.host) }}
                                 {{ render_field(systemForm.port) }}
                             </div>
