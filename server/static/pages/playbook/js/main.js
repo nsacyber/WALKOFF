@@ -218,14 +218,15 @@ $(function(){
         return JSON.parse(JSON.stringify(obj));
     }
 
+    // Modify the parameters JSON object a little to conform to the schema expected by the parameters form
     function transformParametersToSchema(parameters) {
         parameters = deepcopy(parameters);
 
         var numInputs = Object.getOwnPropertyNames(parameters.input).length;
         if (numInputs > 0) {
-            var newInputs = []
+            var newInputs = [];
             $.each(parameters.input, function( key, input ) {
-                newInputs.push(input)
+                newInputs.push(input);
             });
             parameters.input = newInputs;
         }
@@ -235,9 +236,9 @@ $(function(){
 
                 var numArgs = Object.getOwnPropertyNames(flag.args).length;
                 if (numArgs > 0) {
-                    var newArgs = []
+                    var newArgs = [];
                     $.each(flag.args, function( key, arg ) {
-                        newArgs.push(arg)
+                        newArgs.push(arg);
                     });
                     flag.args = newArgs;
                 }
@@ -245,9 +246,9 @@ $(function(){
                 $.each(flag.filters, function( index, filter ) {
                     var numArgs = Object.getOwnPropertyNames(filter.args).length;
                     if (numArgs > 0) {
-                        var newArgs = []
+                        var newArgs = [];
                         $.each(filter.args, function( key, arg ) {
-                            newArgs.push(arg)
+                            newArgs.push(arg);
                         });
                         filter.args = newArgs;
                     }
@@ -258,8 +259,45 @@ $(function(){
         return parameters;
     }
 
-    function transformParametersFromSchema(obj) {
+    // Revert changes to the parameters JSON object of previous function
+    function transformParametersFromSchema(parameters) {
+        parameters = deepcopy(parameters);
 
+        var numInputs = parameters.input.length;
+        if (numInputs > 0) {
+            var newInputs = {};
+            $.each(parameters.input, function( index, input ) {
+                newInputs[input.key] = input;
+            });
+            parameters.input = newInputs;
+        }
+
+        $.each(parameters.next, function( nextIndex, nextStep ) {
+            $.each(nextStep.flags, function( index, flag ) {
+
+                var numArgs = flag.args.length;
+                if (numArgs > 0) {
+                    var newArgs = {};
+                    $.each(flag.args, function( index, arg ) {
+                        newArgs[arg.key] = arg;
+                    });
+                    flag.args = newArgs;
+                }
+
+                $.each(flag.filters, function( index, filter ) {
+                    var numArgs = filter.args.length;
+                    if (numArgs > 0) {
+                        var newArgs = {};
+                        $.each(filter.args, function( index, arg ) {
+                            newArgs[arg.key] = arg;
+                        });
+                        filter.args = newArgs;
+                    }
+                });
+            });
+        });
+
+        return parameters;
     }
 
     // This function displays a form next to the graph for editing a node/edge when clicked upon
@@ -268,7 +306,7 @@ $(function(){
         $("#parameters").empty();
 
         var ele = e.cyTarget;
-        var parameters = ele.data().parameters;
+        var parameters = ele.data('parameters');
 
         parameters = transformParametersToSchema(parameters);
 
@@ -293,6 +331,12 @@ $(function(){
         });
 
         editor.getEditor('root.app').disable();
+
+        editor.on('change',function() {
+            var updatedParameters = editor.getValue();
+            updatedParameters = transformParametersFromSchema(updatedParameters);
+            ele.data('parameters', updatedParameters);
+        });
     }
 
     // This is called while the user is dragging
