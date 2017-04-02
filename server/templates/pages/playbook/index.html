@@ -55,7 +55,7 @@
             margin-bottom: 20px;
         }
         #top {
-            width: 2250px;
+            width: 2300px;
             height: 700px;
             float: left
         }
@@ -81,12 +81,12 @@
             display: inline-block;
             vertical-align: top;
             height: 700px;
-            width: 400px;
+            width: 450px;
         }
         button, input, select, textarea {
           background-color: #45AA3B;
           color: #fff;
-          margin-top: 20px;
+          //margin-top: 20px;
           font-weight: bold;
           font-size: 20px;
           border: none;
@@ -143,7 +143,7 @@
     <div id="top">
         <div id="palette">
             <ul class="nav nav-tabs">
-                <li class="active"><a href="#workflows">Workflows</a></li>
+                <li class="active"><a id="workflows-tab" href="#workflows">Workflows</a></li>
                 <li><a href="#actions">Actions</a></li>
             </ul>
             <div class="tab-content">
@@ -155,8 +155,8 @@
         </div>
         <div id="cy" tabindex="0">
         </div>
-        <pre id="parameters">
-        </pre>
+        <div id="parameters">
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
@@ -166,5 +166,6 @@
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-edgehandles.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-clipboard.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/playbook/js/jsoneditor.min.js') }}"></script>
     <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
 </div>
