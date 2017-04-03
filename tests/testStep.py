@@ -135,24 +135,6 @@ class TestStep(unittest.TestCase):
                     else:
                         self.assertFalse(step.validate_input())
 
-    '''
-        for action in actions:
-            for arg_action, args in self.test_funcs['flags'].items():
-                flag = Flag(action=action, args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                                 for arg in self.test_funcs['flags'][arg_action]['args']})
-                if action == 'invalid_name':
-                    self.assertFalse(flag.validate_args())
-                elif not self.test_funcs['flags'][action]['args']:
-                    self.assertTrue(flag.validate_args())
-                elif action == arg_action:
-                    if len(list(args['args'])) == len(list(self.test_funcs['flags'][action]['args'])):
-                        self.assertTrue(flag.validate_args())
-                    else:
-                        self.assertFalse(flag.validate_args())
-                else:
-                    self.assertFalse(flag.validate_args())
-        '''
-
     def test_from_json(self):
         next_step_names = ['next1', 'next2']
         error_names = ['error1', 'error2']
