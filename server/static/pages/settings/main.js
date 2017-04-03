@@ -107,91 +107,104 @@ $("#saveNewUser").click(function(){
 
 
 $.ajax({
-    url: 'configuration/templatesPath',
+    url: 'configuration/templates_path',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#templatePath").val(data["templatesPath"]);
+        $("#templates_path").val(data["templates_path"]);
     },
     error: function (e) {
-        $("#templatesPath").val("Error");
+        $("#templates_path").val("Error");
     }
 });
 
 $.ajax({
-    url: 'configuration/profileVisualizationsPath',
+    url: 'configuration/workflows_path',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#profileVisualizationsPath").val(data["profileVisualizationsPath"]);
+        $("#workflows_path").val(data["workflows_path"]);
     },
     error: function (e) {
-        $("#profileVisualizationsPath").val("Error");
+        $("#workflows_path").val("Error");
+    }
+});
+$.ajax({
+    url: 'configuration/profile_visualizations_path',
+    data: {},
+    headers: {"Authentication-Token": authKey},
+    type: "GET",
+    success: function (e) {
+        data = JSON.parse(e);
+        $("#profile_visualizations_path").val(data["profile_visualizations_path"]);
+    },
+    error: function (e) {
+        $("#profile_visualizations_path").val("Error");
     }
 });
 
 $.ajax({
-    url: 'configuration/keywordsPath',
+    url: 'configuration/keywords_path',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#keywordsPath").val(data["keywordsPath"]);
+        $("#keywords_path").val(data["keywords_path"]);
     },
     error: function (e) {
-        $("#keywordsPath").val("Error");
+        $("#keywords_path").val("Error");
     }
 });
 $.ajax({
-    url: 'configuration/dbPath',
+    url: 'configuration/db_path',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#dbPath").val(data["dbPath"]);
+        $("#db_path").val(data["db_path"]);
     },
     error: function (e) {
-        $("#dbPath").val("Error");
+        $("#db_path").val("Error");
     }
 });
 
 $.ajax({
-    url: 'configuration/TLS_version',
+    url: 'configuration/tls_version',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#TLS_version").val(data["TLS_version"]);
+        $("#tls_version").val(data["tls_version"]);
     },
     error: function (e) {
-        $("#TLS_version").val("Error");
+        $("#tls_version").val("Error");
     }
 });
 $.ajax({
-    url: 'configuration/certificatePath',
+    url: 'configuration/certificate_path',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#certificatePath").val(data["certificatePath"]);
+        $("#certificate_path").val(data["certificate_path"]);
     },
     error: function (e) {
-        $("#certificatePath").val("Error");
+        $("#certificate_path").val("Error");
     }
 });
 $.ajax({
     url: 'configuration/https',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
         $("#https").val(data["https"]);
@@ -201,16 +214,16 @@ $.ajax({
     }
 });
 $.ajax({
-    url: 'configuration/privateKeyPath',
+    url: 'configuration/private_key_path',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#privateKeyPath").val(data["privateKeyPath"]);
+        $("#private_key_path").val(data["private_key_path"]);
     },
     error: function (e) {
-        $("#privateKeyPath").val("Error");
+        $("#private_key_path").val("Error");
     }
 });
 
@@ -218,7 +231,7 @@ $.ajax({
     url: 'configuration/debug',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
         $("#debug").val(data["debug"]);
@@ -228,23 +241,23 @@ $.ajax({
     }
 });
 $.ajax({
-    url: 'configuration/defaultServer',
+    url: 'configuration/default_server',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
-        $("#defaultServer").val(data["defaultServer"]);
+        $("#default_server").val(data["default_server"]);
     },
     error: function (e) {
-        $("#defaultServer").val("Error");
+        $("#default_server").val("Error");
     }
 });
 $.ajax({
     url: 'configuration/host',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
         $("#host").val(data["host"]);
@@ -257,7 +270,7 @@ $.ajax({
     url: 'configuration/port',
     data: {},
     headers: {"Authentication-Token": authKey},
-    type: "POST",
+    type: "GET",
     success: function (e) {
         data = JSON.parse(e);
         $("#port").val(data["port"]);

@@ -68,9 +68,11 @@ def create_user():
         database.db.session.add(appDevice.App(app=app_name, devices=[]))
     database.db.session.commit()
 
+
 """
     URLS
 """
+
 
 @app.route("/")
 @login_required
@@ -115,8 +117,8 @@ def list_all_apps_and_actions():
 def display_available_playbooks():
     try:
         workflows = {os.path.splitext(workflow)[0]:
-                     helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
-                      for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
+                         helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
+                     for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
         return json.dumps({"status": "success",
                            "playbooks": workflows})
     except Exception as e:
@@ -129,8 +131,8 @@ def display_available_playbooks():
 def display_playbook_workflows(name):
     try:
         workflows = {os.path.splitext(workflow)[0]:
-                     helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
-                      for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
+                         helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
+                     for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
 
         if name in workflows:
             return json.dumps({"status": "success",
@@ -157,8 +159,10 @@ def display_available_workflow_templates():
 def display_workflow(playbook_name, workflow_name):
     if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
         return json.dumps({"status": "success",
-                           "steps": running_context.controller.get_workflow(playbook_name, workflow_name).get_cytoscape_data(),
-                           'options': running_context.controller.get_workflow(playbook_name, workflow_name).options.as_json()})
+                           "steps": running_context.controller.get_workflow(playbook_name,
+                                                                            workflow_name).get_cytoscape_data(),
+                           'options': running_context.controller.get_workflow(playbook_name,
+                                                                              workflow_name).options.as_json()})
     else:
         return json.dumps({"status": "error: name not found"})
 
@@ -174,7 +178,8 @@ def crud_playbook(playbook_name, action):
             template_playbook = form.playbook_template.data
             if template_playbook:
                 if template_playbook in [os.path.splitext(workflow)[0]
-                                         for workflow in locate_workflows_in_directory(core.config.paths.templates_path)]:
+                                         for workflow in
+                                         locate_workflows_in_directory(core.config.paths.templates_path)]:
                     running_context.controller.create_playbook_from_template(playbook_name=playbook_name,
                                                                              template_playbook=template_playbook)
                 else:
@@ -329,7 +334,7 @@ def workflow(playbook_name, workflow_name, action):
         return json.dumps({"status": status,
                            "playbooks": running_context.controller.get_all_workflows()})
 
-    elif action =='execute':
+    elif action == 'execute':
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             running_context.controller.executeWorkflow(playbook_name, workflow_name)
             status = 'success'
@@ -340,6 +345,7 @@ def workflow(playbook_name, workflow_name, action):
     else:
         return json.dumps({"status": 'error: invalid operation'})
 
+
 @app.route('/flags', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/workflow'])
@@ -348,12 +354,14 @@ def display_flags():
     return json.dumps({"status": "success",
                        "flags": core.config.config.function_info['flags']})
 
+
 @app.route('/filters', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/workflow'])
 def display_filters():
     return json.dumps({"status": "success",
                        "filters": core.config.config.function_info['filters']})
+
 
 @app.route('/cases', methods=['GET'])
 @auth_token_required
@@ -479,13 +487,38 @@ def display_subscriptions():
     return json.dumps(case_subscription.subscriptions_as_json())
 
 
-@app.route("/configuration/<string:key>", methods=['POST'])
+@app.route("/configuration/<string:key>", methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
-def configValues(key):
+def config_values(key):
     if current_user.is_authenticated and key:
         if hasattr(core.config.config, key):
             return json.dumps({str(key): str(getattr(core.config.config, key))})
+        elif hasattr(core.config.paths, key):
+            return json.dumps({str(key): str(getattr(core.config.paths, key))})
+        else:
+            return json.dumps({str(key): "Error: key not found"})
+    else:
+        return json.dumps({str(key): "Error: user is not authenticated or key is empty"})
+
+
+@app.route("/configuration/set", methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles["/configuration"])
+def set_configuration():
+    if current_user.is_authenticated:
+        form = forms.settingsForm(request.form)
+        if form.validate():
+            for key, value in form.data.items():
+                if hasattr(core.config.paths, key):
+                    setattr(core.config.paths, key, value)
+                else:
+                    setattr(core.config.config, key, value)
+            return json.dumps({"status": 'success'})
+        else:
+            return json.dumps({"status": 'error: invalid form'})
+    else:
+        return json.dumps({"status": 'error: user is not authenticated'})
 
 
 # Returns System-Level Interface Pages
@@ -499,10 +532,11 @@ def systemPages(name):
     else:
         return {"status": "Could Not Log In."}
 
+
 # Controls execution triggers
 @app.route('/execution/scheduler/<string:action>', methods=["POST"])
 @auth_token_required
-#@roles_accepted(*userRoles["/execution/listener"])
+# @roles_accepted(*userRoles["/execution/listener"])
 def schedulerActions(action):
     if action == "start":
         status = running_context.controller.start()
@@ -513,7 +547,8 @@ def schedulerActions(action):
     elif action == "pause":
         status = running_context.controller.pause()
         return json.dumps({"status": status})
-    return json.dumps({"status" : "invalid command"})
+    return json.dumps({"status": "invalid command"})
+
 
 # Controls execution triggers
 @app.route('/execution/scheduler/jobs', methods=["POST"])
@@ -521,6 +556,7 @@ def schedulerActions(action):
 # @roles_accepted(*userRoles["/execution/listener"])
 def scheduler():
     return running_context.controller.getScheduledJobs()
+
 
 # Controls execution triggers
 @app.route('/execution/listener', methods=["POST"])
@@ -815,9 +851,9 @@ def start(config_type=None):
 
     if core.config.config.https.lower() == "true":
         # Sets up HTTPS
-        if core.config.config.TLS_version == "1.2":
+        if core.config.config.tls_version == "1.2":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        elif core.config.config.TLS_version == "1.1":
+        elif core.config.config.tls_version == "1.1":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
         else:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)

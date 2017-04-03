@@ -4,6 +4,7 @@ from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.helpers import import_lib
+import core.config.config
 
 
 class Filter(ExecutionElement):
@@ -32,7 +33,14 @@ class Filter(ExecutionElement):
         return elem
 
     def validate_args(self):
-        return all(arg.validate_filter_args(self.action, len(list(self.args.keys()))) for arg in self.args.values())
+        if self.action in core.config.config.function_info['filters']:
+            possible_args = core.config.config.function_info['filters'][self.action]['args']
+            if possible_args:
+                return (len(list(possible_args)) == len(list(self.args.keys()))
+                        and all(arg.validate(possible_args) for arg in self.args.values()))
+            else:
+                return True
+        return False
 
     def __call__(self, output=None):
         module = import_lib('filters', self.action)
