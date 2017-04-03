@@ -61,14 +61,7 @@ class Argument(object):
         return arg['name'] == self.key and arg['type'] == self.format
 
     def validate(self, possible_args):
-        if not possible_args:
-            return True
         return any(self.__test_validation_match(arg) for arg in possible_args)
-
-    def validate_flag_args(self, action):
-        if action in core.config.config.function_info['flags']:
-            return self.validate(core.config.config.function_info['flags'][action]['args'])
-        return False
 
     def validate_function_args(self, app, action):
         if app in core.config.config.function_info['apps'] and action in core.config.config.function_info['apps'][app]:

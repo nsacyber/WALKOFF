@@ -507,7 +507,7 @@ def config_values(key):
 @roles_accepted(*userRoles["/configuration"])
 def set_configuration():
     if current_user.is_authenticated:
-        form = forms.settingsForm(request.form)
+        form = forms.SettingsForm(request.form)
         if form.validate():
             for key, value in form.data.items():
                 if hasattr(core.config.paths, key):

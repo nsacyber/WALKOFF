@@ -165,36 +165,28 @@ class TestFlag(unittest.TestCase):
         self.assertFalse(flag.remove_filter())
         self.assertListEqual(flag.filters, [])
 
-    def test_validate_args(self):
-        flag = Flag()
-        self.assertTrue(flag.validate_args())
+    def test_validate_default_flag(self):
+        filter_elem = Flag()
+        self.assertFalse(filter_elem.validate_args())
 
-        flag = Flag(action='count')
-        self.assertTrue(flag.validate_args())
-
+    def test_validate_invalid_flag(self):
         flag = Flag(action='junkName')
-        self.assertTrue(flag.validate_args())
-
-        flag = Flag(args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                          for arg in self.test_funcs['flags']['func_name1']['args']})
-        self.assertTrue(flag.validate_args())
-
-        flag = Flag(action='func_name1', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                               for arg in self.test_funcs['flags']['func_name1']['args']})
-        self.assertTrue(flag.validate_args())
-
-        flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                             for arg in self.test_funcs['flags']['func_name1']['args']})
-        self.assertTrue(flag.validate_args())
-
-        flag = Flag(action='func_name2', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                               for arg in self.test_funcs['flags']['func_name2']['args']})
-        self.assertTrue(flag.validate_args())
-
-        flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                             for arg in self.test_funcs['flags']['func_name2']['args']})
-
         self.assertFalse(flag.validate_args())
+
+    def test_validate_args(self):
+
+        actions = ['func_name1', 'func_name2', 'func_name3', 'invalid_name']
+
+        for action in actions:
+            for arg_action, args in self.test_funcs['flags'].items():
+                flag = Flag(action=action, args={arg['name']: Argument(key=arg['name'], format=arg['type'])
+                                                 for arg in self.test_funcs['flags'][arg_action]['args']})
+                if action == 'invalid_name':
+                    self.assertFalse(flag.validate_args())
+                elif action == arg_action or not self.test_funcs['flags'][action]['args']:
+                    self.assertTrue(flag.validate_args())
+                else:
+                    self.assertFalse(flag.validate_args())
 
     def test_call_invalid_flag(self):
         flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
