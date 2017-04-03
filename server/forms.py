@@ -196,7 +196,6 @@ class userForm(Form):
     last_login_ip = StringField("last_login_ip")
     current_login_ip = StringField("current_login_ip")
     login_count = IntegerField("login_count")
-    # active = RadioField('active',choices = [ (h.key.id(),h.homename)for h in User.queryAll()])
 
 class addUserForm(Form):
     username = StringField('username', [validators.required(message='Enter a user name')])

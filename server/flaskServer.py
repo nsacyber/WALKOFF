@@ -40,9 +40,6 @@ database.initialize_userRoles(urls)
 db = database.db
 
 
-# devClass = appDevice.Device()
-
-
 # Creates Test Data
 @app.before_first_request
 def create_user():
