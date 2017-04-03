@@ -101,13 +101,12 @@ class Step(ExecutionElement):
         return False
 
     def __lookup_function(self):
-        if self.app in core.config.config.function_info['apps']:
-            for action, info in core.config.config.function_info['apps'][self.app].items():
-                if action == self.action:
-                    return self.action
-                else:
-                    if 'aliases' in info and self.action in info['aliases']:
-                        return action
+        for action, info in core.config.config.function_info['apps'][self.app].items():
+            if action == self.action:
+                return self.action
+            else:
+                if 'aliases' in info and self.action in info['aliases']:
+                    return action
         raise InvalidStepActionError(self.app, self.action)
 
     def execute(self, instance=None):
