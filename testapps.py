@@ -38,7 +38,7 @@ def test_app(app_name):
                         for test_module in test_modules])
         unittest.TextTestRunner(verbosity=1).run(suite)
     elif len(test_modules) == 0:
-        print('App {0} has no tests')
+        print("App {0} has no tests. Don't be that person. Write your tests.")
 
 if __name__ == '__main__':
     cmd_args = cmd_line()

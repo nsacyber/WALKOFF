@@ -2,21 +2,21 @@ import unittest
 import sys
 import copy
 from core.filter import Filter
-from core.config import config
+import core.config.config
 
 
 class TestFilter(unittest.TestCase):
     def setUp(self):
-        self.original_functions = copy.deepcopy(config.function_info)
+        self.original_functions = copy.deepcopy(core.config.config.function_info)
         self.test_funcs = {'filters': {'func_name1': {'args': []},
                                        'func_name2': {'args': [{'name': 'arg_name1', 'type': 'str'}]},
                                        'func_name3': {'args': [{'name': 'arg_name1', 'type': 'str'},
                                                                {'name': 'arg_name2', 'type': 'int'}]}}}
         for func_name, arg_dict in self.test_funcs['filters'].items():
-            config.function_info['filters'][func_name] = arg_dict
+            core.config.config.function_info['filters'][func_name] = arg_dict
 
     def tearDown(self):
-        config.function_info = self.original_functions
+        core.config.config.function_info = self.original_functions
 
     def compare_init(self, elem, action, parent_name, ancestry, args=None):
         args = args if args is not None else {}
@@ -93,15 +93,17 @@ class TestFilter(unittest.TestCase):
             derived_json = Filter(xml=filter_element.to_xml()).as_json()
             self.assertEqual(original_json, derived_json)
 
-    def test_validate_args(self):
+    def test_validate_default_filter(self):
         filter_elem = Filter()
-        self.assertTrue(filter_elem.validate_args())
+        self.assertFalse(filter_elem.validate_args())
 
+    def test_validate_length_filter(self):
         filter_elem = Filter(action='length')
         self.assertTrue(filter_elem.validate_args())
 
+    def test_validate_invalid_name(self):
         filter_elem = Filter(action='junkName')
-        self.assertTrue(filter_elem.validate_args())
+        self.assertFalse(filter_elem.validate_args())
 
         self.test_funcs = {'filters': {'func_name1': {'args': []},
                                        'func_name2': {'args': [{'name': 'arg_name1', 'type': 'str'}]},
@@ -111,14 +113,14 @@ class TestFilter(unittest.TestCase):
                               'func_name2': {'arg_name1': 'test_string'},
                               'func_name3': {'arg_name1': 'test_string', 'arg_name2': 6}}
         actions = ['func_name1', 'func_name2', 'func_name3', 'invalid_name']
+
         for action in actions:
             for arg_action, args in corresponding_args.items():
                 filter_elem = Filter(action=action, args=args)
-                if not args:
-                    self.assertTrue(filter_elem.validate_args())
-
-                elif action == 'invalid_name':
+                if action == 'invalid_name':
                     self.assertFalse(filter_elem.validate_args())
+                elif not self.test_funcs['filters'][action]['args']:
+                    self.assertTrue(filter_elem.validate_args())
                 elif action == arg_action:
                     if len(list(args.keys())) == len(list(self.test_funcs['filters'][action]['args'])):
                         self.assertTrue(filter_elem.validate_args())

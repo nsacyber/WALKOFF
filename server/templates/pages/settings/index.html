@@ -107,40 +107,40 @@
                             <div id="pathConfig">
                                 <h3> Path Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.templatesPath) }}
-                                {{ render_field(systemForm.workflowsPath) }}
-                                {{ render_field(systemForm.profileVisualizationsPath) }}
-                                {{ render_field(systemForm.keywordsPath) }}
-                                {{ render_field(systemForm.dbPath) }}
+                                {{ render_field(systemForm.templates_path) }}
+                                {{ render_field(systemForm.workflows_path) }}
+                                {{ render_field(systemForm.profile_visualizations_path) }}
+                                {{ render_field(systemForm.keywords_path) }}
+                                {{ render_field(systemForm.db_path) }}
                             </div>
                             <div id="authConfig">
                               <h3> Authorization Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.TLS_version) }}
-                                {{ render_field(systemForm.certificatePath) }}
+                                {{ render_field(systemForm.tls_version) }}
+                                {{ render_field(systemForm.certificate_path) }}
                                 {{ render_field(systemForm.https) }}
-                                {{ render_field(systemForm.privateKeyPath) }}
+                                {{ render_field(systemForm.private_key_path) }}
                             </div>
                             <div id="interfaceConfig">
                               <h3> Interface Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                                 {{ render_field(systemForm.debug) }}
-                                {{ render_field(systemForm.defaultServer) }}
+                                {{ render_field(systemForm.default_server) }}
                                 {{ render_field(systemForm.host) }}
                                 {{ render_field(systemForm.port) }}
                             </div>
                         <input id="formSubmit" type="submit" value="submit">
                     </form>
                 </div>
+
             </div>
             <div id="userSettings">
                 <h1 class="settingsHeader">User Settings</h1>
-                <div >
+                <div  id="currentUserInfo">
                     <form id="userForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
 
-                        <div id="test">
                           <h3> User Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                             {{ render_field(userForm.username) }}
@@ -154,9 +154,35 @@
 {#                            {{ render_field(form.last_login_ip) }}#}
 {#                            {{ render_field(form.current_login_ip)  }}#}
 {#                            {{ render_field(form.login_count) }}#}
-                        </div>
                     </form>
+                    <div id="crudButtons">
+                        <button id="addUser">Add User</button>
+                        <button id="editUser">Edit User</button>
+                        <button id="deleteUser">Delete User</button>
+                    </div>
                 </div>
+                <div id="createUser">
+                    <form id="addUserForm">
+                        {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(addUserForm.username) }}
+                        {{ render_field(addUserForm.email) }}
+                        {{ render_field(addUserForm.password) }}
+                        {{ render_field(addUserForm.confirm) }}
+                    </form>
+                    <button id="saveNewUser">Submit</button>
+                </div>
+                <div id="updateUser">
+                    <h3>Update User</h3>
+                    <form id="updateUserForm">
+                        {% from "pages/_formhelpers.html" import render_field %}
+                        {{ render_field(addUserForm.username) }}
+                        {{ render_field(addUserForm.email) }}
+                        {{ render_field(addUserForm.password) }}
+                        {{ render_field(addUserForm.confirm) }}
+                    </form>
+                    <button id="submitUpdate">Submit</button>
+                </div>
+
             </div>
         </div>
     </div>

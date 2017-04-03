@@ -7,7 +7,7 @@ from jinja2 import Template, Markup
 from core import arguments
 from core import contextDecorator
 from core import nextstep
-from core.config import config
+import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
@@ -84,16 +84,23 @@ class Step(ExecutionElement):
             content = cElementTree.tostring(self.raw_xml, method='xml')
 
         t = Template(Markup(content).unescape(), autoescape=True)
-        xml = t.render(config.JINJA_GLOBALS, **kwargs)
+        xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
     def validate_input(self):
-        return (all(self.input[arg].validate_function_args(self.app, self.action) for arg in self.input)
-                if self.input else True)
+        if (self.app in core.config.config.function_info['apps']
+                and self.action in core.config.config.function_info['apps'][self.app]):
+            possible_args = core.config.config.function_info['apps'][self.app][self.action]['args']
+            if possible_args:
+                return (len(list(possible_args)) == len(list(self.input.keys()))
+                        and all(self.input[arg].validate(possible_args) for arg in self.input))
+            else:
+                return True
+        return False
 
     def __lookup_function(self):
-        if self.app in config.function_info['apps']:
-            for action, info in config.function_info['apps'][self.app].items():
+        if self.app in core.config.config.function_info['apps']:
+            for action, info in core.config.config.function_info['apps'][self.app].items():
                 if action == self.action:
                     return self.action
                 else:

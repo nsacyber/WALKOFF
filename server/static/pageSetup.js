@@ -4,7 +4,6 @@ $(document).on("DOMContentLoaded", function(e){
     }
 });
 
-console.log(default_page)
 core.start("systemPage", {
     options: {page: default_page}
 });

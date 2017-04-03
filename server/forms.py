@@ -1,3 +1,4 @@
+from flask_security.forms import Required, EqualTo
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
     IntegerField, FormField, \
     SelectField, RadioField, SubmitField
@@ -165,28 +166,27 @@ class DeleteSubscriptionForm(Form):
     ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
 
 
-class settingsForm(Form):
-    templatesPath = StringField('templatesPath', [validators.Optional()])
-    workflowsPath = StringField('workflowsPath', [validators.Optional()])
-    profileVisualizationsPath = StringField('profileVisualizationsPath', [validators.Optional()])
-    keywordsPath = StringField('keywordsPath', [validators.Optional()])
-    dbPath = StringField('dbPath', [validators.Optional()])
+class SettingsForm(Form):
+    templates_path = StringField('Templates Path', [validators.Optional()])
+    workflows_path = StringField('Workflows Path', [validators.Optional()])
+    profile_visualizations_path = StringField('Profile Visualizations Path', [validators.Optional()])
+    keywords_path = StringField('Keywords Path', [validators.Optional()])
+    db_path = StringField('Database Path', [validators.Optional()])
 
-    TLS_version = StringField('TLS_version', [validators.Optional()])
-    certificatePath = StringField('certificatePath', [validators.Optional()])
-    https = StringField('https', [validators.Optional()])
-    privateKeyPath = StringField('privateKeyPath', [validators.Optional()])
+    tls_version = StringField('TLS Version', [validators.Optional()])
+    certificate_path = StringField('Certificate Path', [validators.Optional()])
+    https = StringField('HTTPS Enabled', [validators.Optional()])
+    private_key_path = StringField('Private Key Path', [validators.Optional()])
 
-    debug = StringField('debug', [validators.Optional()])
-    defaultServer = StringField('defaultServer', [validators.Optional()])
-    host = StringField('host', [validators.Optional()])
-    port = StringField('port', [validators.Optional()])
+    debug = StringField('Debug', [validators.Optional()])
+    default_server = StringField('Default Server', [validators.Optional()])
+    host = StringField('Host', [validators.Optional()])
+    port = StringField('Port', [validators.Optional()])
 
 
 class userForm(Form):
     username = SelectField('username', [validators.Optional()], choices=[])
-    email = StringField('email', [validators.DataRequired("Please enter your email address."),
-                                  validators.Email("Please enter your email address.")])
+    email = StringField('email', [validators.DataRequired("Please enter your email address.")])
     password = PasswordField('password')
     active = BooleanField()
     confirmed_at = DateTimeField('confirmed_at', [validators.Optional()])
@@ -197,3 +197,10 @@ class userForm(Form):
     current_login_ip = StringField("current_login_ip")
     login_count = IntegerField("login_count")
     # active = RadioField('active',choices = [ (h.key.id(),h.homename)for h in User.queryAll()])
+
+class addUserForm(Form):
+    username = StringField('username', [validators.required(message='Enter a user name')])
+    password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat Password')
+    roles = SelectField('roles', choices=[])
+    email = StringField('email', [validators.DataRequired("Please enter your email address.")])

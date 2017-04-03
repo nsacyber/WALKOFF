@@ -2,7 +2,7 @@ import ssl
 from os.path import isfile
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
-from core.config import config
+from core.config import config, paths
 from server import flaskServer
 
 from tornado.wsgi import WSGIContainer
@@ -12,19 +12,19 @@ from tornado.ioloop import IOLoop
 def get_ssl_context():
     if config.https.lower() == "true":
         # Sets up HTTPS
-        if config.TLS_version == "1.2":
+        if config.tls_version == "1.2":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        elif config.TLS_version == "1.1":
+        elif config.tls_version == "1.1":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
         else:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
-        if isfile(config.certificatePath) and isfile(config.privateKeyPath):
-            context.load_cert_chain(config.certificatePath, config.privateKeyPath)
+        if isfile(paths.certificate_path) and isfile(paths.private_key_path):
+            context.load_cert_chain(paths.certificate_path, paths.private_key_path)
             return context
         else:
-            flaskServer.displayIfFileNotFound(config.certificatePath)
-            flaskServer.displayIfFileNotFound(config.privateKeyPath)
+            flaskServer.displayIfFileNotFound(paths.certificate_path)
+            flaskServer.displayIfFileNotFound(paths.private_key_path)
     return None
 
 

@@ -5,6 +5,7 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
 from core.helpers import import_lib
+import core.config.config
 
 
 class Flag(ExecutionElement):
@@ -57,7 +58,14 @@ class Flag(ExecutionElement):
         return True
 
     def validate_args(self):
-        return all(arg.validate_flag_args(self.action) for arg in self.args.values())
+        if self.action in core.config.config.function_info['flags']:
+            possible_args = core.config.config.function_info['flags'][self.action]['args']
+            if possible_args:
+                return (len(list(possible_args)) == len(list(self.args.keys()))
+                        and all(arg.validate(possible_args) for arg in self.args.values()))
+            else:
+                return True
+        return False
 
     def __call__(self, output=None):
         data = output
