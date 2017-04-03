@@ -336,6 +336,7 @@ $(function(){
             var updatedParameters = editor.getValue();
             updatedParameters = transformParametersFromSchema(updatedParameters);
             ele.data('parameters', updatedParameters);
+            ele.data('label', updatedParameters.name);
         });
     }
 
@@ -574,10 +575,10 @@ $(function(){
         // Load the data into the graph
         workflowData = JSON.parse(workflowData);
         // If a node does not have a label field, set it to
-        // the action. The label is what is displayed in the graph.
+        // the name. The label is what is displayed in the graph.
         workflowData = workflowData.steps.map(function(value) {
             if (!value.data.hasOwnProperty("label")) {
-                value.data.label = value.data.parameters.action;
+                value.data.label = value.data.parameters.name;
             }
             return value;
         });
