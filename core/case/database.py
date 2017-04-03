@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 from core.config.paths import case_db_path
 
@@ -81,9 +81,11 @@ class CaseDatabase(object):
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
-        Session = sessionmaker()
-        Session.configure(bind=self.engine)
-        self.session = Session()
+        # Session = sessionmaker()
+        # Session.configure(bind=self.engine)
+        # self.session = Session()
+        session_factory = sessionmaker(bind=self.engine)
+        self.session = scoped_session(session_factory)
 
         _Base.metadata.bind = self.engine
         _Base.metadata.create_all(self.engine)
@@ -151,20 +153,25 @@ class CaseDatabase(object):
     def event_as_json(self, event_id):
         return self.session.query(Event).filter(Event.id == event_id).first().as_json()
 
-case_db = CaseDatabase()
+def get_case_db(_singleton = CaseDatabase()):
+    return _singleton
 
+case_db = get_case_db()
 
 # Initialize Module
 def initialize():
-    case_db.tearDown()
-    remove(case_db_path)
-    case_db.create()
-
+#     case_db.tearDown()
+#     remove(case_db_path)
+#     case_db.create()
+    _Base.metadata.drop_all()
+    _Base.metadata.create_all()
+    pass
 
 # Teardown Module
 def tearDown():
-    case_db.session.close()
-    case_db.transaction.rollback()
-    case_db.connection.close()
-    case_db.engine.dispose()
+    # case_db.session.close()
+    # case_db.transaction.rollback()
+    # case_db.connection.close()
+    # case_db.engine.dispose()
+    pass
 

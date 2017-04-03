@@ -14,10 +14,6 @@ class TestLoadWorkflow(unittest.TestCase):
         self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'basicWorkflowTest.workflow')
         self.workflow_name = _WorkflowKey('basicWorkflowTest', 'helloWorldWorkflow')
         self.testWorkflow = self.c.workflows[self.workflow_name]
-        controller.initialize_threading()
-
-    def tearDown(self):
-        controller.shutdown_pool()
 
     @graphDecorator.callgraph(enabled=False)
     def test_workflowLoaded(self):

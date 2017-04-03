@@ -2,8 +2,6 @@ import xml.etree.cElementTree as et
 from os import sep
 import os
 
-import time
-
 from collections import namedtuple
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
@@ -21,73 +19,70 @@ from multiprocessing import Manager
 import dill
 from copy import deepcopy
 
-NUM_PROCESSES = 2
-threads = []
+NUM_PROCESSES = 5
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
 def initialize_threading():
-    global queue
+    global task_queue
+    global completed_queue
     global pool
+    global workflows
+    global processes
 
     manager = Manager()
-    queue = manager.Queue()
+    task_queue = manager.Queue()
+    completed_queue = manager.Queue()
+    workflows = []
 
-    print("Initializing thread pool...")
     pool = Pool(processes=NUM_PROCESSES)
-    print("Initialized pool.")
+
     for i in range(0, NUM_PROCESSES):
-        pool.apply_async(executeWorkflowWorker, (queue,))
-    # print("Initialized")
-    #dill.settings["byref"] = True
+        pool.apply_async(executeWorkflowWorker, (task_queue, completed_queue))
 
 def shutdown_pool():
     global pool
+    global completed_queue
+    global workflows
 
-    #pool.join()
+    print ("shutting down")
 
-#def executeWorkflowWorker(queue, subs):
-def executeWorkflowWorker(queue):
-    #subscription.set_subscriptions(subs)
+    while (True):
+        if not workflows:
+            break
+        playbook_name,workflow_name = completed_queue.get()
+        key = _WorkflowKey(playbook_name, workflow_name)
+        if key in workflows:
+            workflows.remove(key)
+
+    print("through, starting to close and join")
+
+    pool.terminate()
+    pool.join()
+
+    workflows = []
+
+def executeWorkflowWorker(task_queue, completed_queue):
 
     print("Thread " + str(os.getpid()) + " starting up...")
 
     while (True):
-        while not queue.empty():
-            print("Queue not empty...trying to pop")
-            pickled_workflow,start,data,subs = queue.get()
-            print("popped!")
-            subscription.set_subscriptions(subs)
-            workflow = dill.loads(pickled_workflow) #this line takes forever...can we use something like json instead?
-            #print("Thread popped "+workflow.filename+" off queue...")
-            print(workflow.filename)
-            #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
-            workflow.execute(start=start, data=data)
-            workflow.is_completed = True
-            print(workflow.is_completed)
-            print("done")
 
-# def executeWorkflowWorker(workflow, start, data):
-#     #global queue
-#
-#     print("Thread " + str(os.getpid()) + " starting up...")
-#
-#     #workflow = dill.loads(pickled_workflow)
-#
-#     print("Thread executing "+workflow.filename+"...")
-#
-#     workflow.execute(start=start, data=data)
-#
-#     # while (True):
-#     #     while not queue.empty():
-#     #         print("Queue not empty...trying to pop")
-#     #         pickled_workflow,start,data = queue.get()
-#     #         workflow = dill.loads(pickled_workflow)
-#     #         print("Thread popped "+workflow.filename+" off queue...")
-#         # pickled_workflow,start,data = queue.get(block=True)
-#         # workflow = dill.loads(pickled_workflow)
-#         #print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
-#         #steps, instances = workflow.execute(start=start, data=data)
+        while not task_queue.empty():
+
+            print("Queue not empty...trying to pop")
+            pickled_workflow,playbook_name, workflow_name,start,data,subs = task_queue.get()
+            print("popped!")
+
+            subscription.set_subscriptions(subs)
+            workflow = dill.loads(pickled_workflow)
+            print("Thread popped "+playbook_name+" "+workflow_name+" off queue...")
+            workflow.execute(start=start, data=data)
+
+            workflow.is_completed = True
+            completed_queue.put((playbook_name, workflow_name))
+            print(workflows)
+            print("done")
 
 class Controller(object):
 
@@ -222,65 +217,16 @@ class Controller(object):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
             self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
 
-    # def executeWorkflowWorker(self):
-    #
-    #     print("Thread " + str(os.getpid()) + " starting up...")
-    #
-    #     while (True):
-    #         while (self.queue.empty()):
-    #             continue
-    #         name,start,data = self.queue.get()
-    #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
-    #         steps, instances = self.workflows[name].execute(start=start, data=data)
-
-    # def executeWorkflowWorker(self, workflow, start, data, subs):
-    #     # global queue
-    #
-    #     #print(id(subscription.subscriptions))
-    #     subscription.set_subscriptions(subs)
-    #
-    #     print("Thread " + str(os.getpid()) + " starting up...")
-    #
-    #     # workflow = dill.loads(pickled_workflow)
-    #
-    #     print("Thread executing " + workflow.filename + "...")
-    #
-    #     workflow.execute(start=start, data=data)
-    #
-    #     self.jobExecutionListener.execute_event_code(self, 'JobExecuted')
-    #
-    #     workflow.is_completed = True
-    #
-    #     # from core.case.database import case_db, Event
-    #     # print(case_db.session.query(Event).all())
-    #
-    #     # while (True):
-    #     #     while not queue.empty():
-    #     #         print("Queue not empty...trying to pop")
-    #     #         pickled_workflow,start,data = queue.get()
-    #     #         workflow = dill.loads(pickled_workflow)
-    #     #         print("Thread popped "+workflow.filename+" off queue...")
-    #     # pickled_workflow,start,data = queue.get(block=True)
-    #     # workflow = dill.loads(pickled_workflow)
-    #     # print("Thread " + str(os.getpid()) + " received and executing workflow "+workflow.get("name"))
-    #     # steps, instances = workflow.execute(start=start, data=data)
-
     def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
-        global queue
+        global task_queue, workflows
 
         print("Boss thread putting " + workflow_name + " workflow on queue...:")
-        # self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
         key = _WorkflowKey(playbook_name, workflow_name)
-        workFl = self.workflows[key]
-        # CAN'T PICKLE STEPS (conditionals, errors -- both nextStep objects (eventHandler)), OPTIONS (children (tieredWorkflow-childWorkflow))
-        #pool.apply(executeWorkflowWorker, (workFl, start, data))
-        #workFl.event_handler = None
-        #workFl.options = None
-        #workFl.steps = None
-        pickled_workflow = dill.dumps(workFl)
+        pickled_workflow = dill.dumps(self.workflows[key])
         subs = deepcopy(subscription.subscriptions)
-        queue.put((pickled_workflow, start, data, subs))
-        #callbacks.SchedulerJobExecuted.send(self)
+        workflows.append(key)
+        task_queue.put((pickled_workflow, playbook_name, workflow_name, start, data, subs))
+        callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
         key = _WorkflowKey(playbook_name, workflow_name)

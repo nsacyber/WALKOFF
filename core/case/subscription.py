@@ -1,4 +1,5 @@
-from core.case.database import case_db
+# from core.context import running_context
+from core.case import database
 
 class GlobalSubscriptions(object):
     """
@@ -120,7 +121,7 @@ subscriptions = {}
 def set_subscriptions(new_subscriptions):
     global subscriptions
     subscriptions = new_subscriptions
-    case_db.register_events(new_subscriptions.keys())
+    database.case_db.register_events(new_subscriptions.keys())
 
 
 def add_cases(cases):
@@ -129,7 +130,7 @@ def add_cases(cases):
         if case_name not in subscriptions:
             subscriptions[case_name] = case
             valid_cases.append(case_name)
-    case_db.register_events(valid_cases)
+    database.case_db.register_events(valid_cases)
 
 
 def delete_cases(cases):
@@ -138,13 +139,13 @@ def delete_cases(cases):
         if case_name in subscriptions:
             del subscriptions[case_name]
             valid_cases.append(case_name)
-    case_db.delete_cases(valid_cases)
+    database.case_db.delete_cases(valid_cases)
 
 
 def rename_case(old_case_name, new_case_name):
     if old_case_name in subscriptions:
         subscriptions[new_case_name] = subscriptions.pop(old_case_name)
-        case_db.rename_case(old_case_name, new_case_name)
+        database.case_db.rename_case(old_case_name, new_case_name)
 
 
 def get_subscriptions():

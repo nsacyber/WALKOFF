@@ -10,7 +10,6 @@ from core.executionelement import ExecutionElement
 from core.step import Step
 from core.helpers import construct_workflow_name_key, extract_workflow_name
 
-
 class Workflow(ExecutionElement):
     def __init__(self, name="", workflowConfig=None, children=None, parent_name="", filename=''):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
@@ -105,7 +104,7 @@ class Workflow(ExecutionElement):
 
             # Check for call to child workflow
             if next_step and next_step[0] == '@':
-                child_step_generator, child_next_step = self.__get_child_step_generator(next_step)
+                child_step_generator, child_next_step = self.get_child_step_generator(next_step)
                 if child_step_generator:
                     for child_step in child_step_generator:
                         if child_step:
@@ -130,7 +129,7 @@ class Workflow(ExecutionElement):
         finally:
             return error_flag
 
-    def __get_child_step_generator(self, tiered_step_str):
+    def get_child_step_generator(self, tiered_step_str):
         params = tiered_step_str.split(':')
         if len(params) == 3:
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]

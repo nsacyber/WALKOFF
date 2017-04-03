@@ -13,12 +13,14 @@ class Context(object):
         from server.database import User, Role
         from server.appDevice import Device, App
         from core.controller import controller
+        #import core.case.database as case_database
         self.controller = controller
 
         self.User = User
         self.Role = Role
         self.Device = Device
         self.App = App
+        #self.case_database = case_database
 
     # Returns list of apps
     # Gets all the app instances
@@ -28,6 +30,10 @@ class Context(object):
 
     def set(self, key, value):
         setattr(self, key, value)
+
+    def init_threads(self):
+        from core.controller import initialize_threading
+        initialize_threading()
 
     def shutdown_threads(self):
         from core.controller import shutdown_pool

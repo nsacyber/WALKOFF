@@ -11,6 +11,7 @@ from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
 from server import flaskServer as flask_server
+from server.flaskServer import running_context
 
 
 class TestWorkflowManipulation(unittest.TestCase):
@@ -30,14 +31,17 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.c.workflows = None
         case_database.case_db.tearDown()
         case_subscription.clear_subscriptions()
-        controller.shutdown_pool()
 
     def executionTest(self):
+        running_context.init_threads()
         step_names = ['start', '1']
         setup_subscriptions_for_step(self.testWorkflow.name, step_names)
         start = datetime.utcnow()
         # Check that the workflow executed correctly post-manipulation
         self.c.executeWorkflow(*self.id_tuple)
+
+        running_context.shutdown_threads()
+
         steps = executed_steps('defaultController', self.testWorkflow.name, start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
         names = [step['ancestry'].split(',')[-1] for step in steps]

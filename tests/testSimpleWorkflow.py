@@ -14,16 +14,15 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.c = running_context.controller
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "basicWorkflowTest.workflow")
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multiactionWorkflowTest.workflow")
-        self.c.loadWorkflowsFromFile(path=config.testWorkflowsPath + "multistepError.workflow")
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "multistepError.workflow")
         self.start = datetime.utcnow()
         running_context.init_threads()
 
     def tearDown(self):
         case_database.case_db.tearDown()
         case_subscription.clear_subscriptions()
-        running_context.shutdown_threads()
 
     """
         Tests simple workflow execution with a single action with an argument and no jumps.
@@ -34,6 +33,9 @@ class TestSimpleWorkflow(unittest.TestCase):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         setup_subscriptions_for_step(workflow_name, ['start'])
         self.c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        running_context.shutdown_threads()
+
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
 
         self.assertEqual(len(steps), 1)
@@ -52,6 +54,9 @@ class TestSimpleWorkflow(unittest.TestCase):
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
         self.c.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
+
+        running_context.shutdown_threads()
+
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
         names = [step['ancestry'].split(',')[-1] for step in steps]
@@ -75,6 +80,9 @@ class TestSimpleWorkflow(unittest.TestCase):
         step_names = ['start', '1', 'error']
         setup_subscriptions_for_step(workflow_name, step_names)
         self.c.executeWorkflow('multistepError', 'multiactionErrorWorkflow')
+
+        running_context.shutdown_threads()
+
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
         names = [step['ancestry'].split(',')[-1] for step in steps]
