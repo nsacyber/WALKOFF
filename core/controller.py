@@ -45,7 +45,7 @@ def shutdown_pool():
     global completed_queue
     global workflows
 
-    print ("shutting down")
+    #print ("shutting down")
 
     while (True):
         if not workflows:
@@ -55,7 +55,7 @@ def shutdown_pool():
         if key in workflows:
             workflows.remove(key)
 
-    print("through, starting to close and join")
+    #print("through, starting to close and join")
 
     pool.terminate()
     pool.join()
@@ -64,25 +64,25 @@ def shutdown_pool():
 
 def executeWorkflowWorker(task_queue, completed_queue):
 
-    print("Thread " + str(os.getpid()) + " starting up...")
+    #print("Thread " + str(os.getpid()) + " starting up...")
 
     while (True):
 
         while not task_queue.empty():
 
-            print("Queue not empty...trying to pop")
+            #print("Queue not empty...trying to pop")
             pickled_workflow,playbook_name, workflow_name,start,data,subs = task_queue.get()
-            print("popped!")
+            #print("popped!")
 
             subscription.set_subscriptions(subs)
             workflow = dill.loads(pickled_workflow)
-            print("Thread popped "+playbook_name+" "+workflow_name+" off queue...")
+            #print("Thread popped "+playbook_name+" "+workflow_name+" off queue...")
             workflow.execute(start=start, data=data)
 
             workflow.is_completed = True
             completed_queue.put((playbook_name, workflow_name))
-            print(workflows)
-            print("done")
+            #print(workflows)
+            #print("done")
 
 class Controller(object):
 
@@ -220,7 +220,7 @@ class Controller(object):
     def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
         global task_queue, workflows
 
-        print("Boss thread putting " + workflow_name + " workflow on queue...:")
+        #print("Boss thread putting " + workflow_name + " workflow on queue...:")
         key = _WorkflowKey(playbook_name, workflow_name)
         pickled_workflow = dill.dumps(self.workflows[key])
         subs = deepcopy(subscription.subscriptions)

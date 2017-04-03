@@ -160,15 +160,15 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
-        events = case_db.session.query(case_database.Event).all()
+        events = case_database.case_db.session.query(case_database.Event).all()
         smallest_id = min([event.id for event in events])
         expected_json_list = [event.as_json() for event in events]
         for event in expected_json_list:
             if event['id'] == str(smallest_id):
                 event['note'] = 'Note1'
 
-        case_db.edit_event_note(smallest_id, 'Note1')
-        events = case_db.session.query(case_database.Event).all()
+        case_database.case_db.edit_event_note(smallest_id, 'Note1')
+        events = case_database.case_db.session.query(case_database.Event).all()
         result_json_list = [event.as_json() for event in events]
         self.assertEqual(len(result_json_list), len(expected_json_list))
         self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
@@ -191,18 +191,18 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
-        events = case_db.session.query(case_database.Event).all()
+        events = case_database.case_db.session.query(case_database.Event).all()
         expected_json_list = [event.as_json() for event in events]
 
-        case_db.edit_event_note(None, 'Note1')
-        events = case_db.session.query(case_database.Event).all()
+        case_database.case_db.edit_event_note(None, 'Note1')
+        events = case_database.case_db.session.query(case_database.Event).all()
         result_json_list = [event.as_json() for event in events]
         self.assertEqual(len(result_json_list), len(expected_json_list))
         self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
 
         invalid_id = max([event.id for event in events]) + 1
-        case_db.edit_event_note(invalid_id, 'Note1')
-        events = case_db.session.query(case_database.Event).all()
+        case_database.case_db.edit_event_note(invalid_id, 'Note1')
+        events = case_database.case_db.session.query(case_database.Event).all()
         result_json_list = [event.as_json() for event in events]
         self.assertEqual(len(result_json_list), len(expected_json_list))
         self.assertTrue(all(expected_event in result_json_list for expected_event in expected_json_list))
@@ -226,7 +226,7 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
-        events = case_db.session.query(case_database.Event).all()
+        events = case_database.case_db.session.query(case_database.Event).all()
         event_json_list = [event.as_json() for event in events]
 
         input_output ={'message1': '',

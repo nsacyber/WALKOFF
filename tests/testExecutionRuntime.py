@@ -24,7 +24,6 @@ class TestExecutionRuntime(unittest.TestCase):
         running_context.init_threads()
 
     def tearDown(self):
-        print ("torn down")
         database.case_db.tearDown()
         subscription.clear_subscriptions()
 
@@ -119,5 +118,3 @@ class TestExecutionRuntime(unittest.TestCase):
                 name = step['ancestry'].split(',')
                 if name == step_name:
                     self.assertEqual(step['data']['result'], output)
-
-        print("Test done")

@@ -18,18 +18,13 @@ from . import forms, interface
 from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
 from core.options import Options
-#import core.case.database as case_database
 import core.case.subscription as case_subscription
+import core.case.database as case_database
 from . import database, appDevice
 from .app import app
 from .database import User
 from .triggers import Triggers
-from gevent import monkey
-from server.appBlueprint import get_base_app_functions
 from xml.etree import ElementTree
-import pkgutil
-
-#monkey.patch_all()
 
 user_datastore = database.user_datastore
 
@@ -368,7 +363,7 @@ def display_filters():
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_cases():
-    return json.dumps(running_context.case_database.case_db.cases_as_json())
+    return json.dumps(case_database.case_db.cases_as_json())
 
 
 @app.route('/cases/<string:case_name>/<string:action>', methods=['POST'])
@@ -388,10 +383,10 @@ def crud_case(case_name, action):
             if form.name.data:
                 rename_case(case_name, form.name.data)
                 if form.note.data:
-                    running_context.case_database.case_db.edit_case_note(form.name.data, form.note.data)
+                    case_database.case_db.edit_case_note(form.name.data, form.note.data)
             elif form.note.data:
-                running_context.case_database.case_db.edit_case_note(case_name, form.note.data)
-            return json.dumps(running_context.case_database.case_db.cases_as_json())
+                case_database.case_db.edit_case_note(case_name, form.note.data)
+            return json.dumps(case_database.case_db.cases_as_json())
     else:
         return json.dumps({"status": "Invalid operation {0}".format(action)})
 
@@ -400,8 +395,8 @@ def crud_case(case_name, action):
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_case(case_name):
-    case = running_context.case_database.case_db.session.query(running_context.case_database.Case) \
-        .filter(running_context.case_database.Case.name == case_name).first()
+    case = case_database.case_db.session.query(case_database.Case) \
+        .filter(case_database.Case.name == case_name).first()
     if case:
         return json.dumps({'case': case.as_json()})
     else:
@@ -415,11 +410,11 @@ def edit_event_note(event_id):
     form = forms.EditEventForm(request.form)
     if form.validate():
         if form.note.data:
-            valid_event_id = running_context.case_database.case_db.session.query(running_context.case_database.Event) \
-                .filter(running_context.case_database.Event.id == event_id).all()
+            valid_event_id = case_database.case_db.session.query(case_database.Event) \
+                .filter(case_database.Event.id == event_id).all()
             if valid_event_id:
-                running_context.case_database.case_db.edit_event_note(event_id, form.note.data)
-                return json.dumps(running_context.case_database.case_db.event_as_json(event_id))
+                case_database.case_db.edit_event_note(event_id, form.note.data)
+                return json.dumps(case_database.case_db.event_as_json(event_id))
             else:
                 return json.dumps({"status": "invalid event"})
     else:

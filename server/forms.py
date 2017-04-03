@@ -1,7 +1,7 @@
-from flask_security.forms import Required, EqualTo
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
     IntegerField, FormField, \
     SelectField, RadioField, SubmitField
+from flask_security.forms import Required, EqualTo
 
 
 class NewUserForm(Form):
