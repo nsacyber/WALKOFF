@@ -222,36 +222,27 @@ $(function(){
     function transformParametersToSchema(parameters) {
         parameters = deepcopy(parameters);
 
-        var numInputs = Object.getOwnPropertyNames(parameters.input).length;
-        if (numInputs > 0) {
-            var newInputs = [];
-            $.each(parameters.input, function( key, input ) {
-                newInputs.push(input);
-            });
-            parameters.input = newInputs;
-        }
+        var newInputs = [];
+        $.each(parameters.input, function( key, input ) {
+            newInputs.push(input);
+        });
+        parameters.input = newInputs;
 
         $.each(parameters.next, function( nextIndex, nextStep ) {
             $.each(nextStep.flags, function( index, flag ) {
 
-                var numArgs = Object.getOwnPropertyNames(flag.args).length;
-                if (numArgs > 0) {
-                    var newArgs = [];
-                    $.each(flag.args, function( key, arg ) {
-                        newArgs.push(arg);
-                    });
-                    flag.args = newArgs;
-                }
+                var newArgs = [];
+                $.each(flag.args, function( key, arg ) {
+                    newArgs.push(arg);
+                });
+                flag.args = newArgs;
 
                 $.each(flag.filters, function( index, filter ) {
-                    var numArgs = Object.getOwnPropertyNames(filter.args).length;
-                    if (numArgs > 0) {
-                        var newArgs = [];
-                        $.each(filter.args, function( key, arg ) {
-                            newArgs.push(arg);
-                        });
-                        filter.args = newArgs;
-                    }
+                    var newArgs = [];
+                    $.each(filter.args, function( key, arg ) {
+                        newArgs.push(arg);
+                    });
+                    filter.args = newArgs;
                 });
             });
         });
@@ -263,36 +254,27 @@ $(function(){
     function transformParametersFromSchema(parameters) {
         parameters = deepcopy(parameters);
 
-        var numInputs = parameters.input.length;
-        if (numInputs > 0) {
-            var newInputs = {};
-            $.each(parameters.input, function( index, input ) {
-                newInputs[input.key] = input;
-            });
-            parameters.input = newInputs;
-        }
+        var newInputs = {};
+        $.each(parameters.input, function( index, input ) {
+            newInputs[input.key] = input;
+        });
+        parameters.input = newInputs;
 
         $.each(parameters.next, function( nextIndex, nextStep ) {
             $.each(nextStep.flags, function( index, flag ) {
 
-                var numArgs = flag.args.length;
-                if (numArgs > 0) {
-                    var newArgs = {};
-                    $.each(flag.args, function( index, arg ) {
-                        newArgs[arg.key] = arg;
-                    });
-                    flag.args = newArgs;
-                }
+                var newArgs = {};
+                $.each(flag.args, function( index, arg ) {
+                    newArgs[arg.key] = arg;
+                });
+                flag.args = newArgs;
 
                 $.each(flag.filters, function( index, filter ) {
-                    var numArgs = filter.args.length;
-                    if (numArgs > 0) {
-                        var newArgs = {};
-                        $.each(filter.args, function( index, arg ) {
-                            newArgs[arg.key] = arg;
-                        });
-                        filter.args = newArgs;
-                    }
+                    var newArgs = {};
+                    $.each(filter.args, function( index, arg ) {
+                        newArgs[arg.key] = arg;
+                    });
+                    filter.args = newArgs;
                 });
             });
         });
