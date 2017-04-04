@@ -59,10 +59,14 @@ class NextStep(ExecutionElement):
                   'name': self.name}
         return str(output)
 
-    def as_json(self):
+    def as_json(self, with_children=True):
         name = str(self.name) if self.name else ''
-        return {"flags": [flag.as_json() for flag in self.flags],
-                "name": name}
+        if with_children:
+            return {"flags": [flag.as_json() for flag in self.flags],
+                    "name": name}
+        else:
+            return {"flags": [flag.name for flag in self.flags],
+                    "name": name}
 
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):

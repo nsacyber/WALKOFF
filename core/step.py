@@ -170,16 +170,20 @@ class Step(ExecutionElement):
             output["output"] = self.output
         return str(output)
 
-    def as_json(self):
+    def as_json(self, with_children=True):
         output = {"name": str(self.name),
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
-                  "input": {str(key): self.input[key].as_json() for key in self.input},
-                  "next": [next_step.as_json() for next_step in self.conditionals if next_step.name is not None],
-                  "errors": [error.as_json() for error in self.errors if error.name is not None]}
+                  "input": {str(key): self.input[key].as_json() for key in self.input}}
         if self.output:
             output["output"] = str(self.output)
+        if with_children:
+            output["next"] = [next_step.as_json() for next_step in self.conditionals if next_step.name is not None]
+            output["errors"] = [error.as_json() for error in self.errors if error.name is not None]
+        else:
+            output["next"] = [next_step.name for next_step in self.conditionals if next_step.name is not None]
+            output["errors"] = [error.name for error in self.errors if error.name is not None]
         return output
 
     @staticmethod

@@ -174,6 +174,10 @@ class TestNextStep(unittest.TestCase):
             self.assertEqual(next_step.parent_name, derived_next_step.parent_name)
             self.assertListEqual(next_step.ancestry, derived_next_step.ancestry)
 
+            derived_json_without_children = next_step_json
+            derived_json_without_children['flags'] = [flag['action'] for flag in derived_json_without_children['flags']]
+            self.assertDictEqual(derived_next_step.as_json(with_children=False), derived_json_without_children)
+
             # check the ancestry of the flags
             original_flag_ancestries = [list(flag.ancestry) for flag in next_step.flags]
             derived_flag_ancestries = [list(flag.ancestry) for flag in derived_next_step.flags]

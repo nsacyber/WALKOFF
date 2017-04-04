@@ -273,7 +273,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step3.get_next_step(error=True), next_step2.name)
         self.assertEqual(step3.next_up, next_step2.name)
 
-    def test_from_json(self):
+    def test_to_from_json(self):
         next_step_names = ['next1', 'next2']
         error_names = ['error1', 'error2']
         inputs = [{'name': 'name1',
@@ -317,6 +317,13 @@ class TestStep(unittest.TestCase):
             self.assertDictEqual(derived_step.as_json(), step_json)
             self.assertEqual(step.parent_name, derived_step.parent_name)
             self.assertListEqual(step.ancestry, derived_step.ancestry)
+
+            derived_step_without_children = step_json
+            derived_step_without_children['next'] = [next_step['name']
+                                                     for next_step in derived_step_without_children['next']]
+            derived_step_without_children['errors'] = [error['name']
+                                                       for error in derived_step_without_children['errors']]
+            self.assertDictEqual(derived_step.as_json(with_children=False), derived_step_without_children)
 
             # check the ancestry of the next_steps
             original_next_step_ancestries = [list(next_step.ancestry) for next_step in step.conditionals]

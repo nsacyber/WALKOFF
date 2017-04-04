@@ -226,6 +226,10 @@ class TestFlag(unittest.TestCase):
                         }
         for input_flag, expected in input_output.items():
             self.assertDictEqual(input_flag.as_json(), expected)
+            json_without_children = expected
+            json_without_children['filters'] = [filter_element['action']
+                                                for filter_element in json_without_children['filters']]
+            self.assertDictEqual(input_flag.as_json(with_children=False), json_without_children)
 
     def test_from_json(self):
         filters = [Filter(action='test_filter_action'), Filter()]
