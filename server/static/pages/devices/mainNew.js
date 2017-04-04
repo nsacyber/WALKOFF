@@ -105,6 +105,9 @@ $("#removeDevice").on("click", function(){
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
             'success': function (data) {
                 console.log(data);
+            },
+            'error': function(e) {
+                console.log(e);
             }
         });
     }

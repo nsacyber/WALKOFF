@@ -822,7 +822,7 @@ def configDevicesConfigId(app, device, action):
     elif action == "remove":
         dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
-            dev.delete()
+            db.session.delete(dev)
             db.session.commit()
             return json.dumps({"status": "removed device"})
         return json.dumps({"status": "could not remove device"})
