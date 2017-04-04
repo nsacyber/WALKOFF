@@ -99,14 +99,52 @@
     <script type="application/javascript">
         loadedWorkflows = {{loadedWorkflows | safe}};
         schedulerStatusNo = {{schedulerStatus}};
+        controllers = ["{{currentController}}"];
     </script>
 
     <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
     <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/caseFunctions.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/scheduler.js' ) }}"> </script>
 
-    <div id="addCaseDialog" title="case parameters" class=ui-widget">
-        <h3> Case Parameters </h3>
+
+    <div id="editSubscriptionDialog" title="subscription parameters" class=ui-widget">
+        <table>
+            <tr>
+                <td>Name</td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <td>Object Type</td>
+                <td><select id='modalObjectTypeSelection'></select></td>
+            </tr>
+            <tr>
+                <td>Object</td>
+                <td><select id='modalObjectSelection'></select></td>
+            </tr>
+            <tr>
+                <td>Subscriptions</td>
+                 <td>
+                    <ul id="subscriptionSelection"></ul>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><button>Submit</button></td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div id="editCaseDialog" title="case parameters" class=ui-widget">
+        <table>
+            <tr>
+                <td>Name</td>
+                <td><input type="text"></td>
+            </tr>
+        </table>
 
     </div>
 </div>

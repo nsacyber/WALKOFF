@@ -422,7 +422,7 @@ def edit_event_note(event_id):
         return json.dumps({"status": "Invalid form"})
 
 
-@app.route('/cases/subscriptions/available', methods=['GET'])
+@app.route('/cases/availableSubscriptions', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_possible_subscriptions():
