@@ -165,13 +165,22 @@ class Workflow(ExecutionElement):
         return output
 
     def from_cytoscape_data(self, data):
-        steps = {}
         for node in data:
             if 'source' not in node['data'] and 'target' not in node['data']:
                 step_data = node['data']
                 step_name = step_data['parameters']['name']
-                steps[step_name] = Step.from_json(step_data['parameters'], parent_name=self.name, ancestry=self.ancestry)
-        self.steps = steps
+                self.steps[step_name] = Step.from_json(step_data['parameters'], parent_name=self.name, ancestry=self.ancestry)
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return {'steps': list(self.steps.keys())}
+        else:
+            ancestry = ancestry[::-1]
+            next_child = ancestry.pop()
+            if next_child in self.steps:
+                return self.steps[next_child].get_children(ancestry)
+            else:
+                return None
 
     def __repr__(self):
         output = {'options': self.options,
