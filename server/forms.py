@@ -152,6 +152,9 @@ class EditGlobalSubscriptionForm(Form):
     filter = FieldList(StringField('filter'), [validators.Optional()])
 
 
+class AddCaseForm(Form):
+    caseName = StringField('name', [validators.Optional()])
+
 class EditSubscriptionForm(Form):
     ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
     events = FieldList(StringField('events'), [validators.Optional()])

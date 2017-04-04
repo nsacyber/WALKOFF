@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
 <div id="main">
     <style>
@@ -5,6 +6,33 @@
 
         #loadedWorkflowsTreeDiv{
             height:400px;
+            border:solid;
+            padding:10px;
+            margin:5px;
+        }
+        #loadedPlaybooksTree{
+            height:300px;
+        }
+
+        #loadedCasesDiv{
+            height:400px;
+            border:solid;
+            padding:10px;
+            margin:5px;
+        }
+        #casesTree{
+            height:300px;
+        }
+
+        #statusDiv{
+            height:200px;
+            border:solid;
+            padding:10px;
+            margin:5px;
+        }
+
+        #caseControlDiv{
+            height:200px;
             border:solid;
             padding:10px;
             margin:5px;
@@ -20,6 +48,7 @@
         #schedulerDiv{
             padding:20px;
         }
+
     </style>
     <div id="header">
         <h2> Controller Management </h2>
@@ -27,17 +56,35 @@
     </div>
     <div class="row">
         <div id="loadedWorkflowsDiv" class="controllerCol col-xs-2 ">
+            <h3>Workflows</h3>
             <div id="loadedWorkflowsTreeDiv">
                 <h4>Loaded Workflows</h4>
                 <div id="loadedPlaybooksTree"></div>
-            </div>
-            <div id="loadWorkflowDiv">
+                 <div id="loadWorkflowDiv"><button>Load Workflow</button></div>
             </div>
 
+            <div id="statusDiv">
+                <h5>Status</h5>
+                <div id="executionResult">
+                    <li id="eventList"></li>
+                </div>
+            </div>
         </div>
+
+        <div id="casesDiv" class="controllerCol col-xs-2 ">
+            <h3>Cases</h3>
+            <div id="loadedCasesDiv">
+                <h4>Loaded Cases</h4>
+                <div id="casesTree"></div>
+            </div>
+            <div id="caseControlDiv">
+                <button id="addCase">Add Case</button>
+            </div>
+        </div>
+
         <div id="schedulerColumn" class="controllerCol col-xs-2 ">
+            <h3>Scheduler</h3>
             <div id="schedulerDiv">
-                <h4>Scheduler Control</h4>
                 <div id="schedulerStatus">
                     <h4>Scheduler Currently: <span id="status"></span></h4>
                 </div>
@@ -55,5 +102,11 @@
     </script>
 
     <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
     <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
+
+    <div id="addCaseDialog" title="case parameters" class=ui-widget">
+        <h3> Case Parameters </h3>
+
+    </div>
 </div>

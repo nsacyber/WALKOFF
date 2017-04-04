@@ -1,12 +1,19 @@
-function formatPlaybooksForJSTree(data){
+addCaseDialog = $("#addCaseDialog").dialog({
+                    autoOpen: false,
+                    height:400,
+                    width:350,
+                    modal:true
+                });
+
+function formatPlaybooksForJSTree(playbook_data){
     var result = [];
     var x = 1;
-    for(playbook in data){
-        entry = {"id":x.toString(), "text":playbook};
+    for(playbook in playbook_data){
+        entry = {"id":x.toString(), "text":playbook, "type":"playbook"};
         var workflows = [];
-        for(workflow in data[playbook]){
+        for(workflow in playbook_data[playbook]){
             x++;
-            workflows.push({"id":x.toString(), "text":data[playbook][workflow]})
+            workflows.push({"id":x.toString(), "text":playbook_data[playbook][workflow], "type":"workflow"})
         }
         entry["children"] = workflows;
         result.push(entry);
@@ -47,17 +54,21 @@ function executeWorkflow(currentPlaybook, currentWorkflow){
             'url': "/playbook/" +currentPlaybook + "/" + currentWorkflow + "/execute",
             'success': function (data) {
                 tmp = data;
+                $("#eventList").append("<ul>" + currentWorkflow + " is executing </ul>");
             }
         });
         return tmp;
     }();
-    console.log(JSON.parse(result));
+    result = JSON.parse(result);
+    if(result.status == "success"){
+        $("#eventList").append("<ul>" + currentWorkflow + " executed successfully </ul>");
+    }
     notifyMe();
 }
 
 function customMenu(node){
     var items = {
-        executeItem: { // The "rename" menu item
+        executeItem: {
             label: "Execute Workflow",
             action: function () {
                 var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents.shift()).text;
@@ -65,11 +76,21 @@ function customMenu(node){
                 executeWorkflow(playbook, workflow);
             }
         },
+        addCase: {
+            label: "Add Case",
+            action: function () {
+                var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents.shift()).text;
+                addCaseDialog.dialog("open");
+
+            }
+        },
 
     };
-    if (node.children.length > 0) {
+    if (node.original.type != "workflow") {
+        console.log(node)
         // Delete the "delete" menu item
         delete items.executeItem;
+        delete items.addCase;
     }
 
     return items;
@@ -89,6 +110,8 @@ function schedulerStatus(status){
     return "error";
 }
 
+
+
 $("#loadedPlaybooksTree").jstree({
     'core':{
         'data': formatPlaybooksForJSTree(loadedWorkflows)
@@ -102,6 +125,10 @@ $("#loadedPlaybooksTree").jstree({
 $("#loadedPlaybooksTree").on('loaded.jstree', function(){
     $("#loadedPlaybooksTree").jstree("open_all");
 });
+
+
+
+
 
 $("#status").text(schedulerStatus(schedulerStatusNo));
 
