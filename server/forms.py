@@ -205,5 +205,5 @@ class addUserForm(Form):
     username = StringField('username', [validators.required(message='Enter a user name')])
     password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
-    roles = SelectField('roles', choices=[('admin','admin')])
+    roles = SelectField('roles',[validators.Optional()], choices=[])
     email = StringField('email', [validators.DataRequired("Please enter your email address.")])

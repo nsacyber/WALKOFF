@@ -13,8 +13,8 @@
 // });
 
 $(function() {
-    $("#createUser").hide();
-
+//    $("#createUser").hide();
+    getRole();
     $.ajax({
             url: "users/" + ($("#username option:selected").text() + "/display"),
             data: {},
@@ -37,12 +37,28 @@ $(function() {
         });
 
      $("#editUser").click(function(){
-        $("#currentUserInfo").hide();
+//        $("#currentUserInfo").hide();
         $("#updateUserForm #username").val($currentUser['username']);
+
+     });
+     $("#submitUpdate").click(function(){
+        $.ajax({
+            url: 'users/'+$currentUser['username'] +'/edit',
+            data: $("#updateUserForm").serialize(),
+            headers: {"Authentication-Token": authKey},
+            type: "POST",
+            success: function (e) {
+                data = JSON.parse(e);
+                alert("user info" + data);
+            },
+            error: function (e) {
+                console.log('no user info obtained')
+            }
+        });
      });
     $("#addUser").click(function(){
-        $("#currentUserInfo").hide();
-        $("#createUser").show();
+//        $("#currentUserInfo").hide();
+//        $("#createUser").show();
     });
     $("#deleteUser").click(function(){
        user = $("#username option:selected").val();
@@ -97,26 +113,23 @@ $("#saveNewUser").click(function(){
         success: function (e) {
             data = JSON.parse(e);
             alert("new user added" + e);
-            $("#currentUserInfo").show();
-            $("#createUser").hide();
-            addRole($("#addUserForm #username").val())
+//            $("#currentUserInfo").show();
+//            $("#createUser").hide();
         },
         error: function (e) {
             $("#templatesPath").val("Error");
         }
     });
 });
-function addRole(user){
+function getRole(user){
     $.ajax({
-        url: 'roles/user/add',
-        data: $("#addUserForm").serialize(),
+        url: '/roles',
+        data: {},
         headers: {"Authentication-Token": authKey},
-        type: "POST",
+        type: "GET",
         success: function (e) {
             data = JSON.parse(e);
-            alert("new user added" + e);
-            $("#currentUserInfo").show();
-            $("#createUser").hide();
+            $userRoles = data;
 //            addRole($("#addUserForm #username").val())
         },
         error: function (e) {
