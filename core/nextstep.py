@@ -74,3 +74,14 @@ class NextStep(ExecutionElement):
         next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
                            for flag in json['flags']]
         return next_step
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            try:
+                flag_index = [flag.name for flag in self.flags].index(next_child)
+                return self.flags[flag_index].get_children(ancestry)
+            except ValueError:
+                return None

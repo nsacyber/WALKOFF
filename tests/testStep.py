@@ -340,3 +340,42 @@ class TestStep(unittest.TestCase):
             for original_error_ancestry, derived_error_ancestry in zip(original_error_ancestries,
                                                                        derived_error_ancestries):
                 self.assertListEqual(derived_error_ancestry, original_error_ancestry)
+
+    def test_get_children(self):
+        step = Step()
+        names = ['step1', 'step2', 'step3']
+        for name in names:
+            self.assertIsNone(step.get_children([name]))
+            self.assertDictEqual(step.get_children([]), step.as_json(with_children=False))
+
+        next_steps = [NextStep(name='name1'), NextStep(name='name2'), NextStep(name='name3')]
+        names = ['name1', 'name2', 'name3']
+        step = Step(next_steps=next_steps)
+        for i, name in enumerate(names):
+            self.assertDictEqual(step.get_children([name]), next_steps[i].as_json())
+
+        step = Step(errors=next_steps)
+        for i, name in enumerate(names):
+            self.assertDictEqual(step.get_children([name]), next_steps[i].as_json())
+
+        errors = [NextStep(name='name1'), NextStep(name='error1'), NextStep(name='error2'), NextStep(name='name2')]
+        next_names = list(names)
+        error_names = ['error1', 'error2']
+        all_names = list(next_names)
+        all_names.extend(error_names)
+
+        step = Step(next_steps=next_steps, errors=errors)
+
+        for i, name in enumerate(all_names):
+            if not name.startswith('error'):
+                self.assertDictEqual(step.get_children([name]), next_steps[i].as_json())
+            else:
+                self.assertDictEqual(step.get_children([name]), errors[i-2].as_json())
+
+        flags = [Flag(), Flag(action='action1'), Flag(action='action2')]
+        next_steps = [NextStep(name='name1', flags=flags)]
+        names = ['', 'action1', 'action2']
+        step = Step(next_steps=next_steps)
+        ancestries = [[name, 'name1'] for name in names]
+        for i, ancestry in enumerate(ancestries):
+            self.assertDictEqual(step.get_children(ancestry), flags[i].as_json())

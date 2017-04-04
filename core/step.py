@@ -201,3 +201,17 @@ class Step(ExecutionElement):
         step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                        for next_step in json_in['errors']]
         return step
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            if next_child in [conditional.name for conditional in self.conditionals]:
+                next_step_index = [conditional.name for conditional in self.conditionals].index(next_child)
+                return self.conditionals[next_step_index].get_children(ancestry)
+            elif next_child in [error_step.name for error_step in self.errors]:
+                next_step_index = [error_step.name for error_step in self.errors].index(next_child)
+                return self.errors[next_step_index].get_children(ancestry)
+            else:
+                return None

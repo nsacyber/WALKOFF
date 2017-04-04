@@ -106,3 +106,14 @@ class Flag(ExecutionElement):
                    for filter_element in json['filters']]
         flag.filters = filters
         return flag
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            try:
+                filter_index = [filter_element.name for filter_element in self.filters].index(next_child)
+                return self.filters[filter_index].as_json()
+            except ValueError:
+                return None
