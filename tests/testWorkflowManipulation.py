@@ -164,7 +164,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @graphDecorator.callgraph(enabled=False)
     def test_updateStep(self):
         self.assertEqual(self.testWorkflow.steps["start"].action, "repeatBackToMe")
-        self.testWorkflow.steps["start"].set(attribute="action", value="helloWorld")
+        self.testWorkflow.steps["start"].action = "helloWorld"
         self.assertEqual(self.testWorkflow.steps["start"].action, "helloWorld")
 
         xml = self.testWorkflow.to_xml()
@@ -181,31 +181,6 @@ class TestWorkflowManipulation(unittest.TestCase):
     """
         CRUD - Next
     """
-
-    @graphDecorator.callgraph(enabled=False)
-    def test_createNext(self):
-        self.testWorkflow.steps["start"].add_next_step(next_step_name="2", flags=[])
-        step = self.testWorkflow.steps["start"]
-        self.assertEqual(len(step.conditionals), 2)
-        self.assertEqual(step.conditionals[1].name, "2")
-
-        # Check XML
-        xml = self.testWorkflow.to_xml()
-        self.assertEqual(len(xml.findall(".//steps/step/[@id='start']/next")), 2)
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@step='2']").get("step"), "2")
-
-    @graphDecorator.callgraph(enabled=False)
-    def test_removeNext(self):
-        step = self.testWorkflow.steps["start"]
-        self.assertEqual(len(step.conditionals), 1)
-        success = step.remove_next_step("1")
-        self.assertTrue(success)
-        self.assertEqual(len(step.conditionals), 0)
-
-        xml = self.testWorkflow.to_xml()
-
-        # Check XML
-        self.assertEqual(len(xml.findall(".//steps/step/[@id='start']/next")), 0)
 
     @graphDecorator.callgraph(enabled=False)
     def test_updateNext(self):

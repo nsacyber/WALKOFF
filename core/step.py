@@ -13,10 +13,10 @@ from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
 from core.nextstep import NextStep
 
-class InvalidStepArgumentsError(Exception):
-    def __init__(self, message=''):
-        super(InvalidStepArgumentsError, self).__init__(message)
-
+class InvalidStepInputError(Exception):
+    def __init__(self, app, action):
+        super(InvalidStepInputError, self).__init__()
+        self.message = 'Error: Invalid inputs for action {0} for app {1}'.format(action, app)
 
 class InvalidStepActionError(Exception):
     def __init__(self, app, action):
@@ -115,35 +115,16 @@ class Step(ExecutionElement):
             callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
             self.output = result
             return result
-        raise InvalidStepArgumentsError()
+        raise InvalidStepInputError(self.app, self.action)
 
     def get_next_step(self, error=False):
         next_steps = self.errors if error else self.conditionals
-
         for n in next_steps:
             next_step = n(output=self.output)
             if next_step:
                 self.next_up = next_step
                 callbacks.ConditionalsExecuted.send(self)
                 return next_step
-
-    def set(self, attribute=None, value=None):
-        setattr(self, attribute, value)
-
-    def add_next_step(self, next_step_name='', flags=None):
-        flags = flags if flags is not None else []
-        new_conditional = NextStep(parent_name=self.name,
-                                   name=next_step_name,
-                                   flags=flags,
-                                   ancestry=list(self.ancestry))
-        if any(conditional == new_conditional for conditional in self.conditionals):
-            return False
-        self.conditionals.append(new_conditional)
-        return True
-
-    def remove_next_step(self, next_step_name=''):
-        self.conditionals = [x for x in self.conditionals if x.name != next_step_name]
-        return True
 
     def to_xml(self, *args):
         step = cElementTree.Element('step')
@@ -210,7 +191,6 @@ class Step(ExecutionElement):
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,
                     ancestry=ancestry)
-
         step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                              for next_step in json_in['next']]
         step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
