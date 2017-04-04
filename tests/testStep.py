@@ -3,12 +3,13 @@ import copy
 
 from core.arguments import Argument
 from core.flag import Flag
-from core.step import Step, InvalidStepActionError
+from core.step import Step, InvalidStepActionError, InvalidStepInputError
 from core.nextstep import NextStep
 import core.config.config
 import core.config.paths
 from tests.util.assertwrappers import assert_raises_with_error
 from tests.config import test_apps_path
+from core.instance import Instance
 
 
 class TestStep(unittest.TestCase):
@@ -53,9 +54,6 @@ class TestStep(unittest.TestCase):
         step = Step(name='name', parent_name='parent_name', action='action')
         self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'])
 
-        step = Step(name='name', parent_name='parent_name', action='action')
-        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'])
-
         step = Step(name='name', parent_name='parent_name', action='action', app='app')
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'])
 
@@ -93,6 +91,36 @@ class TestStep(unittest.TestCase):
                             [next_.as_json() for next_ in nexts],
                             [error.as_json() for error in errors], ['parent_name', 'name'])
 
+    def test_to_from_xml(self):
+        inputs = {'in1': 'a', 'in2': 3, 'in3': u'abc'}
+        inputs = {arg_name: Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
+                  for arg_name, arg_value in inputs.items()}
+        flags = [Flag(), Flag(action='action')]
+        next_steps = [NextStep(),
+                      NextStep(name='name'),
+                      NextStep(name='name', parent_name='parent', flags=flags, ancestry=['a', 'b'])]
+        error_flags = [Flag(), Flag(action='action'), Flag()]
+        errors = [NextStep(),
+                  NextStep(name='name'),
+                  NextStep(name='name', parent_name='parent', flags=error_flags, ancestry=['a', 'b'])]
+        steps = [Step(),
+                 Step(name='name'),
+                 Step(name='name', parent_name='parent_name'),
+                 Step(name='name', parent_name='parent_name', action='action'),
+                 Step(name='name', parent_name='parent_name', action='action', app='app'),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device'),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs, next_steps=next_steps),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs, next_steps=next_steps, errors=errors)]
+        for step in steps:
+            original_json = step.as_json()
+            new_step = Step(xml=step.to_xml())
+            new_json = new_step.as_json()
+            self.assertDictEqual(new_json, original_json)
+
     def test_function_alias_lookup_same_function(self):
         existing_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne']
         app = 'HelloWorld'
@@ -112,10 +140,11 @@ class TestStep(unittest.TestCase):
 
     def test_function_alias_lookup_invalid(self):
         app = 'HelloWorld'
-        step = Step(action='JunkAction1', app=app)
+        action = 'JunkAction1'
+        step = Step(action=action, app=app)
         assert_raises_with_error(self,
                                  InvalidStepActionError,
-                                 'Error: Step action JunkAction1 not found for app HelloWorld',
+                                 'Error: Step action {0} not found for app {1}'.format(action, app),
                                  step._Step__lookup_function)
 
     def test_validate_input(self):
@@ -135,23 +164,114 @@ class TestStep(unittest.TestCase):
                     else:
                         self.assertFalse(step.validate_input())
 
-    '''
-        for action in actions:
-            for arg_action, args in self.test_funcs['flags'].items():
-                flag = Flag(action=action, args={arg['name']: Argument(key=arg['name'], format=arg['type'])
-                                                 for arg in self.test_funcs['flags'][arg_action]['args']})
-                if action == 'invalid_name':
-                    self.assertFalse(flag.validate_args())
-                elif not self.test_funcs['flags'][action]['args']:
-                    self.assertTrue(flag.validate_args())
-                elif action == arg_action:
-                    if len(list(args['args'])) == len(list(self.test_funcs['flags'][action]['args'])):
-                        self.assertTrue(flag.validate_args())
-                    else:
-                        self.assertFalse(flag.validate_args())
-                else:
-                    self.assertFalse(flag.validate_args())
-        '''
+    def test_execute(self):
+        app = 'HelloWorld'
+        instance = Instance.create(app_name=app, device_name='test_device_name')
+        actions = [('helloWorld', {}, {"message": "HELLO WORLD"}),
+                   ('repeatBackToMe', {'call': Argument(key='call', value='HelloWorld', format='str')},
+                    "REPEATING: HelloWorld"),
+                   ('returnPlusOne', {'number': Argument(key='number', value='6', format='str')}, '7')]
+
+        for action, inputs, output in actions:
+            step = Step(app=app, action=action, inputs=inputs)
+            self.assertEqual(step.execute(instance=instance()), output)
+            self.assertEqual(step.output, output)
+
+    def test_execute_invalid_inputs(self):
+        app = 'HelloWorld'
+        instance = Instance.create(app_name=app, device_name='test_device_name')
+        actions = [('invalid_name', {'call': Argument(key='call', value='HelloWorld', format='str')}),
+                   ('repeatBackToMe', {'number': Argument(key='number', value='6', format='str')}),
+                   ('returnPlusOne', {})]
+
+        for action, inputs in actions:
+            app = 'HelloWorld'
+            step = Step(app=app, action=action, inputs=inputs)
+            instance = Instance.create(app_name=app, device_name='test_device_name')
+            with self.assertRaises(InvalidStepInputError):
+                step.execute(instance=instance())
+
+    def test_get_next_step(self):
+        flags1 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
+        flags2 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')}),
+                  Flag(action='regMatch', args={'regex': Argument(key='regex', value='a', format='str')})]
+
+        next_step1 = NextStep(name='name1', flags=[])
+        next_step2 = NextStep(name='name2', flags=flags1)
+        next_step3 = NextStep(name='name3', flags=flags2)
+
+        step1 = Step(next_steps=[next_step1])
+        self.assertEqual(step1.get_next_step(), next_step1.name)
+        self.assertEqual(step1.next_up, next_step1.name)
+        step1.output = 'aaaa'
+        self.assertEqual(step1.get_next_step(), next_step1.name)
+        self.assertEqual(step1.next_up, next_step1.name)
+
+        step2 = Step(next_steps=[next_step2])
+        step2.output = 'aaaa'
+        self.assertEqual(step2.get_next_step(), next_step2.name)
+        self.assertEqual(step2.next_up, next_step2.name)
+
+        step3 = Step(next_steps=[next_step3])
+        step3.output = 'aaaa'
+        self.assertEqual(step3.get_next_step(), next_step3.name)
+        self.assertEqual(step3.next_up, next_step3.name)
+        step3.output = None
+        self.assertIsNone(step3.get_next_step())
+        self.assertEqual(step3.next_up, next_step3.name)
+
+        step4 = Step(next_steps=[next_step1, next_step2])
+        step4.output = 'aaaa'
+        self.assertEqual(step4.get_next_step(), next_step1.name)
+        self.assertEqual(step4.next_up, next_step1.name)
+        step4.output = None
+        self.assertEqual(step4.get_next_step(), next_step1.name)
+        self.assertEqual(step4.next_up, next_step1.name)
+
+        step4 = Step(next_steps=[next_step2, next_step1])
+        step4.output = 6
+        self.assertEqual(step4.get_next_step(), next_step2.name)
+        self.assertEqual(step4.next_up, next_step2.name)
+
+        step5 = Step(next_steps=[next_step3, next_step2])
+        step5.output = 6
+        self.assertEqual(step5.get_next_step(), next_step2.name)
+        self.assertEqual(step5.next_up, next_step2.name)
+        step5.output = 'aaa'
+        self.assertEqual(step5.get_next_step(), next_step3.name)
+        self.assertEqual(step5.next_up, next_step3.name)
+
+    def test_get_next_step_with_errors(self):
+        flags1 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
+        flags2 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')}),
+                  Flag(action='regMatch', args={'regex': Argument(key='regex', value='a', format='str')})]
+
+        next_step1 = NextStep(name='name1', flags=flags1)
+        next_step2 = NextStep(name='name2', flags=flags2)
+
+        step1 = Step(next_steps=[next_step2, next_step1], errors=[])
+        step1.output = 'aaaa'
+        self.assertEqual(step1.get_next_step(), next_step2.name)
+        self.assertEqual(step1.next_up, next_step2.name)
+        step1.output = 'aaa'
+        self.assertIsNone(step1.get_next_step(error=True))
+        self.assertEqual(step1.next_up, next_step2.name)
+
+        step2 = Step(next_steps=[next_step1], errors=[next_step2])
+        step2.output = 'bbbb'
+        self.assertEqual(step2.get_next_step(), next_step1.name)
+        step2.output = 'aaa'
+        self.assertEqual(step2.get_next_step(error=True), next_step2.name)
+        self.assertEqual(step2.next_up, next_step2.name)
+
+        step3 = Step(next_steps=[], errors=[next_step2, next_step1])
+        self.assertIsNone(step3.get_next_step())
+        step3.output = 'bbbbb'
+        self.assertEqual(step3.get_next_step(error=True), next_step1.name)
+        self.assertEqual(step3.next_up, next_step1.name)
+        step3.output = 'aaa'
+        self.assertEqual(step3.get_next_step(error=True), next_step2.name)
+        self.assertEqual(step3.next_up, next_step2.name)
 
     def test_from_json(self):
         next_step_names = ['next1', 'next2']

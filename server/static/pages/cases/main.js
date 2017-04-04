@@ -6,7 +6,7 @@ var cases = function () {
         'global': false,
         'data':{"format":"cytoscape"},
         'headers':{"Authentication-Token":authKey},
-        'url': "/cases",
+        'url': "/cases/subscriptions",
         'success': function (data) {
             tmp = data;
             console.log(data);
