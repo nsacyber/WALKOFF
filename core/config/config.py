@@ -36,6 +36,11 @@ def write_values_to_file(values=None):
 
 
 load_config()
+try:
+    with open(core.config.paths.events_path) as f:
+        possible_events = json.loads(f.read())
+except (IOError, OSError):
+    possible_events = {}
 
 # Enables/Disables Browser Notifications
 notifications = "True"

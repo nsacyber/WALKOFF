@@ -424,8 +424,7 @@ def edit_event_note(event_id):
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_possible_subscriptions():
-    with open(os.path.join('.', 'data', 'events.json')) as f:
-        return f.read()
+    return json.dumps(core.config.config.possible_events)
 
 
 @app.route('/cases/subscriptions/<string:case_name>/global/edit', methods=['POST'])
