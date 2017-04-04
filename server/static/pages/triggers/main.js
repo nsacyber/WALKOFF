@@ -17,7 +17,7 @@
             }
         });
 
-    $("#parameterEdit").hide();
+//    $("#parameterEdit").hide();
     var $slidee = $("#smart").children('ul').eq(0);
 
     // Add item
@@ -74,7 +74,7 @@
         if($("#trigger option:selected").attr('value') == 'none'){
             alert("Select a trigger");
         }else{
-            $("#parameterEdit").show();
+//            $("#parameterEdit").show();
             $("#name").val(triggerData[index]['name']);
             $("#play").val(triggerData[index]['play']);
             $("#conditional").val(triggerData[index]['conditional']);

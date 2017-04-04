@@ -156,9 +156,9 @@
 {#                            {{ render_field(form.login_count) }}#}
                     </form>
                     <div id="crudButtons">
-                        <button id="addUser">Add User</button>
-                        <button id="editUser">Edit User</button>
-                        <button id="deleteUser">Delete User</button>
+                        <button id="addUser" class="btn btn-primary">Add User</button>
+                        <button id="editUser" class="btn btn-success">Edit User</button>
+                        <button id="deleteUser" class="btn btn-danger">Delete User</button>
                     </div>
                 </div>
                 <div id="createUser">
@@ -166,10 +166,11 @@
                         {% from "pages/_formhelpers.html" import render_field %}
                         {{ render_field(addUserForm.username) }}
                         {{ render_field(addUserForm.email) }}
+                        {{ render_field(addUserForm.roles) }}
                         {{ render_field(addUserForm.password) }}
                         {{ render_field(addUserForm.confirm) }}
                     </form>
-                    <button id="saveNewUser">Submit</button>
+                    <button id="saveNewUser" class="btn btn-primary">Submit</button>
                 </div>
                 <div id="updateUser">
                     <h3>Update User</h3>
@@ -180,7 +181,7 @@
                         {{ render_field(addUserForm.password) }}
                         {{ render_field(addUserForm.confirm) }}
                     </form>
-                    <button id="submitUpdate">Submit</button>
+                    <button id="submitUpdate" class="btn btn-primary">Submit</button>
                 </div>
 
             </div>

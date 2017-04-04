@@ -11,6 +11,7 @@
 //         console.log(e);
 //     }
 // });
+
 $(function() {
     $("#createUser").hide();
 
@@ -37,7 +38,7 @@ $(function() {
 
      $("#editUser").click(function(){
         $("#currentUserInfo").hide();
-        $("#createUser").show();
+        $("#updateUserForm #username").val($currentUser['username']);
      });
     $("#addUser").click(function(){
         $("#currentUserInfo").hide();
@@ -73,7 +74,7 @@ $("#username")
             type: "POST",
             success: function (e) {
                 e = JSON.parse(e);
-                console.log(e);
+                $currentUser = e;
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                 }
@@ -95,16 +96,34 @@ $("#saveNewUser").click(function(){
         type: "POST",
         success: function (e) {
             data = JSON.parse(e);
-            alert("new user added");
+            alert("new user added" + e);
             $("#currentUserInfo").show();
             $("#createUser").hide();
+            addRole($("#addUserForm #username").val())
         },
         error: function (e) {
             $("#templatesPath").val("Error");
         }
     });
 });
-
+function addRole(user){
+    $.ajax({
+        url: 'roles/user/add',
+        data: $("#addUserForm").serialize(),
+        headers: {"Authentication-Token": authKey},
+        type: "POST",
+        success: function (e) {
+            data = JSON.parse(e);
+            alert("new user added" + e);
+            $("#currentUserInfo").show();
+            $("#createUser").hide();
+//            addRole($("#addUserForm #username").val())
+        },
+        error: function (e) {
+            $("#templatesPath").val("Error");
+        }
+    });
+};
 
 $.ajax({
     url: 'configuration/templates_path',

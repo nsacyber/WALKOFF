@@ -1,4 +1,5 @@
 from flask_security.forms import Required, EqualTo
+import json
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
     IntegerField, FormField, \
     SelectField, RadioField, SubmitField
@@ -202,5 +203,5 @@ class addUserForm(Form):
     username = StringField('username', [validators.required(message='Enter a user name')])
     password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
-    roles = SelectField('roles', choices=[])
+    roles = SelectField('roles', choices=[('admin','admin')])
     email = StringField('email', [validators.DataRequired("Please enter your email address.")])
