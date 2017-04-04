@@ -5,24 +5,26 @@ from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
-from server.flaskServer import app, running_context
+import server.flaskServer as server
+#from server.flaskServer import app
+from core.case import database
+from core.case import subscription
 
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
-        self.app = app.test_client(self)
-        self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.c = running_context.controller
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + "multistepError.workflow")
+        # self.app = app.test_client(self)
+        # self.app.testing = True
+        # self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
+        server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "multistepError.workflow")
         self.start = datetime.utcnow()
-        running_context.init_threads()
+        server.running_context.init_threads()
 
     def tearDown(self):
-        case_database.case_db.tearDown()
-        case_subscription.clear_subscriptions()
+        database.case_db.tearDown()
+        subscription.clear_subscriptions()
 
     """
         Tests simple workflow execution with a single action with an argument and no jumps.
@@ -32,9 +34,10 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_SimpleWorkflowExecution(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         setup_subscriptions_for_step(workflow_name, ['start'])
-        self.c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+        server.running_context.controller.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        running_context.shutdown_threads()
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
 
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
 
@@ -53,9 +56,10 @@ class TestSimpleWorkflow(unittest.TestCase):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        server.running_context.controller.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
-        running_context.shutdown_threads()
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
 
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
@@ -79,9 +83,10 @@ class TestSimpleWorkflow(unittest.TestCase):
         workflow_name = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
         step_names = ['start', '1', 'error']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow('multistepError', 'multiactionErrorWorkflow')
+        server.running_context.controller.executeWorkflow('multistepError', 'multiactionErrorWorkflow')
 
-        running_context.shutdown_threads()
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
 
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)

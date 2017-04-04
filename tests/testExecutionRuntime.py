@@ -17,7 +17,6 @@ from server.flaskServer import running_context
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
         database.initialize()
-        self.c = running_context.controller
         if not isdir(profile_visualizations_path):
             mkdir(profile_visualizations_path)
         self.start = datetime.utcnow()
@@ -33,11 +32,11 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'templatedWorkflowTest.workflow')
+        running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + 'templatedWorkflowTest.workflow')
         workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow('templatedWorkflowTest', 'templatedWorkflow')
+        running_context.controller.executeWorkflow('templatedWorkflowTest', 'templatedWorkflow')
 
         running_context.shutdown_threads()
 
@@ -63,12 +62,12 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'tieredWorkflow.workflow')
+        running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + 'tieredWorkflow.workflow')
         workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
         workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step([workflow_name1, workflow_name2], step_names)
-        self.c.executeWorkflow('tieredWorkflow', 'parentWorkflow')
+        running_context.controller.executeWorkflow('tieredWorkflow', 'parentWorkflow')
 
         running_context.shutdown_threads()
 
@@ -98,11 +97,11 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'loopWorkflow.workflow')
+        running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + 'loopWorkflow.workflow')
         workflow_name = construct_workflow_name_key('loopWorkflow', 'loopWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow('loopWorkflow', 'loopWorkflow')
+        running_context.controller.executeWorkflow('loopWorkflow', 'loopWorkflow')
 
         running_context.shutdown_threads()
 

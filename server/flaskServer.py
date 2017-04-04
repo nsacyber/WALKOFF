@@ -25,6 +25,9 @@ from .app import app
 from .database import User
 from .triggers import Triggers
 from xml.etree import ElementTree
+from gevent import monkey
+
+monkey.patch_all()
 
 user_datastore = database.user_datastore
 

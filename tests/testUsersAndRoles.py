@@ -1,7 +1,6 @@
 import json
 import unittest
 
-from server import database
 from server import flaskServer as server
 
 
@@ -21,11 +20,12 @@ class TestUsersAndRoles(unittest.TestCase):
         self.password = "password"
 
     def tearDown(self):
-        database.Role.query.filter_by(name=self.name).delete()
-        database.db.session.commit()
+        with server.running_context.flask_app.app_context():
+            server.running_context.Role.query.filter_by(name=self.name).delete()
+            server.database.db.session.commit()
 
-        database.User.query.filter_by(email=self.email).delete()
-        database.db.session.commit()
+            server.running_context.User.query.filter_by(email=self.email).delete()
+            server.database.db.session.commit()
 
     def testAddRole(self):
         data = {"name" : self.name}

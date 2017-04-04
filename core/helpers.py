@@ -68,18 +68,6 @@ def list_class_functions(class_name):
     return [field for field in dir(class_name) if (not field.startswith('_')
                                                    and callable(getattr(class_name, field)))]
 
-
-def list_app_functions(app_name):
-    app_module = importlib.import_module('apps.' + app_name + '.main')
-    if app_module:
-        try:
-            main_class = getattr(app_module, 'Main')
-            return list_class_functions(main_class)
-        except AttributeError:
-            return []
-    return []
-
-
 def load_app_function(app_instance, function_name):
     try:
         fn = getattr(app_instance, function_name)

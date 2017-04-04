@@ -6,7 +6,7 @@ from collections import namedtuple
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-from apscheduler.schedulers.tornado import TornadoScheduler
+from apscheduler.schedulers.gevent import GeventScheduler
 
 from core.config import paths
 from core import workflow as wf
@@ -14,10 +14,9 @@ from core.case import subscription
 from core.case import callbacks
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
-from multiprocessing import Pool
-from multiprocessing import Manager
 import dill
 from copy import deepcopy
+import concurrent
 
 NUM_PROCESSES = 5
 
@@ -30,59 +29,69 @@ def initialize_threading():
     global workflows
     global processes
 
-    manager = Manager()
-    task_queue = manager.Queue()
-    completed_queue = manager.Queue()
+    #task_queue = queue.Queue()
+    #completed_queue = queue.Queue()
     workflows = []
 
-    pool = Pool(processes=NUM_PROCESSES)
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=NUM_PROCESSES)
 
-    for i in range(0, NUM_PROCESSES):
-        pool.apply_async(executeWorkflowWorker, (task_queue, completed_queue))
+    # for i in range(0, NUM_PROCESSES):
+    #     pool.submit(executeWorkflowWorker, task_queue, completed_queue)
 
 def shutdown_pool():
     global pool
-    global completed_queue
     global workflows
 
     #print ("shutting down")
 
-    while (True):
-        if not workflows:
-            break
-        playbook_name,workflow_name = completed_queue.get()
-        key = _WorkflowKey(playbook_name, workflow_name)
-        if key in workflows:
-            workflows.remove(key)
+    # while (True):
+    #     if not workflows:
+    #         break
+    #     playbook_name,workflow_name = completed_queue.get()
+    #     key = _WorkflowKey(playbook_name, workflow_name)
+    #     if key in workflows:
+    #         workflows.remove(key)
+
+    for future in concurrent.futures.as_completed(workflows):
+        future.result(timeout=3)
 
     #print("through, starting to close and join")
 
-    pool.terminate()
-    pool.join()
+    pool.shutdown(wait=False)
 
-    workflows = []
+    workflows = {}
 
-def executeWorkflowWorker(task_queue, completed_queue):
+def executeWorkflowWorker(workflow, playbook_name, workflow_name, start, data, subs):
 
     #print("Thread " + str(os.getpid()) + " starting up...")
 
-    while (True):
+    subscription.set_subscriptions(subs)
+    #workflow = dill.loads(pickled_workflow)
+    #print("Thread popped " + playbook_name + " " + workflow_name + " off queue...")
+    workflow.execute(start=start, data=data)
 
-        while not task_queue.empty():
+    workflow.is_completed = True
+    #print("done")
 
-            #print("Queue not empty...trying to pop")
-            pickled_workflow,playbook_name, workflow_name,start,data,subs = task_queue.get()
-            #print("popped!")
+    return "done"
 
-            subscription.set_subscriptions(subs)
-            workflow = dill.loads(pickled_workflow)
-            #print("Thread popped "+playbook_name+" "+workflow_name+" off queue...")
-            workflow.execute(start=start, data=data)
-
-            workflow.is_completed = True
-            completed_queue.put((playbook_name, workflow_name))
-            #print(workflows)
-            #print("done")
+    # while (True):
+    #
+    #     while not task_queue.empty():
+    #
+    #         print("Queue not empty...trying to pop")
+    #         pickled_workflow,playbook_name, workflow_name,start,data,subs = task_queue.get()
+    #         print("popped!")
+    #
+    #         subscription.set_subscriptions(subs)
+    #         workflow = dill.loads(pickled_workflow)
+    #         print("Thread popped "+playbook_name+" "+workflow_name+" off queue...")
+    #         workflow.execute(start=start, data=data)
+    #
+    #         workflow.is_completed = True
+    #         completed_queue.put((playbook_name, workflow_name))
+    #         print(workflows)
+    #         print("done")
 
 class Controller(object):
 
@@ -93,7 +102,7 @@ class Controller(object):
         self.instances = {}
         self.tree = None
 
-        self.scheduler = TornadoScheduler()
+        self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
                                     | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
@@ -218,14 +227,20 @@ class Controller(object):
             self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
 
     def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
-        global task_queue, workflows
+        #global task_queue, workflows
+        global pool
+        global workflows
 
         #print("Boss thread putting " + workflow_name + " workflow on queue...:")
         key = _WorkflowKey(playbook_name, workflow_name)
-        pickled_workflow = dill.dumps(self.workflows[key])
+        workflow = self.workflows[key]
+        #pickled_workflow = dill.dumps(self.workflows[key])
         subs = deepcopy(subscription.subscriptions)
-        workflows.append(key)
-        task_queue.put((pickled_workflow, playbook_name, workflow_name, start, data, subs))
+        #workflows.append(key)
+        #task_queue.put((pickled_workflow, playbook_name, workflow_name, start, data, subs))
+
+        workflows.append(pool.submit(executeWorkflowWorker,workflow,playbook_name,workflow_name,start,data,subs))
+
         callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
@@ -249,12 +264,10 @@ class Controller(object):
         self.scheduler.start()
         return self.scheduler.state
 
-
     # Stops active execution
     def stop(self, wait=True):
         self.scheduler.shutdown(wait=wait)
         return self.scheduler.state
-
 
     # Pauses active execution
     def pause(self):
