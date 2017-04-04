@@ -53,6 +53,7 @@ function formatModal(availableSubscriptions){
         $("#modalObjectTypeSelection").append("<option value='" + key + "'>" + key + "</option>");
     }
     selected = $("#modalObjectTypeSelection option").first()[0].value;
+    console.log(Object.keys(availableSubscriptions).slice(0, Object.keys(availableSubscriptions).indexOf(selected)));
     switch(selected){
         case "controller":
             formatControllerSubscriptions(availableSubscriptions[selected]);

@@ -39,7 +39,6 @@ userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
 
-
 # Creates Test Data
 @app.before_first_request
 def create_user():
@@ -69,7 +68,6 @@ def create_user():
 """
     URLS
 """
-
 
 @app.route("/")
 @login_required
@@ -683,6 +681,18 @@ def roleActions(action, name):
             return json.dumps({"status": "invalid input"})
 
     return json.dumps({"status": "role does not exist"})
+
+@app.route('/roles', methods=["GET"])
+@auth_token_required
+@roles_accepted(*userRoles["/roles"])
+def displayRoles():
+    roles = database.Role.query.all()
+    if roles:
+        result = [role.name for role in roles]
+        return json.dumps(result)
+    else:
+        return json.dumps({"status": "roles do not exist"})
+
 
 
 # Controls non-specific users and roles
