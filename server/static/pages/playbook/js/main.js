@@ -284,11 +284,17 @@ $(function(){
 
     // This function displays a form next to the graph for editing a node/edge when clicked upon
     function onClick(e) {
+        var ele = e.cyTarget;
+
+        // Ignore edges for now.
+        if (ele.isEdge()) {
+            return;
+        }
+
+        var parameters = ele.data('parameters');
         $("#parameters").removeClass('hidden');
         $("#parameters").empty();
 
-        var ele = e.cyTarget;
-        var parameters = ele.data('parameters');
 
         parameters = transformParametersToSchema(parameters);
 

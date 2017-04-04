@@ -7,16 +7,17 @@ from jinja2 import Template, Markup
 from core import arguments
 from core import contextDecorator
 from core import nextstep
-from core.config import config
+import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
 from core.nextstep import NextStep
 
 
-class InvalidStepArgumentsError(Exception):
-    def __init__(self, message=''):
-        super(InvalidStepArgumentsError, self).__init__(message)
+class InvalidStepInputError(Exception):
+    def __init__(self, app, action):
+        super(InvalidStepInputError, self).__init__()
+        self.message = 'Error: Invalid inputs for action {0} for app {1}'.format(action, app)
 
 
 class InvalidStepActionError(Exception):
@@ -85,16 +86,23 @@ class Step(ExecutionElement):
             content = cElementTree.tostring(self.raw_xml, method='xml')
 
         t = Template(Markup(content).unescape(), autoescape=True)
-        xml = t.render(config.JINJA_GLOBALS, **kwargs)
+        xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
     def validate_input(self):
-        return (all(self.input[arg].validate_function_args(self.app, self.action) for arg in self.input)
-                if self.input else True)
+        if (self.app in core.config.config.function_info['apps']
+                and self.action in core.config.config.function_info['apps'][self.app]):
+            possible_args = core.config.config.function_info['apps'][self.app][self.action]['args']
+            if possible_args:
+                return (len(list(possible_args)) == len(list(self.input.keys()))
+                        and all(self.input[arg].validate(possible_args) for arg in self.input))
+            else:
+                return True
+        return False
 
     def __lookup_function(self):
-        if self.app in config.function_info['apps']:
-            for action, info in config.function_info['apps'][self.app].items():
+        if self.app in core.config.config.function_info['apps']:
+            for action, info in core.config.config.function_info['apps'][self.app].items():
                 if action == self.action:
                     return self.action
                 else:
@@ -109,35 +117,16 @@ class Step(ExecutionElement):
             callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
             self.output = result
             return result
-        raise InvalidStepArgumentsError()
+        raise InvalidStepInputError(self.app, self.action)
 
     def get_next_step(self, error=False):
         next_steps = self.errors if error else self.conditionals
-
         for n in next_steps:
             next_step = n(output=self.output)
             if next_step:
                 self.next_up = next_step
                 callbacks.ConditionalsExecuted.send(self)
                 return next_step
-
-    def set(self, attribute=None, value=None):
-        setattr(self, attribute, value)
-
-    def add_next_step(self, next_step_name='', flags=None):
-        flags = flags if flags is not None else []
-        new_conditional = NextStep(parent_name=self.name,
-                                   name=next_step_name,
-                                   flags=flags,
-                                   ancestry=list(self.ancestry))
-        if any(conditional == new_conditional for conditional in self.conditionals):
-            return False
-        self.conditionals.append(new_conditional)
-        return True
-
-    def remove_next_step(self, next_step_name=''):
-        self.conditionals = [x for x in self.conditionals if x.name != next_step_name]
-        return True
 
     def to_xml(self, *args):
         step = cElementTree.Element('step')
@@ -204,7 +193,6 @@ class Step(ExecutionElement):
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,
                     ancestry=ancestry)
-
         step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                              for next_step in json_in['next']]
         step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
