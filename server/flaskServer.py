@@ -773,7 +773,8 @@ def userActions(action, id_or_email):
             print(form.password.data)
             if form.validate():
                 if form.password:
-                    verify_and_update_password(form.password.data, user)
+                    user.password = encrypt_password(form.password.data)
+                    database.db.session.commit()
                 if form.role.entries:
                     user.setRoles(form.role.entries)
 
