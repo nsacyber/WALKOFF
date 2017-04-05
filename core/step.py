@@ -13,10 +13,12 @@ from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
 from core.nextstep import NextStep
 
+
 class InvalidStepInputError(Exception):
     def __init__(self, app, action):
         super(InvalidStepInputError, self).__init__()
         self.message = 'Error: Invalid inputs for action {0} for app {1}'.format(action, app)
+
 
 class InvalidStepActionError(Exception):
     def __init__(self, app, action):

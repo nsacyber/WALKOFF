@@ -103,8 +103,8 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_createStep(self):
-        self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
+        self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
+                                      arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
 
         steps = self.testWorkflow.steps
 
@@ -126,8 +126,8 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_addStepToXML(self):
-        self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
+        self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
+                                      arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
         xml = self.testWorkflow.to_xml()
 
         # Verify Structure
@@ -145,13 +145,13 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_removeStep(self):
-        self.testWorkflow.createStep(id="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                     input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
+        self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
+                                      arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
         # Makes sure a new step was created...
         self.assertEqual(len(self.testWorkflow.steps), 2)
 
         # ...So that we may destroy it!
-        removed = self.testWorkflow.removeStep(id="1")
+        removed = self.testWorkflow.remove_step(name="1")
         self.assertTrue(removed)
         self.assertEqual(len(self.testWorkflow.steps), 1)
 
