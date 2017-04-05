@@ -89,10 +89,14 @@ class Flag(ExecutionElement):
                   'filters': [filter_element.as_json() for filter_element in self.filters]}
         return str(output)
 
-    def as_json(self):
-        return {"action": self.action,
-                "args": {arg: self.args[arg].as_json() for arg in self.args},
-                "filters": [filter_element.as_json() for filter_element in self.filters]}
+    def as_json(self, with_children=True):
+        out = {"action": self.action,
+               "args": {arg: self.args[arg].as_json() for arg in self.args}}
+        if with_children:
+            out["filters"] = [filter_element.as_json() for filter_element in self.filters]
+        else:
+            out["filters"] = [filter_element.name for filter_element in self.filters]
+        return out
 
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
@@ -102,3 +106,14 @@ class Flag(ExecutionElement):
                    for filter_element in json['filters']]
         flag.filters = filters
         return flag
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            try:
+                filter_index = [filter_element.name for filter_element in self.filters].index(next_child)
+                return self.filters[filter_index].as_json()
+            except ValueError:
+                return None

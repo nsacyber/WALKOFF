@@ -174,9 +174,36 @@ class TestNextStep(unittest.TestCase):
             self.assertEqual(next_step.parent_name, derived_next_step.parent_name)
             self.assertListEqual(next_step.ancestry, derived_next_step.ancestry)
 
+            derived_json_without_children = next_step_json
+            derived_json_without_children['flags'] = [flag['action'] for flag in derived_json_without_children['flags']]
+            self.assertDictEqual(derived_next_step.as_json(with_children=False), derived_json_without_children)
+
             # check the ancestry of the flags
             original_flag_ancestries = [list(flag.ancestry) for flag in next_step.flags]
             derived_flag_ancestries = [list(flag.ancestry) for flag in derived_next_step.flags]
             self.assertEqual(len(original_flag_ancestries), len(derived_flag_ancestries))
             for original_flag_ancestry, derived_flag_ancestry in zip(original_flag_ancestries, derived_flag_ancestries):
                 self.assertListEqual(derived_flag_ancestry, original_flag_ancestry)
+
+    def test_get_children(self):
+        next_step1 = NextStep()
+        names = ['', 'action1', 'action2']
+        for name in names:
+            self.assertIsNone(next_step1.get_children([name]))
+            self.assertDictEqual(next_step1.get_children([]), next_step1.as_json(with_children=False))
+
+        flags = [Flag(), Flag(action='action1'), Flag(action='action2')]
+        next_step2 = NextStep(flags=flags)
+        for i, name in enumerate(names):
+            self.assertDictEqual(next_step2.get_children([name]), flags[i].as_json())
+            self.assertDictEqual(next_step2.get_children([]), next_step2.as_json(with_children=False))
+
+        filters = [Filter(action='filter1'), Filter(), Filter(action='filter2')]
+        flags = [Flag(action='action1', filters=filters)]
+        names = ['filter1', '', 'filter2']
+        next_step3 = NextStep(flags=flags)
+        ancestries = [[name, 'action1'] for name in names]
+        for i, ancestry in enumerate(ancestries):
+            self.assertDictEqual(next_step3.get_children(ancestry), filters[i].as_json())
+            self.assertDictEqual(next_step3.get_children([]), next_step3.as_json(with_children=False))
+

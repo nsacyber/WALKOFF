@@ -13,3 +13,9 @@ class ExecutionElement(object):
 
     def to_xml(self, xml_element):
         raise NotImplementedError('to_xml(xml_element) has not been implemented')
+
+    def as_json(self, *args):
+        raise NotImplementedError('as_json has not been implemented')
+
+    def get_children(self, ancestry):
+        raise NotImplementedError('get_children has not been implemented')
