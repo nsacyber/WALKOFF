@@ -2,7 +2,7 @@ import json
 import unittest
 
 from server import flaskServer as server
-
+from flask_security.utils import verify_password
 
 class TestUsersAndRoles(unittest.TestCase):
     def setUp(self):
@@ -56,13 +56,20 @@ class TestUsersAndRoles(unittest.TestCase):
         response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["status"], "user exists")
 
-    def testEditUser(self):
+    def testEditUserPassword(self):
         data = {"username": self.email, "password": self.password}
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"password": self.password}
         response = json.loads(self.app.post('/users/'+self.email+'/edit', data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["username"], self.email)
+
+        data = {"password": "testPassword"}
+        response = json.loads(
+            self.app.post('/users/' + self.email + '/edit', data=data, headers=self.headers).get_data(as_text=True))
+        with server.app.app_context():
+            user = server.database.user_datastore.get_user(self.email)
+            self.assertTrue(verify_password("testPassword", user.password))
 
     def testRemoveUser(self):
         data = {"username": self.email, "password": self.password}
