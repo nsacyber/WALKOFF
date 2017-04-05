@@ -847,7 +847,7 @@ def configDevicesConfigId(app, device, action):
         return json.dumps({"status": "could not remove device"})
 
     elif action == "edit":
-        form = forms.EditDeviceForm(request.form)
+        form = forms.AddNewDeviceForm(request.form)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
             # Ensures new name is unique

@@ -74,7 +74,6 @@
         <div>
             <button id="addNewDevice">Add New Device</button>
             <button id="removeDevice">Remove Device</button>
-            <button id="editDevice">Edit Device</button>
         </div>
 
     </div>
@@ -87,22 +86,9 @@
             {{ render_field(form.pw) }}
             {{ render_field(form.ipaddr) }}
             {{ render_field(form.port) }}
-            {{ render_field(form.submit) }}
+            <button id="editDevice" name="editDevice">Edit Device</button>
         </form>
     </div>
-
-    <div class="col-xs-2">
-        <h3>Edit Device configuration</h3>
-        <form id="editDeviceForm">
-            {% from "pages/_formhelpers.html" import render_field %}
-            {% from "pages/_formhelpers.html" import render_field %}
-            {{ render_field(form.name) }}
-            {{ render_field(form.username) }}
-            {{ render_field(form.pw) }}
-            {{ render_field(form.ipaddr) }}
-            {{ render_field(form.port) }}
-        </form>
-
 
     </div>
 </div>
