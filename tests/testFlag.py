@@ -226,6 +226,10 @@ class TestFlag(unittest.TestCase):
                         }
         for input_flag, expected in input_output.items():
             self.assertDictEqual(input_flag.as_json(), expected)
+            json_without_children = expected
+            json_without_children['filters'] = [filter_element['action']
+                                                for filter_element in json_without_children['filters']]
+            self.assertDictEqual(input_flag.as_json(with_children=False), json_without_children)
 
     def test_from_json(self):
         filters = [Filter(action='test_filter_action'), Filter()]
@@ -266,3 +270,16 @@ class TestFlag(unittest.TestCase):
             self.assertDictEqual(derived_flag.as_json(), flag_json)
             self.assertEqual(flag.parent_name, derived_flag.parent_name)
             self.assertListEqual(flag.ancestry, derived_flag.ancestry)
+
+    def test_get_children(self):
+        names = ['action1', '', 'action2']
+        flag1 = Flag()
+        for name in names:
+            self.assertIsNone(flag1.get_children([name]))
+            self.assertDictEqual(flag1.get_children([]), flag1.as_json(with_children=False))
+
+        filters = [Filter(action='action1'), Filter(), Filter(action='action2')]
+        flag2 = Flag(filters=filters)
+        for i, name in enumerate(names):
+            self.assertDictEqual(flag2.get_children([name]), filters[i].as_json())
+            self.assertDictEqual(flag2.get_children([]), flag2.as_json(with_children=False))

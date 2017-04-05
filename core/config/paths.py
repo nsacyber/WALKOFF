@@ -12,3 +12,4 @@ certificate_path = "data/auth/shortstop.public.pem"
 private_key_path = "data/auth/shortstop.private.pem"
 function_info_path = join('.', 'data', 'functions.json')
 config_path = join('.', 'data', 'walkoff.config')
+events_path = join('.', 'data', 'events.json')

@@ -101,13 +101,12 @@ class Step(ExecutionElement):
         return False
 
     def __lookup_function(self):
-        if self.app in core.config.config.function_info['apps']:
-            for action, info in core.config.config.function_info['apps'][self.app].items():
-                if action == self.action:
-                    return self.action
-                else:
-                    if 'aliases' in info and self.action in info['aliases']:
-                        return action
+        for action, info in core.config.config.function_info['apps'][self.app].items():
+            if action == self.action:
+                return self.action
+            else:
+                if 'aliases' in info and self.action in info['aliases']:
+                    return action
         raise InvalidStepActionError(self.app, self.action)
 
     def execute(self, instance=None):
@@ -171,16 +170,20 @@ class Step(ExecutionElement):
             output["output"] = self.output
         return str(output)
 
-    def as_json(self):
+    def as_json(self, with_children=True):
         output = {"name": str(self.name),
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
-                  "input": {str(key): self.input[key].as_json() for key in self.input},
-                  "next": [next_step.as_json() for next_step in self.conditionals if next_step.name is not None],
-                  "errors": [error.as_json() for error in self.errors if error.name is not None]}
+                  "input": {str(key): self.input[key].as_json() for key in self.input}}
         if self.output:
             output["output"] = str(self.output)
+        if with_children:
+            output["next"] = [next_step.as_json() for next_step in self.conditionals if next_step.name is not None]
+            output["errors"] = [error.as_json() for error in self.errors if error.name is not None]
+        else:
+            output["next"] = [next_step.name for next_step in self.conditionals if next_step.name is not None]
+            output["errors"] = [error.name for error in self.errors if error.name is not None]
         return output
 
     @staticmethod
@@ -198,3 +201,17 @@ class Step(ExecutionElement):
         step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                        for next_step in json_in['errors']]
         return step
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            if next_child in [conditional.name for conditional in self.conditionals]:
+                next_step_index = [conditional.name for conditional in self.conditionals].index(next_child)
+                return self.conditionals[next_step_index].get_children(ancestry)
+            elif next_child in [error_step.name for error_step in self.errors]:
+                next_step_index = [error_step.name for error_step in self.errors].index(next_child)
+                return self.errors[next_step_index].get_children(ancestry)
+            else:
+                return None
