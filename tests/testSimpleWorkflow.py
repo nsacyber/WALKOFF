@@ -6,16 +6,12 @@ from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
 import server.flaskServer as server
-#from server.flaskServer import app
 from core.case import database
 from core.case import subscription
 
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
-        # self.app = app.test_client(self)
-        # self.app.testing = True
-        # self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
         server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
         server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "multistepError.workflow")
