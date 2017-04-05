@@ -114,19 +114,24 @@ $("#removeDevice").on("click", function(){
 
 });
 $("#editDevice").on("click", function(){
-    console.log(activeApp);
-    console.log(activeDevice);
+    formData = { 'name': $("#name").val(),
+                 'username': $("#username").val(),
+                 'pw': $("#pw").val(),
+                 'ipaddr': $("#ipaddr").val(),
+                 'port': $("#port").val()
+                };
     if(activeApp && activeDevice){
         $.ajax({
             'async': false,
             'type': "POST",
             'global': false,
+            'data': formData,
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
             'success': function (data) {
                 console.log(data);
             },
-            'errro':function(data){
+            'error': function(data){
                 console.log('edit device failed');
                 console.log(data);
             }
