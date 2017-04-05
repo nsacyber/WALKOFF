@@ -153,11 +153,21 @@ def display_available_workflow_templates():
 @roles_accepted(*userRoles["/workflow"])
 def display_workflow(playbook_name, workflow_name):
     if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-        return json.dumps({"status": "success",
-                           "steps": running_context.controller.get_workflow(playbook_name,
-                                                                            workflow_name).get_cytoscape_data(),
-                           'options': running_context.controller.get_workflow(playbook_name,
-                                                                              workflow_name).options.as_json()})
+        if not request.get_json():
+            return json.dumps({"status": "success",
+                               "steps": running_context.controller.get_workflow(playbook_name,
+                                                                                workflow_name).get_cytoscape_data(),
+                               'options': running_context.controller.get_workflow(playbook_name,
+                                                                                  workflow_name).options.as_json()})
+        elif 'ancestry' in request.get_json():
+            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+            info = workflow.get_children(request.get_json()['ancestry'])
+            if info:
+                return json.dumps({"status": "success", "element": info})
+            else:
+                return json.dumps({"status": 'error: element not found'})
+        else:
+            return json.dumps({"status": 'error: malformed JSON'})
     else:
         return json.dumps({"status": "error: name not found"})
 
@@ -424,8 +434,7 @@ def edit_event_note(event_id):
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_possible_subscriptions():
-    with open(os.path.join('.', 'data', 'events.json')) as f:
-        return f.read()
+    return json.dumps(core.config.config.possible_events)
 
 
 @app.route('/cases/subscriptions/<string:case_name>/global/edit', methods=['POST'])

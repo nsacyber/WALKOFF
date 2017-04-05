@@ -1,6 +1,4 @@
 import unittest
-import xml.etree.cElementTree as elementtree
-from xml.etree import ElementTree
 from core.options import Options
 
 

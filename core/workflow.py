@@ -68,7 +68,7 @@ class Workflow(ExecutionElement):
             root.append(self.steps[step].to_xml())
         return self.workflowXML
 
-    def goToNextStep(self, current="", nextUp=""):
+    def __go_to_next_step(self, current="", nextUp=""):
         if nextUp not in self.steps:
             self.steps[current].nextUp = None
             current = None
@@ -113,7 +113,7 @@ class Workflow(ExecutionElement):
                             child_step_generator.send(error_flag)
                     next_step = child_next_step
 
-            current_name = self.goToNextStep(current=current_name, nextUp=next_step)
+            current_name = self.__go_to_next_step(current=current_name, nextUp=next_step)
             current = self.steps[current_name] if current_name is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
@@ -165,13 +165,22 @@ class Workflow(ExecutionElement):
         return output
 
     def from_cytoscape_data(self, data):
-        steps = {}
         for node in data:
             if 'source' not in node['data'] and 'target' not in node['data']:
                 step_data = node['data']
                 step_name = step_data['parameters']['name']
-                steps[step_name] = Step.from_json(step_data['parameters'], parent_name=self.name, ancestry=self.ancestry)
-        self.steps = steps
+                self.steps[step_name] = Step.from_json(step_data['parameters'], parent_name=self.name, ancestry=self.ancestry)
+
+    def get_children(self, ancestry):
+        if not ancestry:
+            return {'steps': list(self.steps.keys())}
+        else:
+            ancestry = ancestry[::-1]
+            next_child = ancestry.pop()
+            if next_child in self.steps:
+                return self.steps[next_child].get_children(ancestry)
+            else:
+                return None
 
     def __repr__(self):
         output = {'options': self.options,

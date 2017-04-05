@@ -276,7 +276,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step3.get_next_step(error=True), next_step2.name)
         self.assertEqual(step3.next_up, next_step2.name)
 
-    def test_from_json(self):
+    def test_to_from_json(self):
         next_step_names = ['next1', 'next2']
         error_names = ['error1', 'error2']
         inputs = [{'name': 'name1',
@@ -321,6 +321,13 @@ class TestStep(unittest.TestCase):
             self.assertEqual(step.parent_name, derived_step.parent_name)
             self.assertListEqual(step.ancestry, derived_step.ancestry)
 
+            derived_step_without_children = step_json
+            derived_step_without_children['next'] = [next_step['name']
+                                                     for next_step in derived_step_without_children['next']]
+            derived_step_without_children['errors'] = [error['name']
+                                                       for error in derived_step_without_children['errors']]
+            self.assertDictEqual(derived_step.as_json(with_children=False), derived_step_without_children)
+
             # check the ancestry of the next_steps
             original_next_step_ancestries = [list(next_step.ancestry) for next_step in step.conditionals]
             derived_next_step_ancestries = [list(next_step.ancestry) for next_step in derived_step.conditionals]
@@ -336,3 +343,42 @@ class TestStep(unittest.TestCase):
             for original_error_ancestry, derived_error_ancestry in zip(original_error_ancestries,
                                                                        derived_error_ancestries):
                 self.assertListEqual(derived_error_ancestry, original_error_ancestry)
+
+    def test_get_children(self):
+        step = Step()
+        names = ['step1', 'step2', 'step3']
+        for name in names:
+            self.assertIsNone(step.get_children([name]))
+            self.assertDictEqual(step.get_children([]), step.as_json(with_children=False))
+
+        next_steps = [NextStep(name='name1'), NextStep(name='name2'), NextStep(name='name3')]
+        names = ['name1', 'name2', 'name3']
+        step = Step(next_steps=next_steps)
+        for i, name in enumerate(names):
+            self.assertDictEqual(step.get_children([name]), next_steps[i].as_json())
+
+        step = Step(errors=next_steps)
+        for i, name in enumerate(names):
+            self.assertDictEqual(step.get_children([name]), next_steps[i].as_json())
+
+        errors = [NextStep(name='name1'), NextStep(name='error1'), NextStep(name='error2'), NextStep(name='name2')]
+        next_names = list(names)
+        error_names = ['error1', 'error2']
+        all_names = list(next_names)
+        all_names.extend(error_names)
+
+        step = Step(next_steps=next_steps, errors=errors)
+
+        for i, name in enumerate(all_names):
+            if not name.startswith('error'):
+                self.assertDictEqual(step.get_children([name]), next_steps[i].as_json())
+            else:
+                self.assertDictEqual(step.get_children([name]), errors[i-2].as_json())
+
+        flags = [Flag(), Flag(action='action1'), Flag(action='action2')]
+        next_steps = [NextStep(name='name1', flags=flags)]
+        names = ['', 'action1', 'action2']
+        step = Step(next_steps=next_steps)
+        ancestries = [[name, 'name1'] for name in names]
+        for i, ancestry in enumerate(ancestries):
+            self.assertDictEqual(step.get_children(ancestry), flags[i].as_json())

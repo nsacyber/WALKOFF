@@ -122,7 +122,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertDictEqual(response['templates'], {'basicWorkflow': ['helloWorldWorkflow'],
                                                      'emptyWorkflow': ['emptyWorkflow']})
 
-    def test_display_workflow(self):
+    def test_display_workflow_cytoscape(self):
         workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
         flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
         workflow = flask_server.running_context.controller.get_workflow('multiactionWorkflowTest',
@@ -136,6 +136,64 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_response)
+
+    def test_display_workflow_element(self):
+        workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
+        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        workflow = flask_server.running_context.controller.get_workflow('multiactionWorkflowTest',
+                                                                        'multiactionWorkflow')
+        ancestries_to_json = [([], {"steps": ['start', '1']}),
+                              (['start'], workflow.steps['start'].as_json(with_children=False)),
+                              (['1'], workflow.steps['1'].as_json(with_children=False)),
+                              (['start', '1'], workflow.steps['start'].conditionals[0].as_json(with_children=False)),
+                              (['start', '1', 'regMatch'],
+                               workflow.steps['start'].conditionals[0].flags[0].as_json(with_children=False)),
+                              (['start', '1', 'regMatch', 'length'],
+                               workflow.steps['start'].conditionals[0].flags[0].filters[0].as_json())]
+        for ancestry, expected_output in ancestries_to_json:
+            data = {"ancestry": ancestry}
+            response = self.app.get('/playbook/multiactionWorkflowTest/multiactionWorkflow/display',
+                                    data=json.dumps(data),
+                                    content_type='application/json',
+                                    headers=self.headers)
+            self.assertEqual(response.status_code, 200)
+            response = json.loads(response.get_data(as_text=True))
+            self.assertIn('status', response)
+            self.assertEqual(response['status'], 'success')
+            self.assertIn('element', response)
+            orderless_list_compare(self, response['element'], expected_output)
+
+    def test_display_workflow_element_not_found(self):
+        workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
+        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+
+        ancestries = [['starta'],
+                      ['1a'],
+                      ['start', '1a'],
+                      ['start', '1', 'regMatcha'],
+                      ['start', '1', 'regMatch', 'lengtha']]
+        for ancestry in ancestries:
+            data = {"ancestry": ancestry}
+            response = self.app.get('/playbook/multiactionWorkflowTest/multiactionWorkflow/display',
+                                    data=json.dumps(data),
+                                    content_type='application/json',
+                                    headers=self.headers)
+            self.assertEqual(response.status_code, 200)
+            response = json.loads(response.get_data(as_text=True))
+            self.assertIn('status', response)
+            self.assertEqual(response['status'], 'error: element not found')
+
+    def test_display_workflow_element_invalid_json(self):
+        workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
+        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        data = {"invalid_field_name": "grepgrepgrepspamsapmsapm"}
+        response = self.app.get('/playbook/multiactionWorkflowTest/multiactionWorkflow/display',
+                                data=json.dumps(data),
+                                content_type='application/json',
+                                headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, {"status": 'error: malformed JSON'})
 
     def test_display_workflow_invalid_name(self):
         response = self.app.get('/playbook/multiactionWorkflowTest/multiactionWorkflow/display', headers=self.headers)
@@ -155,7 +213,7 @@ class TestWorkflowServer(unittest.TestCase):
         expected_playbooks['test_playbook'] = ['emptyWorkflow']
         self.assertDictEqual(response['playbooks'], expected_playbooks)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_playbooks)
-        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), original_length+1)
+        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), original_length + 1)
 
     def test_add_playbook_template(self):
         expected_playbooks = flask_server.running_context.controller.get_all_workflows()
