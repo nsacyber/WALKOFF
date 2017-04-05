@@ -6,6 +6,8 @@ from tests.config import test_workflows_path, test_apps_path
 import core.config.paths
 from tests.util.assertwrappers import orderless_list_compare
 
+from server import flaskServer as server
+
 class TestHelperFunctions(unittest.TestCase):
     def setUp(self):
         self.original_apps_path = core.config.paths.apps_path
@@ -17,7 +19,8 @@ class TestHelperFunctions(unittest.TestCase):
     def test_load_app_function(self):
 
         app = 'HelloWorld'
-        instance = Instance.create(app, 'default_device_name')
+        with server.running_context.flask_app.app_context():
+            instance = Instance.create(app, 'default_device_name')
         existing_actions = {'helloWorld': instance().helloWorld,
                             'repeatBackToMe': instance().repeatBackToMe,
                             'returnPlusOne': instance().returnPlusOne}
@@ -25,7 +28,8 @@ class TestHelperFunctions(unittest.TestCase):
             self.assertEqual(load_app_function(instance(), action), function)
 
     def test_load_app_function_invalid_function(self):
-        instance = Instance.create('HelloWorld', 'default_device_name')
+        with server.running_context.flask_app.app_context():
+            instance = Instance.create('HelloWorld', 'default_device_name')
         self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
 
     def test_locate_workflows(self):
@@ -53,12 +57,6 @@ class TestHelperFunctions(unittest.TestCase):
 
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.workflow'))
         self.assertIsNone(workflows)
-
-    def test_list_app_functions(self):
-        expected_functions = ['as_json', 'getConfig', 'helloWorld', 'query_class', 'repeatBackToMe',
-                              'returnPlusOne', 'shutdown', 'pause']
-        received_functions = list_app_functions('HelloWorld')
-        orderless_list_compare(self, received_functions, expected_functions)
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld']

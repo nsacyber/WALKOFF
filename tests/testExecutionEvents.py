@@ -1,5 +1,4 @@
 import unittest
-import json
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -7,7 +6,7 @@ from core import controller, graphDecorator
 from core.case.subscription import Subscription
 from core.helpers import construct_workflow_name_key
 from tests import config
-
+from server.flaskServer import running_context
 
 class TestExecutionEvents(unittest.TestCase):
     """
@@ -16,6 +15,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def setUp(self):
         case_database.initialize()
+        running_context.init_threads()
 
     def tearDown(self):
         case_database.tearDown()
@@ -36,6 +36,8 @@ class TestExecutionEvents(unittest.TestCase):
             {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
+
+        running_context.shutdown_threads()
 
         execution_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testExecutionEvents').first()
@@ -67,6 +69,9 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        running_context.shutdown_threads()
+
         step_execution_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepExecutionEvents').first()
         step_execution_event_history = step_execution_events_case.events.all()
@@ -99,6 +104,8 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
         c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        running_context.shutdown_threads()
 
         step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
@@ -139,6 +146,8 @@ class TestExecutionEvents(unittest.TestCase):
                                                                             global_subscriptions=global_subs)})
 
         c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        running_context.shutdown_threads()
 
         step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()

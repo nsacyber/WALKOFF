@@ -4,27 +4,27 @@ from os import mkdir
 from os.path import isdir
 
 from core.config.paths import profile_visualizations_path
-from core import controller
 from core import graphDecorator
 from core.helpers import construct_workflow_name_key
 from tests import config
-import core.case.subscription as case_subscription
-import core.case.database as case_database
+from core.case import database
+from core.case import subscription
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.assertwrappers import orderless_list_compare
 
+from server.flaskServer import running_context
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
-        case_database.initialize()
-        self.c = controller.Controller()
+        database.initialize()
         if not isdir(profile_visualizations_path):
             mkdir(profile_visualizations_path)
         self.start = datetime.utcnow()
+        running_context.init_threads()
 
     def tearDown(self):
-        case_database.case_db.tearDown()
-        case_subscription.clear_subscriptions()
+        database.case_db.tearDown()
+        subscription.clear_subscriptions()
 
     """
         Tests the out templating function which replaces the value of an argument with the output from the workflow history.
@@ -32,13 +32,15 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'templatedWorkflowTest.workflow')
+        running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + 'templatedWorkflowTest.workflow')
         workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow('templatedWorkflowTest', 'templatedWorkflow')
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        running_context.controller.executeWorkflow('templatedWorkflowTest', 'templatedWorkflow')
 
+        running_context.shutdown_threads()
+
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2, 'Unexpected number of steps executed. '
                                         'Expected {0}, got {1}'.format(2, len(steps)))
         names = [step['ancestry'].split(',')[-1] for step in steps]
@@ -60,12 +62,15 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'tieredWorkflow.workflow')
+        running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + 'tieredWorkflow.workflow')
         workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
         workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step([workflow_name1, workflow_name2], step_names)
-        self.c.executeWorkflow('tieredWorkflow', 'parentWorkflow')
+        running_context.controller.executeWorkflow('tieredWorkflow', 'parentWorkflow')
+
+        running_context.shutdown_threads()
+
         steps = executed_steps('defaultController', workflow_name1, self.start, datetime.utcnow())
         steps.extend(executed_steps('defaultController', workflow_name2, self.start, datetime.utcnow()))
         ancestries = [step['ancestry'].split(',') for step in steps]
@@ -92,11 +97,14 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @graphDecorator.callgraph(enabled=False)
     def test_Loop(self):
-        self.c.loadWorkflowsFromFile(path=config.test_workflows_path + 'loopWorkflow.workflow')
+        running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + 'loopWorkflow.workflow')
         workflow_name = construct_workflow_name_key('loopWorkflow', 'loopWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        self.c.executeWorkflow('loopWorkflow', 'loopWorkflow')
+        running_context.controller.executeWorkflow('loopWorkflow', 'loopWorkflow')
+
+        running_context.shutdown_threads()
+
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         names = [step['ancestry'].split(',')[-1] for step in steps]
         expected_steps = ['start', 'start', 'start', 'start', '1']
