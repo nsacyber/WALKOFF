@@ -108,6 +108,7 @@ class LoginForm(Form):
 
 
 class addNewTriggerForm(Form):
+    name = StringField('Name', [validators.Length(min=1, max=25), validators.Optional()])
     conditional = FieldList(StringField('Conditionals'), [validators.data_required()])
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])

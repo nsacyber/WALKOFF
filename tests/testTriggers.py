@@ -71,9 +71,9 @@ class TestTriggers(unittest.TestCase):
         triggers = [trigger.as_json() for trigger in Triggers.query.all()]
         self.assertEqual(len(triggers), 0)
 
-        response = assert_post_status(self, self.app,
-                                      '/execution/listener/triggers/{0}/display'.format(self.test_trigger_name),
-                                      self.headers, "error: trigger not found")
+        assert_post_status(self, self.app,
+                           '/execution/listener/triggers/{0}/display'.format(self.test_trigger_name),
+                           self.headers, "error: trigger not found")
 
     def test_add_trigger_invalid_form(self):
         data = {"playbrook": "test",
@@ -82,7 +82,7 @@ class TestTriggers(unittest.TestCase):
         assert_post_status(self, self.app, '/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
                            self.headers, "error: form not valid", data=data)
 
-    def test_add_trigger_add_dumplicate(self):
+    def test_add_trigger_add_duplicate(self):
         condition = {"flag": 'regMatch', "args": {"regex": '(.*)'}, "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_play,
@@ -108,25 +108,24 @@ class TestTriggers(unittest.TestCase):
                        "playbook": "testrename",
                        "workflow": '{0}rename'.format(self.test_trigger_play),
                        "conditional-0": json.dumps(condition)}
-        response = assert_post_status(self, self.app,
-                                      '/execution/listener/triggers/{0}/edit'.format(self.test_trigger_name),
-                                      self.headers, "success", data=edited_data)
+        assert_post_status(self, self.app,
+                           '/execution/listener/triggers/{0}/edit'.format(self.test_trigger_name),
+                           self.headers, "success", data=edited_data)
 
     '''
     def test_trigger_execute(self):
-        data = {"name": self.test_trigger_name,
-                "playbook": "test",
-                "workflow": "helloWorldWorkflow",
-                "conditional-0": json.dumps({"flag": 'regMatch',
-                                             "args": [{"type": 'str', "value": '(.*)', "key": 'regex'}],
-                                             "filters": []})}
-        response = json.loads(
-            self.app.post('/execution/listener/triggers/add', data=data, headers=self.headers).get_data(as_text=True))
-        self.assertEqual(response["status"], "trigger successfully added")
+        condition = {"flag": 'regMatch', "args": {"regex": '(.*)'}, "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_play,
+                "conditional-0": json.dumps(condition)}
+        assert_post_status(self, self.app, '/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+                           self.headers, "success", data=data)
 
-        #response = self.app.post('/execution/listener',
-        #                         data={"data": "hellohellohello"},
-        #                         headers=self.headers).get_data(as_text=True)
+        response = assert_post_status(self, self.app, '/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+                           self.headers, "success", data=data)
+        self.app.post('/execution/listener',
+                                data={"data": "hellohellohello"},
+                             headers=self.headers).get_data(as_text=True)
         #response = json.loads(response)
         #self.assertEqual(response[self.testTriggerName][0]['output'], 'REPEATING: Hello World')
     '''
