@@ -575,34 +575,31 @@ def listener():
 @app.route('/execution/listener/triggers', methods=["GET"])
 @auth_token_required
 @roles_accepted(*userRoles["/execution/listener/triggers"])
-def displayAllTriggers():
-    result = str(Triggers.query.all())
-    return result
-
-
-@app.route('/execution/listener/triggers/<string:action>', methods=["POST"])
-@auth_token_required
-@roles_accepted(*userRoles["/execution/listener/triggers"])
-def triggerManagement(action):
-    if action == "add":
-        form = forms.addNewTriggerForm(request.form)
-        if form.validate():
-            query = Triggers.query.filter_by(name=form.name.data).first()
-            if query is None:
-                database.db.session.add(
-                    Triggers(name=form.name.data, condition=json.dumps(form.conditional.data), play=form.play.data))
-
-                database.db.session.commit()
-                return json.dumps({"status": "trigger successfully added"})
-            else:
-                return json.dumps({"status": "trigger with that name already exists"})
-        return json.dumps({"status": "trigger could not be added"})
+def display_all_triggers():
+    return json.dumps({"status": "success", "triggers": [trigger.as_json() for trigger in Triggers.query.all()]})
 
 
 @app.route('/execution/listener/triggers/<string:name>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/execution/listener/triggers"])
-def triggerFunctions(action, name):
+def trigger_functions(action, name):
+    if action == "add":
+        form = forms.addNewTriggerForm(request.form)
+        if form.validate():
+            query = Triggers.query.filter_by(name=name).first()
+            if query is None:
+                database.db.session.add(
+                    Triggers(name=name,
+                             condition=json.dumps(form.conditional.data),
+                             playbook=form.playbook.data,
+                             workflow=form.workflow.data))
+
+                database.db.session.commit()
+                return json.dumps({"status": "success"})
+            else:
+                return json.dumps({"status": "warning: trigger with that name already exists"})
+        return json.dumps({"status": "error: form not valid"})
+
     if action == "edit":
         form = forms.editTriggerForm(request.form)
         trigger = Triggers.query.filter_by(name=name).first()
@@ -610,31 +607,31 @@ def triggerFunctions(action, name):
             # Ensures new name is unique
             if form.name.data:
                 if len(Triggers.query.filter_by(name=form.name.data).all()) > 0:
-                    return json.dumps({"status": "device could not be edited"})
+                    return json.dumps({"status": "error: duplicate names found. Trigger could not be edited"})
 
-            result = trigger.editTrigger(form)
+            result = trigger.edit_trigger(form)
 
             if result:
                 db.session.commit()
-                return json.dumps({"status": "device successfully edited"})
+                return json.dumps({"status": "success"})
 
-        return json.dumps({"status": "device could not be edited"})
+        return json.dumps({"status": "trigger could not be edited"})
 
     elif action == "remove":
         query = Triggers.query.filter_by(name=name).first()
         if query:
             Triggers.query.filter_by(name=name).delete()
             database.db.session.commit()
-            return json.dumps({"status": "removed trigger"})
+            return json.dumps({"status": "success"})
         elif query is None:
-            json.dumps({"status": "trigger does not exist"})
-        return json.dumps({"status": "could not remove trigger"})
+            return json.dumps({"status": "error: trigger does not exist"})
+        return json.dumps({"status": "error: could not remove trigger"})
 
     elif action == "display":
         query = Triggers.query.filter_by(name=name).first()
         if query:
-            return str(query)
-        return json.dumps({"status": "could not display trigger"})
+            return json.dumps({"status": 'success', "trigger": query.as_json()})
+        return json.dumps({"status": "error: trigger not found"})
 
 
 # Controls roles

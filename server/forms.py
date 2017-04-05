@@ -108,15 +108,16 @@ class LoginForm(Form):
 
 
 class addNewTriggerForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=25), validators.data_required()])
-    conditional = FieldList(StringField('conditional'), [validators.data_required()])
-    play = StringField('play', [validators.Length(min=1, max=25), validators.data_required()])
+    conditional = FieldList(StringField('Conditionals'), [validators.data_required()])
+    playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
+    workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
 
 
 class editTriggerForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = FieldList(FormField('conditionalArgsField'), [validators.Optional()])
-    play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
+    name = StringField('New Name', [validators.Length(min=1, max=25), validators.Optional()])
+    conditional = FieldList(StringField('Conditionals'), [validators.Optional()])
+    playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.required()])
+    workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.required()])
 
 
 class conditionalArgsField(Form):
@@ -154,6 +155,7 @@ class EditGlobalSubscriptionForm(Form):
 
 class AddCaseForm(Form):
     caseName = StringField('name', [validators.Optional()])
+
 
 class EditSubscriptionForm(Form):
     ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
