@@ -25,9 +25,19 @@ function displayDevices(data){
 function displayDeviceForm(data){
     for(param in data){
         if(data[param] != "None"){
-            $("#deviceForm input[name='" + param + "']").val(data[param]);
+            paramVal = data[param];
+            if(param == "ip") {
+                param = param + "addr";
+            }
+            $("#deviceForm input[name='" + param + "']").val(paramVal);
+        } else {
+            if(param == "ip") {
+                param = param + "addr";
+            }
+            $("#deviceForm input[name='" + param + "']").val("");
         }
     }
+    $("#deviceForm input[name='pw']").val("");
 }
 
 for(var app in apps){
@@ -105,25 +115,34 @@ $("#removeDevice").on("click", function(){
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
             'success': function (data) {
                 console.log(data);
+            },
+            'error': function(e) {
+                console.log(e);
             }
         });
     }
 
 });
-$("#editDevice").on("click", function(){
-    console.log(activeApp);
-    console.log(activeDevice);
+$("#editDevice").on("click", function(e){
+    formData = { 'name': $("#name").val(),
+                 'username': $("#username").val(),
+                 'pw': $("#pw").val(),
+                 'ipaddr': $("#ipaddr").val(),
+                 'port': $("#port").val()
+                };
     if(activeApp && activeDevice){
         $.ajax({
             'async': false,
             'type': "POST",
             'global': false,
+            'data': formData,
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
             'success': function (data) {
                 console.log(data);
+                e.preventDefault();
             },
-            'errro':function(data){
+            'error': function(data){
                 console.log('edit device failed');
                 console.log(data);
             }
