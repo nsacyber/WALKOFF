@@ -178,8 +178,8 @@
             <div class="vcontrols center">
                 <p>
                     <span class="btn-group">
-                        <button class="btn remove">Remove</button>
-                        <button class="btn" id="editTrigger" >Edit</button>
+                        <button class="btn btn-danger remove">Remove</button>
+                        <button class="btn btn-warning" id="editTrigger" >Edit</button>
                     </span>
                 </p>
             </div>
@@ -192,7 +192,7 @@
                 {{ render_multi_field(editForm.conditional.key) }}
                 {{ render_field(editForm.play) }}
             </form>
-            <button id="editformSubmit" class="btn">Submit</button>
+            <button id="editformSubmit" class="btn btn-primary">Submit</button>
 
         </div>
         <div  class="selectColumn col-md-3">
@@ -204,7 +204,7 @@
                 {{ render_field(form.play) }}
 
             </form>
-            <button id="addTrigger" class="btn add">Add</button>
+            <button id="addTrigger" class="btn btn-primary">Add</button>
         </div>
     </div>
 

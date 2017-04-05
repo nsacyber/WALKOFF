@@ -2,6 +2,7 @@ import os
 import ssl
 import json
 import sys
+
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password, verify_and_update_password
@@ -13,19 +14,18 @@ import core.flags
 import core.filters
 from core import helpers
 from . import forms, interface
+
 from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
 from core.options import Options
-import core.case.database as case_database
 import core.case.subscription as case_subscription
+import core.case.database as case_database
 from . import database, appDevice
 from .app import app
 from .database import User
 from .triggers import Triggers
-from gevent import monkey
-from server.appBlueprint import get_base_app_functions
 from xml.etree import ElementTree
-import pkgutil
+from gevent import monkey
 
 monkey.patch_all()
 

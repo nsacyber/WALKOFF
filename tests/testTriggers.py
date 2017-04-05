@@ -2,8 +2,6 @@ import json
 import unittest
 
 from server import flaskServer as server
-from server.database import db
-from server.triggers import Triggers
 
 
 class TestTriggers(unittest.TestCase):
@@ -20,8 +18,9 @@ class TestTriggers(unittest.TestCase):
         self.testTriggerPlay = "HelloWorldWorkflow"
 
     def tearDown(self):
-        Triggers.query.filter_by(name=self.testTriggerName).delete()
-        db.session.commit()
+        with server.running_context.flask_app.app_context():
+            server.running_context.Triggers.query.filter_by(name=self.testTriggerName).delete()
+            server.database.db.session.commit()
 
     def test_display_triggers(self):
         response = self.app.post('/execution/listener/triggers', headers=self.headers).get_data(as_text=True)

@@ -1,18 +1,97 @@
 import xml.etree.cElementTree as et
 from os import sep
 import os
+
 from collections import namedtuple
+
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.gevent import GeventScheduler
 
 from core.config import paths
 from core import workflow as wf
+from core.case import subscription
 from core.case import callbacks
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
 
+import dill
+from copy import deepcopy
+import concurrent
+
+NUM_PROCESSES = 5
+
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
+def initialize_threading():
+    global task_queue
+    global completed_queue
+    global pool
+    global workflows
+    global processes
+
+    #task_queue = queue.Queue()
+    #completed_queue = queue.Queue()
+    workflows = []
+
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=NUM_PROCESSES)
+
+    # for i in range(0, NUM_PROCESSES):
+    #     pool.submit(executeWorkflowWorker, task_queue, completed_queue)
+
+def shutdown_pool():
+    global pool
+    global workflows
+
+    #print ("shutting down")
+
+    # while (True):
+    #     if not workflows:
+    #         break
+    #     playbook_name,workflow_name = completed_queue.get()
+    #     key = _WorkflowKey(playbook_name, workflow_name)
+    #     if key in workflows:
+    #         workflows.remove(key)
+
+    for future in concurrent.futures.as_completed(workflows):
+        future.result(timeout=3)
+
+    #print("through, starting to close and join")
+
+    pool.shutdown(wait=False)
+
+    workflows = {}
+
+def executeWorkflowWorker(workflow, playbook_name, workflow_name, start, data, subs):
+
+    #print("Thread " + str(os.getpid()) + " starting up...")
+
+    subscription.set_subscriptions(subs)
+    #workflow = dill.loads(pickled_workflow)
+    #print("Thread popped " + playbook_name + " " + workflow_name + " off queue...")
+    workflow.execute(start=start, data=data)
+
+    workflow.is_completed = True
+    #print("done")
+
+    return "done"
+
+    # while (True):
+    #
+    #     while not task_queue.empty():
+    #
+    #         print("Queue not empty...trying to pop")
+    #         pickled_workflow,playbook_name, workflow_name,start,data,subs = task_queue.get()
+    #         print("popped!")
+    #
+    #         subscription.set_subscriptions(subs)
+    #         workflow = dill.loads(pickled_workflow)
+    #         print("Thread popped "+playbook_name+" "+workflow_name+" off queue...")
+    #         workflow.execute(start=start, data=data)
+    #
+    #         workflow.is_completed = True
+    #         completed_queue.put((playbook_name, workflow_name))
+    #         print(workflows)
+    #         print("done")
 
 class Controller(object):
 
@@ -22,6 +101,7 @@ class Controller(object):
         self.load_all_workflows_from_directory(path=appPath)
         self.instances = {}
         self.tree = None
+
         self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
@@ -29,6 +109,8 @@ class Controller(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
+
+        #initialize_threading()
 
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         self.tree = et.ElementTree(file=path)
@@ -144,21 +226,21 @@ class Controller(object):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
             self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
 
-    # def executeWorkflowWorker(self):
-    #
-    #     print("Thread " + str(os.getpid()) + " starting up...")
-    #
-    #     while (True):
-    #         while (self.queue.empty()):
-    #             continue
-    #         name,start,data = self.queue.get()
-    #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
-    #         steps, instances = self.workflows[name].execute(start=start, data=data)
-
     def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
-        self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
-        # print("Boss thread putting "+name+" workflow on queue...:")
-        # self.queue.put((name, start, data))
+        #global task_queue, workflows
+        global pool
+        global workflows
+
+        #print("Boss thread putting " + workflow_name + " workflow on queue...:")
+        key = _WorkflowKey(playbook_name, workflow_name)
+        workflow = self.workflows[key]
+        #pickled_workflow = dill.dumps(self.workflows[key])
+        subs = deepcopy(subscription.subscriptions)
+        #workflows.append(key)
+        #task_queue.put((pickled_workflow, playbook_name, workflow_name, start, data, subs))
+
+        workflows.append(pool.submit(executeWorkflowWorker,workflow,playbook_name,workflow_name,start,data,subs))
+
         callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
@@ -182,12 +264,10 @@ class Controller(object):
         self.scheduler.start()
         return self.scheduler.state
 
-
     # Stops active execution
     def stop(self, wait=True):
         self.scheduler.shutdown(wait=wait)
         return self.scheduler.state
-
 
     # Pauses active execution
     def pause(self):
@@ -228,6 +308,5 @@ class Controller(object):
                 print("Error: Unknown event sent!")
 
         return event_selector
-
 
 controller = Controller()

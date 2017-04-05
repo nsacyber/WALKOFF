@@ -1,8 +1,9 @@
 import unittest
-
+from multiprocessing import freeze_support
 from tests import suites as test_suites
 
 if __name__ == '__main__':
+    freeze_support()
     print('Testing Workflows:')
     unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite)
     print('\nTesting Execution:')
