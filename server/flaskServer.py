@@ -842,13 +842,13 @@ def configDevicesConfigId(app, device, action):
     elif action == "remove":
         dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
-            dev.delete()
+            db.session.delete(dev)
             db.session.commit()
             return json.dumps({"status": "removed device"})
         return json.dumps({"status": "could not remove device"})
 
     elif action == "edit":
-        form = forms.EditDeviceForm(request.form)
+        form = forms.AddNewDeviceForm(request.form)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
             # Ensures new name is unique
