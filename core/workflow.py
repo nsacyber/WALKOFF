@@ -167,6 +167,7 @@ class Workflow(ExecutionElement):
         return output
 
     def from_cytoscape_data(self, data):
+        self.steps = {}
         for node in data:
             if 'source' not in node['data'] and 'target' not in node['data']:
                 step_data = node['data']
