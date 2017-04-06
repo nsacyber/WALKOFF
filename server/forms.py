@@ -178,7 +178,7 @@ class SettingsForm(Form):
     profile_visualizations_path = StringField('Profile Visualizations Path', [validators.Optional()])
     keywords_path = StringField('Keywords Path', [validators.Optional()])
     db_path = StringField('Database Path', [validators.Optional()])
-
+    apps_path = StringField('Apps Path', [validators.Optional()])
     tls_version = StringField('TLS Version', [validators.Optional()])
     certificate_path = StringField('Certificate Path', [validators.Optional()])
     https = StringField('HTTPS Enabled', [validators.Optional()])

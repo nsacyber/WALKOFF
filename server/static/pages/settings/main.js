@@ -105,6 +105,33 @@ $("#saveNewUser").click(function(){
     });
 });
 
+$.ajax({
+    url: 'configuration/workflows_path',
+    data: {},
+    headers: {"Authentication-Token": authKey},
+    type: "GET",
+    success: function (e) {
+        data = JSON.parse(e);
+        $("#workflows_path").val(data["workflows_path"]);
+    },
+    error: function (e) {
+        $("#workflows_path").val("Error");
+    }
+});
+
+$.ajax({
+    url: 'configuration/apps_path',
+    data: {},
+    headers: {"Authentication-Token": authKey},
+    type: "GET",
+    success: function (e) {
+        data = JSON.parse(e);
+        $("#apps_path").val(data["apps_path"]);
+    },
+    error: function (e) {
+        $("#apps_path").val("Error");
+    }
+});
 
 $.ajax({
     url: 'configuration/templates_path',
@@ -120,19 +147,6 @@ $.ajax({
     }
 });
 
-$.ajax({
-    url: 'configuration/workflows_path',
-    data: {},
-    headers: {"Authentication-Token": authKey},
-    type: "GET",
-    success: function (e) {
-        data = JSON.parse(e);
-        $("#workflows_path").val(data["workflows_path"]);
-    },
-    error: function (e) {
-        $("#workflows_path").val("Error");
-    }
-});
 $.ajax({
     url: 'configuration/profile_visualizations_path',
     data: {},

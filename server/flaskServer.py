@@ -231,6 +231,16 @@ def add_default_template(playbook_name, workflow_name):
                                                              workflow_name=workflow_name)
 
 
+def write_playbook_to_file(playbook_name):
+    write_format = 'w' if sys.version_info[0] == 2 else 'wb'
+    playbook_filename = os.path.join(core.config.paths.workflows_path,
+                                     '{0}.workflow'.format(playbook_name))
+    with open(playbook_filename, write_format) as workflow_out:
+        xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
+        xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
+        workflow_out.write(xml_dom.encode('utf-8'))
+
+
 @app.route("/playbook/<string:playbook_name>/<string:workflow_name>/<string:action>", methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
@@ -302,13 +312,7 @@ def workflow(playbook_name, workflow_name, action):
                     workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
                     workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
                     try:
-                        write_format = 'w' if sys.version_info[0] == 2 else 'wb'
-                        workflow_filename = os.path.join(core.config.paths.workflows_path,
-                                                         '{0}.workflow'.format(playbook_name))
-                        with open(workflow_filename, write_format) as workflow_out:
-                            xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
-                            xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
-                            workflow_out.write(xml_dom.encode('utf-8'))
+                        write_playbook_to_file(playbook_name)
                         return json.dumps({"status": "success", "steps": workflow.get_cytoscape_data()})
                     except (OSError, IOError) as e:
                         return json.dumps(
@@ -487,10 +491,10 @@ def display_subscriptions():
 @roles_accepted(*userRoles["/configuration"])
 def config_values(key):
     if current_user.is_authenticated and key:
-        if hasattr(core.config.config, key):
-            return json.dumps({str(key): str(getattr(core.config.config, key))})
-        elif hasattr(core.config.paths, key):
+        if hasattr(core.config.paths, key):
             return json.dumps({str(key): str(getattr(core.config.paths, key))})
+        elif hasattr(core.config.config, key):
+            return json.dumps({str(key): str(getattr(core.config.config, key))})
         else:
             return json.dumps({str(key): "Error: key not found"})
     else:
@@ -506,9 +510,19 @@ def set_configuration():
         if form.validate():
             for key, value in form.data.items():
                 if hasattr(core.config.paths, key):
-                    setattr(core.config.paths, key, value)
-                    if key == "apps_path":
-                        core.config.config.load_function_info()
+                    if key == 'workflows_path' and key != core.config.paths.workflows_path:
+                        for playbook in running_context.controller.get_all_playbooks():
+                            try:
+                                write_playbook_to_file(playbook)
+                            except (IOError, OSError):
+                                pass
+                        core.config.paths.workflows_path = value
+                        running_context.controller.workflows = {}
+                        running_context.controller.load_all_workflows_from_directory()
+                    else:
+                        setattr(core.config.paths, key, value)
+                        if key == 'apps_path':
+                            core.config.config.load_function_info()
                 else:
                     setattr(core.config.config, key, value)
             return json.dumps({"status": 'success'})

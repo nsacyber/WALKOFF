@@ -11,6 +11,7 @@ from shutil import copy2
 
 import core.config.paths
 
+
 class TestWorkflowServer(unittest.TestCase):
     def setUp(self):
         self.app = flask_server.app.test_client(self)
@@ -25,7 +26,8 @@ class TestWorkflowServer(unittest.TestCase):
         core.config.paths.workflows_path = test_workflows_path_with_generated
         core.config.paths.apps_path = test_apps_path
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.load_all_workflows_from_directory(path=test_workflows_path_with_generated)
+        flask_server.running_context.controller.load_all_workflows_from_directory(path=
+                                                                                  test_workflows_path_with_generated)
         if ('test.workflow' in os.listdir(core.config.paths.workflows_path)
                 and 'test_copy.workflow_bkup' not in os.listdir(core.config.paths.workflows_path)):
             copy2(os.path.join(core.config.paths.workflows_path, 'test.workflow'),
