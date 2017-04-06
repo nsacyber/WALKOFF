@@ -51,13 +51,14 @@ class Triggers(Base):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
                     workflow_to_be_executed.execute()
+                    return {"status": "success"}
                 else:
-                    return json.dumps({"status": "trigger error: play could not be found"})
-        return {}
+                    return {"status": "error: workflow could not be found"}
+        return {"status": "warning: no trigger found valid for data in"}
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        conditional = ast.literal_eval(conditional)
+        conditional = json.loads(conditional)
         flag_args = {arg['key']: Argument(key=arg['key'],
                                           value=arg['value'],
                                           format=arg.get('format', 'str'))

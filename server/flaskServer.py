@@ -568,8 +568,8 @@ def scheduler():
 @roles_accepted(*userRoles["/execution/listener"])
 def listener():
     form = forms.incomingDataForm(request.form)
-    listener_output = Triggers.execute(form.data.data) if form.validate() else {}
-    return json.dumps(listener_output)
+    returned_json = Triggers.execute(form.data.data) if form.validate() else {}
+    return json.dumps(returned_json)
 
 
 @app.route('/execution/listener/triggers', methods=["GET"])
