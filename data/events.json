@@ -9,6 +9,7 @@
     "Job Executed",
     "Job Error"
   ],
+  "playbook": [],
   "workflow": [
     "Workflow Instance Created",
     "Step Execution Success",
