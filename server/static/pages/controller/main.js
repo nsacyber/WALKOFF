@@ -16,6 +16,8 @@ editCaseDialog = $("#editCaseDialog").dialog({
 
 defaultCaseModal = $("#editCaseDialog").html();
 
+selected_objectType = null;
+
 function notifyMe() {
     if (!Notification) {
         console.log('Desktop notifications not available in your browser. Try Chromium.');
@@ -36,3 +38,21 @@ function notifyMe() {
 
     }
 }
+
+var status = function () {
+    var tmp = null;
+    $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'data':{"ancestry":{"ancestry":["start"]}},
+        'headers':{"Authentication-Token":authKey},
+        'url': "/playbook/test/helloWorldWorkflow/display",
+        'dataType':"json",
+        'success': function (data) {
+            tmp = data;
+            console.log(data);
+        }
+    });
+    return tmp;
+}();

@@ -40,6 +40,7 @@ function formatFilterSubscriptions(availableSubscriptions){
 
 function resetSubscriptionModal(){
     $("#editSubscriptionDialog").empty();
+    $("select[name=modalObjectTypeSelection]").empty();
     $("#editSubscriptionDialog").html(defaultModal);
 }
 
@@ -50,13 +51,12 @@ function resetCaseModal(){
 
 function formatModal(availableSubscriptions){
     for(key in availableSubscriptions){
-        $("#modalObjectTypeSelection").append("<option value='" + key + "'>" + key + "</option>");
+        $("select[name=modalObjectTypeSelection]").append("<option value='" + key + "'>" + key + "</option>");
     }
-    selected = $("#modalObjectTypeSelection option").first()[0].value;
-    console.log(Object.keys(availableSubscriptions).slice(0, Object.keys(availableSubscriptions).indexOf(selected)));
-    switch(selected){
+    selected_objectType = $("select[name=modalObjectTypeSelection] option").first()[0].value;
+    switch(selected_objectType){
         case "controller":
-            formatControllerSubscriptions(availableSubscriptions[selected]);
+            formatControllerSubscriptions(availableSubscriptions[selected_objectType]);
         break;
         case "workflow":
             formatWorkflowSubscriptions(availableSubscriptions);
@@ -76,15 +76,20 @@ function formatModal(availableSubscriptions){
     }
 }
 
+function generateObjectSelection(select){
+    var to_select = Object.keys(availableSubscriptions).slice(0, Object.keys(availableSubscriptions).indexOf(selected_objectType));
+    console.log(to_select);
+}
+
 function openEditSubscriptionModal(){
-    var availableSubscriptions = function () {
+    availableSubscriptions = function () {
         var tmp = null;
         $.ajax({
             'async': false,
             'type': "GET",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/availableSubscriptions",
+            'url': "/cases/availablesubscriptions",
             'success': function (data) {
                 tmp = data;
             }
@@ -122,7 +127,6 @@ function casesCustomMenu(node){
             label: "Add Subscription",
             action: function () {
                 var selected_case = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop());
-                console.log(selected_case);
                 var id = selected_case.children.length;
                 $("#casesTree").jstree("create_node", selected_case,  {"id": "sub_"+id, "text" : "new subscription " + id, "type":"subscription"}, false, false);
 
@@ -157,11 +161,11 @@ var cases = function () {
         'url': "/cases",
         'success': function (data) {
             tmp = data;
-            console.log(data);
         }
     });
     return tmp;
 }();
+
 cases = JSON.parse(cases);
 $("#casesTree").jstree({
     'core':{
@@ -179,4 +183,13 @@ $("#addCase").on("click", function(){
     name = "case_"+id;
     $("#casesTree").jstree().create_node("#", {"id": name, "text" : name, "type":"case"}, "last", function(){});
     addCase(name);
+});
+
+$("select[name=modalObjectTypeSelection]").on("change", function(){
+    selected_objectType = this.value;
+    console.log(selected_objectType);
+});
+
+editSubscriptionDialog.on("dialogclose", function(event, ui){
+    resetSubscriptionModal();
 });

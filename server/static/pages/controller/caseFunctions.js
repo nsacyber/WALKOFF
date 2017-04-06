@@ -14,7 +14,6 @@ function addCase(id){
         });
         return tmp;
     }();
-    console.log(status);
     return status;
 }
 
@@ -54,7 +53,6 @@ function addSubscription(selectedCase, subscriptionId){
             'url': "/cases/subscriptions/" + selectedCase + "/subscription/add",
             'success': function (data) {
                 tmp = data;
-                console.log(data);
             }
         });
         return tmp;
@@ -74,7 +72,6 @@ function removeSubscription(selectedCase, subscriptionId){
             'url': "/cases/subscriptions/" + selectedCase + "/subscription/add",
             'success': function (data) {
                 tmp = data;
-                console.log(data);
             }
         });
         return tmp;

@@ -281,7 +281,7 @@ class TestCaseServer(unittest.TestCase):
         with open(join('.', 'data', 'events.json')) as f:
             expected_response = json.loads(f.read())
 
-        response = self.app.get('/cases/subscriptions/available', headers=self.headers)
+        response = self.app.get('/cases/availablesubscriptions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_response)
