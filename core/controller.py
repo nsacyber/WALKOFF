@@ -170,7 +170,7 @@ class Controller(object):
     def is_workflow_registered(self, playbook_name, workflow_name):
         return _WorkflowKey(playbook_name, workflow_name) in self.workflows
 
-    def is_playbook_registerd(self, playbook_name):
+    def is_playbook_registered(self, playbook_name):
         return any(workflow_key.playbook == playbook_name for workflow_key in self.workflows)
 
     def update_workflow_name(self, old_playbook, old_workflow, new_playbook, new_workflow):

@@ -514,7 +514,7 @@ class TestWorkflowServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, {'status': 'success', 'playbooks': {}})
 
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registerd('test'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test'))
 
         playbooks = [os.path.splitext(playbook)[0]
                      for playbook in helpers.locate_workflows_in_directory(core.config.paths.workflows_path)]
@@ -529,8 +529,8 @@ class TestWorkflowServer(unittest.TestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, {'status': 'success', 'playbooks': initial_playbooks})
 
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registerd('test'))
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registerd('test_playbook'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test_playbook'))
 
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]
         orderless_list_compare(self, final_playbook_files, initial_playbook_files)
@@ -542,7 +542,7 @@ class TestWorkflowServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, {'status': 'success', 'playbooks': initial_playbooks})
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registerd('junkPlaybookName'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('junkPlaybookName'))
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]
         orderless_list_compare(self, final_playbook_files, initial_playbook_files)
 

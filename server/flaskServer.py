@@ -26,6 +26,7 @@ from .database import User
 from .triggers import Triggers
 from xml.etree import ElementTree
 from gevent import monkey
+import xml.dom.minidom as minidom
 
 monkey.patch_all()
 
@@ -110,14 +111,7 @@ def list_all_apps_and_actions():
 @auth_token_required
 @roles_accepted(*userRoles["/workflow"])
 def display_available_playbooks():
-    try:
-        workflows = {os.path.splitext(workflow)[0]:
-                         helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
-                     for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
-        return json.dumps({"status": "success",
-                           "playbooks": workflows})
-    except Exception as e:
-        return json.dumps({"status": "error: {0}".format(e)})
+    return json.dumps({"status": "success", "playbooks": running_context.controller.get_all_workflows()})
 
 
 @app.route("/playbook/<string:name>", methods=['GET'])
@@ -125,13 +119,9 @@ def display_available_playbooks():
 @roles_accepted(*userRoles["/workflow"])
 def display_playbook_workflows(name):
     try:
-        workflows = {os.path.splitext(workflow)[0]:
-                         helpers.get_workflow_names_from_file(os.path.join(core.config.paths.workflows_path, workflow))
-                     for workflow in locate_workflows_in_directory(core.config.paths.workflows_path)}
-
+        workflows = running_context.controller.get_all_workflows()
         if name in workflows:
-            return json.dumps({"status": "success",
-                               "workflows": workflows[name]})
+            return json.dumps({"status": "success", "workflows": workflows[name]})
         else:
             return json.dumps({"status": "error: name not found"})
     except Exception as e:
@@ -199,7 +189,7 @@ def crud_playbook(playbook_name, action):
         else:
             return json.dumps({'status': 'error: invalid form'})
     elif action == 'edit':
-        if running_context.controller.is_playbook_registerd(playbook_name):
+        if running_context.controller.is_playbook_registered(playbook_name):
             form = forms.EditPlaybookForm(request.form)
             if form.validate():
                 new_name = form.new_name.data
@@ -223,7 +213,7 @@ def crud_playbook(playbook_name, action):
                                "playbooks": running_context.controller.get_all_workflows()})
     elif action == 'delete':
         status = 'success'
-        if running_context.controller.is_playbook_registerd(playbook_name):
+        if running_context.controller.is_playbook_registered(playbook_name):
             running_context.controller.remove_playbook(playbook_name)
         if playbook_name in [os.path.splitext(playbook)[0] for playbook in locate_workflows_in_directory()]:
             try:
@@ -317,7 +307,8 @@ def workflow(playbook_name, workflow_name, action):
                                                          '{0}.workflow'.format(playbook_name))
                         with open(workflow_filename, write_format) as workflow_out:
                             xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
-                            workflow_out.write(xml)
+                            xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
+                            workflow_out.write(xml_dom.encode('utf-8'))
                         return json.dumps({"status": "success", "steps": workflow.get_cytoscape_data()})
                     except (OSError, IOError) as e:
                         return json.dumps(
