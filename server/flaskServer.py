@@ -430,7 +430,7 @@ def edit_event_note(event_id):
         return json.dumps({"status": "Invalid form"})
 
 
-@app.route('/cases/availableSubscriptions', methods=['GET'])
+@app.route('/cases/availablesubscriptions', methods=['GET'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
 def display_possible_subscriptions():
@@ -854,7 +854,7 @@ def configDevicesConfigId(app, device, action):
         return json.dumps({"status": "could not remove device"})
 
     elif action == "edit":
-        form = forms.AddNewDeviceForm(request.form)
+        form = forms.EditDeviceForm(request.form)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
             # Ensures new name is unique

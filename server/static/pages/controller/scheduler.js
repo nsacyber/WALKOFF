@@ -15,7 +15,6 @@ $("#startSchedulerBtn").on("click", function(e){
         });
         return JSON.parse(tmp);
     }();
-    console.log(result);
     $("#status").text(schedulerStatus(result["status"]));
 });
 
@@ -52,6 +51,5 @@ $("#stopSchedulerBtn").on("click", function(e){
         });
         return JSON.parse(tmp);
     }();
-
     $("#status").text(schedulerStatus(result["status"]));
 });

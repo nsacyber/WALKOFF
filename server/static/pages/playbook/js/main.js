@@ -371,22 +371,10 @@ $(function(){
                     action: action,
                     app: app,
                     device: "None",
-                    errors: [
-                        {
-                            name: "None",
-                            nextStep: "None",
-                            flags: []
-                        }
-                    ],
+                    errors: [],
                     input: {},
                     name: action,
-                    next: [
-                        {
-                            name: "None",
-                            nextStep: "None",
-                            flags: []
-                        }
-                    ],
+                    next: [],
                 }
             },
             renderedPosition: { x: x, y: y }
