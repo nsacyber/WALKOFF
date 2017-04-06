@@ -7,12 +7,12 @@ from flask_security.forms import Required, EqualTo
 class NewUserForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25), validators.data_required()])
     password = PasswordField('password', [validators.data_required()])
-    role = FieldList(StringField('role', [validators.Length(min=4, max=25)]))
+    role = FieldList(StringField('role'), [validators.Optional()])
 
 
 class EditUserForm(Form):
     password = PasswordField('password')
-    role = FieldList(StringField('role', [validators.Length(min=4, max=25)]))
+    role = FieldList(StringField('role'), [validators.Optional()])
 
 
 class NewRoleForm(Form):

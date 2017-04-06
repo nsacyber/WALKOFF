@@ -5,7 +5,7 @@ import sys
 
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
-from flask_security.utils import encrypt_password, verify_and_update_password
+from flask_security.utils import encrypt_password
 import core.config.paths
 import core.config.config
 from core.context import running_context
@@ -720,8 +720,15 @@ def userNonSpecificActions(action):
                 # Creates User
                 u = user_datastore.create_user(email=un, password=pw)
 
-                if form.role.entries:
-                    u.setRoles(form.role.entries)
+                if form.role.data:
+                    u.setRoles(form.role.data)
+
+                hasAdmin = False
+                for role in u.roles:
+                    if role.name == "admin":
+                        hasAdmin = True
+                if not hasAdmin:
+                    u.setRoles(["admin"])
 
                 db.session.commit()
                 return json.dumps({"status": "user added " + str(u.id)})
@@ -773,8 +780,8 @@ def userActions(action, id_or_email):
                 if form.password:
                     user.password = encrypt_password(form.password.data)
                     database.db.session.commit()
-                if form.role.entries:
-                    user.setRoles(form.role.entries)
+                if form.role.data:
+                    user.setRoles(form.role.data)
 
             return json.dumps(user.display())
 
