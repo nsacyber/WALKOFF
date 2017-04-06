@@ -5,6 +5,7 @@ import core.case.database as case_database
 from core.config import config, paths
 from server import flaskServer
 
+
 def get_ssl_context():
     if config.https.lower() == "true":
         # Sets up HTTPS
