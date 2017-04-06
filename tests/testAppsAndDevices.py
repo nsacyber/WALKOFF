@@ -26,9 +26,10 @@ class TestAppsAndDevices(unittest.TestCase):
         self.extraFields = {"extraFieldOne": "extraNameOne", "extraFieldTwo": "extraNameTwo"}
 
     def tearDown(self):
-        appDevice.Device.query.filter_by(name=self.name).delete()
-        appDevice.Device.query.filter_by(name="testDeviceTwo").delete()
-        database.db.session.commit()
+        with server.running_context.flask_app.app_context():
+            server.running_context.Device.query.filter_by(name=self.name).delete()
+            server.running_context.Device.query.filter_by(name="testDeviceTwo").delete()
+            server.database.db.session.commit()
 
     def testAddDevice(self):
         data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,

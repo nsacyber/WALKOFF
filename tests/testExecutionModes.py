@@ -11,7 +11,6 @@ from core import controller, graphDecorator
 from core.case.subscription import Subscription
 from tests import config
 
-
 class TestExecutionModes(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
@@ -60,6 +59,7 @@ class TestExecutionModes(unittest.TestCase):
         pause_resume_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'pauseResume').first()
         pause_resume_event_history = pause_resume_events_case.events.all()
+
         self.assertEqual(len(pause_resume_event_history), 4,
                         'Incorrect length of event history. '
                         'Expected {0}, got {1}'.format(4, len(pause_resume_event_history)))

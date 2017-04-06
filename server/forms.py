@@ -1,12 +1,12 @@
-from flask_security.forms import Required, EqualTo
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
     IntegerField, FormField, \
     SelectField, RadioField, SubmitField
+from flask_security.forms import Required, EqualTo
 
 
 class NewUserForm(Form):
-    username = StringField('username', [validators.Length(min=4, max=25), validators.required()])
-    password = PasswordField('password', [validators.required()])
+    username = StringField('username', [validators.Length(min=4, max=25), validators.data_required()])
+    password = PasswordField('password', [validators.data_required()])
     role = FieldList(StringField('role', [validators.Length(min=4, max=25)]))
 
 
@@ -16,7 +16,7 @@ class EditUserForm(Form):
 
 
 class NewRoleForm(Form):
-    name = StringField('name', [validators.required()])
+    name = StringField('name', [validators.data_required()])
     description = StringField('description')
 
 
@@ -35,7 +35,7 @@ class AddPlaybookForm(Form):
 
 
 class EditPlaybookForm(Form):
-    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.required()])
+    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.data_required()])
 
 
 class EditPlayNameForm(Form):
@@ -62,7 +62,7 @@ class AddEditStepForm(Form):
 
 
 class EditConfigForm(Form):
-    key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
+    key = StringField('key', [validators.data_required(), validators.length(min=1, max=25)])
     value = StringField('value')
 
 
@@ -71,17 +71,17 @@ class EditSingleConfigForm(Form):
 
 
 class RemoveConfigForm(Form):
-    key = StringField('key', [validators.required(), validators.length(min=1, max=25)])
+    key = StringField('key', [validators.data_required(), validators.length(min=1, max=25)])
 
 
 class RenderArgsForm(Form):
-    page = StringField("page", [validators.required()])
+    page = StringField("page", [validators.data_required()])
     key = FieldList(StringField("key", [validators.Optional()]))
     value = FieldList(StringField("value", [validators.Optional()]))
 
 
 class AddNewDeviceForm(Form):
-    name = StringField('name', [validators.Length(min=4, max=25), validators.required()])
+    name = StringField('name', [validators.Length(min=4, max=25), validators.data_required()])
     username = StringField('username', [validators.Optional()])
     pw = PasswordField('pw', [validators.Optional()])
     ipaddr = StringField('ipaddr', [validators.Optional()])
@@ -108,15 +108,17 @@ class LoginForm(Form):
 
 
 class addNewTriggerForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=25), validators.required()])
-    conditional = FieldList(StringField('conditional'), [validators.required()])
-    play = StringField('play', [validators.Length(min=1, max=25), validators.required()])
+    name = StringField('Name', [validators.Length(min=1, max=25), validators.Optional()])
+    conditional = FieldList(StringField('Conditionals'), [validators.data_required()])
+    playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
+    workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
 
 
 class editTriggerForm(Form):
-    name = StringField('name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = FieldList(FormField('conditionalArgsField'), [validators.Optional()])
-    play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
+    name = StringField('New Name', [validators.Length(min=1, max=25), validators.Optional()])
+    conditional = FieldList(StringField('Conditionals'), [validators.Optional()])
+    playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.required()])
+    workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.required()])
 
 
 class conditionalArgsField(Form):
@@ -154,6 +156,7 @@ class EditGlobalSubscriptionForm(Form):
 
 class AddCaseForm(Form):
     caseName = StringField('name', [validators.Optional()])
+
 
 class EditSubscriptionForm(Form):
     ancestry = FieldList(StringField('ancestry'), [validators.Optional()])

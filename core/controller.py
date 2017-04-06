@@ -1,27 +1,62 @@
 import xml.etree.cElementTree as et
 from os import sep
 import os
+
 from collections import namedtuple
+
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.gevent import GeventScheduler
 
 from core.config import paths
 from core import workflow as wf
+from core.case import subscription
 from core.case import callbacks
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
+
+from copy import deepcopy
+import concurrent
+
+NUM_PROCESSES = 5
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
 
-class Controller(object):
+def initialize_threading():
+    global pool
+    global workflows
 
+    workflows = []
+
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=NUM_PROCESSES)
+
+
+def shutdown_pool():
+    global pool
+    global workflows
+
+    for future in concurrent.futures.as_completed(workflows):
+        future.result(timeout=3)
+    pool.shutdown(wait=False)
+
+    workflows = {}
+
+
+def executeWorkflowWorker(workflow, start, subs):
+    subscription.set_subscriptions(subs)
+    workflow.execute(start=start)
+
+    return "done"
+
+
+class Controller(object):
     def __init__(self, name="defaultController", appPath=None):
         self.name = name
         self.workflows = {}
         self.load_all_workflows_from_directory(path=appPath)
         self.instances = {}
         self.tree = None
+
         self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
@@ -41,9 +76,9 @@ class Controller(object):
                 name = construct_workflow_name_key(playbook_name, workflow_name)
                 key = _WorkflowKey(playbook_name, workflow_name)
                 self.workflows[key] = wf.Workflow(name=name,
-                                                  workflowConfig=workflow,
+                                                  xml=workflow,
                                                   parent_name=self.name,
-                                                  filename=playbook_name)
+                                                  playbook_name=playbook_name)
                 break
         else:
             return False
@@ -60,9 +95,9 @@ class Controller(object):
             name = construct_workflow_name_key(playbook_name, workflow_name)
             key = _WorkflowKey(playbook_name, workflow_name)
             self.workflows[key] = wf.Workflow(name=name,
-                                              workflowConfig=workflow,
+                                              xml=workflow,
                                               parent_name=self.name,
-                                              filename=playbook_name)
+                                              playbook_name=playbook_name)
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
@@ -103,7 +138,7 @@ class Controller(object):
 
     def create_playbook_from_template(self, playbook_name,
                                       template_playbook='emptyWorkflow'):
-        #TODO: Need a handler for returning workflow key and status
+        # TODO: Need a handler for returning workflow key and status
         path = '{0}{1}{2}.workflow'.format(paths.templates_path, sep, template_playbook)
         self.loadWorkflowsFromFile(path=path, playbook_override=playbook_name)
 
@@ -144,21 +179,16 @@ class Controller(object):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
             self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
 
-    # def executeWorkflowWorker(self):
-    #
-    #     print("Thread " + str(os.getpid()) + " starting up...")
-    #
-    #     while (True):
-    #         while (self.queue.empty()):
-    #             continue
-    #         name,start,data = self.queue.get()
-    #         print("Thread " + str(os.getpid()) + " received and executing workflow "+name)
-    #         steps, instances = self.workflows[name].execute(start=start, data=data)
+    def executeWorkflow(self, playbook_name, workflow_name, start="start"):
+        global pool
+        global workflows
 
-    def executeWorkflow(self, playbook_name, workflow_name, start="start", data=None):
-        self.workflows[_WorkflowKey(playbook_name, workflow_name)].execute(start=start, data=data)
-        # print("Boss thread putting "+name+" workflow on queue...:")
-        # self.queue.put((name, start, data))
+        key = _WorkflowKey(playbook_name, workflow_name)
+        workflow = self.workflows[key]
+        subs = deepcopy(subscription.subscriptions)
+
+        workflows.append(pool.submit(executeWorkflowWorker, workflow, start, subs))
+
         callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
@@ -182,12 +212,10 @@ class Controller(object):
         self.scheduler.start()
         return self.scheduler.state
 
-
     # Stops active execution
     def stop(self, wait=True):
         self.scheduler.shutdown(wait=wait)
         return self.scheduler.state
-
 
     # Pauses active execution
     def pause(self):

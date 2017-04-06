@@ -7,18 +7,19 @@ import core.config.paths
 
 class Context(object):
     def __init__(self):
-        #self.workflows = self.getWorkflowsFromFolder()
         self.apps = self.getApps()
 
         from server.database import User, Role
         from server.appDevice import Device, App
         from core.controller import controller
-        self.controller = controller
+        from server.app import app
 
+        self.controller = controller
         self.User = User
         self.Role = Role
         self.Device = Device
         self.App = App
+        self.flask_app = app
 
     # Returns list of apps
     # Gets all the app instances
@@ -28,5 +29,13 @@ class Context(object):
 
     def set(self, key, value):
         setattr(self, key, value)
+
+    def init_threads(self):
+        from core.controller import initialize_threading
+        initialize_threading()
+
+    def shutdown_threads(self):
+        from core.controller import shutdown_pool
+        shutdown_pool()
 
 running_context = Context()

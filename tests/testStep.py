@@ -11,6 +11,8 @@ from tests.util.assertwrappers import assert_raises_with_error
 from tests.config import test_apps_path
 from core.instance import Instance
 
+from server import flaskServer as server
+
 
 class TestStep(unittest.TestCase):
     def setUp(self):
@@ -166,7 +168,8 @@ class TestStep(unittest.TestCase):
 
     def test_execute(self):
         app = 'HelloWorld'
-        instance = Instance.create(app_name=app, device_name='test_device_name')
+        with server.running_context.flask_app.app_context():
+            instance = Instance.create(app_name=app, device_name='test_device_name')
         actions = [('helloWorld', {}, {"message": "HELLO WORLD"}),
                    ('repeatBackToMe', {'call': Argument(key='call', value='HelloWorld', format='str')},
                     "REPEATING: HelloWorld"),
@@ -179,7 +182,6 @@ class TestStep(unittest.TestCase):
 
     def test_execute_invalid_inputs(self):
         app = 'HelloWorld'
-        instance = Instance.create(app_name=app, device_name='test_device_name')
         actions = [('invalid_name', {'call': Argument(key='call', value='HelloWorld', format='str')}),
                    ('repeatBackToMe', {'number': Argument(key='number', value='6', format='str')}),
                    ('returnPlusOne', {})]
@@ -187,7 +189,8 @@ class TestStep(unittest.TestCase):
         for action, inputs in actions:
             app = 'HelloWorld'
             step = Step(app=app, action=action, inputs=inputs)
-            instance = Instance.create(app_name=app, device_name='test_device_name')
+            with server.running_context.flask_app.app_context():
+                instance = Instance.create(app_name=app, device_name='test_device_name')
             with self.assertRaises(InvalidStepInputError):
                 step.execute(instance=instance())
 

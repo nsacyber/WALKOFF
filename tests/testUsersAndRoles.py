@@ -1,9 +1,8 @@
 import json
 import unittest
 
-from server import database
 from server import flaskServer as server
-
+from flask_security.utils import verify_password
 
 class TestUsersAndRoles(unittest.TestCase):
     def setUp(self):
@@ -21,11 +20,12 @@ class TestUsersAndRoles(unittest.TestCase):
         self.password = "password"
 
     def tearDown(self):
-        database.Role.query.filter_by(name=self.name).delete()
-        database.db.session.commit()
+        with server.running_context.flask_app.app_context():
+            server.running_context.Role.query.filter_by(name=self.name).delete()
+            server.database.db.session.commit()
 
-        database.User.query.filter_by(email=self.email).delete()
-        database.db.session.commit()
+            server.running_context.User.query.filter_by(email=self.email).delete()
+            server.database.db.session.commit()
 
     def testAddRole(self):
         data = {"name" : self.name}
@@ -56,13 +56,20 @@ class TestUsersAndRoles(unittest.TestCase):
         response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["status"], "user exists")
 
-    def testEditUser(self):
+    def testEditUserPassword(self):
         data = {"username": self.email, "password": self.password}
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"password": self.password}
         response = json.loads(self.app.post('/users/'+self.email+'/edit', data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["username"], self.email)
+
+        data = {"password": "testPassword"}
+        response = json.loads(
+            self.app.post('/users/' + self.email + '/edit', data=data, headers=self.headers).get_data(as_text=True))
+        with server.app.app_context():
+            user = server.database.user_datastore.get_user(self.email)
+            self.assertTrue(verify_password("testPassword", user.password))
 
     def testRemoveUser(self):
         data = {"username": self.email, "password": self.password}
