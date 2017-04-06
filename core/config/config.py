@@ -6,7 +6,7 @@ from os.path import isfile, join, splitext
 import core.config.paths
 from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
-
+from collections import OrderedDict
 
 def load_config():
     self = sys.modules[__name__]
@@ -38,7 +38,7 @@ def write_values_to_file(values=None):
 load_config()
 try:
     with open(core.config.paths.events_path) as f:
-        possible_events = json.loads(f.read())
+        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
 except (IOError, OSError):
     possible_events = {}
 

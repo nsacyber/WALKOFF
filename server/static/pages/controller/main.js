@@ -1,7 +1,7 @@
 editSubscriptionDialog = $("#editSubscriptionDialog").dialog({
                     autoOpen: false,
-                    height:400,
-                    width:350,
+                    height:600,
+                    width:500,
                     modal:true
                 });
 
@@ -17,6 +17,22 @@ editCaseDialog = $("#editCaseDialog").dialog({
 defaultCaseModal = $("#editCaseDialog").html();
 
 selected_objectType = null;
+
+availableSubscriptions = function () {
+        var tmp = null;
+        $.ajax({
+            'async': false,
+            'type': "GET",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/cases/availablesubscriptions",
+            'success': function (data) {
+                tmp = data;
+            }
+        });
+        return tmp;
+    }();
+availableSubscriptions = JSON.parse(availableSubscriptions);
 
 function notifyMe() {
     if (!Notification) {
@@ -39,20 +55,3 @@ function notifyMe() {
     }
 }
 
-var status = function () {
-    var tmp = null;
-    $.ajax({
-        'async': false,
-        'type': "GET",
-        'global': false,
-        'data':{"ancestry":{"ancestry":["start"]}},
-        'headers':{"Authentication-Token":authKey},
-        'url': "/playbook/test/helloWorldWorkflow/display",
-        'dataType':"json",
-        'success': function (data) {
-            tmp = data;
-            console.log(data);
-        }
-    });
-    return tmp;
-}();
