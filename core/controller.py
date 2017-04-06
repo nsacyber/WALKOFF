@@ -7,6 +7,7 @@ from collections import namedtuple
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.gevent import GeventScheduler
+from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
 from core.config import paths
 from core import workflow as wf
@@ -163,6 +164,9 @@ class Controller(object):
             result[key.playbook].append(key.workflow)
         return result
 
+    def get_all_playbooks(self):
+        return list(set(key.playbook for key in self.workflows.keys()))
+
     def is_workflow_registered(self, playbook_name, workflow_name):
         return _WorkflowKey(playbook_name, workflow_name) in self.workflows
 
@@ -209,22 +213,26 @@ class Controller(object):
 
     # Starts active execution
     def start(self):
-        self.scheduler.start()
+        if self.scheduler.state != STATE_RUNNING:
+            self.scheduler.start()
         return self.scheduler.state
 
     # Stops active execution
     def stop(self, wait=True):
-        self.scheduler.shutdown(wait=wait)
+        if self.scheduler.state != STATE_STOPPED:
+            self.scheduler.shutdown(wait=wait)
         return self.scheduler.state
 
     # Pauses active execution
     def pause(self):
-        self.scheduler.pause()
+        if self.scheduler.state == STATE_RUNNING:
+            self.scheduler.pause()
         return self.scheduler.state
 
     # Resumes active execution
     def resume(self):
-        self.scheduler.resume()
+        if self.scheduler.state == STATE_PAUSED:
+            self.scheduler.resume()
         return self.scheduler.state
 
     # Pauses active execution of specific job

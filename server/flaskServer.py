@@ -32,7 +32,7 @@ monkey.patch_all()
 user_datastore = database.user_datastore
 
 urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/listener", "/execution/listener/triggers",
-        "/roles", "/users", "/configuration", '/cases', '/apps']
+        "/roles", "/users", "/configuration", '/cases', '/apps', "/execution/scheduler"]
 
 default_urls = urls
 userRoles = database.userRoles
@@ -516,6 +516,8 @@ def set_configuration():
             for key, value in form.data.items():
                 if hasattr(core.config.paths, key):
                     setattr(core.config.paths, key, value)
+                    if key == "apps_path":
+                        core.config.config.load_function_info()
                 else:
                     setattr(core.config.config, key, value)
             return json.dumps({"status": 'success'})
@@ -540,7 +542,7 @@ def systemPages(name):
 # Controls execution triggers
 @app.route('/execution/scheduler/<string:action>', methods=["POST"])
 @auth_token_required
-# @roles_accepted(*userRoles["/execution/listener"])
+@roles_accepted(*userRoles["/execution/scheduler"])
 def schedulerActions(action):
     if action == "start":
         status = running_context.controller.start()
@@ -551,6 +553,22 @@ def schedulerActions(action):
     elif action == "pause":
         status = running_context.controller.pause()
         return json.dumps({"status": status})
+    elif action == "resume":
+        status = running_context.controller.resume()
+        return json.dumps({"status": status})
+    return json.dumps({"status": "invalid command"})
+
+# Controls execution triggers
+@app.route('/execution/scheduler/<string:id>/<string:action>', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/execution/scheduler"])
+def schedulerActionsById(id, action):
+    if action == "pause":
+        running_context.controller.pauseJob(id)
+        return json.dumps({"status": "Job Paused"})
+    elif action == "resume":
+        status = running_context.controller.resumeJob(id)
+        return json.dumps({"status": "Job Resumed"})
     return json.dumps({"status": "invalid command"})
 
 
