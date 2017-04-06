@@ -1,8 +1,8 @@
 import json
 import unittest
 
-from server import flaskServer as server
 from flask_security.utils import verify_password
+from server import flaskServer as server
 
 class TestUsersAndRoles(unittest.TestCase):
     def setUp(self):
@@ -21,10 +21,15 @@ class TestUsersAndRoles(unittest.TestCase):
 
     def tearDown(self):
         with server.running_context.flask_app.app_context():
-            server.running_context.Role.query.filter_by(name=self.name).delete()
-            server.database.db.session.commit()
+            # server.running_context.User.query.filter_by(email=self.email).delete()
+            # server.database.db.session.commit()
 
-            server.running_context.User.query.filter_by(email=self.email).delete()
+            email = self.email
+            u = server.user_datastore.get_user(email)
+            if u:
+                server.user_datastore.delete_user(u)
+
+            server.running_context.Role.query.filter_by(name=self.name).delete()
             server.database.db.session.commit()
 
     def testAddRole(self):
@@ -36,8 +41,11 @@ class TestUsersAndRoles(unittest.TestCase):
         self.assertEqual(response["status"], "role exists")
 
     def testDisplayAllRoles(self):
+        data = {"name": self.name}
+        response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
+
         response = json.loads(self.app.get('/roles', headers=self.headers).get_data(as_text=True))
-        self.assertEqual(response , ["admin"])
+        self.assertEqual(response , ["admin", self.name])
 
     def testEditRoleDescription(self):
         data = {"name": self.name}
@@ -77,3 +85,18 @@ class TestUsersAndRoles(unittest.TestCase):
 
         response = json.loads(self.app.post('/users/'+self.email+'/remove', headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["status"], "user removed")
+
+    def testAddRoleToUser(self):
+        data = {"username": self.email, "password": self.password}
+        json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
+
+        data = {"name": self.name}
+        response = json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
+        self.assertEqual(response["status"], "role added {0}".format(self.name))
+
+        data = {"role-0":"admin", "role-1":self.name}
+        response = json.loads(self.app.post('/users/'+self.email+'/edit', data=data, headers=self.headers).get_data(as_text=True))
+        roles = [self.name, "admin"]
+        self.assertEqual(len(roles), len(response["roles"]))
+        self.assertEqual(response["roles"][0]["name"], "admin")
+        self.assertEqual(response["roles"][1]["name"], self.name)

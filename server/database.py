@@ -81,15 +81,17 @@ class User(Base, UserMixin):
 
     def setRoles(self, roles):
         for role in roles:
-            if role.data != "" and not self.has_role(role.data):
-                q = user_datastore.find_role(role.data)
+            if role != "" and not self.has_role(role):
+                q = user_datastore.find_role(role)
                 if q != None:
                     user_datastore.add_role_to_user(self, q)
-                    print("ADDED ROLE")
+                    #print("ADDED ROLE")
                 else:
-                    print("ROLE DOES NOT EXIST")
+                    pass
+                    #print("ROLE DOES NOT EXIST")
             else:
-                print("HAS ROLE")
+                pass
+                #print("HAS ROLE")
 
 
     def __repr__(self):

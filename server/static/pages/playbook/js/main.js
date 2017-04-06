@@ -549,6 +549,25 @@ $(function(){
                         name: targetNodes[i].data().parameters.name,
                         nextStep: targetNodes[i].data().parameters.name
                     });
+
+                    //Update the next property of the source node to contain the new next steps
+                    var parameters = sourceNode.data().parameters;
+                    if (!parameters.hasOwnProperty("next"))
+                        parameters.next = [];
+
+                    // If for some reason, the next array already
+                    // contains an item with the same next node as
+                    // this new link (probably due to some bug),
+                    // remove it now
+                    parameters.next.filter(function(next) {
+                        return next.name !== targetNodes[i].data().id;
+                    });
+
+                    parameters.next.push({
+                        flags: [],
+                        name: targetNodes[i].data().id // Note use id, not name since name can be changed
+                    });
+                    sourceNode.data('parameters', parameters);
                 }
                 cy.remove(addedEntities); // Remove NOT using undo/redo extension
                 var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension

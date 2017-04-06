@@ -12,7 +12,6 @@ class Context(object):
         from server.database import User, Role
         from server.appDevice import Device, App
         from core.controller import controller
-        from server.triggers import Triggers
         from server.app import app
 
         self.controller = controller
@@ -20,7 +19,6 @@ class Context(object):
         self.Role = Role
         self.Device = Device
         self.App = App
-        self.Triggers = Triggers
         self.flask_app = app
 
     # Returns list of apps

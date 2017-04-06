@@ -190,7 +190,8 @@
                 {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
                 {{ render_field(editForm.name) }}
                 {{ render_multi_field(editForm.conditional.key) }}
-                {{ render_field(editForm.play) }}
+                {{ render_field(editForm.playbook) }}
+                {{ render_field(editForm.workflow) }}
             </form>
             <button id="editformSubmit" class="btn btn-primary">Submit</button>
 
@@ -201,7 +202,8 @@
                 {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
                 {{ render_field(form.name) }}
                 {{ render_multi_field(form.args) }}
-                {{ render_field(form.play) }}
+                {{ render_field(form.playbook) }}
+                {{ render_field(form.workflow) }}
 
             </form>
             <button id="addTrigger" class="btn btn-primary">Add</button>

@@ -31,9 +31,7 @@ class Workflow(ExecutionElement):
                 # TODO: Make this work with child workflows
 
     def _from_xml(self, xml_element, *args):
-        self.options = options.Options(xml=xml_element.find('.//options'),
-                                       workflow_name=self.name,
-                                       filename=self.playbook_name)
+        self.options = options.Options(xml=xml_element.find('.//options'), playbook_name=self.playbook_name)
         self.steps = {}
         for step_xml in xml_element.findall('.//steps/*'):
             step = Step(xml=step_xml, parent_name=self.name, ancestry=self.ancestry)
@@ -169,6 +167,7 @@ class Workflow(ExecutionElement):
         return output
 
     def from_cytoscape_data(self, data):
+        self.steps = {}
         for node in data:
             if 'source' not in node['data'] and 'target' not in node['data']:
                 step_data = node['data']
