@@ -53,7 +53,7 @@ def import_app_main(app_name):
         module = import_py_file(os.path.join(core.config.paths.apps_path, app_name, 'main.py'))
         sys.modules[module_name] = module
         return module
-    except (ImportError, OSError):
+    except (ImportError, IOError, OSError):
         pass
 
 
@@ -67,6 +67,7 @@ def list_apps(path=None):
 def list_class_functions(class_name):
     return [field for field in dir(class_name) if (not field.startswith('_')
                                                    and callable(getattr(class_name, field)))]
+
 
 def load_app_function(app_instance, function_name):
     try:
