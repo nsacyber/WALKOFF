@@ -406,9 +406,9 @@ class TestWorkflowServer(unittest.TestCase):
         workflow_name = 'test_name'
         data = {"new_name": workflow_name}
         initial_workflows = flask_server.running_context.controller.workflows.keys()
-        response = post_with_status_check(self, self.app, '/playbook/test/junkworkflow/edit',
-                                          'error: workflow name is not valid',
-                                          data=data, headers=self.headers)
+        post_with_status_check(self, self.app, '/playbook/test/junkworkflow/edit',
+                               'error: workflow name is not valid',
+                               data=data, headers=self.headers)
         final_workflows = flask_server.running_context.controller.workflows.keys()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
@@ -428,10 +428,10 @@ class TestWorkflowServer(unittest.TestCase):
                                 'group': 'nodes'}
         initial_workflow_cytoscape.insert(0, added_step_cytoscape)
         data = {"cytoscape": json.dumps(initial_workflow_cytoscape)}
-        response = post_with_status_check(self, self.app, '/playbook/test/{0}/save'.format(workflow_name), 'success',
-                                          data=json.dumps(data),
-                                          headers=self.headers,
-                                          content_type='application/json')
+        post_with_status_check(self, self.app, '/playbook/test/{0}/save'.format(workflow_name), 'success',
+                               data=json.dumps(data),
+                               headers=self.headers,
+                               content_type='application/json')
 
         resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
 
