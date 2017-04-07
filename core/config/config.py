@@ -8,15 +8,18 @@ from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
 
+
 def load_config():
+    global https
     self = sys.modules[__name__]
-    with open(core.config.paths.config_path) as f:
-        config = json.loads(f.read())
-        for key in list(config.keys()):
-            if hasattr(core.config.paths, key):
-                setattr(self, key, config[key])
-            elif hasattr(self, key):
-                setattr(self, key, config[key])
+    with open(core.config.paths.config_path) as config_file:
+        config = json.loads(config_file.read())
+        for key, value in config.items():
+            if value:
+                if hasattr(core.config.paths, key):
+                    setattr(core.config.paths, key, value)
+                elif hasattr(self, key):
+                    setattr(self, key, value)
 
 
 def write_values_to_file(values=None):
@@ -35,7 +38,12 @@ def write_values_to_file(values=None):
         json.dump(parsed, f)
 
 
-
+load_config()
+try:
+    with open(core.config.paths.events_path) as f:
+        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
+except (IOError, OSError):
+    possible_events = {}
 
 # Enables/Disables Browser Notifications
 notifications = "True"
@@ -68,12 +76,8 @@ execution_settings = {
     "maxJobs": 2
 }
 
-load_config()
-try:
-    with open(core.config.paths.events_path) as f:
-        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-except (IOError, OSError):
-    possible_events = {}
+num_threads = 5
+threadpool_shutdown_timeout_sec = 3
 
 # Function Dict Paths/Initialization
 

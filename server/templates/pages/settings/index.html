@@ -135,14 +135,14 @@
                 </div>
 
             </div>
-            <div id="userSettings">
+            <div id="userSettings" class="row">
                 <h1 class="settingsHeader">User Settings</h1>
-                <div  id="currentUserInfo">
+                <div  id="currentUserInfo" class="col-md-4">
+                    <h3> User Configuration </h3>
+
                     <form id="userForm">
                         <!-- use jinja and formhelpers.html to populate form -->
                         <!-- below is pulled from devices\index.html -->
-
-                          <h3> User Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
                             {{ render_field(userForm.username) }}
                             {{ render_field(userForm.password) }}
@@ -157,31 +157,34 @@
 {#                            {{ render_field(form.login_count) }}#}
                     </form>
                     <div id="crudButtons">
-                        <button id="addUser">Add User</button>
-                        <button id="editUser">Edit User</button>
-                        <button id="deleteUser">Delete User</button>
+                        <button id="addUser" class="btn btn-primary">Add User</button>
+                        <button id="editUser" class="btn btn-success">Edit User</button>
+                        <button id="deleteUser" class="btn btn-danger">Delete User</button>
                     </div>
                 </div>
-                <div id="createUser">
+                <div id="createUser" class="col-md-4">
+                    <h3>Add user</h3>
                     <form id="addUserForm">
                         {% from "pages/_formhelpers.html" import render_field %}
                         {{ render_field(addUserForm.username) }}
                         {{ render_field(addUserForm.email) }}
+                        {{ render_field(addUserForm.roles) }}
                         {{ render_field(addUserForm.password) }}
                         {{ render_field(addUserForm.confirm) }}
                     </form>
-                    <button id="saveNewUser">Submit</button>
+                    <button id="saveNewUser" class="btn btn-primary">Submit</button>
                 </div>
-                <div id="updateUser">
-                    <h3>Update User</h3>
+                <div id="updateUser" class="col-md-4">
+                    <h3>Edit User</h3>
                     <form id="updateUserForm">
                         {% from "pages/_formhelpers.html" import render_field %}
                         {{ render_field(addUserForm.username) }}
                         {{ render_field(addUserForm.email) }}
+                        {{ render_field(addUserForm.roles) }}
                         {{ render_field(addUserForm.password) }}
                         {{ render_field(addUserForm.confirm) }}
                     </form>
-                    <button id="submitUpdate">Submit</button>
+                    <button id="submitUpdate" class="btn btn-primary">Submit</button>
                 </div>
 
             </div>

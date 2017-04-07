@@ -1,6 +1,6 @@
 import unittest
 
-from core import graphDecorator
+from core import graphdecorator
 from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
@@ -12,9 +12,9 @@ from core.case import subscription
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
-        server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
-        server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
-        server.running_context.controller.loadWorkflowsFromFile(path=config.test_workflows_path + "multistepError.workflow")
+        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path + "multistepError.workflow")
         self.start = datetime.utcnow()
         server.running_context.init_threads()
 
@@ -26,11 +26,11 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests simple workflow execution with a single action with an argument and no jumps.
     """
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_SimpleWorkflowExecution(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         setup_subscriptions_for_step(workflow_name, ['start'])
-        server.running_context.controller.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+        server.running_context.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         with server.running_context.flask_app.app_context():
             server.running_context.shutdown_threads()
@@ -47,12 +47,12 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests workflow execution that has multiple steps.
     """
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_MultiActionWorkflow(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        server.running_context.controller.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         with server.running_context.flask_app.app_context():
             server.running_context.shutdown_threads()
@@ -79,7 +79,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         workflow_name = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
         step_names = ['start', '1', 'error']
         setup_subscriptions_for_step(workflow_name, step_names)
-        server.running_context.controller.executeWorkflow('multistepError', 'multiactionErrorWorkflow')
+        server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
 
         with server.running_context.flask_app.app_context():
             server.running_context.shutdown_threads()

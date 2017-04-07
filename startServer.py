@@ -20,8 +20,8 @@ def get_ssl_context():
             context.load_cert_chain(paths.certificate_path, paths.private_key_path)
             return context
         else:
-            flaskServer.displayIfFileNotFound(paths.certificate_path)
-            flaskServer.displayIfFileNotFound(paths.private_key_path)
+            flaskServer.display_if_file_not_found(paths.certificate_path)
+            flaskServer.display_if_file_not_found(paths.private_key_path)
     return None
 
 
