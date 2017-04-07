@@ -2,7 +2,6 @@ import unittest
 import json
 import copy
 import os
-
 from server import flaskServer as server
 from tests.util.assertwrappers import orderless_list_compare, post_with_status_check
 from tests.config import test_apps_path, test_workflows_path_with_generated, test_workflows_path
@@ -24,9 +23,11 @@ class TestServer(unittest.TestCase):
         self.key = json.loads(response)["auth_token"]
         self.headers = {"Authentication-Token": self.key}
         config_fields = [x for x in dir(core.config.config) if
-                         not x.startswith('__') and type(getattr(core.config.config, x)) == str]
+                         not x.startswith('__') and type(getattr(core.config.config, x)).__name__
+                         in ['str', 'unicode']]
         path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__')
-                                                             and type(getattr(core.config.paths, x)) == str)]
+                                                             and type(getattr(core.config.paths, x)).__name__
+                                                             in ['str', 'unicode'])]
         self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
         self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
 
@@ -41,7 +42,6 @@ class TestServer(unittest.TestCase):
                      for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]
         if 'test_playbook' in workflows:
             os.remove(os.path.join(test_workflows_path_with_generated, 'test_playbook.workflow'))
-
 
     def test_login(self):
         response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
