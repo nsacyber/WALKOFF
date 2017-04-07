@@ -35,12 +35,7 @@ def write_values_to_file(values=None):
         json.dump(parsed, f)
 
 
-load_config()
-try:
-    with open(core.config.paths.events_path) as f:
-        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-except (IOError, OSError):
-    possible_events = {}
+
 
 # Enables/Disables Browser Notifications
 notifications = "True"
@@ -72,6 +67,13 @@ execution_settings = {
     "secondsDelay": 0.1,
     "maxJobs": 2
 }
+
+load_config()
+try:
+    with open(core.config.paths.events_path) as f:
+        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
+except (IOError, OSError):
+    possible_events = {}
 
 # Function Dict Paths/Initialization
 

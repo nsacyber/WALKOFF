@@ -1,4 +1,4 @@
-import ssl
+from gevent import ssl
 from os.path import isfile
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
@@ -33,9 +33,10 @@ if __name__ == "__main__":
         host = config.host
         if ssl_context:
             server = WSGIServer((host, port), application=flaskServer.app, ssl_context=ssl_context)
+            print('Listening on host https://' + host + ':' + str(port))
         else:
             server = WSGIServer((host, port), application=flaskServer.app)
-        print('Listening on host '+host+' and port '+str(port)+'...')
+            print('Listening on host http://'+host+':'+str(port))
         server.serve_forever()
     except ValueError:
         print('Invalid port {0}. Port must be an integer'.format(config.port))
