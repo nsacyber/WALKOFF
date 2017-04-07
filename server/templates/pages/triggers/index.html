@@ -1,10 +1,10 @@
 <div id="main">
-    <script src="{{ url_for('static', filename='pages/triggers/main.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/triggers/main.js' ) }}"></script>
 
     <script type="app/javascript">
         var triggers = {{triggers|safe}};
-    </script>
 
+    </script>
 
 
     <style>
@@ -143,9 +143,11 @@
             .appsHeader{
                 display:left;
             }
+
     </style>
     <div id="deviceWrapper" class="row">
-        <div class="selectColumn col-md-6" >
+
+        <div class="selectColumn col-md-12" >
             <h2> Triggers </h2>
             <div class="vertScrollBar">
                 <div class="handle">
@@ -155,59 +157,68 @@
 
             <div class="vframe smart" id="smart">
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <h2>Trigger</h2>
                         <select class="list-group" id="trigger">
                             <option value="none" selected disabled>Select trigger</option>
                         </select>
-                    </div><div class="col-md-4">
+                    </div>
+                    <div class="col-md-3">
                         <h2>Conditional</h2>
-                        <div class="list-group" id="conditional">
+                        <div class="list-group conditional">
                         </div>
-                    </div><div class="col-md-4">
+                    </div>
+                    <div class="col-md-1">
                         <h2>Workflow</h2>
-                        <div class="list-group" id="workflow">
+                        <div class="list-group workflow">
                         </div>
                     </div>
                 </div>
-
+                <div class="col-md-3">
+                    <h2>Playbook</h2>
+                    <div class="list-group playbook">
+                    </div>
+                </div>
             </div>
 
-            <ul class="vpages"></ul>
+        </div>
 
-            <div class="vcontrols center">
-                <p>
+        <ul class="vpages"></ul>
+
+        <div class="vcontrols center">
+            <p>
                     <span class="btn-group">
                         <button class="btn btn-danger remove">Remove</button>
-                        <button class="btn btn-warning" id="editTrigger" >Edit</button>
+                        <button class="btn btn-warning" id="editTrigger">Edit</button>
                     </span>
-                </p>
-            </div>
-        </div>
-        <div id="parameterEdit" class="col-md-3">
-            <h2>Edit Form</h2>
-            <form id="editDeviceForm">
-                {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
-                {{ render_field(editForm.name) }}
-                {{ render_multi_field(editForm.conditional.key) }}
-                {{ render_field(editForm.playbook) }}
-                {{ render_field(editForm.workflow) }}
-            </form>
-            <button id="editformSubmit" class="btn btn-primary">Submit</button>
-
-        </div>
-        <div  class="selectColumn col-md-3">
-            <h2> Add Trigger </h2>
-            <form id="deviceForm">
-                {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
-                {{ render_field(form.name) }}
-                {{ render_multi_field(form.args) }}
-                {{ render_field(form.playbook) }}
-                {{ render_field(form.workflow) }}
-
-            </form>
-            <button id="addTrigger" class="btn btn-primary">Add</button>
+            </p>
         </div>
     </div>
+    <div id="parameterEdit" class="col-md-3">
+        <h2>Edit Form</h2>
+        <form id="editDeviceForm">
+            {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
+            {{ render_field(editForm.name) }}
+            {{ render_multi_field(editForm.conditional.key) }}
+            {{ render_field(editForm.playbook) }}
+            {{ render_field(editForm.workflow) }}
+        </form>
+        <button id="editformSubmit" class="btn btn-primary">Submit</button>
+
+    </div>
+    <div class="selectColumn col-md-3">
+        <h2> Add Trigger </h2>
+        <form id="deviceForm">
+            {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
+            {{ render_field(form.name) }}
+            {{ render_multi_field(form.args) }}
+            {{ render_field(form.playbook) }}
+            {{ render_field(form.workflow) }}
+
+        </form>
+        <button id="addTrigger" class="btn btn-primary">Add</button>
+    </div>
+    <div id="parameters"></div>
+</div>
 
 </div>
