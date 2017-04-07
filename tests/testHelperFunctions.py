@@ -1,12 +1,16 @@
 import unittest
 from core.helpers import *
-
+import types
+import sys
+from os.path import join
+from os import sep
 from core.instance import Instance
 from tests.config import test_workflows_path, test_apps_path
 import core.config.paths
 from tests.util.assertwrappers import orderless_list_compare
 
 from server import flaskServer as server
+
 
 class TestHelperFunctions(unittest.TestCase):
     def setUp(self):
@@ -83,3 +87,35 @@ class TestHelperFunctions(unittest.TestCase):
                         (xyyz, xy): yz}
         for (workflow_key, playbook_name), expected_workflow in input_output.items():
             self.assertEqual(extract_workflow_name(workflow_key, playbook_name=playbook_name), expected_workflow)
+
+    def test_import_py_file(self):
+        module_name = 'tests.apps.HelloWorld'
+        module = import_py_file(module_name, os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
+        self.assertIsInstance(module, types.ModuleType)
+        self.assertEqual(module.__name__, module_name)
+        self.assertIn(module_name, sys.modules)
+        self.assertEqual(sys.modules[module_name], module)
+
+    def test_import_py_file_invalid(self):
+        error_type = IOError if sys.version_info[0] == 2 else OSError
+        with self.assertRaises(error_type):
+            import_py_file('some.module.name', os.path.join(core.config.paths.apps_path, 'InvalidAppName', 'main.py'))
+
+    def test_import_app_main(self):
+        module_name = 'tests.apps.HelloWorld.main'
+        module = import_app_main('HelloWorld')
+        self.assertIsInstance(module, types.ModuleType)
+        self.assertEqual(module.__name__, module_name)
+        self.assertIn(module_name, sys.modules)
+        self.assertEqual(sys.modules[module_name], module)
+
+    def test_import_app_main_invalid_app(self):
+        self.assertIsNone(import_app_main('InvalidAppName'))
+
+    def test_construct_module_name_from_path(self):
+        input_output = {join('.', 'aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
+                        join('aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
+                        join('aaa', '..', 'bbb', 'ccc'): 'aaa.bbb.ccc',
+                        '{0}{1}'.format(join('aaa', 'bbb', 'ccc'), sep): 'aaa.bbb.ccc'}
+        for input_path, expected_output in input_output.items():
+            self.assertEqual(construct_module_name_from_path(input_path), expected_output)

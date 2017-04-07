@@ -9,7 +9,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
 from apscheduler.schedulers.gevent import GeventScheduler
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
-from core.config import paths
+import core.config.paths
 from core import workflow as wf
 from core.case import subscription
 from core.case import callbacks
@@ -102,9 +102,9 @@ class Controller(object):
         self.addChildWorkflows()
         self.addWorkflowScheduledJobs()
 
-    def load_all_workflows_from_directory(self, path=paths.workflows_path):
+    def load_all_workflows_from_directory(self, path=core.config.paths.workflows_path):
         if not path:
-            path = paths.workflows_path
+            path = core.config.paths.workflows_path
         for workflow in locate_workflows_in_directory(path):
             self.loadWorkflowsFromFile(os.path.join(path, workflow))
 
@@ -131,7 +131,7 @@ class Controller(object):
                                       workflow_name,
                                       template_playbook='emptyWorkflow',
                                       template_name='emptyWorkflow'):
-        path = '{0}{1}{2}.workflow'.format(paths.templates_path, sep, template_playbook)
+        path = '{0}{1}{2}.workflow'.format(core.config.paths.templates_path, sep, template_playbook)
         return self.load_workflow_from_file(path=path,
                                             workflow_name=template_name,
                                             name_override=workflow_name,
@@ -140,7 +140,7 @@ class Controller(object):
     def create_playbook_from_template(self, playbook_name,
                                       template_playbook='emptyWorkflow'):
         # TODO: Need a handler for returning workflow key and status
-        path = '{0}{1}{2}.workflow'.format(paths.templates_path, sep, template_playbook)
+        path = '{0}{1}{2}.workflow'.format(core.config.paths.templates_path, sep, template_playbook)
         self.loadWorkflowsFromFile(path=path, playbook_override=playbook_name)
 
     def removeWorkflow(self, playbook_name, workflow_name):

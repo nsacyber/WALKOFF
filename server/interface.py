@@ -2,8 +2,10 @@ from server import forms
 import json
 from core.context import running_context
 
+
 def devices():
-    return {"apps": running_context.getApps(), "form":forms.AddNewDeviceForm(), "editDeviceform": forms.EditDeviceForm()}
+    return {"apps": running_context.get_apps(), "form":forms.AddNewDeviceForm(), "editDeviceform": forms.EditDeviceForm()}
+
 
 def settings():
     userForm = forms.userForm()
@@ -14,17 +16,22 @@ def settings():
     addUserForm.roles.choices = roles
     return {"systemForm": forms.SettingsForm(), "userForm": userForm, "addUserForm": addUserForm }
 
+
 def playbook():
     return {"currentWorkflow": "multiactionWorkflow"}
+
 
 def triggers():
     return {"form": forms.addNewTriggerForm(), "editForm":forms.editTriggerForm()}
 
+
 def cases():
     return {"currentWorkflow": "multiactionWorkflow"}
 
+
 def dashboard():
     return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}
+
 
 def controller():
     return {

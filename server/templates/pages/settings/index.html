@@ -107,8 +107,9 @@
                             <div id="pathConfig">
                                 <h3> Path Configuration </h3>
                             {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.templates_path) }}
                                 {{ render_field(systemForm.workflows_path) }}
+                                {{ render_field(systemForm.apps_path) }}
+                                {{ render_field(systemForm.templates_path) }}
                                 {{ render_field(systemForm.profile_visualizations_path) }}
                                 {{ render_field(systemForm.keywords_path) }}
                                 {{ render_field(systemForm.db_path) }}

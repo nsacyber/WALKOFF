@@ -2,11 +2,12 @@ import unittest
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core import controller, graphDecorator
+from core import controller, graphdecorator
 from core.case.subscription import Subscription
 from core.helpers import construct_workflow_name_key
 from tests import config
 from server.flaskServer import running_context
+
 
 class TestExecutionEvents(unittest.TestCase):
     """
@@ -20,7 +21,7 @@ class TestExecutionEvents(unittest.TestCase):
     def tearDown(self):
         case_database.tearDown()
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         c = controller.Controller(name="testExecutionEventsController")
@@ -50,7 +51,7 @@ class TestExecutionEvents(unittest.TestCase):
         Tests execution events at the Step Level
     """
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_stepExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = controller.Controller(name="testStepExecutionEventsController")
@@ -83,7 +84,7 @@ class TestExecutionEvents(unittest.TestCase):
         Tests execution events at the Filter Flag and Keyword Level
     """
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_ffkExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = controller.Controller(name="testStepFFKEventsController")
@@ -114,7 +115,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(6, len(step_ffk_event_history)))
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_ffkExecutionEventsCase(self):
         c = controller.Controller(name="testStepFFKEventsController")
         c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
