@@ -5,7 +5,7 @@ from xml.etree import cElementTree
 from jinja2 import Template, Markup
 
 from core import arguments
-from core import contextDecorator
+from core import contextdecorator
 from core import nextstep
 import core.config.config
 from core.case import callbacks
@@ -78,7 +78,7 @@ class Step(ExecutionElement):
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall('error')]
 
-    @contextDecorator.context
+    @contextdecorator.context
     def render_step(self, **kwargs):
         if sys.version_info[0] > 2:
             content = cElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')

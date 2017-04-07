@@ -15,25 +15,13 @@ def assert_raises_with_error(klass, exception_klass, message, func, *args, **kwa
         klass.assertEqual(error.message, message)
 
 
-def __assert_url_access(klass, app, url, method, headers, status, data=None, content_type=None):
+def __assert_url_access(klass, app, url, method, status, **kwargs):
     if method.lower() == 'get':
-        if data is not None:
-            if content_type is not None:
-                response = app.get(url, headers=headers, data=data, content_type=content_type)
-            else:
-                response = app.get(url, headers=headers, data=data)
-        else:
-            response = app.get(url, headers=headers)
+        response = app.get(url, **kwargs)
     elif method.lower() == 'post':
-        if data is not None:
-            if content_type is not None:
-                response = app.post(url, headers=headers, data=data, content_type=content_type)
-            else:
-                response = app.post(url, headers=headers, data=data)
-        else:
-            response = app.post(url, headers=headers)
+        response = app.post(url, **kwargs)
     else:
-        raise NameError('method must be either get or post')
+        raise ValueError('method must be either get or post')
     klass.assertEqual(response.status_code, 200)
     response = json.loads(response.get_data(as_text=True))
     klass.assertIn('status', response)
@@ -41,9 +29,9 @@ def __assert_url_access(klass, app, url, method, headers, status, data=None, con
     return response
 
 
-def assert_post_status(klass, app, url, headers, status, data=None, content_type=None):
-    return __assert_url_access(klass, app, url, 'post', headers, status, data, content_type)
+def post_with_status_check(klass, app, url, status, **kwargs):
+    return __assert_url_access(klass, app, url, 'post', status, **kwargs)
 
 
-def assert_get_status(klass, app, url, headers, status, data=None, content_type=None):
-    return __assert_url_access(klass, app, url, 'get', headers, status, data, content_type)
+def get_with_status_check(klass, app, url, status, **kwargs):
+    return __assert_url_access(klass, app, url, 'get', status, **kwargs)

@@ -1,28 +1,30 @@
 import unittest
 
+from tests.apps.HelloWorld.main import Main
+import core.config.paths
 from core import instance
-from apps.HelloWorld import main
+from tests.config import test_apps_path
 
-class TestUsersAndRoles(unittest.TestCase):
+
+class TestInstance(unittest.TestCase):
     def setUp(self):
-        pass
+        core.config.paths.apps_path = test_apps_path
 
-    def tearDown(self):
-        pass
-
-    def testCreateInstance(self):
-
+    def test_create_instance(self):
         inst = instance.Instance.create("HelloWorld", "testDevice")
-        self.assertIsInstance(inst.instance, main.Main)
+        self.assertIsInstance(inst, instance.Instance)
+        self.assertIsInstance(inst.instance, Main)
         self.assertEqual(inst.state, instance.OK)
 
-    def testCall(self):
+    def test_create_invalid_app_name(self):
+        self.assertIsNone(instance.Instance.create("InvalidAppName", "testDevice"))
 
+    def test_call(self):
         inst = instance.Instance.create("HelloWorld", "testDevice")
-        self.assertEqual(inst.instance, inst.__call__())
+        created_app = inst()
+        self.assertIsInstance(created_app, Main)
 
-    def testShutdown(self):
-
+    def test_shutdown(self):
         inst = instance.Instance.create("HelloWorld", "testDevice")
         self.assertEqual(inst.state, instance.OK)
         inst.shutdown()

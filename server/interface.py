@@ -1,8 +1,10 @@
 from server import forms
 from core.context import running_context
 
+
 def devices():
-    return {"apps": running_context.getApps(), "form":forms.AddNewDeviceForm(), "editDeviceform": forms.EditDeviceForm()}
+    return {"apps": running_context.get_apps(), "form":forms.AddNewDeviceForm(), "editDeviceform": forms.EditDeviceForm()}
+
 
 def settings():
     userForm = forms.userForm()
@@ -10,17 +12,22 @@ def settings():
     userForm.username.choices = choices
     return {"systemForm": forms.SettingsForm(), "userForm": userForm, "addUserForm": forms.addUserForm() }
 
+
 def playbook():
     return {"currentWorkflow": "multiactionWorkflow"}
+
 
 def triggers():
     return {"form": forms.addNewTriggerForm(), "editForm":forms.editTriggerForm()}
 
+
 def cases():
     return {"currentWorkflow": "multiactionWorkflow"}
 
+
 def dashboard():
     return {"widgets":[{"app":"HelloWorld", "widget":"testWidget"}]}
+
 
 def controller():
     return {

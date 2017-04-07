@@ -1,15 +1,18 @@
 import unittest
 import json
+import copy
+import os
 
 from server import flaskServer as server
-from tests.util.assertwrappers import orderless_list_compare
-from tests.config import test_apps_path
+from tests.util.assertwrappers import orderless_list_compare, post_with_status_check
+from tests.config import test_apps_path, test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
 
 
-class TestLogin(unittest.TestCase):
+class TestServer(unittest.TestCase):
     def setUp(self):
+        server.running_context.controller.workflows = {}
         self.app = server.app.test_client(self)
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
@@ -17,7 +20,7 @@ class TestLogin(unittest.TestCase):
         response = self.app.post('/key', data=dict(email='admin', password='admin'),
                                  follow_redirects=True).get_data(as_text=True)
         core.config.paths.apps_path = test_apps_path
-
+        core.config.paths.workflows_path = test_workflows_path_with_generated
         self.key = json.loads(response)["auth_token"]
         self.headers = {"Authentication-Token": self.key}
         config_fields = [x for x in dir(core.config.config) if
@@ -27,12 +30,17 @@ class TestLogin(unittest.TestCase):
         self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
         self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
 
+        server.running_context.controller.load_all_workflows_from_directory()
+
     def tearDown(self):
         for key, value in self.original_configs.items():
             setattr(core.config.config, key, value)
         for key, value in self.original_paths.items():
             setattr(core.config.paths, key, value)
-
+        workflows = [os.path.splitext(workflow)[0]
+                     for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]
+        if 'test_playbook' in workflows:
+            os.remove(os.path.join(test_workflows_path_with_generated, 'test_playbook.workflow'))
 
 
     def test_login(self):
@@ -60,16 +68,16 @@ class TestLogin(unittest.TestCase):
                          not x.startswith('__') and type(getattr(core.config.config, x)) == str]
         path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__')
                                                              and type(getattr(core.config.paths, x)) == str)]
+        config_fields = list(set(config_fields) - set(path_fields))
         configs = {key: getattr(core.config.config, key) for key in config_fields}
         paths = {key: getattr(core.config.paths, key) for key in path_fields}
-
-        for key, value in configs.items():
+        for key, value in paths.items():
             response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
             self.assertEqual(response.status_code, 200)
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(response[key], value)
 
-        for key, value in paths.items():
+        for key, value in configs.items():
             response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
             self.assertEqual(response.status_code, 200)
             response = json.loads(response.get_data(as_text=True))
@@ -89,6 +97,7 @@ class TestLogin(unittest.TestCase):
                                                                       in ['str', 'unicode'])]
         data = {"templates_path": 'templates_path_reset',
                 "workflows_path": 'workflows_path_reset',
+                "apps_path": core.config.paths.apps_path,
                 "profile_visualizations_path": 'profile_visualizations_path_reset',
                 "keywords_path": 'keywords_path_reset',
                 "db_path": 'db_path_reset',
@@ -100,10 +109,7 @@ class TestLogin(unittest.TestCase):
                 "host": 'host_reset',
                 "port": 'port_reset'}
 
-        response = self.app.post('/configuration/set', data=data, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertEqual(response['status'], "success")
+        post_with_status_check(self, self.app, '/configuration/set', 'success', headers=self.headers, data=data)
 
         config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and
                                                                 type(getattr(core.config.config, x)).__name__
@@ -115,7 +121,7 @@ class TestLogin(unittest.TestCase):
         orderless_list_compare(self, path_fields, original_path_fields)
 
         for key in data.keys():
-            self.assertIn(key, config_fields)
+            self.assertIn(key, (set(config_fields) | set(path_fields)))
 
         config_fields = list(set(config_fields) - set(path_fields))
         configs = {key: getattr(core.config.config, key) for key in config_fields}
@@ -128,3 +134,25 @@ class TestLogin(unittest.TestCase):
         for key, value in paths.items():
             if key in data:
                 self.assertEqual(value, data[key])
+
+    def test_set_apps_path(self):
+        original_function_info = copy.deepcopy(core.config.config.function_info)
+        modified_function_info = copy.deepcopy(core.config.config.function_info)
+        modified_function_info['testApp'] = {}
+        data = {"apps_path": core.config.paths.apps_path}
+        post_with_status_check(self, self.app, '/configuration/set', 'success', headers=self.headers, data=data)
+        self.assertDictEqual(core.config.config.function_info, original_function_info)
+
+    def test_set_workflows_path(self):
+        workflow_files = [os.path.splitext(workflow)[0]
+                          for workflow in os.listdir(core.config.paths.workflows_path)
+                          if workflow.endswith('.workflow')]
+        self.app.post('/playbook/test_playbook/add', headers=self.headers)
+        original_workflow_keys = list(server.running_context.controller.workflows.keys())
+        data = {"apps_path": core.config.paths.apps_path,
+                "workflows_path": test_workflows_path}
+        post_with_status_check(self, self.app, '/configuration/set', 'success', headers=self.headers, data=data)
+        self.assertNotEqual(len(server.running_context.controller.workflows.keys()), len(original_workflow_keys))
+        new_files = [os.path.splitext(workflow)[0]
+                     for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]
+        self.assertNotEqual(len(new_files), len(workflow_files))
