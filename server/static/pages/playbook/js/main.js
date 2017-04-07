@@ -321,12 +321,13 @@ $(function(){
         });
 
         editor.getEditor('root.app').disable();
+        editor.getEditor('root.name').disable();
 
         editor.on('change',function() {
             var updatedParameters = editor.getValue();
             updatedParameters = transformParametersFromSchema(updatedParameters);
             ele.data('parameters', updatedParameters);
-            ele.data('label', updatedParameters.name);
+            ele.data('label', updatedParameters.action);
         });
     }
 
@@ -375,7 +376,7 @@ $(function(){
                     device: "None",
                     errors: [],
                     input: {},
-                    name: action,
+                    name: id.toString(),
                     next: [],
                 }
             },
@@ -572,10 +573,10 @@ $(function(){
         // Load the data into the graph
         workflowData = JSON.parse(workflowData);
         // If a node does not have a label field, set it to
-        // the name. The label is what is displayed in the graph.
+        // the action. The label is what is displayed in the graph.
         workflowData = workflowData.steps.map(function(value) {
             if (!value.data.hasOwnProperty("label")) {
-                value.data.label = value.data.parameters.name;
+                value.data.label = value.data.parameters.action;
             }
             return value;
         });
