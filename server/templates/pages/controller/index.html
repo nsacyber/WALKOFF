@@ -49,6 +49,10 @@
             padding:20px;
         }
 
+        #editSubscriptionDialog{
+            z-index:99999;
+        }
+
     </style>
     <div id="header">
         <h2> Controller Management </h2>
@@ -56,11 +60,11 @@
     </div>
     <div class="row">
         <div id="loadedWorkflowsDiv" class="controllerCol col-xs-2 ">
-            <h3>Workflows</h3>
+            <h3>Playbook Management</h3>
             <div id="loadedWorkflowsTreeDiv">
                 <h4>Loaded Workflows</h4>
                 <div id="loadedPlaybooksTree"></div>
-                 <div id="loadWorkflowDiv"><button>Load Workflow</button></div>
+                 <div id="loadWorkflowDiv"><button>Load Playbook</button></div>
             </div>
 
             <div id="statusDiv">
@@ -102,26 +106,27 @@
         controllers = ["{{currentController}}"];
     </script>
 
-    <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/caseFunctions.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/scheduler.js' ) }}"> </script>
+
 
 
     <div id="editSubscriptionDialog" title="subscription parameters" class=ui-widget">
         <table>
             <tr>
                 <td>Object Type</td>
-                <td><select name='modalObjectTypeSelection'></select></td>
+                <td><select id='modalObjectTypeSelection'></select></td>
             </tr>
             <tr>
                 <td>Object</td>
 
                 <td>
-                    <ul id="objectSelectionDiv">
-
+                    <ul id="objectSelectionDiv" name="objectSelectionDiv">
+                        <li><label for='controllerObjectSelection'>Controller</label><select id='controllerObjectSelection' class='objectSelection'></select></li>
+                        <li><label for='playbookObjectSelection'>Playbook</label><select id='playbookObjectSelection' class='objectSelection'></select></li>
+                        <li><label for='workflowObjectSelection'>Workflow</label><select id='workflowObjectSelection' class='objectSelection'></select></li>
+                        <li><label for='stepObjectSelection'>Step</label><select id='stepObjectSelection' class='objectSelection'></select></li>
+                        <li><label for='nextStepObjectSelection'>Next Step</label><select id='nextStepObjectSelection' class='objectSelection'></select></li>
+                        <li><label for='flagObjectSelection'>Flag</label><select id='flagObjectSelection' class='objectSelection'></select></li>
+                        <li><label for='filterObjectSelection'>Filter</label><select id='filterObjectSelection' class='objectSelection'></select></li>
                     </ul>
                 </td>
             </tr>
@@ -148,4 +153,10 @@
         </table>
 
     </div>
+    <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/caseFunctions.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/scheduler.js' ) }}"> </script>
+    <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
 </div>

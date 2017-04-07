@@ -10,14 +10,16 @@ from collections import OrderedDict
 
 
 def load_config():
+    global https
     self = sys.modules[__name__]
-    with open(core.config.paths.config_path) as f:
-        config = json.loads(f.read())
-        for key in list(config.keys()):
-            if hasattr(core.config.paths, key):
-                setattr(self, key, config[key])
-            elif hasattr(self, key):
-                setattr(self, key, config[key])
+    with open(core.config.paths.config_path) as config_file:
+        config = json.loads(config_file.read())
+        for key, value in config.items():
+            if value:
+                if hasattr(core.config.paths, key):
+                    setattr(core.config.paths, key, value)
+                elif hasattr(self, key):
+                    setattr(self, key, value)
 
 
 def write_values_to_file(values=None):
@@ -36,12 +38,7 @@ def write_values_to_file(values=None):
         json.dump(parsed, f)
 
 
-load_config()
-try:
-    with open(core.config.paths.events_path) as f:
-        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-except (IOError, OSError):
-    possible_events = {}
+
 
 # Enables/Disables Browser Notifications
 notifications = "True"
@@ -96,6 +93,13 @@ def load_function_info():
     except Exception as e:
         print("caught!")
         print(e)
+
+load_config()
+try:
+    with open(core.config.paths.events_path) as f:
+        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
+except (IOError, OSError):
+    possible_events = {}
 
 
 load_function_info()

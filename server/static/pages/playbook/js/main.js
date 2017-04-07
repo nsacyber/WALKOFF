@@ -10,8 +10,8 @@ $(function(){
     var cy = null;
     var ur = null;
     var appData = null;
-    var flagsList = ['count', 'regMatch'];
-    var filtersList = ['length'];
+    var flagsList = [];
+    var filtersList = [];
 
     //--------------------
     // Top level functions
@@ -45,7 +45,7 @@ $(function(){
     // into a format that jsTree can understand.
     function formatAppsActionJsonDataForJsTree(data) {
         data = JSON.parse(data);
-        appData = data;
+        appData = {};
         var jstreeData = [];
         $.each(data, function( appName, actions ) {
             var app = {};
@@ -61,6 +61,8 @@ $(function(){
             });
 
             jstreeData.push(app);
+
+            appData[appName] = {actions: actions};
         });
 
         // Sort jstreeData by app name
@@ -75,10 +77,10 @@ $(function(){
     function createSchema(parameters) {
         var appNames = [];
         var appActions = {};
-        $.each(appData, function( appName, actions ) {
+        $.each(appData, function( appName, value ) {
             appNames.push(appName);
             appActions[appName] = [];
-            $.each(actions, function( actionName, actionProperties ) {
+            $.each(value.actions, function( actionName, actionProperties ) {
                 appActions[appName].push(actionName);
             });
         });
@@ -136,7 +138,7 @@ $(function(){
                 device: {
                     type: "string",
                     title: "Device",
-                    enum: [parameters.device]
+                    enum: appData[parameters.app].devices
                 },
                 input: deepcopy(argProperties),
                 next: {
@@ -319,12 +321,13 @@ $(function(){
         });
 
         editor.getEditor('root.app').disable();
+        editor.getEditor('root.name').disable();
 
         editor.on('change',function() {
             var updatedParameters = editor.getValue();
             updatedParameters = transformParametersFromSchema(updatedParameters);
             ele.data('parameters', updatedParameters);
-            ele.data('label', updatedParameters.name);
+            ele.data('label', updatedParameters.action);
         });
     }
 
@@ -373,7 +376,7 @@ $(function(){
                     device: "None",
                     errors: [],
                     input: {},
-                    name: action,
+                    name: id.toString(),
                     next: [],
                 }
             },
@@ -570,10 +573,10 @@ $(function(){
         // Load the data into the graph
         workflowData = JSON.parse(workflowData);
         // If a node does not have a label field, set it to
-        // the name. The label is what is displayed in the graph.
+        // the action. The label is what is displayed in the graph.
         workflowData = workflowData.steps.map(function(value) {
             if (!value.data.hasOwnProperty("label")) {
-                value.data.label = value.data.parameters.name;
+                value.data.label = value.data.parameters.action;
             }
             return value;
         });
@@ -774,7 +777,58 @@ $(function(){
                     });
                 }
             });
+
+            // Now is a good time to download all devices for all apps
+            $.each(appData, function( appName, actions ) {
+                $.ajax({
+                    'async': false,
+                    'type': "POST",
+                    'global': false,
+                    'headers':{"Authentication-Token":authKey},
+                    'url': "/configuration/" + appName + "/devices",
+                    'dataType': 'json',
+                    'contentType': 'application/json; charset=utf-8',
+                    'data': {},
+                    'success': function (data) {
+                        appData[appName].devices = [];
+                        $.each(data, function( index, value ) {
+                            appData[appName].devices.push(value.name);
+                        });
+                    }
+                });
+            });
         }
     });
 
+    // Download list of all flags
+    $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/flags",
+        'dataType': 'json',
+        'success': function (data) {
+            flagsList = [];
+            $.each(data.flags, function( key, value ) {
+                flagsList.push(key);
+            });
+        }
+    });
+
+    // Download list of all filters
+    $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/filters",
+        'dataType': 'json',
+        'success': function (data) {
+            filtersList = [];
+            $.each(data.filters, function( key, value ) {
+                filtersList.push(key);
+            });
+        }
+    });
 });

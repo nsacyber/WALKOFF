@@ -103,7 +103,7 @@ function getWorkflowElements(playbook, workflow, elements){
 }
 
 function getSelectedObjects(){
-    var selectedOptions = $("#objectSelectionDiv").find("select > option").filter(":selected").map(function(){
+    var selectedOptions = objectSelectionDiv.find("select > option").filter(":selected").map(function(){
         return {"type": $(this).data()["type"], "value": this.value};
     }).get();
     console.log(selectedOptions);
@@ -128,47 +128,50 @@ function populateObjectSelectionList(availableSubscriptions, selected_objectType
     return result;
 }
 
-function formatControllerSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='controllerObjectSelection'>Controller</label><select name='controllerObjectSelection' class='objectSelection'></select></li>");
+function formatControllerSubscriptions(element, availableSubscriptions){
+    var option;
     for(controller in controllers){
-        $("select[name=controllerObjectSelection]").append("<option data-type='controller' value='" + controllers[controller] + "'>" + controllers[controller] + "</option>");
-    }
+        option = $("<option></option>");
+        option.attr("data-type", "controller");
+        option.val(controllers[controller]);
+        option.text(controllers[controller]);
 
+        $(element).append(option);
+    }
 }
 
-function formatPlaybookSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='playbookObjectSelection'>Playbook</label><select name='playbookObjectSelection' class='objectSelection'></select></li>");
+function formatPlaybookSubscriptions(element, availableSubscriptions){
     var playbooks = Object.keys(loadedWorkflows);
+    var option;
     for(playbook in playbooks){
-        $("select[name=playbookObjectSelection]").append("<option data-type='playbook' value='" + playbooks[playbook] + "'>" + playbooks[playbook] + "</option>");
+        option = $("<option></option>");
+        option.attr("data-type", "playbook");
+        option.val(playbooks[playbook]);
+        option.text(playbooks[playbook]);
+
+        element.append(option);
     }
 }
 
-function formatWorkflowSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='workflowObjectSelection'>Workflow</label><select name='workflowObjectSelection' class='objectSelection'></select></li>");
+function formatWorkflowSubscriptions(element, availableSubscriptions){
     var workflows = loadedWorkflows[playbook];
     for(workflow in workflows){
-        $("select[name=workflowObjectSelection]").append("<option data-type='workflow' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
+        element.append("<option data-type='workflow' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
     }
 }
 
-function formatStepSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='stepObjectSelection'>Step</label><select name='stepObjectSelection' class='objectSelection'></select></li>");
-
+function formatStepSubscriptions(element, availableSubscriptions){
     var steps = getWorkflowElements(playbook, workflow, elements);
     for(workflow in workflows){
-        $("select[name=workflowObjectSelection]").append("<option data-type='step' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
+        element.append("<option data-type='step' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
     }
 }
 
-function formatNextStepSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='nextStepObjectSelection'>Next Step</label><select name='nextStepObjectSelection' class='objectSelection'></select></li>");
+function formatNextStepSubscriptions(element, availableSubscriptions){
 }
 
-function formatFlagSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='flagObjectSelection'>Flag</label><select name='flagObjectSelection' class='objectSelection'></select></li>");
+function formatFlagSubscriptions(element, availableSubscriptions){
 }
 
-function formatFilterSubscriptions(availableSubscriptions, elements){
-    $("#objectSelectionDiv").append("<li><label for='filterObjectSelection'>Filter</label><select name='filterObjectSelection' class='objectSelection'></select></li>");
+function formatFilterSubscriptions(element, availableSubscriptions){
 }
