@@ -1,13 +1,6 @@
 $("#main").children().ready(function(){
-    editSubscriptionDialog = $("#editSubscriptionDialog").dialog({
-                        autoOpen: false,
-                        height:600,
-                        width:500,
-                        close: function(event, ui){
-                            $(this).dialog("destroy");
-                            $("#editSubscriptionDialog").remove();
-                        }
-                    });
+    defaultSubscriptionDialog = $("#editSubscriptionDialog");
+    window.editSubscriptionDialog = createSubscriptionModal();
 
     editCaseDialog = $("#editCaseDialog").dialog({
                         autoOpen: false,
@@ -101,20 +94,7 @@ $("#main").children().ready(function(){
         formatModal(availableSubscriptions,selected_objectType);
     });
 
-    editSubscriptionDialog.on("dialogopen", function(event, ui){
-
-        console.log("Dialog Open");
-        console.log(objectSelectionDiv);
-        for(key in window.availableSubscriptions){
-            objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
-        }
-        selected_objectType = objectTypeSelection.first()[0].value;
-        formatModal(window.availableSubscriptions, selected_objectType);
-
-    });
-
     editSubscriptionDialog.on("dialogclose", function(event, ui){
-        console.log("Dialog Close");
         resetSubscriptionModal();
     });
 

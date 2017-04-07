@@ -1,7 +1,7 @@
 function formatCasesForJSTree(cases){
     var result = [];
     for(x in cases){
-        result.push({"id": cases[x].id, "text": cases[x].name, "type": "case"})
+        result.push({"id": cases[x].id, "text": cases[x].name, "type": "case"});
     }
     return result;
 }
@@ -15,6 +15,28 @@ function resetSubscriptionModal(){
 function resetCaseModal(){
     $("#editCaseDialog").empty();
     $("#editCaseDialog").html(defaultCaseModal);
+}
+
+function createSubscriptionModal(){
+    window.editSubscriptionDialog = defaultSubscriptionDialog.dialog({
+                        autoOpen: false,
+                        height:600,
+                        width:500,
+                        open:
+                            function(event, ui){
+                                for(key in window.availableSubscriptions){
+                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
+                                }
+                                selected_objectType = objectTypeSelection.first()[0].value;
+                                formatModal(window.availableSubscriptions, selected_objectType);
+                        },
+                        close: function(event, ui){
+                            $(this).dialog("destroy");
+                            $("#editSubscriptionDialog").remove();
+                            window.editCaseSubscriptionDialog = null;
+                        }
+                    });
+    return editSubscriptionDialog;
 }
 
 function formatAncestry(element, fields){
@@ -88,13 +110,16 @@ function casesCustomMenu(node){
         editSubscription: {
             label: "Edit Subscription",
             action: function () {
-                editSubscriptionDialog.focus();
-                editSubscriptionDialog.dialog("open");
+                console.log(typeof editCaseSubscriptionDialog);
+                if(typeof window.editCaseSubscriptionDialog === 'undefined' || window.editCaseSubscriptionDialog === null){
+                    createSubscriptionModal();
+                }
+                window.editSubscriptionDialog.dialog("open");
 
             }
         },
-
     };
+
     if (node.original.type != "case") {
         delete items.addSubscription;
         delete items.editCase;

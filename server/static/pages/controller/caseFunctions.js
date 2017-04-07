@@ -128,7 +128,7 @@ function populateObjectSelectionList(availableSubscriptions, selected_objectType
     return result;
 }
 
-function formatControllerSubscriptions(element, availableSubscriptions, elements){
+function formatControllerSubscriptions(element, availableSubscriptions){
     var option;
     for(controller in controllers){
         option = $("<option></option>");
@@ -140,11 +140,10 @@ function formatControllerSubscriptions(element, availableSubscriptions, elements
     }
 }
 
-function formatPlaybookSubscriptions(element, availableSubscriptions, elements){
+function formatPlaybookSubscriptions(element, availableSubscriptions){
     var playbooks = Object.keys(loadedWorkflows);
+    var option;
     for(playbook in playbooks){
-        //element.append("<option data-type='playbook' value='" + playbooks[playbook] + "'>" + playbooks[playbook] + "</option>");
-
         option = $("<option></option>");
         option.attr("data-type", "playbook");
         option.val(playbooks[playbook]);
@@ -154,25 +153,25 @@ function formatPlaybookSubscriptions(element, availableSubscriptions, elements){
     }
 }
 
-function formatWorkflowSubscriptions(element, availableSubscriptions, elements){
+function formatWorkflowSubscriptions(element, availableSubscriptions){
     var workflows = loadedWorkflows[playbook];
     for(workflow in workflows){
         element.append("<option data-type='workflow' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
     }
 }
 
-function formatStepSubscriptions(element, availableSubscriptions, elements){
+function formatStepSubscriptions(element, availableSubscriptions){
     var steps = getWorkflowElements(playbook, workflow, elements);
     for(workflow in workflows){
         element.append("<option data-type='step' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
     }
 }
 
-function formatNextStepSubscriptions(element, availableSubscriptions, elements){
+function formatNextStepSubscriptions(element, availableSubscriptions){
 }
 
-function formatFlagSubscriptions(element, availableSubscriptions, elements){
+function formatFlagSubscriptions(element, availableSubscriptions){
 }
 
-function formatFilterSubscriptions(element, availableSubscriptions, elements){
+function formatFilterSubscriptions(element, availableSubscriptions){
 }
