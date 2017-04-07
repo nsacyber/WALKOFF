@@ -322,7 +322,7 @@ def workflow(playbook_name, workflow_name, action):
 
     elif action == 'delete':
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.removeWorkflow(playbook_name, workflow_name)
+            running_context.controller.remove_workflow(playbook_name, workflow_name)
             status = 'success'
         else:
             status = 'error: invalid workflow name'
@@ -332,7 +332,7 @@ def workflow(playbook_name, workflow_name, action):
     elif action == 'execute':
         write_playbook_to_file(playbook_name)
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.executeWorkflow(playbook_name, workflow_name)
+            running_context.controller.execute_workflow(playbook_name, workflow_name)
             status = 'success'
         else:
             status = 'error: invalid workflow name'
@@ -566,10 +566,10 @@ def scheduler_actions(action):
 @roles_accepted(*userRoles["/execution/scheduler"])
 def scheduler_actions_by_id(job_id, action):
     if action == "pause":
-        running_context.controller.pauseJob(job_id)
+        running_context.controller.pause_job(job_id)
         return json.dumps({"status": "Job Paused"})
     elif action == "resume":
-        running_context.controller.resumeJob(job_id)
+        running_context.controller.resume_job(job_id)
         return json.dumps({"status": "Job Resumed"})
     return json.dumps({"status": "invalid command"})
 
@@ -579,7 +579,7 @@ def scheduler_actions_by_id(job_id, action):
 @auth_token_required
 # @roles_accepted(*userRoles["/execution/listener"])
 def scheduler():
-    return running_context.controller.getScheduledJobs()
+    return running_context.controller.get_scheduled_jobs()
 
 
 # Controls execution triggers
@@ -587,7 +587,7 @@ def scheduler():
 @auth_token_required
 @roles_accepted(*userRoles["/execution/listener"])
 def listener():
-    form = forms.incomingDataForm(request.form)
+    form = forms.IncomingDataForm(request.form)
     returned_json = Triggers.execute(form.data.data) if form.validate() else {}
     return json.dumps(returned_json)
 
@@ -604,7 +604,7 @@ def display_all_triggers():
 @roles_accepted(*userRoles["/execution/listener/triggers"])
 def trigger_functions(action, name):
     if action == "add":
-        form = forms.addNewTriggerForm(request.form)
+        form = forms.AddNewTriggerForm(request.form)
         if form.validate():
             query = Triggers.query.filter_by(name=name).first()
             if query is None:
@@ -621,7 +621,7 @@ def trigger_functions(action, name):
         return json.dumps({"status": "error: form not valid"})
 
     if action == "edit":
-        form = forms.editTriggerForm(request.form)
+        form = forms.EditTriggerForm(request.form)
         trigger = Triggers.query.filter_by(name=name).first()
         if form.validate() and trigger is not None:
             # Ensures new name is unique

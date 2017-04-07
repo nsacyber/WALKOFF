@@ -21,7 +21,7 @@ class TestExecutionModes(unittest.TestCase):
     @graphdecorator.callgraph(enabled=False)
     def test_startStopExecutionLoop(self):
         c = controller.Controller(name="startStopController")
-        c.loadWorkflowsFromFile(path=config.test_workflows_path + "testScheduler.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "testScheduler.workflow")
         subs = {'startStopController': Subscription(events=[EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
                                                             EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED,
                                                             EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
@@ -40,7 +40,7 @@ class TestExecutionModes(unittest.TestCase):
     @graphdecorator.callgraph(enabled=False)
     def test_pauseResumeSchedulerExecution(self):
         c = controller.Controller(name="pauseResumeController")
-        c.loadWorkflowsFromFile(path=config.test_workflows_path + "testScheduler.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "testScheduler.workflow")
 
         subs = {'pauseResumeController': Subscription(events=[EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
                                                               EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED,

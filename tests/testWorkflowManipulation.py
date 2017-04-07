@@ -20,8 +20,9 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.app = flask_server.app.test_client(self)
         self.app.testing = True
         self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.c = controller.Controller(appPath=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
-        self.c.loadWorkflowsFromFile(
+        self.c = controller.Controller(
+            workflows_path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
+        self.c.load_workflows_from_file(
             path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.workflow'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.workflow_name = construct_workflow_name_key(*self.id_tuple)
@@ -38,7 +39,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         setup_subscriptions_for_step(self.testWorkflow.name, step_names)
         start = datetime.utcnow()
         # Check that the workflow executed correctly post-manipulation
-        self.c.executeWorkflow(*self.id_tuple)
+        self.c.execute_workflow(*self.id_tuple)
 
         running_context.shutdown_threads()
 
@@ -74,7 +75,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         initial_workflows = list(self.c.workflows.keys())
         self.c.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
         self.assertEqual(len(self.c.workflows), 3)
-        success = self.c.removeWorkflow('emptyWorkflow', 'emptyWorkflow')
+        success = self.c.remove_workflow('emptyWorkflow', 'emptyWorkflow')
         self.assertTrue(success)
         self.assertEqual(len(self.c.workflows), 2)
         key = _WorkflowKey('emptyWorkflow', 'emptyWorkflow')
@@ -321,7 +322,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(conditional[0]["action"], "length")
 
     def test_to_from_cytoscape_data(self):
-        self.c.loadWorkflowsFromFile(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))
+        self.c.load_workflows_from_file(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))
         workflow = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         original_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
         cytoscape_data = workflow.get_cytoscape_data()

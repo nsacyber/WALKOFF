@@ -25,7 +25,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_workflowExecutionEvents(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         c = controller.Controller(name="testExecutionEventsController")
-        c.loadWorkflowsFromFile(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
 
         subs = {'testExecutionEventsController':
                     Subscription(subscriptions=
@@ -36,7 +36,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.executeWorkflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         running_context.shutdown_threads()
 
@@ -55,7 +55,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_stepExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = controller.Controller(name="testStepExecutionEventsController")
-        c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
 
         subs = {'testStepExecutionEventsController':
             Subscription(subscriptions=
@@ -69,7 +69,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         running_context.shutdown_threads()
 
@@ -88,7 +88,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_ffkExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = controller.Controller(name="testStepFFKEventsController")
-        c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
 
         filter_sub = Subscription(events=['FilterSuccess', 'FilterError'])
         flag_sub = Subscription(events=['FlagArgsValid', 'FlagArgsInvalid'], subscriptions={'length': filter_sub})
@@ -104,7 +104,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         running_context.shutdown_threads()
 
@@ -118,7 +118,7 @@ class TestExecutionEvents(unittest.TestCase):
     @graphdecorator.callgraph(enabled=False)
     def test_ffkExecutionEventsCase(self):
         c = controller.Controller(name="testStepFFKEventsController")
-        c.loadWorkflowsFromFile(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         filter_sub = Subscription(events=['FilterError'])
         flag_sub = Subscription(events=['FlagArgsValid',
@@ -146,7 +146,7 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
                                                                             global_subscriptions=global_subs)})
 
-        c.executeWorkflow('basicWorkflowTest', 'helloWorldWorkflow')
+        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         running_context.shutdown_threads()
 
