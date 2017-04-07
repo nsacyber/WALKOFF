@@ -856,7 +856,7 @@ def configDevicesConfig(app, action):
 
 
 # Controls the specific app device configuration
-@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET", "POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def configDevicesConfigId(app, device, action):
@@ -881,7 +881,7 @@ def configDevicesConfigId(app, device, action):
             # Ensures new name is unique
             # if len(devClass.query.filter_by(name=str(device)).all()) > 0:
             #     return json.dumps({"status": "device could not be edited"})
-
+            print(form.username.data)
             dev.editDevice(form)
 
             db.session.commit()

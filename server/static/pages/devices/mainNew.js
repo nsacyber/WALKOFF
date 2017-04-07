@@ -96,6 +96,8 @@ $("#addNewDevice").on("click", function(){
             'url': "/configuration/" + activeApp + "/devices/add",
             'success': function (data) {
                 console.log(data);
+                var result = JSON.parse(data);
+                alert(result['status'])
             },
             'error': function(data){
                 console.log("error adding devices");
@@ -115,6 +117,8 @@ $("#removeDevice").on("click", function(){
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
             'success': function (data) {
                 console.log(data);
+                var result = JSON.parse(data);
+                alert(result['status'])
             },
             'error': function(e) {
                 console.log(e);
@@ -123,24 +127,25 @@ $("#removeDevice").on("click", function(){
     }
 
 });
-$("#editDevice").on("click", function(e){
+$("#editDevice").on("click", function(){
     formData = { 'name': $("#name").val(),
                  'username': $("#username").val(),
                  'pw': $("#pw").val(),
                  'ipaddr': $("#ipaddr").val(),
                  'port': $("#port").val()
-                };
+               };
     if(activeApp && activeDevice){
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "GET",
             'global': false,
             'data': formData,
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
             'success': function (data) {
                 console.log(data);
-                e.preventDefault();
+                var result = JSON.parse(data);
+                alert(result['status'])
             },
             'error': function(data){
                 console.log('edit device failed');
