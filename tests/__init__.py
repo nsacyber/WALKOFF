@@ -22,4 +22,5 @@ __all__ = ['testAppBlueprint',
            'testAppsAndDevices',
            'testWorkflowManipulation',
            'testWorkflowOptions',
-           'testWorkflowServer']
+           'testWorkflowServer',
+           'testSchedulerActions']
