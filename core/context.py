@@ -1,13 +1,13 @@
 from core.helpers import list_apps
 import core.config.paths
 
-#
-# Act as an interface for objects to access other event specific variables that might be needed
-#
 
 class Context(object):
+    """
+    Act as an interface for objects to access other event specific variables that might be needed
+    """
     def __init__(self):
-        self.apps = self.getApps()
+        self.apps = self.get_apps()
 
         from server.database import User, Role
         from server.appDevice import Device, App
@@ -24,17 +24,19 @@ class Context(object):
     # Returns list of apps
     # Gets all the app instances
     @staticmethod
-    def getApps(path=core.config.paths.apps_path):
+    def get_apps(path=core.config.paths.apps_path):
         return list_apps(path=path)
 
     def set(self, key, value):
         setattr(self, key, value)
 
-    def init_threads(self):
+    @staticmethod
+    def init_threads():
         from core.controller import initialize_threading
         initialize_threading()
 
-    def shutdown_threads(self):
+    @staticmethod
+    def shutdown_threads():
         from core.controller import shutdown_pool
         shutdown_pool()
 

@@ -2,7 +2,7 @@ import unittest
 
 from core import arguments
 from core import controller
-from core import graphDecorator
+from core import graphdecorator
 from tests import config
 from core.helpers import construct_workflow_name_key
 from core.controller import _WorkflowKey
@@ -15,12 +15,12 @@ class TestLoadWorkflow(unittest.TestCase):
         self.workflow_name = _WorkflowKey('basicWorkflowTest', 'helloWorldWorkflow')
         self.testWorkflow = self.c.workflows[self.workflow_name]
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowLoaded(self):
         # Tests that helloWorldWorkflow exists
         self.assertIn(self.workflow_name, self.c.workflows)
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_baseWorkflowAttributes(self):
         # Correct number of steps
         self.assertEqual(len(self.testWorkflow.steps), 1)
@@ -35,12 +35,12 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.action, 'repeatBackToMe')
         self.assertEqual(step.device, 'hwTest')
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowInput(self):
         arg = arguments.Argument(key='call', value='Hello World', format='string')
         #self.assertDictTrue(step.input == {"call":arg})
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowNextSteps(self):
         next = self.testWorkflow.steps['start'].conditionals
         self.assertEqual(len(next), 1)
@@ -49,7 +49,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(next.name, '1')
         self.assertTrue(next.flags)
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowNextStepFlags(self):
         flags = self.testWorkflow.steps['start'].conditionals[0].flags
 
@@ -61,7 +61,7 @@ class TestLoadWorkflow(unittest.TestCase):
         # self.assertDictEqual({'regex': {'key': 'regex', 'type': 'regex', 'value': '(.*)'}}, flag.args)
         self.assertTrue(flag.filters)
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowNextStepFilters(self):
         filters = self.testWorkflow.steps['start'].conditionals[0].flags[0].filters
         self.assertEqual(len(filters), 1)
@@ -70,7 +70,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(filter.action, 'length')
         self.assertEqual(filter.args, {})
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_workflowError(self):
         errors = self.testWorkflow.steps['start'].errors
         self.assertEqual(len(errors), 1)

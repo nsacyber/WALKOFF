@@ -75,7 +75,7 @@ def create_user():
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": running_context.getApps(), "authKey": current_user.get_auth_token(),
+        args = {"apps": running_context.get_apps(), "authKey": current_user.get_auth_token(),
                 "currentUser": current_user.email, "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
@@ -135,7 +135,7 @@ def display_available_workflow_templates():
     templates = {os.path.splitext(workflow)[0]:
                      helpers.get_workflow_names_from_file(os.path.join(core.config.paths.templates_path, workflow))
                  for workflow in locate_workflows_in_directory(core.config.paths.templates_path)}
-    return json.dumps({"templates": templates})
+    return json.dumps({"status": "success", "templates": templates})
 
 
 @app.route("/playbook/<string:playbook_name>/<string:workflow_name>/display", methods=['GET'])

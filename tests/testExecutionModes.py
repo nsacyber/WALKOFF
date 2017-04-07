@@ -7,7 +7,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
 
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core import controller, graphDecorator
+from core import controller, graphdecorator
 from core.case.subscription import Subscription
 from tests import config
 
@@ -18,7 +18,7 @@ class TestExecutionModes(unittest.TestCase):
     def tearDown(self):
         case_database.tearDown()
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_startStopExecutionLoop(self):
         c = controller.Controller(name="startStopController")
         c.loadWorkflowsFromFile(path=config.test_workflows_path + "testScheduler.workflow")
@@ -37,7 +37,7 @@ class TestExecutionModes(unittest.TestCase):
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(2, len(start_stop_event_history)))
 
-    @graphDecorator.callgraph(enabled=False)
+    @graphdecorator.callgraph(enabled=False)
     def test_pauseResumeSchedulerExecution(self):
         c = controller.Controller(name="pauseResumeController")
         c.loadWorkflowsFromFile(path=config.test_workflows_path + "testScheduler.workflow")

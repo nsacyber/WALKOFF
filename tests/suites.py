@@ -13,7 +13,8 @@ server_suite.addTests([TestLoader().loadTestsFromModule(test_module)
                        for test_module in __server_tests])
 
 __execution_tests = [testExecutionRuntime, testExecutionElement, testExecutionEvents, testExecutionModes,
-                     testStep, testHelperFunctions, testFilter, testArgument, testFlag, testNextStep, testSchedulerActions, testInstance]
+                     testStep, testHelperFunctions, testFilter, testArgument, testFlag, testNextStep,
+                     testSchedulerActions, testInstance]
 execution_suite = TestSuite()
 execution_suite.addTests([TestLoader().loadTestsFromModule(test_module)
                           for test_module in __execution_tests])
