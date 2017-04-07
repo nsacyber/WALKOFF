@@ -13,7 +13,6 @@ class App(database.Base, object):
     __tablename__ = 'app'
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
-    # devices = db.relationship('Device', secondary=app_device, lazy='dynamic')
     devices = db.relationship("Device", back_populates="app")
 
     def as_json(self, with_devices=False):
