@@ -854,7 +854,7 @@ def config_devices_config(app, action):
 
 
 # Controls the specific app device configuration
-@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET", "POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def config_devices_config_id(app, device, action):
@@ -876,6 +876,7 @@ def config_devices_config_id(app, device, action):
         form = forms.EditDeviceForm(request.form)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
+
 
             dev.editDevice(form)
 
