@@ -2,7 +2,7 @@ import unittest
 
 from tests.apps.HelloWorld.main import Main
 import core.config.paths
-from core import instance, helpers
+from core import instance
 from tests.config import test_apps_path
 
 
