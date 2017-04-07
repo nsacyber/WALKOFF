@@ -81,25 +81,25 @@ class RenderArgsForm(Form):
 
 
 class AddNewDeviceForm(Form):
-    name = StringField('name', [validators.Length(min=4, max=25), validators.data_required()])
-    username = StringField('username', [validators.Optional()])
-    pw = PasswordField('pw', [validators.Optional()])
-    ipaddr = StringField('ipaddr', [validators.Optional()])
-    apps = FieldList(StringField('apps'), [validators.Optional()])
-    port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
-    submit = SubmitField('submit')
-    extraFields = StringField('extraFields', [validators.Optional()])
+    name = StringField('Name', [validators.Length(min=4, max=25), validators.data_required()])
+    username = StringField('Username', [validators.Optional()])
+    pw = PasswordField('Password', [validators.Optional()])
+    ipaddr = StringField('IP Address', [validators.Optional()])
+    apps = FieldList(StringField('Apps'), [validators.Optional()])
+    port = IntegerField('Port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+    submit = SubmitField('Submit')
+    extraFields = StringField('Extra Fields', [validators.Optional()])
 
 
 class EditDeviceForm(Form):
-    name = StringField('name', [validators.Length(min=4, max=25), validators.Optional()])
-    username = StringField('username', [validators.Optional()])
-    pw = PasswordField('pw', [validators.Optional()])
-    ipaddr = StringField('ipaddr', [validators.Optional()])
-    port = IntegerField('port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
-    apps = FieldList(StringField('apps'), [validators.Optional()])
-    submit = SubmitField('submit')
-    extraFields = StringField('extraFields', [validators.Optional()])
+    name = StringField('Name', [validators.Length(min=4, max=25), validators.Optional()])
+    username = StringField('Username', [validators.Optional()])
+    pw = PasswordField('Password', [validators.Optional()])
+    ipaddr = StringField('IP Address', [validators.Optional()])
+    port = IntegerField('Port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
+    apps = FieldList(StringField('Apps'), [validators.Optional()])
+    submit = SubmitField('Submit')
+    extraFields = StringField('Extra Fields', [validators.Optional()])
 
 
 class LoginForm(Form):
@@ -191,21 +191,21 @@ class SettingsForm(Form):
 
 
 class userForm(Form):
-    username = SelectField('username', [validators.Optional()], choices=[])
-    email = StringField('email', [validators.DataRequired("Please enter your email address.")])
-    password = PasswordField('password')
+    username = SelectField('Username', [validators.Optional()], choices=[])
+    email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
+    password = PasswordField('Password')
     active = BooleanField()
-    confirmed_at = DateTimeField('confirmed_at', [validators.Optional()])
-    roles = SelectField('roles', choices=[])
-    last_login_at = DateTimeField("last_login_at")
-    current_login_at = DateTimeField("current_login_at")
-    last_login_ip = StringField("last_login_ip")
-    current_login_ip = StringField("current_login_ip")
-    login_count = IntegerField("login_count")
+    confirmed_at = DateTimeField('Confirmed at', [validators.Optional()])
+    roles = SelectField('Roles', choices=[])
+    last_login_at = DateTimeField("Last login at")
+    current_login_at = DateTimeField("Current login at")
+    last_login_ip = StringField("Last login ip")
+    current_login_ip = StringField("Current login ip")
+    login_count = IntegerField("Login count")
 
 class addUserForm(Form):
-    username = StringField('username', [validators.required(message='Enter a user name')])
+    username = StringField('Username', [validators.required(message='Enter a user name')])
     password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
-    roles = SelectField('roles', choices=[])
-    email = StringField('email', [validators.DataRequired("Please enter your email address.")])
+    roles = SelectField('Roles', choices=[])
+    email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
