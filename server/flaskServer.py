@@ -709,6 +709,7 @@ def role_actions(action, name):
     return json.dumps({"status": "role does not exist"})
 
 
+# Returns the list of all user roles
 @app.route('/roles', methods=["GET"])
 @auth_token_required
 @roles_accepted(*userRoles["/roles"])
@@ -793,6 +794,7 @@ def user_actions(action, id_or_email):
 
         elif action == "edit":
             form = forms.EditUserForm(request.form)
+            print(form.password.data)
             if form.validate():
                 if form.password:
                     user.password = encrypt_password(form.password.data)
