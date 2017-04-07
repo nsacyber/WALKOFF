@@ -469,6 +469,8 @@ $(function(){
             return tmp;
         }();
 
+        // Remove instructions
+        $("#cy-instructions").addClass('hidden');
 
         // Create the Cytoscape graph
         cy = cytoscape({

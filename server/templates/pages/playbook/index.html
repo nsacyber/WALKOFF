@@ -77,6 +77,10 @@
             background-image: url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
             margin-right: 20px;
         }
+        #cy-instructions {
+            padding: 20px;
+            font-size: 25px;
+        }
         #parameters{
             display: inline-block;
             vertical-align: top;
@@ -157,6 +161,11 @@
             </div>
         </div>
         <div id="cy" tabindex="0">
+            <div id="cy-instructions">
+                <p> Instructions:</p>
+                <p> <b>Double click</b> item in Workflows tab to load workflow into graph.</p>
+                <p> <b>Drag and drop</b> item from Actions tab into graph to create new workflow step.</p>
+            </div>
         </div>
         <div id="parameters">
         </div>
