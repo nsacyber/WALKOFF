@@ -21,14 +21,14 @@ def get_cytoscape_data(steps):
     return output
 
 
-def import_py_file(path_to_file):
+def import_py_file(module_name, path_to_file):
     if sys.version_info[0] == 2:
         from imp import load_source
-        imported = load_source('module.name', os.path.abspath(path_to_file))
+        imported = load_source(module_name, os.path.abspath(path_to_file))
     else:
         from importlib import machinery
-        loader = machinery.SourceFileLoader('module', os.path.abspath(path_to_file))
-        imported = loader.load_module('module')
+        loader = machinery.SourceFileLoader(module_name, os.path.abspath(path_to_file))
+        imported = loader.load_module(module_name)
     return imported
 
 
@@ -42,15 +42,21 @@ def import_lib(directory, module_name):
         return module
 
 
-def import_app_main(app_name):
-    module_name = 'apps.{0}.main'.format(app_name)
+def construct_module_name_from_path(path):
+    path = path.lstrip('.{0}'.format(os.sep))
+    path = path.replace('.', '')
+    return '.'.join([x for x in path.split(os.sep) if x])
 
+
+def import_app_main(app_name):
+    app_path = os.path.join(core.config.paths.apps_path, app_name, 'main.py')
+    module_name = construct_module_name_from_path(app_path[:-3])
     try:
         return sys.modules[module_name]
     except KeyError:
         pass
     try:
-        module = import_py_file(os.path.join(core.config.paths.apps_path, app_name, 'main.py'))
+        module = import_py_file(module_name, app_path)
         sys.modules[module_name] = module
         return module
     except (ImportError, IOError, OSError):

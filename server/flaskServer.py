@@ -1,5 +1,4 @@
 import os
-import ssl
 import json
 import sys
 
@@ -40,23 +39,18 @@ userRoles = database.userRoles
 database.initialize_userRoles(urls)
 db = database.db
 
+
 # Creates Test Data
 @app.before_first_request
 def create_user():
-    # db.drop_all()
     database.db.create_all()
 
     if not database.User.query.first():
-        # Add Credentials to Splunk app
-        # db.session.add(Device(name="deviceOne", app="splunk", username="admin", password="hello", ip="192.168.0.1", port="5000"))
-
-        adminRole = user_datastore.create_role(name="admin", description="administrator", pages=default_urls)
-        # userRole = user_datastore.create_role(name="user", description="user")
+        admin_role = user_datastore.create_role(name="admin", description="administrator", pages=default_urls)
 
         u = user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        # u2 = user_datastore.create_user(email='user', password=encrypt_password('user'))
 
-        user_datastore.add_role_to_user(u, adminRole)
+        user_datastore.add_role_to_user(u, admin_role)
 
         database.db.session.commit()
 
@@ -70,12 +64,13 @@ def create_user():
     URLS
 """
 
+
 @app.route("/")
 @login_required
 def default():
     if current_user.is_authenticated:
         default_page_name = "dashboard"
-        args = {"apps": running_context.getApps(), "authKey": current_user.get_auth_token(),
+        args = {"apps": running_context.get_apps(), "authKey": current_user.get_auth_token(),
                 "currentUser": current_user.email, "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
@@ -85,7 +80,7 @@ def default():
 # Returns the API key for the user
 @app.route('/key', methods=["GET", "POST"])
 @login_required
-def loginInfo():
+def login_info():
     if current_user.is_authenticated:
         return json.dumps({"auth_token": current_user.get_auth_token()})
     else:
@@ -135,7 +130,7 @@ def display_available_workflow_templates():
     templates = {os.path.splitext(workflow)[0]:
                      helpers.get_workflow_names_from_file(os.path.join(core.config.paths.templates_path, workflow))
                  for workflow in locate_workflows_in_directory(core.config.paths.templates_path)}
-    return json.dumps({"templates": templates})
+    return json.dumps({"status": "success", "templates": templates})
 
 
 @app.route("/playbook/<string:playbook_name>/<string:workflow_name>/display", methods=['GET'])
@@ -327,7 +322,7 @@ def workflow(playbook_name, workflow_name, action):
 
     elif action == 'delete':
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.removeWorkflow(playbook_name, workflow_name)
+            running_context.controller.remove_workflow(playbook_name, workflow_name)
             status = 'success'
         else:
             status = 'error: invalid workflow name'
@@ -335,8 +330,9 @@ def workflow(playbook_name, workflow_name, action):
                            "playbooks": running_context.controller.get_all_workflows()})
 
     elif action == 'execute':
+        write_playbook_to_file(playbook_name)
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.executeWorkflow(playbook_name, workflow_name)
+            running_context.controller.execute_workflow(playbook_name, workflow_name)
             status = 'success'
         else:
             status = 'error: invalid workflow name'
@@ -536,7 +532,7 @@ def set_configuration():
 @app.route('/interface/<string:name>/display', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/interface"])
-def systemPages(name):
+def system_pages(name):
     if current_user.is_authenticated and name:
         args = getattr(interface, name)()
         return render_template("pages/" + name + "/index.html", **args)
@@ -548,7 +544,7 @@ def systemPages(name):
 @app.route('/execution/scheduler/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/execution/scheduler"])
-def schedulerActions(action):
+def scheduler_actions(action):
     if action == "start":
         status = running_context.controller.start()
         return json.dumps({"status": status})
@@ -563,16 +559,17 @@ def schedulerActions(action):
         return json.dumps({"status": status})
     return json.dumps({"status": "invalid command"})
 
+
 # Controls execution triggers
-@app.route('/execution/scheduler/<string:id>/<string:action>', methods=["POST"])
+@app.route('/execution/scheduler/<string:job_id>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/execution/scheduler"])
-def schedulerActionsById(id, action):
+def scheduler_actions_by_id(job_id, action):
     if action == "pause":
-        running_context.controller.pauseJob(id)
+        running_context.controller.pause_job(job_id)
         return json.dumps({"status": "Job Paused"})
     elif action == "resume":
-        status = running_context.controller.resumeJob(id)
+        running_context.controller.resume_job(job_id)
         return json.dumps({"status": "Job Resumed"})
     return json.dumps({"status": "invalid command"})
 
@@ -582,7 +579,7 @@ def schedulerActionsById(id, action):
 @auth_token_required
 # @roles_accepted(*userRoles["/execution/listener"])
 def scheduler():
-    return running_context.controller.getScheduledJobs()
+    return running_context.controller.get_scheduled_jobs()
 
 
 # Controls execution triggers
@@ -590,7 +587,7 @@ def scheduler():
 @auth_token_required
 @roles_accepted(*userRoles["/execution/listener"])
 def listener():
-    form = forms.incomingDataForm(request.form)
+    form = forms.IncomingDataForm(request.form)
     returned_json = Triggers.execute(form.data.data) if form.validate() else {}
     return json.dumps(returned_json)
 
@@ -607,7 +604,7 @@ def display_all_triggers():
 @roles_accepted(*userRoles["/execution/listener/triggers"])
 def trigger_functions(action, name):
     if action == "add":
-        form = forms.addNewTriggerForm(request.form)
+        form = forms.AddNewTriggerForm(request.form)
         if form.validate():
             query = Triggers.query.filter_by(name=name).first()
             if query is None:
@@ -624,7 +621,7 @@ def trigger_functions(action, name):
         return json.dumps({"status": "error: form not valid"})
 
     if action == "edit":
-        form = forms.editTriggerForm(request.form)
+        form = forms.EditTriggerForm(request.form)
         trigger = Triggers.query.filter_by(name=name).first()
         if form.validate() and trigger is not None:
             # Ensures new name is unique
@@ -661,7 +658,7 @@ def trigger_functions(action, name):
 @app.route('/roles/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/roles"])
-def roleAddActions(action):
+def role_add_actions(action):
     # Adds a new role
     if action == "add":
         form = forms.NewRoleForm(request.form)
@@ -690,7 +687,7 @@ def roleAddActions(action):
 @app.route('/roles/<string:action>/<string:name>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/roles"])
-def roleActions(action, name):
+def role_actions(action, name):
     role = database.Role.query.filter_by(name=name).first()
 
     if role:
@@ -711,10 +708,11 @@ def roleActions(action, name):
 
     return json.dumps({"status": "role does not exist"})
 
+
 @app.route('/roles', methods=["GET"])
 @auth_token_required
 @roles_accepted(*userRoles["/roles"])
-def displayRoles():
+def display_roles():
     roles = database.Role.query.all()
     if roles:
         result = [role.name for role in roles]
@@ -723,12 +721,11 @@ def displayRoles():
         return json.dumps({"status": "roles do not exist"})
 
 
-
 # Controls non-specific users and roles
 @app.route('/users/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
-def userNonSpecificActions(action):
+def user_non_specific_actions(action):
     # Adds a new user
     if action == "add":
         form = forms.NewUserForm(request.form)
@@ -743,11 +740,11 @@ def userNonSpecificActions(action):
                 if form.role.data:
                     u.setRoles(form.role.data)
 
-                hasAdmin = False
+                has_admin = False
                 for role in u.roles:
                     if role.name == "admin":
-                        hasAdmin = True
-                if not hasAdmin:
+                        has_admin = True
+                if not has_admin:
                     u.setRoles(["admin"])
 
                 db.session.commit()
@@ -762,7 +759,7 @@ def userNonSpecificActions(action):
 @app.route('/users', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
-def displayAllUsers():
+def display_all_users():
     result = str(User.query.all())
     return result
 
@@ -771,7 +768,7 @@ def displayAllUsers():
 @app.route('/users/<string:id_or_email>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
-def displayUser(id_or_email):
+def display_user(id_or_email):
     user = user_datastore.get_user(id_or_email)
     if user:
         return json.dumps(user.display())
@@ -783,7 +780,7 @@ def displayUser(id_or_email):
 @app.route('/users/<string:id_or_email>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/users"])
-def userActions(action, id_or_email):
+def user_actions(action, id_or_email):
     user = user_datastore.get_user(id_or_email)
     if user:
         if action == "remove":
@@ -816,14 +813,13 @@ def userActions(action, id_or_email):
 @app.route('/configuration/<string:app>/devices', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
-def listDevices(app):
+def list_devices(app):
     query = running_context.Device.query.all()
     output = []
     if query:
         for device in query:
-            for app_elem in device.apps:
-                if app_elem.app == app:
-                    output.append(device.as_json())
+            if app == device.app.name:
+                output.append(device.as_json())
     return json.dumps(output)
 
 
@@ -831,7 +827,7 @@ def listDevices(app):
 @app.route('/configuration/<string:app>/devices/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
-def configDevicesConfig(app, action):
+def config_devices_config(app, action):
     if action == "add":
         form = forms.AddNewDeviceForm(request.form)
         if form.validate():
@@ -859,7 +855,7 @@ def configDevicesConfig(app, action):
 @app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET", "POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
-def configDevicesConfigId(app, device, action):
+def config_devices_config_id(app, device, action):
     if action == "display":
         dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
@@ -878,10 +874,8 @@ def configDevicesConfigId(app, device, action):
         form = forms.EditDeviceForm(request.form)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
-            # Ensures new name is unique
-            # if len(devClass.query.filter_by(name=str(device)).all()) > 0:
-            #     return json.dumps({"status": "device could not be edited"})
-            print(form.username.data)
+
+
             dev.editDevice(form)
 
             db.session.commit()
@@ -889,31 +883,6 @@ def configDevicesConfigId(app, device, action):
         return json.dumps({"status": "device could not be edited"})
 
 
-# Start Flask
-def start(config_type=None):
-    global db, env
-
-    if core.config.config.https.lower() == "true":
-        # Sets up HTTPS
-        if core.config.config.tls_version == "1.2":
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        elif core.config.config.tls_version == "1.1":
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
-        else:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-
-        # Provide user with informative error message
-        displayIfFileNotFound(core.config.paths.certificate_path)
-        displayIfFileNotFound(core.config.paths.private_key_path)
-
-        context.load_cert_chain(core.config.paths.certificate_path, core.config.paths.private_key_path)
-        app.run(debug=core.config.config.debug, ssl_context=context,
-                host=core.config.config.host, port=int(core.config.config.port), threaded=True)
-    else:
-        app.run(debug=core.config.config.debug, host=core.config.config.host,
-                port=int(core.config.config.port), threaded=True)
-
-
-def displayIfFileNotFound(filepath):
+def display_if_file_not_found(filepath):
     if not os.path.isfile(filepath):
         print("File not found: " + filepath)
