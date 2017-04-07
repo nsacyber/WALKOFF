@@ -7,8 +7,8 @@ function formatCasesForJSTree(cases){
 }
 
 function resetSubscriptionModal(){
-    $("select[name=modalObjectTypeSelection]").empty();
-    $("#objectSelectionDiv").empty();
+    $("#modalObjectTypeSelection > option").remove();
+    $(".objectSelection > option").remove();
     $(".subscriptionSelection").empty()
 }
 
@@ -17,36 +17,40 @@ function resetCaseModal(){
     $("#editCaseDialog").html(defaultCaseModal);
 }
 
-function resetObjectSelection(){
-    $("#objectSelectionDiv").empty();
+function formatAncestry(element, fields){
+    switch(fields[field]){
+        case "controller":
+            formatControllerSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+        case "playbook":
+            formatPlaybookSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+        case "workflow":
+            formatWorkflowSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+        case "step":
+            formatStepSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+        case "nextstep":
+            formatNextStepSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+        case "flag":
+            formatFlagSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+        case "filter":
+            formatFilterSubscriptions(element, availableSubscriptions[fields[field]]);
+        break;
+    }
 }
 
-function formatModal(availableSubscriptions, selected_objectType){
-    fields = populateObjectSelectionList(availableSubscriptions, selected_objectType);
+
+function formatModal(elements, selected_objectType){
+    fields = populateObjectSelectionList(elements, selected_objectType);
+    var id, element;
     for(field in fields){
-        switch(fields[field]){
-            case "controller":
-                formatControllerSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-            case "playbook":
-                formatPlaybookSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-            case "workflow":
-                formatWorkflowSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-            case "step":
-                formatStepSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-            case "nextstep":
-                formatNextStepSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-            case "flag":
-                formatFlagSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-            case "filter":
-                formatFilterSubscriptions(availableSubscriptions[fields[field]]);
-            break;
-        }
+        id = "#" + fields[field] +"ObjectSelection";
+        element = $(id).get(0);
+        formatAncestry(element, fields);
     }
     formatSubscriptionList(availableSubscriptions[selected_objectType]);
 }
@@ -84,10 +88,9 @@ function casesCustomMenu(node){
         editSubscription: {
             label: "Edit Subscription",
             action: function () {
-                for(key in availableSubscriptions){
-                    $("select[name=modalObjectTypeSelection]").append("<option value='" + key + "'>" + key + "</option>");
-                }
+                editSubscriptionDialog.focus();
                 editSubscriptionDialog.dialog("open");
+
             }
         },
 
@@ -101,60 +104,4 @@ function casesCustomMenu(node){
     }
     return items;
 }
-
-var cases = function () {
-    var tmp = null;
-    $.ajax({
-        'async': false,
-        'type': "GET",
-        'global': false,
-        'data':{"format":"cytoscape"},
-        'headers':{"Authentication-Token":authKey},
-        'url': "/cases",
-        'success': function (data) {
-            tmp = data;
-        }
-    });
-    return tmp;
-}();
-
-cases = JSON.parse(cases);
-$("#casesTree").jstree({
-    'core':{
-        'check_callback': true,
-        'data': formatCasesForJSTree(cases.cases)
-    },
-    'plugins':['contextmenu'],
-    'contextmenu':{
-        items: casesCustomMenu
-    }
-});
-
-$("#addCase").on("click", function(){
-    id = Object.keys($("#casesTree").jstree()._model.data).length;
-    name = "case_"+id;
-    $("#casesTree").jstree().create_node("#", {"id": name, "text" : name, "type":"case"}, "last", function(){});
-    addCase(name);
-});
-
-$("select[name=modalObjectTypeSelection]").on("change", function(){
-    $("#objectSelectionDiv").empty();
-    $(".subscriptionSelection").empty();
-    selected_objectType = this.value;
-    formatModal(availableSubscriptions,selected_objectType);
-});
-
-editSubscriptionDialog.on("dialogopen", function(event, ui){
-    selected_objectType = $("select[name=modalObjectTypeSelection] option").first()[0].value;
-    formatModal(availableSubscriptions, selected_objectType);
-    getSelectedObjects();
-});
-
-editSubscriptionDialog.on("dialogclose", function(event, ui){
-    resetSubscriptionModal();
-});
-
-$("#objectSelectionDiv").on("change", '.objectSelection', function(){
-    getSelectedObjects();
-});
 
