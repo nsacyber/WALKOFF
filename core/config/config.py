@@ -38,12 +38,7 @@ def write_values_to_file(values=None):
         json.dump(parsed, f)
 
 
-load_config()
-try:
-    with open(core.config.paths.events_path) as f:
-        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-except (IOError, OSError):
-    possible_events = {}
+
 
 # Enables/Disables Browser Notifications
 notifications = "True"
@@ -98,6 +93,13 @@ def load_function_info():
     except Exception as e:
         print("caught!")
         print(e)
+
+load_config()
+try:
+    with open(core.config.paths.events_path) as f:
+        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
+except (IOError, OSError):
+    possible_events = {}
 
 
 load_function_info()
