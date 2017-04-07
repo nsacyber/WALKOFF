@@ -807,7 +807,7 @@ def listDevices(app):
     output = []
     if query:
         for device in query:
-            for app_elem in device.apps:
+            for app_elem in device.app:
                 if app_elem.app == app:
                     output.append(device.as_json())
     return json.dumps(output)
