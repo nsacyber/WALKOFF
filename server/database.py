@@ -7,13 +7,16 @@ db = flask_sqlalchemy.SQLAlchemy(app)
 
 userRoles = {}
 
-def initialize_userRoles(urls):
+
+def initialize_user_roles(urls):
     for url in urls:
         userRoles[url] = ["admin"]
 
-def add_to_userRoles(role_name, urls):
+
+def add_to_user_roles(role_name, urls):
     for url in urls:
         userRoles[url].append(role_name)
+
 
 # Base Class for Tables
 class Base(db.Model):
@@ -33,21 +36,19 @@ class Role(Base, RoleMixin):
         self.description = description
         self.pages = pages
 
-    def setDescription(self, description):
+    def set_description(self, description):
         self.description = description
 
-    def toString(self):
+    def to_string(self):
         return {"name": self.name, "description": self.description}
 
     def display(self):
-        result = {}
-        result["name"] = self.name
-        result["description"] = self.description
-
-        return result
+        return {"name": self.name,
+                "description": self.description}
 
     def __repr__(self):
         return '<Role %r>' % self.name
+
 
 class User(Base, UserMixin):
     # Define Models
@@ -69,30 +70,16 @@ class User(Base, UserMixin):
     login_count = db.Column(db.Integer)
 
     def display(self):
-        result = {}
-        result["username"] = self.email
-        roles = []
-        for role in self.roles:
-            roles.append(role.toString())
-        result["roles"] = roles
-        result["active"] = self.active
+        return {"username": self.email,
+                "roles": [role.to_string() for role in self.roles],
+                "active": self.active}
 
-        return result
-
-    def setRoles(self, roles):
+    def set_roles(self, roles):
         for role in roles:
-            if role != "" and not self.has_role(role):
+            if role and not self.has_role(role):
                 q = user_datastore.find_role(role)
-                if q != None:
+                if q:
                     user_datastore.add_role_to_user(self, q)
-                    #print("ADDED ROLE")
-                else:
-                    pass
-                    #print("ROLE DOES NOT EXIST")
-            else:
-                pass
-                #print("HAS ROLE")
-
 
     def __repr__(self):
         return self.email
