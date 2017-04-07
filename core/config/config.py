@@ -8,6 +8,7 @@ from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
 
+
 def load_config():
     self = sys.modules[__name__]
     with open(core.config.paths.config_path) as f:
@@ -72,6 +73,9 @@ execution_settings = {
     "secondsDelay": 0.1,
     "maxJobs": 2
 }
+
+num_threads = 5
+threadpool_shutdown_timeout_sec = 3
 
 # Function Dict Paths/Initialization
 

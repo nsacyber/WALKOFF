@@ -1,6 +1,5 @@
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, DecimalField, \
-    IntegerField, FormField, \
-    SelectField, RadioField, SubmitField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, \
+    IntegerField, FormField, SelectField, SubmitField
 from flask_security.forms import Required, EqualTo
 
 
@@ -35,7 +34,7 @@ class AddPlaybookForm(Form):
 
 
 class EditPlaybookForm(Form):
-    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.data_required()])
+    new_name = StringField('New Name', [validators.Length(min=1, max=50), validators.data_required()])
 
 
 class EditPlayNameForm(Form):
@@ -107,32 +106,32 @@ class LoginForm(Form):
     password = PasswordField('password')
 
 
-class addNewTriggerForm(Form):
+class AddNewTriggerForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=25), validators.Optional()])
     conditional = FieldList(StringField('Conditionals'), [validators.data_required()])
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
 
 
-class editTriggerForm(Form):
+class EditTriggerForm(Form):
     name = StringField('New Name', [validators.Length(min=1, max=25), validators.Optional()])
     conditional = FieldList(StringField('Conditionals'), [validators.Optional()])
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.required()])
 
 
-class conditionalArgsField(Form):
+class ConditionalArgsField(Form):
     key = StringField('key', [validators.Length(min=1, max=25), validators.Optional()])
     value = StringField('value', [validators.Length(min=1, max=25), validators.Optional()])
 
 
-class conditionalField(Form):
+class ConditionalField(Form):
     name = StringField('flag', [validators.Length(min=1, max=25), validators.Optional()])
-    args = FieldList(FormField(conditionalArgsField, [validators.Optional()]))
+    args = FieldList(FormField(ConditionalArgsField, [validators.Optional()]))
     play = StringField('play', [validators.Length(min=1, max=25), validators.Optional()])
 
 
-class incomingDataForm(Form):
+class IncomingDataForm(Form):
     data = StringField('data')
 
 
@@ -190,7 +189,7 @@ class SettingsForm(Form):
     port = StringField('Port', [validators.Optional()])
 
 
-class userForm(Form):
+class UserForm(Form):
     username = SelectField('Username', [validators.Optional()], choices=[])
     email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
     password = PasswordField('Password')
@@ -203,7 +202,8 @@ class userForm(Form):
     current_login_ip = StringField("Current login ip")
     login_count = IntegerField("Login count")
 
-class addUserForm(Form):
+
+class AddUserForm(Form):
     username = StringField('Username', [validators.required(message='Enter a user name')])
     password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')

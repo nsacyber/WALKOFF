@@ -115,7 +115,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_workflow_cytoscape(self):
         workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
-        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        flask_server.running_context.controller.load_workflows_from_file(path=workflow_filename)
         workflow = flask_server.running_context.controller.get_workflow('multiactionWorkflowTest',
                                                                         'multiactionWorkflow')
         steps_data = workflow.get_cytoscape_data()
@@ -130,7 +130,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_workflow_element(self):
         workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
-        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        flask_server.running_context.controller.load_workflows_from_file(path=workflow_filename)
         workflow = flask_server.running_context.controller.get_workflow('multiactionWorkflowTest',
                                                                         'multiactionWorkflow')
         ancestries_to_json = [([], {"steps": ['start', '1']}),
@@ -154,7 +154,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_workflow_element_not_found(self):
         workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
-        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        flask_server.running_context.controller.load_workflows_from_file(path=workflow_filename)
 
         ancestries = [['starta'],
                       ['1a'],
@@ -170,7 +170,7 @@ class TestWorkflowServer(unittest.TestCase):
 
     def test_display_workflow_element_invalid_json(self):
         workflow_filename = os.path.join(".", "tests", "testWorkflows", 'multiactionWorkflowTest.workflow')
-        flask_server.running_context.controller.loadWorkflowsFromFile(path=workflow_filename)
+        flask_server.running_context.controller.load_workflows_from_file(path=workflow_filename)
         data = {"invalid_field_name": "grepgrepgrepspamsapmsapm"}
         get_with_status_check(self, self.app, '/playbook/multiactionWorkflowTest/multiactionWorkflow/display',
                               'error: malformed JSON',
@@ -449,7 +449,7 @@ class TestWorkflowServer(unittest.TestCase):
 
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.loadWorkflowsFromFile(os.path.join(core.config.paths.workflows_path,
+        flask_server.running_context.controller.load_workflows_from_file(os.path.join(core.config.paths.workflows_path,
                                                                                    'test.workflow'))
         orderless_list_compare(self,
                                [key.workflow for key in flask_server.running_context.controller.workflows.keys()],
