@@ -212,7 +212,7 @@ class Controller(object):
 
     # Starts active execution
     def start(self):
-        if self.scheduler.state != STATE_RUNNING:
+        if self.scheduler.state != STATE_RUNNING and self.scheduler.state != STATE_PAUSED:
             self.scheduler.start()
         return self.scheduler.state
 
