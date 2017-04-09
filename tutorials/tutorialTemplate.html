@@ -8,32 +8,25 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-
-
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
 .fa-graduation-cap,.fa-flask{font-size:200px}
-
 #headerDiv{
     background-image:url("../files/images/headerBackground2.png");
     background-size: 50% auto;
     background-repeat: no-repeat;
     background-position:50% 50%;
 }
-
 .topLevelList + ol{
   display:none;
 }
-
 .topLevelList + h5{
   display:none;
 }
-
 .fa-circle, .fa-circle-o{
   font-size:12px;
   padding-right:10px;
 }
-
 </style>
 <body>
 
@@ -67,15 +60,8 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>How to Setup and Install WALKOFF</h1>
-         <h5 class="w3-padding-32">0) Make sure Python 2.7+ and git are installed.</a></h5>
-         <h5 class="w3-padding-32">1) Open a terminal on linux or a command prompt on Windows, and run the command "git clone https://github.com/iadgov/WALKOFF.git".</a></h5>
-         <h5 class="w3-padding-32">2) Change directories to the WALKOFF directory ("cd WALKOFF").</a></h5>
-         <h5 class="w3-padding-32">3) Run the command "python setup.py install" -- this command must be run as root (i.e. using sudo, or in an administrative command shell).</a></h5>
-         <h5 class="w3-padding-32">4) Run the command "pip install -r requirements.txt" to install the required libraries -- this command must be run as root (i.e. using sudo, or in an administrative command shell).</a></h5>
-         <h5 class="w3-padding-32">5) Each app must have a setup.py script inside of its main directory. In order to save the user the effort of manually running the setup.py script for each app, the user can run the command "python installDependencies.py -a|--apps AppOne AppTwo ..." -- this command must be run as root (i.e. using sudo, or in an administrative command shell). Simply provide the installDependencies script with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces.</a></h5>
-         <h5 class="w3-padding-32">6) Run "python startServer.py" in your terminal or command prompt window.</a></h5>
-         <h5 class="w3-padding-32">7) Open a browser of your choice, and navigate to the host IP and port specified in the output of the above command to start the server. Typically, this will mean navigating to 127.0.0.1:5000, unless the user manually configured the host IP and port in the core.config file.</a></h5>
+      <h1>Header</h1>
+         <h5 class="w3-padding-32">Step one</a></h5>
     </div>
 
    <div class="w3-third w3-center">
@@ -89,6 +75,11 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   <div class="w3-content">
     <div class="w3-third w3-center">
       <i class="fa fa-flask w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
+    </div>
+
+    <div class="w3-twothird">
+       <h1>Header</h1>
+      <h5 class="w3-padding-32">Step Two</h5>
     </div>
   </div>
 </div>
