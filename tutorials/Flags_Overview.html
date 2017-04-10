@@ -8,33 +8,25 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-
-
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
 .fa-graduation-cap,.fa-flask{font-size:200px}
-
 #headerDiv{
     background-image:url("../files/images/headerBackground2.png");
     background-size: 50% auto;
     background-repeat: no-repeat;
     background-position:50% 50%;
 }
-
 .topLevelList + ol{
   display:none;
 }
-
 .topLevelList + h5{
   display:none;
 }
-
 .fa-circle, .fa-circle-o{
   font-size:12px;
   padding-right:10px;
 }
-
-
 
 </style>
 <body>
@@ -74,93 +66,28 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
         <div class="w3-twothird">
-            <h1>Case Overview</h1>
-            <p>WALKOFF contains a flexible, customizable logging system. It's better than your average,
-                fatal/error/warning/info/trace logging system -- it's a database-driven event subscription system which
-                allows you to visualize the workflow execution at any level of detail you feel is useful. You start by
-                creating and naming one or more "cases" which are collections of execution events you wish to log
-                together,
-                we call these the case's event subscriptions. As a workflow or collection of workflows is executed, the
-                events to which the case is subscribed to are logged. Each level of execution contains multiple events
-                which can be subscribed to. Currently the available event subscriptions are as follows:</p>
-
-            <h6>Controller</h6>
-            <ul style="list-style-type:circle">
-                <li>Scheduler Started</li>
-                <li>Scheduler Paused</li>
-                <li>Scheduler Resumed</li>
-                <li>Scheduler Shutdown</li>
-                <li>Job Added</li>
-                <li>Job Removed</li>
-                <li>Job Executed</li>
-                <li>Job Error</li>
+            <h1>Flags</h1>
+            <p>
+                Flags are conditions which much be met before a step progresses to another. The condition which must be
+                met is selected from a list functions defined in the core/flags directory. Each flag takes zero or more
+                arguments and an input. When executing a workflow, the input to a flag is the output from the previous
+                step. Additionally, data can be filtered through a <a href="Filter_Overview.html">Filter</a> before
+                being evaluated. Each flag can have its own list of filters, the output of the first being used as the
+                input to the second and so on. The flags currently implemented are the following:
+            </p>
+            <h5>Count</a></h5>
+            <p>Compares the number of elements in a collection or an integer to a value</p>
+            <h6>Arguments</h6>
+            <ul>
+                <li>Threshold - The value to compare the input to</li>
+                <li>Operator - The method of comparison (<, <=, =, >=, or >)</li>
             </ul>
-
-            <h6>Workflow</h6>
-            <ul style="list-style-type:circle">
-                <li>New Workflow Created</li>
-                <li>Step Execution Success</li>
-                <li>Next Step Found</li>
-                <li>Workflow shutdown</li>
+            <h5></a>Regular Expression Match</h5>
+            <p>Attempts to compare the input to a regular expression</p>
+            <h6>Arguments</h6>
+            <ul>
+                <li>Regular expression - The regular expression used to match the input against</li>
             </ul>
-
-            <h6>Step</h6>
-            <ul style="list-style-type:circle">
-                <li>Function Execution Success</li>
-                <li>Input Validated</li>
-                <li>Conditionals Executed</li>
-            </ul>
-
-            <h6>Next Step</h6>
-            <ul style="list-style-type:circle">
-                <li>Next Step Taken</li>
-                <li>Next Step Not Taken</li>
-            </ul>
-
-
-            <h6>Flag</h6>
-            <ul style="list-style-type:circle">
-                <li>Flag Arguments Valid</li>
-                <li>Flag Arguments InValid</li>
-            </ul>
-
-            <h6>Filter</h6>
-            <ul style="list-style-type:circle">
-                <li>Filter Success</li>
-                <li>Filter Error</li>
-            </ul>
-
-
-            <p>Each case can be subscribed to multiple controllers which in turn can have multiple workflows which
-                can have multiple steps, and so on.
-                Each execution element can have multiple execution elements it manages, and for each execution
-                element instance, a case which can have an
-                inividualized set of events it is subscribed to. So if you want one step in one workflow to be log
-                the events Function Execution Success
-                and Conditionals Executed, but a different step in that same workflow to only log its Input
-                Validated event, you can specify these.</p>
-
-            <p>Additionally, each case has a set of global event subscriptions which apply to all events. So if you
-                want all workflows in a case to log
-                their Step Execution Success event, you can specify this. You can also disable these global
-                subscriptions for a given execution element
-                if you want to make an exeption.</p>
-
-            <p>Each event is logged with the following fields</p>
-            <dl>
-                <dt>Unique ID</dt>
-                <dt>Timestamp</dt>
-                <dt>Type</dt>
-                <dd> System, Workflow, Step, Next Step, Flag, Filter</dd>
-                <dt>Ancestry</dt>
-                <dd> A list of execution elements from controller to parent which caused this event</dd>
-                <dt>Message</dt>
-                <dd> The specific event that happened</dd>
-                <dt>Note</dt>
-                <dd> Field which can be modified to add notes</dd>
-            </dl>
-
-
         </div>
 
         <div class="w3-third w3-center">
@@ -190,7 +117,6 @@ function myFunction() {
         x.className = x.className.replace(" w3-show", "");
     }
 }
-
 
 </script>
 </body>
