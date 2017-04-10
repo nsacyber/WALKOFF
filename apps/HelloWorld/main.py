@@ -1,13 +1,13 @@
-from server import appDevice
+from server import appdevice
 import gevent
 
 
 # There is an associated Hello world test workflow which can be executed
 
-class Main(appDevice.App):
+class Main(appdevice.App):
     def __init__(self, name=None, device=None):
         # The parent app constructor looks for a device configuration and returns that as a dict called self.config
-        appDevice.App.__init__(self, name, device)
+        appdevice.App.__init__(self, name, device)
         # Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message": "HELLO WORLD"}
 

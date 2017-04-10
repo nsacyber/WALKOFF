@@ -2,7 +2,7 @@ import json
 import unittest
 
 from tests.util.assertwrappers import post_with_status_check, get_with_status_check
-from server import flaskServer as server
+from server import flaskserver as server
 
 
 class TestAppsAndDevices(unittest.TestCase):

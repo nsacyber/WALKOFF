@@ -10,7 +10,7 @@ class Context(object):
         self.apps = self.get_apps()
 
         from server.database import User, Role
-        from server.appDevice import Device, App
+        from server.appdevice import Device, App
         from core.controller import controller
         from server.app import app
 

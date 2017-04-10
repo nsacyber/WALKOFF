@@ -6,7 +6,7 @@ from core.case.subscription import set_subscriptions, clear_subscriptions, CaseS
     GlobalSubscriptions, subscriptions_as_json, Subscription
 from core.executionelement import ExecutionElement
 from core.case.callbacks import _EventEntry
-from server import flaskServer as flask_server
+from server import flaskserver as flask_server
 from os.path import join
 from tests.util.assertwrappers import post_with_status_check, get_with_status_check
 

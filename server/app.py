@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from jinja2 import Environment, FileSystemLoader
 from core.config import paths
-from . import appBlueprint, widgetBlueprint
+from . import appblueprint, widgetblueprint
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 app.jinja_loader = FileSystemLoader(['server/templates'])
@@ -26,5 +26,5 @@ app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
-app.register_blueprint(appBlueprint.appPage, url_prefix='/apps/<app>')
-app.register_blueprint(widgetBlueprint.widgetPage, url_prefix='/apps/<app>/<widget>')
+app.register_blueprint(appblueprint.appPage, url_prefix='/apps/<app>')
+app.register_blueprint(widgetblueprint.widgetPage, url_prefix='/apps/<app>/<widget>')

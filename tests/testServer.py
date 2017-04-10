@@ -2,7 +2,7 @@ import unittest
 import json
 import copy
 import os
-from server import flaskServer as server
+from server import flaskserver as server
 from tests.util.assertwrappers import orderless_list_compare, post_with_status_check
 from tests.config import test_apps_path, test_workflows_path_with_generated, test_workflows_path
 import core.config.paths

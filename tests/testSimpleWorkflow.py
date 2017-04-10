@@ -5,7 +5,7 @@ from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
-import server.flaskServer as server
+import server.flaskserver as server
 from core.case import database
 from core.case import subscription
 

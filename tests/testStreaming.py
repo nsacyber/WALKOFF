@@ -1,7 +1,7 @@
 import unittest
 import json
 from werkzeug.wsgi import ClosingIterator
-from server import flaskServer as server
+from server import flaskserver as server
 
 
 class TestStreaming(unittest.TestCase):

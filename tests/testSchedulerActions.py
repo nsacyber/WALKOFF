@@ -3,7 +3,7 @@ import unittest
 
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
-from server import flaskServer as server
+from server import flaskserver as server
 from tests.util.assertwrappers import post_with_status_check
 
 

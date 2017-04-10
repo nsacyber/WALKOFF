@@ -12,7 +12,7 @@ from core.case import subscription
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.assertwrappers import orderless_list_compare
 
-from server.flaskServer import running_context
+from server.flaskserver import running_context
 
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):

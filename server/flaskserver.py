@@ -19,7 +19,7 @@ from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
 from core.options import Options
 import core.case.subscription as case_subscription
 import core.case.database as case_database
-from . import database, appDevice
+from . import database, appdevice
 from .app import app
 from .database import User
 from .triggers import Triggers
@@ -54,9 +54,9 @@ def create_user():
 
         database.db.session.commit()
 
-    apps = set(helpers.list_apps()) - set([app.name for app in database.db.session.query(appDevice.App).all()])
+    apps = set(helpers.list_apps()) - set([app.name for app in database.db.session.query(appdevice.App).all()])
     for app_name in apps:
-        database.db.session.add(appDevice.App(app=app_name, devices=[]))
+        database.db.session.add(appdevice.App(app=app_name, devices=[]))
     database.db.session.commit()
 
 

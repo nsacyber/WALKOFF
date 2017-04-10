@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from server import flaskServer as server
+from server import flaskserver as server
 from server.triggers import Triggers
 from tests.util.assertwrappers import post_with_status_check, get_with_status_check
 

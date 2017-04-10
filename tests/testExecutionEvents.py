@@ -6,7 +6,7 @@ from core import controller, graphdecorator
 from core.case.subscription import Subscription
 from core.helpers import construct_workflow_name_key
 from tests import config
-from server.flaskServer import running_context
+from server.flaskserver import running_context
 
 
 class TestExecutionEvents(unittest.TestCase):
