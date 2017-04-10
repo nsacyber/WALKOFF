@@ -20,13 +20,13 @@ class TestSchedulerActions(unittest.TestCase):
 
     def test_scheduler_actions(self):
         post_with_status_check(self, self.app, '/execution/scheduler/start', STATE_RUNNING, headers=self.headers)
-        post_with_status_check(self, self.app, '/execution/scheduler/start', STATE_RUNNING, headers=self.headers)
+        post_with_status_check(self, self.app, '/execution/scheduler/start', "Scheduler already running.", headers=self.headers)
 
         post_with_status_check(self, self.app, '/execution/scheduler/pause', STATE_PAUSED, headers=self.headers)
-        post_with_status_check(self, self.app, '/execution/scheduler/pause', STATE_PAUSED, headers=self.headers)
+        post_with_status_check(self, self.app, '/execution/scheduler/pause', "Scheduler already paused.", headers=self.headers)
 
         post_with_status_check(self, self.app, '/execution/scheduler/resume', STATE_RUNNING, headers=self.headers)
-        post_with_status_check(self, self.app, '/execution/scheduler/resume', STATE_RUNNING, headers=self.headers)
+        post_with_status_check(self, self.app, '/execution/scheduler/resume', "Scheduler is not in PAUSED state and cannot be resumed.", headers=self.headers)
 
         post_with_status_check(self, self.app, '/execution/scheduler/stop', STATE_STOPPED, headers=self.headers)
-        post_with_status_check(self, self.app, '/execution/scheduler/stop', STATE_STOPPED, headers=self.headers)
+        post_with_status_check(self, self.app, '/execution/scheduler/stop', "Scheduler already stopped.", headers=self.headers)
