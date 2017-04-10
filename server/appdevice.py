@@ -105,7 +105,7 @@ class Device(database.Base):
             output['app'] = self.app.as_json()
         else:
             output['app'] = self.app.name
-        if self.extra_fields != "":
+        if self.extra_fields:
             extra_fields = json.loads(self.extra_fields)
             for field in extra_fields:
                 output[field] = extra_fields[field]

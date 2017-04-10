@@ -9,17 +9,16 @@ import core.config.config
 import core.config.paths
 from core.helpers import construct_module_name_from_path
 
-appPage = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
+app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
 
-@appPage.url_value_preprocessor
+@app_page.url_value_preprocessor
 def static_request_handler(endpoint, values):
     g.app = values.pop('app', None)
-    appPage.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface' , 'static'))
+    app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))
 
 
-
-@appPage.route('/display', methods=['POST'])
+@app_page.route('/display', methods=['POST'])
 @auth_token_required
 @roles_required('admin')
 def display_app():
@@ -31,7 +30,7 @@ def display_app():
     return template
 
 
-@appPage.route('/stream/<string:stream_name>')
+@app_page.route('/stream/<string:stream_name>')
 @roles_required('admin')
 def stream_app_data(stream_name):
     stream_generator, stream_type = data_stream(g.app, stream_name)
@@ -40,7 +39,7 @@ def stream_app_data(stream_name):
 
 
 def load_module(app_name):
-    module_name = 'apps.' + app_name + '.display'
+    module_name = 'apps.{0}.display'.format(app_name)
     try:
         return sys.modules[module_name]
     except KeyError:
@@ -54,7 +53,7 @@ def load_module(app_name):
 def load_app(name, keys, values):
     module = load_module(name)
     args = dict(zip(keys, values))
-    return getattr(module, "load")(args) if module else {}
+    return getattr(module, 'load')(args) if module else {}
 
 
 def data_stream(app_name, stream_name):
@@ -63,7 +62,7 @@ def data_stream(app_name, stream_name):
         return getattr(module, 'stream_generator')(stream_name)
 
 
-@appPage.route('/actions', methods=['GET'])
+@app_page.route('/actions', methods=['GET'])
 @auth_token_required
 @roles_required('admin')
 def list_app_actions():
