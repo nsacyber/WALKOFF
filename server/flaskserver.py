@@ -762,7 +762,7 @@ def user_non_specific_actions(action):
 @roles_accepted(*userRoles["/users"])
 def display_all_users():
     result = str(User.query.all())
-    return result
+    return json.dumps(result)
 
 
 # Controls non-specific users and roles

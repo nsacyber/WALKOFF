@@ -8,6 +8,7 @@
             headers: {"Authentication-Token": authKey},
             type: "GET",
             success: function (e) {
+               console.log(JSON.parse(e));
                parameters = JSON.parse(e);
             },
             error: function (e) {
@@ -26,7 +27,7 @@
             success:function(data){
                 result = JSON.parse(data);
                 triggers = result['triggers'];
-                $("#trigger .triggerOption").remove();
+                $("#trigger .trigerOption").remove();
                 for(i=0;i<triggers.length;i++){
                     trigger=triggers['' +i +""];
                     $("#trigger").append("<option value="+ i  + " class='triggerOption'>"+ trigger['name'] + "</option>");
@@ -236,8 +237,8 @@
 
     // Initialize the editor with a JSON schema
 //    console.log(parameters)
-//    parameters = transformParametersToSchema(parameters);
-//   console.log(parameters);
+    parameters = transformParametersToSchema(parameters);
+   console.log(parameters);
 
     $('#addTrigger').on('click', function () {
         name = $('#deviceForm #name').val();
@@ -247,8 +248,10 @@
         headers: {"Authentication-Token": authKey},
         type: "POST",
         success: function (data) {
-            //update the list of triggers
+            console.log('trigger add success');
+            console.log(data);
             getTriggerList();
+
         },
         error: function (e) {
             console.log('trigger add failed');
@@ -307,8 +310,9 @@
             headers:{"Authentication-Token":authKey},
             type:"POST",
             success:function(e){
-                // remove deleted option
-                $("#trigger option:selected",this).remove();
+                // refresh the list of triggers
+                $("#trigger option(1)").prop('sl')
+                getTriggerList();
             },
             error: function(e){
                 console.log("ERROR");
@@ -317,6 +321,6 @@
         };
     });
 
-    getTriggerList();
+
 
 }());
