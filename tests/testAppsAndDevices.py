@@ -97,7 +97,7 @@ class TestAppsAndDevices(unittest.TestCase):
         response = json.loads(
             self.app.post('/configuration/HelloWorld/devices/all', headers=self.headers).get_data(
                 as_text=True))
-        self.assertEqual(len(response), 4)
-        self.assertEqual(response[2]["name"], self.name)
-        self.assertEqual(response[3]["name"], "testDeviceTwo")
-        self.assertEqual(response[2]["app"]["name"], response[1]["app"]["name"])
+        self.assertEqual(len(response), 2)
+        self.assertEqual(response[0]["name"], self.name)
+        self.assertEqual(response[1]["name"], "testDeviceTwo")
+        self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])
