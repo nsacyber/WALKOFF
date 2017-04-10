@@ -25,15 +25,13 @@ class App(database.Base, object):
         self.name = app
         if devices is not None:
             for device in devices:
-                self.getConfig(device)
+                self.get_config(device)
 
-    def getConfig(self, device):
-
+    def get_config(self, device):
         if device:
             query = dev_class.query.filter_by(name=device).first()
             if query:
                 self.config = query
-
         else:
             self.config = {}
 
@@ -53,10 +51,9 @@ class Device(database.Base):
     port = db.Column(db.Integer())
     extra_fields = db.Column(db.String)
     app_id = db.Column(db.String, db.ForeignKey('app.name'))
-    # app = db.relationship(App, backref=db.backref('app_devs', uselist=True, cascade='delete,all'))
     app = db.relationship(App, back_populates="devices")
 
-    def __init__(self, name="", username="", password="", ip="0.0.0.0", port=0, extraFields="", app_id=""):
+    def __init__(self, name="", username="", password="", ip="0.0.0.0", port=0, extra_fields="", app_id=""):
         self.name = name
         self.username = username
         self.password = password
@@ -64,18 +61,18 @@ class Device(database.Base):
         self.port = port
         self.app_id = app_id
         if self.extra_fields != "":
-            self.extra_fields = extraFields.replace("\'", "\"")
+            self.extra_fields = extra_fields.replace("\'", "\"")
         else:
-            self.extra_fields = extraFields
+            self.extra_fields = extra_fields
 
     @staticmethod
-    def add_device(name, username, password, ip, port, extraFields, app_server):
-        device = Device(name=name, username=username, password=password, ip=ip, port=port, extraFields=extraFields,
+    def add_device(name, username, password, ip, port, extra_fields, app_server):
+        device = Device(name=name, username=username, password=password, ip=ip, port=port, extra_fields=extra_fields,
                         app_id=app_server)
         db.session.add(device)
         db.session.commit()
 
-    def editDevice(self, form):
+    def edit_device(self, form):
         if form.name.data:
             self.name = form.name.data
 
@@ -92,13 +89,13 @@ class Device(database.Base):
             self.port = form.port.data
 
         if form.extraFields.data:
-            fieldsDict = json.loads(form.extraFields.data.replace("\'", "\""))
+            fields_dict = json.loads(form.extraFields.data.replace("\'", "\""))
             if self.extra_fields == "":
                 self.extra_fields = form.extraFields.data
             else:
                 extra_fields = json.loads(self.extra_fields)
-                for field in fieldsDict:
-                    extra_fields[field] = fieldsDict[field]
+                for field in fields_dict:
+                    extra_fields[field] = fields_dict[field]
                 self.extra_fields = json.dumps(extra_fields)
 
     def as_json(self, with_apps=True):
@@ -109,9 +106,9 @@ class Device(database.Base):
         else:
             output['app'] = self.app.name
         if self.extra_fields != "":
-            exFields = json.loads(self.extra_fields)
-            for field in exFields:
-                output[field] = exFields[field]
+            extra_fields = json.loads(self.extra_fields)
+            for field in extra_fields:
+                output[field] = extra_fields[field]
         return output
 
     def __repr__(self):

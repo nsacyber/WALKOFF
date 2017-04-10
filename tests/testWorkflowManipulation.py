@@ -10,8 +10,8 @@ from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
-from server import flaskServer as flask_server
-from server.flaskServer import running_context
+from server import flaskserver as flask_server
+from server.flaskserver import running_context
 
 
 class TestWorkflowManipulation(unittest.TestCase):

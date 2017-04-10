@@ -11,7 +11,7 @@ from tests.util.assertwrappers import assert_raises_with_error
 from tests.config import test_apps_path
 from core.instance import Instance
 
-from server import flaskServer as server
+from server import flaskserver as server
 
 
 class TestStep(unittest.TestCase):

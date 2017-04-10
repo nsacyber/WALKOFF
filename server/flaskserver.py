@@ -19,7 +19,7 @@ from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
 from core.options import Options
 import core.case.subscription as case_subscription
 import core.case.database as case_database
-from . import database, appDevice
+from . import database, appdevice
 from .app import app
 from .database import User
 from .triggers import Triggers
@@ -36,7 +36,7 @@ urls = ["/", "/key", "/workflow", "/configuration", "/interface", "/execution/li
 
 default_urls = urls
 userRoles = database.userRoles
-database.initialize_userRoles(urls)
+database.initialize_user_roles(urls)
 db = database.db
 
 
@@ -54,9 +54,9 @@ def create_user():
 
         database.db.session.commit()
 
-    apps = set(helpers.list_apps()) - set([app.name for app in database.db.session.query(appDevice.App).all()])
+    apps = set(helpers.list_apps()) - set([app.name for app in database.db.session.query(appdevice.App).all()])
     for app_name in apps:
-        database.db.session.add(appDevice.App(app=app_name, devices=[]))
+        database.db.session.add(appdevice.App(app=app_name, devices=[]))
     database.db.session.commit()
 
 
@@ -672,7 +672,7 @@ def role_add_actions(action):
                 else:
                     user_datastore.create_role(name=n, pages=default_urls)
 
-                database.add_to_userRoles(n, default_urls)
+                database.add_to_user_roles(n, default_urls)
 
                 db.session.commit()
                 return json.dumps({"status": "role added " + n})
@@ -696,9 +696,9 @@ def role_actions(action, name):
             form = forms.EditRoleForm(request.form)
             if form.validate():
                 if form.description.data:
-                    role.setDescription(form.description.data)
+                    role.set_description(form.description.data)
                 if form.pages.data:
-                    database.add_to_userRoles(name, form.pages)
+                    database.add_to_user_roles(name, form.pages)
             return json.dumps(role.display())
 
         elif action == "display":
@@ -739,14 +739,14 @@ def user_non_specific_actions(action):
                 u = user_datastore.create_user(email=un, password=pw)
 
                 if form.role.data:
-                    u.setRoles(form.role.data)
+                    u.set_roles(form.role.data)
 
                 has_admin = False
                 for role in u.roles:
                     if role.name == "admin":
                         has_admin = True
                 if not has_admin:
-                    u.setRoles(["admin"])
+                    u.set_roles(["admin"])
 
                 db.session.commit()
                 return json.dumps({"status": "user added " + str(u.id)})
@@ -794,13 +794,12 @@ def user_actions(action, id_or_email):
 
         elif action == "edit":
             form = forms.EditUserForm(request.form)
-            print(form.password.data)
             if form.validate():
                 if form.password:
                     user.password = encrypt_password(form.password.data)
                     database.db.session.commit()
                 if form.role.data:
-                    user.setRoles(form.role.data)
+                    user.set_roles(form.role.data)
 
             return json.dumps(user.display())
 
@@ -839,7 +838,7 @@ def config_devices_config(app, action):
             running_context.Device.add_device(name=form.name.data, username=form.username.data,
                                               password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
                                               app_server=app,
-                                              extraFields=form.extraFields.data)
+                                              extra_fields=form.extraFields.data)
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
     if action == "all":
@@ -854,17 +853,12 @@ def config_devices_config(app, action):
 
 
 # Controls the specific app device configuration
-@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET", "POST"])
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def config_devices_config_id(app, device, action):
-    if action == "display":
-        dev = running_context.Device.query.filter_by(name=device).first()
-        if dev is not None:
-            return json.dumps(dev.as_json())
-        return json.dumps({"status": "could not display device"})
 
-    elif action == "remove":
+    if action == "remove":
         dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
             db.session.delete(dev)
@@ -872,14 +866,22 @@ def config_devices_config_id(app, device, action):
             return json.dumps({"status": "removed device"})
         return json.dumps({"status": "could not remove device"})
 
-    elif action == "edit":
-        form = forms.EditDeviceForm(request.form)
+
+# Controls the specific app device edit configuration
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET"])
+@auth_token_required
+@roles_accepted(*userRoles["/configuration"])
+def config_devices_config_id_edit(app, device, action):
+    if action == "display":
+        dev = running_context.Device.query.filter_by(name=device).first()
+        if dev is not None:
+            return json.dumps(dev.as_json())
+        return json.dumps({"status": "could not display device"})
+    if action == "edit":
+        form = forms.EditDeviceForm(request.args)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
-
-
-            dev.editDevice(form)
-
+            dev.edit_device(form)
             db.session.commit()
             return json.dumps({"status": "device successfully edited"})
         return json.dumps({"status": "device could not be edited"})

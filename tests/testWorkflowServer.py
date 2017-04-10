@@ -5,7 +5,7 @@ import os
 
 from tests.util.assertwrappers import orderless_list_compare, post_with_status_check, get_with_status_check
 from tests.config import test_apps_path, test_workflows_path_with_generated
-from server import flaskServer as flask_server
+from server import flaskserver as flask_server
 from core import helpers
 from shutil import copy2
 

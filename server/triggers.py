@@ -43,7 +43,7 @@ class Triggers(Base):
     @staticmethod
     def execute(data_in):
         triggers = Triggers.query.all()
-        from server.flaskServer import running_context
+        from server.flaskserver import running_context
         for trigger in triggers:
             conditionals = json.loads(trigger.condition)
             if all(Triggers.__execute_trigger(conditional, data_in) for conditional in conditionals):

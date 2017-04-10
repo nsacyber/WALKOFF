@@ -9,7 +9,7 @@ from tests.config import test_workflows_path, test_apps_path
 import core.config.paths
 from tests.util.assertwrappers import orderless_list_compare
 
-from server import flaskServer as server
+from server import flaskserver as server
 
 
 class TestHelperFunctions(unittest.TestCase):

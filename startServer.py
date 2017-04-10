@@ -3,7 +3,7 @@ from os.path import isfile
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
 from core.config import config, paths
-from server import flaskServer
+from server import flaskserver
 
 
 def get_ssl_context():
@@ -20,8 +20,8 @@ def get_ssl_context():
             context.load_cert_chain(paths.certificate_path, paths.private_key_path)
             return context
         else:
-            flaskServer.display_if_file_not_found(paths.certificate_path)
-            flaskServer.display_if_file_not_found(paths.private_key_path)
+            flaskserver.display_if_file_not_found(paths.certificate_path)
+            flaskserver.display_if_file_not_found(paths.private_key_path)
     return None
 
 
@@ -32,10 +32,10 @@ if __name__ == "__main__":
         port = int(config.port)
         host = config.host
         if ssl_context:
-            server = WSGIServer((host, port), application=flaskServer.app, ssl_context=ssl_context)
+            server = WSGIServer((host, port), application=flaskserver.app, ssl_context=ssl_context)
             print('Listening on host https://' + host + ':' + str(port))
         else:
-            server = WSGIServer((host, port), application=flaskServer.app)
+            server = WSGIServer((host, port), application=flaskserver.app)
             print('Listening on host http://'+host+':'+str(port))
         server.serve_forever()
     except ValueError:

@@ -212,26 +212,36 @@ class Controller(object):
 
     # Starts active execution
     def start(self):
-        if self.scheduler.state != STATE_RUNNING:
+        if self.scheduler.state != STATE_RUNNING and self.scheduler.state != STATE_PAUSED:
             self.scheduler.start()
+        else:
+            return "Scheduler already running."
         return self.scheduler.state
 
     # Stops active execution
     def stop(self, wait=True):
         if self.scheduler.state != STATE_STOPPED:
             self.scheduler.shutdown(wait=wait)
+        else:
+            return "Scheduler already stopped."
         return self.scheduler.state
 
     # Pauses active execution
     def pause(self):
         if self.scheduler.state == STATE_RUNNING:
             self.scheduler.pause()
+        elif self.scheduler.state == STATE_PAUSED:
+            return "Scheduler already paused."
+        elif self.scheduler.state == STATE_STOPPED:
+            return "Scheduler is in STOPPED state and cannot be paused."
         return self.scheduler.state
 
     # Resumes active execution
     def resume(self):
         if self.scheduler.state == STATE_PAUSED:
             self.scheduler.resume()
+        else:
+            return "Scheduler is not in PAUSED state and cannot be resumed."
         return self.scheduler.state
 
     # Pauses active execution of specific job

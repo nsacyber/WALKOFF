@@ -1,13 +1,13 @@
-from server import appDevice
+from server import appdevice
 import requests, json
 
 
 # There is an associated Daily Quote test workflow which can be executed
 
-class Main(appDevice.App):
+class Main(appdevice.App):
     def __init__(self, name=None, device=None):
         # The parent app constructor looks for a device configuration and returns that as a dictionary called self.config
-        appDevice.App.__init__(self, name, device)
+        appdevice.App.__init__(self, name, device)
         self.introMessage = {"message": "Quote App"}
         self.baseUrl = "http://quotes.rest/qod.json?category=inspire"
         self.s = requests.Session()

@@ -4,7 +4,7 @@ import os
 from core.config.paths import apps_path
 from core.helpers import list_apps, import_app_main, list_class_functions
 import inspect
-from server.appDevice import App as BaseApp
+from server.appdevice import App as BaseApp
 
 base_app_functions = set(list_class_functions(BaseApp))
 

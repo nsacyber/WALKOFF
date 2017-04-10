@@ -15,7 +15,8 @@ appPage = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), 
 @appPage.url_value_preprocessor
 def static_request_handler(endpoint, values):
     g.app = values.pop('app', None)
-    appPage.static_folder = os.path.abspath(os.path.join(core.config.paths.apps_path, g.app, 'interface', 'static'))
+    appPage.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface' , 'static'))
+
 
 
 @appPage.route('/display', methods=['POST'])
@@ -23,7 +24,7 @@ def static_request_handler(endpoint, values):
 @roles_required('admin')
 def display_app():
     form = forms.RenderArgsForm(request.form)
-    path = os.path.join(g.app, 'interface', 'templates', form.page.data)
+    path = '{0}/interface/templates/{1}'.format(g.app, form.page.data)  # Do not use os.path.join
     args = load_app(g.app, form.key.entries, form.value.entries)
 
     template = render_template(path, **args)
@@ -39,8 +40,7 @@ def stream_app_data(stream_name):
 
 
 def load_module(app_name):
-    app_path = os.path.join(core.config.paths.apps_path, app_name, 'display.py')
-    module_name = construct_module_name_from_path(app_path[:-3])
+    module_name = 'apps.' + app_name + '.display'
     try:
         return sys.modules[module_name]
     except KeyError:

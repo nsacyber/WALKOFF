@@ -1,6 +1,6 @@
 import unittest
 import json
-from server import flaskServer as flask_server
+from server import flaskserver as flask_server
 from tests.util.assertwrappers import orderless_list_compare
 from tests.config import test_apps_path
 import core.config.paths

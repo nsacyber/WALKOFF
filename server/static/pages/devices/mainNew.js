@@ -128,18 +128,12 @@ $("#removeDevice").on("click", function(){
 
 });
 $("#editDevice").on("click", function(){
-    formData = { 'name': $("#name").val(),
-                 'username': $("#username").val(),
-                 'pw': $("#pw").val(),
-                 'ipaddr': $("#ipaddr").val(),
-                 'port': $("#port").val()
-               };
     if(activeApp && activeDevice){
         $.ajax({
             'async': false,
             'type': "GET",
             'global': false,
-            'data': formData,
+            'data': $("#deviceForm").serialize(),
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
             'success': function (data) {
