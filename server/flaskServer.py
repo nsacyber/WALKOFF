@@ -794,7 +794,6 @@ def user_actions(action, id_or_email):
 
         elif action == "edit":
             form = forms.EditUserForm(request.form)
-            print(form.password.data)
             if form.validate():
                 if form.password:
                     user.password = encrypt_password(form.password.data)
@@ -854,17 +853,12 @@ def config_devices_config(app, action):
 
 
 # Controls the specific app device configuration
-@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST, GET"])
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def config_devices_config_id(app, device, action):
-    if action == "display":
-        dev = running_context.Device.query.filter_by(name=device).first()
-        if dev is not None:
-            return json.dumps(dev.as_json())
-        return json.dumps({"status": "could not display device"})
 
-    elif action == "remove":
+    if action == "remove":
         dev = running_context.Device.query.filter_by(name=device).first()
         if dev is not None:
             db.session.delete(dev)
@@ -878,6 +872,11 @@ def config_devices_config_id(app, device, action):
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def config_devices_config_id_edit(app, device, action):
+    if action == "display":
+        dev = running_context.Device.query.filter_by(name=device).first()
+        if dev is not None:
+            return json.dumps(dev.as_json())
+        return json.dumps({"status": "could not display device"})
     if action == "edit":
         form = forms.EditDeviceForm(request.args)
         dev = running_context.Device.query.filter_by(name=device).first()

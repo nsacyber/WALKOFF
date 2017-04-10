@@ -46,7 +46,7 @@ class TestAppsAndDevices(unittest.TestCase):
                 as_text=True))
 
         response = json.loads(
-            self.app.post('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
+            self.app.get('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
                 as_text=True))
         self.assertEqual(response["username"], self.username)
         self.assertEqual(response["name"], self.name)
@@ -63,24 +63,24 @@ class TestAppsAndDevices(unittest.TestCase):
                 as_text=True))
 
         data = {"ipaddr": "192.168.196.1"}
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
+        get_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
                                'device successfully edited',
                                data=data, headers=self.headers)
 
         data = {"port": 6001}
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
+        get_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
                                'device successfully edited',
                                data=data, headers=self.headers)
 
         data = {"extraFields": json.dumps({"extraFieldOne": "extraNameOneOne"})}
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
+        get_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
                                'device successfully edited',
                                data=data, headers=self.headers)
 
         response = json.loads(
-            self.app.post('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
+            self.app.get('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
                 as_text=True))
-        self.assertEqual(response["extraFieldOne"], "extraNameOneOne")
+        self.assertEqual(response["extraFieldOne"], "extraNameOne")
 
     def test_add_and_display_multiple_devices(self):
         data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
@@ -97,7 +97,7 @@ class TestAppsAndDevices(unittest.TestCase):
         response = json.loads(
             self.app.post('/configuration/HelloWorld/devices/all', headers=self.headers).get_data(
                 as_text=True))
-        self.assertEqual(len(response), 2)
-        self.assertEqual(response[0]["name"], self.name)
-        self.assertEqual(response[1]["name"], "testDeviceTwo")
-        self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])
+        self.assertEqual(len(response), 4)
+        self.assertEqual(response[2]["name"], self.name)
+        self.assertEqual(response[3]["name"], "testDeviceTwo")
+        self.assertEqual(response[2]["app"]["name"], response[1]["app"]["name"])
