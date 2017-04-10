@@ -65,9 +65,9 @@ class TestServer(unittest.TestCase):
 
     def test_get_configuration(self):
         config_fields = [x for x in dir(core.config.config) if
-                         not x.startswith('__') and type(getattr(core.config.config, x)) == str]
+                         not x.startswith('__') and type(getattr(core.config.config, x)).__name__ in ['str', 'unicode', 'int']]
         path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__')
-                                                             and type(getattr(core.config.paths, x)) == str)]
+                                                             and type(getattr(core.config.paths, x)).__name__ in ['str', 'unicode'])]
         config_fields = list(set(config_fields) - set(path_fields))
         configs = {key: getattr(core.config.config, key) for key in config_fields}
         paths = {key: getattr(core.config.paths, key) for key in path_fields}
@@ -81,7 +81,7 @@ class TestServer(unittest.TestCase):
             response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
             self.assertEqual(response.status_code, 200)
             response = json.loads(response.get_data(as_text=True))
-            self.assertEqual(response[key], value)
+            self.assertEqual(response[key], str(value))
 
         response = self.app.get('/configuration/junkName', headers=self.headers)
         self.assertEqual(response.status_code, 200)

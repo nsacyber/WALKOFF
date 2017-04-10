@@ -1,30 +1,33 @@
-import os,sys,importlib
+import os
+import sys
+import importlib
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
 from . import forms
 
-widgetPage = Blueprint('widgetPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
+widget_page = Blueprint('widgetPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
-@widgetPage.url_value_preprocessor
-def staticRequestHandler(endpoint, values):
+
+@widget_page.url_value_preprocessor
+def static_request_handler(endpoint, values):
     g.app = values.pop('app', None)
     g.widget = values.pop('widget', None)
-    widgetPage.static_folder = os.path.abspath('apps/' + g.app + '/widgets/' + g.widget + '/static')
+    widget_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'widgets', g.widget, 'static'))
 
 
-@widgetPage.route('/display', methods=['POST'])
+@widget_page.route('/display', methods=['POST'])
 @auth_token_required
 @roles_required('admin')
-def displayApp():
+def display_app():
     form = forms.RenderArgsForm(request.form)
-    path = g.app + '/widgets/' + g.widget + '/templates/' + form.page.data
-    args = loadWidget(g.app, g.widget, form.key.entries, form.value.entries)
+    path = '{0}/widgets/{1}/templates/{2}'.format(g.app, g.widget, form.page.data)
+    args = load_widget(g.app, g.widget, form.key.entries, form.value.entries)
 
     template = render_template(path, **args)
     return template
 
 
-@widgetPage.route('/stream/<string:stream_name>')
+@widget_page.route('/stream/<string:stream_name>')
 @roles_required('admin')
 def stream_app_data(stream_name):
     stream_generator, stream_type = data_stream(g.app, g.widget, stream_name)
@@ -32,8 +35,8 @@ def stream_app_data(stream_name):
         return Response(stream_generator(), mimetype=stream_type)
 
 
-def loadModule(app_name, widget_name):
-    module = "apps." + app_name + ".widgets." + widget_name + ".display"
+def load_module(app_name, widget_name):
+    module = 'apps.{0}.widgets.{1}.display'.format(app_name, widget_name)
     try:
         return sys.modules[module]
     except KeyError:
@@ -44,12 +47,13 @@ def loadModule(app_name, widget_name):
         return None
 
 
-def loadWidget(appName, widgetName, keys, values):
-    module = loadModule(appName, widgetName)
+def load_widget(app_name, widget_name, keys, values):
+    module = load_module(app_name, widget_name)
     args = dict(zip(keys, values))
-    return getattr(module, "load")(args) if module else {}
+    return getattr(module, 'load')(args) if module else {}
+
 
 def data_stream(app_name, widget_name, stream_name):
-    module = loadModule(app_name, widget_name)
+    module = load_module(app_name, widget_name)
     if module:
         return getattr(module, 'stream_generator')(stream_name)
