@@ -854,7 +854,7 @@ def config_devices_config(app, action):
 
 
 # Controls the specific app device configuration
-@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET", "POST"])
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["POST"])
 @auth_token_required
 @roles_accepted(*userRoles["/configuration"])
 def config_devices_config_id(app, device, action):
@@ -872,8 +872,14 @@ def config_devices_config_id(app, device, action):
             return json.dumps({"status": "removed device"})
         return json.dumps({"status": "could not remove device"})
 
-    elif action == "edit":
-        form = forms.EditDeviceForm(request.form)
+
+# Controls the specific app device edit configuration
+@app.route('/configuration/<string:app>/devices/<string:device>/<string:action>', methods=["GET"])
+@auth_token_required
+@roles_accepted(*userRoles["/configuration"])
+def config_devices_config_id_edit(app, device, action):
+    if action == "edit":
+        form = forms.EditDeviceForm(request.args)
         dev = running_context.Device.query.filter_by(name=device).first()
         if form.validate() and dev is not None:
 
