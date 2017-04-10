@@ -153,21 +153,6 @@ $.ajax({
     }
 });
 
-
-$.ajax({
-    url: 'configuration/apps_path',
-    data: {},
-    headers: {"Authentication-Token": authKey},
-    type: "GET",
-    success: function (e) {
-        data = JSON.parse(e);
-        $("#apps_path").val(data["apps_path"]);
-    },
-    error: function (e) {
-        $("#apps_path").val("Error");
-    }
-});
-
 $.ajax({
     url: 'configuration/templates_path',
     data: {},
