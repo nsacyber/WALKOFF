@@ -1,6 +1,7 @@
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, \
     IntegerField, FormField, SelectField, SubmitField
 from flask_security.forms import Required, EqualTo
+from wtforms.widgets import TextArea
 
 
 class NewUserForm(Form):
@@ -108,7 +109,8 @@ class LoginForm(Form):
 
 class AddNewTriggerForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = FieldList(StringField('Conditionals'), [validators.data_required()])
+    # conditional = FieldList(StringField('Conditionals'), [validators.data_required()])
+    conditional = StringField('Conditional', widget=TextArea())
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
 
