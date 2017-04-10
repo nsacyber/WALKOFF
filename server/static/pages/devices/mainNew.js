@@ -40,6 +40,26 @@ function displayDeviceForm(data){
     $("#deviceForm input[name='pw']").val("");
 }
 
+function getDeviceList() {
+    $("#deviceList").empty();
+    $.ajax({
+        'async': false,
+        'type': "POST",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/configuration/" + activeApp + "/devices/all",
+        'success': function (data) {
+            console.log(data);
+            var result = JSON.parse(data);
+            displayDevices(result);
+        },
+        'error': function (data){
+            console.log('applist failed');
+            console.log(data);
+        }
+    });
+}
+
 for(var app in apps){
     $("#appList").append($('<option>', {app : apps[app]}).text(apps[app]));
 }
@@ -73,7 +93,7 @@ $("#deviceList").on("change", function(data){
     activeDevice = data.currentTarget[data.currentTarget.selectedIndex].innerHTML;
     $.ajax({
         'async': false,
-        'type': "POST",
+        'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
         'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/display",
@@ -95,8 +115,9 @@ $("#addNewDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/add",
             'success': function (data) {
-                console.log(data);
                 var result = JSON.parse(data);
+                $("#deviceForm").trigger("reset");
+                getDeviceList();
                 alert(result['status'])
             },
             'error': function(data){
@@ -116,8 +137,8 @@ $("#removeDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
             'success': function (data) {
-                console.log(data);
                 var result = JSON.parse(data);
+                getDeviceList();
                 alert(result['status'])
             },
             'error': function(e) {
@@ -137,15 +158,14 @@ $("#editDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
             'success': function (data) {
-                console.log(data);
                 var result = JSON.parse(data);
-                alert(result['status'])
+                alert(result['status']);
+                $("#deviceForm").trigger("reset");
             },
             'error': function(data){
                 console.log('edit device failed');
                 console.log(data);
             }
-
         });
     }
 
