@@ -107,6 +107,9 @@
         .list-group-item:first-child{
           background-color: #aecbdc;
         }
+        .no-close .ui-dialog-titlebar-close {
+          display: none;
+        }
     </style>
 
     <div id="header">
@@ -118,11 +121,9 @@
 
     <!-- <div class=bs-example data-example-id=simple-button-toolbar> -->
         <div class=btn-toolbar role=toolbar>
-            <!--
             <div class=btn-group role=group>
                 <button id="new-button" type=button class="btn btn-default"><i class="fa fa-file-o"></i></button>
             </div>
-            -->
             <div class=btn-group role=group>
                 <button id="save-button" type=button class="btn btn-default"><i class="fa fa-save"></i></button>
             </div>
@@ -169,6 +170,63 @@
         </div>
         <div id="parameters">
         </div>
+    </div>
+
+    <div id = "dialog-new-workflow" class="hidden" title = "Create New Workflow">
+        <p class="validateTips">All form fields are required.</p>
+        <form>
+            <fieldset>
+                <label for="playbookName">Playbook Name</label>
+                <input type="text"
+                       name="playbookName"
+                       id="playbookName1"
+                       value=""
+                       class="text
+                              ui-widget-content
+                              ui-corner-all">
+
+                <label for="workflowName">Workflow Name</label>
+                <input type="text"
+                       name="workflowName"
+                       id="workflowName1"
+                       value=""
+                       class="text
+                              ui-widget-content
+                              ui-corner-all">
+            </fieldset>
+        </form>
+    </div>
+
+    <div id = "dialog-rename-playbook" class="hidden" title = "Rename Playbook">
+        <p class="validateTips">All form fields are required.</p>
+        <form>
+            <fieldset>
+                <label for="playbookName">New Playbook Name</label>
+                <input type="text"
+                       name="playbookName"
+                       id="playbookName2"
+                       value=""
+                       class="text
+                              ui-widget-content
+                              ui-corner-all">
+            </fieldset>
+        </form>
+    </div>
+
+    <div id = "dialog-rename-workflow" class="hidden" title = "Rename Workflow">
+        <p class="validateTips">All form fields are required.</p>
+        <form>
+            <fieldset>
+                <label for="workflowName">New Workflow Name</label>
+                <input type="text"
+                       name="workflowName"
+                       id="workflowName2"
+                       value=""
+                       class="text
+                              ui-widget-content
+                              ui-corner-all">
+            </fieldset>
+        </form>
     </div>
 
     <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
