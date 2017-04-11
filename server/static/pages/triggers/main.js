@@ -8,7 +8,7 @@
             headers: {"Authentication-Token": authKey},
             type: "GET",
             success: function (e) {
-               console.log(JSON.parse(e));
+//               console.log(JSON.parse(e));
                parameters = JSON.parse(e);
             },
             error: function (e) {
