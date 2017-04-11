@@ -31,7 +31,11 @@ class Triggers(Base):
                 self.workflow = form.workflow.data
 
             if form.conditional.data:
-                self.condition = json.dumps(form.conditional.data)
+                try:
+                    json.loads(form.conditional.data)
+                    self.condition = form.conditional.data
+                except ValueError:
+                    return False
         return True
 
     def as_json(self):
@@ -57,7 +61,6 @@ class Triggers(Base):
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        conditional = json.loads(conditional)
         flag_args = {arg['key']: Argument(key=arg['key'],
                                           value=arg['value'],
                                           format=arg.get('format', 'str'))

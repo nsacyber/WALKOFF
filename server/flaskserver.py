@@ -608,14 +608,18 @@ def trigger_functions(action, name):
         if form.validate():
             query = Triggers.query.filter_by(name=name).first()
             if query is None:
-                database.db.session.add(
-                    Triggers(name=name,
-                             condition=json.dumps(form.conditional.data),
-                             playbook=form.playbook.data,
-                             workflow=form.workflow.data))
+                try:
+                    json.loads(form.conditional.data)
+                    database.db.session.add(
+                        Triggers(name=name,
+                                 condition=form.conditional.data,
+                                 playbook=form.playbook.data,
+                                 workflow=form.workflow.data))
 
-                database.db.session.commit()
-                return json.dumps({"status": "success"})
+                    database.db.session.commit()
+                    return json.dumps({"status": "success"})
+                except ValueError:
+                    return json.dumps({"status": "error: invalid json in conditional field"})
             else:
                 return json.dumps({"status": "warning: trigger with that name already exists"})
         return json.dumps({"status": "error: form not valid"})
@@ -634,7 +638,8 @@ def trigger_functions(action, name):
             if result:
                 db.session.commit()
                 return json.dumps({"status": "success"})
-
+            else:
+                return json.dumps({"status": "error: invalid json in conditional field"})
         return json.dumps({"status": "trigger could not be edited"})
 
     elif action == "remove":
