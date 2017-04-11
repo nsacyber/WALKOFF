@@ -64,7 +64,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         # Create Empty Workflow
         self.c.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
         self.assertEqual(len(self.c.workflows), 3)
-        workflow_name = construct_workflow_name_key('emptyWorkflow', 'emptyWorkflow')
         self.assertEqual(self.c.get_workflow('emptyWorkflow', 'emptyWorkflow').steps, {})
 
         xml = self.c.get_workflow('emptyWorkflow', 'emptyWorkflow').to_xml()

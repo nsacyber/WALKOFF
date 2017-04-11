@@ -1,20 +1,11 @@
 import json
-import unittest
 
-from tests.util.assertwrappers import post_with_status_check, get_with_status_check
+from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 
 
-class TestAppsAndDevices(unittest.TestCase):
+class TestAppsAndDevices(ServerTestCase):
     def setUp(self):
-        self.app = server.app.test_client(self)
-        self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        response = self.app.post('/key', data=dict(email='admin', password='admin'), follow_redirects=True).get_data(
-            as_text=True)
-
-        self.key = json.loads(response)["auth_token"]
-        self.headers = {"Authentication-Token": self.key}
         self.name = "testDevice"
 
         self.username = "testUsername"
@@ -33,10 +24,10 @@ class TestAppsAndDevices(unittest.TestCase):
     def test_add_device(self):
         data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/add', 'device successfully added',
-                               data=data, headers=self.headers)
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/add', 'device could not be added',
-                               data=data, headers=self.headers)
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device could not be added',
+                                    data=data, headers=self.headers)
 
     def test_display_device(self):
         data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
@@ -63,19 +54,16 @@ class TestAppsAndDevices(unittest.TestCase):
                 as_text=True))
 
         data = {"ipaddr": "192.168.196.1"}
-        get_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
-                               'device successfully edited',
-                               data=data, headers=self.headers)
+        self.get_with_status_check('/configuration/HelloWorld/devices/testDevice/edit', 'device successfully edited',
+                                   data=data, headers=self.headers)
 
         data = {"port": 6001}
-        get_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
-                               'device successfully edited',
-                               data=data, headers=self.headers)
+        self.get_with_status_check('/configuration/HelloWorld/devices/testDevice/edit', 'device successfully edited',
+                                   data=data, headers=self.headers)
 
         data = {"extraFields": json.dumps({"extraFieldOne": "extraNameOneOne"})}
-        get_with_status_check(self, self.app, '/configuration/HelloWorld/devices/testDevice/edit',
-                               'device successfully edited',
-                               data=data, headers=self.headers)
+        self.get_with_status_check('/configuration/HelloWorld/devices/testDevice/edit', 'device successfully edited',
+                                   data=data, headers=self.headers)
 
         response = json.loads(
             self.app.get('/configuration/HelloWorld/devices/testDevice/display', headers=self.headers).get_data(
@@ -85,14 +73,14 @@ class TestAppsAndDevices(unittest.TestCase):
     def test_add_and_display_multiple_devices(self):
         data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/add', 'device successfully added',
-                               data=data, headers=self.headers)
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
 
         data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        post_with_status_check(self, self.app, '/configuration/HelloWorld/devices/add', 'device successfully added',
-                               data=data, headers=self.headers)
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
 
         response = json.loads(
             self.app.post('/configuration/HelloWorld/devices/all', headers=self.headers).get_data(

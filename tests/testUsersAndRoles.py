@@ -1,21 +1,12 @@
 import json
-import unittest
 
 from flask_security.utils import verify_password
 from server import flaskserver as server
-from tests.util.assertwrappers import post_with_status_check
+from tests.util.servertestcase import ServerTestCase
 
 
-class TestUsersAndRoles(unittest.TestCase):
+class TestUsersAndRoles(ServerTestCase):
     def setUp(self):
-        self.app = server.app.test_client(self)
-        self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        response = self.app.post('/key', data=dict(email='admin', password='admin'), follow_redirects=True).get_data(
-            as_text=True)
-
-        self.key = json.loads(response)["auth_token"]
-        self.headers = {"Authentication-Token": self.key}
         self.name = "testRoleOne"
         self.description = "testRoleOne description"
 
@@ -37,9 +28,8 @@ class TestUsersAndRoles(unittest.TestCase):
 
     def test_add_role(self):
         data = {"name": self.name}
-        post_with_status_check(self, self.app, '/roles/add', 'role added {0}'.format(self.name),
-                               data=data, headers=self.headers)
-        post_with_status_check(self, self.app, '/roles/add', 'role exists', data=data, headers=self.headers)
+        self.post_with_status_check('/roles/add', 'role added {0}'.format(self.name), data=data, headers=self.headers)
+        self.post_with_status_check('/roles/add', 'role exists', data=data, headers=self.headers)
 
     def test_display_all_roles(self):
         data = {"name": self.name}
@@ -63,7 +53,7 @@ class TestUsersAndRoles(unittest.TestCase):
         response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
         self.assertTrue("user added" in response["status"])
 
-        post_with_status_check(self, self.app, '/users/add', 'user exists', data=data, headers=self.headers)
+        self.post_with_status_check('/users/add', 'user exists', data=data, headers=self.headers)
 
     def test_edit_user_password(self):
         data = {"username": self.email, "password": self.password}
@@ -84,16 +74,14 @@ class TestUsersAndRoles(unittest.TestCase):
         data = {"username": self.email, "password": self.password}
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
-        post_with_status_check(self, self.app, '/users/{0}/remove'.format(self.email), 'user removed',
-                               headers=self.headers)
+        self.post_with_status_check('/users/{0}/remove'.format(self.email), 'user removed', headers=self.headers)
 
     def test_add_role_to_user(self):
         data = {"username": self.email, "password": self.password}
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"name": self.name}
-        post_with_status_check(self, self.app, '/roles/add', "role added {0}".format(self.name), data=data,
-                               headers=self.headers)
+        self.post_with_status_check('/roles/add', "role added {0}".format(self.name), data=data, headers=self.headers)
 
         data = {"role-0": "admin", "role-1": self.name}
         response = json.loads(self.app.post('/users/' + self.email + '/edit',

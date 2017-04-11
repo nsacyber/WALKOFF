@@ -1,27 +1,16 @@
-import unittest
 import json
 import copy
 import os
 from server import flaskserver as server
-from tests.util.assertwrappers import orderless_list_compare, post_with_status_check
-from tests.config import test_apps_path, test_workflows_path_with_generated, test_workflows_path
+from tests.util.assertwrappers import orderless_list_compare
+from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
+from tests.util.servertestcase import ServerTestCase
 
 
-class TestServer(unittest.TestCase):
+class TestServer(ServerTestCase):
     def setUp(self):
-        server.running_context.controller.workflows = {}
-        self.app = server.app.test_client(self)
-        self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-
-        response = self.app.post('/key', data=dict(email='admin', password='admin'),
-                                 follow_redirects=True).get_data(as_text=True)
-        core.config.paths.apps_path = test_apps_path
-        core.config.paths.workflows_path = test_workflows_path_with_generated
-        self.key = json.loads(response)["auth_token"]
-        self.headers = {"Authentication-Token": self.key}
         config_fields = [x for x in dir(core.config.config) if
                          not x.startswith('__') and type(getattr(core.config.config, x)).__name__
                          in ['str', 'unicode']]
@@ -31,17 +20,13 @@ class TestServer(unittest.TestCase):
         self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
         self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
 
-        server.running_context.controller.load_all_workflows_from_directory()
+    def preTearDown(self):
+        for key, value in self.original_paths.items():
+            setattr(core.config.paths, key, value)
 
     def tearDown(self):
         for key, value in self.original_configs.items():
             setattr(core.config.config, key, value)
-        for key, value in self.original_paths.items():
-            setattr(core.config.paths, key, value)
-        workflows = [os.path.splitext(workflow)[0]
-                     for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]
-        if 'test_playbook' in workflows:
-            os.remove(os.path.join(test_workflows_path_with_generated, 'test_playbook.workflow'))
 
     def test_login(self):
         response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
@@ -65,9 +50,11 @@ class TestServer(unittest.TestCase):
 
     def test_get_configuration(self):
         config_fields = [x for x in dir(core.config.config) if
-                         not x.startswith('__') and type(getattr(core.config.config, x)).__name__ in ['str', 'unicode', 'int']]
-        path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__')
-                                                             and type(getattr(core.config.paths, x)).__name__ in ['str', 'unicode'])]
+                         not x.startswith('__')
+                         and type(getattr(core.config.config, x)).__name__ in ['str', 'unicode', 'int']]
+        path_fields = [x for x in dir(core.config.paths) if
+                       (not x.startswith('__')
+                        and type(getattr(core.config.paths, x)).__name__ in ['str', 'unicode'])]
         config_fields = list(set(config_fields) - set(path_fields))
         configs = {key: getattr(core.config.config, key) for key in config_fields}
         paths = {key: getattr(core.config.paths, key) for key in path_fields}
@@ -109,7 +96,7 @@ class TestServer(unittest.TestCase):
                 "host": 'host_reset',
                 "port": 'port_reset'}
 
-        post_with_status_check(self, self.app, '/configuration/set', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/configuration/set', 'success', headers=self.headers, data=data)
 
         config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and
                                                                 type(getattr(core.config.config, x)).__name__
@@ -140,7 +127,7 @@ class TestServer(unittest.TestCase):
         modified_function_info = copy.deepcopy(core.config.config.function_info)
         modified_function_info['testApp'] = {}
         data = {"apps_path": core.config.paths.apps_path}
-        post_with_status_check(self, self.app, '/configuration/set', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/configuration/set', 'success', headers=self.headers, data=data)
         self.assertDictEqual(core.config.config.function_info, original_function_info)
 
     def test_set_workflows_path(self):
@@ -151,7 +138,7 @@ class TestServer(unittest.TestCase):
         original_workflow_keys = list(server.running_context.controller.workflows.keys())
         data = {"apps_path": core.config.paths.apps_path,
                 "workflows_path": test_workflows_path}
-        post_with_status_check(self, self.app, '/configuration/set', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/configuration/set', 'success', headers=self.headers, data=data)
         self.assertNotEqual(len(server.running_context.controller.workflows.keys()), len(original_workflow_keys))
         new_files = [os.path.splitext(workflow)[0]
                      for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]

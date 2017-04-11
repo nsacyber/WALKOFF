@@ -1,4 +1,3 @@
-import unittest
 import json
 from tests.util.case import construct_case1, construct_case2, construct_case_json
 import core.case.database as case_database
@@ -6,22 +5,13 @@ from core.case.subscription import set_subscriptions, clear_subscriptions, CaseS
     GlobalSubscriptions, subscriptions_as_json, Subscription
 from core.executionelement import ExecutionElement
 from core.case.callbacks import _EventEntry
-from server import flaskserver as flask_server
 from os.path import join
-from tests.util.assertwrappers import post_with_status_check, get_with_status_check
+from tests.util.servertestcase import ServerTestCase
 
 
-class TestCaseServer(unittest.TestCase):
+class TestCaseServer(ServerTestCase):
     def setUp(self):
         case_database.initialize()
-        self.app = flask_server.app.test_client(self)
-        self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        response = self.app.post('/key', data=dict(email='admin', password='admin'),
-                                 follow_redirects=True).get_data(as_text=True)
-
-        self.key = json.loads(response)["auth_token"]
-        self.headers = {"Authentication-Token": self.key}
 
     def tearDown(self):
         case_database.case_db.tearDown()
@@ -57,9 +47,8 @@ class TestCaseServer(unittest.TestCase):
         self.assertSetEqual(set(expected_cases), set(received_cases), 'Received incorrect cases')
 
     def test_display_case_not_found(self):
-        response = get_with_status_check(self, self.app, '/cases/hiThere',
-                                         'Case with given name does not exist',
-                                         headers=self.headers)
+        response = self.get_with_status_check('/cases/hiThere', 'Case with given name does not exist',
+                                              headers=self.headers)
         with self.assertRaises(KeyError):
             _ = response['cases']
 
@@ -271,7 +260,7 @@ class TestCaseServer(unittest.TestCase):
         self.assertDictEqual(response, original_cases_json)
 
     def test_crud_case_invalid_action(self):
-        post_with_status_check(self, self.app, '/cases/case3/junk', 'Invalid operation junk', headers=self.headers)
+        self.post_with_status_check('/cases/case3/junk', 'Invalid operation junk', headers=self.headers)
 
     def test_display_possible_subscriptions(self):
         with open(join('.', 'data', 'events.json')) as f:
@@ -332,15 +321,13 @@ class TestCaseServer(unittest.TestCase):
                        "filter-0": 'g',
                        "filter-1": 'h',
                        "filter-2": 'i'}
-        post_with_status_check(self, self.app, '/cases/subscriptions/case1/global/edit',
-                               'Error: Case name case1 was not found',
-                               data=global_subs, headers=self.headers)
+        self.post_with_status_check('/cases/subscriptions/case1/global/edit', 'Error: Case name case1 was not found',
+                                    data=global_subs, headers=self.headers)
 
         case2 = CaseSubscriptions()
         set_subscriptions({'case2': case2})
-        post_with_status_check(self, self.app, '/cases/subscriptions/case1/global/edit',
-                               'Error: Case name case1 was not found',
-                               data=global_subs, headers=self.headers)
+        self.post_with_status_check('/cases/subscriptions/case1/global/edit', 'Error: Case name case1 was not found',
+                                    data=global_subs, headers=self.headers)
 
     def test_edit_subscription(self):
         sub1 = Subscription()
@@ -424,12 +411,12 @@ class TestCaseServer(unittest.TestCase):
                  "ancestry-2": "junk",
                  "events-0": "a",
                  "events-1": "b"}
-        post_with_status_check(self, self.app, '/cases/subscriptions/case2/subscription/edit',
-                               'Error occurred while editing subscription', data=edit1, headers=self.headers)
+        self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+                                    'Error occurred while editing subscription', data=edit1, headers=self.headers)
 
     def test_edit_subscription_invalid_case(self):
-        post_with_status_check(self, self.app, '/cases/subscriptions/case1/subscription/edit',
-                               'Error occurred while editing subscription', headers=self.headers)
+        self.post_with_status_check('/cases/subscriptions/case1/subscription/edit',
+                                    'Error occurred while editing subscription', headers=self.headers)
 
     def test_add_subscription(self):
         sub1 = Subscription()
@@ -745,5 +732,5 @@ class TestCaseServer(unittest.TestCase):
         invalid_id = max([event.id for event in events]) + 1
 
         data = {"note": 'Note2'}
-        post_with_status_check(self, self.app, '/cases/event/{0}/edit'.format(invalid_id), 'invalid event',
-                               data=data, headers=self.headers)
+        self.post_with_status_check('/cases/event/{0}/edit'.format(invalid_id), 'invalid event',
+                                    data=data, headers=self.headers)
