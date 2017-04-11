@@ -109,7 +109,7 @@ class LoginForm(Form):
 
 class AddNewTriggerForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = StringField('Conditionals', [validators.data_required()], widget=TextAreaField())
+    conditional = TextAreaField('Conditionals', [validators.data_required()])
 
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
@@ -117,7 +117,7 @@ class AddNewTriggerForm(Form):
 
 class EditTriggerForm(Form):
     name = StringField('New Name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = StringField('Conditionals', [validators.Optional()], widget=TextAreaField())
+    conditional = TextAreaField('Conditionals', [validators.Optional()])
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.required()])
 
