@@ -1,31 +1,31 @@
-import os
 import json
+import os
 import sys
+import xml.dom.minidom as minidom
+from xml.etree import ElementTree
 
 from flask import render_template, request
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password
-import core.config.paths
-import core.config.config
-from core.context import running_context
-from core.helpers import locate_workflows_in_directory
-import core.flags
-import core.filters
-from core import helpers
-from . import forms, interface
+from gevent import monkey
 
+import core.case.database as case_database
+import core.case.subscription as case_subscription
+import core.config.config
+import core.config.paths
+import core.filters
+import core.flags
+from core import helpers
 from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
+from core.helpers import locate_workflows_in_directory
 from core.options import Options
-import core.case.subscription as case_subscription
-import core.case.database as case_database
+from server.context import running_context
 from . import database, appdevice
+from . import forms, interface
 from .app import app
 from .database import User
 from .triggers import Triggers
-from xml.etree import ElementTree
-from gevent import monkey
-import xml.dom.minidom as minidom
 
 monkey.patch_all()
 

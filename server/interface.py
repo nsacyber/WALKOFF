@@ -1,6 +1,5 @@
 from server import forms
-import json
-from core.context import running_context
+from server.context import running_context
 
 
 def devices():
@@ -13,10 +12,10 @@ def settings():
     user_form = forms.UserForm()
     choices = [(obj.email, str(obj.email)) for obj in running_context.User.query.all()]
     user_form.username.choices = choices
-    addUserForm = forms.AddUserForm()
-    roles =[(x.name,str(x.name)) for x in running_context.Role.query.all()]
-    addUserForm.roles.choices = roles
-    return {"systemForm": forms.SettingsForm(), "userForm": user_form, "addUserForm": addUserForm }
+    add_user_form = forms.AddUserForm()
+    roles = [(x.name,str(x.name)) for x in running_context.Role.query.all()]
+    add_user_form.roles.choices = roles
+    return {"systemForm": forms.SettingsForm(), "userForm": user_form, "addUserForm": add_user_form }
 
 
 def playbook():
