@@ -7,7 +7,7 @@ def main(args, value):
     else:
         try:
             var = int(value)
-        except Exception:
+        except ValueError:
             var = len(value)
 
     threshold = args["threshold"]
