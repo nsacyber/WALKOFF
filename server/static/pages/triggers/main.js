@@ -27,7 +27,7 @@
             success:function(data){
                 result = JSON.parse(data);
                 triggers = result['triggers'];
-                $("#trigger .trigerOption").remove();
+                $("#trigger .triggerOption").remove();
                 for(i=0;i<triggers.length;i++){
                     trigger=triggers['' +i +""];
                     $("#trigger").append("<option value="+ i  + " class='triggerOption'>"+ trigger['name'] + "</option>");
@@ -38,7 +38,8 @@
                 console.log("ERROR");
             }
         });
-    }
+    };
+    getTriggerList();
 
 
 //    $("#parameterEdit").hide();
@@ -51,14 +52,7 @@
         trigger = triggerData['triggers'][''+ val +''];
         $(".workflow").empty().append('<div>' + trigger['workflow'] + '</div>');
         $(".playbook").empty().append('<div>' + trigger['playbook'] + '</div>');
-//        conditionals = JSON.parse(trigger['conditions']);
-       /* if(conditionals.length === 0 ){
-            $("#conditional").empty().append('<p>No conditionsals</p>');
-        }else{
-            for(i=0;i<conditionals.length;i++){
-                $("#conditional").empty().append('<p>' +conditionals[i] +'</p>');
-            };
-        };*/
+
     });
     function createSchema(parameters) {
         var appNames = [];
@@ -249,8 +243,8 @@
         type: "POST",
         success: function (data) {
             console.log('trigger add success');
-            console.log(data);
             getTriggerList();
+            $("#deviceForm").trigger("reset");
 
         },
         error: function (e) {
@@ -278,7 +272,6 @@
     });
     //Edit item
     $("#editformSubmit").on('click',function(){
-    alert('editing')
         if($("#trigger option:selected").attr('value') == 'none'){
             alert("Select a trigger");
         }else{
@@ -291,6 +284,7 @@
             success:function(e){
                 //refresh the list of triggers
                 getTriggerList();
+                $("#editDeviceForm").trigger("reset");
             },
             error: function(e){
                 console.log("ERROR");
