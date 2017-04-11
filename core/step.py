@@ -59,7 +59,8 @@ class Step(ExecutionElement):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
-        self.device = step_xml.find('device').text
+        device_field = step_xml.find('device')
+        self.device = device_field.text if device_field is not None else ''
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
                       for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -140,8 +141,9 @@ class Step(ExecutionElement):
         action = cElementTree.SubElement(step, 'action')
         action.text = self.action
 
-        device = cElementTree.SubElement(step, 'device')
-        device.text = self.device
+        if self.device:
+            device = cElementTree.SubElement(step, 'device')
+            device.text = self.device
 
         inputs = cElementTree.SubElement(step, 'input')
         for i in self.input:
@@ -188,18 +190,21 @@ class Step(ExecutionElement):
 
     @staticmethod
     def from_json(json_in, parent_name='', ancestry=None):
+        device = json_in['device'] if 'device' in json_in else ''
         step = Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
-                    device=json_in['device'],
+                    device=device,
                     inputs={arg_name: arguments.Argument.from_json(arg_element)
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,
                     ancestry=ancestry)
-        step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
-                             for next_step in json_in['next']]
-        step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
-                       for next_step in json_in['errors']]
+        if json_in['next']:
+            step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+                                 for next_step in json_in['next'] if next_step]
+        if json_in['errors']:
+            step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
+                           for next_step in json_in['errors'] if next_step]
         return step
 
     def get_children(self, ancestry):

@@ -14,10 +14,9 @@ from core.helpers import construct_workflow_name_key, extract_workflow_name
 class Workflow(ExecutionElement):
     def __init__(self, name='', xml=None, children=None, parent_name='', playbook_name=''):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
-        self.xml = xml
         self.playbook_name = playbook_name
         self.steps = {}
-        self._from_xml(self.xml)
+        self._from_xml(xml)
         self.children = children if (children is not None) else {}
         self.is_completed = False
 
@@ -50,8 +49,6 @@ class Workflow(ExecutionElement):
         ancestry = list(self.ancestry)
         self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
                                 next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name)
-        xml = self.steps[name].to_xml()
-        self.xml.find('.//steps').append(xml)
 
     def remove_step(self, name=''):
         if name in self.steps:
@@ -62,13 +59,15 @@ class Workflow(ExecutionElement):
         return False
 
     def to_xml(self, *args):
-        self.xml.set('name', extract_workflow_name(self.name))
-        root = self.xml.find('.//steps')
-        if list(iter(root)):
-            root.clear()
-        for step in self.steps:
-            root.append(self.steps[step].to_xml())
-        return self.xml
+        workflow_element = cElementTree.Element('workflow')
+        workflow_element.set('name', extract_workflow_name(self.name))
+
+        workflow_element.append(self.options.to_xml())
+
+        steps = cElementTree.SubElement(workflow_element, 'steps')
+        for step_name, step in self.steps.items():
+            steps.append(step.to_xml())
+        return workflow_element
 
     def __go_to_next_step(self, current='', next_up=''):
         if next_up not in self.steps:

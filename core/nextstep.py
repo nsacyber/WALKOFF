@@ -70,9 +70,11 @@ class NextStep(ExecutionElement):
 
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
-        next_step = NextStep(name=json['name'], parent_name=parent_name, ancestry=ancestry)
-        next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
-                           for flag in json['flags']]
+        name = json['name'] if 'name' in json else ''
+        next_step = NextStep(name=name, parent_name=parent_name, ancestry=ancestry)
+        if json['flags']:
+            next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
+                               for flag in json['flags']]
         return next_step
 
     def get_children(self, ancestry):
