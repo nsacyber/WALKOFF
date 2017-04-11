@@ -1,5 +1,6 @@
 (function () {
     triggerData = [];
+    params = {};
     //Get List of flags
      $.ajax({
             url: "/flags",
@@ -7,8 +8,8 @@
             headers: {"Authentication-Token": authKey},
             type: "GET",
             success: function (e) {
-//               console.log(JSON.parse(e));
-                    var c = 1;
+               console.log(JSON.parse(e));
+               parameters = JSON.parse(e);
             },
             error: function (e) {
                 console.log("failed")
@@ -17,19 +18,19 @@
         });
 
 
-    //select default elment in the list
-    $.ajax({
+    //Get and display the list of triggers
+    function getTriggerList(){
+        $.ajax({
             url:'/execution/listener/triggers',
             headers:{"Authentication-Token":authKey},
             type:"GET",
             success:function(data){
                 result = JSON.parse(data);
                 triggers = result['triggers'];
-                $t = triggers;
-                console.log(triggers);
+                $("#trigger .trigerOption").remove();
                 for(i=0;i<triggers.length;i++){
                     trigger=triggers['' +i +""];
-                    $("#trigger").append("<option value="+ i  + ">"+ trigger['name'] + "</option>");
+                    $("#trigger").append("<option value="+ i  + " class='triggerOption'>"+ trigger['name'] + "</option>");
                 }
                 triggerData = result;
             },
@@ -37,6 +38,8 @@
                 console.log("ERROR");
             }
         });
+    }
+
 
 //    $("#parameterEdit").hide();
     var $slidee = $("#smart").children('ul').eq(0);
@@ -108,21 +111,6 @@
                     type: "string",
                     title: "Name",
                 },
-                app: {
-                    type: "string",
-                    title: "App",
-                    enum: appNames
-                },
-                action: {
-                    type: "string",
-                    title: "Action",
-                    enum: appActions[parameters.app]
-                },
-                device: {
-                    type: "string",
-                    title: "Device",
-                    enum: [parameters.device]
-                },
                 input: deepcopy(argProperties),
                 next: {
                     options: {
@@ -138,63 +126,43 @@
         };
 
 
-        var numSteps = parameters.next.length;
-        if (numSteps > 0) {
-            schema.properties.next = {
+
+        schema.properties.next = {
+            flags: {
                 type: "array",
-                title: "Next Nodes",
-                options: {
-                    disable_array_add: true,
-                    disable_array_delete: true,
-                    disable_array_reorder: true
-                },
+                headerTemplate: "Flags",
                 items: {
                     type: "object",
-                    headerTemplate: "Next Node {{ i1 }}: {{ self.name }}",
+                    title: "Next Step Flag",
+                    headerTemplate: "Flag {{ i1 }}",
                     properties: {
-                        name: {
+                        action: {
                             type: "string",
-                            options: {
-                                hidden: true
-                            }
+                            title: "Select Flag",
+                            enum: flagsList
                         },
-                        flags: {
+                        args: deepcopy(argProperties),
+                        filters: {
                             type: "array",
-                            headerTemplate: "Flags",
+                            title: "Filters",
                             items: {
                                 type: "object",
-                                title: "Next Step Flag",
-                                headerTemplate: "Flag {{ i1 }}",
+                                title: "Filter",
                                 properties: {
                                     action: {
                                         type: "string",
-                                        title: "Select Flag",
-                                        enum: flagsList
+                                        title: "Select Filter",
+                                        enum: filtersList
                                     },
                                     args: deepcopy(argProperties),
-                                    filters: {
-                                        type: "array",
-                                        title: "Filters",
-                                        items: {
-                                            type: "object",
-                                            title: "Filter",
-                                            properties: {
-                                                action: {
-                                                    type: "string",
-                                                    title: "Select Filter",
-                                                    enum: filtersList
-                                                },
-                                                args: deepcopy(argProperties),
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }
                     }
                 }
-            };
-        }
+            }
+        };
+
 
         return schema;
     }
@@ -268,11 +236,12 @@
     }
 
     // Initialize the editor with a JSON schema
-
+//    console.log(parameters)
+    parameters = transformParametersToSchema(parameters);
+   console.log(parameters);
 
     $('#addTrigger').on('click', function () {
         name = $('#deviceForm #name').val();
-        console.log(name)
         $.ajax({
         url: 'execution/listener/triggers/' + name + '/add',
         data: $("#deviceForm").serialize(),
@@ -281,6 +250,8 @@
         success: function (data) {
             console.log('trigger add success');
             console.log(data);
+            getTriggerList();
+
         },
         error: function (e) {
             console.log('trigger add failed');
@@ -307,6 +278,7 @@
     });
     //Edit item
     $("#editformSubmit").on('click',function(){
+    alert('editing')
         if($("#trigger option:selected").attr('value') == 'none'){
             alert("Select a trigger");
         }else{
@@ -317,7 +289,8 @@
             headers:{"Authentication-Token":authKey},
             type:"POST",
             success:function(e){
-                console.log(e);
+                //refresh the list of triggers
+                getTriggerList();
             },
             error: function(e){
                 console.log("ERROR");
@@ -337,7 +310,9 @@
             headers:{"Authentication-Token":authKey},
             type:"POST",
             success:function(e){
-                console.log(e);
+                // refresh the list of triggers
+                $("#trigger option(1)").prop('sl')
+                getTriggerList();
             },
             error: function(e){
                 console.log("ERROR");
@@ -345,21 +320,7 @@
         });
         };
     });
-//    //Setting up json-editor
-//    JSONEditor.default.options.theme = 'bootstrap2';
-//
-//    var editor =  new JSONEditor(element,{
-//        theme: 'bootstrap2'
-//    });
-//
-//    editor.on('ready',function() {
-//      // Now the api methods will be available
-//      editor.validate();
-//    });
-//
-//    editor.on('change',function() {
-//      // Do something
-//    });
+
 
 
 }());

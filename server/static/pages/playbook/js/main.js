@@ -299,9 +299,9 @@ $(function(){
         $("#parameters").removeClass('hidden');
         $("#parameters").empty();
 
-
+        console.log(parameters)
         parameters = transformParametersToSchema(parameters);
-
+        console.log(parameters);
         // Initialize the editor with a JSON schema
         var schema = createSchema(parameters);
         JSONEditor.defaults.options.theme = 'bootstrap3';

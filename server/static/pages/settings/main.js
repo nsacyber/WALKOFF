@@ -1,20 +1,28 @@
-// $.ajax({
-//     url: '/users',
-//     headers: {"Authentication-Token": authKey},
-//     type: "POST",
-//     success: function (e) {
-//         for (var x = 0; x < e.length; x++) {
-//             $("#userList").append("<option value='" + x + "'>" + x + "</option>");
-//         }
-//     },
-//     error: function (e) {
-//         console.log(e);
-//     }
-// });
+
 
 $(function() {
 //    $("#createUser").hide();
     getRole();
+    function getUserList(){
+        $.ajax({
+            url: "/users",
+            data: {},
+            headers: {"Authentication-Token": authKey},
+            type: "POST",
+            success: function (e) {
+                users = e.substring(2, e.length-2).split(",");
+                $("#username .userOption").remove();
+                for(i=0;i<users.length;i++){
+                    $("#username").append("<option class='userOption' value=" + user[i] +">" + user[i] + "</option>");
+                }
+            },
+            error: function (e) {
+                console.log("failed");
+            }
+        });
+    }
+
+    console.log($("#username option:selected").text())
     $.ajax({
             url: "users/" + ($("#username option:selected").text() + "/display"),
             data: {},
@@ -50,6 +58,7 @@ $(function() {
             success: function (e) {
                 data = JSON.parse(e);
                 alert("user info" + data);
+                getUserList();
             },
             error: function (e) {
                 console.log('no user info obtained')
@@ -69,8 +78,7 @@ $(function() {
                 headers: {"Authentication-Token": authKey},
                 type: "POST",
                 success: function (e) {
-                    data = JSON.parse(e);
-                    alert("user removed");
+                    $("#username option:selected").remove();
                 },
                 error: function (e) {
                     $("#templatesPath").val("Error");
@@ -105,6 +113,7 @@ $("#username")
     });
 
 $("#saveNewUser").click(function(){
+    username = $("#addUserForm #username").val();
     $.ajax({
         url: 'users/add',
         data: $("#addUserForm").serialize(),
@@ -113,8 +122,11 @@ $("#saveNewUser").click(function(){
         success: function (e) {
             data = JSON.parse(e);
             alert("new user added" + e);
-//            $("#currentUserInfo").show();
-//            $("#createUser").hide();
+            if(e['status'] != 'invalid input'){
+                $('#username').append('<option class="userOption" value="' + username + '">' + username + '</option>');
+            }
+
+            $('#AddUserForm').trigger("reset");
         },
         error: function (e) {
             $("#templatesPath").val("Error");
