@@ -167,12 +167,16 @@ class Main(App):
     }
 }
         </code></pre>
-        <p>There are more fields available in the JSON metadata file. And if you ever are concerned if your functions.json
+        <p>There are more fields available in the JSON metadata file. And if you are concerned if your functions.json
             file is correct, you can do a quick scan by running the <code>validateappfunctions.py</code> script included
             at the root of the WALKOFF repository. You can validate your app's functions.json by running</p>
             <pre><code>
 python validateappfunctions.py --apps HelloWorld
             </code></pre>
+        <p>You can see more options using </p>
+        <pre><code>
+python validateappfunctions.py --help
+        </code></pre>
         <h4><b>Congratulations! You now have made your first WALKOFF app.</b></h4>
         <p>Go have a look in the webapp and see the name of your app included in the "Installed Apps" portion of the
             dashboard and see the actions you defined included in the workflow editor. Next, you'll learn how to make a

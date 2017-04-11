@@ -8,32 +8,25 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-
-
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
 .fa-graduation-cap,.fa-flask{font-size:200px}
-
 #headerDiv{
     background-image:url("../files/images/headerBackground2.png");
     background-size: 50% auto;
     background-repeat: no-repeat;
     background-position:50% 50%;
 }
-
 .topLevelList + ol{
   display:none;
 }
-
 .topLevelList + h5{
   display:none;
 }
-
 .fa-circle, .fa-circle-o{
   font-size:12px;
   padding-right:10px;
 }
-
 </style>
 <body>
 
@@ -67,102 +60,63 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Version Two Tutorials</h1>
-      <h3><i> (Coming Soon...) </i></h3>
+      <h1>Test an app</h1>
+        <p>WALKOFF can easily test your apps with a top-level app testing script</p>
+        <h4><b>1. Create a Python package in your app package named "test"</b></h4>
+        <p>If you were testing your HelloWorld app described in the <a href="Develop_an_app.html">Develop an App</a>
+        section, your directory structure will look like this:</p>
+        <pre><code>
+WALKOFF
+|-- apps
+  |-- HelloWorld
+    |-- test
+    |-- __init__.py
+    |-- main.py
+    |-- functions.json
+  |-- [Other apps]
+        </code></pre>
+        <h4><b>2. Write your tests</b></h4>
+        <p>Inside the test package, we then need to write some Python modules which use Python's builtin
+            <code>unittest</code> package to test our module.</p>
+        <pre><code>
+import unittest
+from apps.HelloWorld import main
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
-      <ol class="w3-medium">
-        <li><a href="Install_Tutorial.html"> Installation </a></li>
-        <li>Overview</li>
-        <li>Run Your First Workflow</li>
-      </ol>
+class TestMain(unittest.TestCase):
+    def setUp(self):
+        self.app = main.Main('TestApp', 'TestDevice')  # Arguments in this case are arbitrary
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
-      <ol class="w3-medium">
-        <li>Workflow Overview</li>
-        <li>Basic Workflows</li>
-        <li>Advanced Workflows</li>
-      </ol>
+    def test_hello_world(self):
+        message = self.app.hello_world()
+        self.assertDictEqual(message, {"message": "Hello World"})
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> Workflow Components</h5>
-      <ol>
-        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Devices</h5>
-        <ol class="w3-medium">
-          <li><a href="Devices_Overview.html"> Device Overview </a></li>
-          <li>Manage Devices</li>
-        </ol>
+    def test_plus_one(self):
+        # Note here. The values expected in the args dict are core.arguments.Argument objects.
+        # These objects are callable and return a value. For almost all purposes you can mimic their behavior
+        # for testing using an anonymous lambda function which returns the value you want to pass.
+        # See below.
+        args = {'number': (lambda: 4)}
+        returned = self.app.plus_one(args)
+        self.assertEqual(returned, '5')
+        </code></pre>
 
-        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Next</h5>
-        <ol class="w3-medium">
-            <li><a href="Step_Overview.html">Step</a></li>
-            <li><a href="Next_Step_Overview.html">Next Step</a></li>
-          <li><a href="Flags_Overview.html">Flags</a></li>
-          <li><a href="Filter_Overview.html">Filters</a></li>
-        </ol>
-      </ol>
+        <h4><b>3. Run your tests</b></h4>
 
-
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
-      <ol class="w3-medium">
-        <li><a href="App_Overview.html">App Overview</a></li>
-        <li>Installing an App</li>
-        <li><a href="Develop_an_app.html">Develop an App</a></li>
-        <li>Develop an App Interface</li>
-        <li><a href="Test_an_app.html">Testing an App</a></li>
-      </ol>
-
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> Cases</h5>
-      <ol class="w3-medium">
-        <li><a href="Case_Overview.html">Case Overview</a></li>
-        <li>View Cases</li>
-        <li>Manage Cases</li>
-      </ol>
-
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> Execution</h5>
-      <ol>
-        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Manual Execution</h5>
-        <ol class="w3-medium">
-          <li>Manually running a workflow</li>
-        </ol>
-
-        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Active Execution</h5>
-        <ol class="w3-medium">
-          <li>Workflow schedules</li>
-        </ol>
-
-        <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Passive Execution</h5>
-        <ol class="w3-medium">
-          <li><a href="Triggers_Tutorial.html">Triggers Overview</a></li>
-          <li>Manage Triggers</li>
-        </ol>
-      </ol>
-
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
-      <ol class="w3-medium">
-        <li>Managing Users and Roles</li>
-        <li>HTTPS</li>
-      </ol>
+        <p>You can run your tests by running the <code>testapps.py</code> script included at the root of the WALKOFF
+            repository</p>
+            <pre><code>
+python testapps.py --apps HelloWorld
+            </code></pre>
+        <p>You can see more options using </p>
+        <pre><code>
+python testapps.py --help
+        </code></pre>
     </div>
 
    <div class="w3-third w3-center">
       <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
     </div>
   </div>
-</div>
-
-<!-- Second Grid  -->
-<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-third w3-center">
-      <i class="fa fa-flask w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
-    </div>
-
-    <div class="w3-twothird">
-       <h1>Version One Tutorials</h1>
-      <h5 class="w3-padding-32">Can be found <a href="../tutorials.html">here</a></h5>
-    </div>
-  </div>
-</div>
 </div>
 
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
@@ -186,14 +140,6 @@ function myFunction() {
         x.className = x.className.replace(" w3-show", "");
     }
 }
-
-$(document).ready(function(){
-  $(".topLevelList").on("click", function(e){
-    $(this).find("i").toggleClass("fa-circle fa-circle-o");
-    $(this).next("ol").toggle();
-  });
-
-});
 </script>
 </body>
 </html>
