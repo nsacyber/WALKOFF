@@ -13,3 +13,5 @@ private_key_path = "data/shortstop.private.pem"
 function_info_path = join('.', 'data', 'functions.json')
 config_path = join('.', 'data', 'walkoff.config')
 events_path = join('.', 'data', 'events.json')
+default_appdevice_export_path = join('.', 'data', 'appdevice.json')
+data_path = join('.', 'data')

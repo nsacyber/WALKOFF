@@ -1,7 +1,6 @@
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, \
     IntegerField, FormField, SelectField, SubmitField, TextAreaField
 from flask_security.forms import Required, EqualTo
-from wtforms.widgets import TextArea
 
 
 class NewUserForm(Form):
@@ -100,6 +99,10 @@ class EditDeviceForm(Form):
     apps = FieldList(StringField('Apps'), [validators.Optional()])
     submit = SubmitField('Submit')
     extraFields = StringField('Extra Fields', [validators.Optional()])
+
+
+class ExportAppDevices(Form):
+    filename = StringField('Filename', [validators.Optional()])
 
 
 class LoginForm(Form):

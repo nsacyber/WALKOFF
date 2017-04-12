@@ -31,11 +31,27 @@ class ServerTestCase(unittest.TestCase):
 
             cls.tearDown = teardown_override
 
+        if (tests.config.test_data_dir_name not in os.listdir(tests.config.test_path)
+                or os.path.isfile(tests.config.test_data_path)):
+            if os.path.isfile(tests.config.test_data_path):
+                os.remove(tests.config.test_data_path)
+            os.makedirs(tests.config.test_data_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        if tests.config.test_data_path in os.listdir(tests.config.test_path):
+            if os.path.isfile(tests.config.test_data_path):
+                os.remove(tests.config.test_data_path)
+            else:
+                shutil.rmtree(tests.config.test_data_path)
+
     def setUp(self):
         core.config.paths.workflows_path = self.test_workflows_path
         core.config.paths.apps_path = tests.config.test_apps_path
+        core.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
         if os.path.exists(tests.config.test_workflows_backup_path):
             shutil.rmtree(tests.config.test_workflows_backup_path)
+
         shutil.copytree(core.config.paths.workflows_path, tests.config.test_workflows_backup_path)
 
         self.app = server.flaskserver.app.test_client(self)
@@ -54,6 +70,8 @@ class ServerTestCase(unittest.TestCase):
         shutil.rmtree(core.config.paths.workflows_path)
         shutil.copytree(tests.config.test_workflows_backup_path, core.config.paths.workflows_path)
         shutil.rmtree(tests.config.test_workflows_backup_path)
+        for data_file in os.listdir(tests.config.test_data_path):
+            os.remove(os.path.join(tests.config.test_data_path, data_file))
 
     def preTearDown(self):
         """

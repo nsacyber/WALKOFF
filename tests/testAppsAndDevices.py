@@ -1,7 +1,9 @@
 import json
-
+import os
 from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
+import tests.config
+import core.config.paths
 
 
 class TestAppsAndDevices(ServerTestCase):
@@ -89,3 +91,91 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(response[0]["name"], self.name)
         self.assertEqual(response[1]["name"], "testDeviceTwo")
         self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])
+
+    def test_export_apps_devices_no_filename(self):
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+
+        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
+                "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+        test_device_one_json = {"extraFieldOne": "extraNameOne",
+                                "extraFieldTwo": "extraNameTwo",
+                                "ip": "127.0.0.1",
+                                "name": "testDevice",
+                                "port": "6000",
+                                "username": "testUsername"}
+        test_device_two_json = {"extraFieldOne": "extraNameOne",
+                                "extraFieldTwo": "extraNameTwo",
+                                "ip": "127.0.0.1",
+                                "name": "testDeviceTwo",
+                                "port": "6000",
+                                "username": "testUsername"}
+
+        self.post_with_status_check('/configuration/HelloWorld/devices/export', 'success', headers=self.headers)
+        self.assertIn('appdevice.json', os.listdir(tests.config.test_data_path))
+        with open(core.config.paths.default_appdevice_export_path, 'r') as appdevice_file:
+            read_file = appdevice_file.read()
+            read_file = read_file.replace('\n', '')
+            read_json = json.loads(read_file)
+        self.assertIn('HelloWorld', read_json)
+        self.assertTrue(len(read_json['HelloWorld']) >= 2)
+        devices_read = 0
+        for device in read_json['HelloWorld']:
+            if device['name'] == 'testDevice':
+                self.assertDictEqual(device, test_device_one_json)
+                devices_read += 1
+            elif device['name'] == 'testDeviceTwo':
+                self.assertDictEqual(device, test_device_two_json)
+                devices_read += 1
+        self.assertEqual(devices_read, 2)
+
+    def test_export_apps_devices_with_filename(self):
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip,
+                "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+
+        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
+                "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+        test_device_one_json = {"extraFieldOne": "extraNameOne",
+                                "extraFieldTwo": "extraNameTwo",
+                                "ip": "127.0.0.1",
+                                "name": "testDevice",
+                                "port": "6000",
+                                "username": "testUsername"}
+        test_device_two_json = {"extraFieldOne": "extraNameOne",
+                                "extraFieldTwo": "extraNameTwo",
+                                "ip": "127.0.0.1",
+                                "name": "testDeviceTwo",
+                                "port": "6000",
+                                "username": "testUsername"}
+        filename = 'testappdevices.json'
+        filepath = os.path.join(tests.config.test_data_path, filename)
+        data = {'filename': filepath}
+        self.post_with_status_check('/configuration/HelloWorld/devices/export', 'success',
+                                    data=data, headers=self.headers)
+        self.assertIn(filename, os.listdir(tests.config.test_data_path))
+        with open(filepath, 'r') as appdevice_file:
+            read_file = appdevice_file.read()
+            read_file = read_file.replace('\n', '')
+            read_json = json.loads(read_file)
+        self.assertIn('HelloWorld', read_json)
+        self.assertTrue(len(read_json['HelloWorld']) >= 2)
+        devices_read = 0
+        for device in read_json['HelloWorld']:
+            if device['name'] == 'testDevice':
+                self.assertDictEqual(device, test_device_one_json)
+                devices_read += 1
+            elif device['name'] == 'testDeviceTwo':
+                self.assertDictEqual(device, test_device_two_json)
+                devices_read += 1
+        self.assertEqual(devices_read, 2)

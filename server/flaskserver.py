@@ -846,7 +846,7 @@ def config_devices_config(app, action):
                                               extra_fields=form.extraFields.data)
             return json.dumps({"status": "device successfully added"})
         return json.dumps({"status": "device could not be added"})
-    if action == "all":
+    elif action == "all":
         query = running_context.App.query.filter_by(name=app).first()
         output = []
         if query:
@@ -854,7 +854,30 @@ def config_devices_config(app, action):
                 output.append(device.as_json())
 
             return json.dumps(output)
-    return json.dumps({"status": "could not display all devices"})
+        return json.dumps({"status": "could not display all devices"})
+    elif action == 'export':
+        form = forms.ExportAppDevices(request.form)
+        filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
+        returned_json = {}
+        apps = running_context.App.query.all()
+        for app in apps:
+            devices = []
+            for device in app.devices:
+                device_json = device.as_json(with_apps=False)
+                device_json.pop('app', None)
+                device_json.pop('id', None)
+                devices.append(device_json)
+            returned_json[app.as_json()['name']] = devices
+
+        try:
+            with open(filename, 'w') as appdevice_file:
+                appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
+        except (OSError, IOError):
+            return json.dumps({"status": "error writing file"})
+        return json.dumps({"status": "success"})
+
+
+
 
 
 # Controls the specific app device configuration
