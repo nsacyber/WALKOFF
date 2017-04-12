@@ -1,6 +1,7 @@
 # from core.context import running_context
 from core.case import database
 
+
 class GlobalSubscriptions(object):
     """
     Specifies the events which are subscribed to by all types of a execution level
@@ -218,7 +219,7 @@ def add_subscription(case, ancestry, events):
                 current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
                 ancestry_level_name = ancestry.pop()
         else:
-            #You failed to add anything if you get here
+            # You failed to add anything if you get here
             pass
 
 

@@ -30,7 +30,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def tearDown(self):
         self.c.workflows = None
-        case_database.case_db.tearDown()
+        case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
     def __execution_test(self):

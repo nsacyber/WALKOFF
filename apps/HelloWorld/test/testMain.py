@@ -30,4 +30,3 @@ class TestMain(TestCase):
 
     def test_shutdown(self):
         self.assertIsNone(self.app.shutdown())
-

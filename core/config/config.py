@@ -37,9 +37,6 @@ def write_values_to_file(values=None):
     with open(core.config.paths.config_path, "w") as f:
         json.dump(parsed, f)
 
-
-
-
 # Enables/Disables Browser Notifications
 notifications = "True"
 

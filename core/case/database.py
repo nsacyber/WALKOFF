@@ -1,17 +1,16 @@
-from os import remove
 import json
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+from sqlalchemy.orm import relationship, sessionmaker
 
 from core.config.paths import case_db_path
 
 _Base = declarative_base()
 
 
-class _Case_Event(_Base):
+class _CaseEventLink(_Base):
     __tablename__ = 'case_event'
     case_id = Column(Integer, ForeignKey('case.id'), primary_key=True)
     event_id = Column(Integer, ForeignKey('event.id'), primary_key=True)
@@ -81,16 +80,14 @@ class CaseDatabase(object):
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
-        # Session = sessionmaker()
-        # Session.configure(bind=self.engine)
-        # self.session = Session()
-        session_factory = sessionmaker(bind=self.engine)
-        self.session = scoped_session(session_factory)
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        self.session = Session()
 
         _Base.metadata.bind = self.engine
         _Base.metadata.create_all(self.engine)
 
-    def tearDown(self):
+    def tear_down(self):
         self.session.rollback()
         self.connection.close()
         self.engine.dispose()
@@ -153,25 +150,22 @@ class CaseDatabase(object):
     def event_as_json(self, event_id):
         return self.session.query(Event).filter(Event.id == event_id).first().as_json()
 
-def get_case_db(_singleton = CaseDatabase()):
+
+def get_case_db(_singleton=CaseDatabase()):
     return _singleton
 
 case_db = get_case_db()
 
+
 # Initialize Module
 def initialize():
-#     case_db.tearDown()
-#     remove(case_db_path)
-#     case_db.create()
     _Base.metadata.drop_all()
     _Base.metadata.create_all()
-    pass
+
 
 # Teardown Module
-def tearDown():
-    # case_db.session.close()
-    # case_db.transaction.rollback()
-    # case_db.connection.close()
-    # case_db.engine.dispose()
-    pass
-
+def tear_down():
+    case_db.session.close()
+    case_db.transaction.rollback()
+    case_db.connection.close()
+    case_db.engine.dispose()

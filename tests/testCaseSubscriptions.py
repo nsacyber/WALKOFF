@@ -160,7 +160,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.tearDown()
+        case_database.case_db.tear_down()
         clear_subscriptions()
 
     def test_set_subscriptions(self):

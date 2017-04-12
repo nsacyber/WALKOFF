@@ -4,7 +4,6 @@ from core import arguments
 from core import controller
 from core import graphdecorator
 from tests import config
-from core.helpers import construct_workflow_name_key
 from core.controller import _WorkflowKey
 
 
@@ -42,12 +41,12 @@ class TestLoadWorkflow(unittest.TestCase):
 
     @graphdecorator.callgraph(enabled=False)
     def test_workflowNextSteps(self):
-        next = self.testWorkflow.steps['start'].conditionals
-        self.assertEqual(len(next), 1)
+        next_step = self.testWorkflow.steps['start'].conditionals
+        self.assertEqual(len(next_step), 1)
 
-        next = next[0]
-        self.assertEqual(next.name, '1')
-        self.assertTrue(next.flags)
+        next_step = next_step[0]
+        self.assertEqual(next_step.name, '1')
+        self.assertTrue(next_step.flags)
 
     @graphdecorator.callgraph(enabled=False)
     def test_workflowNextStepFlags(self):
@@ -66,9 +65,9 @@ class TestLoadWorkflow(unittest.TestCase):
         filters = self.testWorkflow.steps['start'].conditionals[0].flags[0].filters
         self.assertEqual(len(filters), 1)
 
-        filter = filters[0]
-        self.assertEqual(filter.action, 'length')
-        self.assertEqual(filter.args, {})
+        filter_element = filters[0]
+        self.assertEqual(filter_element.action, 'length')
+        self.assertEqual(filter_element.args, {})
 
     @graphdecorator.callgraph(enabled=False)
     def test_workflowError(self):

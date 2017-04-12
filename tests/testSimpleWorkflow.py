@@ -9,17 +9,21 @@ import server.flaskserver as server
 from core.case import database
 from core.case import subscription
 
+
 class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
-        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
-        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
-        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path + "multistepError.workflow")
+        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+                                                                        "basicWorkflowTest.workflow")
+        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+                                                                        "multiactionWorkflowTest.workflow")
+        server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+                                                                        "multistepError.workflow")
         self.start = datetime.utcnow()
         server.running_context.init_threads()
 
     def tearDown(self):
-        database.case_db.tearDown()
+        database.case_db.tear_down()
         subscription.clear_subscriptions()
 
     """

@@ -14,7 +14,7 @@ class TestCaseServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.tearDown()
+        case_database.case_db.tear_down()
         clear_subscriptions()
 
     @staticmethod

@@ -11,12 +11,13 @@ from core import controller, graphdecorator
 from core.case.subscription import Subscription
 from tests import config
 
+
 class TestExecutionModes(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.tearDown()
+        case_database.tear_down()
 
     @graphdecorator.callgraph(enabled=False)
     def test_startStopExecutionLoop(self):

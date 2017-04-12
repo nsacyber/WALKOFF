@@ -8,7 +8,8 @@ setup(
     license='Creative Commons',
     author='National Security Agency ',
     author_email='walkoff@nsa.gov',
-    description='An active cyber defense development framework enabling orchestration capabilities to be written once and deployed across WALKOFF-enabled orchestration tools.',
+    description='An active cyber defense development framework enabling orchestration '
+                'capabilities to be written once and deployed across WALKOFF-enabled orchestration tools.',
 
     install_requires = ['blinker >= 1.4',
                         'Flask >= 0.10.0',

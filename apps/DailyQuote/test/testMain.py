@@ -6,11 +6,11 @@ class TestMain(TestCase):
     def setUp(self):
         self.app = main.Main()
 
-    def test_quote_message(self):
+    def test_quote_intro(self):
         message = self.app.quoteIntro()
         self.assertDictEqual(message, {"message": "Quote App"})
 
-    def test_quote_message(self):
+    def test_get_quote(self):
         quote = self.app.getQuote()
         self.assertEqual(quote["success"], {"total": 1})
 
@@ -25,7 +25,5 @@ class TestMain(TestCase):
         args = {'call': (lambda: 'test_message')}
         self.assertEqual(self.app.repeatBackToMe(args), 'REPEATING: {0}'.format('test_message'))
 
-
     def test_shutdown(self):
         self.assertIsNone(self.app.shutdown())
-

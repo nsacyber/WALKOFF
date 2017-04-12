@@ -14,6 +14,7 @@ from tests.util.assertwrappers import orderless_list_compare
 
 from server.flaskserver import running_context
 
+
 class TestExecutionRuntime(unittest.TestCase):
     def setUp(self):
         database.initialize()
@@ -23,16 +24,18 @@ class TestExecutionRuntime(unittest.TestCase):
         running_context.init_threads()
 
     def tearDown(self):
-        database.case_db.tearDown()
+        database.case_db.tear_down()
         subscription.clear_subscriptions()
 
     """
-        Tests the out templating function which replaces the value of an argument with the output from the workflow history.
+        Tests the out templating function which replaces the value of an argument with the output
+        from the workflow history.
     """
 
     @graphdecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
-        running_context.controller.load_workflows_from_file(path=config.test_workflows_path + 'templatedWorkflowTest.workflow')
+        running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+                                                                 'templatedWorkflowTest.workflow')
         workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)

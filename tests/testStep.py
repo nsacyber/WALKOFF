@@ -187,7 +187,6 @@ class TestStep(unittest.TestCase):
                    ('returnPlusOne', {})]
 
         for action, inputs in actions:
-            app = 'HelloWorld'
             step = Step(app=app, action=action, inputs=inputs)
             with server.running_context.flask_app.app_context():
                 instance = Instance.create(app_name=app, device_name='test_device_name')

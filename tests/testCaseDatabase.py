@@ -12,7 +12,7 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.tearDown()
+        case_database.case_db.tear_down()
 
     @staticmethod
     def __construct_basic_db():

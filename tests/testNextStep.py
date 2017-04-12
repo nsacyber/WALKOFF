@@ -58,13 +58,13 @@ class TestNextStep(unittest.TestCase):
         self.assertIsNone(next_step.to_xml())
 
     def test_create_flag(self):
-        def test_help(next_step, expected):
-            self.assertEqual(len(next_step.flags), len(expected))
-            self.assertListEqual([flag.action for flag in next_step.flags], [flag['action'] for flag in expected])
-            for flag, expected_flag in zip(next_step.flags, expected):
+        def test_help(_next_step, _expected):
+            self.assertEqual(len(_next_step.flags), len(_expected))
+            self.assertListEqual([flag.action for flag in _next_step.flags], [flag['action'] for flag in _expected])
+            for flag, expected_flag in zip(_next_step.flags, _expected):
                 self.assertDictEqual(flag.as_json(), expected_flag)
                 self.assertEqual(flag.parent_name, 'name')
-                expected_ancestry = list(next_step.ancestry)
+                expected_ancestry = list(_next_step.ancestry)
                 expected_ancestry.append(flag.name)
                 self.assertListEqual(flag.ancestry, expected_ancestry)
 
@@ -206,4 +206,3 @@ class TestNextStep(unittest.TestCase):
         for i, ancestry in enumerate(ancestries):
             self.assertDictEqual(next_step3.get_children(ancestry), filters[i].as_json())
             self.assertDictEqual(next_step3.get_children([]), next_step3.as_json(with_children=False))
-

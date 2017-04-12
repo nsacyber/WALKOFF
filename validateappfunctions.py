@@ -8,6 +8,7 @@ from server.appdevice import App as BaseApp
 
 base_app_functions = set(list_class_functions(BaseApp))
 
+
 def cmd_line():
     parser = argparse.ArgumentParser(description="Validate functions.json for apps")
     parser.add_argument('-a', '--apps', nargs='*', type=str, required=False,
@@ -19,8 +20,8 @@ def cmd_line():
 
 def get_app_main(app_name):
     try:
-        app = getattr(import_app_main(app_name), 'Main')
-        return app
+        app_main = getattr(import_app_main(app_name), 'Main')
+        return app_main
     except AttributeError:
         print('In app {0}: Critical!: App has no class called Main!'.format(app_name))
         return None
@@ -64,8 +65,8 @@ def load_functions_json(app_name):
             print(e)
             return None
     else:
-        print('In app {0}: Critical!: functions.json does not exist in expected location {1}!'.format(app_name,
-                                                                                                     filename))
+        print('In app {0}: Critical!: functions.json does '
+              'not exist in expected location {1}!'.format(app_name, filename))
         return None
 
 
@@ -86,7 +87,8 @@ def validate_fields(app_name, funcs_json):
             print('In app {0}: Critical! "args" field not found in functions.json for function {1}'.format(app_name,
                                                                                                            func))
         if 'description' not in info:
-            print('In app {0}: Warning: "description" field not found in functions.json for function {1}'.format(app_name, func))
+            print('In app {0}: Warning: "description" field '
+                  'not found in functions.json for function {1}'.format(app_name, func))
         elif not info['description']:
             print('In app {0}: Warning: "description" field function {1} is empty'.format(app_name, func))
 
@@ -123,8 +125,3 @@ if __name__ == '__main__':
                 validate_app(app)
             else:
                 print('App {0} not found!'.format(app))
-
-
-
-
-

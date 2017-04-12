@@ -2,6 +2,7 @@ from setuptools import setup
 import os
 import argparse
 
+
 def cmd_line():
     parser = argparse.ArgumentParser("Install Dependencies")
     parser.add_argument('-a', '--apps', nargs='*', type=str, required=True, help='List of apps for which you would like to install dependencies')

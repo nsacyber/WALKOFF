@@ -19,7 +19,7 @@ class TestExecutionEvents(unittest.TestCase):
         running_context.init_threads()
 
     def tearDown(self):
-        case_database.tearDown()
+        case_database.tear_down()
 
     @graphdecorator.callgraph(enabled=False)
     def test_workflowExecutionEvents(self):

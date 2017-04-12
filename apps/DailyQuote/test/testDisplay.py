@@ -1,6 +1,5 @@
 from unittest import TestCase
 from apps.DailyQuote import display
-from types import GeneratorType
 
 
 class TestDisplay(TestCase):
