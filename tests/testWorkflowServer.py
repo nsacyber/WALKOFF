@@ -24,6 +24,7 @@ class TestWorkflowServer(ServerTestCase):
                                                     'type': u'cron'}}}}
         self.hello_world_json = \
             {'steps': [{'group': 'nodes',
+                        'position': {},
                         'data': {'id': 'start',
                                  'parameters': {'errors': [{'flags': [], 'name': '1'}],
                                                 'name': 'start',
@@ -375,8 +376,10 @@ class TestWorkflowServer(ServerTestCase):
                                                         'next': [],
                                                         'device': 'new_device',
                                                         'action': 'new_action',
-                                                        'input': {}}},
-                                'group': 'nodes'}
+                                                        'input': {}},
+                                         },
+                                'group': 'nodes',
+                                'position': {'x': '5', 'y': '3'}}
         initial_workflow_cytoscape.insert(0, added_step_cytoscape)
         data = {"cytoscape": json.dumps(initial_workflow_cytoscape)}
         self.post_with_status_check('/playbook/test/{0}/save'.format(workflow_name), 'success',
