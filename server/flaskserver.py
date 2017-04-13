@@ -19,6 +19,7 @@ from core import helpers
 from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
 from core.helpers import locate_workflows_in_directory
+from core.helpers import combineDicts
 from core.options import Options
 from server.context import running_context
 from . import database, appdevice
@@ -73,6 +74,18 @@ def default():
         args = {"apps": running_context.get_apps(), "authKey": current_user.get_auth_token(),
                 "currentUser": current_user.email, "default_page": default_page_name}
         return render_template("container.html", **args)
+    else:
+        return {"status": "Could Not Log In."}
+
+# Returns System-Level Interface Pages
+@app.route('/interface/<string:name>/display', methods=["POST"])
+@auth_token_required
+@roles_accepted(*userRoles["/interface"])
+def system_pages(name):
+    if current_user.is_authenticated and name:
+        args = getattr(interface, name)()
+        combineDicts(args, {"authKey": current_user.get_auth_token()})
+        return render_template("pages/" + name + "/index.html", **args)
     else:
         return {"status": "Could Not Log In."}
 
@@ -528,16 +541,7 @@ def set_configuration():
         return json.dumps({"status": 'error: user is not authenticated'})
 
 
-# Returns System-Level Interface Pages
-@app.route('/interface/<string:name>/display', methods=["POST"])
-@auth_token_required
-@roles_accepted(*userRoles["/interface"])
-def system_pages(name):
-    if current_user.is_authenticated and name:
-        args = getattr(interface, name)()
-        return render_template("pages/" + name + "/index.html", **args)
-    else:
-        return {"status": "Could Not Log In."}
+
 
 
 # Controls execution triggers
