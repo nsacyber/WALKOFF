@@ -101,7 +101,7 @@ class EditDeviceForm(Form):
     extraFields = StringField('Extra Fields', [validators.Optional()])
 
 
-class ExportAppDevices(Form):
+class ExportImportAppDevices(Form):
     filename = StringField('Filename', [validators.Optional()])
 
 
@@ -159,7 +159,15 @@ class EditGlobalSubscriptionForm(Form):
 
 
 class AddCaseForm(Form):
-    caseName = StringField('name', [validators.Optional()])
+    case_name = StringField('name', [validators.Optional()])
+
+
+class ExportCaseForm(Form):
+    filename = StringField('Filename', [validators.Optional()])
+
+
+class ImportCaseForm(Form):
+    filename = StringField('Filename', [validators.Optional()])
 
 
 class EditSubscriptionForm(Form):

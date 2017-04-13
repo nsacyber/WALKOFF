@@ -179,3 +179,53 @@ class TestAppsAndDevices(ServerTestCase):
                 self.assertDictEqual(device, test_device_two_json)
                 devices_read += 1
         self.assertEqual(devices_read, 2)
+
+    def test_import_apps_devices(self):
+        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip,
+                "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+
+        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
+                "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.post_with_status_check('/configuration/HelloWorld/devices/add', 'device successfully added',
+                                    data=data, headers=self.headers)
+
+        test_device_one_json = {"extraFieldOne": "extraNameOne",
+                                "extraFieldTwo": "extraNameTwo",
+                                "ip": "127.0.0.1",
+                                "name": "testDevice",
+                                "port": "6000",
+                                "username": "testUsername"}
+        test_device_two_json = {"extraFieldOne": "extraNameOne",
+                                "extraFieldTwo": "extraNameTwo",
+                                "ip": "127.0.0.1",
+                                "name": "testDeviceTwo",
+                                "port": "6000",
+                                "username": "testUsername"}
+
+        filename = 'testappdevices.json'
+        filepath = os.path.join(tests.config.test_data_path, filename)
+        data = {'filename': filepath}
+        self.post_with_status_check('/configuration/HelloWorld/devices/export', 'success',
+                                    data=data, headers=self.headers)
+
+        with server.running_context.flask_app.app_context():
+            server.running_context.Device.query.filter_by(name="testDevice").delete()
+            server.running_context.Device.query.filter_by(name="testDeviceTwo").delete()
+            server.database.db.session.commit()
+
+        self.post_with_status_check('/configuration/HelloWorld/devices/import', 'success',
+                                    data=data, headers=self.headers)
+
+        with server.running_context.flask_app.app_context():
+            app = server.running_context.App.query.filter_by(name="HelloWorld").first()
+            test_device_one_json["id"] = "1"
+            test_device_two_json["id"] = "2"
+            test_device_one_json["app"] = {"id": "1", "name": "HelloWorld"}
+            test_device_two_json["app"] = {"id": "1", "name": "HelloWorld"}
+            self.assertEqual(len(app.devices), 2)
+            self.assertEqual(test_device_one_json, app.devices[0].as_json())
+            self.assertEqual(test_device_two_json, app.devices[1].as_json())

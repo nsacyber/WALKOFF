@@ -1,10 +1,14 @@
 import json
+import os
+
+import tests.config
 from tests.util.case import construct_case1, construct_case2, construct_case_json
 import core.case.database as case_database
 from core.case.subscription import set_subscriptions, clear_subscriptions, CaseSubscriptions, \
-    GlobalSubscriptions, subscriptions_as_json, Subscription
+    GlobalSubscriptions, subscriptions_as_json, Subscription, delete_cases, add_cases
 from core.executionelement import ExecutionElement
 from core.case.callbacks import _EventEntry
+import core.config.paths
 from os.path import join
 from tests.util.servertestcase import ServerTestCase
 
@@ -258,6 +262,78 @@ class TestCaseServer(ServerTestCase):
         result_cases = case_database.case_db.cases_as_json()
         self.assertDictEqual(result_cases, original_cases_json)
         self.assertDictEqual(response, original_cases_json)
+
+    def test_export_cases_no_filename(self):
+        TestCaseServer.__basic_case_setup()
+        expected_subs = subscriptions_as_json()
+        self.post_with_status_check('/cases/export', 'success', headers=self.headers)
+        self.assertIn('cases.json', os.listdir(tests.config.test_data_path))
+        with open(core.config.paths.default_case_export_path, 'r') as appdevice_file:
+            read_file = appdevice_file.read()
+            read_file = read_file.replace('\n', '')
+            read_json = json.loads(read_file)
+        self.assertDictEqual(read_json, expected_subs)
+
+    def test_export_cases_with_filename(self):
+        TestCaseServer.__basic_case_setup()
+        expected_subs = subscriptions_as_json()
+        filename = os.path.join(tests.config.test_data_path, 'case_other.json')
+        data = {"filename": filename}
+        self.post_with_status_check('/cases/export', 'success', headers=self.headers, data=data)
+        self.assertIn('case_other.json', os.listdir(tests.config.test_data_path))
+        with open(filename, 'r') as appdevice_file:
+            read_file = appdevice_file.read()
+            read_file = read_file.replace('\n', '')
+            read_json = json.loads(read_file)
+        self.assertDictEqual(read_json, expected_subs)
+
+    def test_import_cases_no_filename(self):
+        TestCaseServer.__basic_case_setup()
+        self.post_with_status_check('/cases/export', 'success', headers=self.headers)
+        # essentially add two more cases, swap contents of case 1 and 2 in case_subscriptions
+        case1, _ = construct_case2()
+        case2, _ = construct_case1()
+        case5, _ = construct_case1()
+        case6, _ = construct_case2()
+        delete_cases(['case1' 'case2'])
+        cases = {'case1': case1, 'case2': case2, 'case5': case5, 'case6': case6}
+        add_cases(cases)
+        response = self.get_with_status_check('/cases/import', 'success', headers=self.headers)
+        expected_json = {'case1': construct_case1()[0],
+                         'case2': construct_case2()[0],
+                         'case3': construct_case1()[0],
+                         'case4': construct_case2()[0],
+                         'case5': construct_case1()[0],
+                         'case6': construct_case2()[0]}
+        expected_json = {key: value.as_json() for key, value in expected_json.items()}
+        self.assertDictEqual(subscriptions_as_json(), expected_json)
+        self.assertIn('cases', response)
+        self.assertDictEqual(response['cases'], expected_json)
+
+    def test_import_cases_with_filename(self):
+        TestCaseServer.__basic_case_setup()
+        filename = os.path.join(tests.config.test_data_path, 'case_other.json')
+        data = {"filename": filename}
+        self.post_with_status_check('/cases/export', 'success', headers=self.headers, data=data)
+        # essentially add two more cases, swap contents of case 1 and 2 in case_subscriptions
+        case1, _ = construct_case2()
+        case2, _ = construct_case1()
+        case5, _ = construct_case1()
+        case6, _ = construct_case2()
+        delete_cases(['case1' 'case2'])
+        cases = {'case1': case1, 'case2': case2, 'case5': case5, 'case6': case6}
+        add_cases(cases)
+        response = self.get_with_status_check('/cases/import', 'success', headers=self.headers, data=data)
+        expected_json = {'case1': construct_case1()[0],
+                         'case2': construct_case2()[0],
+                         'case3': construct_case1()[0],
+                         'case4': construct_case2()[0],
+                         'case5': construct_case1()[0],
+                         'case6': construct_case2()[0]}
+        expected_json = {key: value.as_json() for key, value in expected_json.items()}
+        self.assertDictEqual(subscriptions_as_json(), expected_json)
+        self.assertIn('cases', response)
+        self.assertDictEqual(response['cases'], expected_json)
 
     def test_crud_case_invalid_action(self):
         self.post_with_status_check('/cases/case3/junk', 'Invalid operation junk', headers=self.headers)

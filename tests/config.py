@@ -9,3 +9,4 @@ test_apps_path = join('.', 'tests', 'apps')
 test_data_dir_name = 'testdata'
 test_data_path = join('.', 'tests', test_data_dir_name)
 test_appdevice_backup = join(test_data_path, 'appdevice.json')
+test_cases_backup = join(test_data_path, 'cases.json')

@@ -379,6 +379,42 @@ def display_cases():
     return json.dumps(case_database.case_db.cases_as_json())
 
 
+@app.route('/cases/import', methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def import_cases():
+    form = forms.ImportCaseForm(request.form)
+    filename = form.filename.data if form.filename.data else core.config.paths.default_case_export_path
+    if os.path.isfile(filename):
+        try:
+            with open(filename, 'r') as cases_file:
+                cases_file = cases_file.read()
+                cases_file = cases_file.replace('\n', '')
+                cases = json.loads(cases_file)
+            case_subscription.add_cases(cases)
+            return json.dumps({"status": "success", "cases": case_subscription.subscriptions_as_json()})
+        except (OSError, IOError):
+            return json.dumps({"status": "error reading file"})
+        except ValueError:
+            return json.dumps({"status": "file contains invalid JSON"})
+    else:
+        return json.dumps({"status": "error: file does not exist"})
+
+
+@app.route('/cases/export', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def export_cases():
+    form = forms.ExportCaseForm(request.form)
+    filename = form.filename.data if form.filename.data else core.config.paths.default_case_export_path
+    try:
+        with open(filename, 'w') as cases_file:
+            cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))
+        return json.dumps({"status": "success"})
+    except (OSError, IOError):
+        return json.dumps({"status": "error writing to file"})
+
+
 @app.route('/cases/<string:case_name>/<string:action>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])
@@ -860,7 +896,7 @@ def config_devices_config(app, action):
             return json.dumps(output)
         return json.dumps({"status": "could not display all devices"})
     elif action == 'export':
-        form = forms.ExportAppDevices(request.form)
+        form = forms.ExportImportAppDevices(request.form)
         filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
         returned_json = {}
         apps = running_context.App.query.all()
@@ -873,6 +909,8 @@ def config_devices_config(app, action):
                 devices.append(device_json)
             returned_json[app.as_json()['name']] = devices
 
+        #print(json.dumps(returned_json, indent=4, sort_keys=True))
+
         try:
             with open(filename, 'w') as appdevice_file:
                 appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
@@ -880,7 +918,26 @@ def config_devices_config(app, action):
             return json.dumps({"status": "error writing file"})
         return json.dumps({"status": "success"})
 
-
+    elif action == "import":
+        form = forms.ExportImportAppDevices(request.form)
+        filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
+        try:
+            with open(filename, 'r') as appdevice_file:
+                read_file = appdevice_file.read()
+                read_file = read_file.replace('\n', '')
+                appsDevices = json.loads(read_file)
+        except (OSError, IOError):
+            return json.dumps({"status": "error reading file"})
+        for app in appsDevices:
+            for device in appsDevices[app]:
+                extra_fields = {}
+                for key in device:
+                    if key not in ["ip", "name", "port", "username"]:
+                        extra_fields[key] = device[key]
+                extra_fields_str = json.dumps(extra_fields)
+                running_context.Device.add_device(name=device["name"], username=device["username"], ip=device["ip"], port=device["port"],
+                                     extra_fields=extra_fields_str, app_server=app, password="")
+        return json.dumps({"status": "success"})
 
 
 
