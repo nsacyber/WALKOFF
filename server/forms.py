@@ -159,7 +159,15 @@ class EditGlobalSubscriptionForm(Form):
 
 
 class AddCaseForm(Form):
-    caseName = StringField('name', [validators.Optional()])
+    case_name = StringField('name', [validators.Optional()])
+
+
+class ExportCaseForm(Form):
+    filename = StringField('Filename', [validators.Optional()])
+
+
+class ImportCaseForm(Form):
+    filename = StringField('Filename', [validators.Optional()])
 
 
 class EditSubscriptionForm(Form):
