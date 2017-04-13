@@ -856,7 +856,7 @@ def config_devices_config(app, action):
             return json.dumps(output)
         return json.dumps({"status": "could not display all devices"})
     elif action == 'export':
-        form = forms.ExportAppDevices(request.form)
+        form = forms.ExportImportAppDevices(request.form)
         filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
         returned_json = {}
         apps = running_context.App.query.all()
@@ -869,6 +869,8 @@ def config_devices_config(app, action):
                 devices.append(device_json)
             returned_json[app.as_json()['name']] = devices
 
+        #print(json.dumps(returned_json, indent=4, sort_keys=True))
+
         try:
             with open(filename, 'w') as appdevice_file:
                 appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
@@ -876,7 +878,26 @@ def config_devices_config(app, action):
             return json.dumps({"status": "error writing file"})
         return json.dumps({"status": "success"})
 
-
+    elif action == "import":
+        form = forms.ExportImportAppDevices(request.form)
+        filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
+        try:
+            with open(filename, 'r') as appdevice_file:
+                read_file = appdevice_file.read()
+                read_file = read_file.replace('\n', '')
+                appsDevices = json.loads(read_file)
+        except (OSError, IOError):
+            return json.dumps({"status": "error reading file"})
+        for app in appsDevices:
+            for device in appsDevices[app]:
+                extra_fields = {}
+                for key in device:
+                    if key not in ["ip", "name", "port", "username"]:
+                        extra_fields[key] = device[key]
+                extra_fields_str = json.dumps(extra_fields)
+                running_context.Device.add_device(name=device["name"], username=device["username"], ip=device["ip"], port=device["port"],
+                                     extra_fields=extra_fields_str, app_server=app, password="")
+        return json.dumps({"status": "success"})
 
 
 

@@ -101,7 +101,7 @@ class EditDeviceForm(Form):
     extraFields = StringField('Extra Fields', [validators.Optional()])
 
 
-class ExportAppDevices(Form):
+class ExportImportAppDevices(Form):
     filename = StringField('Filename', [validators.Optional()])
 
 
