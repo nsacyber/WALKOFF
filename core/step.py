@@ -37,6 +37,7 @@ class Step(ExecutionElement):
                  next_steps=None,
                  errors=None,
                  parent_name='',
+                 position=None,
                  ancestry=None):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.raw_xml = xml
@@ -50,6 +51,7 @@ class Step(ExecutionElement):
             self.input = inputs if inputs is not None else {}
             self.conditionals = next_steps if next_steps is not None else []
             self.errors = errors if errors is not None else []
+            self.position = position if position is not None else {}
             self.raw_xml = self.to_xml()
         self.output = None
         self.next_up = None
@@ -74,6 +76,16 @@ class Step(ExecutionElement):
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall('error')]
+        position = step_xml.find('position')
+        if position is None:
+            self.position = {}
+        else:
+            x_position = position.find('x')
+            y_position = position.find('y')
+            if x_position is not None and y_position is not None:
+                self.position = {'x': x_position.text, 'y': y_position.text}
+            else:
+                self.position = {}
 
     def _update_xml(self, step_xml):
         self.action = step_xml.find('action').text
@@ -152,6 +164,13 @@ class Step(ExecutionElement):
             device = cElementTree.SubElement(step, 'device')
             device.text = self.device
 
+        if self.position and 'x' in self.position and 'y' in self.position:
+            position = cElementTree.SubElement(step, 'position')
+            x_position = cElementTree.SubElement(position, 'x')
+            x_position.text = str(self.position['x'])
+            y_position = cElementTree.SubElement(position, 'y')
+            y_position.text = str(self.position['y'])
+
         inputs = cElementTree.SubElement(step, 'input')
         for i in self.input:
             inputs.append(self.input[i].to_xml())
@@ -174,7 +193,8 @@ class Step(ExecutionElement):
                   'input': {key: self.input[key] for key in self.input},
                   'next': [next_step for next_step in self.conditionals],
                   'errors': [error for error in self.errors],
-                  'nextUp': self.next_up}
+                  'nextUp': self.next_up,
+                  'position': self.position}
         if self.output:
             output["output"] = self.output
         return str(output)
@@ -184,7 +204,8 @@ class Step(ExecutionElement):
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
-                  "input": {str(key): self.input[key].as_json() for key in self.input}}
+                  "input": {str(key): self.input[key].as_json() for key in self.input},
+                  "position": {pos: str(val) for pos, val in self.position.items()}}
         if self.output:
             output["output"] = str(self.output)
         if with_children:
@@ -196,7 +217,7 @@ class Step(ExecutionElement):
         return output
 
     @staticmethod
-    def from_json(json_in, parent_name='', ancestry=None):
+    def from_json(json_in, position, parent_name='', ancestry=None):
         device = json_in['device'] if 'device' in json_in else ''
         step = Step(name=json_in['name'],
                     action=json_in['action'],
@@ -205,6 +226,7 @@ class Step(ExecutionElement):
                     inputs={arg_name: arguments.Argument.from_json(arg_element)
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,
+                    position=position,
                     ancestry=ancestry)
         if json_in['next']:
             step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
