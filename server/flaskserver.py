@@ -366,6 +366,42 @@ def display_cases():
     return json.dumps(case_database.case_db.cases_as_json())
 
 
+@app.route('/cases/import', methods=['GET'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def import_cases():
+    form = forms.ImportCaseForm(request.form)
+    filename = form.filename.data if form.filename.data else core.config.paths.default_case_export_path
+    if os.path.isfile(filename):
+        try:
+            with open(filename, 'r') as cases_file:
+                cases_file = cases_file.read()
+                cases_file = cases_file.replace('\n', '')
+                cases = json.loads(cases_file)
+            case_subscription.add_cases(cases)
+            return json.dumps({"status": "success", "cases": case_subscription.subscriptions_as_json()})
+        except (OSError, IOError):
+            return json.dumps({"status": "error reading file"})
+        except ValueError:
+            return json.dumps({"status": "file contains invalid JSON"})
+    else:
+        return json.dumps({"status": "error: file does not exist"})
+
+
+@app.route('/cases/export', methods=['POST'])
+@auth_token_required
+@roles_accepted(*userRoles['/cases'])
+def export_cases():
+    form = forms.ExportCaseForm(request.form)
+    filename = form.filename.data if form.filename.data else core.config.paths.default_case_export_path
+    try:
+        with open(filename, 'w') as cases_file:
+            cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))
+        return json.dumps({"status": "success"})
+    except (OSError, IOError):
+        return json.dumps({"status": "error writing to file"})
+
+
 @app.route('/cases/<string:case_name>/<string:action>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*userRoles['/cases'])

@@ -49,6 +49,7 @@ class ServerTestCase(unittest.TestCase):
         core.config.paths.workflows_path = self.test_workflows_path
         core.config.paths.apps_path = tests.config.test_apps_path
         core.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
+        core.config.paths.default_case_export_path = tests.config.test_cases_backup
         if os.path.exists(tests.config.test_workflows_backup_path):
             shutil.rmtree(tests.config.test_workflows_backup_path)
 
