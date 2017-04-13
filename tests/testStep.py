@@ -381,3 +381,49 @@ class TestStep(unittest.TestCase):
         ancestries = [[name, 'name1'] for name in names]
         for i, ancestry in enumerate(ancestries):
             self.assertDictEqual(step.get_children(ancestry), flags[i].as_json())
+
+    def test_name_parent_rename(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        new_ancestry = ['step_parent_update']
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append('step')
+        self.assertListEqual(new_ancestry, step.ancestry)
+
+    def test_name_parent_nextstep_rename_conditional(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        nextstep = NextStep(name="test_nextstep", ancestry=step.ancestry)
+        step.conditionals = [nextstep]
+
+        new_ancestry = ["step_parent_update"]
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("step")
+        new_ancestry.append("test_nextstep")
+        self.assertListEqual(new_ancestry, step.conditionals[0].ancestry)
+
+    def test_name_parent_nextstep_rename_error(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        nextstep = NextStep(name="test_nextstep", ancestry=step.ancestry)
+        step.errors = [nextstep]
+
+        new_ancestry = ["step_parent_update"]
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("step")
+        new_ancestry.append("test_nextstep")
+        self.assertListEqual(new_ancestry, step.errors[0].ancestry)
+
+    def test_name_parent_multiple_nextstep_rename(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        nextstepOne = NextStep(name="test_nextstep_one", ancestry=step.ancestry)
+        nextstepTwo = NextStep(name="test_nextstep_two", ancestry=step.ancestry)
+        step.conditionals = [nextstepOne]
+        step.errors = [nextstepTwo]
+
+        new_ancestry = ["step_parent_update"]
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("step")
+        new_ancestry.append("test_nextstep_one")
+        self.assertListEqual(new_ancestry, step.conditionals[0].ancestry)
+
+        new_ancestry.remove("test_nextstep_one")
+        new_ancestry.append("test_nextstep_two")
+        self.assertListEqual(new_ancestry, step.errors[0].ancestry)

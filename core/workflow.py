@@ -20,6 +20,11 @@ class Workflow(ExecutionElement):
         self.children = children if (children is not None) else {}
         self.is_completed = False
 
+    def reconstruct_ancestry(self, parent_ancestry):
+        self._construct_ancestry(parent_ancestry)
+        for key in self.steps:
+            self.steps[key].reconstruct_ancestry(self.ancestry)
+
     @staticmethod
     def get_workflow(workflow_name):
         if isfile(join(paths.templates_path, workflow_name)):

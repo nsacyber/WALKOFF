@@ -54,6 +54,13 @@ class Step(ExecutionElement):
         self.output = None
         self.next_up = None
 
+    def reconstruct_ancestry(self, parent_ancestry):
+        self._construct_ancestry(parent_ancestry)
+        for nextstep in self.conditionals:
+            nextstep.reconstruct_ancestry(self.ancestry)
+        for nextstep in self.errors:
+            nextstep.reconstruct_ancestry(self.ancestry)
+
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get('id')
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)

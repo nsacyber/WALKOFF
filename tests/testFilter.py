@@ -141,3 +141,10 @@ class TestFilter(unittest.TestCase):
         self.assertEqual(filter_elem(output=5.5), None)
         self.assertEqual(filter_elem(output=[3, 4, 5]), 3)
         self.assertEqual(filter_elem(output='aaab'), 4)
+
+    def test_name_parent_rename(self):
+        filter = Filter(ancestry=['filter_parent'], action='filter')
+        new_ancestry = ['filter_parent_update']
+        filter.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append('filter')
+        self.assertListEqual(new_ancestry, filter.ancestry)

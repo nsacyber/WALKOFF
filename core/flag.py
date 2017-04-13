@@ -18,6 +18,11 @@ class Flag(ExecutionElement):
             self.args = args if args is not None else {}
             self.filters = filters if filters is not None else []
 
+    def reconstruct_ancestry(self, parent_ancestry):
+        self._construct_ancestry(parent_ancestry)
+        for filter in self.filters:
+            filter.reconstruct_ancestry(self.ancestry)
+
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)

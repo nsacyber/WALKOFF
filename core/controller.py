@@ -65,6 +65,10 @@ class Controller(object):
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
+    def reconstruct_ancestry(self):
+        for key in self.workflows:
+            self.workflows[key].reconstruct_ancestry(self.ancestry)
+
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         self.tree = cElementTree.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]

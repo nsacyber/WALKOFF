@@ -9,6 +9,9 @@ from flask_security import login_required, auth_token_required, current_user, ro
 from flask_security.utils import encrypt_password
 from gevent import monkey
 
+from copy import deepcopy
+from core.controller import _WorkflowKey
+
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
@@ -337,6 +340,28 @@ def workflow(playbook_name, workflow_name, action):
         else:
             status = 'error: invalid workflow name'
         return json.dumps({"status": status})
+
+    elif action == "copy":
+        form = forms.CopyWorkflowForm(request.form)
+        if form.validate():
+            if form.playbook.data:
+                new_playbook_name = form.playbook.data
+            else:
+                new_playbook_name = playbook_name
+            if form.workflow.data:
+                new_workflow_name = form.workflow.data
+            else:
+                new_workflow_name = workflow_name+"_Copy"
+
+            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+            workflow_copy = deepcopy(workflow)
+            workflow_copy.playbook_name = new_playbook_name
+            workflow_copy.name = new_workflow_name
+            key = _WorkflowKey(workflow_copy.playbook_name, workflow_copy.name)
+            running_context.controller.workflows[key] = workflow_copy
+            running_context.controller.reconstruct_ancestry()
+
+            return json.dumps({"status": "success"})
 
     else:
         return json.dumps({"status": 'error: invalid operation'})

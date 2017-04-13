@@ -283,3 +283,37 @@ class TestFlag(unittest.TestCase):
         for i, name in enumerate(names):
             self.assertDictEqual(flag2.get_children([name]), filters[i].as_json())
             self.assertDictEqual(flag2.get_children([]), flag2.as_json(with_children=False))
+
+    def test_name_parent_rename(self):
+        flag = Flag(ancestry=['parent'], action='test')
+        new_ancestry = ['parent_update']
+        flag.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append('test')
+        self.assertListEqual(new_ancestry, flag.ancestry)
+
+    def test_name_parent_filter_rename(self):
+        flag = Flag(ancestry=['flag_parent'], action='test_flag')
+        filter = Filter(action="test_filter", ancestry=flag.ancestry)
+        flag.filters = [filter]
+
+        new_ancestry = ["flag_parent_update"]
+        flag.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("test_flag")
+        new_ancestry.append("test_filter")
+        self.assertListEqual(new_ancestry, flag.filters[0].ancestry)
+
+    def test_name_parent_multiple_filter_rename(self):
+        flag = Flag(ancestry=['flag_parent'], action='test_flag')
+        filterOne = Filter(action="test_filter_one", ancestry=flag.ancestry)
+        filterTwo = Filter(action="test_filter_two", ancestry=flag.ancestry)
+        flag.filters = [filterOne, filterTwo]
+
+        new_ancestry = ["flag_parent_update"]
+        flag.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("test_flag")
+        new_ancestry.append("test_filter_one")
+        self.assertListEqual(new_ancestry, flag.filters[0].ancestry)
+
+        new_ancestry.remove("test_filter_one")
+        new_ancestry.append("test_filter_two")
+        self.assertListEqual(new_ancestry, flag.filters[1].ancestry)

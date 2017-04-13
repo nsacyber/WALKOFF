@@ -41,7 +41,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         # Check that the workflow executed correctly post-manipulation
         self.c.execute_workflow(*self.id_tuple)
 
-        running_context.shutdown_threads()
+        with flask_server.running_context.flask_app.app_context():
+            flask_server.running_context.shutdown_threads()
 
         steps = executed_steps('defaultController', self.testWorkflow.name, start, datetime.utcnow())
         self.assertEqual(len(steps), 2)

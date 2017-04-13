@@ -18,6 +18,9 @@ class Filter(ExecutionElement):
             self.args = {arg_name: arguments.Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
                          for arg_name, arg_value in args.items()}
 
+    def reconstruct_ancestry(self, parent_ancestry):
+        self._construct_ancestry(parent_ancestry)
+
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)

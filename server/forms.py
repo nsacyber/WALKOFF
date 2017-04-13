@@ -28,6 +28,10 @@ class AddWorkflowForm(Form):
     playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
     template = StringField('template', [validators.Length(min=1, max=50), validators.Optional()])
 
+class CopyWorkflowForm(Form):
+    playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
+    workflow = StringField('workflow', [validators.Length(min=1, max=50), validators.Optional()])
+
 
 class AddPlaybookForm(Form):
     playbook_template = StringField('playbook_template', [validators.Length(min=1, max=50), validators.Optional()])
@@ -103,7 +107,6 @@ class EditDeviceForm(Form):
 
 class ExportImportAppDevices(Form):
     filename = StringField('Filename', [validators.Optional()])
-
 
 class LoginForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25)])

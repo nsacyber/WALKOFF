@@ -206,3 +206,37 @@ class TestNextStep(unittest.TestCase):
         for i, ancestry in enumerate(ancestries):
             self.assertDictEqual(next_step3.get_children(ancestry), filters[i].as_json())
             self.assertDictEqual(next_step3.get_children([]), next_step3.as_json(with_children=False))
+
+    def test_name_parent_rename(self):
+        nextstep = NextStep(ancestry=['nextstep_parent'], name='nextstep')
+        new_ancestry = ['nextstep_parent_update']
+        nextstep.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append('nextstep')
+        self.assertListEqual(new_ancestry, nextstep.ancestry)
+
+    def test_name_parent_flag_rename(self):
+        nextstep = NextStep(ancestry=['nextstep_parent'], name='nextstep')
+        flag = Flag(action="test_flag", ancestry=nextstep.ancestry)
+        nextstep.flags = [flag]
+
+        new_ancestry = ["nextstep_parent_update"]
+        nextstep.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("nextstep")
+        new_ancestry.append("test_flag")
+        self.assertListEqual(new_ancestry, nextstep.flags[0].ancestry)
+
+    def test_name_parent_multiple_flag_rename(self):
+        nextstep = NextStep(ancestry=['nextstep_parent'], name='nextstep')
+        flagOne = Flag(action="test_flag_one", ancestry=nextstep.ancestry)
+        flagTwo = Flag(action="test_flag_two", ancestry=nextstep.ancestry)
+        nextstep.flags = [flagOne, flagTwo]
+
+        new_ancestry = ["nextstep_parent_update"]
+        nextstep.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("nextstep")
+        new_ancestry.append("test_flag_one")
+        self.assertListEqual(new_ancestry, nextstep.flags[0].ancestry)
+
+        new_ancestry.remove("test_flag_one")
+        new_ancestry.append("test_flag_two")
+        self.assertListEqual(new_ancestry, nextstep.flags[1].ancestry)
