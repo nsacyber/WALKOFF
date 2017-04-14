@@ -571,3 +571,24 @@ class TestWorkflowServer(ServerTestCase):
                     self.assertTrue('helloWorldWorkflow_Copy' in flag.ancestry)
                     for filter in flag.filters:
                         self.assertTrue('helloWorldWorkflow_Copy' in filter.ancestry)
+
+    def test_copy_playbook(self):
+        self.post_with_status_check('/playbook/test/copy', 'success',
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.get_all_playbooks()), 2)
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test_Copy'))
+
+        workflows_original = flask_server.running_context.controller.get_all_workflows_by_playbook('test')
+        workflows_copy = flask_server.running_context.controller.get_all_workflows_by_playbook('test_Copy')
+
+        self.assertEqual(len(workflows_original), len(workflows_copy))
+
+    def test_copy_playbook_invalid_name(self):
+        data = {"playbook" : "test"}
+        self.post_with_status_check('/playbook/test/copy', 'error: invalid playbook name', data=data,
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.get_all_playbooks()), 1)
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))

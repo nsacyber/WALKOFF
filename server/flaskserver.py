@@ -220,6 +220,22 @@ def crud_playbook(playbook_name, action):
                 status = 'error: error occurred while remove playbook file: {0}'.format(e)
 
         return json.dumps({'status': status, 'playbooks': running_context.controller.get_all_workflows()})
+
+    elif action == "copy":
+        form = forms.CopyPlaybookForm(request.form)
+        if form.validate():
+            if form.playbook.data:
+                new_playbook_name = form.playbook.data
+            else:
+                new_playbook_name = playbook_name+"_Copy"
+
+            if running_context.controller.is_playbook_registered(new_playbook_name):
+                status = 'error: invalid playbook name'
+            else:
+                running_context.controller.copy_playbook(playbook_name, new_playbook_name)
+                status = 'success'
+
+            return json.dumps({"status": status})
     else:
         return json.dumps({"status": 'error: invalid operation'})
 

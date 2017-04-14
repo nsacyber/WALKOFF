@@ -32,6 +32,8 @@ class CopyWorkflowForm(Form):
     playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
     workflow = StringField('workflow', [validators.Length(min=1, max=50), validators.Optional()])
 
+class CopyPlaybookForm(Form):
+    playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
 
 class AddPlaybookForm(Form):
     playbook_template = StringField('playbook_template', [validators.Length(min=1, max=50), validators.Optional()])
