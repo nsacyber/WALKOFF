@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 from os import path
 from core import controller, graphdecorator
+from core.step import Step
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.helpers import construct_workflow_name_key
@@ -330,3 +331,38 @@ class TestWorkflowManipulation(unittest.TestCase):
         workflow.from_cytoscape_data(cytoscape_data)
         derived_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
         self.assertDictEqual(derived_steps, original_steps)
+
+    def test_name_parent_rename(self):
+        workflow = controller.wf.Workflow(parent_name='workflow_parent', name='workflow')
+        new_ancestry = ['workflow_parent_update']
+        workflow.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append('workflow')
+        self.assertListEqual(new_ancestry, workflow.ancestry)
+
+    def test_name_parent_step_rename(self):
+        workflow = controller.wf.Workflow(parent_name='workflow_parent', name='workflow')
+        step = Step(name="test_step", ancestry=workflow.ancestry)
+        workflow.steps["test_step"] = step
+
+        new_ancestry = ["workflow_parent_update"]
+        workflow.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("workflow")
+        new_ancestry.append("test_step")
+        self.assertListEqual(new_ancestry, workflow.steps["test_step"].ancestry)
+
+    def test_name_parent_multiple_step_rename(self):
+        workflow = controller.wf.Workflow(parent_name='workflow_parent', name='workflow')
+        stepOne = Step(name="test_step_one", ancestry=workflow.ancestry)
+        stepTwo = Step(name="test_step_two", ancestry=workflow.ancestry)
+        workflow.steps["test_step_one"] = stepOne
+        workflow.steps["test_step_two"] = stepTwo
+
+        new_ancestry = ["workflow_parent_update"]
+        workflow.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("workflow")
+        new_ancestry.append("test_step_one")
+        self.assertListEqual(new_ancestry, workflow.steps["test_step_one"].ancestry)
+
+        new_ancestry.remove("test_step_one")
+        new_ancestry.append("test_step_two")
+        self.assertListEqual(new_ancestry, workflow.steps["test_step_two"].ancestry)

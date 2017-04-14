@@ -16,7 +16,8 @@ class Workflow(ExecutionElement):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
         self.playbook_name = playbook_name
         self.steps = {}
-        self._from_xml(xml)
+        if xml:
+            self._from_xml(xml)
         self.children = children if (children is not None) else {}
         self.is_completed = False
 
