@@ -353,15 +353,13 @@ def workflow(playbook_name, workflow_name, action):
             else:
                 new_workflow_name = workflow_name+"_Copy"
 
-            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            workflow_copy = deepcopy(workflow)
-            workflow_copy.playbook_name = new_playbook_name
-            workflow_copy.name = new_workflow_name
-            key = _WorkflowKey(workflow_copy.playbook_name, workflow_copy.name)
-            running_context.controller.workflows[key] = workflow_copy
-            running_context.controller.reconstruct_ancestry()
+            if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
+                status = 'error: invalid playbook and/or workflow name'
+            else:
+                running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name, new_workflow_name)
+                status = 'success'
 
-            return json.dumps({"status": "success"})
+            return json.dumps({"status": status})
 
     else:
         return json.dumps({"status": 'error: invalid operation'})

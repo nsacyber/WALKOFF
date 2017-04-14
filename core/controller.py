@@ -181,6 +181,7 @@ class Controller(object):
         new_key = _WorkflowKey(new_playbook, new_workflow)
         self.workflows[new_key] = self.workflows.pop(old_key)
         self.workflows[new_key].name = construct_workflow_name_key(new_playbook, new_workflow)
+        self.workflows[new_key].reconstruct_ancestry([self.name])
 
     def update_playbook_name(self, old_playbook, new_playbook):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
@@ -213,6 +214,16 @@ class Controller(object):
             return xml
         else:
             return None
+
+    def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
+        workflow = self.get_workflow(old_playbook_name, old_workflow_name)
+        workflow_copy = deepcopy(workflow)
+        workflow_copy.playbook_name = new_playbook_name
+        workflow_copy.name = new_workflow_name
+
+        key = _WorkflowKey(workflow_copy.playbook_name, workflow_copy.name)
+        self.workflows[key] = workflow_copy
+        self.workflows[key].reconstruct_ancestry([self.name])
 
     # Starts active execution
     def start(self):
