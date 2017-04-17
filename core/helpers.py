@@ -107,7 +107,8 @@ def extract_workflow_name(workflow_key, playbook_name=''):
     else:
         return __workflow_key_separator.join(workflow_key.split(__workflow_key_separator)[1:])
 
-def combineDicts(x, y):
+
+def combine_dicts(x, y):
     z = x.copy()
     z.update(y)
     return z

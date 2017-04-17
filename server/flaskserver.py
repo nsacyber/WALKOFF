@@ -14,43 +14,42 @@ import core.filters
 import core.flags
 from core import helpers
 
-from core.helpers import combineDicts
+from core.helpers import combine_dicts
 from server.context import running_context
-from . import database, appdevice, interface
-from .app import app
+from . import database, interface
+from server import app
 
 monkey.patch_all()
 
-user_datastore = database.user_datastore
-
-urls = ["/", "/key", "/workflow", '/playbook', "/configuration", "/interface", "/execution/listener",
-        "/execution/listener/triggers",
-        "/roles", "/users", "/configuration", '/cases', '/apps', "/execution/scheduler"]
+urls = ['/', '/key', '/playbook', '/configuration', '/interface', '/execution/listener',
+        '/execution/listener/triggers',
+        '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
 
 default_urls = urls
-userRoles = database.userRoles
 database.initialize_user_roles(urls)
-db = database.db
 
 
 # Creates Test Data
 @app.before_first_request
 def create_user():
-    database.db.create_all()
+    running_context.db.create_all()
 
     if not database.User.query.first():
-        admin_role = user_datastore.create_role(name="admin", description="administrator", pages=default_urls)
+        admin_role = running_context.user_datastore.create_role(name='admin',
+                                                                description='administrator',
+                                                                pages=default_urls)
 
-        u = user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
 
-        user_datastore.add_role_to_user(u, admin_role)
+        running_context.user_datastore.add_role_to_user(u, admin_role)
 
-        database.db.session.commit()
+        running_context.db.session.commit()
 
-    apps = set(helpers.list_apps()) - set([_app.name for _app in database.db.session.query(appdevice.App).all()])
+    apps = set(helpers.list_apps()) - set([_app.name
+                                           for _app in running_context.db.session.query(running_context.App).all()])
     for app_name in apps:
-        database.db.session.add(appdevice.App(app=app_name, devices=[]))
-    database.db.session.commit()
+        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+    running_context.db.session.commit()
 
 
 """
@@ -62,29 +61,31 @@ def create_user():
 @login_required
 def default():
     if current_user.is_authenticated:
-        default_page_name = "dashboard"
-        args = {"apps": running_context.get_apps(), "authKey": current_user.get_auth_token(),
-                "currentUser": current_user.email, "default_page": default_page_name}
+        default_page_name = 'dashboard'
+        args = {"apps": running_context.get_apps(),
+                "authKey": current_user.get_auth_token(),
+                "currentUser": current_user.email,
+                "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
 
 
 # Returns System-Level Interface Pages
-@app.route('/interface/<string:name>/display', methods=["POST"])
+@app.route('/interface/<string:name>/display', methods=['POST'])
 @auth_token_required
-@roles_accepted(*userRoles["/interface"])
+@roles_accepted(*running_context.user_roles['/interface'])
 def system_pages(name):
     if current_user.is_authenticated and name:
         args = getattr(interface, name)()
-        combineDicts(args, {"authKey": current_user.get_auth_token()})
+        combine_dicts(args, {"authKey": current_user.get_auth_token()})
         return render_template("pages/" + name + "/index.html", **args)
     else:
         return {"status": "Could Not Log In."}
 
 
 # Returns the API key for the user
-@app.route('/key', methods=["GET", "POST"])
+@app.route('/key', methods=['GET', 'POST'])
 @login_required
 def login_info():
     if current_user.is_authenticated:
@@ -95,14 +96,14 @@ def login_info():
 
 @app.route('/apps/', methods=['GET'])
 @auth_token_required
-@roles_accepted(*userRoles["/apps"])
+@roles_accepted(*running_context.user_roles['/apps'])
 def list_all_apps():
     return json.dumps({"apps": helpers.list_apps()})
 
 
 @app.route('/apps/actions', methods=['GET'])
 @auth_token_required
-@roles_accepted(*userRoles["/apps"])
+@roles_accepted(*running_context.user_roles['/apps'])
 def list_all_apps_and_actions():
     core.config.config.load_function_info()
     return json.dumps(core.config.config.function_info['apps'])
@@ -110,8 +111,7 @@ def list_all_apps_and_actions():
 
 def write_playbook_to_file(playbook_name):
     write_format = 'w' if sys.version_info[0] == 2 else 'wb'
-    playbook_filename = os.path.join(core.config.paths.workflows_path,
-                                     '{0}.workflow'.format(playbook_name))
+    playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))
     with open(playbook_filename, write_format) as workflow_out:
         xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
         xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
@@ -120,16 +120,14 @@ def write_playbook_to_file(playbook_name):
 
 @app.route('/flags', methods=['GET'])
 @auth_token_required
-@roles_accepted(*userRoles['/workflow'])
+@roles_accepted(*running_context.user_roles['/playbook'])
 def display_flags():
     core.config.config.load_function_info()
-    return json.dumps({"status": "success",
-                       "flags": core.config.config.function_info['flags']})
+    return json.dumps({"status": "success", "flags": core.config.config.function_info['flags']})
 
 
 @app.route('/filters', methods=['GET'])
 @auth_token_required
-@roles_accepted(*userRoles['/workflow'])
+@roles_accepted(*running_context.user_roles['/playbook'])
 def display_filters():
-    return json.dumps({"status": "success",
-                       "filters": core.config.config.function_info['filters']})
+    return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})

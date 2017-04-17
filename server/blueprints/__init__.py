@@ -13,4 +13,3 @@ def register_blueprints():
     app.register_blueprint(roles.roles_page, url_prefix='/roles')
     app.register_blueprint(trigger.triggers_page, url_prefix='/execution/listener')
     app.register_blueprint(scheduler.scheduler_page, url_prefix='/execution/scheduler')
-

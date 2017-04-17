@@ -19,9 +19,9 @@ class TestUsersAndRoles(ServerTestCase):
             # server.database.db.session.commit()
 
             email = self.email
-            u = server.user_datastore.get_user(email)
+            u = server.running_context.user_datastore.get_user(email)
             if u:
-                server.user_datastore.delete_user(u)
+                server.running_context.user_datastore.delete_user(u)
 
             server.running_context.Role.query.filter_by(name=self.name).delete()
             server.database.db.session.commit()
