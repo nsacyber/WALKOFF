@@ -1,4 +1,3 @@
-
 defaultSubscriptionDialog = $("#editSubscriptionDialog");
 window.editSubscriptionDialog =
 window.editSubscriptionDialog = defaultSubscriptionDialog.dialog({

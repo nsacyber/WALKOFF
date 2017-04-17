@@ -66,18 +66,7 @@ function customMenu(node){
     return items;
 }
 
-function schedulerStatus(status){
-    if(status == 0){
-        return "stopped";
-    }
-    if(status == 2){
-        return "paused";
-    }
-    if(status == 1){
-        return "running";
-    }
-    return "error";
-}
+
 
 $("#loadedPlaybooksTree").jstree({
     'core':{

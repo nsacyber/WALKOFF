@@ -14,7 +14,7 @@ function resetSubscriptionModal(){
 
 function resetCaseModal(){
     $("#editCaseDialog").empty();
-    $("#editCaseDialog").html(defaultCaseModal);
+    $("#editCaseDialog").html(editCaseDialog);
 }
 
 function createSubscriptionModal(){

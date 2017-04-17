@@ -1,6 +1,20 @@
+function schedulerStatus(status){
+    if(status == 0){
+        return "stopped";
+    }
+    if(status == 2){
+        return "paused";
+    }
+    if(status == 1){
+        return "running";
+    }
+    return "error";
+}
+
 $("#status").text(schedulerStatus(schedulerStatusNo));
 
 $("#startSchedulerBtn").on("click", function(e){
+    $("#messageDetail").empty();
     var result = function () {
         var tmp = null;
         $.ajax({
@@ -15,10 +29,17 @@ $("#startSchedulerBtn").on("click", function(e){
         });
         return JSON.parse(tmp);
     }();
-    $("#status").text(schedulerStatus(result["status"]));
+    message = schedulerStatus(result["status"]);
+    if(message == "error"){
+        $("#messageDetail").text(result["status"]);
+    }
+    $("#status").text(message);
 });
 
 $("#pauseSchedulerBtn").on("click", function(e){
+    $("#messageDetail").empty();
+    action = $(this).text().toLowerCase();
+    console.log(action);
     var result = function () {
         var tmp = null;
         $.ajax({
@@ -26,17 +47,30 @@ $("#pauseSchedulerBtn").on("click", function(e){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/execution/scheduler/pause",
+            'url': "/execution/scheduler/" + action,
             'success': function (data) {
                 tmp = data;
             }
         });
         return JSON.parse(tmp);
     }();
-    $("#status").text(schedulerStatus(result["status"]));
+    console.log(result);
+    message = schedulerStatus(result["status"]);
+    if(message == "error"){
+        $("#messageDetail").text(result["status"]);
+    }
+    else{
+        if(action == "pause"){
+            $(this).text("Resume");
+        }else{
+            $(this).text("Pause");
+        }
+    }
+    $("#status").text(message);
 });
 
 $("#stopSchedulerBtn").on("click", function(e){
+    $("#messageDetail").empty();
     var result = function () {
         var tmp = null;
         $.ajax({
@@ -51,5 +85,12 @@ $("#stopSchedulerBtn").on("click", function(e){
         });
         return JSON.parse(tmp);
     }();
-    $("#status").text(schedulerStatus(result["status"]));
+    message = schedulerStatus(result["status"]);
+    if(message == "error"){
+        $("#messageDetail").text(result["status"]);
+    }
+    else{
+        $("#pauseSchedulerBtn").text("Pause");
+    }
+    $("#status").text(message);
 });
