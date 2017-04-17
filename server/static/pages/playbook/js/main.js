@@ -667,6 +667,10 @@ $(function(){
     //-------------------------
     // Configure event handlers
     //-------------------------
+    $("#palette ul li a").each(function() {
+        console.log("CHANGED HREF");
+        $(this).attr("href", location.href.toString()+$(this).attr("href"));
+    });
 
     $(".nav-tabs a").click(function(){
         $(this).tab('show');
