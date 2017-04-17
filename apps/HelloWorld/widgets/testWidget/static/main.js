@@ -1,7 +1,7 @@
 $(function(){
-    var xData = ['xData',0];
-    var data1 = ['data1',0];
-    var data2 = ['data2',0];
+    var xData = ['xData','0'];
+    var data1 = ['data1','0'];
+    var data2 = ['data2','0'];
     var xmin=0;
     var range=10;
     var on = false;
@@ -42,9 +42,10 @@ $(function(){
     var sse2 = new EventSource('apps/HelloWorld/testWidget/stream/data-1');
     var sse3 = new EventSource('apps/HelloWorld/testWidget/stream/data-2');
     sse1.onmessage = function(message) {
+
         xData.push(message.data)
         if(xData.length >= range){
-          xData.shift();
+          data2.splice(1, 1);
         }
     }
     sse1.onerror = function(){
@@ -58,9 +59,10 @@ $(function(){
 
 
     sse2.onmessage = function(message) {
+
         data1.push(message.data);
         if(data1.length >= range){
-            data1.shift();
+            data2.splice(1, 1);
         }
     }
     sse2.onerror = function(){
@@ -74,9 +76,10 @@ $(function(){
 
 
     sse3.onmessage = function(message) {
+
         data2.push(message.data);
         if(data2.length >= range){
-           data2.shift();
+           data2.splice(1, 1);
         }
     }
     sse3.onerror = function(){
@@ -107,17 +110,22 @@ $(function(){
     setInterval(function () {
         if(on){
             forward = 0
-            if(xmin < xData.length && typeof xData != "undefined" && typeof data1 != "undefined" && typeof data2 != "undefined"){
-                forward = 1;
-                chart1.axis.range({max: {x: xmin+range}, min: {x: xmin}});
 
+            if(xmin < xData.length){
+                data1 = data1.slice(0, xData.length);
+                data2 = data2.slice(0, xData.length);
+                console.log(xData.length, data1.length, data2.length, xmin);
+                forward = 1;
                 xmin +=1;
+                chart1.axis.range({min: {x: xmin}, max: {x: xmin+range}});
                 chart1.flow({
                     columns: [
                         xData,data1, data2
                     ],
-                    length: forward
+                    length: forward,
+                    done: function(){
 
+                    }
                 });
             }
 

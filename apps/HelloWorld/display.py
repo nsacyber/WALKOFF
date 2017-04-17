@@ -7,11 +7,10 @@ def load(*args, **kwargs):
 
 
 def stream_generator(stream_name):
-
     def counter():
         count = 0
         while True:
-            gevent.sleep(2)
+            gevent.sleep(1)
             yield 'data: %s\n\n' % count
             count += 1
 
