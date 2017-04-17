@@ -198,13 +198,15 @@ class TestAppsAndDevices(ServerTestCase):
                                 "ip": "127.0.0.1",
                                 "name": "testDevice",
                                 "port": "6000",
-                                "username": "testUsername"}
+                                "username": "testUsername",
+                                'app': {"name": "HelloWorld"}}
         test_device_two_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
-                                "ip": "127.0.0.1",
+                                "ip": u"127.0.0.1",
                                 "name": "testDeviceTwo",
                                 "port": "6000",
-                                "username": "testUsername"}
+                                "username": "testUsername",
+                                'app': {"name": "HelloWorld"}}
 
         filename = 'testappdevices.json'
         filepath = os.path.join(tests.config.test_data_path, filename)
@@ -220,12 +222,33 @@ class TestAppsAndDevices(ServerTestCase):
         self.post_with_status_check('/configuration/HelloWorld/devices/import', 'success',
                                     data=data, headers=self.headers)
 
+        def convert_all_json_to_str(json_in):
+            return {str(key): (str(value) if not isinstance(value, dict) else convert_all_json_to_str(value))
+                    for key, value in json_in.items()}
+
         with server.running_context.flask_app.app_context():
-            app = server.running_context.App.query.filter_by(name="HelloWorld").first()
-            test_device_one_json["id"] = "1"
-            test_device_two_json["id"] = "2"
-            test_device_one_json["app"] = {"id": "1", "name": "HelloWorld"}
-            test_device_two_json["app"] = {"id": "1", "name": "HelloWorld"}
+            app = server.running_context.App.query.filter_by(name="HelloWorld").all()
+            self.assertEqual(len(app), 1)
+            app = app[0]
             self.assertEqual(len(app.devices), 2)
-            self.assertEqual(test_device_one_json, app.devices[0].as_json())
-            self.assertEqual(test_device_two_json, app.devices[1].as_json())
+            checked_apps = 0
+            for device in app.devices:
+                if device.name == 'testDevice':
+                    device_json = convert_all_json_to_str(device.as_json())
+                    if 'id' in device_json:
+                        device_json.pop('id', None)
+                    self.assertIn('app', device_json)
+                    self.assertIn('id', device_json['app'])
+                    device_json['app'].pop('id', None)
+                    self.assertDictEqual(device_json, test_device_one_json)
+                    checked_apps += 1
+                elif device.name == 'testDeviceTwo':
+                    device_json = convert_all_json_to_str(device.as_json())
+                    if 'id' in device_json:
+                        device_json.pop('id', None)
+                    self.assertIn('app', device_json)
+                    self.assertIn('id', device_json['app'])
+                    device_json['app'].pop('id', None)
+                    self.assertDictEqual(device_json, test_device_two_json)
+                    checked_apps += 1
+            self.assertEqual(checked_apps, 2)
