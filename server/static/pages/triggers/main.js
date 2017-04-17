@@ -231,8 +231,8 @@
 
     // Initialize the editor with a JSON schema
 //    console.log(parameters)
-    parameters = transformParametersToSchema(parameters);
-   console.log(parameters);
+//    parameters = transformParametersToSchema(parameters);
+//   console.log(parameters);
 
     $('#addTrigger').on('click', function () {
         name = $('#deviceForm #name').val();
@@ -257,10 +257,10 @@
 
     //Show edit dialog
     $("#editTrigger").on('click',function(){
+    alert('edited')
         index = $("#trigger option:selected").val();
         trigger = triggerData['triggers'][''+index];
         if($("#trigger option:selected").attr('value') == 'none'){
-            alert("Select a trigger");
         }else{
 //            $("#parameterEdit").show();
             $("#name").val(trigger['name']);
