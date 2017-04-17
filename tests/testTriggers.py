@@ -104,7 +104,7 @@ class TestTriggers(ServerTestCase):
         self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
 
-        self.post_with_status_check('/execution/listener'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data={"data": "hellohellohello"})
 
     def test_trigger_execute_invalid_name(self):
@@ -115,7 +115,7 @@ class TestTriggers(ServerTestCase):
         self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
 
-        self.post_with_status_check('/execution/listener'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/'.format(self.test_trigger_name),
                                     "error: workflow could not be found",
                                     headers=self.headers, data={"data": "hellohellohello"})
 
@@ -127,6 +127,6 @@ class TestTriggers(ServerTestCase):
         self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
 
-        self.post_with_status_check('/execution/listener'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/'.format(self.test_trigger_name),
                                     "warning: no trigger found valid for data in", headers=self.headers,
                                     data={"data": "bbb"})

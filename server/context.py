@@ -9,17 +9,22 @@ class Context(object):
     def __init__(self):
         self.apps = self.get_apps()
 
-        from server.database import User, Role
-        from server.appdevice import Device, App
-        from core.controller import controller
         from server.app import app
+        from server.appdevice import Device, App
+        from server.database import User, Role, userRoles, db, user_datastore
+        from server.triggers import Triggers
+        from core.controller import controller
 
-        self.controller = controller
         self.User = User
         self.Role = Role
         self.Device = Device
         self.App = App
+        self.Triggers = Triggers
         self.flask_app = app
+        self.user_roles = userRoles
+        self.db = db
+        self.user_datastore = user_datastore
+        self.controller = controller
 
     # Returns list of apps
     # Gets all the app instances

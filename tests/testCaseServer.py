@@ -33,7 +33,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_cases_typical(self):
         cases = TestCaseServer.__basic_case_setup()
-        response = self.app.get('/cases', headers=self.headers)
+        response = self.app.get('/cases/', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = set(cases.keys())
@@ -42,7 +42,7 @@ class TestCaseServer(ServerTestCase):
         self.assertSetEqual(expected_cases, set(received_cases), 'Received incorrect cases')
 
     def test_display_cases_none(self):
-        response = self.app.get('/cases', headers=self.headers)
+        response = self.app.get('/cases/', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = []

@@ -35,7 +35,7 @@ class TestUsersAndRoles(ServerTestCase):
         data = {"name": self.name}
         self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True)
 
-        response = json.loads(self.app.get('/roles', headers=self.headers).get_data(as_text=True))
+        response = json.loads(self.app.get('/roles/', headers=self.headers).get_data(as_text=True))
         self.assertEqual(response, ["admin", self.name])
 
     def test_edit_role_description(self):

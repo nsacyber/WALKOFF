@@ -4,10 +4,9 @@ import importlib
 import json
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
-from . import forms
+from server import forms
 import core.config.config
 import core.config.paths
-from core.helpers import construct_module_name_from_path
 
 app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 

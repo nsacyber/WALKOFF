@@ -3,7 +3,7 @@ import sys
 import importlib
 from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
-from . import forms
+from server import forms
 
 widget_page = Blueprint('widgetPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 

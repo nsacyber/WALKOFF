@@ -55,7 +55,7 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.workflows = {}
 
     def test_display_all_playbooks(self):
-        response = self.get_with_status_check('/playbook', 'success', headers=self.headers)
+        response = self.get_with_status_check('/playbook/', 'success', headers=self.headers)
         self.assertIn('playbooks', response)
         self.assertDictEqual(response['playbooks'], {'test': ['helloWorldWorkflow']})
 
