@@ -4,9 +4,7 @@ $(document).on("DOMContentLoaded", function(e){
     }
 });
 
-core.start("systemPage", {
-    options: {page: default_page}
-});
+
 
 
 

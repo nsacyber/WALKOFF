@@ -3,6 +3,7 @@
 $(function() {
 //    $("#createUser").hide();
     getRole();
+    $currentUser = $("#username option:selected");
     function getUserList(){
         $.ajax({
             url: "/users",
@@ -89,8 +90,7 @@ $(function() {
        }
     });
 });
-$("#username")
-    .change(function () {
+$("#username").change(function () {
         $.ajax({
             url: "users/" + ($("#username option:selected").text() + "/display"),
             data: {},
@@ -326,9 +326,19 @@ $.ajax({
     }
 });
 
-$(function () {
+
+//    $("#settingsTabs").tabs({
+//        beforeLoad: function(e, ui){
+//            console.log(ui);
+//            ui.ajaxSettings.url = "#" + ui.tab[0].id;
+//            console.log(ui.ajaxSettings.url);
+//            e.stopImmediatePropagation();
+//        }
+//    });
+    $("#settingsTabs UL LI A").each(function() {
+        $(this).attr("href", location.href.toString()+$(this).attr("href"));
+    });
     $("#settingsTabs").tabs();
-});
 
 $("#setForm").on("submit", function (e) {
     $.ajax({

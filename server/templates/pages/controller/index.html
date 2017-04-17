@@ -1,162 +1,178 @@
-<link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
-<div id="main">
-    <style>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
+
+        <style>
 
 
-        #loadedWorkflowsTreeDiv{
-            height:400px;
-            border:solid;
-            padding:10px;
-            margin:5px;
-        }
-        #loadedPlaybooksTree{
-            height:300px;
-        }
+            #loadedWorkflowsTreeDiv{
+                height:400px;
+                border:solid;
+                padding:10px;
+                margin:5px;
+            }
+            #loadedPlaybooksTree{
+                height:300px;
+            }
 
-        #loadedCasesDiv{
-            height:400px;
-            border:solid;
-            padding:10px;
-            margin:5px;
-        }
-        #casesTree{
-            height:300px;
-        }
+            #loadedCasesDiv{
+                height:400px;
+                border:solid;
+                padding:10px;
+                margin:5px;
+            }
+            #casesTree{
+                height:300px;
+            }
 
-        #statusDiv{
-            height:200px;
-            border:solid;
-            padding:10px;
-            margin:5px;
-        }
+            #statusDiv{
+                height:200px;
+                border:solid;
+                padding:10px;
+                margin:5px;
+            }
 
-        #caseControlDiv{
-            height:200px;
-            border:solid;
-            padding:10px;
-            margin:5px;
-        }
+            #caseControlDiv{
+                height:200px;
+                border:solid;
+                padding:10px;
+                margin:5px;
+            }
 
-         .controllerCol{
-            height:700px;
-            background-color:white;
-            margin-left:20px;
+             .controllerCol{
+                height:700px;
+                background-color:white;
+                margin-left:20px;
 
-        }
+            }
 
-        #schedulerDiv{
-            padding:20px;
-        }
+            #schedulerDiv{
+                padding:20px;
+            }
 
-        #editSubscriptionDialog{
-            z-index:99999;
-        }
+            #editSubscriptionDialog{
+                z-index:99999;
+            }
 
-    </style>
-    <div id="header">
-        <h2> Controller Management </h2>
-        <h3>{{currentController}}</h3>
-    </div>
-    <div class="row">
-        <div id="loadedWorkflowsDiv" class="controllerCol col-xs-2 ">
-            <h3>Playbook Management</h3>
-            <div id="loadedWorkflowsTreeDiv">
-                <h4>Loaded Workflows</h4>
-                <div id="loadedPlaybooksTree"></div>
-                 <div id="loadWorkflowDiv"><button>Load Playbook</button></div>
+        </style>
+    </head>
+    <body>
+        <div id="main">
+
+            <div id="header">
+                <h2> Controller Management </h2>
+                <h3>{{currentController}}</h3>
             </div>
+            <div class="row">
+                <div id="loadedWorkflowsDiv" class="controllerCol col-xs-2 ">
+                    <h3>Playbook Management</h3>
+                    <div id="loadedWorkflowsTreeDiv">
+                        <h4>Loaded Workflows</h4>
+                        <div id="loadedPlaybooksTree"></div>
+                         <div id="loadWorkflowDiv"><button>Load Playbook</button></div>
+                    </div>
 
-            <div id="statusDiv">
-                <h5>Status</h5>
-                <div id="executionResult">
-                    <li id="eventList"></li>
+                    <div id="statusDiv">
+                        <h5>Status</h5>
+                        <div id="executionResult">
+                            <li id="eventList"></li>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="casesDiv" class="controllerCol col-xs-2 ">
+                    <h3>Cases</h3>
+                    <div id="loadedCasesDiv">
+                        <h4>Loaded Cases</h4>
+                        <div id="casesTree"></div>
+                    </div>
+                    <div id="caseControlDiv">
+                        <button id="addCase">Add Case</button>
+                    </div>
+                </div>
+
+                <div id="schedulerColumn" class="controllerCol col-xs-2 ">
+                    <h3>Scheduler</h3>
+                    <div id="schedulerDiv">
+                        <div id="schedulerStatus">
+                            <h4>Scheduler Currently: <span id="status"></span></h4>
+                        </div>
+                        <button id="startSchedulerBtn">Start</button>
+                        <button id="pauseSchedulerBtn">Pause</button>
+                        <button id="stopSchedulerBtn">Stop</button>
+
+                    </div>
                 </div>
             </div>
+
+
+
+
+
+
+            <div id="editSubscriptionDialog" title="subscription parameters" class=ui-widget">
+                <table>
+                    <tr>
+                        <td>Object Type</td>
+                        <td><select id='modalObjectTypeSelection'></select></td>
+                    </tr>
+                    <tr>
+                        <td>Object</td>
+
+                        <td>
+                            <ul id="objectSelectionDiv" name="objectSelectionDiv">
+                                <li><label for='controllerObjectSelection'>Controller</label><select id='controllerObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='playbookObjectSelection'>Playbook</label><select id='playbookObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='workflowObjectSelection'>Workflow</label><select id='workflowObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='stepObjectSelection'>Step</label><select id='stepObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='nextStepObjectSelection'>Next Step</label><select id='nextStepObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='flagObjectSelection'>Flag</label><select id='flagObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='filterObjectSelection'>Filter</label><select id='filterObjectSelection' class='objectSelection'></select></li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Subscriptions</td>
+                         <td>
+                            <ul class="subscriptionSelection"></ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><button>Submit</button></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="editCaseDialog" title="case parameters" class=ui-widget">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td><input type="text"></td>
+                    </tr>
+                </table>
+            </div>
+            <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+
+            <script type="text/javascript">
+                window.loadedWorkflows = {{loadedWorkflows | safe}};
+                window.schedulerStatusNo = {{schedulerStatus}};
+                window.controllers = ["{{currentController}}"];
+            </script>
+
+            <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>
+            <script src="{{ url_for('static', filename='pages/controller/caseFunctions.js' ) }}"> </script>
+            <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
+            <script src="{{ url_for('static', filename='pages/controller/scheduler.js' ) }}"> </script>
+            <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
         </div>
 
-        <div id="casesDiv" class="controllerCol col-xs-2 ">
-            <h3>Cases</h3>
-            <div id="loadedCasesDiv">
-                <h4>Loaded Cases</h4>
-                <div id="casesTree"></div>
-            </div>
-            <div id="caseControlDiv">
-                <button id="addCase">Add Case</button>
-            </div>
-        </div>
-
-        <div id="schedulerColumn" class="controllerCol col-xs-2 ">
-            <h3>Scheduler</h3>
-            <div id="schedulerDiv">
-                <div id="schedulerStatus">
-                    <h4>Scheduler Currently: <span id="status"></span></h4>
-                </div>
-                <button id="startSchedulerBtn">Start</button>
-                <button id="pauseSchedulerBtn">Pause</button>
-                <button id="stopSchedulerBtn">Stop</button>
-
-            </div>
-        </div>
-    </div>
-
-    <script type="application/javascript">
-        loadedWorkflows = {{loadedWorkflows | safe}};
-        schedulerStatusNo = {{schedulerStatus}};
-        controllers = ["{{currentController}}"];
-    </script>
+    </body>
+</html>
 
 
-
-
-    <div id="editSubscriptionDialog" title="subscription parameters" class=ui-widget">
-        <table>
-            <tr>
-                <td>Object Type</td>
-                <td><select id='modalObjectTypeSelection'></select></td>
-            </tr>
-            <tr>
-                <td>Object</td>
-
-                <td>
-                    <ul id="objectSelectionDiv" name="objectSelectionDiv">
-                        <li><label for='controllerObjectSelection'>Controller</label><select id='controllerObjectSelection' class='objectSelection'></select></li>
-                        <li><label for='playbookObjectSelection'>Playbook</label><select id='playbookObjectSelection' class='objectSelection'></select></li>
-                        <li><label for='workflowObjectSelection'>Workflow</label><select id='workflowObjectSelection' class='objectSelection'></select></li>
-                        <li><label for='stepObjectSelection'>Step</label><select id='stepObjectSelection' class='objectSelection'></select></li>
-                        <li><label for='nextStepObjectSelection'>Next Step</label><select id='nextStepObjectSelection' class='objectSelection'></select></li>
-                        <li><label for='flagObjectSelection'>Flag</label><select id='flagObjectSelection' class='objectSelection'></select></li>
-                        <li><label for='filterObjectSelection'>Filter</label><select id='filterObjectSelection' class='objectSelection'></select></li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>Subscriptions</td>
-                 <td>
-                    <ul class="subscriptionSelection"></ul>
-                </td>
-            </tr>
-            <tr>
-                <td></td>
-                <td><button>Submit</button></td>
-            </tr>
-        </table>
-
-    </div>
-
-    <div id="editCaseDialog" title="case parameters" class=ui-widget">
-        <table>
-            <tr>
-                <td>Name</td>
-                <td><input type="text"></td>
-            </tr>
-        </table>
-
-    </div>
-    <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/caseFunctions.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/cases.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/scheduler.js' ) }}"> </script>
-    <script src="{{ url_for('static', filename='pages/controller/main.js' ) }}"> </script>
-</div>

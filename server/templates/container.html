@@ -30,6 +30,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!--[if lt IE 9]>
   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+
   <![endif]-->
 </head>
 <!--
@@ -174,9 +175,9 @@ desired effect
             <a id="ss_settings" href="#"><i class="fa fa-gear"></i> Settings </a>
         </li>
 
-        <li>
+        <!-- <li>
             <a id="ss_help" href="#"><i class="fa fa-gear"></i> Help </a>
-        </li>
+        </li> -->
       </ul>
       <!-- /.sidebar-menu -->
     </section>
@@ -194,9 +195,8 @@ desired effect
     <section class="content">
 
       <!-- Your Page Content Here -->
-        <div id="ss_main">
-            {{content}}
-        </div>
+      <div class="contentContainer"><iframe name="contentFrame" frameBorder='0' onload="" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe></div>
+
     </section>
     <!-- /.content -->
      <br clear="all" />
@@ -232,13 +232,20 @@ desired effect
 
 
 <!-- Main JavaScript -->
-<script type="application/javascript">
-    var authKey = '{{ authKey|safe }}';
-    var default_page = '{{default_page | safe}}';
+<script id="globalVariables" type="application/javascript">
+    authKey = '{{ authKey|safe }}';
+    default_page = '{{default_page | safe}}';
+    apps = {{apps | safe}};
+    currentUser = '{{currentUser}}';
+
+    document.addEventListener("DOMContentLoaded", function(e){
+        if (Notification.permission !== "granted"){
+            Notification.requestPermission();
+        }
+    });
 </script>
 <script src="{{ url_for('static', filename='scaleApp.js' ) }}"></script>
 <script src="{{ url_for('static', filename='modules.js' ) }}"></script>
-<script src="{{ url_for('static', filename='pageSetup.js' ) }}"></script>
 <script src="{{ url_for('static', filename='main.js' ) }}"></script>
 </body>
 </html>

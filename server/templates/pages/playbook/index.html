@@ -1,241 +1,256 @@
-<div id="main">
-    <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/cytoscape.js-panzoom.css' ) }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
-    <style>
-        h3{
-            font-family: 'Lato', sans-serif;
-            font-weight: bold;
-        }
-        h1 {
-            font-family: 'Lato', sans-serif;
-            font-weight: bold;
-            font-size: 30px;
-            color: #255876;
-        }
-        #main {
-          overflow-x:auto;
-        }
-        .content {
-          padding-right: 0;
-        }
-        .btn-default {
-          background-color: #aecbdc;
-          border-color: #aecbdc;
-        }
-        .btn-default:hover {
-          background-color: #eaf2f6;
-          border-color: #eaf2f6;
-          margin: 0;
-          border-radius: 0;
-        }
-        .btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
-          margin-left: 0;
-        }
-        .btn-group>.btn:first-child {
-          margin: 0;
-          padding: 10px;
-        }
-        /*#remove-button:hover {
-          background-color: red;
-        }*/
-        .btn-toolbar {
-          background-color: #aecbdc;
-          margin-left: 0;
-          /*margin-right: -20px;*/
-          border: 1px solid #8b9aa3;
-        }
-        .btn-group {
-          border-right: 1px solid #8b9aa3;
-        }
-        h3#currentWorkflowText {
-          font-size: 18px;
-        }
-        #body{
-            margin-bottom: 20px;
-        }
-        #top {
-            width: 2300px;
-            height: 700px;
-            float: left
-        }
-        #palette{
-            display: inline-block;
-            vertical-align: top;
-            height: 700px;
-            width: 400px;
-        }
-        #cy {
-            display: inline-block;
-            vertical-align: top;
-            height: 700px;
-            width: 1000px;
-            position: relative;
-            left: 0;
-            border: solid;
-            background-color: white;
-            background-image: url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
-            margin-right: 20px;
-        }
-        #cy-instructions {
-            padding: 20px;
-            font-size: 25px;
-        }
-        #parameters{
-            display: inline-block;
-            vertical-align: top;
-            height: 700px;
-            width: 450px;
-            overflow-y:auto;
-        }
-        button, input, select, textarea {
-          background-color: #45AA3B;
-          color: #fff;
-          //margin-top: 20px;
-          font-weight: bold;
-          font-size: 20px;
-          border: none;
-          border-radius:5px;
-        }
-        .panel-default>.panel-heading  {
-          background-color: #eaf2f6;
-          font-weight: bolder;
-        }
-        .list-group-item:last-child{
-          background-color: #d6e5ed;
-        }
-        .list-group-item:first-child{
-          background-color: #aecbdc;
-        }
-        .no-close .ui-dialog-titlebar-close {
-          display: none;
-        }
-    </style>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/cytoscape.js-panzoom.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='plugins/ionicons-2.0.1/css/ionicons.min.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='plugins/font-awesome-4.6.3/css/font-awesome.min.css' ) }}">
 
-    <div id="header">
-        <h1> Workflow Editor </h1>
-    </div>
-    <div id="body">
-        <h3 id="currentWorkflowText"></h3>
-    </div>
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <style>
+            h3{
+                font-family: 'Lato', sans-serif;
+                font-weight: bold;
+            }
+            h1 {
+                font-family: 'Lato', sans-serif;
+                font-weight: bold;
+                font-size: 30px;
+                color: #255876;
+            }
+            #main {
+              overflow-x:auto;
+            }
+            .content {
+              padding-right: 0;
+            }
+            .btn-default {
+              background-color: #aecbdc;
+              border-color: #aecbdc;
+            }
+            .btn-default:hover {
+              background-color: #eaf2f6;
+              border-color: #eaf2f6;
+              margin: 0;
+              border-radius: 0;
+            }
+            .btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
+              margin-left: 0;
+            }
+            .btn-group>.btn:first-child {
+              margin: 0;
+              padding: 10px;
+            }
+            /*#remove-button:hover {
+              background-color: red;
+            }*/
+            .btn-toolbar {
+              background-color: #aecbdc;
+              margin-left: 0;
+              /*margin-right: -20px;*/
+              border: 1px solid #8b9aa3;
+            }
+            .btn-group {
+              border-right: 1px solid #8b9aa3;
+            }
+            h3#currentWorkflowText {
+              font-size: 18px;
+            }
+            #body{
+                margin-bottom: 20px;
+            }
+            #top {
+                width: 2300px;
+                height: 700px;
+                float: left
+            }
+            #palette{
+                display: inline-block;
+                vertical-align: top;
+                height: 700px;
+                width: 400px;
+            }
+            #cy {
+                display: inline-block;
+                vertical-align: top;
+                height: 700px;
+                width: 1000px;
+                position: relative;
+                left: 0;
+                border: solid;
+                background-color: white;
+                background-image: url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");
+                margin-right: 20px;
+            }
+            #cy-instructions {
+                padding: 20px;
+                font-size: 25px;
+            }
+            #parameters{
+                display: inline-block;
+                vertical-align: top;
+                height: 700px;
+                width: 450px;
+                overflow-y:auto;
+            }
+            button, input, select, textarea {
+              background-color: #45AA3B;
+              color: #fff;
+              //margin-top: 20px;
+              font-weight: bold;
+              font-size: 20px;
+              border: none;
+              border-radius:5px;
+            }
+            .panel-default>.panel-heading  {
+              background-color: #eaf2f6;
+              font-weight: bolder;
+            }
+            .list-group-item:last-child{
+              background-color: #d6e5ed;
+            }
+            .list-group-item:first-child{
+              background-color: #aecbdc;
+            }
+            .no-close .ui-dialog-titlebar-close {
+              display: none;
+            }
+        </style>
 
-    <!-- <div class=bs-example data-example-id=simple-button-toolbar> -->
-        <div class=btn-toolbar role=toolbar>
-            <div class=btn-group role=group>
-                <button id="new-button" type=button class="btn btn-default"><i class="fa fa-file-o"></i></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="save-button" type=button class="btn btn-default"><i class="fa fa-save"></i></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="remove-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="undo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="redo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="cut-button" type=button class="btn btn-default"><i class="fa fa-cut" style="transform: rotate(-90deg);"></i></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="copy-button" type=button class="btn btn-default"><i class="fa fa-copy"></i></button>
-            </div>
-            <div class=btn-group role=group>
-                <button id="paste-button" type=button class="btn btn-default"><i class="fa fa-paste"></i></button>
-            </div>
-        </div>
-    <!-- </div> -->
 
-    <div id="top">
-        <div id="palette">
-            <ul class="nav nav-tabs">
-                <li class="active"><a id="workflows-tab" href="#workflows">Workflows</a></li>
-                <li><a href="#actions">Actions</a></li>
-            </ul>
-            <div class="tab-content">
-                <div id="workflows" class="tab-pane fade in active">
+    </head>
+    <body>
+        <div id="main">
+            <div id="header">
+                <h1> Workflow Editor </h1>
+            </div>
+            <div id="body">
+                <h3 id="currentWorkflowText"></h3>
+            </div>
+
+            <!-- <div class=bs-example data-example-id=simple-button-toolbar> -->
+                <div class=btn-toolbar role=toolbar>
+                    <div class=btn-group role=group>
+                        <button id="new-button" type=button class="btn btn-default"><i class="fa fa-file-o"></i></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="save-button" type=button class="btn btn-default"><i class="fa fa-save"></i></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="remove-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="undo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="redo-button" type=button class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="cut-button" type=button class="btn btn-default"><i class="fa fa-cut" style="transform: rotate(-90deg);"></i></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="copy-button" type=button class="btn btn-default"><i class="fa fa-copy"></i></button>
+                    </div>
+                    <div class=btn-group role=group>
+                        <button id="paste-button" type=button class="btn btn-default"><i class="fa fa-paste"></i></button>
+                    </div>
                 </div>
-                <div id="actions" class="tab-pane fade">
+            <!-- </div> -->
+
+            <div id="top">
+                <div id="palette">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a id="workflows-tab" href="#workflows">Workflows</a></li>
+                        <li><a href="#actions">Actions</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="workflows" class="tab-pane fade in active">
+                        </div>
+                        <div id="actions" class="tab-pane fade">
+                        </div>
+                    </div>
+                </div>
+                <div id="cy" tabindex="0">
+                    <div id="cy-instructions">
+                        <p> Instructions:</p>
+                        <p> <b>Double click</b> item in Workflows tab to load workflow into graph.</p>
+                        <p> <b>Drag and drop</b> item from Actions tab into graph to create new workflow step.</p>
+                    </div>
+                </div>
+                <div id="parameters">
                 </div>
             </div>
-        </div>
-        <div id="cy" tabindex="0">
-            <div id="cy-instructions">
-                <p> Instructions:</p>
-                <p> <b>Double click</b> item in Workflows tab to load workflow into graph.</p>
-                <p> <b>Drag and drop</b> item from Actions tab into graph to create new workflow step.</p>
+
+            <div id = "dialog-new-workflow" class="hidden" title = "Create New Workflow">
+                <p class="validateTips">All form fields are required.</p>
+                <form>
+                    <fieldset>
+                        <label for="playbookName">Playbook Name</label>
+                        <input type="text"
+                               name="playbookName"
+                               id="playbookName1"
+                               value=""
+                               class="text
+                                      ui-widget-content
+                                      ui-corner-all">
+
+                        <label for="workflowName">Workflow Name</label>
+                        <input type="text"
+                               name="workflowName"
+                               id="workflowName1"
+                               value=""
+                               class="text
+                                      ui-widget-content
+                                      ui-corner-all">
+                    </fieldset>
+                </form>
             </div>
+
+            <div id = "dialog-rename-playbook" class="hidden" title = "Rename Playbook">
+                <p class="validateTips">All form fields are required.</p>
+                <form>
+                    <fieldset>
+                        <label for="playbookName">New Playbook Name</label>
+                        <input type="text"
+                               name="playbookName"
+                               id="playbookName2"
+                               value=""
+                               class="text
+                                      ui-widget-content
+                                      ui-corner-all">
+                    </fieldset>
+                </form>
+            </div>
+
+            <div id = "dialog-rename-workflow" class="hidden" title = "Rename Workflow">
+                <p class="validateTips">All form fields are required.</p>
+                <form>
+                    <fieldset>
+                        <label for="workflowName">New Workflow Name</label>
+                        <input type="text"
+                               name="workflowName"
+                               id="workflowName2"
+                               value=""
+                               class="text
+                                      ui-widget-content
+                                      ui-corner-all">
+                    </fieldset>
+                </form>
+            </div>
+            <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-undo-redo.js') }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-panzoom.js') }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-edgehandles.js') }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-clipboard.js') }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='pages/playbook/js/jsoneditor.min.js') }}"></script>
+
+            <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
         </div>
-        <div id="parameters">
-        </div>
-    </div>
+    </body>
+</html>
 
-    <div id = "dialog-new-workflow" class="hidden" title = "Create New Workflow">
-        <p class="validateTips">All form fields are required.</p>
-        <form>
-            <fieldset>
-                <label for="playbookName">Playbook Name</label>
-                <input type="text"
-                       name="playbookName"
-                       id="playbookName1"
-                       value=""
-                       class="text
-                              ui-widget-content
-                              ui-corner-all">
-
-                <label for="workflowName">Workflow Name</label>
-                <input type="text"
-                       name="workflowName"
-                       id="workflowName1"
-                       value=""
-                       class="text
-                              ui-widget-content
-                              ui-corner-all">
-            </fieldset>
-        </form>
-    </div>
-
-    <div id = "dialog-rename-playbook" class="hidden" title = "Rename Playbook">
-        <p class="validateTips">All form fields are required.</p>
-        <form>
-            <fieldset>
-                <label for="playbookName">New Playbook Name</label>
-                <input type="text"
-                       name="playbookName"
-                       id="playbookName2"
-                       value=""
-                       class="text
-                              ui-widget-content
-                              ui-corner-all">
-            </fieldset>
-        </form>
-    </div>
-
-    <div id = "dialog-rename-workflow" class="hidden" title = "Rename Workflow">
-        <p class="validateTips">All form fields are required.</p>
-        <form>
-            <fieldset>
-                <label for="workflowName">New Workflow Name</label>
-                <input type="text"
-                       name="workflowName"
-                       id="workflowName2"
-                       value=""
-                       class="text
-                              ui-widget-content
-                              ui-corner-all">
-            </fieldset>
-        </form>
-    </div>
-
-    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-undo-redo.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-panzoom.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-edgehandles.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/cytoscape-clipboard.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/jsoneditor.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>
-</div>

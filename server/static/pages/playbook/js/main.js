@@ -1,6 +1,11 @@
 $(function(){
     "use strict";
 
+    $(".nav-tabs ul li a").each(function() {
+        console.log("HERE");
+        $(this).attr("href", location.href.toString()+$(this).attr("href"));
+    });
+
     //--------------------
     // Top level variables
     //--------------------

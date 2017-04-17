@@ -43,6 +43,9 @@ $(function(){
     var sse3 = new EventSource('apps/HelloWorld/testWidget/stream/data-2');
     sse1.onmessage = function(message) {
         xData.push(message.data)
+        if(xData.length >= range){
+          xData.shift();
+        }
     }
     sse1.onerror = function(){
         sse1.close();
@@ -56,6 +59,9 @@ $(function(){
 
     sse2.onmessage = function(message) {
         data1.push(message.data);
+        if(data1.length >= range){
+            data1.shift();
+        }
     }
     sse2.onerror = function(){
         sse1.close();
@@ -69,6 +75,9 @@ $(function(){
 
     sse3.onmessage = function(message) {
         data2.push(message.data);
+        if(data2.length >= range){
+           data2.shift();
+        }
     }
     sse3.onerror = function(){
         sse1.close();
@@ -95,19 +104,20 @@ $(function(){
 
     });
 
-
     setInterval(function () {
         if(on){
             forward = 0
-            if(xmin < xData.length){
-                forward = 1
+            if(xmin < xData.length && typeof xData != "undefined" && typeof data1 != "undefined" && typeof data2 != "undefined"){
+                forward = 1;
                 chart1.axis.range({max: {x: xmin+range}, min: {x: xmin}});
+
                 xmin +=1;
                 chart1.flow({
                     columns: [
-                        xData,data1,data2
+                        xData,data1, data2
                     ],
                     length: forward
+
                 });
             }
 

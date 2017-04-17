@@ -92,4 +92,4 @@ $(document).ready(function(){
             }
         });
     });
-})
+});

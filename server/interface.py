@@ -1,6 +1,6 @@
 from server import forms
 from server.context import running_context
-
+import json
 
 def devices():
     return {"apps": running_context.get_apps(),
@@ -37,6 +37,6 @@ def dashboard():
 def controller():
     return {
         "currentController": str(running_context.controller.name),
-        "loadedWorkflows": running_context.controller.get_all_workflows(),
-        "schedulerStatus": running_context.controller.scheduler.state
+        "loadedWorkflows": json.dumps(running_context.controller.get_all_workflows()),
+        "schedulerStatus": str(running_context.controller.scheduler.state)
     }

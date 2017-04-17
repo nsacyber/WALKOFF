@@ -1,95 +1,112 @@
-<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
 
 
-<script type="app/javascript">
-        var apps = {{apps|safe}};
-    </script>
-<script src="{{ url_for('static', filename='pages/devices/mainNew.js' ) }}"> </script>
-<style>
-    .selectColumn{
-        border:solid;
-        height:800px;
-    }
-    #appList{
-        width:130px;
-        background-color: #F0F8FF;
-        border: none;
-    }
-    #deviceList{
-        width:130px;
-        background-color: #F0F8FF;
-        border: none;
-    }
 
-    h2 {
-      font-family: 'Lato', sans-serif;
-      font-weight: bold;
-      font-size: 30px;
-      color: #255876;
-      /*font-size: 24px;*/
-    }
-    h3 {
-      font-family: 'Lato', sans-serif;
-      font-weight: bold;
-      /*font-size: 20px;*/
-    }
-    input {
-      background-color: #F0F8FF;
-      border: none;
-    }
-    input#submit {
-      background-color: #45AA3B;
-      color: #fff;
-    }
-    button#addNewDevice {
-      background-color: #367fa9;
-      color: #fff;
-      border: none;
-    }
-    button#removeDevice {
-      background-color: #102632;
-      color: #fff;
-      border: none;
-    }
-    button {
-      display: block;
-      margin-top: 10px;
-    }
-    .selectColumn {
-      border: none;
-    }
-    .col-xs-2 {
-      width: 30%;
-    }
+        <style>
+            .selectColumn{
+                border:solid;
+                height:800px;
+            }
+            #appList{
+                width:130px;
+                background-color: #F0F8FF;
+                border: none;
+            }
+            #deviceList{
+                width:130px;
+                background-color: #F0F8FF;
+                border: none;
+            }
 
-</style>
+            h2 {
+              font-family: 'Lato', sans-serif;
+              font-weight: bold;
+              font-size: 30px;
+              color: #255876;
+              /*font-size: 24px;*/
+            }
+            h3 {
+              font-family: 'Lato', sans-serif;
+              font-weight: bold;
+              /*font-size: 20px;*/
+            }
+            input {
+              background-color: #F0F8FF;
+              border: none;
+            }
+            input#submit {
+              background-color: #45AA3B;
+              color: #fff;
+            }
+            button#addNewDevice {
+              background-color: #367fa9;
+              color: #fff;
+              border: none;
+            }
+            button#removeDevice {
+              background-color: #102632;
+              color: #fff;
+              border: none;
+            }
+            button {
+              display: block;
+              margin-top: 10px;
+            }
+            .selectColumn {
+              border: none;
+            }
+            .col-xs-2 {
+              width: 30%;
+            }
 
-<div class="row content" id="main">
-    <h2>Device Management</h2>
-    <div id="deviceSelect" class="col-xs-2">
-        <h3> Apps </h3>
-        <select id="appList" size="10" multiple></select>
-        <h3> Devices </h3>
-        <select id="deviceList" size="10" multiple></select>
-        <div>
-            <button id="addNewDevice">Add New Device</button>
-            <button id="removeDevice">Remove Device</button>
+        </style>
+    </head>
+    <body>
+
+
+
+        <div class="row content" id="main">
+            <h2>Device Management</h2>
+            <div id="deviceSelect" class="col-xs-2">
+                <h3> Apps </h3>
+                <select id="appList" size="10" multiple></select>
+                <h3> Devices </h3>
+                <select id="deviceList" size="10" multiple></select>
+                <div>
+                    <button id="addNewDevice">Add New Device</button>
+                    <button id="removeDevice">Remove Device</button>
+                </div>
+
+            </div>
+            <div id="parameterSelect" class="col-xs-2 ">
+                <h3> Parameters </h3>
+                <form id="deviceForm">
+                    {% from "pages/_formhelpers.html" import render_field %}
+                    {{ render_field(form.name) }}
+                    {{ render_field(form.username) }}
+                    {{ render_field(form.pw) }}
+                    {{ render_field(form.ipaddr) }}
+                    {{ render_field(form.port) }}
+                </form>
+                <button id="editDevice" name="editDevice">Edit Device</button>
+            </div>
+
+            </div>
         </div>
+        <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+        <script type="app/javascript">
+            var apps = {{apps|safe}};
+        </script>
+        <script src="{{ url_for('static', filename='pages/devices/mainNew.js' ) }}"> </script>
+    </body>
+</html>
 
-    </div>
-    <div id="parameterSelect" class="col-xs-2 ">
-        <h3> Parameters </h3>
-        <form id="deviceForm">
-            {% from "pages/_formhelpers.html" import render_field %}
-            {{ render_field(form.name) }}
-            {{ render_field(form.username) }}
-            {{ render_field(form.pw) }}
-            {{ render_field(form.ipaddr) }}
-            {{ render_field(form.port) }}
-        </form>
-        <button id="editDevice" name="editDevice">Edit Device</button>
-    </div>
 
-    </div>
-</div>
+
 

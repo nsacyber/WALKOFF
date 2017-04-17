@@ -262,7 +262,6 @@ $(function(){
     }
     sse1.onerror = function(){
         sse1.close();
-        sse2.close();
     }
 
     var s = document.getElementById('rand_stream')
@@ -270,7 +269,6 @@ $(function(){
         s.innerHTML = '<li>'+message.data+'</li>'
     }
     sse2.onerror = function(){
-        sse1.close();
         sse2.close();
     }
 })

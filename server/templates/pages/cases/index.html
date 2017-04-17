@@ -1,147 +1,159 @@
-<div id="main" class="content">
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='pages/cases/jquery-ui.theme.min.css' ) }}">
-    <style>
-        h1 {
-            font-family: 'Lato', sans-serif;
-            font-weight: bold;
-            font-size: 30px;
-            color: #255876;
-        }
-        h3 {
-          font-family: 'Lato', sans-serif;
-          font-weight: bold;
-        }
-        h3#currentWorkflowText {
-          font-size: 18px;
-        }
-        .box-title {
-          font-family: 'Lato', sans-serif;
-          font-weight: bold;
-        }
-        .box {
-          margin-top: 40px;
-        }
-        button, input, select, textarea {
-          background-color: #45AA3B;
-          color: #fff;
-          margin-top: 20px;
-          font-weight: bold;
-          font-size: 20px;
-          border: none;
-          border-radius:5px;
-        }
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+        <style>
+            h1 {
+                font-family: 'Lato', sans-serif;
+                font-weight: bold;
+                font-size: 30px;
+                color: #255876;
+            }
+            h3 {
+              font-family: 'Lato', sans-serif;
+              font-weight: bold;
+            }
+            h3#currentWorkflowText {
+              font-size: 18px;
+            }
+            .box-title {
+              font-family: 'Lato', sans-serif;
+              font-weight: bold;
+            }
+            .box {
+              margin-top: 40px;
+            }
+            button, input, select, textarea {
+              background-color: #45AA3B;
+              color: #fff;
+              margin-top: 20px;
+              font-weight: bold;
+              font-size: 20px;
+              border: none;
+              border-radius:5px;
+            }
 
-        #sidebar{
-            width:275px;
-            margin-right:20px;
-            border:solid;
-            background-color:#2b6688;
-            padding:10px;
-            text-align:center;
-        }
+            #sidebar{
+                width:275px;
+                margin-left:30px;
+                border:solid;
+                background-color:#2b6688;
 
-        #sidebarTitle{
-            color:white;
-        }
-        #logTable{
-        }
-        .box{
-            height:700px;
-        }
-        .box-header{
+                text-align:center;
+            }
 
-        }
-        .box-title{
+            #sidebarTitle{
+                color:white;
+            }
+            #logTable{
+            }
+            .box{
+                height:700px;
+            }
+            .box-header{
 
-        }
-        th {
-          color: #367fa9;
-          background-color: #eaf2f6;
-        }
-        .box-header>.fa, .box-header>.glyphicon, .box-header>.ion, .box-header .box-title {
-          font-size: 24px;
-          font-family: 'Lato', sans-serif;
-        }
+            }
+            .box-title{
 
-        .innerSidebar{
-            background-color:white;
-            height:100%;
-            text-align:left;
-            padding:5px;
-        }
-    </style>
+            }
+            th {
+              color: #367fa9;
+              background-color: #eaf2f6;
+            }
+            .box-header>.fa, .box-header>.glyphicon, .box-header>.ion, .box-header .box-title {
+              font-size: 24px;
+              font-family: 'Lato', sans-serif;
+            }
+
+            .innerSidebar{
+                background-color:white;
+                height:100%;
+                text-align:left;
+                padding:5px;
+            }
+        </style>
+
+
+    </head>
+    <body>
+        <div id="main" class="content">
+
+
+        <div id="header">
+            <h1> Case Log </h1>
+        </div>
+        <div class="row">
+            <div id="sidebar" class="col-xs-4 box" >
+                <div id="innerSidebar" class="innerSidebar">
+                    <h3>Cases</h3>
+                    <div id="casesDiv">
+                        Cases Here
+                    </div>
+                    <h3>Workflows</h3>
+                    <div id="workflowsDiv">
+                        Workflows Here
+                    </div>
+                    <h3>Events</h3>
+                    <div id="eventsDiv">
+                        Events Here
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-8">
+              <div class="box ">
+                <div class="box-header">
+                  <h3 class="box-title">Events</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                  <table id="logDataTable" class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th data-field="name">Name</th>
+                        <th data-field="app">App</th>
+                        <th data-field="device">Device</th>
+                        <th data-field="nextUp">Next Up</th>
+                        <th data-field="action">Action</th>
+                        <th data-field="output">Output</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>start</td>
+                        <td>HelloWorld</td>
+                        <td>testDevice</td>
+                        <td>Workflow End</td>
+                        <td>HelloWorld</td>
+                        <td>"Hello World"</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                     <tr>
+                        <th data-field="name">Name</th>
+                        <th data-field="app">App</th>
+                        <th data-field="device">Device</th>
+                        <th data-field="nextUp">Next Up</th>
+                        <th data-field="action">Action</th>
+                        <th data-field="output">Output</th>
+                    </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
-    <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
     <script>
         var currentWorkflow = "{{currentWorkflow}}";
         $("#currentWorkflowText").text(currentWorkflow);
     </script>
-
-    <div id="header">
-        <h1> Case Log </h1>
-    </div>
-    <div class="row">
-        <div id="sidebar" class="col-xs-4 box" >
-            <div id="innerSidebar" class="innerSidebar">
-                <h3>Cases</h3>
-                <div id="casesDiv">
-                    Cases Here
-                </div>
-                <h3>Workflows</h3>
-                <div id="workflowsDiv">
-                    Workflows Here
-                </div>
-                <h3>Events</h3>
-                <div id="eventsDiv">
-                    Events Here
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xs-8">
-          <div class="box ">
-            <div class="box-header">
-              <h3 class="box-title">Events</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <table id="logDataTable" class="table table-bordered table-hover">
-                <thead>
-                <tr>
-                    <th data-field="name">Name</th>
-                    <th data-field="app">App</th>
-                    <th data-field="device">Device</th>
-                    <th data-field="nextUp">Next Up</th>
-                    <th data-field="action">Action</th>
-                    <th data-field="output">Output</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>start</td>
-                    <td>HelloWorld</td>
-                    <td>testDevice</td>
-                    <td>Workflow End</td>
-                    <td>HelloWorld</td>
-                    <td>"Hello World"</td>
-                </tr>
-                </tbody>
-                <tfoot>
-                 <tr>
-                    <th data-field="name">Name</th>
-                    <th data-field="app">App</th>
-                    <th data-field="device">Device</th>
-                    <th data-field="nextUp">Next Up</th>
-                    <th data-field="action">Action</th>
-                    <th data-field="output">Output</th>
-                </tr>
-                </tfoot>
-              </table>
-            </div>
-            <!-- /.box-body -->
-        </div>
-        <!-- /.box -->
-        </div>
-    </div>
-</div>
+    <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
+    </body>
+</html>

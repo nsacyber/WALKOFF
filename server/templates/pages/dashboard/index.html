@@ -1,77 +1,130 @@
-<script src="{{ url_for('static', filename='pages/dashboard/jquery.gridly.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='pages/dashboard/jquery.gridly.css') }}" />
-<script src="{{ url_for('static', filename='pages/dashboard/rainbow.js') }}"></script>
-<script src="{{ url_for('static', filename='pages/dashboard/main.js') }}"></script>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-<style type="text/css">
-  .example {
-  position: relative; }
-  .example .brick {
-    opacity: 1;
-    cursor: pointer;
-    position: relative; }
-    .example .brick .delete {
-      display: block;
-      top: 0;
-      right: 0;
-      position: absolute;
-      text-align: center;
-      }
-    .example .brick.small {
-      width: 140px;
-      height: 140px; }
-    .example .brick.large {
-      width: auto;
-      height: auto; }
-    .example .brick.dragging {
-      opacity: 1; }
-    .example .brick:nth-child(20n + 1) {
-      background: #1ABC9C; }
-    .example .brick:nth-child(20n + 2) {
-      background: #16A085; }
-    .example .brick:nth-child(20n + 3) {
-      background: #2ECC71; }
-    .example .brick:nth-child(20n + 4) {
-      background: #27AE60; }
-    .example .brick:nth-child(20n + 5) {
-      background: #3498DB; }
-    .example .brick:nth-child(20n + 6) {
-      background: #2980B9; }
-    .example .brick:nth-child(20n + 7) {
-      background: #9B59B6; }
-    .example .brick:nth-child(20n + 8) {
-      background: #8E44AD; }
-    .example .brick:nth-child(20n + 9) {
-      background: #34495E; }
-    .example .brick:nth-child(20n + 10) {
-      background: #2C3E50; }
-    .example .brick:nth-child(20n + 11) {
-      background: #F1C40F; }
-    .example .brick:nth-child(20n + 12) {
-      background: #F39C12; }
-    .example .brick:nth-child(20n + 13) {
-      background: #E67E22; }
-    .example .brick:nth-child(20n + 14) {
-      background: #D35400; }
-    .example .brick:nth-child(20n + 15) {
-      background: #E74C3C; }
-    .example .brick:nth-child(20n + 16) {
-      background: #C0392B; }
-    .example .brick:nth-child(20n + 17) {
-      background: #ECF0F1; }
-    .example .brick:nth-child(20n + 18) {
-      background: #BDC3C7; }
-    .example .brick:nth-child(20n + 19) {
-      background: #95A5A6; }
-    .example .brick:nth-child(20n + 20) {
-      background: #7F8C8D; }
-</style>
-<section class='example'>
-        <div class='gridly'>
-          {% from "pages/_widget.html" import displayWidget %}
-          {% for widget in widgets %}
-            {{displayWidget(widget)}}
-          {% endfor %}
-        </div>
-</section>
+        <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='pages/dashboard/jquery.gridly.css') }}" />
+
+        <style type="text/css">
+              .example {
+              position: relative; }
+              .example .brick {
+                opacity: 1;
+                cursor: pointer;
+                position: relative; }
+                .example .brick .delete {
+                  display: block;
+                  top: 0;
+                  right: 0;
+                  position: absolute;
+                  text-align: center;
+                  }
+                .example .brick.small {
+                  width: 140px;
+                  height: 140px; }
+                .example .brick.large {
+                  width: auto;
+                  height: auto; }
+                .example .brick.dragging {
+                  opacity: 1; }
+                .example .brick:nth-child(20n + 1) {
+                  background: #1ABC9C; }
+                .example .brick:nth-child(20n + 2) {
+                  background: #16A085; }
+                .example .brick:nth-child(20n + 3) {
+                  background: #2ECC71; }
+                .example .brick:nth-child(20n + 4) {
+                  background: #27AE60; }
+                .example .brick:nth-child(20n + 5) {
+                  background: #3498DB; }
+                .example .brick:nth-child(20n + 6) {
+                  background: #2980B9; }
+                .example .brick:nth-child(20n + 7) {
+                  background: #9B59B6; }
+                .example .brick:nth-child(20n + 8) {
+                  background: #8E44AD; }
+                .example .brick:nth-child(20n + 9) {
+                  background: #34495E; }
+                .example .brick:nth-child(20n + 10) {
+                  background: #2C3E50; }
+                .example .brick:nth-child(20n + 11) {
+                  background: #F1C40F; }
+                .example .brick:nth-child(20n + 12) {
+                  background: #F39C12; }
+                .example .brick:nth-child(20n + 13) {
+                  background: #E67E22; }
+                .example .brick:nth-child(20n + 14) {
+                  background: #D35400; }
+                .example .brick:nth-child(20n + 15) {
+                  background: #E74C3C; }
+                .example .brick:nth-child(20n + 16) {
+                  background: #C0392B; }
+                .example .brick:nth-child(20n + 17) {
+                  background: #ECF0F1; }
+                .example .brick:nth-child(20n + 18) {
+                  background: #BDC3C7; }
+                .example .brick:nth-child(20n + 19) {
+                  background: #95A5A6; }
+                .example .brick:nth-child(20n + 20) {
+                  background: #7F8C8D; }
+            </style>
+            <style>
+            .brick{
+                overflow:hidden;
+            }
+
+            #widgetContent{
+                padding:2%;
+                width:100%;
+                height:100%;
+            }
+            #title{
+                margin-left:5px;
+                height:40px;
+                text-align:left;
+            }
+            .delete{
+                position:absolute;
+                top:0px;
+                right:10px;
+                width:20px;
+                height:20px;
+                text-align:center;
+                color: #FFF;
+            }
+            .header{
+                width: 100%;
+                height: 40px;
+                color: #FFF;
+                background: rgba(255, 255, 255, 0.2);
+                line-height: 40px;
+            }
+        </style>
+
+
+    </head>
+    <body>
+        <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+        <section class='example'>
+                <div class='gridly'>
+                  {% from "pages/_widget.html" import displayWidget %}
+                  {% for widget in widgets %}
+                    {{displayWidget(widget)}}
+                  {% endfor %}
+                </div>
+        </section>
+
+
+        <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+
+        <script src="{{ url_for('static', filename='pages/dashboard/rainbow.js') }}"></script>
+        <script src="{{ url_for('static', filename='pages/dashboard/jquery.gridly.js') }}"></script>
+        <script src="{{ url_for('static', filename='pages/dashboard/main.js') }}"></script>
+    </body>
+</html>
+
+
 

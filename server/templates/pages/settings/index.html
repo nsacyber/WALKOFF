@@ -1,11 +1,12 @@
-<div id="main" xmlns:padding="http://www.w3.org/1999/xhtml">
-    <!--<p> This is the settings page </p> -->
+<!DOCTYPE html>
 
-    <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
-
+<html>
     <head>
-      <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <base >
+        <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+
         <style>
             #setForm input[type=text] {
                 width: 300px;
@@ -88,105 +89,120 @@
               border: none;
             }
         </style>
+
     </head>
-    <!-- This div will contain keyword labels with textboxes that are
-        auto-populated with the default setting -->
-    <div id="settingsWrapper">
-        <div id="settingsTabs">
-            <ul class="nav nav-tabs" role="tablist">
-                <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
-                <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
-            </ul>
-            <div id="systemSettings">
-                <h1 class="settingsHeader"> Settings </h1>
-                <div id="settingsForm">
-                    <form id="setForm">
-                        <!-- use jinja and formhelpers.html to populate form -->
-                        <!-- below is pulled from devices\index.html -->
+    <body>
+        <div id="main" xmlns:padding="http://www.w3.org/1999/xhtml">
+            <!--<p> This is the settings page </p> -->
 
-                            <div id="pathConfig">
-                                <h3> Path Configuration </h3>
-                            {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.workflows_path) }}
-                                {{ render_field(systemForm.templates_path) }}
-                                {{ render_field(systemForm.profile_visualizations_path) }}
-                                {{ render_field(systemForm.keywords_path) }}
-                                {{ render_field(systemForm.db_path) }}
-                            </div>
-                            <div id="authConfig">
-                              <h3> Authorization Configuration </h3>
-                            {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.tls_version) }}
-                                {{ render_field(systemForm.certificate_path) }}
-                                {{ render_field(systemForm.https) }}
-                                {{ render_field(systemForm.private_key_path) }}
-                            </div>
-                            <div id="interfaceConfig">
-                              <h3> Interface Configuration </h3>
-                            {% from "pages/_formhelpers.html" import render_field %}
-                                {{ render_field(systemForm.debug) }}
-                                {{ render_field(systemForm.default_server) }}
-                                {{ render_field(systemForm.host) }}
-                                {{ render_field(systemForm.port) }}
-                            </div>
-                        <input id="formSubmit" type="submit" value="submit">
-                    </form>
-                </div>
 
-            </div>
-            <div id="userSettings" class="row">
-                <h1 class="settingsHeader">User Settings</h1>
-                <div  id="currentUserInfo" class="col-md-4">
-                    <h3> User Configuration </h3>
+            <!-- This div will contain keyword labels with textboxes that are
+                auto-populated with the default setting -->
+            <div id="settingsWrapper">
+                <div id="settingsTabs">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab" >System Settings</a></li>
+                        <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab" >User Settings</a></li>
+                    </ul>
 
-                    <form id="userForm">
-                        <!-- use jinja and formhelpers.html to populate form -->
-                        <!-- below is pulled from devices\index.html -->
-                            {% from "pages/_formhelpers.html" import render_field %}
-                            {{ render_field(userForm.username) }}
-                            {{ render_field(userForm.password) }}
-                            {{ render_field(userForm.email) }}
-                            {{ render_field(userForm.active)  }}
-{#                            {{ render_field(userForm.confirmed_at) }}#}
-                            {{ render_field(userForm.roles)  }}
-{#                            {{ render_field(form.last_login_at)  }}#}
-{#                            {{ render_field(form.current_login_at)  }}#}
-{#                            {{ render_field(form.last_login_ip) }}#}
-{#                            {{ render_field(form.current_login_ip)  }}#}
-{#                            {{ render_field(form.login_count) }}#}
-                    </form>
-                    <div id="crudButtons">
-                        <button id="addUser" class="btn btn-primary">Add User</button>
-                        <button id="editUser" class="btn btn-success">Edit User</button>
-                        <button id="deleteUser" class="btn btn-danger">Delete User</button>
+                    <div id="systemSettings">
+                        <h1 class="settingsHeader"> Settings </h1>
+                        <div id="settingsForm">
+                            <form id="setForm">
+                                <!-- use jinja and formhelpers.html to populate form -->
+                                <!-- below is pulled from devices\index.html -->
+
+                                    <div id="pathConfig">
+                                        <h3> Path Configuration </h3>
+                                    {% from "pages/_formhelpers.html" import render_field %}
+                                        {{ render_field(systemForm.workflows_path) }}
+                                        {{ render_field(systemForm.templates_path) }}
+                                        {{ render_field(systemForm.profile_visualizations_path) }}
+                                        {{ render_field(systemForm.keywords_path) }}
+                                        {{ render_field(systemForm.db_path) }}
+                                    </div>
+                                    <div id="authConfig">
+                                      <h3> Authorization Configuration </h3>
+                                    {% from "pages/_formhelpers.html" import render_field %}
+                                        {{ render_field(systemForm.tls_version) }}
+                                        {{ render_field(systemForm.certificate_path) }}
+                                        {{ render_field(systemForm.https) }}
+                                        {{ render_field(systemForm.private_key_path) }}
+                                    </div>
+                                    <div id="interfaceConfig">
+                                      <h3> Interface Configuration </h3>
+                                    {% from "pages/_formhelpers.html" import render_field %}
+                                        {{ render_field(systemForm.debug) }}
+                                        {{ render_field(systemForm.default_server) }}
+                                        {{ render_field(systemForm.host) }}
+                                        {{ render_field(systemForm.port) }}
+                                    </div>
+                                <input id="formSubmit" type="submit" value="submit">
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <div id="userSettings">
+                        <div >
+                            <h1 class="settingsHeader">User Settings</h1>
+                        </div>
+                        <div class="row">
+
+                            <div  id="currentUserInfo" class="col-md-4">
+                                <h3> User Configuration </h3>
+
+                                <form id="userForm">
+                                    <!-- use jinja and formhelpers.html to populate form -->
+                                    <!-- below is pulled from devices\index.html -->
+                                        {% from "pages/_formhelpers.html" import render_field %}
+                                        {{ render_field(userForm.username) }}
+                                        {{ render_field(userForm.password) }}
+                                        {{ render_field(userForm.email) }}
+                                        {{ render_field(userForm.active)  }}
+
+                                </form>
+                                <div id="crudButtons">
+                                    <button id="addUser" class="btn btn-primary">Add User</button>
+                                    <button id="editUser" class="btn btn-success">Edit User</button>
+                                    <button id="deleteUser" class="btn btn-danger">Delete User</button>
+                                </div>
+                            </div>
+                            <div id="createUser" class="col-md-4">
+                                <h3>Add user</h3>
+                                <form id="addUserForm">
+                                    {% from "pages/_formhelpers.html" import render_field %}
+                                    {{ render_field(addUserForm.username) }}
+                                    {{ render_field(addUserForm.email) }}
+                                    {{ render_field(addUserForm.roles) }}
+                                    {{ render_field(addUserForm.password) }}
+                                    {{ render_field(addUserForm.confirm) }}
+                                </form>
+                                <button id="saveNewUser" class="btn btn-primary">Submit</button>
+                            </div>
+                            <div id="updateUser" class="col-md-4">
+                                <h3>Edit User</h3>
+                                <form id="updateUserForm">
+                                    {% from "pages/_formhelpers.html" import render_field %}
+                                    {{ render_field(addUserForm.username) }}
+                                    {{ render_field(addUserForm.email) }}
+                                    {{ render_field(addUserForm.roles) }}
+                                    {{ render_field(addUserForm.password) }}
+                                    {{ render_field(addUserForm.confirm) }}
+                                </form>
+                                <button id="submitUpdate" class="btn btn-primary">Submit</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="createUser" class="col-md-4">
-                    <h3>Add user</h3>
-                    <form id="addUserForm">
-                        {% from "pages/_formhelpers.html" import render_field %}
-                        {{ render_field(addUserForm.username) }}
-                        {{ render_field(addUserForm.email) }}
-                        {{ render_field(addUserForm.roles) }}
-                        {{ render_field(addUserForm.password) }}
-                        {{ render_field(addUserForm.confirm) }}
-                    </form>
-                    <button id="saveNewUser" class="btn btn-primary">Submit</button>
-                </div>
-                <div id="updateUser" class="col-md-4">
-                    <h3>Edit User</h3>
-                    <form id="updateUserForm">
-                        {% from "pages/_formhelpers.html" import render_field %}
-                        {{ render_field(addUserForm.username) }}
-                        {{ render_field(addUserForm.email) }}
-                        {{ render_field(addUserForm.roles) }}
-                        {{ render_field(addUserForm.password) }}
-                        {{ render_field(addUserForm.confirm) }}
-                    </form>
-                    <button id="submitUpdate" class="btn btn-primary">Submit</button>
-                </div>
-
             </div>
         </div>
-    </div>
-</div>
+        <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+            <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+
+
+        <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
+    </body>
+</html>
+
