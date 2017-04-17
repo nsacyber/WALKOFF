@@ -13,6 +13,11 @@ class NextStep(ExecutionElement):
             ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
             self.flags = flags if flags is not None else []
 
+    def reconstruct_ancestry(self, parent_ancestry):
+        self._construct_ancestry(parent_ancestry)
+        for flag in self.flags:
+            flag.reconstruct_ancestry(self.ancestry)
+
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         name = xml_element.get('step')
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)

@@ -116,7 +116,9 @@ class TestStep(unittest.TestCase):
                  Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
                       inputs=inputs, next_steps=next_steps),
                  Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
-                      inputs=inputs, next_steps=next_steps, errors=errors)]
+                      inputs=inputs, next_steps=next_steps, errors=errors),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs, next_steps=next_steps, errors=errors, position={'x': 5, 'y': -40.3})]
         for step in steps:
             original_json = step.as_json()
             new_step = Step(xml=step.to_xml())
@@ -283,39 +285,47 @@ class TestStep(unittest.TestCase):
                    'app': 'app1',
                    'device': 'dev1',
                    'next': [],
-                   'error': []},
+                   'error': [],
+                   'position': {}},
 
                   {'name': 'name2',
                    'action': 'action2',
                    'app': 'app2',
                    'device': 'opt2',
                    'next': next_step_names,
-                   'error': []},
+                   'error': [],
+                   'position': {'x': 3, 'y': 5}},
 
                   {'name': 'name3',
                    'action': 'action3',
                    'app': 'app3',
                    'device': 'opt3',
                    'next': [],
-                   'error': error_names},
+                   'error': error_names,
+                   'position': {'x': 30, 'y': -5}},
 
                   {'name': 'name4',
                    'action': 'action4',
                    'app': 'app4',
                    'device': 'dev4',
                    'next': next_step_names,
-                   'error': error_names}]
+                   'error': error_names,
+                  'position': {'x': 40.237, 'y': -100}}]
         for input_params in inputs:
             step = Step(name=input_params['name'],
                         action=input_params['action'],
                         app=input_params['app'],
-                        device=input_params['device'])
+                        device=input_params['device'],
+                        position=input_params['position'])
             step.conditionals = [NextStep(name=name, parent_name=step.name, ancestry=list(step.ancestry))
                                  for name in input_params['next']]
             step.errors = [NextStep(name=name, parent_name=step.name, ancestry=list(step.ancestry))
                            for name in input_params['error']]
             step_json = step.as_json()
-            derived_step = Step.from_json(step_json, parent_name=step.parent_name, ancestry=list(step.ancestry)[:-1])
+            derived_step = Step.from_json(step_json,
+                                          step_json['position'],
+                                          parent_name=step.parent_name,
+                                          ancestry=list(step.ancestry)[:-1])
             self.assertDictEqual(derived_step.as_json(), step_json)
             self.assertEqual(step.parent_name, derived_step.parent_name)
             self.assertListEqual(step.ancestry, derived_step.ancestry)
@@ -381,3 +391,49 @@ class TestStep(unittest.TestCase):
         ancestries = [[name, 'name1'] for name in names]
         for i, ancestry in enumerate(ancestries):
             self.assertDictEqual(step.get_children(ancestry), flags[i].as_json())
+
+    def test_name_parent_rename(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        new_ancestry = ['step_parent_update']
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append('step')
+        self.assertListEqual(new_ancestry, step.ancestry)
+
+    def test_name_parent_nextstep_rename_conditional(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        nextstep = NextStep(name="test_nextstep", ancestry=step.ancestry)
+        step.conditionals = [nextstep]
+
+        new_ancestry = ["step_parent_update"]
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("step")
+        new_ancestry.append("test_nextstep")
+        self.assertListEqual(new_ancestry, step.conditionals[0].ancestry)
+
+    def test_name_parent_nextstep_rename_error(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        nextstep = NextStep(name="test_nextstep", ancestry=step.ancestry)
+        step.errors = [nextstep]
+
+        new_ancestry = ["step_parent_update"]
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("step")
+        new_ancestry.append("test_nextstep")
+        self.assertListEqual(new_ancestry, step.errors[0].ancestry)
+
+    def test_name_parent_multiple_nextstep_rename(self):
+        step = Step(ancestry=['step_parent'], name='step')
+        nextstepOne = NextStep(name="test_nextstep_one", ancestry=step.ancestry)
+        nextstepTwo = NextStep(name="test_nextstep_two", ancestry=step.ancestry)
+        step.conditionals = [nextstepOne]
+        step.errors = [nextstepTwo]
+
+        new_ancestry = ["step_parent_update"]
+        step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("step")
+        new_ancestry.append("test_nextstep_one")
+        self.assertListEqual(new_ancestry, step.conditionals[0].ancestry)
+
+        new_ancestry.remove("test_nextstep_one")
+        new_ancestry.append("test_nextstep_two")
+        self.assertListEqual(new_ancestry, step.errors[0].ancestry)

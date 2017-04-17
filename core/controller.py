@@ -65,6 +65,10 @@ class Controller(object):
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
 
+    def reconstruct_ancestry(self):
+        for key in self.workflows:
+            self.workflows[key].reconstruct_ancestry(self.ancestry)
+
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         self.tree = cElementTree.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
@@ -177,6 +181,7 @@ class Controller(object):
         new_key = _WorkflowKey(new_playbook, new_workflow)
         self.workflows[new_key] = self.workflows.pop(old_key)
         self.workflows[new_key].name = construct_workflow_name_key(new_playbook, new_workflow)
+        self.workflows[new_key].reconstruct_ancestry([self.name])
 
     def update_playbook_name(self, old_playbook, new_playbook):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
@@ -200,6 +205,13 @@ class Controller(object):
             return self.workflows[key]
         return None
 
+    def get_all_workflows_by_playbook(self, playbook_name):
+        workflows = []
+        for key in self.workflows.keys():
+            if key.playbook == playbook_name:
+                workflows.append(self.workflows[key].name)
+        return workflows
+
     def playbook_to_xml(self, playbook_name):
         all_workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
         if all_workflows:
@@ -209,6 +221,21 @@ class Controller(object):
             return xml
         else:
             return None
+
+    def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
+        workflow = self.get_workflow(old_playbook_name, old_workflow_name)
+        workflow_copy = deepcopy(workflow)
+        workflow_copy.playbook_name = new_playbook_name
+        workflow_copy.name = new_workflow_name
+
+        key = _WorkflowKey(workflow_copy.playbook_name, workflow_copy.name)
+        self.workflows[key] = workflow_copy
+        self.workflows[key].reconstruct_ancestry([self.name])
+
+    def copy_playbook(self, old_playbook_name, new_playbook_name):
+        for key in [workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
+            p,wf = key
+            self.copy_workflow(old_playbook_name, new_playbook_name, wf, wf)
 
     # Starts active execution
     def start(self):

@@ -9,6 +9,9 @@ from flask_security import login_required, auth_token_required, current_user, ro
 from flask_security.utils import encrypt_password
 from gevent import monkey
 
+from copy import deepcopy
+from core.controller import _WorkflowKey
+
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
@@ -230,6 +233,22 @@ def crud_playbook(playbook_name, action):
                 status = 'error: error occurred while remove playbook file: {0}'.format(e)
 
         return json.dumps({'status': status, 'playbooks': running_context.controller.get_all_workflows()})
+
+    elif action == "copy":
+        form = forms.CopyPlaybookForm(request.form)
+        if form.validate():
+            if form.playbook.data:
+                new_playbook_name = form.playbook.data
+            else:
+                new_playbook_name = playbook_name+"_Copy"
+
+            if running_context.controller.is_playbook_registered(new_playbook_name):
+                status = 'error: invalid playbook name'
+            else:
+                running_context.controller.copy_playbook(playbook_name, new_playbook_name)
+                status = 'success'
+
+            return json.dumps({"status": status})
     else:
         return json.dumps({"status": 'error: invalid operation'})
 
@@ -350,6 +369,26 @@ def workflow(playbook_name, workflow_name, action):
         else:
             status = 'error: invalid workflow name'
         return json.dumps({"status": status})
+
+    elif action == "copy":
+        form = forms.CopyWorkflowForm(request.form)
+        if form.validate():
+            if form.playbook.data:
+                new_playbook_name = form.playbook.data
+            else:
+                new_playbook_name = playbook_name
+            if form.workflow.data:
+                new_workflow_name = form.workflow.data
+            else:
+                new_workflow_name = workflow_name+"_Copy"
+
+            if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
+                status = 'error: invalid playbook and/or workflow name'
+            else:
+                running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name, new_workflow_name)
+                status = 'success'
+
+            return json.dumps({"status": status})
 
     else:
         return json.dumps({"status": 'error: invalid operation'})

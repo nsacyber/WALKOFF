@@ -16,9 +16,15 @@ class Workflow(ExecutionElement):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
         self.playbook_name = playbook_name
         self.steps = {}
-        self._from_xml(xml)
+        if xml:
+            self._from_xml(xml)
         self.children = children if (children is not None) else {}
         self.is_completed = False
+
+    def reconstruct_ancestry(self, parent_ancestry):
+        self._construct_ancestry(parent_ancestry)
+        for key in self.steps:
+            self.steps[key].reconstruct_ancestry(self.ancestry)
 
     @staticmethod
     def get_workflow(workflow_name):
@@ -154,7 +160,10 @@ class Workflow(ExecutionElement):
         output = []
         for step in self.steps:
             node_id = self.steps[step].name if self.steps[step].name is not None else 'None'
-            node = {"group": "nodes", "data": {"id": node_id, "parameters": self.steps[step].as_json()}}
+            step_json = self.steps[step].as_json()
+            position = step_json.pop('position')
+            node = {"group": "nodes", "data": {"id": node_id, "parameters": step_json},
+                    "position": {pos: float(val) for pos, val in position.items()}}
             output.append(node)
             for next_step in self.steps[step].conditionals:
                 edge_id = str(node_id) + str(next_step.name)
@@ -172,6 +181,7 @@ class Workflow(ExecutionElement):
                 step_data = node['data']
                 step_name = step_data['parameters']['name']
                 self.steps[step_name] = Step.from_json(step_data['parameters'],
+                                                       node['position'],
                                                        parent_name=self.name,
                                                        ancestry=self.ancestry)
 

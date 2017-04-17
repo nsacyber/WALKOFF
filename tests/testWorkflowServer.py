@@ -24,6 +24,7 @@ class TestWorkflowServer(ServerTestCase):
                                                     'type': u'cron'}}}}
         self.hello_world_json = \
             {'steps': [{'group': 'nodes',
+                        'position': {},
                         'data': {'id': 'start',
                                  'parameters': {'errors': [{'flags': [], 'name': '1'}],
                                                 'name': 'start',
@@ -297,6 +298,16 @@ class TestWorkflowServer(ServerTestCase):
         self.assertFalse(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
 
+        workflow = flask_server.running_context.controller.get_workflow('test', 'test_name')
+        for step in workflow.steps:
+            self.assertTrue('test-test_name' in workflow.steps[step].ancestry)
+            for nextstep in workflow.steps[step].conditionals:
+                self.assertTrue('test-test_name' in nextstep.ancestry)
+                for flag in nextstep.flags:
+                    self.assertTrue('test-test_name' in flag.ancestry)
+                    for filter in flag.filters:
+                        self.assertTrue('test-test_name' in filter.ancestry)
+
     def test_edit_workflow_options_only(self):
         expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
         data = {"enabled": "true",
@@ -375,8 +386,10 @@ class TestWorkflowServer(ServerTestCase):
                                                         'next': [],
                                                         'device': 'new_device',
                                                         'action': 'new_action',
-                                                        'input': {}}},
-                                'group': 'nodes'}
+                                                        'input': {}},
+                                         },
+                                'group': 'nodes',
+                                'position': {'x': '5', 'y': '3'}}
         initial_workflow_cytoscape.insert(0, added_step_cytoscape)
         data = {"cytoscape": json.dumps(initial_workflow_cytoscape)}
         self.post_with_status_check('/playbook/test/{0}/save'.format(workflow_name), 'success',
@@ -498,3 +511,84 @@ class TestWorkflowServer(ServerTestCase):
         expected_flags = ['length']
         response = self.get_with_status_check('/filters', 'success', headers=self.headers)
         orderless_list_compare(self, list(response['filters'].keys()), expected_flags)
+
+    def test_copy_workflow(self):
+        self.post_with_status_check('/playbook/test/helloWorldWorkflow/copy', 'success',
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 2)
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow_Copy'))
+
+        workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow_copy = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow_Copy')
+
+        self.assertEqual(workflow_original.__repr__(), workflow_copy.__repr__())
+
+        self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
+        for step in workflow_copy.steps:
+            self.assertTrue('helloWorldWorkflow_Copy' in workflow_copy.steps[step].ancestry)
+            self.assertEqual(len(workflow_original.steps[step].conditionals), len(workflow_copy.steps[step].conditionals))
+            for nextstep in workflow_copy.steps[step].conditionals:
+                self.assertTrue('helloWorldWorkflow_Copy' in nextstep.ancestry)
+                for flag in nextstep.flags:
+                    self.assertTrue('helloWorldWorkflow_Copy' in flag.ancestry)
+                    for filter in flag.filters:
+                        self.assertTrue('helloWorldWorkflow_Copy' in filter.ancestry)
+
+    def test_copy_workflow_invalid_name(self):
+        data = {"workflow" : "helloWorldWorkflow"}
+        self.post_with_status_check('/playbook/test/helloWorldWorkflow/copy', 'error: invalid playbook and/or workflow name', data=data,
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+
+    def test_copy_workflow_different_playbook(self):
+
+        self.post_with_status_check('/playbook/new_playbook/add', 'success', headers=self.headers)
+
+        data = {"playbook" : "new_playbook"}
+        self.post_with_status_check('/playbook/test/helloWorldWorkflow/copy', 'success', data=data,
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 3)
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('new_playbook', 'helloWorldWorkflow_Copy'))
+
+        workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow_copy = flask_server.running_context.controller.get_workflow('new_playbook', 'helloWorldWorkflow_Copy')
+
+        self.assertEqual(workflow_original.__repr__(), workflow_copy.__repr__())
+
+        self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
+        for step in workflow_copy.steps:
+            self.assertTrue('helloWorldWorkflow_Copy' in workflow_copy.steps[step].ancestry)
+            self.assertEqual(len(workflow_original.steps[step].conditionals), len(workflow_copy.steps[step].conditionals))
+            for nextstep in workflow_copy.steps[step].conditionals:
+                self.assertTrue('helloWorldWorkflow_Copy' in nextstep.ancestry)
+                for flag in nextstep.flags:
+                    self.assertTrue('helloWorldWorkflow_Copy' in flag.ancestry)
+                    for filter in flag.filters:
+                        self.assertTrue('helloWorldWorkflow_Copy' in filter.ancestry)
+
+    def test_copy_playbook(self):
+        self.post_with_status_check('/playbook/test/copy', 'success',
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.get_all_playbooks()), 2)
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test_Copy'))
+
+        workflows_original = flask_server.running_context.controller.get_all_workflows_by_playbook('test')
+        workflows_copy = flask_server.running_context.controller.get_all_workflows_by_playbook('test_Copy')
+
+        self.assertEqual(len(workflows_original), len(workflows_copy))
+
+    def test_copy_playbook_invalid_name(self):
+        data = {"playbook" : "test"}
+        self.post_with_status_check('/playbook/test/copy', 'error: invalid playbook name', data=data,
+                                                headers=self.headers)
+
+        self.assertEqual(len(flask_server.running_context.controller.get_all_playbooks()), 1)
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
