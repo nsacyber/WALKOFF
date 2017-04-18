@@ -13,13 +13,14 @@ class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        "basicWorkflowTest.workflow")
+                                                                        'basicWorkflowTest.workflow')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        "multiactionWorkflowTest.workflow")
+                                                                        'multiactionWorkflowTest.workflow')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        "multistepError.workflow")
+                                                                        'multistepError.workflow')
         self.start = datetime.utcnow()
         server.running_context.init_threads()
+        server.running_context.db.create_all()
 
     def tearDown(self):
         database.case_db.tear_down()
@@ -29,7 +30,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests simple workflow execution with a single action with an argument and no jumps.
     """
 
-    def test_SimpleWorkflowExecution(self):
+    def test_simple_workflow_execution(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         setup_subscriptions_for_step(workflow_name, ['start'])
         server.running_context.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
@@ -49,7 +50,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests workflow execution that has multiple steps.
     """
 
-    def test_MultiActionWorkflow(self):
+    def test_multi_action_workflow(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
@@ -76,7 +77,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             Tests workflow execution that has an error in the second step. Then moves to step "error" instead.
     """
 
-    def test_ErrorWorkflow(self):
+    def test_error_workflow(self):
         workflow_name = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
         step_names = ['start', '1', 'error']
         setup_subscriptions_for_step(workflow_name, step_names)
