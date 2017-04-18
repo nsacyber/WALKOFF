@@ -205,11 +205,11 @@ class Controller(object):
         return None
 
     def get_all_workflows_by_playbook(self, playbook_name):
-        workflows = []
+        _workflows = []
         for key in self.workflows.keys():
             if key.playbook == playbook_name:
-                workflows.append(self.workflows[key].name)
-        return workflows
+                _workflows.append(self.workflows[key].name)
+        return _workflows
 
     def playbook_to_xml(self, playbook_name):
         all_workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
@@ -232,9 +232,8 @@ class Controller(object):
         self.workflows[key].reconstruct_ancestry([self.name])
 
     def copy_playbook(self, old_playbook_name, new_playbook_name):
-        for key in [workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
-            p,wf = key
-            self.copy_workflow(old_playbook_name, new_playbook_name, wf, wf)
+        for workflow in [workflow.workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
+            self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
 
     # Starts active execution
     def start(self):
