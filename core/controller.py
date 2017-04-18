@@ -194,8 +194,12 @@ class Controller(object):
         key = _WorkflowKey(playbook_name, workflow_name)
         workflow = self.workflows[key]
         subs = deepcopy(subscription.subscriptions)
-        workflows.append(pool.submit(execute_workflow_worker, workflow, start, subs))
 
+        #If threading has not been initialized, initialize it.
+        if not workflows:
+            initialize_threading()
+
+        workflows.append(pool.submit(execute_workflow_worker, workflow, start, subs))
         callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
