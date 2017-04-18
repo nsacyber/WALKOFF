@@ -1,7 +1,6 @@
 from server import appdevice
 import requests
 import json
-from json.decoder import JSONDecodeError
 
 
 # There is an associated Daily Quote test workflow which can be executed
@@ -35,7 +34,7 @@ class Main(appdevice.App):
             json_result = json.loads(result.text)
             json_result['success'] = True
             return json_result
-        except JSONDecodeError:
+        except:
             return {'success': False, 'text': result.text}
 
     # Uses the url defined in _init to make a getQuote api call and returns the quote
