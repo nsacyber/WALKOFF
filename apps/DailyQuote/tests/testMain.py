@@ -17,7 +17,6 @@ class TestMain(TestCase):
         else:
             self.assertIn('error', quote)
 
-    # def test_quote_with_args(selfself):
     def test_other_quote(self):
         url = "http://api.forismatic.com/api/1.0/"
         args = {'url': (lambda: url)}
