@@ -1,6 +1,5 @@
 import unittest
 
-from core import graphdecorator
 from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
@@ -30,7 +29,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests simple workflow execution with a single action with an argument and no jumps.
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_SimpleWorkflowExecution(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         setup_subscriptions_for_step(workflow_name, ['start'])
@@ -51,7 +49,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         Tests workflow execution that has multiple steps.
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_MultiActionWorkflow(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']

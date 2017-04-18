@@ -2,7 +2,7 @@ import ast
 import unittest
 from datetime import datetime
 from os import path
-from core import controller, graphdecorator
+from core import controller
 from core.step import Step
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -60,7 +60,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         CRUD - Workflow
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_create_workflow(self):
         self.assertEqual(len(self.c.workflows), 2)
         # Create Empty Workflow
@@ -71,7 +70,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.c.get_workflow('emptyWorkflow', 'emptyWorkflow').to_xml()
         self.assertEqual(len(xml.findall(".//steps/*")), 0)
 
-    @graphdecorator.callgraph(enabled=False)
     def test_remove_workflow(self):
         initial_workflows = list(self.c.workflows.keys())
         self.c.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
@@ -83,7 +81,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertNotIn(key, self.c.workflows)
         orderless_list_compare(self, list(self.c.workflows.keys()), initial_workflows)
 
-    @graphdecorator.callgraph(enabled=False)
     def test_update_workflow(self):
         self.c.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
         self.c.update_workflow_name('emptyWorkflow', 'emptyWorkflow', 'newPlaybookName', 'newWorkflowName')
@@ -93,7 +90,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertNotIn(old_key, self.c.workflows)
         self.assertIn(new_key, self.c.workflows)
 
-    @graphdecorator.callgraph(enabled=False)
     def test_display_workflow(self):
         workflow = ast.literal_eval(self.testWorkflow.__repr__())
         self.assertEqual(len(workflow["steps"]), 1)
@@ -103,7 +99,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         CRUD - Step
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_create_step(self):
         self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
                                       arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
@@ -126,7 +121,6 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         self.__execution_test()
 
-    @graphdecorator.callgraph(enabled=False)
     def test_add_step_to_xml(self):
         self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
                                       arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
@@ -145,7 +139,6 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         self.__execution_test()
 
-    @graphdecorator.callgraph(enabled=False)
     def test_remove_step(self):
         self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
                                       arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
@@ -163,7 +156,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(len(steps), 1)
         self.assertEqual(steps[0].get("id"), "start")
 
-    @graphdecorator.callgraph(enabled=False)
     def test_update_step(self):
         self.assertEqual(self.testWorkflow.steps["start"].action, "repeatBackToMe")
         self.testWorkflow.steps["start"].action = "helloWorld"
@@ -172,7 +164,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.testWorkflow.to_xml()
         self.assertEqual(xml.find(".//steps/step/[@id='start']/action").text, "helloWorld")
 
-    @graphdecorator.callgraph(enabled=False)
     def test_display_steps(self):
         output = ast.literal_eval(self.testWorkflow.__repr__())
         self.assertTrue(output["options"])
@@ -184,7 +175,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         CRUD - Next
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_update_next(self):
         step = self.testWorkflow.steps["start"]
         self.assertEqual(step.conditionals[0].name, "1")
@@ -196,7 +186,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         # Check XML
         self.assertEqual(xml.find(".//steps/step/[@id='start']/next").get("step"), "2")
 
-    @graphdecorator.callgraph(enabled=False)
     def test_display_next(self):
         conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].__repr__())
         self.assertTrue(conditional["flags"])
@@ -206,7 +195,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         CRUD - Flag
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_create_flag(self):
         next_step = self.testWorkflow.steps["start"].conditionals[0]
         self.assertEqual(len(next_step.flags), 1)
@@ -216,7 +204,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertDictEqual(next_step.flags[1].args, {"operator": "ge", "threshold": "1"})
         self.assertEqual(next_step.flags[1].filters, [])
 
-    @graphdecorator.callgraph(enabled=False)
     def test_remove_flag(self):
         next_step = self.testWorkflow.steps["start"].conditionals[0]
         self.assertEqual(len(next_step.flags), 1)
@@ -231,7 +218,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         next_step_flags_xml = xml.findall(".//steps/step/[@id='start']/next")
         self.assertEqual(len(next_step_flags_xml), 1)
 
-    @graphdecorator.callgraph(enabled=False)
     def test_update_flag(self):
         self.assertEqual(self.testWorkflow.steps["start"].conditionals[0].flags[0].action, "regMatch")
         self.testWorkflow.steps["start"].conditionals[0].flags[0].set(attribute="action", value="count")
@@ -241,7 +227,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         xml = self.testWorkflow.to_xml()
         self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@step='1']/flag[1]").get("action"), "count")
 
-    @graphdecorator.callgraph(enabled=False)
     def test_display_flag(self):
         output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
         self.assertTrue(output["action"])
@@ -251,7 +236,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         CRUD - Filter
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_create_filter(self):
         conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
         self.assertEqual(len(conditional.filters), 1)
@@ -279,7 +263,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(len(xml.findall(
             ".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[3]/args/test")), 1)
 
-    @graphdecorator.callgraph(enabled=False)
     def test_remove_filter(self):
         conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
         conditional.add_filter(action="length", args={"test": "test"})
@@ -303,7 +286,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(len(xml.findall(
             ".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[2]/args/test")), 1)
 
-    @graphdecorator.callgraph(enabled=False)
     def test_update_filter(self):
         conditional = self.testWorkflow.steps["start"].conditionals[0].flags[0]
         self.assertEqual(conditional.filters[0].action, "length")
@@ -316,7 +298,6 @@ class TestWorkflowManipulation(unittest.TestCase):
             xml.find(".//steps/step/[@id='start']/next/[@step='1']/flag/[@action='regMatch']/filters/filter[1]").get(
                 "action"), "combine")
 
-    @graphdecorator.callgraph(enabled=False)
     def test_display_filter(self):
         conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].filters.__repr__())
         self.assertEqual(len(conditional), 1)

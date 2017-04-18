@@ -1,6 +1,5 @@
 __all__ = ['testAppBlueprint',
            'testArgument',
-           'testBenchmarks',
            'testCaseDatabase',
            'testCaseServer',
            'testCaseSubscriptions',

@@ -4,7 +4,6 @@ from os import mkdir
 from os.path import isdir
 
 from core.config.paths import profile_visualizations_path
-from core import graphdecorator
 from core.helpers import construct_workflow_name_key
 from tests import config
 from core.case import database
@@ -32,7 +31,6 @@ class TestExecutionRuntime(unittest.TestCase):
         from the workflow history.
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_TemplatedWorkflow(self):
         running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                  'templatedWorkflowTest.workflow')
@@ -63,7 +61,6 @@ class TestExecutionRuntime(unittest.TestCase):
         Tests the calling of nested workflows
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_SimpleTieredWorkflow(self):
         running_context.controller.load_workflows_from_file(path=config.test_workflows_path + 'tieredWorkflow.workflow')
         workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
@@ -98,7 +95,6 @@ class TestExecutionRuntime(unittest.TestCase):
         Tests a workflow that loops a few times
     """
 
-    @graphdecorator.callgraph(enabled=False)
     def test_Loop(self):
         running_context.controller.load_workflows_from_file(path=config.test_workflows_path + 'loopWorkflow.workflow')
         workflow_name = construct_workflow_name_key('loopWorkflow', 'loopWorkflow')
