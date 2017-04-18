@@ -5,7 +5,7 @@ python:
     - "3.3"
     - "3.4"
     - "3.5"
-before_install: sudo apt-get install graphviz
+before_install: sudo apt-get install graphviz && sudo apt-get install python-setuptools
 install: "pip install -r requirements.txt"
 script: python runAllTests.py
 branches:
