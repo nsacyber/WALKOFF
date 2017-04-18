@@ -70,14 +70,15 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
     <div class="">
       <h1>Test an app</h1>
         <p>WALKOFF can easily test your apps with a top-level app testing script</p>
-        <h4><b>1. Create a Python package in your app package named "test"</b></h4>
+        <h4><b>1. Create a Python package in your app package named "tests"</b></h4>
         <p>If you were testing your HelloWorld app described in the <a href="Develop_an_app.html">Develop an App</a>
         section, your directory structure will look like this:</p>
         <pre><code class="console">
 WALKOFF
 |-- apps
   |-- HelloWorld
-    |-- test
+    |-- tests
+      |-- __init__.py
     |-- __init__.py
     |-- main.py
     |-- functions.json
@@ -85,8 +86,9 @@ WALKOFF
         </code></pre>
         <h4><b>2. Write your tests</b></h4>
         <p>Inside the test package, we then need to write some Python modules which use Python's builtin
-            <code>unittest</code> package to test our module.</p>
-        <pre><code>
+            <code>unittest</code> package to test our module. We put the following code inside of a module named
+            <code>test_main.py</code> inside our tests module</p>
+        <pre><code class="python">
 import unittest
 from apps.HelloWorld import main
 
@@ -108,6 +110,13 @@ class TestMain(unittest.TestCase):
         self.assertEqual(returned, '5')
         </code></pre>
 
+        <p>The test needs to be registered in the module, so we'll modify out <code>__init__.py</code>:</p>
+        <pre><code>
+__all__ = ['test_main']
+        </code></pre>
+
+        <p>Each module containing tests will need to be registered in teh <code>__init__.py</code> y appending to this
+        list</p>
         <h4><b>3. Run your tests</b></h4>
 
         <p>You can run your tests by running the <code>testapps.py</code> script included at the root of the WALKOFF
