@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF)
 # WALKOFF
 An active cyber defense development framework enabling orchestration capabilities to be written once and deployed across WALKOFF-enabled orchestration tools.  
 
