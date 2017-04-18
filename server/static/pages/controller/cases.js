@@ -107,6 +107,7 @@ function casesCustomMenu(node){
                 var selected_case = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop());
                 var id = selected_case.children.length;
                 $("#casesTree").jstree("create_node", selected_case,  {"id": "sub_"+id, "text" : "new subscription " + id, "type":"subscription"}, false, false);
+                addNewSubscription(selected_case.text, id);
 
             }
         },
@@ -120,14 +121,26 @@ function casesCustomMenu(node){
 
             }
         },
+        removeSubscription:{
+            label: "Remove Subscription",
+            action: function () {
+                var selected_subscription = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop());
+                r = removeSelectedSubscription(selected_subscription.text);
+                if(r["status"] == 1){
+                    $("#casesTree").jstree().delete_node([selected_subscription]);
+                }
+            }
+        },
     };
 
     if (node.original.type != "case") {
         delete items.addSubscription;
         delete items.editCase;
+        delete items.removeCase;
     }
     else if(node.original.type != "subscription"){
         delete items.editSubscription;
+        delete items.removeSubscription;
     }
     return items;
 }

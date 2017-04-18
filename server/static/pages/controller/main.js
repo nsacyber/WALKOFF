@@ -136,17 +136,17 @@ objectSelectionDiv.on("change", '.objectSelection', function(){
 
 $("#submitForm").on("click", function(){
     var selectedSub = $('#casesTree').jstree().get_selected();
-    var selectedCase = "case_" + $("#casesTree").jstree().get_parent(selectedSub);
+    var selectedCase =  "case_" + $("#casesTree").jstree().get_parent(selectedSub);
 
     var selectedObjects = getSelectedList();
-    console.log(selectedObjects.length);
+
     if(selectedObjects.length >= 3){
         selectedObjects[0] = selectedObjects[1] + "-" + selectedObjects[2];
         selectedObjects.splice(2, 1);
     }
-    console.log(selectedObjects);
     var selectedEvents = getCheckedEvents();
 
-    console.log(selectedEvents);
+    r = editSubscription(selectedCase, selectedObjects, selectedEvents);
+    console.log(r);
     window.editSubscriptionDialog.dialog("close");
 });

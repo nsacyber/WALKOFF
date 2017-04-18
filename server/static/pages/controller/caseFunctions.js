@@ -48,14 +48,14 @@ function editCase(id){
 
 }
 
-function addSubscription(selectedCase, subscriptionId){
+function addNewSubscription(selectedCase, subscriptionId){
     var status = function () {
         var tmp = null;
         $.ajax({
             'async': false,
             'type': "POST",
             'global': false,
-            'data':{"format":"cytoscape"},
+            'data':{"ancestry":[], "events":[]},
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/subscriptions/" + selectedCase + "/subscription/add",
             'success': function (data) {
@@ -67,7 +67,7 @@ function addSubscription(selectedCase, subscriptionId){
     return status;
 }
 
-function removeSubscription(selectedCase, subscriptionId){
+function removeSelectedSubscription(selectedCase){
     var status = function () {
         var tmp = null;
         $.ajax({
@@ -76,14 +76,37 @@ function removeSubscription(selectedCase, subscriptionId){
             'global': false,
             'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase + "/subscription/add",
+            'url': "/cases/subscriptions/" + selectedCase + "/subscription/delete",
             'success': function (data) {
                 tmp = data;
             }
         });
         return tmp;
     }();
-    return status;
+    stat = {"status": 1}
+    return stat;
+}
+
+function editSubscription(selectedCase, ancestry, events){
+    stat = {"status": 0};
+    var status = function () {
+        var tmp = null;
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'data':{["ancestry":ancestry], ["events":events]},
+            'headers':{"Authentication-Token":authKey},
+            'url': "/cases/subscriptions/" + selectedCase + "/subscription/edit",
+            'success': function (data) {
+                tmp = data;
+                stat = {"status": 1};
+            }
+        });
+        return tmp;
+    }();
+    console.log(status);
+    return stat;
 }
 
 function getWorkflowElements(playbook, workflow, elements){
@@ -109,6 +132,8 @@ function getWorkflowElements(playbook, workflow, elements){
     return status;
 }
 
+
+
 function getSelectedObjects(){
     var selectedOptions = objectSelectionDiv.find("select > option").filter(":selected").map(function(){
         return {"type": $(this).data()["type"], "value": this.value};
@@ -127,9 +152,9 @@ function getSelectedList(){
 
 function getCheckedEvents(){
     var selectedEvents = [];
-    $.each($("#subscriptionSelection > li:checked > input"), function(i, el){
+    $.each($(".subscriptionSelection > li > input:checked"), function(i, el){
         var x = $(el).val() || "";
-        selectedOptions.push(x);
+        selectedEvents.push(x);
     });
     return selectedEvents;
 }
