@@ -105,12 +105,26 @@ $("#addCase").on("click", function(){
 });
 
 $("#modalObjectTypeSelection").on("change", function(){
-    console.log("Dialog Change");
+    $(".objectSelection").parent().show();
     $(".objectSelection > option").remove();
     $(".subscriptionSelection").empty();
     selected_objectType = this.value;
     formatModal(availableSubscriptions,selected_objectType);
 });
+
+//$(".objectSelection").on("change", function(e){
+//    var i = $(e.currentTarget).parent().index() + 2;
+//    var nextup = $("#objectSelectionDiv > li:nth-child(" + i + ") > select");
+//    if(nextup.length){
+//        if(nextup.data("type") != "none"){
+//            var previous = [];
+//            $.each($(e.currentTarget).parent().prevAll(), function(index, value){
+//                console.log(value)
+//            });
+//            formatAncestry(nextup, nextup.data("type"));
+//        }
+//    }
+//})
 
 editSubscriptionDialog.on("dialogclose", function(event, ui){
     resetSubscriptionModal();
@@ -120,3 +134,19 @@ objectSelectionDiv.on("change", '.objectSelection', function(){
     getSelectedObjects();
 });
 
+$("#submitForm").on("click", function(){
+    var selectedSub = $('#casesTree').jstree().get_selected();
+    var selectedCase = "case_" + $("#casesTree").jstree().get_parent(selectedSub);
+
+    var selectedObjects = getSelectedList();
+    console.log(selectedObjects.length);
+    if(selectedObjects.length >= 3){
+        selectedObjects[0] = selectedObjects[1] + "-" + selectedObjects[2];
+        selectedObjects.splice(2, 1);
+    }
+    console.log(selectedObjects);
+    var selectedEvents = getCheckedEvents();
+
+    console.log(selectedEvents);
+    window.editSubscriptionDialog.dialog("close");
+});

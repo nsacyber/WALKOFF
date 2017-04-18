@@ -31,15 +31,15 @@ function createSubscriptionModal(){
                                 formatModal(window.availableSubscriptions, selected_objectType);
                         },
                         close: function(event, ui){
-                            $(this).dialog("destroy");
-                            $("#editSubscriptionDialog").remove();
-                            window.editCaseSubscriptionDialog = null;
+                            //$(this).dialog("destroy");
+                            //$("#editSubscriptionDialog").empty();
+                            //window.editCaseSubscriptionDialog = null;
                         }
                     });
     return editSubscriptionDialog;
 }
 
-function formatAncestry(element, fields){
+function formatAncestry(element, fields, previous){
     switch(fields[field]){
         case "controller":
             formatControllerSubscriptions(element, availableSubscriptions[fields[field]]);
@@ -48,7 +48,7 @@ function formatAncestry(element, fields){
             formatPlaybookSubscriptions(element, availableSubscriptions[fields[field]]);
         break;
         case "workflow":
-            formatWorkflowSubscriptions(element, availableSubscriptions[fields[field]]);
+            formatWorkflowSubscriptions(element, availableSubscriptions[fields[field]], previous);
         break;
         case "step":
             formatStepSubscriptions(element, availableSubscriptions[fields[field]]);
@@ -71,10 +71,13 @@ function formatModal(elements, selected_objectType){
     var id, element;
     for(field in fields){
         id = "#" + fields[field] +"ObjectSelection";
-        element = $(id).get(0);
-        formatAncestry(element, fields);
+        element = $(id);
+        element.append("<option data-type='none'>Select " + fields[field] + "</option>");
+
     }
+    //formatAncestry($("#controllerObjectSelection"), ["controller"]);
     formatSubscriptionList(availableSubscriptions[selected_objectType]);
+
 }
 
 function openEditCaseModal(){
@@ -110,7 +113,6 @@ function casesCustomMenu(node){
         editSubscription: {
             label: "Edit Subscription",
             action: function () {
-                console.log(typeof editCaseSubscriptionDialog);
                 if(typeof window.editCaseSubscriptionDialog === 'undefined' || window.editCaseSubscriptionDialog === null){
                     createSubscriptionModal();
                 }

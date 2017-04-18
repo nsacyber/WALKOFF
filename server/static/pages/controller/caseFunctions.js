@@ -1,3 +1,11 @@
+function formatCasesForJSTree(cases){
+    var result = [];
+    for(x in cases){
+        result.push({"id": cases[x].id, "text": cases[x].name, "type": "case"});
+    }
+    return result;
+}
+
 function addCase(id){
     var status = function () {
         var tmp = null;
@@ -29,7 +37,6 @@ function removeCase(id){
             'url': "/cases/" + id + "/delete",
             'success': function (data) {
                 tmp = data;
-                console.log(data);
             }
         });
         return tmp;
@@ -106,8 +113,25 @@ function getSelectedObjects(){
     var selectedOptions = objectSelectionDiv.find("select > option").filter(":selected").map(function(){
         return {"type": $(this).data()["type"], "value": this.value};
     }).get();
-    console.log(selectedOptions);
     return selectedOptions;
+}
+
+function getSelectedList(){
+    var selectedOptions = [];
+    $.each($("#objectSelectionDiv > li:visible > input"), function(i , el){
+        var x = $(el).val() || "";
+        selectedOptions.push(x);
+    });
+    return selectedOptions;
+}
+
+function getCheckedEvents(){
+    var selectedEvents = [];
+    $.each($("#subscriptionSelection > li:checked > input"), function(i, el){
+        var x = $(el).val() || "";
+        selectedOptions.push(x);
+    });
+    return selectedEvents;
 }
 
 function formatSubscriptionList(availableSubscriptions){
@@ -120,8 +144,12 @@ function formatSubscriptionList(availableSubscriptions){
 function populateObjectSelectionList(availableSubscriptions, selected_objectType){
     var index = Object.keys(availableSubscriptions).indexOf(selected_objectType);
     var result;
+    if(index < $(".objectSelection").length){
+        $(".objectSelection").slice((index+1), $(".objectSelection").length).parent().hide();
+    }
+
     if(index > 0){
-         result = Object.keys(availableSubscriptions).slice(0, index);
+         result = Object.keys(availableSubscriptions).slice(0, index+1 || index);
     }else{
         result = [selected_objectType]
     }
@@ -142,9 +170,8 @@ function formatControllerSubscriptions(element, availableSubscriptions){
 
 function formatPlaybookSubscriptions(element, availableSubscriptions){
     var playbooks = Object.keys(loadedWorkflows);
-    var option;
     for(playbook in playbooks){
-        option = $("<option></option>");
+        var option = $("<option></option>");
         option.attr("data-type", "playbook");
         option.val(playbooks[playbook]);
         option.text(playbooks[playbook]);
@@ -153,8 +180,8 @@ function formatPlaybookSubscriptions(element, availableSubscriptions){
     }
 }
 
-function formatWorkflowSubscriptions(element, availableSubscriptions){
-    var workflows = loadedWorkflows[playbook];
+function formatWorkflowSubscriptions(element, availableSubscriptions, previous){
+    var workflows = loadedWorkflows[previous[1]];
     for(workflow in workflows){
         element.append("<option data-type='workflow' value='" + workflows[workflow] + "'>" + workflows[workflow] + "</option>");
     }

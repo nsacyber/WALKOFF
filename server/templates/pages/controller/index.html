@@ -123,13 +123,21 @@
 
                         <td>
                             <ul id="objectSelectionDiv" name="objectSelectionDiv">
-                                <li><label for='controllerObjectSelection'>Controller</label><select id='controllerObjectSelection' class='objectSelection'></select></li>
-                                <li><label for='playbookObjectSelection'>Playbook</label><select id='playbookObjectSelection' class='objectSelection'></select></li>
-                                <li><label for='workflowObjectSelection'>Workflow</label><select id='workflowObjectSelection' class='objectSelection'></select></li>
-                                <li><label for='stepObjectSelection'>Step</label><select id='stepObjectSelection' class='objectSelection'></select></li>
-                                <li><label for='nextStepObjectSelection'>Next Step</label><select id='nextStepObjectSelection' class='objectSelection'></select></li>
-                                <li><label for='flagObjectSelection'>Flag</label><select id='flagObjectSelection' class='objectSelection'></select></li>
-                                <li><label for='filterObjectSelection'>Filter</label><select id='filterObjectSelection' class='objectSelection'></select></li>
+                                <!-- <li><label for='controllerObjectSelection'>Controller</label><select data-type="controller" id='controllerObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='playbookObjectSelection'>Playbook</label><select data-type="playbook" id='playbookObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='workflowObjectSelection'>Workflow</label><select data-type="workflow" id='workflowObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='stepObjectSelection'>Step</label><select data-type="step" id='stepObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='nextStepObjectSelection'>Next Step</label><select data-type="nextstep" id='nextStepObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='flagObjectSelection'>Flag</label><select data-type="flag" id='flagObjectSelection' class='objectSelection'></select></li>
+                                <li><label for='filterObjectSelection'>Filter</label><select data-type="filter" id='filterObjectSelection' class='objectSelection'></select></li> -->
+
+                                <li><label for='controllerObjectSelection'>Controller</label><input data-type="controller" name="controller" id='controllerObjectSelection' class='objectSelection' type="text"></input></li>
+                                <li><label for='playbookObjectSelection'>Playbook</label><input data-type="playbook" name="playbook" id='playbookObjectSelection' class='objectSelection' type="text"></input></li>
+                                <li><label for='workflowObjectSelection'>Workflow</label><input data-type="workflow" name="workflow" id='workflowObjectSelection' class='objectSelection' type="text"></input></li>
+                                <li><label for='stepObjectSelection'>Step</label><input data-type="step" name="step" id='stepObjectSelection' class='objectSelection' type="text"></input></li>
+                                <li><label for='nextStepObjectSelection'>Next Step</label><input data-type="nextstep" name="nextstep" id='nextStepObjectSelection' class='objectSelection' type="text"></input></li>
+                                <li><label for='flagObjectSelection'>Flag</label><input data-type="flag" name="flag" id='flagObjectSelection' class='objectSelection' type="text"></input></li>
+                                <li><label for='filterObjectSelection'>Filter</label><input data-type="filter" name="filter" id='filterObjectSelection' class='objectSelection' type="text"></input></li>
                             </ul>
                         </td>
                     </tr>
@@ -141,7 +149,7 @@
                     </tr>
                     <tr>
                         <td></td>
-                        <td><button>Submit</button></td>
+                        <td><button id="submitForm">Submit</button></td>
                     </tr>
                 </table>
             </div>
@@ -160,9 +168,9 @@
             <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
 
             <script type="text/javascript">
-                window.loadedWorkflows = {{loadedWorkflows | safe}};
-                window.schedulerStatusNo = {{schedulerStatus}};
-                window.controllers = ["{{currentController}}"];
+                loadedWorkflows = {{loadedWorkflows | safe}};
+                schedulerStatusNo = {{schedulerStatus}};
+                controllers = ["{{currentController}}"];
             </script>
 
             <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>
