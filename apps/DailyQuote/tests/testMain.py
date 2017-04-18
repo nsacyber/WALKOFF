@@ -12,14 +12,17 @@ class TestMain(TestCase):
 
     def test_get_quote(self):
         quote = self.app.getQuote()
-        self.assertEqual(quote["success"], {"total": 1})
+        if 'success' in quote:
+            self.assertEqual(quote["success"], {"total": 1})
+        else:
+            self.assertIn('error', quote)
 
     # def test_quote_with_args(selfself):
     def test_other_quote(self):
         url = "http://api.forismatic.com/api/1.0/"
         args = {'url': (lambda: url)}
         quote = self.app.forismaticQuote(args)
-        self.assertEqual(quote['success'], True)
+        self.assertIn('success', quote)
 
     def test_repeat_to_me(self):
         args = {'call': (lambda: 'test_message')}

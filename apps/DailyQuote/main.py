@@ -30,9 +30,12 @@ class Main(appdevice.App):
         url = args["url"]()
         payload = {'method': 'getQuote', 'format': 'json', 'lang': 'en'}
         result = self.s.get(url, params=payload, verify=False)
-        json_result = json.loads(result.text)
-        json_result['success'] = True
-        return json_result
+        try:
+            json_result = json.loads(result.text)
+            json_result['success'] = True
+            return json_result
+        except json.decoder.JSONDecodeError:
+            return {'success': False, 'text': result.text}
 
     # Uses the url defined in _init to make a getQuote api call and returns the quote
     def getQuote(self, args={}):
