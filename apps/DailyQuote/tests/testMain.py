@@ -23,6 +23,8 @@ class TestMain(TestCase):
         args = {'url': (lambda: url)}
         quote = self.app.forismaticQuote(args)
         self.assertIn('success', quote)
+        if not quote['success']:
+            self.assertIn('text', quote)
 
     def test_repeat_to_me(self):
         args = {'call': (lambda: 'test_message')}
