@@ -33,8 +33,6 @@ $(function() {
                 e = JSON.parse(e);
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
-                    $('#password').val("admin");
-                    $('#email').val("test@email.com");
                 }
                 $('#active').prop("checked",e.active);
 
