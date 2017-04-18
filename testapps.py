@@ -17,13 +17,13 @@ def cmd_line():
 
 
 def get_tests(app_name):
-    tests_path = os.path.join(apps_path, app_name, 'test')
+    tests_path = os.path.join(apps_path, app_name, 'tests')
     if os.path.isdir(tests_path):
         test_files = [os.path.splitext(f)[0]
                       for f in os.listdir(tests_path) if (os.path.isfile(os.path.join(tests_path, f))
                                                           and f.endswith('.py')
                                                           and f != '__init__.py')]
-        test_modules = [importlib.import_module('apps.{0}.test.{1}'.format(app_name, test_module))
+        test_modules = [importlib.import_module('apps.{0}.tests.{1}'.format(app_name, test_module))
                         for test_module in test_files]
         return test_modules
     else:
