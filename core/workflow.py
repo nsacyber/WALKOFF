@@ -202,4 +202,6 @@ class Workflow(ExecutionElement):
         return str(output)
 
     def as_json(self, *args):
-        pass
+        return {'name': self.name,
+                'options': self.options.as_json(),
+                'steps': {name: step.as_json() for name, step in self.steps.items()}}

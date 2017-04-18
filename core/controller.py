@@ -229,9 +229,9 @@ class Controller(object):
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         workflow_copy = deepcopy(workflow)
         workflow_copy.playbook_name = new_playbook_name
-        workflow_copy.name = new_workflow_name
+        workflow_copy.name = construct_workflow_name_key(new_playbook_name, new_workflow_name)
 
-        key = _WorkflowKey(workflow_copy.playbook_name, workflow_copy.name)
+        key = _WorkflowKey(new_playbook_name, new_workflow_name)
         self.workflows[key] = workflow_copy
         self.workflows[key].reconstruct_ancestry([self.name])
 
