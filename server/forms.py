@@ -28,27 +28,18 @@ class AddWorkflowForm(Form):
     playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
     template = StringField('template', [validators.Length(min=1, max=50), validators.Optional()])
 
+
 class CopyWorkflowForm(Form):
     playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
     workflow = StringField('workflow', [validators.Length(min=1, max=50), validators.Optional()])
 
+
 class CopyPlaybookForm(Form):
     playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
 
+
 class AddPlaybookForm(Form):
     playbook_template = StringField('playbook_template', [validators.Length(min=1, max=50), validators.Optional()])
-
-
-class EditPlaybookForm(Form):
-    new_name = StringField('New Name', [validators.Length(min=1, max=50), validators.data_required()])
-
-
-class EditPlayNameForm(Form):
-    new_name = StringField('new_name', [validators.Length(min=1, max=50), validators.Optional()])
-    enabled = BooleanField('enabled', [validators.Optional()])
-    scheduler_type = StringField('scheduler_type', [validators.Optional()])
-    autoRun = BooleanField('autorun', [validators.Optional()])
-    scheduler_args = StringField('scheduler_options', [validators.Optional()])
 
 
 class SavePlayForm(Form):
@@ -109,6 +100,7 @@ class EditDeviceForm(Form):
 
 class ExportImportAppDevices(Form):
     filename = StringField('Filename', [validators.Optional()])
+
 
 class LoginForm(Form):
     username = StringField('username', [validators.Length(min=4, max=25)])

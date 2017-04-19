@@ -643,13 +643,13 @@ class TestCaseServer(ServerTestCase):
         set_subscriptions({'case1': case1, 'case2': case2})
 
         tree1 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
-                                                       'sub2': {}}},
-                                     'sub8': {'sub5': {'sub3': {}}}},
+                                                          'sub2': {}}},
+                                        'sub8': {'sub5': {'sub3': {}}}},
                            sub12_name: {'sub9': {'sub6': {}}},
                            sub13_name: {'sub10': {}}}}
 
         tree2 = {'sub21': {sub18_name: {'sub15': {},
-                                     'sub16': {}}},
+                                        'sub16': {}}},
                  'sub22': {sub19_name: {'sub17': {}},
                            sub20_name: {}}}
 
@@ -669,27 +669,27 @@ class TestCaseServer(ServerTestCase):
             self.assertDictEqual(response, expected_response)
 
         tree1_after_rem10 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
-                                                                   'sub2': {}}},
-                                                 'sub8': {'sub5': {'sub3': {}}}},
+                                                                      'sub2': {}}},
+                                                    'sub8': {'sub5': {'sub3': {}}}},
                                        sub12_name: {'sub9': {'sub6': {}}},
                                        sub13_name: {}}}
 
         test_removal('case1', ["sub14", "playbook", "sub13", "sub10"], tree1_after_rem10, tree2)
 
         tree2_after_rem20 = {'sub21': {sub18_name: {'sub15': {},
-                                                 'sub16': {}}},
+                                                    'sub16': {}}},
                              'sub22': {sub19_name: {'sub17': {}}}}
         test_removal('case2', ["sub22", 'playbook', "sub20"], tree1_after_rem10, tree2_after_rem20)
 
         tree1_after_rem9 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
-                                                                  'sub2': {}}},
-                                                'sub8': {'sub5': {'sub3': {}}}},
+                                                                     'sub2': {}}},
+                                                   'sub8': {'sub5': {'sub3': {}}}},
                                       sub12_name: {},
                                       sub13_name: {}}}
         test_removal('case1', ["sub14", "playbook", "sub12", "sub9"], tree1_after_rem9, tree2_after_rem20)
 
         tree1_after_rem4 = {'sub14': {sub11_name: {'sub7': {},
-                                                'sub8': {'sub5': {'sub3': {}}}},
+                                                   'sub8': {'sub5': {'sub3': {}}}},
                                       sub12_name: {},
                                       sub13_name: {}}}
         test_removal('case1', ['sub14', 'playbook', 'sub11', 'sub7', 'sub4'], tree1_after_rem4, tree2_after_rem20)
