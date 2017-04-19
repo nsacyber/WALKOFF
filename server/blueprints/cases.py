@@ -10,6 +10,7 @@ from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
 import core.config.config
 import core.config.paths
+from core.helpers import construct_workflow_name_key
 
 
 cases_page = Blueprint('cases_page', __name__)
@@ -141,6 +142,13 @@ def edit_global_subscription(case_name):
         return json.dumps({"status": "Error: form invalid"})
 
 
+def convert_ancestry(ancestry):
+    if len(ancestry) >= 3:
+        ancestry[1] = construct_workflow_name_key(ancestry[1], ancestry[2])
+        del ancestry[2]
+    return ancestry
+
+
 @cases_page.route('/subscriptions/<string:case_name>/subscription/<string:action>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
@@ -148,7 +156,9 @@ def crud_subscription(case_name, action):
     if action == 'edit':
         form = forms.EditSubscriptionForm(request.form)
         if form.validate():
-            success = case_subscription.edit_subscription(case_name, form.ancestry.data, form.events.data)
+            success = case_subscription.edit_subscription(case_name,
+                                                          convert_ancestry(form.ancestry.data),
+                                                          form.events.data)
             if success:
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
@@ -158,12 +168,12 @@ def crud_subscription(case_name, action):
     elif action == 'add':
         form = forms.AddSubscriptionForm(request.form)
         if form.validate():
-            case_subscription.add_subscription(case_name, form.ancestry.data, form.events.data)
+            case_subscription.add_subscription(case_name, convert_ancestry(form.ancestry.data), form.events.data)
             return json.dumps(case_subscription.subscriptions_as_json())
     elif action == 'delete':
         form = forms.DeleteSubscriptionForm(request.form)
         if form.validate():
-            case_subscription.remove_subscription_node(case_name, form.ancestry.data)
+            case_subscription.remove_subscription_node(case_name, convert_ancestry(form.ancestry.data))
             return json.dumps(case_subscription.subscriptions_as_json())
 
 
