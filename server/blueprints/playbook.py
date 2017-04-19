@@ -43,26 +43,35 @@ def display_available_workflow_templates():
     return json.dumps({"status": "success", "templates": templates})
 
 
-@playbook_page.route('/<string:playbook_name>/<string:workflow_name>/display', methods=['GET'])
+@playbook_page.route('/<string:playbook_name>/<string:workflow_name>/<string:action>', methods=['GET'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/playbook'])
-def display_workflow(playbook_name, workflow_name):
+def display_workflow(playbook_name, workflow_name, action):
     if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-        if not request.get_json():
-            return json.dumps({"status": "success",
-                               "steps": running_context.controller.get_workflow(playbook_name,
-                                                                                workflow_name).get_cytoscape_data(),
-                               'options': running_context.controller.get_workflow(playbook_name,
-                                                                                  workflow_name).options.as_json()})
-        elif 'ancestry' in request.get_json():
-            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            info = workflow.get_children(request.get_json()['ancestry'])
-            if info:
-                return json.dumps({"status": "success", "element": info})
+        if action == "display":
+            if not request.get_json():
+                return json.dumps({"status": "success",
+                                   "steps": running_context.controller.get_workflow(playbook_name,
+                                                                                    workflow_name).get_cytoscape_data(),
+                                   'options': running_context.controller.get_workflow(playbook_name,
+                                                                                      workflow_name).options.as_json()})
+            elif 'ancestry' in request.get_json():
+                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                info = workflow.get_children(request.get_json()['ancestry'])
+                if info:
+                    return json.dumps({"status": "success", "element": info})
+                else:
+                    return json.dumps({"status": 'error: element not found'})
             else:
-                return json.dumps({"status": 'error: element not found'})
+                return json.dumps({"status": 'error: malformed JSON'})
+        elif action == "risk":
+            workflow = running_context.controller.get_workflow(playbook_name,workflow_name)
+            risk_percent = "{0:.2f}".format(workflow.accumulated_risk*100.00)
+            risk_number = str(workflow.accumulated_risk*workflow.total_risk)
+            return json.dumps({"risk_percent": risk_percent,
+                               "risk_number": risk_number})
         else:
-            return json.dumps({"status": 'error: malformed JSON'})
+            return json.dumps({"status": 'error: invalid operation'})
     else:
         return json.dumps({"status": "error: name not found"})
 

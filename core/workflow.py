@@ -203,11 +203,11 @@ class Workflow(ExecutionElement):
     def __repr__(self):
         output = {'options': self.options,
                   'steps': {step: self.steps[step] for step in self.steps},
-                  'accumulated_risk': "{0:.2f}".format(self.accumulated_risk)}
+                  'accumulated_risk': "{0:.2f}".format(self.accumulated_risk*100.00)}
         return str(output)
 
     def as_json(self, *args):
         return {'name': self.name,
-                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk),
+                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk*100.00),
                 'options': self.options.as_json(),
                 'steps': {name: step.as_json() for name, step in self.steps.items()}}
