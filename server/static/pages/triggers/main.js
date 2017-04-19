@@ -233,88 +233,87 @@
 //    console.log(parameters)
 //    parameters = transformParametersToSchema(parameters);
 //   console.log(parameters);
-
-    $('#addTrigger').on('click', function () {
-        name = $('#deviceForm #name').val();
-        $.ajax({
-        url: 'execution/listener/triggers/' + name + '/add',
-        data: $("#deviceForm").serialize(),
-        headers: {"Authentication-Token": authKey},
-        type: "POST",
-        success: function (data) {
-            console.log('trigger add success');
-            getTriggerList();
-            $("#deviceForm").trigger("reset");
-
-        },
-        error: function (e) {
-            console.log('trigger add failed');
-            console.log(e);
-        }
-    });
-
-    });
-
-    //Show edit dialog
-    $("#editTrigger").on('click',function(){
-    alert('edited')
-        index = $("#trigger option:selected").val();
-        trigger = triggerData['triggers'][''+index];
-        if($("#trigger option:selected").attr('value') == 'none'){
-        }else{
-//            $("#parameterEdit").show();
-            $("#name").val(trigger['name']);
-            $("#playbook").val(trigger['playbook']);
-            $("#workflow").val(trigger['workflow']);
-            $("#conditional").val(trigger['conditional']);
-        };
-
-    });
-    //Edit item
-    $("#editformSubmit").on('click',function(){
-        if($("#trigger option:selected").attr('value') == 'none'){
-            alert("Select a trigger");
-        }else{
-            name = $("#trigger option:selected").text();
-             $.ajax({
-            url:'execution/listener/triggers/'+ name + '/edit' ,
-            data: $("#editDeviceForm").serialize(),
-            headers:{"Authentication-Token":authKey},
-            type:"POST",
-            success:function(e){
-                //refresh the list of triggers
+    $(document).ready(function() {
+        $('#addTrigger').on('click', function () {
+            name = $('#deviceForm #name').val();
+            $.ajax({
+            url: 'execution/listener/triggers/' + name + '/add',
+            data: $("#deviceForm").serialize(),
+            headers: {"Authentication-Token": authKey},
+            type: "POST",
+            success: function (data) {
+                console.log('trigger add success');
                 getTriggerList();
-                $("#editDeviceForm").trigger("reset");
+                $("#deviceForm").trigger("reset");
             },
-            error: function(e){
-                console.log("ERROR");
+            error: function (e) {
+                console.log('trigger add failed');
+                console.log(e);
             }
         });
-        };
-    })
-    // Remove item
-    $('.remove').on('click', function () {
-        if($("#trigger option:selected").attr('value') == 'none'){
-            alert("Select a trigger");
-        }else{
-            name = $("#trigger option:selected").text();
-             $.ajax({
-            url:'execution/listener/triggers/'+ name + '/remove' ,
-            data:{},
-            headers:{"Authentication-Token":authKey},
-            type:"POST",
-            success:function(e){
-                // refresh the list of triggers
-                $("#trigger option(1)").prop('sl')
-                getTriggerList();
-            },
-            error: function(e){
-                console.log("ERROR");
-            }
-        });
-        };
-    });
 
+        });
+
+        //Show edit dialog
+        $("#editTrigger").on('click',function(){
+        alert('edited')
+            index = $("#trigger option:selected").val();
+            trigger = triggerData['triggers'][''+index];
+            if($("#trigger option:selected").attr('value') == 'none'){
+            }else{
+    //            $("#parameterEdit").show();
+                $("#name").val(trigger['name']);
+                $("#playbook").val(trigger['playbook']);
+                $("#workflow").val(trigger['workflow']);
+                $("#conditional").val(trigger['conditional']);
+            };
+
+        });
+        //Edit item
+        $("#editformSubmit").on('click',function(){
+            if($("#trigger option:selected").attr('value') == 'none'){
+                alert("Select a trigger");
+            }else{
+                name = $("#trigger option:selected").text();
+                 $.ajax({
+                url:'execution/listener/triggers/'+ name + '/edit' ,
+                data: $("#editDeviceForm").serialize(),
+                headers:{"Authentication-Token":authKey},
+                type:"POST",
+                success:function(e){
+                    //refresh the list of triggers
+                    getTriggerList();
+                    $("#editDeviceForm").trigger("reset");
+                },
+                error: function(e){
+                    console.log("ERROR");
+                }
+            });
+            };
+        })
+        // Remove item
+        $('.remove').on('click', function () {
+            if($("#trigger option:selected").attr('value') == 'none'){
+                alert("Select a trigger");
+            }else{
+                name = $("#trigger option:selected").text();
+                 $.ajax({
+                url:'execution/listener/triggers/'+ name + '/remove' ,
+                data:{},
+                headers:{"Authentication-Token":authKey},
+                type:"POST",
+                success:function(e){
+                    // refresh the list of triggers
+                    $("#trigger option(1)").prop('sl')
+                    getTriggerList();
+                },
+                error: function(e){
+                    console.log("ERROR");
+                }
+            });
+            };
+        });
+    });
 
 
 }());
