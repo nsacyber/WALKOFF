@@ -21,26 +21,30 @@ _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
 pool = None
 workflows = None
-
+threading_is_initialized = False
 
 def initialize_threading():
     global pool
     global workflows
+    global threading_is_initialized
 
     workflows = []
 
     pool = futures.ThreadPoolExecutor(max_workers=core.config.config.num_threads)
+    threading_is_initialized = True
 
 
 def shutdown_pool():
     global pool
     global workflows
+    global threading_is_initialized
 
     for future in futures.as_completed(workflows):
         future.result(timeout=core.config.config.threadpool_shutdown_timeout_sec)
     pool.shutdown(wait=False)
 
-    workflows = {}
+    workflows = []
+    threading_is_initialized = False
 
 
 def execute_workflow_worker(workflow, start, subs):
@@ -190,13 +194,14 @@ class Controller(object):
     def execute_workflow(self, playbook_name, workflow_name, start='start'):
         global pool
         global workflows
+        global threading_is_initialized
 
         key = _WorkflowKey(playbook_name, workflow_name)
         workflow = self.workflows[key]
         subs = deepcopy(subscription.subscriptions)
 
         #If threading has not been initialized, initialize it.
-        if not workflows:
+        if not threading_is_initialized:
             initialize_threading()
 
         workflows.append(pool.submit(execute_workflow_worker, workflow, start, subs))
