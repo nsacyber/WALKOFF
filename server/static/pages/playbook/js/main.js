@@ -992,6 +992,10 @@ $(function(){
             }
         }
 
+        $('form').on('submit', function(event){
+            event.preventDefault();
+        });
+
         $( "#dialog-new-workflow" ).dialog({
             autoOpen: false,
             modal: true,
@@ -1046,6 +1050,10 @@ $(function(){
         function doesPlaybookExist(playbookName) {
             return workflowList.hasOwnProperty(playbookName);
         }
+
+        $('form').on('submit', function(event){
+            event.preventDefault();
+        });
 
         $( "#dialog-rename-playbook" ).dialog({
             autoOpen: false,
@@ -1109,6 +1117,10 @@ $(function(){
                 return false;
             }
         }
+
+        $('form').on('submit', function(event){
+            event.preventDefault();
+        });
 
         $( "#dialog-rename-workflow" ).dialog({
             autoOpen: false,
