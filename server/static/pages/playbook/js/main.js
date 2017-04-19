@@ -542,6 +542,7 @@ $(function(){
             boxSelectionEnabled: false,
             autounselectify: false,
             wheelSensitivity: 0.1,
+            layout: { name: 'preset' },
             style: [
                 {
                     selector: 'node',
@@ -648,15 +649,7 @@ $(function(){
 
         cy.add(workflowData);
 
-        // Setup the layout.
-        // Setting up the layout must be done after loading the data. Otherwise
-        // nodes will not be positioned correctly.
-        cy.layout({
-            name: 'breadthfirst',
-            fit:true,
-            padding: 5,
-            root:"#start"
-        });
+        cy.fit();
 
         // Configure handler when user clicks on node or edge
         cy.$('*').on('click', onClick);
