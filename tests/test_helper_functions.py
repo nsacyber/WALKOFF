@@ -119,3 +119,24 @@ class TestHelperFunctions(unittest.TestCase):
                         '{0}{1}'.format(join('aaa', 'bbb', 'ccc'), sep): 'aaa.bbb.ccc'}
         for input_path, expected_output in input_output.items():
             self.assertEqual(construct_module_name_from_path(input_path), expected_output)
+
+    def test_import_submodules(self):
+        from tests import testpkg
+        base_name = 'tests.testpkg'
+        results = import_submodules(testpkg)
+        expected_names = ['{0}.{1}'.format(base_name, module_name) for module_name in ['a', 'b', 'subpkg']]
+        self.assertEqual(len(results.keys()), len(expected_names))
+        for name in expected_names:
+            self.assertIn(name, results.keys())
+            self.assertIn(name, sys.modules.keys())
+
+    def test_import_submodules_recursive(self):
+        from tests import testpkg
+        base_name = 'tests.testpkg'
+        results = import_submodules(testpkg, recursive=True)
+        expected_names = ['{0}.{1}'.format(base_name, module_name)
+                          for module_name in ['a', 'b', 'subpkg', 'subpkg.c', 'subpkg.d']]
+        self.assertEqual(len(results.keys()), len(expected_names))
+        for name in expected_names:
+            self.assertIn(name, results.keys())
+            self.assertIn(name, sys.modules.keys())

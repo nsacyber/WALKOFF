@@ -315,12 +315,12 @@ class TestWorkflowServer(ServerTestCase):
         workflow = flask_server.running_context.controller.get_workflow('test', 'test_name')
         for step in workflow.steps:
             self.assertTrue('test-test_name' in workflow.steps[step].ancestry)
-            for nextstep in workflow.steps[step].conditionals:
-                self.assertTrue('test-test_name' in nextstep.ancestry)
-                for flag in nextstep.flags:
+            for next_step in workflow.steps[step].conditionals:
+                self.assertTrue('test-test_name' in next_step.ancestry)
+                for flag in next_step.flags:
                     self.assertTrue('test-test_name' in flag.ancestry)
-                    for filter in flag.filters:
-                        self.assertTrue('test-test_name' in filter.ancestry)
+                    for filter_element in flag.filters:
+                        self.assertTrue('test-test_name' in filter_element.ancestry)
 
     def test_edit_workflow_empty_name(self):
         data = {"new_name": ""}
