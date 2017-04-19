@@ -20,6 +20,8 @@ class Workflow(ExecutionElement):
             self._from_xml(xml)
         self.children = children if (children is not None) else {}
         self.is_completed = False
+        self.accumulated_risk = 0.0
+        self.total_risk = sum([step.risk for step in self.steps.values()])
 
     def reconstruct_ancestry(self, parent_ancestry):
         self._construct_ancestry(parent_ancestry)
@@ -45,7 +47,7 @@ class Workflow(ExecutionElement):
     def assign_child(self, name='', workflow=None):
         self.children[name] = workflow
 
-    def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, errors=None):
+    def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, errors=None, risk=0):
         arg_input = arg_input if arg_input is not None else {}
         next_steps = next_steps if next_steps is not None else []
         errors = errors if errors is not None else []
@@ -54,7 +56,8 @@ class Workflow(ExecutionElement):
                                                     format=arg['format']) for key, arg in arg_input.items()}
         ancestry = list(self.ancestry)
         self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
-                                next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name)
+                                next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name, risk=risk)
+        self.total_risk += risk
 
     def remove_step(self, name=''):
         if name in self.steps:
@@ -133,6 +136,7 @@ class Workflow(ExecutionElement):
         except Exception as e:
             error_flag = True
             step.output = str(e)
+            self.accumulated_risk += (float(step.risk)/float(self.total_risk))
         finally:
             return error_flag
 
@@ -198,10 +202,12 @@ class Workflow(ExecutionElement):
 
     def __repr__(self):
         output = {'options': self.options,
-                  'steps': {step: self.steps[step] for step in self.steps}}
+                  'steps': {step: self.steps[step] for step in self.steps},
+                  'accumulated_risk': "{0:.2f}".format(self.accumulated_risk)}
         return str(output)
 
     def as_json(self, *args):
         return {'name': self.name,
+                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk),
                 'options': self.options.as_json(),
                 'steps': {name: step.as_json() for name, step in self.steps.items()}}

@@ -38,7 +38,8 @@ class Step(ExecutionElement):
                  errors=None,
                  parent_name='',
                  position=None,
-                 ancestry=None):
+                 ancestry=None,
+                 risk=0):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.raw_xml = xml
 
@@ -48,6 +49,7 @@ class Step(ExecutionElement):
             self.action = action
             self.app = app
             self.device = device
+            self.risk = risk
             self.input = inputs if inputs is not None else {}
             self.conditionals = next_steps if next_steps is not None else []
             self.errors = errors if errors is not None else []
@@ -70,6 +72,8 @@ class Step(ExecutionElement):
         self.app = step_xml.find('app').text
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
+        risk_field = step_xml.find('risk')
+        self.risk = int(risk_field.text) if risk_field is not None else 0
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
                       for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -91,6 +95,8 @@ class Step(ExecutionElement):
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
         self.device = step_xml.find('device').text
+        risk_field = step_xml.find('risk')
+        self.risk = int(risk_field.text) if risk_field is not None else 0
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
                       for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -160,6 +166,10 @@ class Step(ExecutionElement):
         action = cElementTree.SubElement(step, 'action')
         action.text = self.action
 
+        if self.risk:
+            risk = cElementTree.SubElement(step, 'risk')
+            risk.text = str(self.risk)
+
         if self.device:
             device = cElementTree.SubElement(step, 'device')
             device.text = self.device
@@ -190,6 +200,7 @@ class Step(ExecutionElement):
                   'action': self.action,
                   'app': self.app,
                   'device': self.device,
+                  'risk': str(self.risk),
                   'input': {key: self.input[key] for key in self.input},
                   'next': [next_step for next_step in self.conditionals],
                   'errors': [error for error in self.errors],
@@ -204,6 +215,7 @@ class Step(ExecutionElement):
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
+                  "risk": str(self.risk),
                   "input": {str(key): self.input[key].as_json() for key in self.input},
                   "position": {pos: str(val) for pos, val in self.position.items()}}
         if self.output:
@@ -219,10 +231,12 @@ class Step(ExecutionElement):
     @staticmethod
     def from_json(json_in, position, parent_name='', ancestry=None):
         device = json_in['device'] if 'device' in json_in else ''
+        risk = json_in['risk'] if 'risk' in json_in else 0
         step = Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
                     device=device,
+                    risk=risk,
                     inputs={arg_name: arguments.Argument.from_json(arg_element)
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,

@@ -3,7 +3,9 @@ import unittest
 from datetime import datetime
 from os import path
 from core import controller
-from core.step import Step
+from core.step import Step, InvalidStepInputError
+from core.instance import Instance
+from core.arguments import Argument
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.helpers import construct_workflow_name_key
@@ -347,3 +349,30 @@ class TestWorkflowManipulation(unittest.TestCase):
         new_ancestry.remove("test_step_one")
         new_ancestry.append("test_step_two")
         self.assertListEqual(new_ancestry, workflow.steps["test_step_two"].ancestry)
+
+    def test_simple_risk(self):
+        workflow = controller.wf.Workflow(name='workflow')
+        workflow.create_step(name="stepOne", risk=1)
+        workflow.create_step(name="stepTwo", risk=2)
+        workflow.create_step(name="stepThree", risk=3)
+
+        self.assertEqual(workflow.total_risk, 6)
+
+    def test_accumulated_risk_with_error(self):
+        workflow = controller.wf.Workflow(name='workflow')
+
+        workflow.create_step(name="stepOne", app='HelloWorld', action='invalid_name', risk=1)
+        workflow.steps["stepOne"].inputs = {'call': Argument(key='call', value='HelloWorld', format='str')}
+        workflow.create_step(name="stepTwo", app='HelloWorld', action='repeatBackToMe', risk=2)
+        workflow.steps["stepTwo"].inputs = {'number': Argument(key='number', value='6', format='str')}
+        workflow.create_step(name="stepThree", app='HelloWorld', action='returnPlusOne', risk=3)
+        workflow.steps["stepThree"].inputs = {}
+
+        instance = Instance.create(app_name='HelloWorld', device_name='test_device_name')
+
+        workflow._Workflow__execute_step(workflow.steps["stepOne"], instance=instance())
+        self.assertEqual(workflow.accumulated_risk, 1.0/6.0)
+        workflow._Workflow__execute_step(workflow.steps["stepTwo"], instance=instance())
+        self.assertEqual(workflow.accumulated_risk, (1.0/6.0)+(2.0/6.0))
+        workflow._Workflow__execute_step(workflow.steps["stepThree"], instance=instance())
+        self.assertEqual(workflow.accumulated_risk, 1.0)
