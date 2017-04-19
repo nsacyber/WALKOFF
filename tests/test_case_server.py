@@ -11,6 +11,8 @@ from core.case.callbacks import _EventEntry
 import core.config.paths
 from os.path import join
 from tests.util.servertestcase import ServerTestCase
+from server.blueprints.cases import convert_ancestry
+from core.helpers import construct_workflow_name_key
 
 
 class TestCaseServer(ServerTestCase):
@@ -405,94 +407,13 @@ class TestCaseServer(ServerTestCase):
         self.post_with_status_check('/cases/subscriptions/case1/global/edit', 'Error: Case name case1 was not found',
                                     data=global_subs, headers=self.headers)
 
-    def test_edit_subscription(self):
-        sub1 = Subscription()
-        sub2 = Subscription()
-        sub3 = Subscription()
-
-        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
-        sub5 = Subscription(subscriptions={'sub3': sub3})
-        sub6 = Subscription()
-
-        sub7 = Subscription(subscriptions={'sub4': sub4})
-        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
-
-        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
-
-        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
-
-        edit1 = {"ancestry-0": "sub8",
-                 "ancestry-1": "sub5",
-                 "ancestry-2": "sub3",
-                 "events-0": "a",
-                 "events-1": "b"}
-
-        edit2 = {"ancestry-0": "sub7",
-                 "ancestry-1": "sub4",
-                 "events-0": "c",
-                 "events-1": "d",
-                 "events-2": "e"}
-
-        edit3 = {"ancestry-0": "sub8",
-                 "events-0": "e"}
-
-        tree = {'sub7': {'sub4': {'sub1': {},
-                                  'sub2': {}}},
-                'sub8': {'sub5': {'sub3': {}},
-                         'sub6': {}}}
-
-        expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
-        expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['sub5']['subscriptions']['sub3'][
-            'events'] \
-            = ['a', 'b']
-
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit1, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected_cases_json)
-
-        expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['sub4']['events'] \
-            = ['c', 'd', 'e']
-
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit2, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected_cases_json)
-
-        expected_cases_json['case2']['subscriptions']['sub8']['events'] = ['e']
-
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit3, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected_cases_json)
-
-    def test_edit_subscription_invalid_ancestry(self):
-        sub1 = Subscription()
-        sub2 = Subscription()
-        sub3 = Subscription()
-
-        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
-        sub5 = Subscription(subscriptions={'sub3': sub3})
-        sub6 = Subscription()
-
-        sub7 = Subscription(subscriptions={'sub4': sub4})
-        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
-
-        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
-
-        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
-
-        edit1 = {"ancestry-0": "sub8",
-                 "ancestry-1": "sub5",
-                 "ancestry-2": "junk",
-                 "events-0": "a",
-                 "events-1": "b"}
-        self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
-                                    'Error occurred while editing subscription', data=edit1, headers=self.headers)
-
-    def test_edit_subscription_invalid_case(self):
-        self.post_with_status_check('/cases/subscriptions/case1/subscription/edit',
-                                    'Error occurred while editing subscription', headers=self.headers)
+    def test_convert_ancestry(self):
+        input_output = [(['a'], ['a']),
+                        (['a', 'b'], ['a', 'b']),
+                        (['a', 'b', 'c'], ['a', construct_workflow_name_key('b', 'c')]),
+                        (['a', 'b', 'c', 'd'], ['a', construct_workflow_name_key('b', 'c'), 'd'])]
+        for input_ancestry, output_ancestry in input_output:
+            self.assertListEqual(convert_ancestry(input_ancestry), output_ancestry)
 
     def test_add_subscription(self):
         sub1 = Subscription()
@@ -587,6 +508,97 @@ class TestCaseServer(ServerTestCase):
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
 
+    def test_edit_subscription(self):
+        sub1 = Subscription()
+        sub2 = Subscription()
+        sub3 = Subscription()
+
+        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
+        sub5 = Subscription(subscriptions={'sub3': sub3})
+        sub6 = Subscription()
+
+        sub7 = Subscription(subscriptions={'sub4': sub4})
+        sub5_name = construct_workflow_name_key('playbook', 'sub5')
+        sub8 = Subscription(subscriptions={sub5_name: sub5, 'sub6': sub6})
+
+        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+
+        edit1 = {"ancestry-0": "sub8",
+                 "ancestry-1": "playbook",
+                 "ancestry-2": "sub5",
+                 "ancestry-3": "sub3",
+                 "events-0": "a",
+                 "events-1": "b"}
+
+        edit2 = {"ancestry-0": "sub7",
+                 "ancestry-1": "sub4",
+                 "events-0": "c",
+                 "events-1": "d",
+                 "events-2": "e"}
+
+        edit3 = {"ancestry-0": "sub8",
+                 "events-0": "e"}
+
+        tree = {'sub7': {'sub4': {'sub1': {},
+                                  'sub2': {}}},
+                'sub8': {sub5_name: {'sub3': {}},
+                         'sub6': {}}}
+
+        expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
+        expected_cases_json['case2']['subscriptions']['sub8']['subscriptions'][sub5_name]['subscriptions']['sub3'][
+            'events'] \
+            = ['a', 'b']
+
+        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit1, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_cases_json)
+
+        expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['sub4']['events'] \
+            = ['c', 'd', 'e']
+
+        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit2, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_cases_json)
+
+        expected_cases_json['case2']['subscriptions']['sub8']['events'] = ['e']
+
+        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit3, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected_cases_json)
+
+    def test_edit_subscription_invalid_ancestry(self):
+        sub1 = Subscription()
+        sub2 = Subscription()
+        sub3 = Subscription()
+
+        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
+        sub5 = Subscription(subscriptions={'sub3': sub3})
+        sub6 = Subscription()
+
+        sub7 = Subscription(subscriptions={'sub4': sub4})
+        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
+
+        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+
+        edit1 = {"ancestry-0": "sub8",
+                 "ancestry-1": "sub5",
+                 "ancestry-2": "junk",
+                 "events-0": "a",
+                 "events-1": "b"}
+        self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+                                    'Error occurred while editing subscription', data=edit1, headers=self.headers)
+
+    def test_edit_subscription_invalid_case(self):
+        self.post_with_status_check('/cases/subscriptions/case1/subscription/edit',
+                                    'Error occurred while editing subscription', headers=self.headers)
+
     def test_remove_subscription(self):
         sub1 = Subscription()
         sub2 = Subscription()
@@ -605,7 +617,10 @@ class TestCaseServer(ServerTestCase):
         sub12 = Subscription(subscriptions={'sub9': sub9})
         sub13 = Subscription(subscriptions={'sub10': sub10})
 
-        sub14 = Subscription(subscriptions={'sub11': sub11, 'sub12': sub12, 'sub13': sub13})
+        sub11_name = construct_workflow_name_key('playbook', 'sub11')
+        sub12_name = construct_workflow_name_key('playbook', 'sub12')
+        sub13_name = construct_workflow_name_key('playbook', 'sub13')
+        sub14 = Subscription(subscriptions={sub11_name: sub11, sub12_name: sub12, sub13_name: sub13})
 
         case1 = CaseSubscriptions(subscriptions={'sub14': sub14})
 
@@ -617,23 +632,26 @@ class TestCaseServer(ServerTestCase):
         sub19 = Subscription(subscriptions={'sub17': sub17})
         sub20 = Subscription()
 
-        sub21 = Subscription(subscriptions={'sub18': sub18})
-        sub22 = Subscription(subscriptions={'sub19': sub19, 'sub20': sub20})
+        sub18_name = construct_workflow_name_key('playbook', 'sub18')
+        sub19_name = construct_workflow_name_key('playbook', 'sub19')
+        sub20_name = construct_workflow_name_key('playbook', 'sub20')
+        sub21 = Subscription(subscriptions={sub18_name: sub18})
+        sub22 = Subscription(subscriptions={sub19_name: sub19, sub20_name: sub20})
 
         case2 = CaseSubscriptions(subscriptions={'sub21': sub21, 'sub22': sub22})
 
         set_subscriptions({'case1': case1, 'case2': case2})
 
-        tree1 = {'sub14': {'sub11': {'sub7': {'sub4': {'sub1': {},
-                                                       'sub2': {}}},
-                                     'sub8': {'sub5': {'sub3': {}}}},
-                           'sub12': {'sub9': {'sub6': {}}},
-                           'sub13': {'sub10': {}}}}
+        tree1 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
+                                                          'sub2': {}}},
+                                        'sub8': {'sub5': {'sub3': {}}}},
+                           sub12_name: {'sub9': {'sub6': {}}},
+                           sub13_name: {'sub10': {}}}}
 
-        tree2 = {'sub21': {'sub18': {'sub15': {},
-                                     'sub16': {}}},
-                 'sub22': {'sub19': {'sub17': {}},
-                           'sub20': {}}}
+        tree2 = {'sub21': {sub18_name: {'sub15': {},
+                                        'sub16': {}}},
+                 'sub22': {sub19_name: {'sub17': {}},
+                           sub20_name: {}}}
 
         # test that construct expected json is working
         self.assertDictEqual({'case1': construct_case_json(tree1), 'case2': construct_case_json(tree2)},
@@ -650,39 +668,39 @@ class TestCaseServer(ServerTestCase):
                                  'case2': construct_case_json(expected_tree_2)}
             self.assertDictEqual(response, expected_response)
 
-        tree1_after_rem10 = {'sub14': {'sub11': {'sub7': {'sub4': {'sub1': {},
-                                                                   'sub2': {}}},
-                                                 'sub8': {'sub5': {'sub3': {}}}},
-                                       'sub12': {'sub9': {'sub6': {}}},
-                                       'sub13': {}}}
+        tree1_after_rem10 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
+                                                                      'sub2': {}}},
+                                                    'sub8': {'sub5': {'sub3': {}}}},
+                                       sub12_name: {'sub9': {'sub6': {}}},
+                                       sub13_name: {}}}
 
-        test_removal('case1', ["sub14", "sub13", "sub10"], tree1_after_rem10, tree2)
+        test_removal('case1', ["sub14", "playbook", "sub13", "sub10"], tree1_after_rem10, tree2)
 
-        tree2_after_rem20 = {'sub21': {'sub18': {'sub15': {},
-                                                 'sub16': {}}},
-                             'sub22': {'sub19': {'sub17': {}}}}
-        test_removal('case2', ["sub22", "sub20"], tree1_after_rem10, tree2_after_rem20)
+        tree2_after_rem20 = {'sub21': {sub18_name: {'sub15': {},
+                                                    'sub16': {}}},
+                             'sub22': {sub19_name: {'sub17': {}}}}
+        test_removal('case2', ["sub22", 'playbook', "sub20"], tree1_after_rem10, tree2_after_rem20)
 
-        tree1_after_rem9 = {'sub14': {'sub11': {'sub7': {'sub4': {'sub1': {},
-                                                                  'sub2': {}}},
-                                                'sub8': {'sub5': {'sub3': {}}}},
-                                      'sub12': {},
-                                      'sub13': {}}}
-        test_removal('case1', ["sub14", "sub12", "sub9"], tree1_after_rem9, tree2_after_rem20)
+        tree1_after_rem9 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
+                                                                     'sub2': {}}},
+                                                   'sub8': {'sub5': {'sub3': {}}}},
+                                      sub12_name: {},
+                                      sub13_name: {}}}
+        test_removal('case1', ["sub14", "playbook", "sub12", "sub9"], tree1_after_rem9, tree2_after_rem20)
 
-        tree1_after_rem4 = {'sub14': {'sub11': {'sub7': {},
-                                                'sub8': {'sub5': {'sub3': {}}}},
-                                      'sub12': {},
-                                      'sub13': {}}}
-        test_removal('case1', ['sub14', 'sub11', 'sub7', 'sub4'], tree1_after_rem4, tree2_after_rem20)
+        tree1_after_rem4 = {'sub14': {sub11_name: {'sub7': {},
+                                                   'sub8': {'sub5': {'sub3': {}}}},
+                                      sub12_name: {},
+                                      sub13_name: {}}}
+        test_removal('case1', ['sub14', 'playbook', 'sub11', 'sub7', 'sub4'], tree1_after_rem4, tree2_after_rem20)
 
         tree2_after_rem18 = {'sub21': {},
-                             'sub22': {'sub19': {'sub17': {}}}}
-        test_removal('case2', ['sub21', 'sub18'], tree1_after_rem4, tree2_after_rem18)
+                             'sub22': {sub19_name: {'sub17': {}}}}
+        test_removal('case2', ['sub21', 'playbook', 'sub18'], tree1_after_rem4, tree2_after_rem18)
 
-        tree1_after_rem11 = {'sub14': {'sub12': {},
-                                       'sub13': {}}}
-        test_removal('case1', ['sub14', 'sub11'], tree1_after_rem11, tree2_after_rem18)
+        tree1_after_rem11 = {'sub14': {sub12_name: {},
+                                       sub13_name: {}}}
+        test_removal('case1', ['sub14', 'playbook', 'sub11'], tree1_after_rem11, tree2_after_rem18)
 
         tree1_after_rem14 = {}
         test_removal('case1', ['sub14'], tree1_after_rem14, tree2_after_rem18)

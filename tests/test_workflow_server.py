@@ -233,8 +233,11 @@ class TestWorkflowServer(ServerTestCase):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
         new_playbook_name = 'editedPlaybookName'
         data = {'new_name': new_playbook_name}
-        response = self.post_with_status_check('/playbook/test/edit', 'success',
-                                               data=data, headers=self.headers)
+        response = self.post_with_status_check('/playbook/test/edit',
+                                               'success',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
         expected_keys['editedPlaybookName'] = expected_keys.pop('test')
         self.assertIn('playbooks', response)
         self.assertDictEqual(response['playbooks'], expected_keys)
@@ -245,7 +248,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_edit_playbook_no_name(self):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
-        response = self.post_with_status_check('/playbook/test/edit', 'error: invalid form', headers=self.headers)
+        response = self.post_with_status_check('/playbook/test/edit', 'error: invalid json', headers=self.headers)
         self.assertIn('playbooks', response)
         self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
@@ -268,7 +271,11 @@ class TestWorkflowServer(ServerTestCase):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
         new_playbook_name = 'editedPlaybookName'
         data = {'new_name': new_playbook_name}
-        response = self.post_with_status_check('/playbook/test2/edit', 'success', data=data, headers=self.headers)
+        response = self.post_with_status_check('/playbook/test2/edit',
+                                               'success',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
         expected_keys['editedPlaybookName'] = expected_keys.pop('test2')
         self.assertIn('playbooks', response)
         self.assertDictEqual(response['playbooks'], expected_keys)
@@ -280,16 +287,22 @@ class TestWorkflowServer(ServerTestCase):
         self.assertTrue(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.workflow')))
 
     def test_edit_workflow_name_only(self):
-        workflow_name = 'test_name'
+        workflow_name = "test_name"
         data = {"new_name": workflow_name}
-        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit', 'success',
-                                               data=data, headers=self.headers)
+        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit',
+                                               'success',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
         expected_json = {'status': 'success',
-                         'workflow': {'name': 'test_name',
-                                      'options': {'enabled': 'False',
+                         'workflow': {'name': workflow_name,
+                                      'options': {'enabled': 'True',
                                                   'children': {},
-                                                  'scheduler': {'args': {},
-                                                                'type': 'chron',
+                                                  'scheduler': {'args': {'hours': '*',
+                                                                         'minutes': '*/0.1',
+                                                                         'day': '*',
+                                                                         'month': '11-12'},
+                                                                'type': 'cron',
                                                                 'autorun': 'false'}}}}
 
         self.assertDictEqual(response, expected_json)
@@ -309,23 +322,52 @@ class TestWorkflowServer(ServerTestCase):
                     for filter in flag.filters:
                         self.assertTrue('test-test_name' in filter.ancestry)
 
-    def test_edit_workflow_options_only(self):
-        expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
-        data = {"enabled": "true",
-                "scheduler_type": "test_scheduler",
-                "autoRun": 'true',
-                "scheduler_args": expected_args}
-        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit', 'success',
-                                               data=data, headers=self.headers)
+    def test_edit_workflow_empty_name(self):
+        data = {"new_name": ""}
+        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit',
+                                               'success',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
         expected_json = {'status': 'success',
                          'workflow': {'name': 'helloWorldWorkflow',
                                       'options': {'enabled': 'True',
+                                                  'children': {},
+                                                  'scheduler': {'args': {'hours': '*',
+                                                                         'minutes': '*/0.1',
+                                                                         'day': '*',
+                                                                         'month': '11-12'},
+                                                                'type': 'cron',
+                                                                'autorun': 'false'}}}}
+
+        self.assertDictEqual(response, expected_json)
+
+        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
+        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
+        self.assertTrue(
+            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+
+    def test_edit_workflow_options_only(self):
+        expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
+        data = {"scheduler": {"enabled": "true",
+                              "type": "test_scheduler",
+                              "autorun": 'true',
+                              "args": expected_args}}
+        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit',
+                                               'success',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
+        expected_json = {'status': 'success',
+                         'workflow': {'name': 'helloWorldWorkflow',
+                                      'options': {'enabled': 'true',
                                                   'children': {},
                                                   'scheduler': {'args': {'arg1': 'val1',
                                                                          'arg2': 'val2',
                                                                          'agr3': 'val3'},
                                                                 'type': 'test_scheduler',
                                                                 'autorun': 'true'}}}}
+
         self.assertDictEqual(response, expected_json)
 
         options = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').options
@@ -338,17 +380,20 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_edit_workflow_(self):
         expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
-        workflow_name = 'test_name'
+        workflow_name = "test_name"
         data = {"new_name": workflow_name,
-                "enabled": "true",
-                "scheduler_type": "test_scheduler",
-                "autoRun": 'true',
-                "scheduler_args": expected_args}
-        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit', 'success',
-                                               data=data, headers=self.headers)
+                "scheduler": {"enabled": "true",
+                              "type": "test_scheduler",
+                              "autorun": 'true',
+                              "args": expected_args}}
+        response = self.post_with_status_check('/playbook/test/helloWorldWorkflow/edit',
+                                               'success',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
         expected_json = {'status': 'success',
-                         'workflow': {'name': u'test_name',
-                                      'options': {'enabled': 'True',
+                         'workflow': {'name': 'test_name',
+                                      'options': {'enabled': 'true',
                                                   'children': {},
                                                   'scheduler': {'args': {'arg1': 'val1',
                                                                          'arg2': 'val2',

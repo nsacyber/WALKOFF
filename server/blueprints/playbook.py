@@ -95,10 +95,10 @@ def crud_playbook(playbook_name, action):
             return json.dumps({'status': 'error: invalid form'})
     elif action == 'edit':
         if running_context.controller.is_playbook_registered(playbook_name):
-            form = forms.EditPlaybookForm(request.form)
-            if form.validate():
-                new_name = form.new_name.data
-                if new_name:
+            if request.get_json():
+                data = request.get_json()
+                if 'new_name' in data and data['new_name']:
+                    new_name = data['new_name']
                     running_context.controller.update_playbook_name(playbook_name, new_name)
                     saved_playbooks = [os.path.splitext(playbook)[0]
                                        for playbook in
@@ -112,11 +112,12 @@ def crud_playbook(playbook_name, action):
                     return json.dumps({"status": 'error: no name provided',
                                        "playbooks": running_context.controller.get_all_workflows()})
             else:
-                return json.dumps({"status": 'error: invalid form',
+                return json.dumps({"status": 'error: invalid json',
                                    "playbooks": running_context.controller.get_all_workflows()})
         else:
             return json.dumps({"status": 'error: playbook name not found',
                                "playbooks": running_context.controller.get_all_workflows()})
+
     elif action == 'delete':
         status = 'success'
         if running_context.controller.is_playbook_registered(playbook_name):
@@ -192,20 +193,22 @@ def workflow(playbook_name, workflow_name, action):
 
     elif action == 'edit':
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            form = forms.EditPlayNameForm(request.form)
-            if form.validate():
-                enabled = form.enabled.data if form.enabled.data else False
-                scheduler = {'type': form.scheduler_type.data if form.scheduler_type.data else 'chron',
-                             'autorun': str(form.autoRun.data).lower() if form.autoRun.data else 'false',
-                             'args': json.loads(form.scheduler_args.data) if form.scheduler_args.data else {}}
-                running_context.controller.get_workflow(playbook_name, workflow_name).options = \
-                    Options(scheduler=scheduler, enabled=enabled)
-                if form.new_name.data:
+            if request.get_json():
+                data = request.get_json()
+                if 'scheduler' in data:
+                    enabled = data['scheduler']['enabled'] if 'enabled' in data['scheduler'] else False
+                    scheduler = {'type': data['scheduler']['type'] if 'type' in data['scheduler'] else 'cron',
+                                 'autorun': (str(data['scheduler']['autorun']).lower()
+                                             if 'autorun' in data['scheduler'] else 'false'),
+                                 'args': json.loads(data['scheduler']['args']) if 'args' in data['scheduler'] else {}}
+                    running_context.controller.get_workflow(playbook_name, workflow_name).options = \
+                        Options(scheduler=scheduler, enabled=enabled)
+                if 'new_name' in data and data['new_name']:
                     running_context.controller.update_workflow_name(playbook_name,
                                                                     workflow_name,
                                                                     playbook_name,
-                                                                    form.new_name.data)
-                    workflow_name = form.new_name.data
+                                                                    data['new_name'])
+                    workflow_name = data['new_name']
                 workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
                 if workflow:
                     return json.dumps({'workflow': {'name': workflow_name, 'options': workflow.options.as_json()},
@@ -213,7 +216,7 @@ def workflow(playbook_name, workflow_name, action):
                 else:
                     json.dumps({'status': 'error: altered workflow can no longer be located'})
             else:
-                return json.dumps({'status': 'error: invalid form'})
+                return json.dumps({'status': 'error: invalid json'})
         else:
             return json.dumps({'status': 'error: workflow name is not valid'})
 
