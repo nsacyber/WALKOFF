@@ -41,6 +41,7 @@ class TestHelperFunctions(unittest.TestCase):
                               'DailyQuote.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
+                              'pauseWorkflowTest.workflow',
                               'multistepError.workflow',
                               'simpleDataManipulationWorkflow.workflow',
                               'templatedWorkflowTest.workflow',

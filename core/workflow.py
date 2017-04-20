@@ -22,6 +22,8 @@ class Workflow(ExecutionElement):
         self.is_completed = False
         self.accumulated_risk = 0.0
         self.total_risk = sum([step.risk for step in self.steps.values()])
+        self.is_paused = False
+        self.executor = None
 
     def reconstruct_ancestry(self, parent_ancestry):
         self._construct_ancestry(parent_ancestry)
@@ -86,23 +88,38 @@ class Workflow(ExecutionElement):
             current = next_up
         return current
 
+    def pause(self):
+        if self.executor is not None:
+            self.is_paused = True
+
+    def resume(self):
+        if self.executor is not None:
+            self.is_paused = False
+            self.executor.send(None)
+
     def execute(self, start='start'):
+        self.executor = self.__execute(start)
+        next(self.executor)
+        self.executor = None
+
+    def __execute(self, start='start'):
         instances = {}
         total_steps = []
         steps = self.__steps(start=start)
         for step in steps:
+            while self.is_paused:
+                _ = yield
             if step:
                 callbacks.NextStepFound.send(self)
                 if step.device not in instances:
                     instances[step.device] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
-
                 step.render_step(steps=total_steps)
-
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
                 steps.send(error_flag)
         self.__shutdown(instances)
+        yield
 
     def __steps(self, start='start'):
         initial_step_name = start

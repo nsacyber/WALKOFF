@@ -1,5 +1,5 @@
 from server import appdevice
-import gevent
+import time
 
 
 # There is an associated Hello world test workflow which can be executed
@@ -28,7 +28,7 @@ class Main(appdevice.App):
         return str(int(args["number"]()) + 1)
 
     def pause(self, args={}):
-        gevent.sleep(args['seconds']())
+        time.sleep(int(args['seconds']()))
 
     def shutdown(self):
         # print("SHUTTING DOWN")

@@ -68,6 +68,7 @@ class Controller(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
+        self.paused_workflows = {}
 
     def reconstruct_ancestry(self):
         for key in self.workflows:
@@ -243,6 +244,16 @@ class Controller(object):
     def copy_playbook(self, old_playbook_name, new_playbook_name):
         for workflow in [workflow.workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
             self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
+
+    def pause_workflow(self, playbook_name, workflow_name):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        if workflow:
+            workflow.pause()
+
+    def resume_workflow(self, playbook_name, workflow_name):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        if workflow:
+            workflow.resume()
 
     # Starts active execution
     def start(self):

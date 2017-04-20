@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 from os import path
 from core import controller
-from core.step import Step, InvalidStepInputError
+from core.step import Step
 from core.instance import Instance
 from core.arguments import Argument
 import core.case.database as case_database
@@ -15,6 +15,7 @@ from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
 from server import flaskserver as flask_server
 from server.flaskserver import running_context
+from timeit import default_timer
 
 
 class TestWorkflowManipulation(unittest.TestCase):
@@ -376,3 +377,22 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(workflow.accumulated_risk, (1.0/6.0)+(2.0/6.0))
         workflow._Workflow__execute_step(workflow.steps["stepThree"], instance=instance())
         self.assertEqual(workflow.accumulated_risk, 1.0)
+
+    # def test_pause_and_resume_workfow(self):
+    #     self.c.load_workflows_from_file(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))
+    #     workflow = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+    #
+    #     start = default_timer()
+    #     self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+    #     duration_no_pause = default_timer() - start
+    #     print(duration_no_pause)
+    #
+    #     start = default_timer()
+    #     workflow.is_paused = True
+    #     self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+    #     import time
+    #     time.sleep(5)
+    #     workflow.is_paused = False
+    #     duration_no_pause = default_timer() - start
+    #     print(duration_no_pause)
+
