@@ -21,7 +21,7 @@ class Workflow(ExecutionElement):
         self.children = children if (children is not None) else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
-        self.total_risk = sum([step.risk for step in self.steps.values()])
+        self.total_risk = sum([step.risk for step in self.steps.values() if step.risk > 0])
         self.is_paused = False
         self.executor = None
 
