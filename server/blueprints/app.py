@@ -29,14 +29,6 @@ def display_app():
     return template
 
 
-@app_page.route('/stream/<string:stream_name>')
-@roles_required('admin')
-def stream_app_data(stream_name):
-    stream_generator, stream_type = data_stream(g.app, stream_name)
-    if stream_generator and stream_type:
-        return Response(stream_generator(), mimetype=stream_type)
-
-
 def load_module(app_name):
     module_name = 'apps.{0}.display'.format(app_name)
     try:
