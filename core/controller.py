@@ -4,6 +4,7 @@ from concurrent import futures
 from copy import deepcopy
 from os import sep
 from xml.etree import cElementTree
+import uuid
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
@@ -247,13 +248,22 @@ class Controller(object):
 
     def pause_workflow(self, playbook_name, workflow_name):
         workflow = self.get_workflow(playbook_name, workflow_name)
+        wf_key = _WorkflowKey(playbook_name, workflow_name)
+        self.paused_workflows[wf_key]=uuid.uuid4()
         if workflow:
             workflow.pause()
+        return self.paused_workflows[wf_key].hex
 
-    def resume_workflow(self, playbook_name, workflow_name):
+    def resume_workflow(self, playbook_name, workflow_name, validate_uuid):
         workflow = self.get_workflow(playbook_name, workflow_name)
+        wf_key = _WorkflowKey(playbook_name, workflow_name)
         if workflow:
-            workflow.resume()
+            if validate_uuid == self.paused_workflows[wf_key].hex:
+                workflow.resume()
+                return "success"
+            else:
+                return "invalid UUID"
+        return "error: invalid playbook and/or workflow name"
 
     # Starts active execution
     def start(self):

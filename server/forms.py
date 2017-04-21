@@ -47,6 +47,10 @@ class SavePlayForm(Form):
     cytoscape = StringField('cytoscape', [validators.Optional()])
 
 
+class ResumeWorkflowForm(Form):
+    uuid = StringField('uuid', [validators.Length(32), validators.DataRequired()])
+
+
 class AddEditStepForm(Form):
     id = StringField('id', [validators.Optional()])
     to = FieldList(StringField('to-id'), [validators.Optional()])

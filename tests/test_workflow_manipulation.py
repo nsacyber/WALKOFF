@@ -391,9 +391,9 @@ class TestWorkflowManipulation(unittest.TestCase):
                 waiter.set()
 
         def pause_resume_thread():
-            self.c.pause_workflow('pauseWorkflowTest', 'pauseWorkflow')
+            uuid = self.c.pause_workflow('pauseWorkflowTest', 'pauseWorkflow')
             gevent.sleep(1.5)
-            self.c.resume_workflow('pauseWorkflowTest', 'pauseWorkflow')
+            self.c.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uuid)
 
         def step_1_about_to_begin_listener(sender, **kwargs):
             if sender.name == '1':

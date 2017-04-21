@@ -10,7 +10,6 @@ from core.executionelement import ExecutionElement
 from core.step import Step
 from core.helpers import construct_workflow_name_key, extract_workflow_name
 
-
 class Workflow(ExecutionElement):
     def __init__(self, name='', xml=None, children=None, parent_name='', playbook_name=''):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])

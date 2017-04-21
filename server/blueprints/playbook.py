@@ -290,21 +290,22 @@ def workflow(playbook_name, workflow_name, action):
 
     elif action == 'pause':
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.pause_workflow(playbook_name, workflow_name)
-            status = 'success'
+            uuid = running_context.controller.pause_workflow(playbook_name, workflow_name)
+            return json.dumps({"uuid": uuid})
         else:
             status = 'error: invalid playbook and/or workflow name'
-
-        return json.dumps({"status": status})
+            return json.dumps({"status":status})
 
     elif action == 'resume':
-        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.resume_workflow(playbook_name, workflow_name)
-            status = 'success'
-        else:
-            status = 'error: invalid playbook and/or workflow name'
+        form = forms.ResumeWorkflowForm(request.form)
+        if form.validate():
+            if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+                uuid = form.uuid.data
+                status = running_context.controller.resume_workflow(playbook_name, workflow_name, uuid)
+            else:
+                status = 'error: invalid playbook and/or workflow name'
 
-        return json.dumps({"status": status})
+            return json.dumps({"status": status})
 
     else:
         return json.dumps({"status": 'error: invalid operation'})
