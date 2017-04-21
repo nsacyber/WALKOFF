@@ -39,6 +39,14 @@ class App(database.Base, object):
     def shutdown(self):
         return
 
+    @abstractmethod
+    def on_pause(self):
+        return
+
+    @abstractmethod
+    def on_resume(self):
+        return
+
 
 class Device(database.Base):
     __tablename__ = 'device'
