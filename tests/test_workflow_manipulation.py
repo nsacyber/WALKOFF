@@ -407,3 +407,30 @@ class TestWorkflowManipulation(unittest.TestCase):
         waiter.wait(timeout=5)
         duration = default_timer() - start
         self.assertTrue(2.5 < duration < 5)
+
+    def test_pause_and_resume_workflow_breakpoint(self):
+        self.c.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.workflow'))
+
+        waiter = Event()
+
+        def step_2_finished_listener(sender, **kwargs):
+            if sender.name == '2':
+                waiter.set()
+
+        def pause_resume_thread():
+            self.c.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
+            gevent.sleep(1.5)
+            self.c.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow')
+
+        def step_1_about_to_begin_listener(sender, **kwargs):
+            if sender.name == '1':
+                gevent.spawn(pause_resume_thread)
+
+        FunctionExecutionSuccess.connect(step_2_finished_listener)
+        StepInputValidated.connect(step_1_about_to_begin_listener)
+
+        start = default_timer()
+        self.c.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        waiter.wait(timeout=5)
+        duration = default_timer() - start
+        self.assertTrue(2.5 < duration < 5)

@@ -23,6 +23,7 @@ class Workflow(ExecutionElement):
         self.total_risk = sum([step.risk for step in self.steps.values() if step.risk > 0])
         self.is_paused = False
         self.executor = None
+        self.breakpoint_steps = []
 
     def reconstruct_ancestry(self, parent_ancestry):
         self._construct_ancestry(parent_ancestry)
@@ -98,6 +99,12 @@ class Workflow(ExecutionElement):
         except (StopIteration, AttributeError):
             pass
 
+    def resume_breakpoint_step(self):
+        try:
+            self.executor.send(None)
+        except (StopIteration, AttributeError):
+            pass
+
     def execute(self, start='start'):
         self.executor = self.__execute(start)
         next(self.executor)
@@ -110,6 +117,8 @@ class Workflow(ExecutionElement):
             while self.is_paused:
                 _ = yield
             if step:
+                if step.name in self.breakpoint_steps:
+                    _ = yield
                 callbacks.NextStepFound.send(self)
                 if step.device not in instances:
                     instances[step.device] = Instance.create(step.app, step.device)

@@ -193,6 +193,12 @@ class Controller(object):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
             self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
 
+    def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        if workflow:
+            for step in steps:
+                workflow.breakpoint_steps.append(step)
+
     def execute_workflow(self, playbook_name, workflow_name, start='start'):
         global pool
         global workflows
@@ -264,6 +270,11 @@ class Controller(object):
             else:
                 return "invalid UUID"
         return "error: invalid playbook and/or workflow name"
+
+    def resume_breakpoint_step(self, playbook_name, workflow_name):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        if workflow:
+            workflow.resume_breakpoint_step()
 
     # Starts active execution
     def start(self):
