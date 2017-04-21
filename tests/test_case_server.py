@@ -431,19 +431,14 @@ class TestCaseServer(ServerTestCase):
 
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
 
-        add1 = {"ancestry-0": "sub8",
-                "ancestry-1": "add1",
-                "events-0": "a",
-                "events-1": "b"}
+        add1 = {"ancestry": ["sub8", "add1"],
+                "events": ["a", "b"]}
 
-        add2 = {"ancestry-0": "sub7",
-                "ancestry-1": "add2",
-                "events-0": "c",
-                "events-1": "d",
-                "events-2": "e"}
+        add2 = {"ancestry": ["sub7", "add2"],
+                "events": ["c", "d", "e"]}
 
-        add3 = {"ancestry-0": "add3",
-                "events-0": "e"}
+        add3 = {"ancestry": ["add3"],
+                "events": ["e"]}
 
         tree = {'sub7': {'sub4': {'sub1': {},
                                   'sub2': {}}},
@@ -452,7 +447,10 @@ class TestCaseServer(ServerTestCase):
 
         expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/add', data=add1, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/case2/subscription/add',
+                                 data=json.dumps(add1),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['add1'] = \
@@ -460,7 +458,10 @@ class TestCaseServer(ServerTestCase):
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/add', data=add2, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/case2/subscription/add',
+                                 data=json.dumps(add2),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['add2'] = \
@@ -468,7 +469,10 @@ class TestCaseServer(ServerTestCase):
              'subscriptions': {}}
         self.assertDictEqual(response, expected_cases_json)
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/add', data=add3, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/case2/subscription/add',
+                                 data=json.dumps(add3),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['add3'] = \
@@ -497,16 +501,72 @@ class TestCaseServer(ServerTestCase):
                 'sub8': {'sub5': {'sub3': {}},
                          'sub6': {}}}
 
-        add1 = {"ancestry-0": "sub8",
-                "ancestry-1": "add1",
-                "events-0": "a",
-                "events-1": "b"}
+        add1 = {"ancestry": ["sub8", "add1"],
+                "events": ["a", "b"]}
 
         expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
-        response = self.app.post('/cases/subscriptions/junkcase/subscription/add', data=add1, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/junkcase/subscription/add',
+                                 data=json.dumps(add1),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
+
+    def test_add_subscription_no_json(self):
+        sub1 = Subscription()
+        sub2 = Subscription()
+        sub3 = Subscription()
+
+        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
+        sub5 = Subscription(subscriptions={'sub3': sub3})
+        sub6 = Subscription()
+
+        sub7 = Subscription(subscriptions={'sub4': sub4})
+        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
+
+        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+
+        add1 = {"ancestry": ["sub8", "add1"],
+                "events": ["a", "b"]}
+
+        self.post_with_status_check('/cases/subscriptions/case1/subscription/add',
+                                    'Error: no JSON in request',
+                                    data=add1,
+                                    headers=self.headers,
+                                    content_type='application/json')
+
+    def test_add_subscription_malformed_json(self):
+        sub1 = Subscription()
+        sub2 = Subscription()
+        sub3 = Subscription()
+
+        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
+        sub5 = Subscription(subscriptions={'sub3': sub3})
+        sub6 = Subscription()
+
+        sub7 = Subscription(subscriptions={'sub4': sub4})
+        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
+
+        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+
+        bad1 = {"ancestry_bad": ["sub8", "add1"],
+                "events": ["a", "b"]}
+        bad2 = {"ancestry": ["sub8", "add1"],
+                "events_bad": ["a", "b"]}
+        bad3 = {"ancestry_bad": ["sub8", "add1"],
+                "events_bad": ["a", "b"]}
+
+        for bad_json in [bad1, bad2, bad3]:
+            self.post_with_status_check('/cases/subscriptions/case1/subscription/add',
+                                        'Error: malformed JSON',
+                                        data=json.dumps(bad_json),
+                                        headers=self.headers,
+                                        content_type='application/json')
 
     def test_edit_subscription(self):
         sub1 = Subscription()
@@ -525,21 +585,14 @@ class TestCaseServer(ServerTestCase):
 
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
 
-        edit1 = {"ancestry-0": "sub8",
-                 "ancestry-1": "playbook",
-                 "ancestry-2": "sub5",
-                 "ancestry-3": "sub3",
-                 "events-0": "a",
-                 "events-1": "b"}
+        edit1 = {"ancestry": ["sub8", "playbook", "sub5", "sub3"],
+                 "events": ["a", "b"]}
 
-        edit2 = {"ancestry-0": "sub7",
-                 "ancestry-1": "sub4",
-                 "events-0": "c",
-                 "events-1": "d",
-                 "events-2": "e"}
+        edit2 = {"ancestry": ["sub7", "sub4"],
+                 "events": ["c", "d", "e"]}
 
-        edit3 = {"ancestry-0": "sub8",
-                 "events-0": "e"}
+        edit3 = {"ancestry": ["sub8"],
+                 "events": ["e"]}
 
         tree = {'sub7': {'sub4': {'sub1': {},
                                   'sub2': {}}},
@@ -551,7 +604,10 @@ class TestCaseServer(ServerTestCase):
             'events'] \
             = ['a', 'b']
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit1, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/case2/subscription/edit',
+                                 data=json.dumps(edit1),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
@@ -559,14 +615,20 @@ class TestCaseServer(ServerTestCase):
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['sub4']['events'] \
             = ['c', 'd', 'e']
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit2, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/case2/subscription/edit',
+                                 data=json.dumps(edit2),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
 
         expected_cases_json['case2']['subscriptions']['sub8']['events'] = ['e']
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit', data=edit3, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/case2/subscription/edit',
+                                 data=json.dumps(edit3),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
@@ -587,17 +649,75 @@ class TestCaseServer(ServerTestCase):
 
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
 
-        edit1 = {"ancestry-0": "sub8",
-                 "ancestry-1": "sub5",
-                 "ancestry-2": "junk",
-                 "events-0": "a",
-                 "events-1": "b"}
+        edit1 = {"ancestry": ["sub8", "sub5", "junk"],
+                 "events": ["a", "b"]}
         self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
-                                    'Error occurred while editing subscription', data=edit1, headers=self.headers)
+                                    'Error occurred while editing subscription',
+                                    data=json.dumps(edit1),
+                                    headers=self.headers,
+                                    content_type='application/json')
 
     def test_edit_subscription_invalid_case(self):
+        edit = {"ancestry": [], "events": []}
         self.post_with_status_check('/cases/subscriptions/case1/subscription/edit',
-                                    'Error occurred while editing subscription', headers=self.headers)
+                                    'Error occurred while editing subscription',
+                                    data=json.dumps(edit),
+                                    headers=self.headers,
+                                    content_type='application/json')
+
+    def test_edit_subscription_no_json(self):
+        sub1 = Subscription()
+        sub2 = Subscription()
+        sub3 = Subscription()
+
+        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
+        sub5 = Subscription(subscriptions={'sub3': sub3})
+        sub6 = Subscription()
+
+        sub7 = Subscription(subscriptions={'sub4': sub4})
+        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
+
+        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+
+        edit1 = {"ancestry": ["sub8", "sub5", "junk"],
+                 "events": ["a", "b"]}
+        self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+                                    'Error: no JSON in request',
+                                    data=edit1,
+                                    headers=self.headers,
+                                    content_type='application/json')
+
+    def test_edit_subscriptions_invalid_json(self):
+        sub1 = Subscription()
+        sub2 = Subscription()
+        sub3 = Subscription()
+
+        sub4 = Subscription(subscriptions={'sub1': sub1, 'sub2': sub2})
+        sub5 = Subscription(subscriptions={'sub3': sub3})
+        sub6 = Subscription()
+
+        sub7 = Subscription(subscriptions={'sub4': sub4})
+        sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
+
+        case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+
+        edit1 = {"ancestry_bad": ["sub8", "sub5", "junk"],
+                 "events": ["a", "b"]}
+        edit2 = {"ancestry": ["sub8", "sub5", "junk"],
+                 "events_bad": ["a", "b"]}
+        edit3 = {"ancestry_bad": ["sub8", "sub5", "junk"],
+                 "events_bad": ["a", "b"]}
+
+        for edit in [edit1, edit2, edit3]:
+            self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+                                        'Error: malformed JSON',
+                                        data=json.dumps(edit),
+                                        headers=self.headers,
+                                        content_type='application/json')
 
     def test_remove_subscription(self):
         sub1 = Subscription()
@@ -658,10 +778,11 @@ class TestCaseServer(ServerTestCase):
                              subscriptions_as_json())
 
         def test_removal(case, ancestry, expected_tree_1, expected_tree_2):
-            post_data = {"ancestry-{0}".format(i): sub for i, sub in enumerate(ancestry)}
+            post_data = {"ancestry": ancestry}
             response = self.app.post('/cases/subscriptions/{0}/subscription/delete'.format(case),
-                                     data=post_data,
-                                     headers=self.headers)
+                                     data=json.dumps(post_data),
+                                     headers=self.headers,
+                                     content_type='application/json')
             self.assertEqual(response.status_code, 200)
             response = json.loads(response.get_data(as_text=True))
             expected_response = {'case1': construct_case_json(expected_tree_1),
@@ -712,10 +833,13 @@ class TestCaseServer(ServerTestCase):
         test_removal('case2', ['sub21'], tree1_after_rem14, tree2_after_rem21)
 
     def test_remove_subscription_invalid_case(self):
-        data = {"ancestry-0": "sub1"}
+        data = {"ancestry": ["sub1"]}
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
         expected_cases_json = {'case2': CaseSubscriptions().as_json(), 'case1': CaseSubscriptions().as_json()}
-        response = self.app.post('/cases/subscriptions/junkcase/subscription/delete', data=data, headers=self.headers)
+        response = self.app.post('/cases/subscriptions/junkcase/subscription/delete',
+                                 data=json.dumps(data),
+                                 headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
@@ -744,9 +868,11 @@ class TestCaseServer(ServerTestCase):
         expected_cases_json = {'case1': CaseSubscriptions().as_json(), 'case2': construct_case_json(tree2)}
 
         def test_junk_path(case, path):
-            data = {"ancestry-{0}".format(i): sub for i, sub in enumerate(path)}
+            data = {"ancestry": path}
             response = self.app.post('/cases/subscriptions/{0}/subscription/delete'.format(case),
-                                     data=data, headers=self.headers)
+                                     data=json.dumps(data),
+                                     headers=self.headers,
+                                     content_type='application/json')
             self.assertEqual(response.status_code, 200)
             response = json.loads(response.get_data(as_text=True))
             self.assertDictEqual(response, expected_cases_json)
@@ -755,6 +881,43 @@ class TestCaseServer(ServerTestCase):
         test_junk_path('case2', ["sub1"])
         test_junk_path('case1', ['sub21'])
         test_junk_path('case2', ["sub22", "sub20", "sub17"])
+
+    def test_remove_subscription_no_json(self):
+        data = {"ancestry": ["sub1"]}
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
+        self.post_with_status_check('/cases/subscriptions/junkcase/subscription/delete',
+                                    'Error: no JSON in request',
+                                    data=data,
+                                    headers=self.headers,
+                                    content_type='application/json')
+
+    def test_remove_subscription_invalid_json(self):
+        data = {"ancestry_bad": ["sub1"]}
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
+        self.post_with_status_check('/cases/subscriptions/junkcase/subscription/delete',
+                                    'Error: malformed JSON',
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    content_type='application/json')
+
+    def test_invalid_subscription_action(self):
+        sub15 = Subscription()
+        sub16 = Subscription()
+        sub17 = Subscription()
+
+        sub18 = Subscription(subscriptions={'sub15': sub15, 'sub16': sub16})
+        sub19 = Subscription(subscriptions={'sub17': sub17})
+        sub20 = Subscription()
+
+        sub21 = Subscription(subscriptions={'sub18': sub18})
+        sub22 = Subscription(subscriptions={'sub19': sub19, 'sub20': sub20})
+
+        case2 = CaseSubscriptions(subscriptions={'sub21': sub21, 'sub22': sub22})
+
+        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+        self.post_with_status_check('/cases/subscriptions/case1/subscription/junkAction',
+                                    'error: unknown subscription action',
+                                    headers=self.headers)
 
     def test_edit_event_note(self):
         case1, _ = construct_case1()

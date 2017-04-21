@@ -154,27 +154,42 @@ def convert_ancestry(ancestry):
 @roles_accepted(*running_context.user_roles['/cases'])
 def crud_subscription(case_name, action):
     if action == 'edit':
-        form = forms.EditSubscriptionForm(request.form)
-        if form.validate():
-            success = case_subscription.edit_subscription(case_name,
-                                                          convert_ancestry(form.ancestry.data),
-                                                          form.events.data)
-            if success:
+        if request.get_json():
+            data = request.get_json()
+            if 'ancestry' in data and 'events' in data:
+                success = case_subscription.edit_subscription(case_name,
+                                                              convert_ancestry(data['ancestry']),
+                                                              data['events'])
+                if success:
+                    return json.dumps(case_subscription.subscriptions_as_json())
+                else:
+                    return json.dumps({"status": "Error occurred while editing subscription"})
+            else:
+                return json.dumps({"status": "Error: malformed JSON"})
+        else:
+            return json.dumps({"status": "Error: no JSON in request"})
+    elif action == 'add':
+        if request.get_json():
+            data = request.get_json()
+            if 'ancestry' in data and 'events' in data:
+                case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), data['events'])
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
-                return json.dumps({"status": "Error occurred while editing subscription"})
+                return json.dumps({"status": "Error: malformed JSON"})
         else:
-            return json.dumps({"status": "Error: Case name {0} was not found".format(case_name)})
-    elif action == 'add':
-        form = forms.AddSubscriptionForm(request.form)
-        if form.validate():
-            case_subscription.add_subscription(case_name, convert_ancestry(form.ancestry.data), form.events.data)
-            return json.dumps(case_subscription.subscriptions_as_json())
+            return json.dumps({"status": "Error: no JSON in request"})
     elif action == 'delete':
-        form = forms.DeleteSubscriptionForm(request.form)
-        if form.validate():
-            case_subscription.remove_subscription_node(case_name, convert_ancestry(form.ancestry.data))
-            return json.dumps(case_subscription.subscriptions_as_json())
+        if request.get_json():
+            data = request.get_json()
+            if 'ancestry' in data:
+                case_subscription.remove_subscription_node(case_name, convert_ancestry(data['ancestry']))
+                return json.dumps(case_subscription.subscriptions_as_json())
+            else:
+                return json.dumps({"status": "Error: malformed JSON"})
+        else:
+            return json.dumps({"status": "Error: no JSON in request"})
+    else:
+        return json.dumps({"status": "error: unknown subscription action"})
 
 
 @cases_page.route('/subscriptions/', methods=['GET'])
