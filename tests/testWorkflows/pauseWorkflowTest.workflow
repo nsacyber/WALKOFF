@@ -26,10 +26,10 @@
             <input>
                 <seconds format="int">1</seconds>
             </input>
-            <next step="really_unique_name"></next>
+            <next step="2"></next>
             <error></error>
         </step>
-        <step id="really_unique_name">
+        <step id="2">
             <action>pause</action>
             <app>HelloWorld</app>
             <device>hwTest</device>

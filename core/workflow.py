@@ -93,14 +93,15 @@ class Workflow(ExecutionElement):
             self.is_paused = True
 
     def resume(self):
-        if self.executor is not None:
+        try:
             self.is_paused = False
             self.executor.send(None)
+        except (StopIteration, AttributeError):
+            pass
 
     def execute(self, start='start'):
         self.executor = self.__execute(start)
         next(self.executor)
-        self.executor = None
 
     def __execute(self, start='start'):
         instances = {}

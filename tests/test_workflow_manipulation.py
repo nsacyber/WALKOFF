@@ -1,6 +1,8 @@
 import ast
 import unittest
 from datetime import datetime
+import gevent
+from gevent.event import Event
 from os import path
 from core import controller
 from core.step import Step
@@ -8,6 +10,7 @@ from core.instance import Instance
 from core.arguments import Argument
 import core.case.database as case_database
 import core.case.subscription as case_subscription
+from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
 from core.helpers import construct_workflow_name_key
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
@@ -336,10 +339,10 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_name_parent_multiple_step_rename(self):
         workflow = controller.wf.Workflow(parent_name='workflow_parent', name='workflow')
-        stepOne = Step(name="test_step_one", ancestry=workflow.ancestry)
-        stepTwo = Step(name="test_step_two", ancestry=workflow.ancestry)
-        workflow.steps["test_step_one"] = stepOne
-        workflow.steps["test_step_two"] = stepTwo
+        step_one = Step(name="test_step_one", ancestry=workflow.ancestry)
+        step_two = Step(name="test_step_two", ancestry=workflow.ancestry)
+        workflow.steps["test_step_one"] = step_one
+        workflow.steps["test_step_two"] = step_two
 
         new_ancestry = ["workflow_parent_update"]
         workflow.reconstruct_ancestry(new_ancestry)
@@ -372,27 +375,35 @@ class TestWorkflowManipulation(unittest.TestCase):
         instance = Instance.create(app_name='HelloWorld', device_name='test_device_name')
 
         workflow._Workflow__execute_step(workflow.steps["stepOne"], instance=instance())
-        self.assertEqual(workflow.accumulated_risk, 1.0/6.0)
+        self.assertEqual(workflow.accumulated_risk, 1.0 / 6.0)
         workflow._Workflow__execute_step(workflow.steps["stepTwo"], instance=instance())
-        self.assertEqual(workflow.accumulated_risk, (1.0/6.0)+(2.0/6.0))
+        self.assertEqual(workflow.accumulated_risk, (1.0 / 6.0) + (2.0 / 6.0))
         workflow._Workflow__execute_step(workflow.steps["stepThree"], instance=instance())
         self.assertEqual(workflow.accumulated_risk, 1.0)
 
-    # def test_pause_and_resume_workfow(self):
-    #     self.c.load_workflows_from_file(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))
-    #     workflow = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-    #
-    #     start = default_timer()
-    #     self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-    #     duration_no_pause = default_timer() - start
-    #     print(duration_no_pause)
-    #
-    #     start = default_timer()
-    #     workflow.is_paused = True
-    #     self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-    #     import time
-    #     time.sleep(5)
-    #     workflow.is_paused = False
-    #     duration_no_pause = default_timer() - start
-    #     print(duration_no_pause)
+    def test_pause_and_resume_workflow(self):
+        self.c.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.workflow'))
 
+        waiter = Event()
+
+        def step_2_finished_listener(sender, **kwargs):
+            if sender.name == '2':
+                waiter.set()
+
+        def pause_resume_thread():
+            self.c.pause_workflow('pauseWorkflowTest', 'pauseWorkflow')
+            gevent.sleep(1.5)
+            self.c.resume_workflow('pauseWorkflowTest', 'pauseWorkflow')
+
+        def step_1_about_to_begin_listener(sender, **kwargs):
+            if sender.name == '1':
+                gevent.spawn(pause_resume_thread)
+
+        FunctionExecutionSuccess.connect(step_2_finished_listener)
+        StepInputValidated.connect(step_1_about_to_begin_listener)
+
+        start = default_timer()
+        self.c.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        waiter.wait(timeout=5)
+        duration = default_timer() - start
+        self.assertTrue(2.5 < duration < 5)
