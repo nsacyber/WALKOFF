@@ -3,7 +3,7 @@ import copy
 
 from core.arguments import Argument
 from core.flag import Flag
-from core.step import Step, InvalidStepActionError, InvalidStepInputError
+from core.step import Step, InvalidStepActionError, InvalidStepInputError, _Widget
 from core.nextstep import NextStep
 import core.config.config
 import core.config.paths
@@ -31,7 +31,8 @@ class TestStep(unittest.TestCase):
     def tearDown(self):
         core.config.config.function_info = self.original_functions
 
-    def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, errors, ancestry):
+    def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, errors, ancestry, widgets,
+                       risk=0):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.parent_name, parent_name)
         self.assertEqual(elem.action, action)
@@ -41,27 +42,44 @@ class TestStep(unittest.TestCase):
         self.assertListEqual([conditional.as_json() for conditional in elem.conditionals], next_steps)
         self.assertListEqual([error.as_json() for error in elem.errors], errors)
         self.assertListEqual(elem.ancestry, ancestry)
+        self.assertEqual(elem.risk, risk)
+        widgets = [_Widget(app, widget) for (app, widget) in widgets]
+        self.assertEqual(len(elem.widgets), len(widgets))
+        for widget in elem.widgets:
+            self.assertIn(widget, widgets)
         self.assertIsNone(elem.output)
 
     def test_init(self):
         step = Step()
-        self.__compare_init(step, '', '', '', '', '', {}, [], [], ['', ''])
+        self.__compare_init(step, '', '', '', '', '', {}, [], [], ['', ''], [])
 
         step = Step(name='name')
-        self.__compare_init(step, 'name', '', '', '', '', {}, [], [], ['', 'name'])
+        self.__compare_init(step, 'name', '', '', '', '', {}, [], [], ['', 'name'], [])
 
         step = Step(name='name', parent_name='parent_name')
-        self.__compare_init(step, 'name', 'parent_name', '', '', '', {}, [], [], ['parent_name', 'name'])
+        self.__compare_init(step, 'name', 'parent_name', '', '', '', {}, [], [], ['parent_name', 'name'], [])
 
         step = Step(name='name', parent_name='parent_name', action='action')
-        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'])
+        self.__compare_init(step, 'name', 'parent_name', 'action', '', '', {}, [], [], ['parent_name', 'name'], [])
 
         step = Step(name='name', parent_name='parent_name', action='action', app='app')
-        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'])
+        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'], [])
+
+        step = Step(name='name', parent_name='parent_name', action='action', app='app', risk=100)
+        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'], [],
+                            risk=100)
+
+        step = Step(name='name', parent_name='parent_name', action='action', app='app', risk=-100)
+        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'], [],
+                            risk=-100)
+
+        widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
+        step = Step(name='name', parent_name='parent_name', action='action', app='app', widgets=widgets)
+        self.__compare_init(step, 'name', 'parent_name', 'action', 'app', '', {}, [], [], ['parent_name', 'name'], widgets)
 
         step = Step(name='name', parent_name='parent_name', action='action', app='app', device='device')
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
-                            {}, [], [], ['parent_name', 'name'])
+                            {}, [], [], ['parent_name', 'name'], [])
 
         inputs = {'in1': 'a', 'in2': 3, 'in3': u'abc'}
         inputs = {arg_name: Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
@@ -69,7 +87,8 @@ class TestStep(unittest.TestCase):
 
         step = Step(name='name', parent_name='parent_name', action='action', app='app', device='device', inputs=inputs)
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
-                            {key: input_.as_json() for key, input_ in inputs.items()}, [], [], ['parent_name', 'name'])
+                            {key: input_.as_json() for key, input_ in inputs.items()}, [], [], ['parent_name', 'name'],
+                            [])
 
         flags = [Flag(), Flag(action='action')]
         nexts = [NextStep(),
@@ -80,7 +99,7 @@ class TestStep(unittest.TestCase):
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
                             {key: input_.as_json() for key, input_ in inputs.items()},
                             [next_.as_json() for next_ in nexts],
-                            [], ['parent_name', 'name'])
+                            [], ['parent_name', 'name'], [])
 
         error_flags = [Flag(), Flag(action='action'), Flag()]
         errors = [NextStep(),
@@ -91,7 +110,7 @@ class TestStep(unittest.TestCase):
         self.__compare_init(step, 'name', 'parent_name', 'action', 'app', 'device',
                             {key: input_.as_json() for key, input_ in inputs.items()},
                             [next_.as_json() for next_ in nexts],
-                            [error.as_json() for error in errors], ['parent_name', 'name'])
+                            [error.as_json() for error in errors], ['parent_name', 'name'], [])
 
     def test_to_from_xml(self):
         inputs = {'in1': 'a', 'in2': 3, 'in3': u'abc'}
@@ -105,6 +124,7 @@ class TestStep(unittest.TestCase):
         errors = [NextStep(),
                   NextStep(name='name'),
                   NextStep(name='name', parent_name='parent', flags=error_flags, ancestry=['a', 'b'])]
+        widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
         steps = [Step(),
                  Step(name='name'),
                  Step(name='name', parent_name='parent_name'),
@@ -118,7 +138,14 @@ class TestStep(unittest.TestCase):
                  Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
                       inputs=inputs, next_steps=next_steps, errors=errors),
                  Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
-                      inputs=inputs, next_steps=next_steps, errors=errors, position={'x': 5, 'y': -40.3})]
+                      inputs=inputs, next_steps=next_steps, errors=errors, position={'x': 5, 'y': -40.3}),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs, next_steps=next_steps, errors=errors, position={'x': 5, 'y': -40.3}, risk=10),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs, next_steps=next_steps, errors=errors, position={'x': 5, 'y': -40.3}, risk=-10),
+                 Step(name='name', parent_name='parent_name', action='action', app='app', device='device',
+                      inputs=inputs, next_steps=next_steps, errors=errors, widgets=widgets)]
+
         for step in steps:
             original_json = step.as_json()
             new_step = Step(xml=step.to_xml())
