@@ -288,5 +288,23 @@ def workflow(playbook_name, workflow_name, action):
 
             return json.dumps({"status": status})
 
+    elif action == 'pause':
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            running_context.controller.pause_workflow(playbook_name, workflow_name)
+            status = 'success'
+        else:
+            status = 'error: invalid playbook and/or workflow name'
+
+        return json.dumps({"status": status})
+
+    elif action == 'resume':
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            running_context.controller.resume_workflow(playbook_name, workflow_name)
+            status = 'success'
+        else:
+            status = 'error: invalid playbook and/or workflow name'
+
+        return json.dumps({"status": status})
+
     else:
         return json.dumps({"status": 'error: invalid operation'})
