@@ -13,20 +13,6 @@ def load(*args, **kwargs):
     return {}
 
 
-def stream_generator(stream_name):
-    def counter():
-        count = 0
-        while True:
-            gevent.sleep(1)
-            yield 'data: %s\n\n' % count
-            count += 1
-
-    if stream_name == 'counter':
-        return counter, 'text/event-stream'
-    else:
-        return None, None
-
-
 # These blueprints will be registered with the Flask app and can be used to make your own endpoints.
 @blueprint.blueprint.route('/test_blueprint')
 def test_basic_blueprint():
@@ -38,14 +24,14 @@ __random_num_event = AsyncResult()
 __sync = Event()
 
 
-def rand_co():
+def random_number_receiver():
     while True:
         data = __random_num_event.get()
         yield 'data: %s\n\n' % data
         __sync.wait()
 
 
-def pusher():
+def random_number_pusher():
     while True:
         __random_num_event.set(random.random())
         gevent.sleep(2)
@@ -59,8 +45,8 @@ def stream_random_numbers():
     Example of using gevent and AsyncResults to create an event-driven stream
     :return:
     """
-    gevent.spawn(pusher)
-    return Response(rand_co(), mimetype='text/event-stream')
+    gevent.spawn(random_number_pusher)
+    return Response(random_number_receiver(), mimetype='text/event-stream')
 
 
 @blueprint.blueprint.route('/stream/counter')
