@@ -133,7 +133,7 @@ $("#submitForm").on("click", function(){
     inputs.shift();
     $.each(inputs, function(i, e){
         var elem = $("<li></li>");
-        elem.append(e);
+        elem.append($(e).clone());
         $("#ancestryAjaxForm").append(elem);
     });
 

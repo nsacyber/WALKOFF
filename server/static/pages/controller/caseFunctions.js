@@ -107,6 +107,7 @@ function editSubscription(selectedCase, ancestry, events){
         return tmp;
     }();
     console.log(status);
+    $("#ancestryAjaxForm > li").remove();
     return stat;
 }
 
