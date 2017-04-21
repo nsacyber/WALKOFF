@@ -95,7 +95,8 @@ function editSubscription(selectedCase, ancestry, events){
             'async': false,
             'type': "POST",
             'global': false,
-            'data':{["ancestry":ancestry], ["events":events]},
+            'data':ancestry,
+            'dataType':"json",
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/subscriptions/" + selectedCase + "/subscription/edit",
             'success': function (data) {

@@ -38,5 +38,6 @@ def controller():
     return {
         "currentController": str(running_context.controller.name),
         "loadedWorkflows": json.dumps(running_context.controller.get_all_workflows()),
-        "schedulerStatus": str(running_context.controller.scheduler.state)
+        "schedulerStatus": str(running_context.controller.scheduler.state),
+        "editSubscriptionForm": forms.EditSubscriptionForm()
     }

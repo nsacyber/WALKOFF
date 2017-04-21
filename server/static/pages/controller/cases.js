@@ -7,7 +7,7 @@ function formatCasesForJSTree(cases){
 }
 
 function resetSubscriptionModal(){
-    $("#modalObjectTypeSelection > option").remove();
+//    $("#modalObjectTypeSelection > option").remove();
     $(".objectSelection > option").remove();
     $(".subscriptionSelection").empty()
 }
@@ -24,11 +24,11 @@ function createSubscriptionModal(){
                         width:500,
                         open:
                             function(event, ui){
-                                for(key in window.availableSubscriptions){
-                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
-                                }
-                                selected_objectType = objectTypeSelection.first()[0].value;
-                                formatModal(window.availableSubscriptions, selected_objectType);
+//                                for(key in window.availableSubscriptions){
+//                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
+//                                }
+//                                selected_objectType = objectTypeSelection.first()[0].value;
+//                                formatModal(window.availableSubscriptions, selected_objectType);
                         },
                         close: function(event, ui){
                             //$(this).dialog("destroy");
