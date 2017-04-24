@@ -39,8 +39,7 @@ $(function(){
 
 
     var sse1 = new EventSource('apps/HelloWorld/testWidget/stream/counter');
-    var sse2 = new EventSource('apps/HelloWorld/testWidget/stream/data-1');
-    var sse3 = new EventSource('apps/HelloWorld/testWidget/stream/data-2');
+    var sse2 = new EventSource('apps/HelloWorld/testWidget/stream/random-number');
     sse1.onmessage = function(message) {
 
         xData.push(message.data)
@@ -51,7 +50,6 @@ $(function(){
     sse1.onerror = function(){
         sse1.close();
         sse2.close();
-        sse3.close();
         $("#toggleStreamButton").text("Stream Closed");
         $("#toggleStreamButton").prop("disabled",true);
     }
@@ -68,44 +66,9 @@ $(function(){
     sse2.onerror = function(){
         sse1.close();
         sse2.close();
-        sse3.close();
         $("#toggleStreamButton").text("Stream Closed");
         $("#toggleStreamButton").prop("disabled",true);
     }
-
-
-
-    sse3.onmessage = function(message) {
-
-        data2.push(message.data);
-        if(data2.length >= range){
-           data2.splice(1, 1);
-        }
-    }
-    sse3.onerror = function(){
-        sse1.close();
-        sse2.close();
-        sse3.close();
-        $("#toggleStreamButton").text("Stream Closed");
-        $("#toggleStreamButton").prop("disabled",true);
-    }
-
-    $("#toggleStreamButton").on("click", function(){
-            if(on){
-                on = false;
-                $("#toggleStreamButton").text("Turn Stream On");
-                sse1.close();
-                sse2.close();
-                sse3.close();
-            }else{
-                on = true;
-                $("#toggleStreamButton").text("Turn Stream Off");
-                sse1 = new EventSource('apps/HelloWorld/testWidget/stream/counter');
-                sse2 = new EventSource('apps/HelloWorld/testWidget/stream/data-1');
-                sse3 = new EventSource('apps/HelloWorld/testWidget/stream/data-2');
-            }
-
-    });
 
     setInterval(function () {
         if(on){
@@ -136,7 +99,6 @@ $(function(){
     $("#contentWrapper").on("remove", function(){
         sse1.close();
         sse2.close();
-        sse3.close();
     });
 
 });
