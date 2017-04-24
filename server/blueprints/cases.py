@@ -36,6 +36,10 @@ def import_cases():
                 cases_file = cases_file.replace('\n', '')
                 cases = json.loads(cases_file)
             case_subscription.add_cases(cases)
+            for case in cases.keys():
+                running_context.db.session.add(running_context.CaseSubscription(name=case))
+                running_context.CaseSubscription.update(case)
+                running_context.db.session.commit()
             return json.dumps({"status": "success", "cases": case_subscription.subscriptions_as_json()})
         except (OSError, IOError):
             return json.dumps({"status": "error reading file"})
@@ -66,15 +70,27 @@ def crud_case(case_name, action):
     if action == 'add':
         case = CaseSubscriptions()
         add_cases({"{0}".format(str(case_name)): case})
+        case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+        if not case:
+            running_context.db.session.add(running_context.CaseSubscription(name=case_name))
+            running_context.db.session.commit()
         return json.dumps(case_subscription.subscriptions_as_json())
     elif action == 'delete':
         delete_cases([case_name])
+        case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+        if case:
+            running_context.db.session.delete(case)
+            running_context.db.session.commit()
         return json.dumps(case_subscription.subscriptions_as_json())
     elif action == 'edit':
         form = forms.EditCaseForm(request.form)
         if form.validate():
             if form.name.data:
                 rename_case(case_name, form.name.data)
+                case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+                if case:
+                    case.name = form.name.data
+                    running_context.db.session.commit()
                 if form.note.data:
                     case_database.case_db.edit_case_note(form.name.data, form.note.data)
             elif form.note.data:
@@ -134,6 +150,8 @@ def edit_global_subscription(case_name):
                                                            flag=form.flag.data,
                                                            filter=form.filter.data)
         success = case_subscription.edit_global_subscription(case_name, global_sub)
+        running_context.CaseSubscription.update(case_name)
+        running_context.db.session.commit()
         if success:
             return json.dumps(case_subscription.subscriptions_as_json())
         else:
@@ -160,6 +178,8 @@ def crud_subscription(case_name, action):
                 success = case_subscription.edit_subscription(case_name,
                                                               convert_ancestry(data['ancestry']),
                                                               data['events'])
+                running_context.CaseSubscription.update(case_name)
+                running_context.db.session.commit()
                 if success:
                     return json.dumps(case_subscription.subscriptions_as_json())
                 else:
@@ -174,6 +194,8 @@ def crud_subscription(case_name, action):
             if 'ancestry' in data:
                 events = data['events'] if 'events' in data else []
                 case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
+                running_context.CaseSubscription.update(case_name)
+                running_context.db.session.commit()
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
                 return json.dumps({"status": "Error: malformed JSON"})
@@ -184,6 +206,8 @@ def crud_subscription(case_name, action):
             data = request.get_json()
             if 'ancestry' in data:
                 case_subscription.remove_subscription_node(case_name, convert_ancestry(data['ancestry']))
+                running_context.CaseSubscription.update(case_name)
+                running_context.db.session.commit()
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
                 return json.dumps({"status": "Error: malformed JSON"})

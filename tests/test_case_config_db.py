@@ -24,19 +24,19 @@ class TestCaseConfigDatabase(unittest.TestCase):
 
     def test_to_from_json(self):
         case = CaseSubscription('name')
-        expected_json = {'name': 'name', 'subscriptions': {}}
+        expected_json = {'name': 'name', 'subscription': {}}
         self.assertDictEqual(case.as_json(), expected_json)
         derived_json = CaseSubscription.from_json('name', {}).as_json()
         self.assertDictEqual(derived_json, expected_json)
 
         case = CaseSubscription('name', '{{')
-        expected_json = {'name': 'name', 'subscriptions': {}}
+        expected_json = {'name': 'name', 'subscription': {}}
         self.assertDictEqual(case.as_json(), expected_json)
 
         test_json = {"a": {"b": {"c": []},
                            "d": ["e", "f", "g"]}}
         case = CaseSubscription('name', json.dumps(test_json))
-        expected_json = {'name': 'name', 'subscriptions': test_json}
+        expected_json = {'name': 'name', 'subscription': test_json}
         self.assertDictEqual(case.as_json(), expected_json)
         derived_json = CaseSubscription.from_json('name', test_json).as_json()
         self.assertDictEqual(derived_json, expected_json)
