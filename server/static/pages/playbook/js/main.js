@@ -353,6 +353,8 @@ $(function(){
         var draggable = ui.draggable;
         var draggableId   = draggable.attr('id');
         var draggableNode = $('#actions').jstree(true).get_node(draggableId);
+        if (!draggableNode.data)
+            return;
         var app = draggableNode.data.app;
         var action = draggableNode.text;
 
@@ -450,7 +452,7 @@ $(function(){
         });
     }
 
-    function renameWorkflow(playbookName, oldWorkflowName, newWorkflowName) {
+    function renameWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
         $.ajax({
             'async': false,
             'type': "POST",
@@ -656,6 +658,137 @@ $(function(){
 
     }
 
+
+
+    function checkIfPlaybookExists(playbookName) {
+        if(workflowList.hasOwnProperty(playbookName)) {
+            return {
+                result: false,
+                error: 'Playbook "' + playbookName + '" already exists.'
+            };
+        }
+        else {
+            return {
+                result: true,
+                error: null
+            };
+        }
+    }
+
+    function checkIfWorkflowExists(playbookName, workflowName) {
+        if (workflowList.hasOwnProperty(playbookName) &&
+            workflowList[playbookName].indexOf(workflowName) >= 0) {
+            return {
+                result: false,
+                error: 'Workflow "' + workflowName + '" already exists.'
+            };
+        }
+        else {
+            return {
+                result: true,
+                error: null
+            };
+        }
+    }
+
+
+    // The following function popups a dialog to be used for creating,
+    // renaming and duplicating playbooks and workflows.
+    function showDialog(title, label1Text, input1Text, isInput1Hidden, label2Text, input2Text, isInput2Hidden, submitCallback, validateCallback) {
+
+        var dialog = $( "#dialog-template" ).clone().removeClass('hidden');
+
+        var label1 = dialog.find( ".label1" );
+        var input1 = dialog.find( ".input1" );
+        var label2 = dialog.find( ".label2" );
+        var input2 = dialog.find( ".input2" );
+        var allFields = $( [] ).add( input1 ).add( input2 );
+        var tips = dialog.find( ".validateTips" );
+
+        dialog.attr("title", title);
+        label1.text(label1Text);
+        input1.val(input1Text);
+        label2.text(label2Text);
+        input2.val(input2Text);
+        if (isInput1Hidden) {
+            label1.addClass('hidden');
+            input1.addClass('hidden');
+        }
+        else if (isInput2Hidden) {
+            label2.addClass('hidden');
+            input2.addClass('hidden');
+        }
+
+        function updateTips( t ) {
+            tips
+                .text( t )
+                .addClass( "ui-state-highlight" );
+            setTimeout(function() {
+                tips.removeClass( "ui-state-highlight", 1500 );
+            }, 500 );
+        }
+
+        function checkLength( o, n, min, max ) {
+            if ( o.val().length > max || o.val().length < min ) {
+                o.addClass( "ui-state-error" );
+                updateTips( "Length of " + n + " must be between " +
+                            min + " and " + max + " characters." );
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        function customValidation(value1, value2) {
+            var result = validateCallback(value1, value2);
+            if (result.result) {
+                return true;
+            }
+            else {
+                updateTips(result.error);
+                return false;
+            }
+        }
+
+        function closeDialog() {
+            dialog.dialog("close");
+            dialog.remove();
+        }
+
+        $('form').on('submit', function(event){
+            event.preventDefault();
+        });
+
+        var buttons = {};
+        buttons[title] = function() {
+            var valid = true;
+            allFields.removeClass( "ui-state-error" );
+
+            if (!isInput1Hidden)
+                valid = valid && checkLength( input1, label1Text, 1, 255 );
+            if (!isInput2Hidden)
+                valid = valid && checkLength( input2, label2Text, 1, 255 );
+            valid = valid && customValidation(input1.val(), input2.val());
+            if (valid) {
+                submitCallback(input1.val(), input2.val());
+                closeDialog();
+            }
+        };
+        buttons["Cancel"] = function() {
+            closeDialog();
+        };
+
+        dialog.dialog({
+            autoOpen: false,
+            modal: true,
+            dialogClass: "no-close",
+            buttons: buttons
+        });
+
+        dialog.dialog( "open" );
+    }
+
+
     //-------------------------
     // Configure event handlers
     //-------------------------
@@ -692,8 +825,7 @@ $(function(){
     // Handle new button press
     $( "#new-button" ).click(function() {
         $("#workflows-tab").tab('show');
-        $("#dialog-new-workflow").removeClass('hidden');
-        $("#dialog-new-workflow").dialog( "open" );
+        showDialog("Create New Workflow", "Playbook Name", "", false, "Workflow Name", "", false, newWorkflow, checkIfWorkflowExists);
     });
 
     // Handle save button press
@@ -784,10 +916,8 @@ $(function(){
                     renameItem: { // The "rename" menu item
                         label: "Rename Workflow",
                         action: function () {
-                            $("#dialog-rename-workflow").removeClass('hidden');
-                            $("#dialog-rename-workflow").data("playbookName", playbookName);
-                            $("#dialog-rename-workflow").data("oldWorkflowName", workflowName);
-                            $("#dialog-rename-workflow").dialog( "open" );
+                            var renameCallback = renameWorkflow.bind(null, workflowName);
+                            showDialog("Raname Workflow", "Playbook Name", playbookName, true, "Workflow Name", workflowName, false, renameCallback, checkIfWorkflowExists);
                         }
                     },
                     deleteItem: { // The "delete" menu item
@@ -806,9 +936,8 @@ $(function(){
                     renameItem: { // The "rename" menu item
                         label: "Rename Playbook",
                         action: function() {
-                            $("#dialog-rename-playbook").removeClass('hidden');
-                            $("#dialog-rename-playbook").data("oldPlaybookName", playbookName);
-                            $("#dialog-rename-playbook").dialog( "open" );
+                            var renameCallback = renamePlaybook.bind(null, playbookName);
+                            showDialog("Raname Playbook", "Playbook Name", playbookName, false, "", "", true, renameCallback, checkIfPlaybookExists);
                         }
                     },
                     deleteItem: { // The "delete" menu item
@@ -948,200 +1077,5 @@ $(function(){
                 filtersList.push(key);
             });
         }
-    });
-
-
-    // The following sets up the new workflow dialog which is shown
-    // when the new workflow button is pressed
-    $(function() {
-        var playbookName = $( "#playbookName1" ),
-            workflowName = $( "#workflowName1" ),
-            allFields = $( [] ).add( playbookName ).add( workflowName ),
-            tips = $( ".validateTips" );
-
-        function updateTips( t ) {
-            tips
-                .text( t )
-                .addClass( "ui-state-highlight" );
-            setTimeout(function() {
-                tips.removeClass( "ui-state-highlight", 1500 );
-            }, 500 );
-        }
-
-        function checkLength( o, n, min, max ) {
-            if ( o.val().length > max || o.val().length < min ) {
-                o.addClass( "ui-state-error" );
-                updateTips( "Length of " + n + " must be between " +
-                            min + " and " + max + "." );
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        function doesPlaybookExist(playbookName) {
-            return workflowList.hasOwnProperty(playbookName);
-        }
-
-        function checkIfWorkflowExists(playbookName, workflowName) {
-            if (doesPlaybookExist(playbookName)) {
-                return workflowList[playbookName].indexOf(workflowName) >= 0;
-            }
-            else {
-                return false;
-            }
-        }
-
-        $('form').on('submit', function(event){
-            event.preventDefault();
-        });
-
-        $( "#dialog-new-workflow" ).dialog({
-            autoOpen: false,
-            modal: true,
-            dialogClass: "no-close",
-            buttons: {
-                "Create Workflow": function() {
-                    var valid = true;
-                    allFields.removeClass( "ui-state-error" );
-
-                    valid = valid && checkLength( playbookName, "playbook name", 1, 255 );
-                    valid = valid && checkLength( workflowName, "workflow name", 1, 255 );
-                    valid = valid && !checkIfWorkflowExists(playbookName.val(), workflowName.val());
-                    if (valid) {
-                        newWorkflow(playbookName.val(), workflowName.val());
-                        $(this).dialog("close");
-                    }
-                },
-                "Cancel": function() {
-                    $(this).dialog("close");
-                }
-            }
-        });
-    });
-
-    // The following sets up the rename playbook dialog which is shown
-    // when the rename playbook menu option is pressed
-    $(function() {
-        var playbookName = $( "#playbookName2" ),
-            allFields = $( [] ).add( playbookName ),
-            tips = $( ".validateTips" );
-
-        function updateTips( t ) {
-            tips
-                .text( t )
-                .addClass( "ui-state-highlight" );
-            setTimeout(function() {
-                tips.removeClass( "ui-state-highlight", 1500 );
-            }, 500 );
-        }
-
-        function checkLength( o, n, min, max ) {
-            if ( o.val().length > max || o.val().length < min ) {
-                o.addClass( "ui-state-error" );
-                updateTips( "Length of " + n + " must be between " +
-                            min + " and " + max + "." );
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        function doesPlaybookExist(playbookName) {
-            return workflowList.hasOwnProperty(playbookName);
-        }
-
-        $('form').on('submit', function(event){
-            event.preventDefault();
-        });
-
-        $( "#dialog-rename-playbook" ).dialog({
-            autoOpen: false,
-            modal: true,
-            dialogClass: "no-close",
-            buttons: {
-                "Rename Playbook": function() {
-                    var valid = true;
-                    allFields.removeClass( "ui-state-error" );
-
-                    valid = valid && checkLength( playbookName, "playbook name", 1, 255 );
-                    valid = valid && !doesPlaybookExist(playbookName.val());
-                    if (valid) {
-                        renamePlaybook($(this).data("oldPlaybookName"), playbookName.val());
-                        $(this).dialog("close");
-                    }
-                },
-                "Cancel": function() {
-                    $(this).dialog("close");
-                }
-            }
-        });
-    });
-
-    // The following sets up the rename workflow dialog which is shown
-    // when the rename workflow menu option is pressed
-    $(function() {
-        var workflowName = $( "#workflowName2" ),
-            allFields = $( [] ).add( workflowName ),
-            tips = $( ".validateTips" );
-
-        function updateTips( t ) {
-            tips
-                .text( t )
-                .addClass( "ui-state-highlight" );
-            setTimeout(function() {
-                tips.removeClass( "ui-state-highlight", 1500 );
-            }, 500 );
-        }
-
-        function checkLength( o, n, min, max ) {
-            if ( o.val().length > max || o.val().length < min ) {
-                o.addClass( "ui-state-error" );
-                updateTips( "Length of " + n + " must be between " +
-                            min + " and " + max + "." );
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        function doesPlaybookExist(playbookName) {
-            return workflowList.hasOwnProperty(playbookName);
-        }
-
-        function checkIfWorkflowExists(playbookName, workflowName) {
-            if (doesPlaybookExist(playbookName)) {
-                return workflowList[playbookName].indexOf(workflowName) >= 0;
-            }
-            else {
-                return false;
-            }
-        }
-
-        $('form').on('submit', function(event){
-            event.preventDefault();
-        });
-
-        $( "#dialog-rename-workflow" ).dialog({
-            autoOpen: false,
-            modal: true,
-            dialogClass: "no-close",
-            buttons: {
-                "Rename Workflow": function() {
-                    var valid = true;
-                    allFields.removeClass( "ui-state-error" );
-
-                    valid = valid && checkLength( workflowName, "workflow name", 1, 255 );
-                    valid = valid && !checkIfWorkflowExists($(this).data("playbookName"), workflowName.val());
-                    if (valid) {
-                        renameWorkflow($(this).data("playbookName"), $(this).data("oldWorkflowName"), workflowName.val());
-                        $(this).dialog("close");
-                    }
-                },
-                "Cancel": function() {
-                    $(this).dialog("close");
-                }
-            }
-        });
     });
 });
