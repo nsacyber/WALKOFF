@@ -55,7 +55,8 @@ function addNewSubscription(selectedCase, subscriptionId){
             'async': false,
             'type': "POST",
             'global': false,
-            'data':{"ancestry":[], "events":[]},
+            'data':JSON.stringify({"ancestry":[], "events":[]}),
+            'dataType':"application/json",
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/subscriptions/" + selectedCase + "/subscription/add",
             'success': function (data) {
@@ -64,6 +65,7 @@ function addNewSubscription(selectedCase, subscriptionId){
         });
         return tmp;
     }();
+    console.log(status);
     return status;
 }
 
@@ -96,7 +98,6 @@ function editSubscription(selectedCase, ancestry, events){
             'type': "POST",
             'global': false,
             'data':ancestry,
-            'dataType':"json",
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/subscriptions/" + selectedCase + "/subscription/edit",
             'success': function (data) {
