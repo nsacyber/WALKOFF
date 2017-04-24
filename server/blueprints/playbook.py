@@ -259,8 +259,8 @@ def workflow(playbook_name, workflow_name, action):
                            "playbooks": running_context.controller.get_all_workflows()})
 
     elif action == 'execute':
-        write_playbook_to_file(playbook_name)
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            write_playbook_to_file(playbook_name)
             running_context.controller.execute_workflow(playbook_name, workflow_name)
             status = 'success'
         else:
