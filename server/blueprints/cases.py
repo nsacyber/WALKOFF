@@ -170,9 +170,10 @@ def crud_subscription(case_name, action):
             return json.dumps({"status": "Error: no JSON in request"})
     elif action == 'add':
         if request.get_json():
-            data = request.get_json()
-            if 'ancestry' in data and 'events' in data:
-                case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), data['events'])
+            data = request.get_json(force=True)
+            if 'ancestry' in data:
+                events = data['events'] if 'events' in data else []
+                case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
                 return json.dumps({"status": "Error: malformed JSON"})
