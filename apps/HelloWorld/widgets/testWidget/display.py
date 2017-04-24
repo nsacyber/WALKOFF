@@ -37,7 +37,7 @@ def random_number_pusher():
         __sync.clear()
 
 
-@blueprint.blueprint.route('/stream/random-number')
+@blueprint.blueprint.route('/stream/data-1')
 def stream_random_numbers():
     """
     Example of using gevent and AsyncResults to create an event-driven stream
@@ -46,6 +46,15 @@ def stream_random_numbers():
     gevent.spawn(random_number_pusher)
     return Response(random_number_receiver(), mimetype='text/event-stream')
 
+
+@blueprint.blueprint.route('/stream/data-2')
+def stream_random_numbers_2():
+    def random_generator():
+        while True:
+            gevent.sleep(2)
+            yield 'data: %s\n\n' % random.random()
+
+    return Response(random_generator(), mimetype='text/event-stream')
 
 @blueprint.blueprint.route('/stream/counter')
 def stream_counter():

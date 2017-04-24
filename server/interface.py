@@ -31,7 +31,7 @@ def cases():
 
 
 def dashboard():
-    return {"widgets": [{"app": "HelloWorld", "widget": "testWidget"}, {"app": "HelloWorld", "widget": "testStepStreaming"}]}
+    return {"widgets": [{"app": "HelloWorld", "widget": "testWidget"}]}
 
 
 def controller():
