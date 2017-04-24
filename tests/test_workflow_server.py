@@ -42,6 +42,7 @@ class TestWorkflowServer(ServerTestCase):
                                                 'action': 'repeatBackToMe',
                                                 'device': 'hwTest',
                                                 'risk': '0',
+                                                'widgets': [],
                                                 'input': {'call': {'key': 'call',
                                                                    'value': 'Hello World',
                                                                    'format': 'str'}}}}}],

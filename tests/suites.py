@@ -16,7 +16,7 @@ add_tests_to_suite(server_suite, __server_tests)
 
 __execution_tests = [test_execution_runtime, test_execution_element, test_execution_events, test_execution_modes,
                      test_step, test_helper_functions, test_filter, test_argument, test_flag, test_next_step,
-                     test_scheduler_actions, test_instance, test_controller]
+                     test_scheduler_actions, test_instance, test_controller, test_widget_signals]
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 

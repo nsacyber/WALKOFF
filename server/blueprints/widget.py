@@ -27,14 +27,6 @@ def display_app():
     return template
 
 
-@widget_page.route('/stream/<string:stream_name>')
-@roles_required('admin')
-def stream_app_data(stream_name):
-    stream_generator, stream_type = data_stream(g.app, g.widget, stream_name)
-    if stream_generator and stream_type:
-        return Response(stream_generator(), mimetype=stream_type)
-
-
 def load_module(app_name, widget_name):
     module = 'apps.{0}.widgets.{1}.display'.format(app_name, widget_name)
     try:
@@ -51,9 +43,3 @@ def load_widget(app_name, widget_name, keys, values):
     module = load_module(app_name, widget_name)
     args = dict(zip(keys, values))
     return getattr(module, 'load')(args) if module else {}
-
-
-def data_stream(app_name, widget_name, stream_name):
-    module = load_module(app_name, widget_name)
-    if module:
-        return getattr(module, 'stream_generator')(stream_name)

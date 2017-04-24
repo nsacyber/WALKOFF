@@ -154,9 +154,8 @@ def convert_ancestry(ancestry):
 @roles_accepted(*running_context.user_roles['/cases'])
 def crud_subscription(case_name, action):
     if action == 'edit':
-        form_data = forms.EditSubscriptionForm(request.form)
-        if form_data.validate():
-            data = {"ancestry": form_data.ancestry.data, "events": form_data.events.data}
+        if request.get_json():
+            data = request.get_json()
             if 'ancestry' in data and 'events' in data:
                 success = case_subscription.edit_subscription(case_name,
                                                               convert_ancestry(data['ancestry']),
@@ -170,10 +169,11 @@ def crud_subscription(case_name, action):
         else:
             return json.dumps({"status": "Error: no JSON in request"})
     elif action == 'add':
-        data = request.get_json(force=True)
-        if data:
-            if 'ancestry' in data and 'events' in data:
-                case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), data['events'])
+        if request.get_json():
+            data = request.get_json(force=True)
+            if 'ancestry' in data:
+                events = data['events'] if 'events' in data else []
+                case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
                 return json.dumps({"status": "Error: malformed JSON"})

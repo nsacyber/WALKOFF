@@ -23,4 +23,5 @@ __all__ = ['test_app_blueprint',
            'test_workflow_server',
            'test_scheduler_actions',
            'test_instance',
-           'test_controller']
+           'test_controller',
+           'test_widget_signals']
