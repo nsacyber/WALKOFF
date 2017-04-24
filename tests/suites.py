@@ -5,7 +5,7 @@ from . import *
 def add_tests_to_suite(suite, test_modules):
     suite.addTests([TestLoader().loadTestsFromModule(test_module) for test_module in test_modules])
 
-__case_tests = [test_case_subscriptions, test_case_database]
+__case_tests = [test_case_subscriptions, test_case_database, test_case_config_db]
 case_suite = TestSuite()
 add_tests_to_suite(case_suite, __case_tests)
 
