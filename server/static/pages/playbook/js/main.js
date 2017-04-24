@@ -659,6 +659,93 @@ $(function(){
     }
 
 
+    // Download list of workflows for display in the Workflows list
+    function downloadWorkflowList() {
+
+        function customMenu(node) {
+            if (node.data && node.data.playbook) {
+                var playbookName = node.data.playbook;
+                var workflowName = node.text;
+                var items = {
+                    renameItem: { // The "rename" menu item
+                        label: "Rename Workflow",
+                        action: function () {
+                            var renameCallback = renameWorkflow.bind(null, workflowName);
+                            showDialog("Raname Workflow", "Playbook Name", playbookName, true, "Workflow Name", workflowName, false, renameCallback, checkIfWorkflowExists);
+                        }
+                    },
+                    deleteItem: { // The "delete" menu item
+                        label: "Delete Workflow",
+                        action: function () {
+                            deleteWorkflow(playbookName, workflowName);
+                        }
+                    }
+                };
+
+                return items;
+            }
+            else {
+                var playbookName = node.text;
+                var items = {
+                    renameItem: { // The "rename" menu item
+                        label: "Rename Playbook",
+                        action: function() {
+                            var renameCallback = renamePlaybook.bind(null, playbookName);
+                            showDialog("Raname Playbook", "Playbook Name", playbookName, false, "", "", true, renameCallback, checkIfPlaybookExists);
+                        }
+                    },
+                    deleteItem: { // The "delete" menu item
+                        label: "Delete Playbook",
+                        action: function() {
+                            deletePlaybook(playbookName);
+                        }
+                    }
+                };
+
+                return items;
+            }
+        }
+
+        $.ajax({
+            'async': true,
+            'type': "GET",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/playbook",
+            'success': function (data) {
+                if ($("#workflows").jstree(true))
+                    $("#workflows").jstree(true).destroy();
+                $('#workflows').jstree({
+                    'core' : {
+                        "check_callback" : true,
+                        'multiple': false, // Disable multiple selection
+                        'data' : formatWorkflowJsonDataForJsTree(data)
+                    },
+                    "plugins" : [ "contextmenu" ],
+                    "contextmenu" : { items: customMenu }
+                })
+                    .bind("ready.jstree", function (event, data) {
+                        $(this).jstree("open_all"); // Expand all
+                    });
+                // handle double click on workflow
+                $("#workflows").bind("dblclick.jstree", function (event, data) {
+
+                    var node = $(event.target).closest("li");
+                    var node_id = node[0].id; //id of the selected node
+                    node = $('#workflows').jstree(true).get_node(node_id);
+
+                    var workflowName = node.text;
+                    if (node.data && node.data.playbook) {
+                        loadWorkflow(node.data.playbook, workflowName);
+
+                        // hide parameters panel until first click on node
+                        $("#parameters").addClass('hidden');
+                    }
+                });
+            }
+        });
+    }
+
 
     function checkIfPlaybookExists(playbookName) {
         if(workflowList.hasOwnProperty(playbookName)) {
@@ -901,102 +988,12 @@ $(function(){
     });
 
 
-    //--------------------
-    // Setup Workflow list
-    //--------------------
+    //---------------------------------
+    // Setup Workflows and Actions tree
+    //---------------------------------
 
-    // Download list of workflows for display in the Workflows list
-    function downloadWorkflowList() {
-
-        function customMenu(node) {
-            if (node.data && node.data.playbook) {
-                var playbookName = node.data.playbook;
-                var workflowName = node.text;
-                var items = {
-                    renameItem: { // The "rename" menu item
-                        label: "Rename Workflow",
-                        action: function () {
-                            var renameCallback = renameWorkflow.bind(null, workflowName);
-                            showDialog("Raname Workflow", "Playbook Name", playbookName, true, "Workflow Name", workflowName, false, renameCallback, checkIfWorkflowExists);
-                        }
-                    },
-                    deleteItem: { // The "delete" menu item
-                        label: "Delete Workflow",
-                        action: function () {
-                            deleteWorkflow(playbookName, workflowName);
-                        }
-                    }
-                };
-
-                return items;
-            }
-            else {
-                var playbookName = node.text;
-                var items = {
-                    renameItem: { // The "rename" menu item
-                        label: "Rename Playbook",
-                        action: function() {
-                            var renameCallback = renamePlaybook.bind(null, playbookName);
-                            showDialog("Raname Playbook", "Playbook Name", playbookName, false, "", "", true, renameCallback, checkIfPlaybookExists);
-                        }
-                    },
-                    deleteItem: { // The "delete" menu item
-                        label: "Delete Playbook",
-                        action: function() {
-                            deletePlaybook(playbookName);
-                        }
-                    }
-                };
-
-                return items;
-            }
-        }
-
-    $.ajax({
-        'async': true,
-        'type': "GET",
-        'global': false,
-        'headers':{"Authentication-Token":authKey},
-        'url': "/playbook",
-        'success': function (data) {
-            if ($("#workflows").jstree(true))
-                $("#workflows").jstree(true).destroy();
-            $('#workflows').jstree({
-                'core' : {
-                    "check_callback" : true,
-                    'multiple': false, // Disable multiple selection
-                    'data' : formatWorkflowJsonDataForJsTree(data)
-                },
-                "plugins" : [ "contextmenu" ],
-                "contextmenu" : { items: customMenu }
-            })
-            .bind("ready.jstree", function (event, data) {
-                $(this).jstree("open_all"); // Expand all
-            });
-            // handle double click on workflow
-            $("#workflows").bind("dblclick.jstree", function (event, data) {
-
-                var node = $(event.target).closest("li");
-                var node_id = node[0].id; //id of the selected node
-                node = $('#workflows').jstree(true).get_node(node_id);
-
-                var workflowName = node.text;
-                if (node.data && node.data.playbook) {
-                    loadWorkflow(node.data.playbook, workflowName);
-
-                    // hide parameters panel until first click on node
-                    $("#parameters").addClass('hidden');
-                }
-            });
-        }
-    });
-    }
+    // Download all workflows for display in the Workflows tree
     downloadWorkflowList();
-
-
-    //-------------------
-    // Setup Actions tree
-    //-------------------
 
     // Download all actions in all apps for display in the Actions tree
     $.ajax({
