@@ -463,6 +463,9 @@ $(function(){
             'url': "/playbook/" + playbookName + "/delete",
             'success': function (data) {
                 downloadWorkflowList();
+
+                if (currentPlaybook === playbookName)
+                    closeCurrentWorkflow();
             }
         });
     }
@@ -507,6 +510,9 @@ $(function(){
             'url': "/playbook/" + playbookName + "/" + workflowName + "/delete",
             'success': function (data) {
                 downloadWorkflowList();
+
+                if (currentPlaybook === playbookName && currentWorkflow === workflowName)
+                    closeCurrentWorkflow();
             }
         });
     }
@@ -686,6 +692,11 @@ $(function(){
         // Configure handler when user clicks on node or edge
         cy.$('*').on('click', onClick);
 
+    }
+
+
+    function closeCurrentWorkflow() {
+        $("#cy").empty();
     }
 
 
