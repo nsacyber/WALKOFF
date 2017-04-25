@@ -2,8 +2,7 @@
     <div class='brick small'>
         <div class="header"><span id="title">{{widget['app']}} {{widget['widget']}}</span><a class='delete' href='#'>&times;</a></div>
         <div id="contentWrapper">
-            <script type="text/javascript">
-                $(document).on("ready", function(){
+            <script type="application/javascript">
                     $.ajax({
                         url:'/apps/{{ widget['app'] }}/{{ widget['widget'] }}/display',
                         data:{"page": "index.html", "key-0":"name", "value-0":"testing"},
@@ -11,13 +10,14 @@
                         type:"POST",
                         success: function(e){
                             data = e;
-                            $("#widgetContent").html(data);
+                            base = $("<div></div>");
+                            base.append(data);
+                            $("#widgetContent").append(base);
                         },
                         error: function(e){
                             $("#widgetContent").html("<p> Widget could not be Loaded! </p>");
                         }
                     });
-                });
             </script>
             <div id="widgetContent"></div>
         </div>
