@@ -1,4 +1,4 @@
-from core.helpers import list_apps
+from core.helpers import list_apps, list_widgets
 import core.config.paths
 
 
@@ -33,6 +33,14 @@ class Context(object):
     @staticmethod
     def get_apps(path=core.config.paths.apps_path):
         return list_apps(path=path)
+
+    @staticmethod
+    def get_widgets(path=core.config.paths.apps_path):
+        ret = []
+        for app in Context.get_apps():
+            for widget in list_widgets(app, path):
+                ret.append({'app': app, 'widget': widget})
+        return ret
 
     def set(self, key, value):
         setattr(self, key, value)

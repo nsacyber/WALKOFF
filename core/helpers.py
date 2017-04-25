@@ -64,12 +64,26 @@ def import_app_main(app_name):
         pass
 
 
+def __list_valid_directories(path):
+    try:
+        return [f for f in os.listdir(path)
+                if (os.path.isdir(os.path.join(path, f))
+                    and not f.startswith('__'))]
+    except (IOError, OSError):
+        return []
+
+
+
 def list_apps(path=None):
     if path is None:
         path = core.config.paths.apps_path
-    return [f for f in os.listdir(core.config.paths.apps_path)
-            if (os.path.isdir(os.path.join(core.config.paths.apps_path, f))
-                and not f.startswith('__'))]
+    return __list_valid_directories(path)
+
+
+def list_widgets(app, app_path=None):
+    if app_path is None:
+        app_path = core.config.paths.apps_path
+    return __list_valid_directories(os.path.join(app_path, app, 'widgets'))
 
 
 def list_class_functions(class_name):
