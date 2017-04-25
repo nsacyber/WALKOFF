@@ -935,9 +935,9 @@ $(function(){
             allFields.removeClass( "ui-state-error" );
 
             if (!isInput1Hidden)
-                valid = valid && checkLength( input1, label1Text, 1, 255 );
+                valid = valid && checkLength( input1, label1Text, 1, 50 );
             if (!isInput2Hidden)
-                valid = valid && checkLength( input2, label2Text, 1, 255 );
+                valid = valid && checkLength( input2, label2Text, 1, 50 );
             valid = valid && customValidation(input1.val(), input2.val());
             if (valid) {
                 submitCallback(input1.val(), input2.val());
