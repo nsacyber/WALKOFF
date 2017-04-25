@@ -195,18 +195,23 @@ def edit_global_subscription(case_name, global_subscriptions):
 
 def edit_subscription(case, ancestry, events):
     if case in subscriptions:
+        a = list(ancestry[::-1])
         current_subscriptions = subscriptions[case].subscriptions
         ancestry = list(ancestry[::-1])
         if ancestry:
             ancestry_level_name = ancestry.pop()
-            while ancestry_level_name and ancestry_level_name in current_subscriptions:
-                if not ancestry:
-                    current_subscriptions[ancestry_level_name].events = events
-                    return True
-                else:
-                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
-                    ancestry_level_name = ancestry.pop()
-            return False
+            if ancestry_level_name not in current_subscriptions:
+                subscriptions[case].subscriptions = __construct_subscription_from_ancestry(a, events)
+                return True
+            else:
+                while ancestry_level_name and ancestry_level_name in current_subscriptions:
+                    if not ancestry:
+                        current_subscriptions[ancestry_level_name].events = events
+                        return True
+                    else:
+                        current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                        ancestry_level_name = ancestry.pop()
+                return False
         else:
             return False
 

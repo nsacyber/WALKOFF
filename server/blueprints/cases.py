@@ -224,8 +224,13 @@ def convert_ancestry(ancestry):
 @roles_accepted(*running_context.user_roles['/cases'])
 def crud_subscription(case_name, action):
     if action == 'edit':
-        if request.get_json():
+        if request.form:
+            f = forms.EditSubscriptionForm(request.form)
+            data = {"ancestry": f.ancestry.data, "events": f.events.data}
+        else:
             data = request.get_json()
+
+        if data:
             if 'ancestry' in data and 'events' in data:
                 success = case_subscription.edit_subscription(case_name,
                                                               convert_ancestry(data['ancestry']),

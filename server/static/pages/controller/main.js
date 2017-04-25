@@ -125,7 +125,7 @@ objectSelectionDiv.on("change", '.objectSelection', function(){
 });
 
 $("#submitForm").on("click", function(){
-    var selectedSub = $('#casesTree').jstree().get_selected();
+    var selectedSub = $("#casesTree").jstree().get_node($('#casesTree').jstree().get_selected()).text;
     var selectedCase =  $("#casesTree").jstree().get_node($("#casesTree").jstree().get_parent(selectedSub)).text;
     console.log(selectedCase);
     var ancestryForm = $("#ancestryAjaxForm");
@@ -149,7 +149,7 @@ $("#submitForm").on("click", function(){
         $("#ancestryAjaxForm").append(elem);
     });
     console.log(ancestryForm.serialize());
-    r = editSubscription(selectedCase, ancestryForm.serialize(), selectedEvents);
+    r = editSubscription(selectedSub, ancestryForm.serialize(), selectedEvents);
     console.log(r);
     window.editSubscriptionDialog.dialog("close");
 });

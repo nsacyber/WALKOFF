@@ -67,6 +67,11 @@ class TestHelperFunctions(unittest.TestCase):
         expected_apps = ['HelloWorld']
         orderless_list_compare(self, expected_apps, list_apps())
 
+    def test_list_widgtes(self):
+        orderless_list_compare(self, list_widgets('HelloWorld'), ['testWidget', 'testWidget2'])
+        self.assertListEqual(list_widgets('JunkApp'), [])
+
+
     def test_construct_workflow_name_key(self):
         input_output = {('',''): '-',
                         ('', 'test_workflow'): '-test_workflow',
