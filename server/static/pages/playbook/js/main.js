@@ -701,7 +701,15 @@ $(function(){
                         label: "Rename Workflow",
                         action: function () {
                             var renameCallback = renameWorkflow.bind(null, workflowName);
-                            showDialog("Raname Workflow", "Playbook Name", playbookName, true, "Workflow Name", workflowName, false, renameCallback, checkIfWorkflowExists);
+                            showDialog("Rename Workflow",
+                                       "Playbook Name",
+                                       playbookName,
+                                       true,
+                                       "Workflow Name",
+                                       workflowName,
+                                       false,
+                                       renameCallback,
+                                       checkIfWorkflowExists);
                         }
                     },
                     duplicateItem: { // The "duplicate" menu item
@@ -736,7 +744,15 @@ $(function(){
                         label: "Rename Playbook",
                         action: function() {
                             var renameCallback = renamePlaybook.bind(null, playbookName);
-                            showDialog("Raname Playbook", "Playbook Name", playbookName, false, "", "", true, renameCallback, checkIfPlaybookExists);
+                            showDialog("Rename Playbook",
+                                       "Playbook Name",
+                                       playbookName,
+                                       false,
+                                       "",
+                                       "",
+                                       true,
+                                       renameCallback,
+                                       checkIfPlaybookExists);
                         }
                     },
                     duplicateItem: { // The "duplicate" menu item
@@ -840,7 +856,15 @@ $(function(){
 
     // The following function popups a dialog to be used for creating,
     // renaming and duplicating playbooks and workflows.
-    function showDialog(title, label1Text, input1Text, isInput1Hidden, label2Text, input2Text, isInput2Hidden, submitCallback, validateCallback) {
+    function showDialog(title,
+                        label1Text,
+                        input1Text,
+                        isInput1Hidden,
+                        label2Text,
+                        input2Text,
+                        isInput2Hidden,
+                        submitCallback,
+                        validateCallback) {
 
         var dialog = $( "#dialog-template" ).clone().removeClass('hidden');
 
@@ -971,7 +995,15 @@ $(function(){
     // Handle new button press
     $( "#new-button" ).click(function() {
         $("#workflows-tab").tab('show');
-        showDialog("Create New Workflow", "Playbook Name", "", false, "Workflow Name", "", false, newWorkflow, checkIfWorkflowExists);
+        showDialog("Create New Workflow",
+                   "Playbook Name",
+                   "",
+                   false,
+                   "Workflow Name",
+                   "",
+                   false,
+                   newWorkflow,
+                   checkIfWorkflowExists);
     });
 
     // Handle save button press
