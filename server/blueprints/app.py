@@ -17,7 +17,7 @@ def static_request_handler(endpoint, values):
     app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))
 
 
-@app_page.route('/display', methods=['POST'])
+@app_page.route('/', methods=['GET'])
 @auth_token_required
 @roles_required('admin')
 def display_app():
