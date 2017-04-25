@@ -17,7 +17,9 @@ def static_request_handler(endpoint, values):
     app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))
 
 
-@app_page.route('/', methods=['GET'])
+#TODO: Delete "display" decorator and change to GET
+# @app_page.route('/', methods=['GET'])
+@app_page.route('/display', methods=['POST'])
 @auth_token_required
 @roles_required('admin')
 def display_app():

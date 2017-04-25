@@ -107,7 +107,7 @@ class TestCaseServer(ServerTestCase):
                 self.assertTrue(event in received_events, 'Expected event is not in receieved events')
 
     def test_add_case_no_existing_cases(self):
-        response = self.app.post('/cases/case1/add', headers=self.headers)
+        response = self.app.put('/cases/case1', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json()})
@@ -123,7 +123,7 @@ class TestCaseServer(ServerTestCase):
     def test_add_case_existing_cases(self):
         case1 = CaseSubscriptions()
         set_subscriptions({'case1': case1})
-        response = self.app.post('/cases/case2/add', headers=self.headers)
+        response = self.app.put('/cases/case2', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json(),
@@ -142,7 +142,7 @@ class TestCaseServer(ServerTestCase):
         case1 = CaseSubscriptions(global_subscriptions=global_subs)
         set_subscriptions({'case1': case1})
         expected_json = subscriptions_as_json()
-        response = self.app.post('/cases/case1/add', headers=self.headers)
+        response = self.app.put('/cases/case1', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, expected_json)
@@ -157,8 +157,8 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(case.subscription, '{}')
 
     def test_delete_case_only_case(self):
-        self.app.post('/cases/case1/add', headers=self.headers)
-        response = self.app.post('/cases/case1/delete', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        response = self.app.delete('/cases/case1', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {})
@@ -171,11 +171,11 @@ class TestCaseServer(ServerTestCase):
 
     def test_delete_case(self):
         case2 = CaseSubscriptions()
-        self.app.post('/cases/case1/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
         cases_config = server.running_context.CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
-        self.app.post('/cases/case2/add', headers=self.headers)
-        response = self.app.post('/cases/case1/delete', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
+        response = self.app.delete('/cases/case1', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case2': case2.as_json()})
@@ -195,9 +195,9 @@ class TestCaseServer(ServerTestCase):
         case2 = CaseSubscriptions()
         cases = {'case1': case1, 'case2': case2}
         set_subscriptions(cases)
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
-        response = self.app.post('/cases/case3/delete', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
+        response = self.app.delete('/cases/case3', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {name: case.as_json() for name, case in cases.items()})
@@ -212,7 +212,7 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(case.subscription, '{}')
 
     def test_delete_case_no_cases(self):
-        response = self.app.post('/cases/case1/delete', headers=self.headers)
+        response = self.app.delete('/cases/case1', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {})
@@ -225,13 +225,13 @@ class TestCaseServer(ServerTestCase):
         self.assertListEqual(cases_config, [])
 
     def test_edit_case(self):
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"name": "renamed",
                 "note": "note1"}
-        self.app.post('/cases/case1/add', headers=self.headers)
-        response = self.app.post('/cases/case1/edit', data=data, headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        response = self.app.post('/cases/case1', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
 
@@ -251,11 +251,11 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(case.subscription, '{}')
 
     def test_edit_case_no_name(self):
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"note": "note1"}
-        response = self.app.post('/cases/case2/edit', data=data, headers=self.headers)
+        response = self.app.post('/cases/case2', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
 
@@ -273,11 +273,11 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(case.subscription, '{}')
 
     def test_edit_case_no_note(self):
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"name": "renamed"}
-        response = self.app.post('/cases/case1/edit', data=data, headers=self.headers)
+        response = self.app.post('/cases/case1', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
 
@@ -296,11 +296,11 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(case.subscription, '{}')
 
     def test_edit_case_invalid_case(self):
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"name": "renamed"}
-        response = self.app.post('/cases/case3/edit', data=data, headers=self.headers)
+        response = self.app.post('/cases/case3', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
 
@@ -392,8 +392,11 @@ class TestCaseServer(ServerTestCase):
         for case in ['case1', 'case2', 'case3', 'case4']:
             self.__assert_subscriptions_synced(case)
 
-    def test_crud_case_invalid_action(self):
-        self.post_with_status_check('/cases/case3/junk', 'Invalid operation junk', headers=self.headers)
+    #TODO: Remove last line and uncomment first 2 lines of test function
+    # def test_crud_case_invalid_action(self):
+    #     response = self.app.post('/cases/case3/junk', headers=self.headers)
+    #     self.assertEqual(response.status_code, 404)
+        #self.post_with_status_check('/cases/case3/junk', status='', status_code=404, headers=self.headers)
 
     def test_display_possible_subscriptions(self):
         with open(join('.', 'data', 'events.json')) as f:
@@ -433,7 +436,7 @@ class TestCaseServer(ServerTestCase):
         case1 = CaseSubscriptions()
         case2 = CaseSubscriptions()
         set_subscriptions({'case1': case1, 'case2': case2})
-        self.app.post('/cases/case1/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
         response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs1, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
@@ -485,8 +488,8 @@ class TestCaseServer(ServerTestCase):
         sub8 = Subscription(subscriptions={'sub5': sub5, 'sub6': sub6})
 
         case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
 
         add1 = {"ancestry": ["sub8", "add1"],
@@ -643,8 +646,8 @@ class TestCaseServer(ServerTestCase):
         case2 = CaseSubscriptions(subscriptions={'sub7': sub7, 'sub8': sub8})
 
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         edit1 = {"ancestry": ["sub8", "playbook", "sub5", "sub3"],
                  "events": ["a", "b"]}
 
@@ -823,8 +826,8 @@ class TestCaseServer(ServerTestCase):
         case2 = CaseSubscriptions(subscriptions={'sub21': sub21, 'sub22': sub22})
 
         set_subscriptions({'case1': case1, 'case2': case2})
-        self.app.post('/cases/case1/add', headers=self.headers)
-        self.app.post('/cases/case2/add', headers=self.headers)
+        self.app.put('/cases/case1', headers=self.headers)
+        self.app.put('/cases/case2', headers=self.headers)
         tree1 = {'sub14': {sub11_name: {'sub7': {'sub4': {'sub1': {},
                                                           'sub2': {}}},
                                         'sub8': {'sub5': {'sub3': {}}}},

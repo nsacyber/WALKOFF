@@ -62,7 +62,59 @@ def export_cases():
     except (OSError, IOError):
         return json.dumps({"status": "error writing to file"})
 
+@cases_page.route('/<string:case_name>', methods=['PUT'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def add_case(case_name):
+    case = CaseSubscriptions()
+    add_cases({"{0}".format(str(case_name)): case})
+    case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+    if not case:
+        running_context.db.session.add(running_context.CaseSubscription(name=case_name))
+        running_context.db.session.commit()
+    return json.dumps(case_subscription.subscriptions_as_json())
 
+@cases_page.route('/<string:case_name>', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def read_case(case_name):
+    case = case_database.case_db.session.query(case_database.Case) \
+        .filter(case_database.Case.name == case_name).first()
+    if case:
+        return json.dumps({'case': case.as_json()})
+    else:
+        return json.dumps({'status': 'Case with given name does not exist'})
+
+@cases_page.route('/<string:case_name>', methods=['POST'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def update_case(case_name):
+    form = forms.EditCaseForm(request.form)
+    if form.validate():
+        if form.name.data:
+            rename_case(case_name, form.name.data)
+            case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+            if case:
+                case.name = form.name.data
+                running_context.db.session.commit()
+            if form.note.data:
+                case_database.case_db.edit_case_note(form.name.data, form.note.data)
+        elif form.note.data:
+            case_database.case_db.edit_case_note(case_name, form.note.data)
+        return json.dumps(case_database.case_db.cases_as_json())
+
+@cases_page.route('/<string:case_name>', methods=['DELETE'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def delete_case(case_name):
+    delete_cases([case_name])
+    case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+    if case:
+        running_context.db.session.delete(case)
+        running_context.db.session.commit()
+    return json.dumps(case_subscription.subscriptions_as_json())
+
+#TODO: DELETE
 @cases_page.route('/<string:case_name>/<string:action>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
@@ -99,7 +151,7 @@ def crud_case(case_name, action):
     else:
         return json.dumps({"status": "Invalid operation {0}".format(action)})
 
-
+#TODO: DELETE
 @cases_page.route('/<string:case_name>', methods=['GET'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
@@ -111,7 +163,7 @@ def display_case(case_name):
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
 
-
+#TODO:DELETE
 @cases_page.route('/event/<int:event_id>/edit', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
