@@ -71,14 +71,17 @@ class TestGlobalSubscriptions(unittest.TestCase):
                         self.should_be_subscribed_message.format(self.filter_subs_events, 'filter'))
         self.assertFalse('a' in filter_subs, self.should_not_be_subscribed_message.format('a', 'filter'))
 
-    def test_json(self):
+    def test_to_from_json(self):
         expected_json = {"controller": ['a'],
                          "workflow": [],
                          "step": ['b', 'c'],
                          "next_step": [],
                          "flag": ['u', 'v', 'w'],
                          "filter": ['d', 'e']}
-        self.assertDictEqual(expected_json, self.global_subs.as_json())
+        json_first = self.global_subs.as_json()
+        self.assertDictEqual(expected_json, json_first)
+        derived = GlobalSubscriptions.from_json(json_first)
+        self.assertDictEqual(derived.as_json(), json_first)
 
 
 class TestSubscription(unittest.TestCase):
@@ -107,28 +110,26 @@ class TestSubscription(unittest.TestCase):
         self.assertTrue(all(sub5.is_subscribed(event_name) for event_name in self.sub1_events))
         self.assertDictEqual({'sub_element': subsub}, sub5.subscriptions)
 
-    def as_json(self):
+    def test_to_from_json(self):
         sub1 = Subscription(events=self.sub1_events)
-        sub2 = Subscription(events=self.sub1_events)
-        sub3 = Subscription(events=self.sub1_events)
-        sub4 = Subscription(events=[1, 2])
+        sub2 = Subscription(events=[1, 2])
         subsub = Subscription(events='f')
-        sub5 = Subscription(events=self.sub1_events, subscriptions={'sub_element': subsub})
+        sub3 = Subscription(events=self.sub1_events, subscriptions={'sub_element': subsub})
         sub1_expected_json = {"events": ['a', 'b', 'c'],
                               "subscriptions": {}}
-        sub2_expected_json = {"events": ['a', 'b', 'c'],
+        sub2_expected_json = {"events": [1, 2],
                               "subscriptions": {}}
         sub3_expected_json = {"events": ['a', 'b', 'c'],
-                              "subscriptions": {}}
-        sub4_expected_json = {"events": [1, 2],
-                              "subscriptions": {}}
-        sub5_expected_json = {"events": ['a', 'b', 'c'],
-                              "subscriptions": {"sub_element": ['f']}}
+                              "subscriptions": {'sub_element': {'events': 'f', 'subscriptions': {}}}}
         self.assertDictEqual(sub1_expected_json, sub1.as_json())
+        derived = Subscription.from_json(sub1.as_json())
+        self.assertDictEqual(derived.as_json(), sub1.as_json())
         self.assertDictEqual(sub2_expected_json, sub2.as_json())
+        derived = Subscription.from_json(sub2.as_json())
+        self.assertDictEqual(derived.as_json(), sub2.as_json())
         self.assertDictEqual(sub3_expected_json, sub3.as_json())
-        self.assertDictEqual(sub4_expected_json, sub4.as_json())
-        self.assertDictEqual(sub5_expected_json, sub5.as_json())
+        derived = Subscription.from_json(sub3.as_json())
+        self.assertDictEqual(derived.as_json(), sub3.as_json())
 
 
 class TestCaseSubscriptions(unittest.TestCase):
@@ -153,6 +154,8 @@ class TestCaseSubscriptions(unittest.TestCase):
         expected_json = {"subscriptions": {"controller1": case1.subscriptions["controller1"].as_json()},
                          "global_subscriptions": global_subs.as_json()}
         self.assertDictEqual(expected_json, case1.as_json())
+        derived = CaseSubscriptions.from_json(case1.as_json())
+        self.assertDictEqual(derived.as_json(), case1.as_json())
 
 
 class TestSubscriptionFunctions(unittest.TestCase):

@@ -464,7 +464,6 @@ class TestCaseServer(ServerTestCase):
         self.post_with_status_check('/cases/subscriptions/case1/global/edit', 'Error: Case name case1 was not found',
                                     data=global_subs, headers=self.headers)
 
-
     def test_convert_ancestry(self):
         input_output = [(['a'], ['a']),
                         (['a', 'b'], ['a', 'b']),

@@ -51,6 +51,7 @@ def create_user():
         running_context.db.session.add(running_context.App(app=app_name, devices=[]))
     running_context.db.session.commit()
 
+    running_context.CaseSubscription.sync_to_subscriptions()
 
 """
     URLS

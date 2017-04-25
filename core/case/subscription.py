@@ -84,6 +84,14 @@ class Subscription(object):
                 "subscriptions": {str(name): subscription.as_json()
                                   for name, subscription in self.subscriptions.items()}}
 
+    @staticmethod
+    def from_json(json_in):
+        events = json_in['events'] if 'events' in json_in else None
+        _subscriptions = json_in['subscriptions'] if 'subscriptions' in json_in else None
+        if _subscriptions is not None:
+            _subscriptions = {sub_name: Subscription.from_json(sub) for sub_name, sub in _subscriptions.items()}
+        return Subscription(events=events, subscriptions=_subscriptions)
+
     def __repr__(self):
         return str({'events': self.events,
                     'subscriptions': self.subscriptions})
@@ -110,6 +118,18 @@ class CaseSubscriptions(object):
         return {"subscriptions": {str(name): subscription.as_json()
                                   for name, subscription in self.subscriptions.items()},
                 "global_subscriptions": self.global_subscriptions.as_json()}
+
+    @staticmethod
+    def from_json(json_in):
+        _subscriptions = json_in['subscriptions'] if 'subscriptions' in json_in else None
+        if _subscriptions is not None:
+            _subscriptions = {subscription_name: Subscription.from_json(subscription)
+                              for subscription_name, subscription in _subscriptions.items()}
+
+        global_subscriptions = json_in['global_subscriptions'] if 'global_subscriptions' in json_in else None
+        if global_subscriptions is not None:
+            global_subscriptions = GlobalSubscriptions.from_json(global_subscriptions)
+        return CaseSubscriptions(subscriptions=_subscriptions, global_subscriptions=global_subscriptions)
 
     def __repr__(self):
         return str({'subscriptions': self.subscriptions,

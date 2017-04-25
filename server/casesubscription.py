@@ -29,7 +29,13 @@ class CaseSubscription(Base):
             if case_name in core.case.subscription.subscriptions:
                 case.subscription = json.dumps(core.case.subscription.subscriptions_as_json()[case_name])
 
-
     @staticmethod
     def from_json(name, subscription_json):
         return CaseSubscription(name, subscription=json.dumps(subscription_json))
+
+    @staticmethod
+    def sync_to_subscriptions():
+        subscriptions = {case.name: core.case.subscription.CaseSubscriptions.from_json(json.loads(case.subscription))
+                         for case in CaseSubscription.query.all()}
+        core.case.subscription.set_subscriptions(subscriptions)
+
