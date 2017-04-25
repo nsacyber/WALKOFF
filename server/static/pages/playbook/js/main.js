@@ -439,6 +439,21 @@ $(function(){
         });
     }
 
+    function duplicatePlaybook(oldPlaybookName, newPlaybookName) {
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/playbook/" + oldPlaybookName + "/copy",
+            'dataType': 'json',
+            'data': {playbook: newPlaybookName},
+            'success': function (data) {
+                downloadWorkflowList();
+            }
+        });
+    }
+
     function deletePlaybook(playbookName, workflowName) {
         $.ajax({
             'async': false,
@@ -462,6 +477,21 @@ $(function(){
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'data': JSON.stringify({'new_name': newWorkflowName}),
+            'success': function (data) {
+                downloadWorkflowList();
+            }
+        });
+    }
+
+    function duplicateWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "/playbook/" + playbookName + "/" + oldWorkflowName + "/copy",
+            'dataType': 'json',
+            'data': {playbook: playbookName, workflow: newWorkflowName},
             'success': function (data) {
                 downloadWorkflowList();
             }
@@ -674,6 +704,21 @@ $(function(){
                             showDialog("Raname Workflow", "Playbook Name", playbookName, true, "Workflow Name", workflowName, false, renameCallback, checkIfWorkflowExists);
                         }
                     },
+                    duplicateItem: { // The "duplicate" menu item
+                        label: "Duplicate Workflow",
+                        action: function () {
+                            var duplicateCallback = duplicateWorkflow.bind(null, workflowName);
+                            showDialog("Duplicate Workflow",
+                                       "Playbook Name",
+                                       playbookName,
+                                       true,
+                                       "Workflow Name",
+                                       workflowName,
+                                       false,
+                                       duplicateCallback,
+                                       checkIfWorkflowExists);
+                        }
+                    },
                     deleteItem: { // The "delete" menu item
                         label: "Delete Workflow",
                         action: function () {
@@ -692,6 +737,20 @@ $(function(){
                         action: function() {
                             var renameCallback = renamePlaybook.bind(null, playbookName);
                             showDialog("Raname Playbook", "Playbook Name", playbookName, false, "", "", true, renameCallback, checkIfPlaybookExists);
+                        }
+                    },
+                    duplicateItem: { // The "duplicate" menu item
+                        label: "Duplicate Playbook",
+                        action: function() {
+                            var duplicateCallback = duplicatePlaybook.bind(null, playbookName);
+                            showDialog("Duplicate Playbook",
+                                       "Playbook Name",
+                                       playbookName, false,
+                                       "",
+                                       "",
+                                       true,
+                                       duplicateCallback,
+                                       checkIfPlaybookExists);
                         }
                     },
                     deleteItem: { // The "delete" menu item
