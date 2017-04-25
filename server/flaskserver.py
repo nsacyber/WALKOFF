@@ -139,3 +139,9 @@ def display_flags():
 @roles_accepted(*running_context.user_roles['/playbook'])
 def display_filters():
     return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
+
+@app.route('/availablesubscriptions', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def display_possible_subscriptions():
+    return json.dumps(core.config.config.possible_events)

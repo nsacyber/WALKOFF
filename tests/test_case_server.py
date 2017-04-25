@@ -402,7 +402,7 @@ class TestCaseServer(ServerTestCase):
         with open(join('.', 'data', 'events.json')) as f:
             expected_response = json.loads(f.read())
 
-        response = self.app.get('/cases/availablesubscriptions', headers=self.headers)
+        response = self.app.get('/availablesubscriptions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_response)
@@ -508,7 +508,7 @@ class TestCaseServer(ServerTestCase):
 
         expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/add',
+        response = self.app.put('/cases/case2/subscriptions',
                                  data=json.dumps(add1),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -520,7 +520,7 @@ class TestCaseServer(ServerTestCase):
         self.assertDictEqual(response, expected_cases_json)
         self.__assert_subscriptions_synced('case2')
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/add',
+        response = self.app.put('/cases/case2/subscriptions',
                                  data=json.dumps(add2),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -532,7 +532,7 @@ class TestCaseServer(ServerTestCase):
         self.assertDictEqual(response, expected_cases_json)
         self.__assert_subscriptions_synced('case2')
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/add',
+        response = self.app.put('/cases/case2/subscriptions',
                                  data=json.dumps(add3),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -569,7 +569,7 @@ class TestCaseServer(ServerTestCase):
                 "events": ["a", "b"]}
 
         expected_cases_json = {'case2': construct_case_json(tree), 'case1': CaseSubscriptions().as_json()}
-        response = self.app.post('/cases/subscriptions/junkcase/subscription/add',
+        response = self.app.put('/cases/junkcase/subscriptions',
                                  data=json.dumps(add1),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -596,7 +596,7 @@ class TestCaseServer(ServerTestCase):
         add1 = {"ancestry": ["sub8", "add1"],
                 "events": ["a", "b"]}
 
-        self.post_with_status_check('/cases/subscriptions/case1/subscription/add',
+        self.post_with_status_check('/cases/case1/subscriptions',
                                     'Error: no JSON in request',
                                     data=add1,
                                     headers=self.headers,
@@ -624,7 +624,7 @@ class TestCaseServer(ServerTestCase):
                 "events_bad": ["a", "b"]}
 
         for bad_json in [bad1, bad3]:
-            self.post_with_status_check('/cases/subscriptions/case1/subscription/add',
+            self.post_with_status_check('/cases/case1/subscriptions',
                                         'Error: malformed JSON',
                                         data=json.dumps(bad_json),
                                         headers=self.headers,
@@ -667,7 +667,7 @@ class TestCaseServer(ServerTestCase):
             'events'] \
             = ['a', 'b']
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit',
+        response = self.app.post('/cases/case2/subscriptions',
                                  data=json.dumps(edit1),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -679,7 +679,7 @@ class TestCaseServer(ServerTestCase):
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['sub4']['events'] \
             = ['c', 'd', 'e']
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit',
+        response = self.app.post('/cases/case2/subscriptions',
                                  data=json.dumps(edit2),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -689,7 +689,7 @@ class TestCaseServer(ServerTestCase):
 
         expected_cases_json['case2']['subscriptions']['sub8']['events'] = ['e']
 
-        response = self.app.post('/cases/subscriptions/case2/subscription/edit',
+        response = self.app.post('/cases/case2/subscriptions',
                                  data=json.dumps(edit3),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -716,7 +716,7 @@ class TestCaseServer(ServerTestCase):
 
         edit1 = {"ancestry": ["sub8", "sub5", "junk"],
                  "events": ["a", "b"]}
-        self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+        self.post_with_status_check('/cases/case2/subscriptions',
                                     'Error occurred while editing subscription',
                                     data=json.dumps(edit1),
                                     headers=self.headers,
@@ -724,7 +724,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_edit_subscription_invalid_case(self):
         edit = {"ancestry": [], "events": []}
-        self.post_with_status_check('/cases/subscriptions/case1/subscription/edit',
+        self.post_with_status_check('/cases/case1/subscriptions',
                                     'Error occurred while editing subscription',
                                     data=json.dumps(edit),
                                     headers=self.headers,
@@ -748,7 +748,7 @@ class TestCaseServer(ServerTestCase):
 
         edit1 = {"ancestry": ["sub8", "sub5", "junk"],
                  "events": ["a", "b"]}
-        self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+        self.post_with_status_check('/cases/case2/subscriptions',
                                     'Error: no JSON in request',
                                     data=edit1,
                                     headers=self.headers,
@@ -778,7 +778,7 @@ class TestCaseServer(ServerTestCase):
                  "events_bad": ["a", "b"]}
 
         for edit in [edit1, edit2, edit3]:
-            self.post_with_status_check('/cases/subscriptions/case2/subscription/edit',
+            self.post_with_status_check('/cases/case2/subscriptions',
                                         'Error: malformed JSON',
                                         data=json.dumps(edit),
                                         headers=self.headers,
@@ -845,7 +845,7 @@ class TestCaseServer(ServerTestCase):
 
         def test_removal(case, ancestry, expected_tree_1, expected_tree_2):
             post_data = {"ancestry": ancestry}
-            response = self.app.post('/cases/subscriptions/{0}/subscription/delete'.format(case),
+            response = self.app.delete('/cases/{0}/subscriptions'.format(case),
                                      data=json.dumps(post_data),
                                      headers=self.headers,
                                      content_type='application/json')
@@ -903,7 +903,7 @@ class TestCaseServer(ServerTestCase):
         data = {"ancestry": ["sub1"]}
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
         expected_cases_json = {'case2': CaseSubscriptions().as_json(), 'case1': CaseSubscriptions().as_json()}
-        response = self.app.post('/cases/subscriptions/junkcase/subscription/delete',
+        response = self.app.delete('/cases/junkcase/subscriptions',
                                  data=json.dumps(data),
                                  headers=self.headers,
                                  content_type='application/json')
@@ -936,7 +936,7 @@ class TestCaseServer(ServerTestCase):
 
         def test_junk_path(case, path):
             data = {"ancestry": path}
-            response = self.app.post('/cases/subscriptions/{0}/subscription/delete'.format(case),
+            response = self.app.delete('/cases/{0}/subscriptions'.format(case),
                                      data=json.dumps(data),
                                      headers=self.headers,
                                      content_type='application/json')
@@ -952,39 +952,42 @@ class TestCaseServer(ServerTestCase):
     def test_remove_subscription_no_json(self):
         data = {"ancestry": ["sub1"]}
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
-        self.post_with_status_check('/cases/subscriptions/junkcase/subscription/delete',
-                                    'Error: no JSON in request',
+        response = self.app.delete('/cases/junkcase/subscriptions',
                                     data=data,
                                     headers=self.headers,
                                     content_type='application/json')
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response["status"], 'Error: no JSON in request')
 
     def test_remove_subscription_invalid_json(self):
         data = {"ancestry_bad": ["sub1"]}
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
-        self.post_with_status_check('/cases/subscriptions/junkcase/subscription/delete',
-                                    'Error: malformed JSON',
+        response = self.app.delete('/cases/junkcase/subscriptions',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json')
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response["status"], 'Error: malformed JSON')
 
-    def test_invalid_subscription_action(self):
-        sub15 = Subscription()
-        sub16 = Subscription()
-        sub17 = Subscription()
-
-        sub18 = Subscription(subscriptions={'sub15': sub15, 'sub16': sub16})
-        sub19 = Subscription(subscriptions={'sub17': sub17})
-        sub20 = Subscription()
-
-        sub21 = Subscription(subscriptions={'sub18': sub18})
-        sub22 = Subscription(subscriptions={'sub19': sub19, 'sub20': sub20})
-
-        case2 = CaseSubscriptions(subscriptions={'sub21': sub21, 'sub22': sub22})
-
-        set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
-        self.post_with_status_check('/cases/subscriptions/case1/subscription/junkAction',
-                                    'error: unknown subscription action',
-                                    headers=self.headers)
+    #TODO: Delete?
+    # def test_invalid_subscription_action(self):
+    #     sub15 = Subscription()
+    #     sub16 = Subscription()
+    #     sub17 = Subscription()
+    #
+    #     sub18 = Subscription(subscriptions={'sub15': sub15, 'sub16': sub16})
+    #     sub19 = Subscription(subscriptions={'sub17': sub17})
+    #     sub20 = Subscription()
+    #
+    #     sub21 = Subscription(subscriptions={'sub18': sub18})
+    #     sub22 = Subscription(subscriptions={'sub19': sub19, 'sub20': sub20})
+    #
+    #     case2 = CaseSubscriptions(subscriptions={'sub21': sub21, 'sub22': sub22})
+    #
+    #     set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
+    #     self.post_with_status_check('/cases/case1/subscriptions',
+    #                                 'error: unknown subscription action',
+    #                                 headers=self.headers)
 
     def test_edit_event_note(self):
         case1, _ = construct_case1()
@@ -1016,7 +1019,7 @@ class TestCaseServer(ServerTestCase):
         expected_event['note'] = 'Note1'
 
         data = {"note": 'Note1'}
-        response = self.app.post('/cases/event/{0}/edit'.format(smallest_id), data=data, headers=self.headers)
+        response = self.app.post('/events/{0}'.format(smallest_id), data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_event)
@@ -1024,7 +1027,7 @@ class TestCaseServer(ServerTestCase):
         expected_event['note'] = 'Note2'
 
         data = {"note": 'Note2'}
-        response = self.app.post('/cases/event/{0}/edit'.format(smallest_id), data=data, headers=self.headers)
+        response = self.app.post('/events/{0}'.format(smallest_id), data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_event)
@@ -1056,5 +1059,5 @@ class TestCaseServer(ServerTestCase):
         invalid_id = max([event.id for event in events]) + 1
 
         data = {"note": 'Note2'}
-        self.post_with_status_check('/cases/event/{0}/edit'.format(invalid_id), 'invalid event',
+        self.post_with_status_check('/events/{0}'.format(invalid_id), 'invalid event',
                                     data=data, headers=self.headers)

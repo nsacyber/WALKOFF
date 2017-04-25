@@ -85,6 +85,7 @@ def read_case(case_name):
     else:
         return json.dumps({'status': 'Case with given name does not exist'})
 
+
 @cases_page.route('/<string:case_name>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
@@ -151,18 +152,6 @@ def crud_case(case_name, action):
     else:
         return json.dumps({"status": "Invalid operation {0}".format(action)})
 
-#TODO: DELETE
-@cases_page.route('/<string:case_name>', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/cases'])
-def display_case(case_name):
-    case = case_database.case_db.session.query(case_database.Case) \
-        .filter(case_database.Case.name == case_name).first()
-    if case:
-        return json.dumps({'case': case.as_json()})
-    else:
-        return json.dumps({'status': 'Case with given name does not exist'})
-
 #TODO:DELETE
 @cases_page.route('/event/<int:event_id>/edit', methods=['POST'])
 @auth_token_required
@@ -181,14 +170,14 @@ def edit_event_note(event_id):
     else:
         return json.dumps({"status": "Invalid form"})
 
-
+#TODO:DELETE
 @cases_page.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
-
+#TODO:DELETE?
 @cases_page.route('/subscriptions/<string:case_name>/global/edit', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
@@ -219,6 +208,77 @@ def convert_ancestry(ancestry):
     return ancestry
 
 
+@cases_page.route('/<string:case_name>/subscriptions', methods=['PUT'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def add_subscription(case_name):
+    if request.get_json():
+        data = request.get_json()
+        if 'ancestry' in data:
+            events = data['events'] if 'events' in data else []
+            case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
+            running_context.CaseSubscription.update(case_name)
+            running_context.db.session.commit()
+            return json.dumps(case_subscription.subscriptions_as_json())
+        else:
+            return json.dumps({"status": "Error: malformed JSON"})
+    else:
+        return json.dumps({"status": "Error: no JSON in request"})
+
+
+@cases_page.route('/<string:case_name>/subscriptions', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def read_subscription(case_name):
+    if case_name in core.case.subscription.subscriptions:
+        return json.dumps(core.case.subscription.subscriptions[case_name].as_json())
+
+
+@cases_page.route('/<string:case_name>/subscriptions', methods=['POST'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def update_subscription(case_name):
+    if request.form:
+        f = forms.EditSubscriptionForm(request.form)
+        data = {"ancestry": f.ancestry.data, "events": f.events.data}
+    else:
+        data = request.get_json()
+
+    if data:
+        if 'ancestry' in data and 'events' in data:
+            success = case_subscription.edit_subscription(case_name,
+                                                          convert_ancestry(data['ancestry']),
+                                                          data['events'])
+            running_context.CaseSubscription.update(case_name)
+            running_context.db.session.commit()
+            if success:
+                return json.dumps(case_subscription.subscriptions_as_json())
+            else:
+                return json.dumps({"status": "Error occurred while editing subscription"})
+        else:
+            return json.dumps({"status": "Error: malformed JSON"})
+    else:
+        return json.dumps({"status": "Error: no JSON in request"})
+
+
+@cases_page.route('/<string:case_name>/subscriptions', methods=['DELETE'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def delete_subscription(case_name):
+    if request.get_json():
+        data = request.get_json()
+        if 'ancestry' in data:
+            case_subscription.remove_subscription_node(case_name, convert_ancestry(data['ancestry']))
+            running_context.CaseSubscription.update(case_name)
+            running_context.db.session.commit()
+            return json.dumps(case_subscription.subscriptions_as_json())
+        else:
+            return json.dumps({"status": "Error: malformed JSON"})
+    else:
+        return json.dumps({"status": "Error: no JSON in request"})
+
+
+#TODO:DELETE
 @cases_page.route('/subscriptions/<string:case_name>/subscription/<string:action>', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
