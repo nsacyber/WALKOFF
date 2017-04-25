@@ -3,11 +3,12 @@ import json
 from .database import db, Base
 import core.case.subscription
 
+
 class CaseSubscription(Base):
-    __tablename__ = 'case_config'
+    __tablename__ = 'case_subscription'
 
     name = db.Column(db.String(255), nullable=False)
-    subscription = db.Text()
+    subscription = db.Column(db.Text())
 
     def __init__(self, name, subscription='{}'):
         self.name = name
@@ -19,7 +20,15 @@ class CaseSubscription(Base):
 
     def as_json(self):
         return {"name": self.name,
-                "subscriptions": json.loads(self.subscription)}
+                "subscription": json.loads(self.subscription)}
+
+    @staticmethod
+    def update(case_name):
+        case = CaseSubscription.query.filter_by(name=case_name).first()
+        if case:
+            if case_name in core.case.subscription.subscriptions:
+                case.subscription = json.dumps(core.case.subscription.subscriptions_as_json()[case_name])
+
 
     @staticmethod
     def from_json(name, subscription_json):
