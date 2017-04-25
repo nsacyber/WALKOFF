@@ -110,6 +110,13 @@ def list_all_apps_and_actions():
     return json.dumps(core.config.config.function_info['apps'])
 
 
+@app.route('/widgets', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/apps'])
+def list_all_widgets():
+    return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})
+
+
 def write_playbook_to_file(playbook_name):
     write_format = 'w' if sys.version_info[0] == 2 else 'wb'
     playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))

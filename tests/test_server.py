@@ -39,6 +39,13 @@ class TestServer(ServerTestCase):
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response['apps'], expected_apps)
 
+    def test_list_widgets(self):
+        expected = {'HelloWorld': ['testWidget', 'testWidget2']}
+        response = self.app.get('/widgets', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected)
+
     def test_get_all_list_actions(self):
         expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause']}
         response = self.app.get('/apps/actions', headers=self.headers)
