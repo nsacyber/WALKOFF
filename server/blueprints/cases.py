@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Blueprint, request
+from flask import Blueprint, request, Response
 from flask_security import auth_token_required, roles_accepted
 from server.flaskserver import running_context
 import core.case.database as case_database
@@ -11,6 +11,7 @@ from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
 import core.config.config
 import core.config.paths
 from core.helpers import construct_workflow_name_key
+from gevent.event import Event, AsyncResult
 
 
 cases_page = Blueprint('cases_page', __name__)
@@ -279,3 +280,41 @@ def crud_subscription(case_name, action):
 @roles_accepted(*running_context.user_roles['/cases'])
 def display_subscriptions():
     return json.dumps(case_subscription.subscriptions_as_json())
+
+
+__case_event_json = AsyncResult()
+__sync_signal = Event()
+
+
+def __case_event_stream():
+    while True:
+        data = __case_event_json.get()
+        yield 'data: %s\n\n' % data
+        __sync_signal.wait()
+
+
+def __push_to_case_stream(sender, **kwargs):
+    out = {'name': sender.name,
+           'ancestry': sender.ancestry}
+    if 'data' in kwargs:
+        out['data'] = kwargs['data']
+    __case_event_json.set(json.dumps(out))
+    __sync_signal.set()
+    __sync_signal.clear()
+
+
+def setup_case_stream():
+    from blinker import NamedSignal
+    import core.case.callbacks as callbacks
+    signals = [getattr(callbacks, field) for field in dir(callbacks) if (not field.startswith('__')
+                                                                             and isinstance(getattr(callbacks, field),
+                                                                                            NamedSignal))]
+    for signal in signals:
+        signal.connect(__push_to_case_stream)
+
+
+@cases_page.route('/events', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def stream_workflow():
+    return Response(__case_event_stream(), mimetype='text/event-stream')
