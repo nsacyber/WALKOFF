@@ -256,17 +256,17 @@ $(function(){
     var sse1 = new EventSource('apps/HelloWorld/stream/counter');
     var sse2 = new EventSource('apps/HelloWorld/stream/random-number');
 
-    var s = document.getElementById('counter_stream')
+    var s1 = document.getElementById('counter_stream')
     sse1.onmessage = function(message) {
-        s.innerHTML = '<li>'+message.data+'</li>'
+        s1.innerHTML = '<li>'+message.data+'</li>'
     }
     sse1.onerror = function(){
         sse1.close();
     }
 
-    var s = document.getElementById('rand_stream')
+    var s2 = document.getElementById('rand_stream')
     sse2.onmessage = function(message) {
-        s.innerHTML = '<li>'+message.data+'</li>'
+        s2.innerHTML = '<li>'+message.data+'</li>'
     }
     sse2.onerror = function(){
         sse2.close();

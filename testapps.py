@@ -1,5 +1,6 @@
 import unittest
 import os
+import sys
 import argparse
 import importlib
 from core.helpers import list_apps
@@ -16,13 +17,13 @@ def cmd_line():
 
 
 def get_tests(app_name):
-    tests_path = os.path.join(apps_path, app_name, 'test')
+    tests_path = os.path.join(apps_path, app_name, 'tests')
     if os.path.isdir(tests_path):
         test_files = [os.path.splitext(f)[0]
                       for f in os.listdir(tests_path) if (os.path.isfile(os.path.join(tests_path, f))
                                                           and f.endswith('.py')
                                                           and f != '__init__.py')]
-        test_modules = [importlib.import_module('apps.{0}.test.{1}'.format(app_name, test_module))
+        test_modules = [importlib.import_module('apps.{0}.tests.{1}'.format(app_name, test_module))
                         for test_module in test_files]
         return test_modules
     else:
@@ -36,19 +37,22 @@ def test_app(app_name):
         suite = unittest.TestSuite()
         suite.addTests([unittest.TestLoader().loadTestsFromModule(test_module)
                         for test_module in test_modules])
-        unittest.TextTestRunner(verbosity=1).run(suite)
+        return unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
     elif len(test_modules) == 0:
         print("App {0} has no tests. Don't be that person. Write your tests.")
+        return True
 
 if __name__ == '__main__':
     cmd_args = cmd_line()
     all_apps = list_apps()
+    ret = True
     if cmd_args.all:
         for app in all_apps:
-            test_app(app)
+            ret &= test_app(app)
     else:
         for app in cmd_args.apps:
             if app in all_apps:
-                test_app(app)
+                ret &= test_app(app)
             else:
                 print('App {0} not found!'.format(app))
+    sys.exit(not ret)

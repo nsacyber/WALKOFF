@@ -1,14 +1,17 @@
 import unittest
+import sys
 from multiprocessing import freeze_support
 from tests import suites as test_suites
 
 if __name__ == '__main__':
     freeze_support()
+    ret = True
     print('Testing Workflows:')
-    unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite)
+    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite).wasSuccessful()
     print('\nTesting Execution:')
-    unittest.TextTestRunner(verbosity=1).run(test_suites.execution_suite)
+    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.execution_suite).wasSuccessful()
     print('\nTesting Cases:')
-    unittest.TextTestRunner(verbosity=1).run(test_suites.case_suite)
+    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.case_suite).wasSuccessful()
     print('\nTesting Server:')
-    unittest.TextTestRunner(verbosity=1).run(test_suites.server_suite)
+    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.server_suite).wasSuccessful()
+    sys.exit(not ret)

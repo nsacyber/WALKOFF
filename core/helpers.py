@@ -2,6 +2,7 @@ import importlib
 import sys
 import os
 from xml.etree import ElementTree
+import pkgutil
 
 import core.config.paths
 
@@ -66,8 +67,9 @@ def import_app_main(app_name):
 def list_apps(path=None):
     if path is None:
         path = core.config.paths.apps_path
-    return [f for f in os.listdir(core.config.paths.apps_path) if (os.path.isdir(os.path.join(core.config.paths.apps_path, f))
-                                            and not f.startswith('__'))]
+    return [f for f in os.listdir(core.config.paths.apps_path)
+            if (os.path.isdir(os.path.join(core.config.paths.apps_path, f))
+                and not f.startswith('__'))]
 
 
 def list_class_functions(class_name):
@@ -107,7 +109,20 @@ def extract_workflow_name(workflow_key, playbook_name=''):
     else:
         return __workflow_key_separator.join(workflow_key.split(__workflow_key_separator)[1:])
 
-def combineDicts(x, y):
+
+def combine_dicts(x, y):
     z = x.copy()
     z.update(y)
     return z
+
+
+def import_submodules(package, recursive=False):
+    if isinstance(package, str):
+        package = importlib.import_module(package)
+    results = {}
+    for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+        full_name = '{0}.{1}'.format(package.__name__, name)
+        results[full_name] = importlib.import_module(full_name)
+        if recursive and is_package:
+            results.update(import_submodules(full_name))
+    return results

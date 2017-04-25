@@ -86,6 +86,10 @@ class ServerTestCase(unittest.TestCase):
             response = self.app.get(url, **kwargs)
         elif method.lower() == 'post':
             response = self.app.post(url, **kwargs)
+        elif method.lower() == 'put':
+            response = self.app.put(url, **kwargs)
+        elif method.lower() == 'delete':
+            response = self.app.delete(url, **kwargs)
         else:
             raise ValueError('method must be either get or post')
         self.assertEqual(response.status_code, status_code)
@@ -94,8 +98,14 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(response['status'], status)
         return response
 
+    def get_with_status_check(self, url, status, status_code=200, **kwargs):
+        return self.__assert_url_access(url, 'get', status, status_code, **kwargs)
+
     def post_with_status_check(self, url, status, status_code=200, **kwargs):
         return self.__assert_url_access(url, 'post', status, status_code, **kwargs)
 
-    def get_with_status_check(self, url, status, status_code=200, **kwargs):
-        return self.__assert_url_access(url, 'get', status, status_code, **kwargs)
+    def put_with_status_check(self, url, status, status_code=200, **kwargs):
+        return self.__assert_url_access(url, 'put', status, status_code, **kwargs)
+
+    def delete_with_status_check(self, url, status, status_code=200, **kwargs):
+        return self.__assert_url_access(url, 'delete', status, status_code, **kwargs)

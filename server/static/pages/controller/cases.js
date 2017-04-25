@@ -7,7 +7,7 @@ function formatCasesForJSTree(cases){
 }
 
 function resetSubscriptionModal(){
-    $("#modalObjectTypeSelection > option").remove();
+//    $("#modalObjectTypeSelection > option").remove();
     $(".objectSelection > option").remove();
     $(".subscriptionSelection").empty()
 }
@@ -24,22 +24,22 @@ function createSubscriptionModal(){
                         width:500,
                         open:
                             function(event, ui){
-                                for(key in window.availableSubscriptions){
-                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
-                                }
-                                selected_objectType = objectTypeSelection.first()[0].value;
-                                formatModal(window.availableSubscriptions, selected_objectType);
+//                                for(key in window.availableSubscriptions){
+//                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
+//                                }
+//                                selected_objectType = objectTypeSelection.first()[0].value;
+//                                formatModal(window.availableSubscriptions, selected_objectType);
                         },
                         close: function(event, ui){
-                            $(this).dialog("destroy");
-                            $("#editSubscriptionDialog").remove();
-                            window.editCaseSubscriptionDialog = null;
+                            //$(this).dialog("destroy");
+                            //$("#editSubscriptionDialog").empty();
+                            //window.editCaseSubscriptionDialog = null;
                         }
                     });
     return editSubscriptionDialog;
 }
 
-function formatAncestry(element, fields){
+function formatAncestry(element, fields, previous){
     switch(fields[field]){
         case "controller":
             formatControllerSubscriptions(element, availableSubscriptions[fields[field]]);
@@ -48,7 +48,7 @@ function formatAncestry(element, fields){
             formatPlaybookSubscriptions(element, availableSubscriptions[fields[field]]);
         break;
         case "workflow":
-            formatWorkflowSubscriptions(element, availableSubscriptions[fields[field]]);
+            formatWorkflowSubscriptions(element, availableSubscriptions[fields[field]], previous);
         break;
         case "step":
             formatStepSubscriptions(element, availableSubscriptions[fields[field]]);
@@ -71,10 +71,13 @@ function formatModal(elements, selected_objectType){
     var id, element;
     for(field in fields){
         id = "#" + fields[field] +"ObjectSelection";
-        element = $(id).get(0);
-        formatAncestry(element, fields);
+        element = $(id);
+        element.append("<option data-type='none'>Select " + fields[field] + "</option>");
+
     }
+    //formatAncestry($("#controllerObjectSelection"), ["controller"]);
     formatSubscriptionList(availableSubscriptions[selected_objectType]);
+
 }
 
 function openEditCaseModal(){
@@ -104,13 +107,13 @@ function casesCustomMenu(node){
                 var selected_case = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop());
                 var id = selected_case.children.length;
                 $("#casesTree").jstree("create_node", selected_case,  {"id": "sub_"+id, "text" : "new subscription " + id, "type":"subscription"}, false, false);
+                addNewSubscription(selected_case.text, id);
 
             }
         },
         editSubscription: {
             label: "Edit Subscription",
             action: function () {
-                console.log(typeof editCaseSubscriptionDialog);
                 if(typeof window.editCaseSubscriptionDialog === 'undefined' || window.editCaseSubscriptionDialog === null){
                     createSubscriptionModal();
                 }
@@ -118,14 +121,26 @@ function casesCustomMenu(node){
 
             }
         },
+        removeSubscription:{
+            label: "Remove Subscription",
+            action: function () {
+                var selected_subscription = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop());
+                r = removeSelectedSubscription(selected_subscription.text);
+                if(r["status"] == 1){
+                    $("#casesTree").jstree().delete_node([selected_subscription]);
+                }
+            }
+        },
     };
 
     if (node.original.type != "case") {
         delete items.addSubscription;
         delete items.editCase;
+        delete items.removeCase;
     }
     else if(node.original.type != "subscription"){
         delete items.editSubscription;
+        delete items.removeSubscription;
     }
     return items;
 }

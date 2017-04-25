@@ -4,6 +4,7 @@ from concurrent import futures
 from copy import deepcopy
 from os import sep
 from xml.etree import cElementTree
+import uuid
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
@@ -21,26 +22,30 @@ _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
 pool = None
 workflows = None
-
+threading_is_initialized = False
 
 def initialize_threading():
     global pool
     global workflows
+    global threading_is_initialized
 
     workflows = []
 
     pool = futures.ThreadPoolExecutor(max_workers=core.config.config.num_threads)
+    threading_is_initialized = True
 
 
 def shutdown_pool():
     global pool
     global workflows
+    global threading_is_initialized
 
     for future in futures.as_completed(workflows):
         future.result(timeout=core.config.config.threadpool_shutdown_timeout_sec)
     pool.shutdown(wait=False)
 
-    workflows = {}
+    workflows = []
+    threading_is_initialized = False
 
 
 def execute_workflow_worker(workflow, start, subs):
@@ -64,6 +69,7 @@ class Controller(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
+        self.paused_workflows = {}
 
     def reconstruct_ancestry(self):
         for key in self.workflows:
@@ -187,15 +193,26 @@ class Controller(object):
         for key in [name for name in self.workflows.keys() if name.playbook == old_playbook]:
             self.update_workflow_name(old_playbook, key.workflow, new_playbook, key.workflow)
 
+    def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        if workflow:
+            for step in steps:
+                workflow.breakpoint_steps.append(step)
+
     def execute_workflow(self, playbook_name, workflow_name, start='start'):
         global pool
         global workflows
+        global threading_is_initialized
 
         key = _WorkflowKey(playbook_name, workflow_name)
         workflow = self.workflows[key]
         subs = deepcopy(subscription.subscriptions)
-        workflows.append(pool.submit(execute_workflow_worker, workflow, start, subs))
 
+        #If threading has not been initialized, initialize it.
+        if not threading_is_initialized:
+            initialize_threading()
+
+        workflows.append(pool.submit(execute_workflow_worker, workflow, start, subs))
         callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
@@ -205,11 +222,11 @@ class Controller(object):
         return None
 
     def get_all_workflows_by_playbook(self, playbook_name):
-        workflows = []
+        _workflows = []
         for key in self.workflows.keys():
             if key.playbook == playbook_name:
-                workflows.append(self.workflows[key].name)
-        return workflows
+                _workflows.append(self.workflows[key].name)
+        return _workflows
 
     def playbook_to_xml(self, playbook_name):
         all_workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
@@ -225,16 +242,39 @@ class Controller(object):
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         workflow_copy = deepcopy(workflow)
         workflow_copy.playbook_name = new_playbook_name
-        workflow_copy.name = new_workflow_name
+        workflow_copy.name = construct_workflow_name_key(new_playbook_name, new_workflow_name)
 
-        key = _WorkflowKey(workflow_copy.playbook_name, workflow_copy.name)
+        key = _WorkflowKey(new_playbook_name, new_workflow_name)
         self.workflows[key] = workflow_copy
         self.workflows[key].reconstruct_ancestry([self.name])
 
     def copy_playbook(self, old_playbook_name, new_playbook_name):
-        for key in [workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
-            p,wf = key
-            self.copy_workflow(old_playbook_name, new_playbook_name, wf, wf)
+        for workflow in [workflow.workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
+            self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
+
+    def pause_workflow(self, playbook_name, workflow_name):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        wf_key = _WorkflowKey(playbook_name, workflow_name)
+        self.paused_workflows[wf_key]=uuid.uuid4()
+        if workflow:
+            workflow.pause()
+        return self.paused_workflows[wf_key].hex
+
+    def resume_workflow(self, playbook_name, workflow_name, validate_uuid):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        wf_key = _WorkflowKey(playbook_name, workflow_name)
+        if workflow:
+            if validate_uuid == self.paused_workflows[wf_key].hex:
+                workflow.resume()
+                return "success"
+            else:
+                return "invalid UUID"
+        return "error: invalid playbook and/or workflow name"
+
+    def resume_breakpoint_step(self, playbook_name, workflow_name):
+        workflow = self.get_workflow(playbook_name, workflow_name)
+        if workflow:
+            workflow.resume_breakpoint_step()
 
     # Starts active execution
     def start(self):

@@ -6,11 +6,11 @@ window.editSubscriptionDialog = defaultSubscriptionDialog.dialog({
                     width:500,
                     open:
                         function(event, ui){
-                            for(key in window.availableSubscriptions){
-                                objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
-                            }
-                            selected_objectType = objectTypeSelection.first()[0].value;
-                            formatModal(window.availableSubscriptions, selected_objectType);
+//                            for(key in window.availableSubscriptions){
+//                                objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
+//                            }
+//                            selected_objectType = objectTypeSelection.first()[0].value;
+//                            formatModal(window.availableSubscriptions, selected_objectType);
                     },
                     close: function(event, ui){
                         $(this).dialog("destroy");
@@ -30,7 +30,10 @@ editCaseDialog = $("#editCaseDialog").dialog({
 selected_objectType = null;
 
 objectSelectionDiv = $(document).find("#objectSelectionDiv");
-objectTypeSelection = $(document).find("#modalObjectTypeSelection");
+//objectTypeSelection = $(document).find("#modalObjectTypeSelection");
+
+//Keeps track of the current event object
+Window.currentSelection = null;
 
 availableSubscriptions = function () {
         var tmp = null;
@@ -104,13 +107,14 @@ $("#addCase").on("click", function(){
     addCase(name);
 });
 
-$("#modalObjectTypeSelection").on("change", function(){
-    console.log("Dialog Change");
-    $(".objectSelection > option").remove();
-    $(".subscriptionSelection").empty();
-    selected_objectType = this.value;
-    formatModal(availableSubscriptions,selected_objectType);
-});
+//$("#modalObjectTypeSelection").on("change", function(){
+//    //$(".objectSelection").parent().show();
+//    //$(".objectSelection > option").remove();
+//    $(".subscriptionSelection").empty();
+//    selected_objectType = this.value;
+//    formatModal(availableSubscriptions,selected_objectType);
+//});
+
 
 editSubscriptionDialog.on("dialogclose", function(event, ui){
     resetSubscriptionModal();
@@ -120,3 +124,68 @@ objectSelectionDiv.on("change", '.objectSelection', function(){
     getSelectedObjects();
 });
 
+$("#submitForm").on("click", function(){
+    var selectedSub = $('#casesTree').jstree().get_selected();
+    var selectedCase =  $("#casesTree").jstree().get_node($("#casesTree").jstree().get_parent(selectedSub)).text;
+    console.log(selectedCase);
+    var ancestryForm = $("#ancestryAjaxForm");
+    var inputs = $(".container").find("input").toArray();
+    inputs.shift();
+    $.each(inputs, function(i, e){
+        var elem = $("<li></li>");
+        elem.append($(e).clone());
+        $("#ancestryAjaxForm").append(elem);
+    });
+
+
+    var selectedEvents = getCheckedEvents();
+    console.log(selectedEvents);
+    $.each(selectedEvents, function(i, e){
+        var elem = $("<li></li>");
+        var eventInput = $("<input type='text'></input>");
+        eventInput.attr("name", "events-" + i);
+        eventInput.attr("value", e);
+        elem.append(eventInput);
+        $("#ancestryAjaxForm").append(elem);
+    });
+    console.log(ancestryForm.serialize());
+    r = editSubscription(selectedCase, ancestryForm.serialize(), selectedEvents);
+    console.log(r);
+    window.editSubscriptionDialog.dialog("close");
+});
+
+
+objects = Object.keys(availableSubscriptions);
+$('.objectSelectionDiv').each(function() {
+    jQuery(this).repeatable_fields({
+        wrapper: 'table',
+        container: 'tbody',
+        is_sortable: false,
+        row_count_placeholder:'$rowCount',
+        after_add: function(e){
+            var index = $(e).children().length-2;
+            if(index < 7){
+                var key = objects[index];
+                if(typeof key !== "undefined"){
+                    Window.currentSelection = objects[index];
+                    $(e).children().eq(index+1).find("td.rowLabel").html(key);
+                    $(e).children().eq(index+1).find("input").attr("name", "ancestry-" + index)
+                    $(e).children().eq(index+1).find("input").attr("id", "ancestry-" + (index))
+                }
+                $(".subscriptionSelection").empty();
+                formatSubscriptionList(availableSubscriptions[Window.currentSelection]);
+            }
+            else{
+                $(e).children().eq(index+1).remove();
+            }
+        },
+        after_remove: function(e){
+            var index = $(e).children().length-2;
+            if(index <= 7){
+                Window.currentSelection = objects[index];
+                $(".subscriptionSelection").empty();
+                formatSubscriptionList(availableSubscriptions[Window.currentSelection]);
+            }
+        }
+    });
+});

@@ -84,6 +84,14 @@ class Subscription(object):
                 "subscriptions": {str(name): subscription.as_json()
                                   for name, subscription in self.subscriptions.items()}}
 
+    @staticmethod
+    def from_json(json_in):
+        events = json_in['events'] if 'events' in json_in else None
+        _subscriptions = json_in['subscriptions'] if 'subscriptions' in json_in else None
+        if _subscriptions is not None:
+            _subscriptions = {sub_name: Subscription.from_json(sub) for sub_name, sub in _subscriptions.items()}
+        return Subscription(events=events, subscriptions=_subscriptions)
+
     def __repr__(self):
         return str({'events': self.events,
                     'subscriptions': self.subscriptions})
@@ -110,6 +118,18 @@ class CaseSubscriptions(object):
         return {"subscriptions": {str(name): subscription.as_json()
                                   for name, subscription in self.subscriptions.items()},
                 "global_subscriptions": self.global_subscriptions.as_json()}
+
+    @staticmethod
+    def from_json(json_in):
+        _subscriptions = json_in['subscriptions'] if 'subscriptions' in json_in else None
+        if _subscriptions is not None:
+            _subscriptions = {subscription_name: Subscription.from_json(subscription)
+                              for subscription_name, subscription in _subscriptions.items()}
+
+        global_subscriptions = json_in['global_subscriptions'] if 'global_subscriptions' in json_in else None
+        if global_subscriptions is not None:
+            global_subscriptions = GlobalSubscriptions.from_json(global_subscriptions)
+        return CaseSubscriptions(subscriptions=_subscriptions, global_subscriptions=global_subscriptions)
 
     def __repr__(self):
         return str({'subscriptions': self.subscriptions,
@@ -177,17 +197,18 @@ def edit_subscription(case, ancestry, events):
     if case in subscriptions:
         current_subscriptions = subscriptions[case].subscriptions
         ancestry = list(ancestry[::-1])
-        ancestry_level_name = ancestry.pop()
-        while ancestry_level_name and ancestry_level_name in current_subscriptions:
-            if not ancestry:
-                current_subscriptions[ancestry_level_name].events = events
-                return True
-            else:
-                current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
-                ancestry_level_name = ancestry.pop()
-        return False
-    else:
-        return False
+        if ancestry:
+            ancestry_level_name = ancestry.pop()
+            while ancestry_level_name and ancestry_level_name in current_subscriptions:
+                if not ancestry:
+                    current_subscriptions[ancestry_level_name].events = events
+                    return True
+                else:
+                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                    ancestry_level_name = ancestry.pop()
+            return False
+        else:
+            return False
 
 
 def __construct_subscription_from_ancestry(ancestry, events):
@@ -204,23 +225,24 @@ def add_subscription(case, ancestry, events):
     if case in subscriptions:
         ancestry = list(ancestry[::-1])
         current_subscriptions = subscriptions[case].subscriptions
-        ancestry_level_name = ancestry.pop()
-        while ancestry_level_name:
-            if not current_subscriptions:
-                ancestry.append(ancestry_level_name)
-                current_subscriptions = __construct_subscription_from_ancestry(ancestry, events)
-                break
-            elif ancestry_level_name not in current_subscriptions:
-                ancestry.append(ancestry_level_name)
-                current_subscriptions[ancestry_level_name] = __construct_subscription_from_ancestry(ancestry, events)[
-                    ancestry_level_name]
-                break
+        if ancestry:
+            ancestry_level_name = ancestry.pop()
+            while ancestry_level_name:
+                if not current_subscriptions:
+                    ancestry.append(ancestry_level_name)
+                    current_subscriptions = __construct_subscription_from_ancestry(ancestry, events)
+                    break
+                elif ancestry_level_name not in current_subscriptions:
+                    ancestry.append(ancestry_level_name)
+                    current_subscriptions[ancestry_level_name] = __construct_subscription_from_ancestry(ancestry, events)[
+                        ancestry_level_name]
+                    break
+                else:
+                    current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
+                    ancestry_level_name = ancestry.pop()
             else:
-                current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
-                ancestry_level_name = ancestry.pop()
-        else:
-            # You failed to add anything if you get here
-            pass
+                # You failed to add anything if you get here
+                pass
 
 
 def remove_subscription_node(case, ancestry):

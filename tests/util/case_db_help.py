@@ -6,11 +6,11 @@ import core.case.database as case_database
 
 def setup_subscriptions_for_step(workflow_names, step_names):
     step_sub = case_subscription.Subscription(events=['FunctionExecutionSuccess'])
-    if type(step_names) == list:
+    if isinstance(step_names, list):
         step_subs = case_subscription.Subscription(subscriptions={name: step_sub for name in step_names})
     else:
         step_subs = case_subscription.Subscription(subscriptions={step_names: step_sub})
-    if type(workflow_names) == list:
+    if isinstance(workflow_names, list):
         workflow_subs = case_subscription.Subscription(subscriptions={workflow_name: step_subs
                                                                       for workflow_name in workflow_names})
     else:

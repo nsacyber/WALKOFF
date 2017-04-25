@@ -42,7 +42,6 @@ $(function(){
     var sse2 = new EventSource('apps/HelloWorld/testWidget/stream/data-1');
     var sse3 = new EventSource('apps/HelloWorld/testWidget/stream/data-2');
     sse1.onmessage = function(message) {
-
         xData.push(message.data)
         if(xData.length >= range){
           data2.splice(1, 1);

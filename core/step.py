@@ -1,6 +1,7 @@
 import json
 import sys
 from xml.etree import cElementTree
+from collections import namedtuple
 
 from jinja2 import Template, Markup
 
@@ -12,7 +13,9 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
 from core.nextstep import NextStep
+from core.widgetsignals import get_widget_signal
 
+import xml.dom.minidom as minidom
 
 class InvalidStepInputError(Exception):
     def __init__(self, app, action):
@@ -24,6 +27,8 @@ class InvalidStepActionError(Exception):
     def __init__(self, app, action):
         super(InvalidStepActionError, self).__init__()
         self.message = 'Error: Step action {0} not found for app {1}'.format(action, app)
+
+_Widget = namedtuple('Widget', ['app', 'widget'])
 
 
 class Step(ExecutionElement):
@@ -38,7 +43,9 @@ class Step(ExecutionElement):
                  errors=None,
                  parent_name='',
                  position=None,
-                 ancestry=None):
+                 ancestry=None,
+                 widgets=None,
+                 risk=0):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.raw_xml = xml
 
@@ -48,10 +55,13 @@ class Step(ExecutionElement):
             self.action = action
             self.app = app
             self.device = device
+            self.risk = risk
             self.input = inputs if inputs is not None else {}
             self.conditionals = next_steps if next_steps is not None else []
             self.errors = errors if errors is not None else []
             self.position = position if position is not None else {}
+            self.widgets = [_Widget(widget_app, widget_name)
+                            for (widget_app, widget_name) in widgets] if widgets is not None else []
             self.raw_xml = self.to_xml()
         self.output = None
         self.next_up = None
@@ -70,12 +80,16 @@ class Step(ExecutionElement):
         self.app = step_xml.find('app').text
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
+        risk_field = step_xml.find('risk')
+        self.risk = int(risk_field.text) if risk_field is not None else 0
+
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
                       for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
                        for error_step_element in step_xml.findall('error')]
+        self.widgets = [_Widget(widget.get('app'), widget.text) for widget in step_xml.findall('widgets/*')]
         position = step_xml.find('position')
         if position is None:
             self.position = {}
@@ -91,6 +105,8 @@ class Step(ExecutionElement):
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
         self.device = step_xml.find('device').text
+        risk_field = step_xml.find('risk')
+        self.risk = int(risk_field.text) if risk_field is not None else 0
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
                       for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -134,6 +150,8 @@ class Step(ExecutionElement):
             callbacks.StepInputValidated.send(self)
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
             callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+            for widget in self.widgets:
+                get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
             self.output = result
             return result
         raise InvalidStepInputError(self.app, self.action)
@@ -160,6 +178,10 @@ class Step(ExecutionElement):
         action = cElementTree.SubElement(step, 'action')
         action.text = self.action
 
+        if self.risk:
+            risk = cElementTree.SubElement(step, 'risk')
+            risk.text = str(self.risk)
+
         if self.device:
             device = cElementTree.SubElement(step, 'device')
             device.text = self.device
@@ -174,6 +196,14 @@ class Step(ExecutionElement):
         inputs = cElementTree.SubElement(step, 'input')
         for i in self.input:
             inputs.append(self.input[i].to_xml())
+
+        if self.widgets:
+            widgets = cElementTree.SubElement(step, 'widgets')
+            for widget in self.widgets:
+                widget_xml = cElementTree.SubElement(widgets, 'widget')
+                widget_xml.text = widget.widget
+                widget_xml.set('app', widget.app)
+
         for next_step in self.conditionals:
             next_xml = next_step.to_xml()
             if next_xml is not None:
@@ -183,6 +213,7 @@ class Step(ExecutionElement):
             error_xml = error.to_xml()
             if error_xml is not None:
                 step.append(error.to_xml(tag='error'))
+
         return step
 
     def __repr__(self):
@@ -190,11 +221,13 @@ class Step(ExecutionElement):
                   'action': self.action,
                   'app': self.app,
                   'device': self.device,
+                  'risk': str(self.risk),
                   'input': {key: self.input[key] for key in self.input},
                   'next': [next_step for next_step in self.conditionals],
                   'errors': [error for error in self.errors],
                   'nextUp': self.next_up,
-                  'position': self.position}
+                  'position': self.position,
+                  'widget': str([{'app': widget.app, 'name': widget.widget} for widget in self.widgets])}
         if self.output:
             output["output"] = self.output
         return str(output)
@@ -204,7 +237,9 @@ class Step(ExecutionElement):
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
+                  "risk": str(self.risk),
                   "input": {str(key): self.input[key].as_json() for key in self.input},
+                  'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
                   "position": {pos: str(val) for pos, val in self.position.items()}}
         if self.output:
             output["output"] = str(self.output)
@@ -219,15 +254,24 @@ class Step(ExecutionElement):
     @staticmethod
     def from_json(json_in, position, parent_name='', ancestry=None):
         device = json_in['device'] if 'device' in json_in else ''
+        risk = json_in['risk'] if 'risk' in json_in else 0
+        widgets = []
+        if 'widgets' in json_in:
+            widgets = [(widget['app'], widget['name'])
+                       for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
+
         step = Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
                     device=device,
+                    risk=risk,
                     inputs={arg_name: arguments.Argument.from_json(arg_element)
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,
                     position=position,
+                    widgets=widgets,
                     ancestry=ancestry)
+
         if json_in['next']:
             step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                                  for next_step in json_in['next'] if next_step]
