@@ -20,6 +20,10 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .topLevelList + ol{
   display:none;
 }
+img.media-object.image{
+    width:70%;
+    height:30%;
+}
 .topLevelList + h5{
   display:none;
 }
@@ -61,15 +65,50 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   <div class="w3-content">
     <div class="w3-twothird">
       <h1>Devices Tutorial</h1>
-         <h5 class="w3-padding-32">The fourth tab down in the sidebar on the left side of the page is the "Devices" tab, which allows you to manage the various apps and devices. Each app
-          has one or more devices associated with it.</a></h5>
-        <h5 class="w3-padding-32">There are three different views on this page: the Apps view, the Devices view, and the Edit Device ("Parameters") view. The "Apps" panel shows a list of 
-          all the apps that have been loaded into WALKOFF. If you select an app, then the Devices panel below will show the device(s) associated with that app.</a></h5>
-        <h5 class="w3-padding-32">The Devices panel shows the devices that are associated with the highlighted app. You have the ability of adding a new device, removing a device, or 
-          editing a device. To add a new device, fill out the "Parameters" form on the right side of the page. You have the option of entering in the name of the device, a username and
-          password of the device, as well as the IP Address and port of the device, if applicable. If no name is given, a default one will be provided. You may also select an already
-          created device, edit it the same way you added a new device (i.e. via the "Paramaters" panel), and then click the "Edit Device" button once you are done to save your changes.
-          Lastly, to remove a device from an app, click on the "Remove Device" button after selecting the device to be removed.</a></h5>
+        <ul type="1" class="media-list">
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/deviceManagement/addDevice.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Add device</h4>
+                  <ol type="1">
+                      <li>Select the app you want to modify</li>
+                      <li>Fill out the parameters form</li>
+                      <li>Click the add device button</li>
+                  </ol>
+                </div>
+            </li>
+            <br/>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/deviceManagement/editDevice.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Add device</h4>
+                  <ol type="1">
+                      <li>Select the app you want to modify</li>
+                      <li>Select the device you want to modify</li>
+                      <li>Fill out the parameter form</li>
+                      <li>Click Edit</li>
+                  </ol>
+                </div>
+            </li>
+            <br/>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/deviceManagement/removeDevice.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Remove device</h4>
+                  <ol type="1">
+                      <li>Select the app you that contains the device to remove</li>
+                      <li>Select the device you want to remove</li>
+                      <li>Click the Remove button</li>
+                  </ol>
+                </div>
+            </li>
+        </ul>
     </div>
 
    <div class="w3-third w3-center">
