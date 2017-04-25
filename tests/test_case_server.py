@@ -556,12 +556,10 @@ class TestCaseServer(ServerTestCase):
 
         bad1 = {"ancestry_bad": ["sub8", "add1"],
                 "events": ["a", "b"]}
-        bad2 = {"ancestry": ["sub8", "add1"],
-                "events_bad": ["a", "b"]}
         bad3 = {"ancestry_bad": ["sub8", "add1"],
                 "events_bad": ["a", "b"]}
 
-        for bad_json in [bad1, bad2, bad3]:
+        for bad_json in [bad1, bad3]:
             self.post_with_status_check('/cases/subscriptions/case1/subscription/add',
                                         'Error: malformed JSON',
                                         data=json.dumps(bad_json),

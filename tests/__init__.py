@@ -1,6 +1,7 @@
 __all__ = ['test_app_blueprint',
            'test_argument',
            'test_case_database',
+           'test_case_config_db',
            'test_case_server',
            'test_case_subscriptions',
            'test_execution_element',

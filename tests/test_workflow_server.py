@@ -2,8 +2,11 @@ import json
 from os import path
 from tests.util.servertestcase import ServerTestCase
 from tests.util.assertwrappers import orderless_list_compare
+from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from datetime import datetime
 from server import flaskserver as flask_server
 from core import helpers
+import core.case.subscription
 import os
 import core.config.paths
 
@@ -650,3 +653,46 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertEqual(len(flask_server.running_context.controller.get_all_playbooks()), 1)
         self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
+
+    def test_execute_workflow_playbook_dne(self):
+        self.post_with_status_check('/playbook/junkPlay/helloWorldWorkflow/execute',
+                                    'error: invalid workflow name',
+                                    headers=self.headers)
+
+    def test_execute_workflow_workflow_dne(self):
+        self.post_with_status_check('/playbook/test/junkWorkflow/execute',
+                                    'error: invalid workflow name',
+                                    headers=self.headers)
+
+    def test_execute_worfklow(self):
+        workflow_name = helpers.construct_workflow_name_key('test', 'helloWorldWorkflow')
+        setup_subscriptions_for_step(workflow_name, ['start'])
+        start = datetime.utcnow()
+        self.post_with_status_check('/playbook/test/helloWorldWorkflow/execute',
+                                    'success',
+                                    headers=self.headers)
+        steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
+        self.assertEqual(len(steps), 1)
+        step = steps[0]
+        ancestry = step['ancestry'].split(',')
+        self.assertEqual(ancestry[-1], "start")
+        self.assertEqual(step['data']['result'], "REPEATING: Hello World")
+
+    def test_execute_worfklow_in_memory(self):
+        workflow_name = 'test_name'
+        data = {"playbook": 'basicWorkflow',
+                "template": 'helloWorldWorkflow'}
+        self.post_with_status_check('/playbook/basicWorkflow/{0}/add'.format(workflow_name), 'success',
+                                    data=data, headers=self.headers)
+        workflow_name = helpers.construct_workflow_name_key('basicWorkflow', 'test_name')
+        setup_subscriptions_for_step(workflow_name, ['start'])
+        start = datetime.utcnow()
+        self.post_with_status_check('/playbook/basicWorkflow/test_name/execute',
+                                    'success',
+                                    headers=self.headers)
+        steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
+        self.assertEqual(len(steps), 1)
+        step = steps[0]
+        ancestry = step['ancestry'].split(',')
+        self.assertEqual(ancestry[-1], "start")
+        self.assertEqual(step['data']['result'], "REPEATING: Hello World")
