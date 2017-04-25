@@ -3,6 +3,7 @@
         <div class="header"><span id="title">{{widget['app']}} {{widget['widget']}}</span><a class='delete' href='#'>&times;</a></div>
         <div id="contentWrapper">
             <script type="application/javascript">
+                    base = $("<div></div>");
                     $.ajax({
                         url:'/apps/{{ widget['app'] }}/{{ widget['widget'] }}/display',
                         data:{"page": "index.html", "key-0":"name", "value-0":"testing"},
@@ -10,14 +11,20 @@
                         type:"POST",
                         success: function(e){
                             data = e;
-                            base = $("<div></div>");
-                            base.append(data);
-                            $("#widgetContent").append(base);
+
+                            var scripts = base.find('script');
+                            for(var x=0; x < scripts.length; x++){
+                                $.getScript($(scripts[x]).attr("src"));
+                            }
                         },
                         error: function(e){
                             $("#widgetContent").html("<p> Widget could not be Loaded! </p>");
                         }
+                    }).done(function(html){
+                        base.append(html);
+                        $("#widgetContent").append(base);
                     });
+
             </script>
             <div id="widgetContent"></div>
         </div>
