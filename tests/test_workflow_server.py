@@ -9,6 +9,8 @@ from core import helpers
 import core.case.subscription
 import os
 import core.config.paths
+from gevent.event import Event
+from core.case.callbacks import WorkflowShutdown
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -664,13 +666,21 @@ class TestWorkflowServer(ServerTestCase):
                                     'error: invalid workflow name',
                                     headers=self.headers)
 
-    def test_execute_worfklow(self):
+    def test_execute_workflow(self):
+        sync = Event()
         workflow_name = helpers.construct_workflow_name_key('test', 'helloWorldWorkflow')
         setup_subscriptions_for_step(workflow_name, ['start'])
         start = datetime.utcnow()
+
+        def wait_for_completion(sender, **kwargs):
+            sync.set()
+
+        WorkflowShutdown.connect(wait_for_completion)
+
         self.post_with_status_check('/playbook/test/helloWorldWorkflow/execute',
                                     'success',
                                     headers=self.headers)
+        sync.wait(timeout=10)
         steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
         step = steps[0]
@@ -678,18 +688,27 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(ancestry[-1], "start")
         self.assertEqual(step['data']['result'], "REPEATING: Hello World")
 
-    def test_execute_worfklow_in_memory(self):
+    def test_execute_workflow_in_memory(self):
+        sync = Event()
         workflow_name = 'test_name'
         data = {"playbook": 'basicWorkflow',
                 "template": 'helloWorldWorkflow'}
+
+        def wait_for_completion(sender, **kwargs):
+            sync.set()
+
+        WorkflowShutdown.connect(wait_for_completion)
+
         self.post_with_status_check('/playbook/basicWorkflow/{0}/add'.format(workflow_name), 'success',
                                     data=data, headers=self.headers)
+
         workflow_name = helpers.construct_workflow_name_key('basicWorkflow', 'test_name')
         setup_subscriptions_for_step(workflow_name, ['start'])
         start = datetime.utcnow()
         self.post_with_status_check('/playbook/basicWorkflow/test_name/execute',
                                     'success',
                                     headers=self.headers)
+        sync.wait(timeout=10)
         steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
         step = steps[0]

@@ -108,48 +108,48 @@ WorkflowExecutionStart, __workflow_execution_start_callback = __construct_loggin
                                                                                          'Workflow Execution Start',
                                                                                          'Workflow execution started')
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
-                                                                                 'InstanceCreated',
+                                                                                 'App Instance Created',
                                                                                  'New app instance created')
 StepExecutionSuccess, __step_execution_success_callback = __construct_logging_signal('Workflow',
-                                                                                     'StepExecutionSuccess',
+                                                                                     'Step Execution Success',
                                                                                      'Step executed successfully')
 StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Workflow',
-                                                                                 'StepExecutionError',
+                                                                                 'Step Execution Error',
                                                                                  'Step executed with error')
-NextStepFound, __next_step_found_callback = __construct_logging_signal('Workflow', 'NextStepFound', 'Next step found')
+NextStepFound, __next_step_found_callback = __construct_logging_signal('Workflow', 'Next Step Found', 'Next step found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
-                                                                            'WorkflowShutdown',
+                                                                            'Workflow Shutdown',
                                                                             'Workflow shutdown')
 
 # Step callbacks
 
 FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Step',
-                                                                                    'FunctionExecutionSuccess',
+                                                                                    'Function Execution Success',
                                                                                     'Function executed successfully')
 
 StepInputValidated, __step_input_validated_callback = __construct_logging_signal('Step',
-                                                                                 'InputValidated',
+                                                                                 'Input Validated',
                                                                                  'Input successfully validated')
 StepInputInvalid, __step_input_invalid_callback = __construct_logging_signal('Step',
-                                                                             'InputInvalid',
+                                                                             'Input Invalid',
                                                                              'Input is invalid')
 ConditionalsExecuted, __conditionals_executed_callback = __construct_logging_signal('Step',
-                                                                                    'ConditionalsExecuted',
+                                                                                    'Conditionals Executed',
                                                                                     'Conditionals executed')
 
 # Next step callbacks
-NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step', 'NextStepTaken', 'Next step taken')
+NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step', 'Next Step Taken', 'Next step taken')
 NextStepNotTaken, __next_step_not_taken_callback = __construct_logging_signal('Next Step',
-                                                                              'NextStepNotTaken',
+                                                                              'Next Step Not Taken',
                                                                               'Next step not taken')
 
 # Flag callbacks
-FlagArgsValid, __flag_args_valid_callback = __construct_logging_signal('Flag', 'FlagArgsValid', 'Flag arguments valid')
+FlagArgsValid, __flag_args_valid_callback = __construct_logging_signal('Flag', 'Flag Arguments Valid', 'Flag arguments valid')
 FlagArgsInvalid, __flag_args_invalid_callback = __construct_logging_signal('Flag',
-                                                                           'FlagArgsInvalid',
+                                                                           'Flag Arguments Invalid',
                                                                            'Flag arguments invalid')
 
 # Filter callbacks
-FilterSuccess, __filter_success_callback = __construct_logging_signal('Filter', 'FilterSuccess', 'Filter success')
-FilterError, __filter_error_callback = __construct_logging_signal('Filter', 'FilterError', 'Filter error')
+FilterSuccess, __filter_success_callback = __construct_logging_signal('Filter', 'Filter Success', 'Filter success')
+FilterError, __filter_error_callback = __construct_logging_signal('Filter', 'Filter Error', 'Filter error')

@@ -5,7 +5,7 @@ import core.case.database as case_database
 
 
 def setup_subscriptions_for_step(workflow_names, step_names, step_events=None, workflow_events=None):
-    step_events = step_events if step_events is not None else ['FunctionExecutionSuccess']
+    step_events = step_events if step_events is not None else ['Function Execution Success']
     workflow_events = workflow_events if workflow_events is not None else []
     step_sub = case_subscription.Subscription(events=step_events)
     if isinstance(step_names, list):

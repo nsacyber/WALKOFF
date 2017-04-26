@@ -26,4 +26,5 @@ __all__ = ['test_app_blueprint',
            'test_instance',
            'test_controller',
            'test_widget_signals',
-           'test_metrics']
+           'test_metrics',
+           'test_metrics_server']
