@@ -11,14 +11,17 @@
   ],
   "playbook": [],
   "workflow": [
-    "Workflow Instance Created",
+    "Workflow Execution Start",
+    "App Instance Created",
     "Step Execution Success",
+    "Step Execution Error",
     "Next Step Found",
     "Workflow Shutdown"
   ],
   "step": [
     "Function Execution Success",
     "Input Validated",
+    "Input Invalid",
     "Conditionals Executed"
   ],
   "nextstep": [

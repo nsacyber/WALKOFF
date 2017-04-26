@@ -29,8 +29,8 @@ class TestExecutionEvents(unittest.TestCase):
         subs = {'testExecutionEventsController':
                     Subscription(subscriptions=
                                  {workflow_name:
-                                      Subscription(events=["InstanceCreated", "StepExecutionSuccess",
-                                                           "NextStepFound", "WorkflowShutdown"])})}
+                                      Subscription(events=["App Instance Created", "Step Execution Success",
+                                                           "Next Step Found", "Workflow Shutdown"])})}
 
         case_subscription.set_subscriptions(
             {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
@@ -61,8 +61,8 @@ class TestExecutionEvents(unittest.TestCase):
                 Subscription(subscriptions=
                 {'start':
                     Subscription(
-                        events=["FunctionExecutionSuccess", "InputValidated",
-                                "ConditionalsExecuted"])})})}
+                        events=["Function Execution Success", "Input Validated",
+                                "Conditionals Executed"])})})}
 
         case_subscription.set_subscriptions(
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
@@ -87,10 +87,10 @@ class TestExecutionEvents(unittest.TestCase):
         c = controller.Controller(name="testStepFFKEventsController")
         c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
 
-        filter_sub = Subscription(events=['FilterSuccess', 'FilterError'])
-        flag_sub = Subscription(events=['FlagArgsValid', 'FlagArgsInvalid'], subscriptions={'length': filter_sub})
-        next_sub = Subscription(events=['NextStepTaken', 'NextStepNotTaken'], subscriptions={'regMatch': flag_sub})
-        step_sub = Subscription(events=["FunctionExecutionSuccess", "InputValidated", "ConditionalsExecuted"],
+        filter_sub = Subscription(events=['Filter Success', 'Filter Error'])
+        flag_sub = Subscription(events=['Flag Arguments Valid', 'Flag Arguments Invalid'], subscriptions={'length': filter_sub})
+        next_sub = Subscription(events=['Next Step Taken', 'Next Step Not Taken'], subscriptions={'regMatch': flag_sub})
+        step_sub = Subscription(events=["Function Execution Success", "Input Validated", "Conditionals Executed"],
                                 subscriptions={'1': next_sub})
         subs = {'testStepFFKEventsController':
                     Subscription(subscriptions=
@@ -116,28 +116,28 @@ class TestExecutionEvents(unittest.TestCase):
         c = controller.Controller(name="testStepFFKEventsController")
         c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        filter_sub = Subscription(events=['FilterError'])
-        flag_sub = Subscription(events=['FlagArgsValid',
-                                        'FlagArgsInvalid'], subscriptions={'length': filter_sub})
-        next_sub = Subscription(events=['NextStepTaken',
-                                        'NextStepNotTaken'],
+        filter_sub = Subscription(events=['Filter Error'])
+        flag_sub = Subscription(events=['Flag Arguments Valid',
+                                        'Flag Arguments Invalid'], subscriptions={'length': filter_sub})
+        next_sub = Subscription(events=['Next Step Taken',
+                                        'Next Step Not Taken'],
                                 subscriptions={'regMatch': flag_sub})
-        step_sub = Subscription(events=['FunctionExecutionSuccess',
-                                        'InputValidated',
-                                        'ConditionalsExecuted'], subscriptions={'1': next_sub})
+        step_sub = Subscription(events=['Function Execution Success',
+                                        'Input Validated',
+                                        'Conditionals Executed'], subscriptions={'1': next_sub})
         subs = {'testStepFFKEventsController':
                     Subscription(subscriptions=
                                  {workflow_name:
                                       Subscription(subscriptions=
                                                    {'start': step_sub})})}
-        global_subs = case_subscription.GlobalSubscriptions(step=['FunctionExecutionSuccess',
-                                                                  'InputValidated',
-                                                                  'ConditionalsExecuted'],
-                                                            next_step=['NextStepTaken',
-                                                                       'NextStepNotTaken'],
-                                                            flag=['FlagArgsValid',
-                                                                  'FlagArgsInvalid'],
-                                                            filter=['FilterError'])
+        global_subs = case_subscription.GlobalSubscriptions(step=['Function Execution Success',
+                                                                  'Input Validated',
+                                                                  'Conditionals Executed'],
+                                                            next_step=['Next Step Taken',
+                                                                       'Next Step Not Taken'],
+                                                            flag=['Flag Arguments Valid',
+                                                                  'Flag Arguments Invalid'],
+                                                            filter=['Filter Error'])
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
                                                                             global_subscriptions=global_subs)})

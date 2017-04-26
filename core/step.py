@@ -154,7 +154,9 @@ class Step(ExecutionElement):
                 get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
             self.output = result
             return result
-        raise InvalidStepInputError(self.app, self.action)
+        else:
+            callbacks.StepInputInvalid.send(self)
+            raise InvalidStepInputError(self.app, self.action)
 
     def get_next_step(self, error=False):
         next_steps = self.errors if error else self.conditionals

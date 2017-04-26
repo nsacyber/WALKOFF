@@ -22,7 +22,7 @@ from server import app
 monkey.patch_all()
 
 urls = ['/', '/key', '/playbook', '/configuration', '/interface', '/execution/listener',
-        '/execution/listener/triggers',
+        '/execution/listener/triggers', '/metrics',
         '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
 
 default_urls = urls
