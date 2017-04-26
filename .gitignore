@@ -4,3 +4,4 @@ index.html.bak
 *.pyc
 tests/profileVisualizations/*
 *.db
+*.pem

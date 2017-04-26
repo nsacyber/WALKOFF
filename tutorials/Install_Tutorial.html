@@ -34,6 +34,14 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   padding-right:10px;
 }
 
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
+.tutorialTable td{
+    border-bottom:1px solid black;
+}
 
 </style>
 <body>
@@ -72,31 +80,81 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <!-- First Grid -->
 <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
-        <div class="w3-twothird">
+        <div class="">
             <h1>How to Setup and Install WALKOFF</h1>
-            <h5 class="w3-padding-32">0) Make sure Python 2.7+ and git are installed.</a></h5>
-            <h5 class="w3-padding-32">1) Open a terminal on linux or a command prompt on Windows, and run the command
-                "git clone https://github.com/iadgov/WALKOFF.git".</a></h5>
-            <h5 class="w3-padding-32">2) Change directories to the WALKOFF directory ("cd WALKOFF").</a></h5>
-            <h5 class="w3-padding-32">3) Run the command "python setup.py install" -- this command must be run as root
-                (i.e. using sudo, or in an administrative command shell).</a></h5>
-            <h5 class="w3-padding-32">4) Run the command "pip install -r requirements.txt" to install the required
-                libraries -- this command must be run as root (i.e. using sudo, or in an administrative command
-                shell).</a></h5>
-            <h5 class="w3-padding-32">5) Each app must have a setup.py script inside of its main directory. In order to
-                save the user the effort of manually running the setup.py script for each app, the user can run the
-                command "python installDependencies.py -a|--apps AppOne AppTwo ..." -- this command must be run as root
-                (i.e. using sudo, or in an administrative command shell). Simply provide the installDependencies script
-                with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces.</a></h5>
-            <h5 class="w3-padding-32">6) Run "python startServer.py" in your terminal or command prompt window.</a></h5>
-            <h5 class="w3-padding-32">7) Open a browser of your choice, and navigate to the host IP and port specified
-                in the output of the above command to start the server. Typically, this will mean navigating to
-                127.0.0.1:5000, unless the user manually configured the host IP and port in the data/walkoff.config
-                file.</a></h5>
+            <table class="tutorialTable">
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32">0) Make sure Python 2.7+, or Python 3.3+ and git are installed.</a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32">1) Open a terminal on linux or a command prompt on Windows, and run the command
+                            <pre class="code"> git clone https://github.com/iadgov/WALKOFF.git </pre></a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32">2)  Change directories to the WALKOFF directory
+                            <pre class="code"> cd WALKOFF </pre></a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32">3) Run the command <pre class="code"> python setup.py install </pre> this command must be run as root
+                            (i.e. using sudo, or in an administrative command shell).</a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32">4) Run the command <pre class="code"> pip install -r "requirements.txt" </pre> to install the required
+                            libraries -- this command must be run as root (i.e. using sudo, or in an administrative command
+                            shell).</a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32">6) Run the command <pre class="code"> python startServer.py </pre> </a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                         <p class="w3-padding-32">7) Open a browser of your choice, and navigate to the host IP and port specified
+                             in the output of the above command to start the server. </p>
+
+                        <p>The default is 127.0.0.1:5000, however the IP and the port can be changed in the data/walkoff.config
+                            file.</a></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td>
+                        <p class="w3-padding-32"><i>Optional</i> - Each app must have a setup.py script inside of its main directory. In order to
+                            save the user the effort of manually running the setup.py script for each app, the user can run the
+                            command <pre class="code"> python installDependencies.py -a|--apps AppOne AppTwo ...</pre>  this command must be run as root
+                            (i.e. using sudo, or in an administrative command shell). Simply provide the installDependencies script
+                            with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces.</a></p>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <div class="w3-third w3-center">
-            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
         </div>
     </div>
 </div>
@@ -105,7 +163,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
     <div class="w3-content">
         <div class="w3-third w3-center">
-            <i class="fa fa-flask w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
+
         </div>
     </div>
 </div>
