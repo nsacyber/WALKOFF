@@ -141,7 +141,7 @@ class TestServer(ServerTestCase):
         workflow_files = [os.path.splitext(workflow)[0]
                           for workflow in os.listdir(core.config.paths.workflows_path)
                           if workflow.endswith('.workflow')]
-        self.app.post('/playbook/test_playbook/add', headers=self.headers)
+        self.app.put('/playbooks/test_playbook', headers=self.headers)
         original_workflow_keys = list(server.running_context.controller.workflows.keys())
         data = {"apps_path": core.config.paths.apps_path,
                 "workflows_path": test_workflows_path}

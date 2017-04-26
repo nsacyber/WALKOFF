@@ -20,6 +20,7 @@ def register_blueprints():
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/widgets/<widget>')
     __flaskapp.register_blueprint(appblueprint.app_page, url_prefix='/apps/<app>')
     __flaskapp.register_blueprint(playbook.playbook_page, url_prefix='/playbook')
+    __flaskapp.register_blueprint(playbook.playbooks_page, url_prefix='/playbooks')
     __flaskapp.register_blueprint(cases.cases_page, url_prefix='/cases')
     __flaskapp.register_blueprint(configuration.configurations_page, url_prefix='/configuration')
     __flaskapp.register_blueprint(users.users_page, url_prefix='/users')
