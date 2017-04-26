@@ -81,7 +81,7 @@ class RenderArgsForm(Form):
 
 
 class AddNewDeviceForm(Form):
-    name = StringField('Name', [validators.Length(min=4, max=25), validators.data_required()])
+    name = StringField('Name', [validators.Length(min=4, max=25), validators.Optional()])
     username = StringField('Username', [validators.Optional()])
     pw = PasswordField('Password', [validators.Optional()])
     ipaddr = StringField('IP Address', [validators.Optional()])
