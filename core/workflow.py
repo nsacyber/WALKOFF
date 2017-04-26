@@ -1,6 +1,6 @@
 from xml.etree import cElementTree
 from os.path import join, isfile
-
+import json
 from core import arguments
 from core.config import paths
 from core.instance import Instance
@@ -9,6 +9,7 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.step import Step
 from core.helpers import construct_workflow_name_key, extract_workflow_name
+
 
 class Workflow(ExecutionElement):
     def __init__(self, name='', xml=None, children=None, parent_name='', playbook_name=''):
@@ -20,7 +21,7 @@ class Workflow(ExecutionElement):
         self.children = children if (children is not None) else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
-        self.total_risk = sum([step.risk for step in self.steps.values() if step.risk > 0])
+        self.total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
         self.is_paused = False
         self.executor = None
         self.breakpoint_steps = []
@@ -58,7 +59,8 @@ class Workflow(ExecutionElement):
                                                     format=arg['format']) for key, arg in arg_input.items()}
         ancestry = list(self.ancestry)
         self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
-                                next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name, risk=risk)
+                                next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name,
+                                risk=risk)
         self.total_risk += risk
 
     def remove_step(self, name=''):
@@ -106,6 +108,7 @@ class Workflow(ExecutionElement):
             pass
 
     def execute(self, start='start'):
+        callbacks.WorkflowExecutionStart.send(self)
         self.executor = self.__execute(start)
         next(self.executor)
 
@@ -140,13 +143,14 @@ class Workflow(ExecutionElement):
 
             # Check for call to child workflow
             if next_step and next_step[0] == '@':
-                child_step_generator, child_next_step = self.get_child_step_generator(next_step)
+                child_step_generator, child_next_step, child_name = self.get_child_step_generator(next_step)
                 if child_step_generator:
                     for child_step in child_step_generator:
                         if child_step:
                             yield  # needed so outer for-loop is in sync
                             error_flag = yield child_step
                             child_step_generator.send(error_flag)
+                        callbacks.WorkflowShutdown.send(self.options.children[child_name])
                     next_step = child_next_step
 
             current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
@@ -156,13 +160,20 @@ class Workflow(ExecutionElement):
 
     def __execute_step(self, step, instance):
         error_flag = False
+        data = {"step": {"app": step.app,
+                         "action": step.action,
+                         "name": step.name}}
+        json.dumps(data)
         try:
             step.execute(instance=instance())
             callbacks.StepExecutionSuccess.send(self)
         except Exception as e:
+            callbacks.StepExecutionError.send(self, data=json.dumps({"step": {"app": step.app,
+                                                                              "action": step.action,
+                                                                              "name": step.name}}))
             error_flag = True
             step.output = str(e)
-            self.accumulated_risk += (float(step.risk)/float(self.total_risk))
+            self.accumulated_risk += float(step.risk) / self.total_risk
         finally:
             return error_flag
 
@@ -173,8 +184,9 @@ class Workflow(ExecutionElement):
             child_name = construct_workflow_name_key(self.playbook_name, child_name)
             if (child_name in self.options.children
                     and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                callbacks.WorkflowExecutionStart.send(self.options.children[child_name])
                 child_step_generator = self.options.children[child_name].__steps(start=child_start)
-                return child_step_generator, child_next
+                return child_step_generator, child_next, child_name
         return None, None
 
     def __shutdown(self, instances):
@@ -229,11 +241,11 @@ class Workflow(ExecutionElement):
     def __repr__(self):
         output = {'options': self.options,
                   'steps': {step: self.steps[step] for step in self.steps},
-                  'accumulated_risk': "{0:.2f}".format(self.accumulated_risk*100.00)}
+                  'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00)}
         return str(output)
 
     def as_json(self, *args):
         return {'name': self.name,
-                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk*100.00),
+                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00),
                 'options': self.options.as_json(),
                 'steps': {name: step.as_json() for name, step in self.steps.items()}}

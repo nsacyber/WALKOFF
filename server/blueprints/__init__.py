@@ -15,7 +15,7 @@ setup_case_stream()
 
 def register_blueprints():
     from server.blueprints import app as appblueprint
-    from server.blueprints import widget, playbook, cases, configuration, users, roles, trigger, scheduler, events
+    from server.blueprints import widget, playbook, cases, configuration, users, roles, trigger, scheduler, events, metrics
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/widgets/<widget>')
     __flaskapp.register_blueprint(appblueprint.app_page, url_prefix='/apps/<app>')
@@ -27,6 +27,7 @@ def register_blueprints():
     __flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     __flaskapp.register_blueprint(trigger.triggers_page, url_prefix='/execution/listener')
     __flaskapp.register_blueprint(scheduler.scheduler_page, url_prefix='/execution/scheduler')
+    __flaskapp.register_blueprint(metrics.metrics_page, url_prefix='/metrics')
     __register_all_app_blueprints()
 
 

@@ -24,6 +24,7 @@ pool = None
 workflows = None
 threading_is_initialized = False
 
+
 def initialize_threading():
     global pool
     global workflows
@@ -208,7 +209,7 @@ class Controller(object):
         workflow = self.workflows[key]
         subs = deepcopy(subscription.subscriptions)
 
-        #If threading has not been initialized, initialize it.
+        # If threading has not been initialized, initialize it.
         if not threading_is_initialized:
             initialize_threading()
 
@@ -255,7 +256,7 @@ class Controller(object):
     def pause_workflow(self, playbook_name, workflow_name):
         workflow = self.get_workflow(playbook_name, workflow_name)
         wf_key = _WorkflowKey(playbook_name, workflow_name)
-        self.paused_workflows[wf_key]=uuid.uuid4()
+        self.paused_workflows[wf_key] = uuid.uuid4()
         if workflow:
             workflow.pause()
         return self.paused_workflows[wf_key].hex

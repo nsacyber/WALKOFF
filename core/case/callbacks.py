@@ -104,12 +104,18 @@ SchedulerJobError, __scheduler_job_error_callback = __construct_logging_signal('
                                                                                'Job executed with error')
 
 # Workflow callbacks
+WorkflowExecutionStart, __workflow_execution_start_callback = __construct_logging_signal('Workflow',
+                                                                                         'Workflow Execution Start',
+                                                                                         'Workflow execution started')
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
                                                                                  'InstanceCreated',
                                                                                  'New app instance created')
 StepExecutionSuccess, __step_execution_success_callback = __construct_logging_signal('Workflow',
                                                                                      'StepExecutionSuccess',
                                                                                      'Step executed successfully')
+StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Workflow',
+                                                                                 'StepExecutionError',
+                                                                                 'Step executed with error')
 NextStepFound, __next_step_found_callback = __construct_logging_signal('Workflow', 'NextStepFound', 'Next step found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
@@ -125,6 +131,9 @@ FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_sig
 StepInputValidated, __step_input_validated_callback = __construct_logging_signal('Step',
                                                                                  'InputValidated',
                                                                                  'Input successfully validated')
+StepInputInvalid, __step_input_invalid_callback = __construct_logging_signal('Step',
+                                                                             'InputInvalid',
+                                                                             'Input is invalid')
 ConditionalsExecuted, __conditionals_executed_callback = __construct_logging_signal('Step',
                                                                                     'ConditionalsExecuted',
                                                                                     'Conditionals executed')
