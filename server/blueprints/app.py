@@ -17,8 +17,30 @@ def static_request_handler(endpoint, values):
     app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))
 
 
-#TODO: Delete "display" decorator and change to GET
-# @app_page.route('/', methods=['GET'])
+@app_page.route('/', methods=['GET'])
+@auth_token_required
+@roles_required('admin')
+def read_app():
+    form = forms.RenderArgsForm(request.form)
+    path = '{0}/interface/templates/{1}'.format(g.app, form.page.data)  # Do not use os.path.join
+    args = load_app(g.app, form.key.entries, form.value.entries)
+
+    template = render_template(path, **args)
+    return template
+
+
+@app_page.route('/actions', methods=['GET'])
+@auth_token_required
+@roles_required('admin')
+def list_app_actions():
+    core.config.config.load_function_info()
+    if g.app in core.config.config.function_info['apps']:
+        return json.dumps({'status': 'success',
+                           'actions': core.config.config.function_info['apps'][g.app]})
+    else:
+        return json.dumps({'status': 'error: app name not found'})
+
+#TODO: DELETE
 @app_page.route('/display', methods=['POST'])
 @auth_token_required
 @roles_required('admin')
@@ -53,15 +75,3 @@ def data_stream(app_name, stream_name):
     module = load_module(app_name)
     if module:
         return getattr(module, 'stream_generator')(stream_name)
-
-
-@app_page.route('/actions', methods=['GET'])
-@auth_token_required
-@roles_required('admin')
-def list_app_actions():
-    core.config.config.load_function_info()
-    if g.app in core.config.config.function_info['apps']:
-        return json.dumps({'status': 'success',
-                           'actions': core.config.config.function_info['apps'][g.app]})
-    else:
-        return json.dumps({'status': 'error: app name not found'})
