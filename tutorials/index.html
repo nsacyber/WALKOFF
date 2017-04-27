@@ -21,10 +21,6 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
     background-position:50% 50%;
 }
 
-.topLevelList + ol{
-  display:none;
-}
-
 .topLevelList + h5{
   display:none;
 }
@@ -68,7 +64,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   <div class="w3-content">
     <div class="w3-twothird">
       <h1>Version Two Tutorials</h1>
-      <h5><i> Click on a section header to open up documentation and tutorials.  More coming soon... </i></h5>
+      <h5><i>  More tutorials coming soon... </i></h5>
 
       <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
       <ol class="w3-medium">
@@ -174,13 +170,6 @@ function myFunction() {
         x.className = x.className.replace(" w3-show", "");
     }
 }
-
-$(document).ready(function(){
-  $(".topLevelList").on("click", function(e){
-    $(this).find("i").toggleClass("fa-circle fa-circle-o");
-    $(this).next("ol").toggle();
-  });
-
 });
 </script>
 </body>

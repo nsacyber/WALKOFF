@@ -27,6 +27,10 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   font-size:12px;
   padding-right:10px;
 }
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
 </style>
 <body>
 
@@ -69,7 +73,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
             didn't need your app, we can spare them needing to install them by including them in them in your app's
         <code>setup.py</code> file. For our example, our setup.py would look like this:</p>
-        <pre><code>
+        <pre class="code"><code>
 from setuptools import setup
 
 setup(install_requires=['scikit-learn'])
@@ -79,11 +83,11 @@ setup(install_requires=['scikit-learn'])
         <h3>Installing app dependencies</h3>
         <p>To install an app dependency, you can use the <code>installDependencies.py</code> script included at the top
             level of the repository.</p>
-        <pre><code>
-python instalDependencies.py --apps App1
+        <pre class="code"><code>
+python installDependencies.py --apps App1
         </code></pre>
         <p>You can see more options using </p>
-        <pre><code>
+        <pre class="code"><code>
 python installDependencies.py --help
         </code></pre>
         <p>Next, you'll learn how to make a custom interface for your app (right now the server will quietly complain if you try to display your app)</p>

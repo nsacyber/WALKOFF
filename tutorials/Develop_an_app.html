@@ -11,22 +11,32 @@
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
 .fa-graduation-cap,.fa-flask{font-size:200px}
+
 #headerDiv{
     background-image:url("../files/images/headerBackground2.png");
     background-size: 50% auto;
     background-repeat: no-repeat;
     background-position:50% 50%;
 }
+
 .topLevelList + ol{
   display:none;
 }
+
 .topLevelList + h5{
   display:none;
 }
+
 .fa-circle, .fa-circle-o{
   font-size:12px;
   padding-right:10px;
 }
+
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
 </style>
 <body>
 
@@ -65,7 +75,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         <h4><b>1. Create a Python package in the apps directory with the name of the app you want to create.</b></h4>
         <p>In this example we will be recreating the some of the functions of the HelloWorld App in the apps directory,
             so we'll call our package HelloWorld. The <code>apps</code> directory should look like this:</p>
-        <pre><code>
+        <pre class="code"><code>
 WALKOFF
 |-- apps
   |-- __init__.py
@@ -88,7 +98,7 @@ WALKOFF
            any cleanup is necessary to terminate a session with the app. In our example, we won't need any
            shutdown procedures, so we'll just make that function empty</p>
 
-        <pre><code>
+        <pre class="code"><code>
 from server.appdevice import App
 
 class Main(App):
@@ -102,7 +112,7 @@ class Main(App):
         <h4><b>3. Write some methods</b></h4>
         <p>Each method you write in this class can be turned into an action. Each method must be able to be
             called with a named "args" parameter. So the method signature can either be </p>
-        <pre>
+        <pre class="code">
 <code>def my_func(self, args={}): pass</code>
 <b><i>or</i></b>
 <code>def my_func(self, **kwargs): pass</code>
@@ -116,7 +126,7 @@ class Main(App):
                 Now to write our functions. We are going to write a the standard "Hello World" action as well as an action
                 which takes an argument named "number" and increments it by one and converts it to a string.
             </p>
-            <pre><code>
+            <pre class="code"><code>
 from server.appdevice import App
 
 class Main(App):
@@ -137,7 +147,7 @@ class Main(App):
         <h4><b>4. Create the <code>functions.json</code> JSON metadata file to convert the methods to actions</b></h4>
         <p>For WALKOFF to recognize a method as an action, it must have an entry in the apps's function.json file,
             which is located in the app directory. The minimum required entry of the functions.json is as follows:</p>
-        <pre><code>
+        <pre class="code"><code>
 {
     "method_name": {
         "description": "Short description of what the action does"
@@ -151,7 +161,7 @@ class Main(App):
 }
         </code></pre>
         <p>For our basic app, our <code>functions.json</code> file will look like the following:</p>
-        <pre><code>
+        <pre class="code"><code>
 {
     "hello_world": {
         "description": "Say hello"
@@ -171,11 +181,11 @@ class Main(App):
         <p>There are more fields available in the JSON metadata file. And if you are concerned if your functions.json
             file is correct, you can do a quick scan by running the <code>validateappfunctions.py</code> script included
             at the root of the WALKOFF repository. You can validate your app's functions.json by running</p>
-            <pre><code>
+            <pre class="code"><code>
 python validateappfunctions.py --apps HelloWorld
             </code></pre>
         <p>You can see more options using </p>
-        <pre><code>
+        <pre class="code"><code>
 python validateappfunctions.py --help
         </code></pre>
         <h4><b>Congratulations! You now have made your first WALKOFF app.</b></h4>

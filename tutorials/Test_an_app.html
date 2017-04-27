@@ -27,6 +27,11 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
   font-size:12px;
   padding-right:10px;
 }
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
 </style>
 <body>
 
@@ -59,13 +64,13 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 <!-- First Grid -->
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <div class="w3-twothird">
+    <div class="">
       <h1>Test an app</h1>
         <p>WALKOFF can easily test your apps with a top-level app testing script</p>
         <h4><b>1. Create a Python package in your app package named "test"</b></h4>
         <p>If you were testing your HelloWorld app described in the <a href="Develop_an_app.html">Develop an App</a>
         section, your directory structure will look like this:</p>
-        <pre><code>
+        <pre class="code"><code>
 WALKOFF
 |-- apps
   |-- HelloWorld
@@ -78,7 +83,7 @@ WALKOFF
         <h4><b>2. Write your tests</b></h4>
         <p>Inside the test package, we then need to write some Python modules which use Python's builtin
             <code>unittest</code> package to test our module.</p>
-        <pre><code>
+        <pre class="code"><code>
 import unittest
 from apps.HelloWorld import main
 
@@ -104,11 +109,11 @@ class TestMain(unittest.TestCase):
 
         <p>You can run your tests by running the <code>testapps.py</code> script included at the root of the WALKOFF
             repository</p>
-            <pre><code>
+            <pre class="code"><code>
 python testapps.py --apps HelloWorld
             </code></pre>
         <p>You can see more options using </p>
-        <pre><code>
+        <pre class="code"><code>
 python testapps.py --help
         </code></pre>
         <div align="center" style="border:1px solid blue">
