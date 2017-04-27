@@ -50,41 +50,41 @@ class TestUsersAndRoles(ServerTestCase):
 
     def test_add_user(self):
         data = {"username": self.email, "password": self.password}
-        response = json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
+        response = json.loads(self.app.put('/users/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
         self.assertTrue("user added" in response["status"])
 
-        self.post_with_status_check('/users/add', 'user exists', data=data, headers=self.headers)
+        self.put_with_status_check('/users/'+self.email, 'user exists', data=data, headers=self.headers)
 
     def test_edit_user_password(self):
         data = {"username": self.email, "password": self.password}
-        json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
+        json.loads(self.app.put('/users/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"password": self.password}
         response = json.loads(
-            self.app.post('/users/' + self.email + '/edit', data=data, headers=self.headers).get_data(as_text=True))
+            self.app.post('/users/' + self.email, data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["username"], self.email)
 
         data = {"password": "testPassword"}
-        self.app.post('/users/' + self.email + '/edit', data=data, headers=self.headers).get_data(as_text=True)
+        self.app.post('/users/' + self.email, data=data, headers=self.headers).get_data(as_text=True)
         with server.app.app_context():
             user = server.database.user_datastore.get_user(self.email)
             self.assertTrue(verify_password("testPassword", user.password))
 
     def test_remove_user(self):
         data = {"username": self.email, "password": self.password}
-        json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
+        json.loads(self.app.put('/users/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
 
-        self.post_with_status_check('/users/{0}/remove'.format(self.email), 'user removed', headers=self.headers)
+        self.delete_with_status_check('/users/{0}'.format(self.email), 'user removed', headers=self.headers)
 
     def test_add_role_to_user(self):
         data = {"username": self.email, "password": self.password}
-        json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
+        json.loads(self.app.put('/users/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"name": self.name}
         self.put_with_status_check('/roles/'+self.name, "role added {0}".format(self.name), data=data, headers=self.headers)
 
         data = {"role-0": "admin", "role-1": self.name}
-        response = json.loads(self.app.post('/users/' + self.email + '/edit',
+        response = json.loads(self.app.post('/users/' + self.email,
                                             data=data, headers=self.headers).get_data(as_text=True))
         roles = [self.name, "admin"]
         self.assertEqual(len(roles), len(response["roles"]))
