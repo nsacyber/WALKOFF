@@ -41,7 +41,7 @@ def scheduler_actions_by_id(job_id, action):
 @scheduler_page.route('/jobs', methods=['GET'])
 @auth_token_required
 # @roles_accepted(*userRoles["/execution/listener"])
-def scheduler():
+def get_scheduler():
     return running_context.controller.get_scheduled_jobs()
 
 

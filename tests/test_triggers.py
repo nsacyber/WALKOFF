@@ -21,7 +21,7 @@ class TestTriggers(ServerTestCase):
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
         triggers = [trigger.as_json() for trigger in Triggers.query.all()]
         self.assertEqual(len(triggers), 1)
@@ -43,8 +43,8 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response['triggers'][0]['playbook'], expected_json['playbook'])
         self.assertDictEqual(response['triggers'][0]['conditions'][0], expected_json['conditions'][0])
 
-        response = self.post_with_status_check(
-            '/execution/listener/triggers/{0}/display'.format(self.test_trigger_name),
+        response = self.get_with_status_check(
+            '/execution/listener/triggers/{0}'.format(self.test_trigger_name),
             "success", headers=self.headers)
         self.assertIn('trigger', response)
         self.assertEqual(response['trigger']['name'], expected_json['name'])
@@ -52,20 +52,20 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response['trigger']['playbook'], expected_json['playbook'])
         self.assertDictEqual(response['trigger']['conditions'][0], expected_json['conditions'][0])
 
-        self.post_with_status_check('/execution/listener/triggers/{0}/remove'.format(self.test_trigger_name),
+        self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers)
 
         triggers = [trigger.as_json() for trigger in Triggers.query.all()]
         self.assertEqual(len(triggers), 0)
 
-        self.post_with_status_check('/execution/listener/triggers/{0}/display'.format(self.test_trigger_name),
+        self.get_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "error: trigger not found", headers=self.headers)
 
     def test_add_trigger_invalid_form(self):
         data = {"playbrook": "test",
                 "workbro": self.test_trigger_workflow,
                 "conditional-0": ""}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "error: form not valid", headers=self.headers, data=data)
 
     def test_add_trigger_add_duplicate(self):
@@ -73,13 +73,13 @@ class TestTriggers(ServerTestCase):
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "warning: trigger with that name already exists", headers=self.headers, data=data)
 
     def test_remove_trigger_does_not_exist(self):
-        self.post_with_status_check('/execution/listener/triggers/{0}/remove'.format(self.test_trigger_name),
+        self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "error: trigger does not exist", headers=self.headers)
 
     def test_edit_trigger(self):
@@ -87,13 +87,13 @@ class TestTriggers(ServerTestCase):
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
         edited_data = {"name": "{0}rename".format(self.test_trigger_name),
                        "playbook": "testrename",
                        "workflow": '{0}rename'.format(self.test_trigger_workflow),
                        "conditional": json.dumps(condition)}
-        self.post_with_status_check('/execution/listener/triggers/{0}/edit'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=edited_data)
 
     def test_trigger_execute(self):
@@ -101,10 +101,10 @@ class TestTriggers(ServerTestCase):
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
 
-        self.post_with_status_check('/execution/listener/'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data={"data": "hellohellohello"})
 
     def test_trigger_execute_invalid_name(self):
@@ -112,10 +112,10 @@ class TestTriggers(ServerTestCase):
         data = {"playbook": "test",
                 "workflow": "invalid_workflow_name",
                 "conditional": json.dumps([condition])}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
 
-        self.post_with_status_check('/execution/listener/'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "error: workflow could not be found",
                                     headers=self.headers, data={"data": "hellohellohello"})
 
@@ -124,9 +124,9 @@ class TestTriggers(ServerTestCase):
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
-        self.post_with_status_check('/execution/listener/triggers/{0}/add'.format(self.test_trigger_name),
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data)
 
-        self.post_with_status_check('/execution/listener/'.format(self.test_trigger_name),
+        self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "warning: no trigger found valid for data in", headers=self.headers,
                                     data={"data": "bbb"})
