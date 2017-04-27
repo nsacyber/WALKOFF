@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="../files/bootstrap/css/bootstrap.min.css">
 <style>
 
 
@@ -42,24 +43,22 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 
 td{
     padding-right:10px;
+    margin-bottom: 25px;
+    margin-top:25px;
 }
-
-
-.tutorialTable, td{
-    border-bottom:1px solid black;
-    height:300px;
-}
-
-.tutorialTable, tr, td{
-
-}
-
 
 .image{
+    text-align:center;
+}
+
+.image img{
     max-width:100%;
     max-height:100%;
 }
 
+.functionality_list li{
+    margin-bottom:20px;
+}
 </style>
 <body>
 
@@ -99,23 +98,32 @@ td{
     <div class="w3-content">
         <div class="">
             <h1>A Brief Tour of the WALKOFF Interface</h1>
-            <table class="tutorialTable">
-                <tr>
-                    <td class="w3-third"><img class="image" src="images/homeCropped.png"></td>
-                    <td class="w3-twothird">
-                        <p class="w3-padding-32">The purpose of this tutorial is to provide a brief overview of the different functions within
-                            WALKOFF and the interface. In-depth instructions and overviews for specific functionality can be found in subsequent documentation.
-                        </p>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="w3-third"><img class="image" src="images/sidebar.png"></td>
-                    <td class="w3-twothird">
-                        <p class="w3-padding-32">
-                            
-                        </p>
-                    </td>
-                </tr>
+            <table class="table table-responsive">
+                <tbody>
+                    <tr>
+                        <td class="w3-third image"><img src="images/homeCropped.png"></td>
+                        <td class="w3-twothird">
+                            <p class="w3-padding-32">The purpose of this tutorial is to provide a brief overview of the different functions within
+                                WALKOFF and the interface. In-depth instructions and overviews for specific functionality can be found in subsequent documentation.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="w3-third image"><img src="images/sidebar.png"></td>
+                        <td class="w3-twothird">
+                            <ul class="functionality_list">
+                                <li>Installed Apps - A drop down with all of the apps you have installed which lead to their custom interfaces </li>
+                                <li>Controller - Displays which playbooks and workflows are loaded, allows you to create cases for logging and enables you to
+                                start, stop, pause, and resume the scheduler. </li>
+                                <li>Playbook - Provides a drag and drop interface for you to create, design, and edit your custom workflows. </li>
+                                <li>Devices - Allows you to manage your devices associated with the different apps.  Think of devices as configuration profiles. </li>
+                                <li>Triggers - Manages the WALKOFF triggers which enable workflows to be executed upon data being recieved. </li>
+                                <li>Cases - An interface displaying the logs of configured cases. </li>
+                                <li>Settings - Allows for the management of system configuration and user/role management. </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         <div class="w3-third w3-center">
         </div>
@@ -143,6 +151,7 @@ td{
 </footer>
 
 <script src="../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script src="../files/bootstrap/js/bootstrap.min.js"></script>
 <script>
 // Used to toggle the menu on small screens when clicking on the menu button
 function myFunction() {
