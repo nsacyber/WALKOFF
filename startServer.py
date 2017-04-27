@@ -1,9 +1,23 @@
 from gevent import ssl
 from os.path import isfile
+import json
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
 from core.config import config, paths
-from server import flaskserver
+from server import flaskserver, app
+
+
+def get_logging_config():
+    if isfile(paths.logging_config_path):
+        #try:
+        with open(paths.logging_config_path, 'rt') as log_config_file:
+            ll = json.loads(log_config_file.read())
+            print(ll)
+            return ll
+        #except:
+        #    return None
+    else:
+        return None
 
 
 def get_ssl_context():
@@ -26,9 +40,15 @@ def get_ssl_context():
 
 
 if __name__ == "__main__":
+    import logging, logging.config
     case_database.initialize()
     ssl_context = get_ssl_context()
     flaskserver.running_context.init_threads()
+    log_config = get_logging_config()
+    if log_config is not None:
+        logging.config.dictConfig(log_config)
+    else:
+        logging.basicConfig()
     try:
         port = int(config.port)
         host = config.host

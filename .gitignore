@@ -16,3 +16,4 @@ build/*
 .idea/inspectionProfiles/Project_Default.xml
 *.egg
 *.pem
+data/log/*.log
