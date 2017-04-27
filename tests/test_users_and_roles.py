@@ -28,23 +28,23 @@ class TestUsersAndRoles(ServerTestCase):
 
     def test_add_role(self):
         data = {"name": self.name}
-        self.post_with_status_check('/roles/add', 'role added {0}'.format(self.name), data=data, headers=self.headers)
-        self.post_with_status_check('/roles/add', 'role exists', data=data, headers=self.headers)
+        self.put_with_status_check('/roles/'+self.name, 'role added {0}'.format(self.name), data=data, headers=self.headers)
+        self.put_with_status_check('/roles/'+self.name, 'role exists', data=data, headers=self.headers)
 
     def test_display_all_roles(self):
         data = {"name": self.name}
-        self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True)
+        self.app.put('/roles/'+self.name, data=data, headers=self.headers).get_data(as_text=True)
 
-        response = json.loads(self.app.get('/roles/', headers=self.headers).get_data(as_text=True))
+        response = json.loads(self.app.get('/roles', headers=self.headers).get_data(as_text=True))
         self.assertEqual(response, ["admin", self.name])
 
     def test_edit_role_description(self):
         data = {"name": self.name}
-        json.loads(self.app.post('/roles/add', data=data, headers=self.headers).get_data(as_text=True))
+        json.loads(self.app.put('/roles/'+self.name, data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"name": self.name, "description": self.description}
         response = json.loads(
-            self.app.post('/roles/edit/' + self.name, data=data, headers=self.headers).get_data(as_text=True))
+            self.app.post('/roles/'+self.name, data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["name"], self.name)
         self.assertEqual(response["description"], self.description)
 
@@ -81,7 +81,7 @@ class TestUsersAndRoles(ServerTestCase):
         json.loads(self.app.post('/users/add', data=data, headers=self.headers).get_data(as_text=True))
 
         data = {"name": self.name}
-        self.post_with_status_check('/roles/add', "role added {0}".format(self.name), data=data, headers=self.headers)
+        self.put_with_status_check('/roles/'+self.name, "role added {0}".format(self.name), data=data, headers=self.headers)
 
         data = {"role-0": "admin", "role-1": self.name}
         response = json.loads(self.app.post('/users/' + self.email + '/edit',

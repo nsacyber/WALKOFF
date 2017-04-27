@@ -15,7 +15,7 @@ class EditUserForm(Form):
 
 
 class NewRoleForm(Form):
-    name = StringField('name', [validators.data_required()])
+    name = StringField('name', [validators.Optional()])
     description = StringField('description')
 
 
