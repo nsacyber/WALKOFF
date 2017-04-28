@@ -5,17 +5,17 @@ from flask import Blueprint, render_template, request, g, Response
 from flask_security import roles_required, auth_token_required
 from server import forms
 
-widget_page = Blueprint('widgetPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
+widgets_page = Blueprint('widgetsPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
 
-@widget_page.url_value_preprocessor
+@widgets_page.url_value_preprocessor
 def static_request_handler(endpoint, values):
     g.app = values.pop('app', None)
     g.widget = values.pop('widget', None)
-    widget_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'widgets', g.widget, 'static'))
+    widgets_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'widgets', g.widget, 'static'))
 
 
-@widget_page.route('/', methods=['GET'])
+@widgets_page.route('', methods=['POST'])
 @auth_token_required
 @roles_required('admin')
 def display_app():
