@@ -247,8 +247,9 @@ def update_subscription(case_name):
 
     if data:
         if 'ancestry' in data and 'events' in data:
+            data['ancestry'] = convert_ancestry(data['ancestry'])
             success = case_subscription.edit_subscription(case_name,
-                                                          convert_ancestry(data['ancestry']),
+                                                          data['ancestry'],
                                                           data['events'])
             running_context.CaseSubscription.update(case_name)
             running_context.db.session.commit()

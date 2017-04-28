@@ -11,11 +11,11 @@ function addCase(id){
         var tmp = null;
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "PUT",
             'global': false,
             'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/" + id + "/add",
+            'url': "/cases/" + id ,
             'success': function (data) {
                 tmp = data;
             }
@@ -53,12 +53,12 @@ function addNewSubscription(selectedCase, subscriptionId){
         var tmp = null;
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "PUT",
             'global': false,
             'data':JSON.stringify({"ancestry":[], "events":[]}),
             'dataType':"application/json",
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase + "/subscription/add",
+            'url': "/cases/subscriptions/" + selectedCase ,
             'success': function (data) {
                 tmp = data;
             }
@@ -99,7 +99,7 @@ function editSubscription(selectedCase, ancestry, events){
             'global': false,
             'data':ancestry,
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase + "/subscription/edit",
+            'url': "/cases/" + selectedCase + "/subscriptions",
             'success': function (data) {
                 tmp = data;
                 stat = {"status": 1};
@@ -135,7 +135,47 @@ function getWorkflowElements(playbook, workflow, elements){
     return status;
 }
 
+function getCaseDetails(selectedCase){
+    var status = function () {
+        var tmp = null;
+        $.ajax({
+            'async': false,
+            'type': "GET",
+            'global': false,
+            'data':{},
+            'headers':{"Authentication-Token":authKey},
+            'url': "/cases/" + selectedCase,
+            'success': function (data) {
+                tmp = data;
+            }
+        });
+        return tmp;
+    }();
+    console.log(status);
+    stat = {"status": 1}
+    return stat;
+}
 
+function getSubscriptionDetails(selectedCase){
+    var status = function () {
+        var tmp = null;
+        $.ajax({
+            'async': false,
+            'type': "GET",
+            'global': false,
+            'data':{},
+            'headers':{"Authentication-Token":authKey},
+            'url': "/cases/" + selectedCase + "/subscriptions",
+            'success': function (data) {
+                tmp = data;
+            }
+        });
+        return tmp;
+    }();
+    console.log(status);
+    stat = {"status": 1}
+    return stat;
+}
 
 function getSelectedObjects(){
     var selectedOptions = objectSelectionDiv.find("select > option").filter(":selected").map(function(){

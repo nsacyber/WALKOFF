@@ -24,6 +24,11 @@ function createSubscriptionModal(){
                         width:500,
                         open:
                             function(event, ui){
+                                var selected_case = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop()).text;
+                                console.log(selected_case);
+                                var details = getCaseDetails(selected_case);
+                                var sub_details = getSubscriptionDetails(selected_case);
+                                console.log(details);
 //                                for(key in window.availableSubscriptions){
 //                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
 //                                }
