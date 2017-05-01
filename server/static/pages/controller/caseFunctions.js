@@ -177,6 +177,12 @@ function getSubscriptionDetails(selectedCase){
     return stat;
 }
 
+function displayCaseDetails(subscriptionDetails){
+    for(item in subscriptionDetails){
+
+    }
+}
+
 function getSelectedObjects(){
     var selectedOptions = objectSelectionDiv.find("select > option").filter(":selected").map(function(){
         return {"type": $(this).data()["type"], "value": this.value};

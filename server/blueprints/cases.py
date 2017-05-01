@@ -13,7 +13,6 @@ import core.config.paths
 from core.helpers import construct_workflow_name_key
 from gevent.event import Event, AsyncResult
 
-
 cases_page = Blueprint('cases_page', __name__)
 
 
@@ -115,6 +114,13 @@ def delete_case(case_name):
         running_context.db.session.delete(case)
         running_context.db.session.commit()
     return json.dumps(case_subscription.subscriptions_as_json())
+
+@cases_page.route('/<string:case_name>/events', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def get_events(case_name):
+    result = case_database.case_db.case_events_as_json(case_name)
+    return json.dumps(result)
 
 #TODO: DELETE
 @cases_page.route('/<string:case_name>/<string:action>', methods=['POST'])

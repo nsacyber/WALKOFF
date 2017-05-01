@@ -90,14 +90,6 @@
                     <div id="casesDiv">
                         Cases Here
                     </div>
-                    <h3>Workflows</h3>
-                    <div id="workflowsDiv">
-                        Workflows Here
-                    </div>
-                    <h3>Events</h3>
-                    <div id="eventsDiv">
-                        Events Here
-                    </div>
                 </div>
             </div>
 
@@ -154,6 +146,7 @@
         var currentWorkflow = "{{currentWorkflow}}";
         $("#currentWorkflowText").text(currentWorkflow);
     </script>
+    <script src="{{ url_for('static', filename='pages/cases/logFunctions.js' ) }}"> </script>
     <script src="{{ url_for('static', filename='pages/cases/main.js' ) }}"> </script>
     </body>
 </html>
