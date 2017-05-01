@@ -9,18 +9,27 @@ function getEventLogs(case_name){
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/" + case_name + "/events",
             'success': function (data) {
-                tmp = data;
-                console.log(data);
+                tmp = JSON.parse(data);
             }
         });
         return tmp;
     }();
-
     return logs;
 }
 
-function populateTable(data){
-
+function formatLogData(data){
+    var dataSet = [];
+    for(prop in data){
+        row = [];
+        row.push(data[prop].id);
+        row.push(data[prop].timestamp);
+        row.push(data[prop].type);
+        row.push(data[prop].ancestry);
+        row.push(data[prop].data);
+        row.push(data[prop].message);
+        dataSet.push(row);
+    }
+    return dataSet;
 }
 
 function notifyMe() {

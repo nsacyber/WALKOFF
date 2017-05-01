@@ -3,6 +3,7 @@
         <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+
         <style>
             h1 {
                 font-family: 'Lato', sans-serif;
@@ -74,6 +75,10 @@
             }
         </style>
 
+            <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+            <script src="{{ url_for('static', filename='pages/cases/dataTables.min.js' ) }}"></script>
 
     </head>
     <body>
@@ -101,36 +106,29 @@
                 <!-- /.box-header -->
                 <div class="box-body">
                   <table id="logDataTable" class="table table-bordered table-hover">
-                    <thead>
-                    <tr>
-                        <th data-field="name">Name</th>
-                        <th data-field="app">App</th>
-                        <th data-field="device">Device</th>
-                        <th data-field="nextUp">Next Up</th>
-                        <th data-field="action">Action</th>
-                        <th data-field="output">Output</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>start</td>
-                        <td>HelloWorld</td>
-                        <td>testDevice</td>
-                        <td>Workflow End</td>
-                        <td>HelloWorld</td>
-                        <td>"Hello World"</td>
-                    </tr>
-                    </tbody>
-                    <tfoot>
-                     <tr>
-                        <th data-field="name">Name</th>
-                        <th data-field="app">App</th>
-                        <th data-field="device">Device</th>
-                        <th data-field="nextUp">Next Up</th>
-                        <th data-field="action">Action</th>
-                        <th data-field="output">Output</th>
-                    </tr>
-                    </tfoot>
+                    <!--<thead>-->
+                    <!--<tr>-->
+                        <!--<th data-field="id">Id</th>-->
+                        <!--<th data-field="timestamp">Timestamp</th>-->
+                        <!--<th data-field="type">Type</th>-->
+                        <!--<th data-field="ancestry">Ancestry</th>-->
+                        <!--<th data-field="data">Data</th>-->
+                        <!--<th data-field="message">Message</th>-->
+                    <!--</tr>-->
+                    <!--</thead>-->
+                    <!--<tbody>-->
+
+                    <!--</tbody>-->
+                    <!--<tfoot>-->
+                     <!--<tr>-->
+                        <!--<th data-field="id">Id</th>-->
+                        <!--<th data-field="timestamp">Timestamp</th>-->
+                        <!--<th data-field="type">Type</th>-->
+                        <!--<th data-field="ancestry">Ancestry</th>-->
+                        <!--<th data-field="data">Data</th>-->
+                        <!--<th data-field="message">Message</th>-->
+                    <!--</tr>-->
+                    <!--</tfoot>-->
                   </table>
                 </div>
                 <!-- /.box-body -->
@@ -139,9 +137,7 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+
     <script>
         var currentWorkflow = "{{currentWorkflow}}";
         $("#currentWorkflowText").text(currentWorkflow);

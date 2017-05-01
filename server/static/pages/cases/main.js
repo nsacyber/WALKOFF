@@ -15,5 +15,17 @@ var cases = function () {
     return tmp;
 }();
 
-var data = getEventLogs("case_2");
-populateTable(data);
+var data = getEventLogs("case_1");
+var dataSet = formatLogData(data);
+
+$("#logDataTable").DataTable({
+    data: dataSet,
+    columns:[
+     {title: "id"},
+     {title: "timestamp"},
+     {title: "type"},
+     {title: "ancestry"},
+     {title: "data"},
+     {title: "message"}
+    ]
+});
