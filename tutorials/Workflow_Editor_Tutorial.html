@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-graduation-cap,.fa-flask{font-size:200px}
+#headerDiv{
+    background-image:url("../files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
+.topLevelList + ol{
+  display:none;
+}
+img.media-object.image{
+    width:70%;
+    height:30%;
+}
+.topLevelList + h5{
+  display:none;
+}
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+</style>
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    <a href="../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+    <a href="https://iadgov.github.io/WALKOFF/documentation.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Version One</a>
+    <a href="../documentationVersionTwo.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Version Two</a>
+    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+  </div>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+    <a class="w3-padding-large" href="https://iadgov.github.io/WALKOFF/documentation.html">Version One</a>
+    <a class="w3-padding-large" href="../documentationVersionTwo.html">Version Two</a>
+    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+    <a class="w3-padding-large" href="index.html">Tutorials</a>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
+  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+</header>
+
+<!-- First Grid -->
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Workflow Editor Tutorial</h1>
+        <ul type="1" class="media-list">
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-01.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Navigate to Playbook Page</h4>
+                  <p>Click the Playbook link on the left</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-02.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Create New Workflow</h4>
+                  <p>Click the New Workflow button</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-03.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Enter New Workflow Name</h4>
+                  <ol type="1">
+                      <li>Enter MyPlaybook in the Playbook field.</li>
+                      <li>Enter MyWorkflow in the Workflow field</li>
+                      <li>Click Create Workflow</li>
+                  </ol>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-04.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Open Workflow in Editor</h4>
+                  <p>Double click the MyWorkflow workflow now shown on the left</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-05.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Show Action Tab</h4>
+                  <p>Click the Action tab to show the list of
+                  available actions</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-06.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Drag and Drop helloWorld action into Graph</h4>
+                  <p></p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-07.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Drag and Drop pause Action into Graph</h4>
+                  <p></p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-08.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Drag and Drop repeatBackToMe Action into Graph</h4>
+                  <p></p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-09.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Drag and Drop returnPlusOne Action into Graph</h4>
+                  <p></p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-10.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Drag and Drop getQuote Action into Graph</h4>
+                  <p></p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-11.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Create Edge 1</h4>
+                  <p>Link two nodes as shown by dragging from the red
+                  circle at the top of the node</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-12.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Create Edge 2</h4>
+                  <p>Link two nodes as shown by dragging from the red
+                  circle at the top of the node</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-13.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Create Edge 3</h4>
+                  <p>Link two nodes as shown by dragging from the red
+                  circle at the top of the node</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-14.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Create Edge 4</h4>
+                  <p>Link two nodes as shown by dragging from the red
+                  circle at the top of the node</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-15.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Create Edge 5</h4>
+                  <p>Link two nodes as shown by dragging from the red
+                  circle at the top of the node</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-16.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Save Workflow</h4>
+                  <p>Press the Save Workflow button to save the
+                  workflow on the server.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-17.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Select Node</h4>
+                  <p>Click the node to select. It will turn blue and
+                  node properties will be shown to the right of the graph</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-18.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Delete Node</h4>
+                  <p>Press the Delete button to delete the selected
+                  node. Can be used to delete edges as well.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-19.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Undo</h4>
+                  <p>Press the Undo button to undo the deletion of
+                  the previous step. The node will now appear.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-20.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Drag Node</h4>
+                  <p>Nodes can dragged as shown by clicking on a node
+                  with the left mouse button and and moving the mouse
+                  with the left mouse button still pressed. </p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-21.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Edit Node Parameters</h4>
+                  <p>You may edit the node parameters to the right of
+                  the graph as desired.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-22.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Pan</h4>
+                  <p>You may shift the entire graph in any direction
+                  by either (1) dragging with mouse by clicking anywhere
+                  in graph where there is no node or edge, or (2) using
+                  the pan control on the top right of the graph.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-23.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Zoom</h4>
+                  <p>You may zoom the entire graph in or out by
+                  either (1) using the mousewheel, or (2) use the
+                  zoom control on the top right of the graph.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-24.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Reset</h4>
+                  <p>Press the Reset button to revert the graph to
+                  the default zoom. This undos any zooming or panning
+                  done previously.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-left media-middle">
+                     <img class="media-object image" src="images/workflowEditor/workflowEditor-25.png" alt="...">
+                </div>
+                <div class="media-body">
+                  <h4 class="media-heading">Rename, Duplicate, or Delete Playbook or Workflow</h4>
+                  <p>To rename, duplicate, or delete the playbook or
+                  workflow, right-click the playbook or workflow and
+                  press the "Rename Playbook", "Rename Workflow",
+                  "Duplicate Playbook", "Duplicate Workflow", "Delete
+                  Playbook", or "Delete Workflow" options.</p>
+                </div>
+            </li>
+            <br>
+        </ul>
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+ <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
+
+<script src="../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+</body>
+</html>
