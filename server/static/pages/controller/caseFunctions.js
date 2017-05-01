@@ -30,11 +30,11 @@ function removeCase(id){
         var tmp = null;
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/" + id + "/delete",
+            'url': "/cases/" + id,
             'success': function (data) {
                 tmp = data;
             }
@@ -58,7 +58,7 @@ function addNewSubscription(selectedCase, subscriptionId){
             'data':JSON.stringify({"ancestry":[], "events":[]}),
             'dataType':"application/json",
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase ,
+            'url': "/cases/" + selectedCase + "subscriptions/",
             'success': function (data) {
                 tmp = data;
             }
@@ -74,11 +74,11 @@ function removeSelectedSubscription(selectedCase){
         var tmp = null;
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase + "/subscription/delete",
+            'url': "/cases/" + selectedCase + "subscriptions/",
             'success': function (data) {
                 tmp = data;
             }

@@ -99,6 +99,7 @@ def list_all_apps_and_actions():
 def display_filters():
     return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
 
+
 @app.route('/flags', methods=['GET'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/playbook'])
