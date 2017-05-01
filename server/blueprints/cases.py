@@ -12,6 +12,8 @@ import core.config.config
 import core.config.paths
 from core.helpers import construct_workflow_name_key
 from gevent.event import Event, AsyncResult
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
+    EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
 cases_page = Blueprint('cases_page', __name__)
 
@@ -214,6 +216,19 @@ def convert_ancestry(ancestry):
         del ancestry[2]
     return ancestry
 
+__scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
+                                'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
+                                'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
+                                'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
+                                'Job Added': EVENT_JOB_ADDED,
+                                'Job Removed': EVENT_JOB_REMOVED,
+                                'Job Executed': EVENT_JOB_EXECUTED,
+                                'Job Error': EVENT_JOB_ERROR}
+
+
+def convert_scheduler_events(events):
+    return [__scheduler_event_conversion[event] for event in events if event in __scheduler_event_conversion]
+
 
 @cases_page.route('/<string:case_name>/subscriptions', methods=['PUT'])
 @auth_token_required
@@ -223,6 +238,8 @@ def add_subscription(case_name):
         data = request.get_json()
         if 'ancestry' in data:
             events = data['events'] if 'events' in data else []
+            if len(data['ancestry']) == 1 and events:
+                events = convert_scheduler_events(events)
             case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
             running_context.CaseSubscription.update(case_name)
             running_context.db.session.commit()
@@ -254,6 +271,8 @@ def update_subscription(case_name):
     if data:
         if 'ancestry' in data and 'events' in data:
             data['ancestry'] = convert_ancestry(data['ancestry'])
+            if len(data['ancestry']) == 1 and data['events']:
+                data['events'] = convert_scheduler_events(data['events'])
             success = case_subscription.edit_subscription(case_name,
                                                           data['ancestry'],
                                                           data['events'])
@@ -300,6 +319,8 @@ def crud_subscription(case_name, action):
 
         if data:
             if 'ancestry' in data and 'events' in data:
+                if len(data['ancestry']) == 1 and events:
+                    events = convert_scheduler_events(events)
                 success = case_subscription.edit_subscription(case_name,
                                                               convert_ancestry(data['ancestry']),
                                                               data['events'])
@@ -317,6 +338,8 @@ def crud_subscription(case_name, action):
         if request.get_json():
             data = request.get_json()
             if 'ancestry' in data:
+                if len(data['ancestry']) == 1 and events:
+                    events = convert_scheduler_events(events)
                 events = data['events'] if 'events' in data else []
                 case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
                 running_context.CaseSubscription.update(case_name)
