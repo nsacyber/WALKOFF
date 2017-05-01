@@ -42,7 +42,7 @@ availableSubscriptions = function () {
             'type': "GET",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/availablesubscriptions",
+            'url': "/availablesubscriptions",
             'success': function (data) {
                 tmp = data;
             }

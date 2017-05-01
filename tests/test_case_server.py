@@ -394,12 +394,6 @@ class TestCaseServer(ServerTestCase):
         for case in ['case1', 'case2', 'case3', 'case4']:
             self.__assert_subscriptions_synced(case)
 
-            # TODO: Remove last line and uncomment first 2 lines of test function
-            # def test_crud_case_invalid_action(self):
-            #     response = self.app.post('/cases/case3/junk', headers=self.headers)
-            #     self.assertEqual(response.status_code, 404)
-            # self.post_with_status_check('/cases/case3/junk', status='', status_code=404, headers=self.headers)
-
     def test_display_possible_subscriptions(self):
         with open(join('.', 'data', 'events.json')) as f:
             expected_response = json.loads(f.read())
@@ -423,51 +417,6 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(expected_response, response)
-
-    def test_edit_global_subscription(self):
-        global_subs1 = {"controller-0": 'a',
-                        "controller-1": 'b',
-                        "controller-2": 'c',
-                        "controller-3": 'd',
-                        "workflow-0": 'e',
-                        "next_step-0": 'f',
-                        "filter-0": 'g',
-                        "filter-1": 'h',
-                        "filter-2": 'i'}
-
-        case1 = CaseSubscriptions()
-        case2 = CaseSubscriptions()
-        set_subscriptions({'case1': case1, 'case2': case2})
-        self.app.put('/cases/case1', headers=self.headers)
-        response = self.app.post('/cases/subscriptions/case1/global/edit', data=global_subs1, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.get_data(as_text=True))
-        expected_global1 = GlobalSubscriptions(controller=['a', 'b', 'c', 'd'], workflow=['e'], next_step=['f'],
-                                               filter=['g', 'h', 'i'])
-        expected_case1 = CaseSubscriptions(global_subscriptions=expected_global1)
-        expected_response = {'case1': expected_case1.as_json(), 'case2': case2.as_json()}
-        self.assertDictEqual(expected_response, response)
-        self.assertDictEqual(expected_response, subscriptions_as_json())
-
-        self.__assert_subscriptions_synced('case1')
-
-    def test_edit_global_subscription_invalid_case(self):
-        global_subs = {"controller-0": 'a',
-                       "controller-1": 'b',
-                       "controller-2": 'c',
-                       "controller-3": 'd',
-                       "workflow-0": 'e',
-                       "next_step-0": 'f',
-                       "filter-0": 'g',
-                       "filter-1": 'h',
-                       "filter-2": 'i'}
-        self.post_with_status_check('/cases/subscriptions/case1/global/edit', 'Error: Case name case1 was not found',
-                                    data=global_subs, headers=self.headers)
-
-        case2 = CaseSubscriptions()
-        set_subscriptions({'case2': case2})
-        self.post_with_status_check('/cases/subscriptions/case1/global/edit', 'Error: Case name case1 was not found',
-                                    data=global_subs, headers=self.headers)
 
     def test_convert_ancestry(self):
         input_output = [(['a'], ['a']),
@@ -1002,26 +951,6 @@ class TestCaseServer(ServerTestCase):
                                    content_type='application/json')
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response["status"], 'Error: malformed JSON')
-
-    # TODO: Delete?
-    # def test_invalid_subscription_action(self):
-    #     sub15 = Subscription()
-    #     sub16 = Subscription()
-    #     sub17 = Subscription()
-    #
-    #     sub18 = Subscription(subscriptions={'sub15': sub15, 'sub16': sub16})
-    #     sub19 = Subscription(subscriptions={'sub17': sub17})
-    #     sub20 = Subscription()
-    #
-    #     sub21 = Subscription(subscriptions={'sub18': sub18})
-    #     sub22 = Subscription(subscriptions={'sub19': sub19, 'sub20': sub20})
-    #
-    #     case2 = CaseSubscriptions(subscriptions={'sub21': sub21, 'sub22': sub22})
-    #
-    #     set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
-    #     self.post_with_status_check('/cases/case1/subscriptions',
-    #                                 'error: unknown subscription action',
-    #                                 headers=self.headers)
 
     def test_edit_event_note(self):
         case1, _ = construct_case1()
