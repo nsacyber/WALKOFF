@@ -237,10 +237,10 @@
         $('#addTrigger').on('click', function () {
             name = $('#deviceForm #name').val();
             $.ajax({
-            url: 'execution/listener/triggers/' + name + '/add',
+            url: 'execution/listener/triggers/' + name,
             data: $("#deviceForm").serialize(),
             headers: {"Authentication-Token": authKey},
-            type: "POST",
+            type: "PUT",
             success: function (data) {
                 console.log('trigger add success');
                 getTriggerList();
@@ -276,7 +276,7 @@
             }else{
                 name = $("#trigger option:selected").text();
                  $.ajax({
-                url:'execution/listener/triggers/'+ name + '/edit' ,
+                url:'execution/listener/triggers/'+ name,
                 data: $("#editDeviceForm").serialize(),
                 headers:{"Authentication-Token":authKey},
                 type:"POST",
@@ -298,10 +298,10 @@
             }else{
                 name = $("#trigger option:selected").text();
                  $.ajax({
-                url:'execution/listener/triggers/'+ name + '/remove' ,
+                url:'execution/listener/triggers/'+ name,
                 data:{},
                 headers:{"Authentication-Token":authKey},
-                type:"POST",
+                type:"DELETE",
                 success:function(e){
                     // refresh the list of triggers
                     $("#trigger option(1)").prop('sl')
