@@ -113,7 +113,7 @@ function editSubscription(selectedCase, ancestry, events){
 }
 
 function getWorkflowElements(playbook, workflow, elements){
-    var url = "/playbook/" + playbook + "/" + workflow + "/display";
+    var url = "/playbook/" + playbook + "/" + workflow;
     //var ancestry = {"ancestry":{"ancestry":["start"]}};
     var ancestry = {"ancestry":elements};
     var status = function () {
