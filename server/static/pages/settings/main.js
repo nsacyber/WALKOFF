@@ -9,7 +9,7 @@ $(function() {
             url: "/users",
             data: {},
             headers: {"Authentication-Token": authKey},
-            type: "POST",
+            type: "GET",
             success: function (e) {
                 users = e.substring(2, e.length-2).split(",");
                 $("#username .userOption").remove();
@@ -25,10 +25,10 @@ $(function() {
 
     console.log($("#username option:selected").text())
     $.ajax({
-            url: "users/" + ($("#username option:selected").text() + "/display"),
+            url: "users/" + ($("#username option:selected").text()),
             data: {},
             headers: {"Authentication-Token": authKey},
-            type: "POST",
+            type: "GET",
             success: function (e) {
                 e = JSON.parse(e);
                 for (i = 0; i < e['roles'].length; i++) {
@@ -50,7 +50,7 @@ $(function() {
      });
      $("#submitUpdate").click(function(){
         $.ajax({
-            url: 'users/'+$currentUser['username'] +'/edit',
+            url: 'users/'+$currentUser['username'],
             data: $("#updateUserForm").serialize(),
             headers: {"Authentication-Token": authKey},
             type: "POST",
@@ -72,10 +72,10 @@ $(function() {
        user = $("#username option:selected").val();
        if(user != 'admin'){
             $.ajax({
-                url: 'users/' + user + '/remove',
+                url: 'users/' + user,
                 data: {},
                 headers: {"Authentication-Token": authKey},
-                type: "POST",
+                type: "DELETE",
                 success: function (e) {
                     $("#username option:selected").remove();
                 },
@@ -90,10 +90,10 @@ $(function() {
 });
 $("#username").change(function () {
         $.ajax({
-            url: "users/" + ($("#username option:selected").text() + "/display"),
+            url: "users/" + ($("#username option:selected").text()),
             data: {},
             headers: {"Authentication-Token": authKey},
-            type: "POST",
+            type: "GET",
             success: function (e) {
                 e = JSON.parse(e);
                 $currentUser = e;
@@ -113,10 +113,10 @@ $("#username").change(function () {
 $("#saveNewUser").click(function(){
     username = $("#addUserForm #username").val();
     $.ajax({
-        url: 'users/add',
+        url: 'users/' + username,
         data: $("#addUserForm").serialize(),
         headers: {"Authentication-Token": authKey},
-        type: "POST",
+        type: "PUT",
         success: function (e) {
             data = JSON.parse(e);
             alert("new user added" + e);
