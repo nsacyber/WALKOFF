@@ -429,7 +429,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + oldPlaybookName + "/edit",
+            'url': "/playbooks/" + oldPlaybookName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'data': JSON.stringify({'new_name': newPlaybookName}),
@@ -445,7 +445,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + oldPlaybookName + "/copy",
+            'url': "/playbooks/" + oldPlaybookName + "/copy",
             'dataType': 'json',
             'data': {playbook: newPlaybookName},
             'success': function (data) {
@@ -457,10 +457,10 @@ $(function(){
     function deletePlaybook(playbookName, workflowName) {
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + playbookName + "/delete",
+            'url': "/playbooks/" + playbookName,
             'success': function (data) {
                 downloadWorkflowList();
 
@@ -476,7 +476,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + playbookName + "/" + oldWorkflowName + "/edit",
+            'url': "/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'data': JSON.stringify({'new_name': newWorkflowName}),
@@ -492,7 +492,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + playbookName + "/" + oldWorkflowName + "/copy",
+            'url': "/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
             'dataType': 'json',
             'data': {playbook: playbookName, workflow: newWorkflowName},
             'success': function (data) {
@@ -504,10 +504,10 @@ $(function(){
     function deleteWorkflow(playbookName, workflowName) {
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + playbookName + "/" + workflowName + "/delete",
+            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName,
             'success': function (data) {
                 downloadWorkflowList();
 
@@ -520,10 +520,10 @@ $(function(){
     function newWorkflow(playbookName, workflowName) {
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "PUT",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + playbookName + "/" + workflowName + "/add",
+            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName,
             'success': function (data) {
                 saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
@@ -541,7 +541,7 @@ $(function(){
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" + playbookName + "/" + workflowName + "/save",
+            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
             'data': data,
             'success': function (data) {
             }
@@ -562,7 +562,7 @@ $(function(){
                 'type': "GET",
                 'global': false,
                 'headers':{"Authentication-Token":authKey},
-                'url': "/playbook/" + currentPlaybook + "/" + currentWorkflow + "/display",
+                'url': "/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
                     tmp = data;
                 }
@@ -797,7 +797,7 @@ $(function(){
             'type': "GET",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook",
+            'url': "/playbooks",
             'success': function (data) {
                 if ($("#workflows").jstree(true))
                     $("#workflows").jstree(true).destroy();
