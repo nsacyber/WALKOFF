@@ -44,10 +44,10 @@ function getDeviceList() {
     $("#deviceList").empty();
     $.ajax({
         'async': false,
-        'type': "POST",
+        'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/configuration/" + activeApp + "/devices/all",
+        'url': "/apps/" + activeApp + "/devices",
         'success': function (data) {
             console.log(data);
             var result = JSON.parse(data);
@@ -71,10 +71,10 @@ $("#appList").on("change", function(data){
     if(activeApp != undefined){
          $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "GET",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/configuration/" + activeApp + "/devices/all",
+            'url': "/apps/" + activeApp + "/devices",
             'success': function (data) {
                 console.log(data);
                 var result = JSON.parse(data);
@@ -96,7 +96,7 @@ $("#deviceList").on("change", function(data){
         'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/display",
+        'url': "/apps/" + activeApp + "/devices/" + activeDevice,
         'success': function (data) {
             var result = JSON.parse(data);
             displayDeviceForm(result);
@@ -109,11 +109,11 @@ $("#addNewDevice").on("click", function(){
     if(activeApp){
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "PUT",
             'global': false,
             'data':formData,
             'headers':{"Authentication-Token":authKey},
-            'url': "/configuration/" + activeApp + "/devices/add",
+            'url': "/apps/" + activeApp + "/devices/" + $("#deviceForm #name").val();,
             'success': function (data) {
                 var result = JSON.parse(data);
                 $("#deviceForm").trigger("reset");
@@ -132,10 +132,10 @@ $("#removeDevice").on("click", function(){
     if(activeApp && activeDevice){
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/remove",
+            'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
                 var result = JSON.parse(data);
                 getDeviceList();
@@ -152,11 +152,11 @@ $("#editDevice").on("click", function(){
     if(activeApp && activeDevice){
         $.ajax({
             'async': false,
-            'type': "GET",
+            'type': "POST",
             'global': false,
             'data': $("#deviceForm").serialize(),
             'headers':{"Authentication-Token":authKey},
-            'url': "/configuration/" + activeApp + "/devices/" + activeDevice + "/edit",
+            'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
                 var result = JSON.parse(data);
                 alert(result['status']);

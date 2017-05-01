@@ -60,10 +60,10 @@ for(var app in apps){
         }
 
         $.ajax({
-            url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/add',
+            url:'/apps/' + apps[sly.rel.activeItem] + '/devices/' + $("#deviceForm #name").val();,
             data:$("#deviceForm").serialize(),
             headers:{"Authentication-Token":authKey},
-            type:"POST",
+            type:"PUT",
             success:function(e){
                 console.log(e);
                 $vframe.sly('add', '<li>' + defaultValues["name"] + '</li>');
@@ -80,10 +80,10 @@ for(var app in apps){
     $vwrap.find('.remove').on('click', function () {
 
         $.ajax({
-            url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[vsly.rel.activeItem].el.innerHTML + '/remove',
+            url:'/apps/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[vsly.rel.activeItem].el.innerHTML,
             data:{},
             headers:{"Authentication-Token":authKey},
-            type:"POST",
+            type:"DELETE",
             success:function(e){
                 console.log(e);
                 $vframe.sly('remove', vsly.rel.activeItem);
@@ -123,10 +123,10 @@ for(var app in apps){
     }).init();
 
      $.ajax({
-        url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/all',
+        url:'/apps/' + apps[sly.rel.activeItem] + '/devices',
         data:{},
         headers:{"Authentication-Token":authKey},
-        type:"POST",
+        type:"GET",
         success: function(e){
             displayNameList(JSON.parse(e));
             vsly.reload();
@@ -143,10 +143,10 @@ for(var app in apps){
         var app = apps[itemIndex];
         $("#deviceList").empty();
         $.ajax({
-            url:'/configuration/' + app + '/devices/all',
+            url:'/apps/' + app + '/devices',
             data:{},
             headers:{"Authentication-Token":authKey},
-            type:"POST",
+            type:"GET",
             success: function(e){
                 displayNameList(JSON.parse(e));
                 vsly.reload();
@@ -160,10 +160,10 @@ for(var app in apps){
     vsly.on('active', function(eventName, itemIndex){
         $(this).closest('#deviceForm').find("input[type=text]").val("");
         $.ajax({
-            url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[itemIndex].el.innerHTML + '/display',
+            url:'/apps/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[itemIndex].el.innerHTML,
             data:{},
             headers:{"Authentication-Token":authKey},
-            type:"POST",
+            type:"GET",
             success:function(e){
                 values = JSON.parse(e);
                 console.log(values);
@@ -188,7 +188,7 @@ for(var app in apps){
     $( "#deviceForm" ).submit(function(event){
           event.preventDefault();
          $.ajax({
-            url:'/configuration/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[vsly.rel.activeItem].el.innerHTML + '/edit',
+            url:'/apps/' + apps[sly.rel.activeItem] + '/devices/' + vsly.items[vsly.rel.activeItem].el.innerHTML,
             data:$("#deviceForm").serialize(),
             headers:{"Authentication-Token":authKey},
             type:"POST",

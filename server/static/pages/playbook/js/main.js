@@ -1128,10 +1128,10 @@ $(function(){
             $.each(appData, function( appName, actions ) {
                 $.ajax({
                     'async': false,
-                    'type': "POST",
+                    'type': "GET",
                     'global': false,
                     'headers':{"Authentication-Token":authKey},
-                    'url': "/configuration/" + appName + "/devices",
+                    'url': "/apps/" + appName + "/devices",
                     'dataType': 'json',
                     'contentType': 'application/json; charset=utf-8',
                     'data': {},
