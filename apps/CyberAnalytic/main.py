@@ -11,22 +11,27 @@ class Main(App):
 
     global suspicious_pids
 
-    def __init__(self):
+    def __init__(self, name=None, device=None):
         self.is_running = False
+        App.__init__(self, name, device)
 
     def __monitor_processes(self):
         while True:
             for proc in psutil.process_iter():
+                print(proc.name())
                 if 'at.exe' in proc.exe():
                     suspicious_pids.append(threat_pid("at.exe", proc.name(), proc.pid))
-                elif 'schtask.exe' in proc.exe():
+                elif 'schtasks.exe' in proc.exe():
                     suspicious_pids.append(threat_pid("schtask.exe", proc.name(), proc.pid))
                 elif 'cmd.exe' in proc.exe():
-                    if proc.parent() and "explorer.exe" not in proc.parent().exe():
-                        suspicious_pids.append(threat_pid("cmd.exe", proc.name(), proc.pid))
+                    print("found one")
+                    #if proc.parent() and "explorer.exe" not in proc.parent().exe():
+                    #    suspicious_pids.append(threat_pid("cmd.exe", proc.name(), proc.pid))
+                    suspicious_pids.append(threat_pid("cmd.exe", proc.name(), proc.pid))
 
     def begin_monitoring(self, args={}):
         if not self.is_running:
+            print("spawning")
             gevent.spawn(self.__monitor_processes)
 
     def get_exe_pids(self, args={}):
