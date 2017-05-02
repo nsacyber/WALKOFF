@@ -184,7 +184,7 @@ class Step(ExecutionElement):
             risk = cElementTree.SubElement(step, 'risk')
             risk.text = str(self.risk)
 
-        if self.device:
+        if self.device is not None:
             device = cElementTree.SubElement(step, 'device')
             device.text = self.device
 
@@ -255,7 +255,9 @@ class Step(ExecutionElement):
 
     @staticmethod
     def from_json(json_in, position, parent_name='', ancestry=None):
-        device = json_in['device'] if 'device' in json_in else ''
+        device = json_in['device'] if ('device' in json_in
+                                       and json_in['device'] is not None
+                                       and json_in['device'] != 'None') else ''
         risk = json_in['risk'] if 'risk' in json_in else 0
         widgets = []
         if 'widgets' in json_in:
