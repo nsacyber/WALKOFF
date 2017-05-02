@@ -104,7 +104,8 @@ class Step(ExecutionElement):
     def _update_xml(self, step_xml):
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
-        self.device = step_xml.find('device').text
+        device_field = step_xml.find('device')
+        self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
         self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
@@ -120,7 +121,6 @@ class Step(ExecutionElement):
             content = cElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
         else:
             content = cElementTree.tostring(self.raw_xml, method='xml')
-
         t = Template(Markup(content).unescape(), autoescape=True)
         xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
@@ -146,6 +146,7 @@ class Step(ExecutionElement):
         raise InvalidStepActionError(self.app, self.action)
 
     def execute(self, instance=None):
+        print("Step exec")
         if self.validate_input():
             callbacks.StepInputValidated.send(self)
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
