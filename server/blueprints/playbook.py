@@ -290,7 +290,7 @@ def copy_workflow(playbook_name, workflow_name):
         return json.dumps({"status": status})
 
 
-@playbooks_page.route('/<playbook_name>/workflows/<workflow_name>/execute', methods=['POST'])
+@playbooks_page.route('/<string:playbook_name>/workflows/<string:workflow_name>/execute', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/playbook'])
 def execute_workflow(playbook_name, workflow_name):

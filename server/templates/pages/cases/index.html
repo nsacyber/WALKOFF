@@ -73,11 +73,14 @@
                 text-align:left;
                 padding:5px;
             }
+
+
         </style>
 
             <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
             <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
             <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+            <script src="{{ url_for('static', filename='pages/cases/listgroup.min.js' ) }}"></script>
             <script src="{{ url_for('static', filename='pages/cases/dataTables.min.js' ) }}"></script>
 
     </head>
@@ -93,7 +96,9 @@
                 <div id="innerSidebar" class="innerSidebar">
                     <h3>Cases</h3>
                     <div id="casesDiv">
-                        Cases Here
+                        <ul class="list-group" id="caseSelect">
+
+                        </ul>
                     </div>
                 </div>
             </div>

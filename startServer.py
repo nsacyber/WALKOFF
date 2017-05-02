@@ -4,7 +4,7 @@ import json
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
 from core.config import config, paths
-from server import flaskserver, app
+from server import flaskserver
 
 
 def get_logging_config():

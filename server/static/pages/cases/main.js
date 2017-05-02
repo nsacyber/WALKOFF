@@ -9,16 +9,17 @@ var cases = function () {
         'url': "/cases/subscriptions",
         'success': function (data) {
             tmp = data;
-            console.log(data);
         }
     });
     return tmp;
 }();
 
-var data = getEventLogs("case_1");
-var dataSet = formatLogData(data);
+var cases = getCases();
+formatCaseSelection(cases);
 
-$("#logDataTable").DataTable({
+var dataSet = [];
+
+dataTable = $("#logDataTable").DataTable({
     data: dataSet,
     columns:[
      {title: "id"},
@@ -28,4 +29,18 @@ $("#logDataTable").DataTable({
      {title: "data"},
      {title: "message"}
     ]
+});
+
+$("#caseSelect > li").on("click", function(e){
+    //Clears the table
+    dataTable.clear().draw();
+
+    //Gets the data
+    var selectedCase = e.currentTarget.innerText;
+    var data = getEventLogs(selectedCase);
+    var dataSet = formatLogData(data);
+
+    //Adds the new rows
+    dataTable.rows.add(dataSet);
+    dataTable.draw();
 });

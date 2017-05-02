@@ -151,10 +151,10 @@ class CaseDatabase(object):
         return self.session.query(Event).filter(Event.id == event_id).first().as_json()
 
     def case_events_as_json(self, case_name):
-        # return [event.as_json(with_cases=True) for event in self.session.query(Event).all()]
-        case = self.session.query(Case).filter(Case.name == case_name).first()
-        if case.id:
-            return [event.as_json() for event in self.session.query(Event).filter(_CaseEventLink.event_id.in_([case.id])).all()]
+        id = self.session.query(Case).filter(Case.name == case_name).first().id
+        if id:
+            result = [event.as_json() for event in self.session.query(Event).join(Event.cases).filter(Case.id==id).all()]
+            return result
         return {}
 
 

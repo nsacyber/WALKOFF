@@ -17,6 +17,33 @@ function getEventLogs(case_name){
     return logs;
 }
 
+function getCases(){
+    var logs = function () {
+        var tmp = null;
+        $.ajax({
+            'async': false,
+            'type': "GET",
+            'global': false,
+            'data':{},
+            'headers':{"Authentication-Token":authKey},
+            'url': "/cases/",
+            'success': function (data) {
+                tmp = JSON.parse(data);
+            }
+        });
+        return tmp;
+    }();
+    return logs;
+}
+
+function formatCaseSelection(data){
+    console.log(data.cases);
+    for(x in data.cases){
+        $("#caseSelect").append("<li class='list-group-item'>" + data.cases[x].name + "</li>");
+
+    }
+}
+
 function formatLogData(data){
     var dataSet = [];
     for(prop in data){
