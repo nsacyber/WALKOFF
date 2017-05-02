@@ -1,6 +1,7 @@
 # from core.context import running_context
 from core.case import database
-
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
+    EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
 class GlobalSubscriptions(object):
     """
@@ -79,10 +80,18 @@ class Subscription(object):
         """
         return message_name in self.events
 
-    def as_json(self):
-        return {"events": self.events,
-                "subscriptions": {str(name): subscription.as_json()
-                                  for name, subscription in self.subscriptions.items()}}
+
+
+    def as_json(self, names=False):
+        if names:
+            results = {"events": convert_to_event_names(self.events),
+                    "subscriptions": {str(name): subscription.as_json()
+                                      for name, subscription in self.subscriptions.items()}}
+        else:
+            results = {"events": self.events,
+                       "subscriptions": {str(name): subscription.as_json()
+                                         for name, subscription in self.subscriptions.items()}}
+        return results
 
     @staticmethod
     def from_json(json_in):
@@ -264,3 +273,24 @@ def remove_subscription_node(case, ancestry):
             else:
                 current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
                 ancestry_level_name = ancestry.pop()
+
+__scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
+                                'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
+                                'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
+                                'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
+                                'Job Added': EVENT_JOB_ADDED,
+                                'Job Removed': EVENT_JOB_REMOVED,
+                                'Job Executed': EVENT_JOB_EXECUTED,
+                                'Job Error': EVENT_JOB_ERROR}
+
+def convert_to_event_names(events):
+    result = []
+    for event in events:
+        try:
+            code = int(event)
+            for key in __scheduler_event_conversion:
+                if __scheduler_event_conversion[key] == code:
+                    result.append(key)
+        except:
+            result.append(event)
+    return result

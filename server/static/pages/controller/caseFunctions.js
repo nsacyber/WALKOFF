@@ -65,7 +65,6 @@ function addNewSubscription(selectedCase, subscriptionId){
         });
         return tmp;
     }();
-    console.log(status);
     return status;
 }
 
@@ -107,7 +106,6 @@ function editSubscription(selectedCase, ancestry, events){
         });
         return tmp;
     }();
-    console.log(status);
     $("#ancestryAjaxForm > li").remove();
     return stat;
 }
@@ -151,7 +149,6 @@ function getCaseDetails(selectedCase){
         });
         return tmp;
     }();
-    console.log(status);
     stat = {"status": 1}
     return stat;
 }
@@ -172,14 +169,61 @@ function getSubscriptionDetails(selectedCase){
         });
         return tmp;
     }();
-    console.log(status);
-    stat = {"status": 1}
-    return stat;
+    return status;
+}
+
+function clearCaseDetails(){
+    $(".remove").filter(function(){
+
+        if($(this).parent().parent().find(".rowLabel").text() == "Controller"){
+            return false;
+        }
+        return true;
+    }).trigger("click");
+    $(".subscriptionSelection").empty()
 }
 
 function displayCaseDetails(subscriptionDetails){
-    for(item in subscriptionDetails){
+    var subscriptionDetails = JSON.parse(subscriptionDetails);
 
+    //Grabs the data needed
+    var ancestry = [], counter=0, events=[];
+    var item = subscriptionDetails["subscriptions"];
+    while(item !== {} && typeof item !== "undefined" && item != null){
+        if(counter == 1){
+            var value = Object.keys(item)[0];
+            if(typeof value !== "undefined" && value !== null){
+                Array.prototype.push.apply(ancestry, value.split("-"));
+            }
+
+        }
+        else{
+            var value = Object.keys(item)[0];
+            if(typeof value !== "undefined" && value !== null){
+                ancestry.push(value);
+            }
+        }
+
+        var next = Object.keys(item)[0];
+        if(typeof next !== "undefined" && next != null){
+            events = item[next]["events"];
+            item = item[next]["subscriptions"];
+            counter++;
+        }
+        else{
+            break;
+        }
+    }
+
+    clearCaseDetails();
+    //Fills in the ancestry
+    for(ancestor in ancestry){
+        $(".add").trigger("click");
+        $("input[name='ancestry-" + ancestor + "']").val(ancestry[ancestor]);
+    }
+    //Checks the appropriate boxes
+    for(x in events){
+        $("input[name='" + events[x] + "']").attr("checked", true);
     }
 }
 

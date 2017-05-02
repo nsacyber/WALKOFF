@@ -148,6 +148,13 @@ __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
 def convert_scheduler_events(events):
     return [__scheduler_event_conversion[event] for event in events if event in __scheduler_event_conversion]
 
+def convert_to_event_names(events):
+    result = []
+    for event in events:
+        for key in __scheduler_event_conversion:
+            if __scheduler_event_conversion[key] == event:
+                result.append(key)
+    return result
 
 @cases_page.route('/<string:case_name>/subscriptions', methods=['PUT'])
 @auth_token_required
@@ -174,7 +181,8 @@ def add_subscription(case_name):
 @roles_accepted(*running_context.user_roles['/cases'])
 def read_subscription(case_name):
     if case_name in core.case.subscription.subscriptions:
-        return json.dumps(core.case.subscription.subscriptions[case_name].as_json())
+        result = core.case.subscription.subscriptions[case_name].as_json(names=True)
+        return json.dumps(result)
 
 
 @cases_page.route('/<string:case_name>/subscriptions', methods=['POST'])

@@ -8,8 +8,7 @@ function formatCasesForJSTree(cases){
 
 function resetSubscriptionModal(){
 //    $("#modalObjectTypeSelection > option").remove();
-    $(".objectSelection > option").remove();
-    $(".subscriptionSelection").empty()
+
 }
 
 function resetCaseModal(){
@@ -25,10 +24,9 @@ function createSubscriptionModal(){
                         open:
                             function(event, ui){
                                 var selected_case = $("#casesTree").jstree().get_node($("#casesTree").jstree("get_selected").pop()).text;
-                                console.log(selected_case);
                                 var details = getCaseDetails(selected_case);
                                 var sub_details = getSubscriptionDetails(selected_case);
-                                console.log(details);
+                                displayCaseDetails(sub_details);
 //                                for(key in window.availableSubscriptions){
 //                                    objectTypeSelection.append("<option value='" + key + "'>" + key + "</option>");
 //                                }
