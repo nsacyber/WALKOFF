@@ -1,0 +1,25 @@
+<html>
+    <head></head>
+    <body>
+        <script src="{{ url_for('appPage.static', app=g.app, filename='main.js') }}"></script>
+
+        <div id="main" class="container-fluid">
+            <h1>Suspicious Processes</h1>
+            <table style="width:50%">
+                <tr>
+                    <th>Threat Type</th>
+                    <th>Process Name</th>
+                    <th>Process ID</th>
+                </tr>
+                {% for pid in pids %}
+                    <tr>
+                        <td align="center">{{ pid.threat_name }}</td>
+                        <td align="center">{{ pid.threat_exe }}</td>
+                        <td align="center">{{ pid.pid }}</td>
+                    </tr>
+              {% endfor %}
+            </table>
+        </div>
+    </body>
+</html>
+
