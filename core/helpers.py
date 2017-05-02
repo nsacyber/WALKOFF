@@ -99,9 +99,13 @@ def load_app_function(app_instance, function_name):
         return None
 
 
-def locate_workflows_in_directory(path=core.config.paths.workflows_path):
-    return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
-                                                          and workflow.endswith('.workflow'))]
+def locate_workflows_in_directory(path=None):
+    path = path if path is not None else core.config.paths.workflows_path
+    if os.path.exists(path):
+        return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
+                                                              and workflow.endswith('.workflow'))]
+    else:
+        return []
 
 
 def get_workflow_names_from_file(filename):
