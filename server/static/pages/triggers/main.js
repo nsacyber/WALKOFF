@@ -1,6 +1,9 @@
 (function () {
     triggerData = [];
     params = {};
+    $("#editformSubmit").prop("disabled",true);
+    $("#editTrigger").prop("disabled",true);
+
     //Get List of flags
      $.ajax({
             url: "/flags",
@@ -47,6 +50,7 @@
 
     // Add item
     $("#trigger").on("change",function(){
+        $("#editTrigger").prop("disabled",false);
         val = $("#trigger option:selected").val();
         index = $("#trigger option:selected").val();
         trigger = triggerData['triggers'][''+ val +''];
@@ -256,8 +260,8 @@
 
         //Show edit dialog
         $("#editTrigger").on('click',function(){
-        alert('edited')
             index = $("#trigger option:selected").val();
+            $("#editformSubmit").prop("disabled",false);
             trigger = triggerData['triggers'][''+index];
             if($("#trigger option:selected").attr('value') == 'none'){
             }else{
@@ -277,7 +281,7 @@
                 name = $("#trigger option:selected").text();
                  $.ajax({
                 url:'execution/listener/triggers/'+ name + '/edit' ,
-                data: $("#editDeviceForm").serialize(),
+                data: $("#deviceForm").serialize(),
                 headers:{"Authentication-Token":authKey},
                 type:"POST",
                 success:function(e){
@@ -304,7 +308,7 @@
                 type:"POST",
                 success:function(e){
                     // refresh the list of triggers
-                    $("#trigger option(1)").prop('sl')
+                    $("#trigger option:selected").remove()
                     getTriggerList();
                 },
                 error: function(e){
