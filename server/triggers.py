@@ -45,7 +45,7 @@ class Triggers(Base):
                 'workflow': self.workflow}
 
     @staticmethod
-    def execute(data_in):
+    def execute(data_in, input_in):
         triggers = Triggers.query.all()
         from server.flaskserver import running_context
         for trigger in triggers:
@@ -53,7 +53,14 @@ class Triggers(Base):
             if all(Triggers.__execute_trigger(conditional, data_in) for conditional in conditionals):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
-                    workflow_to_be_executed.execute()
+                    if input_in:
+                        input = {arg['key']: Argument(key=arg['key'],
+                                                          value=arg['value'],
+                                                          format=arg.get('format', 'str'))
+                                     for arg in input_in}
+                        workflow_to_be_executed.execute(input=input)
+                    else:
+                        workflow_to_be_executed.execute()
                     return {"status": "success"}
                 else:
                     return {"status": "error: workflow could not be found"}

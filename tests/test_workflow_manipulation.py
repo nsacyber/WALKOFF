@@ -19,6 +19,7 @@ from core.controller import _WorkflowKey
 from server import flaskserver as flask_server
 from server.flaskserver import running_context
 from timeit import default_timer
+import json
 
 
 class TestWorkflowManipulation(unittest.TestCase):
@@ -434,3 +435,22 @@ class TestWorkflowManipulation(unittest.TestCase):
         waiter.wait(timeout=5)
         duration = default_timer() - start
         self.assertTrue(2.5 < duration < 5)
+
+    def test_change_step_input(self):
+
+        input = [{"key":"call", "value":"CHANGE INPUT"}]
+
+        input_arg = {arg['key']: Argument(key=arg['key'],
+                                      value=arg['value'],
+                                      format=arg.get('format', 'str'))
+                 for arg in input}
+
+        result = {'value': None}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] = kwargs['data']
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        self.testWorkflow.execute(input=input_arg)
+        self.assertDictEqual(json.loads(result['value']), {"result": "REPEATING: CHANGE INPUT"})

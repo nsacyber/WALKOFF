@@ -12,7 +12,10 @@ triggers_page = Blueprint('triggers_page', __name__)
 @roles_accepted(*running_context.user_roles['/execution/listener'])
 def listener():
     form = forms.IncomingDataForm(request.form)
-    returned_json = running_context.Triggers.execute(form.data.data) if form.validate() else {}
+    input = None
+    if form.input.data:
+        input = json.loads(form.input.data)
+    returned_json = running_context.Triggers.execute(form.data.data, input) if form.validate() else {}
     return json.dumps(returned_json)
 
 

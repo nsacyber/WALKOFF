@@ -4,6 +4,8 @@ from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 from server.triggers import Triggers
 
+from core.case.callbacks import FunctionExecutionSuccess
+
 
 class TestTriggers(ServerTestCase):
     def setUp(self):
@@ -130,3 +132,24 @@ class TestTriggers(ServerTestCase):
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "warning: no trigger found valid for data in", headers=self.headers,
                                     data={"data": "bbb"})
+
+    def test_trigger_execute_change_input(self):
+        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditional": json.dumps([condition])}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   "success", headers=self.headers, data=data)
+
+        result = {'value': None}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] = kwargs['data']
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data" : "hellohellohello",
+                "input" : json.dumps([{"key":"call", "value":"CHANGE INPUT"}])}
+
+        self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
+                                    "success", headers=self.headers, data=data)

@@ -139,6 +139,7 @@ class ConditionalField(Form):
 
 class IncomingDataForm(Form):
     data = StringField('data')
+    input = StringField('input')
 
 
 class EditCaseForm(Form):

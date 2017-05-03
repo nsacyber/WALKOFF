@@ -146,7 +146,6 @@ class Step(ExecutionElement):
         raise InvalidStepActionError(self.app, self.action)
 
     def execute(self, instance=None):
-        print("Step exec")
         if self.validate_input():
             callbacks.StepInputValidated.send(self)
             result = load_app_function(instance, self.__lookup_function())(args=self.input)

@@ -107,15 +107,16 @@ class Workflow(ExecutionElement):
         except (StopIteration, AttributeError):
             pass
 
-    def execute(self, start='start'):
+    def execute(self, start='start', input=""):
         callbacks.WorkflowExecutionStart.send(self)
-        self.executor = self.__execute(start)
+        self.executor = self.__execute(start, input)
         next(self.executor)
 
-    def __execute(self, start='start'):
+    def __execute(self, start='start', input=""):
         instances = {}
         total_steps = []
         steps = self.__steps(start=start)
+        first = True
         for step in steps:
             while self.is_paused:
                 _ = yield
@@ -127,6 +128,12 @@ class Workflow(ExecutionElement):
                     instances[step.device] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
                 step.render_step(steps=total_steps)
+
+                if first:
+                    if input:
+                        step.input = input
+                    first = False
+
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
                 steps.send(error_flag)
