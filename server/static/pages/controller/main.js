@@ -42,7 +42,7 @@ availableSubscriptions = function () {
             'type': "GET",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/availablesubscriptions",
+            'url': "/availablesubscriptions",
             'success': function (data) {
                 tmp = data;
             }
@@ -127,7 +127,6 @@ objectSelectionDiv.on("change", '.objectSelection', function(){
 $("#submitForm").on("click", function(){
     var selectedSub = $("#casesTree").jstree().get_node($('#casesTree').jstree().get_selected()).text;
     var selectedCase =  $("#casesTree").jstree().get_node($("#casesTree").jstree().get_parent(selectedSub)).text;
-    console.log(selectedCase);
     var ancestryForm = $("#ancestryAjaxForm");
     var inputs = $(".container").find("input").toArray();
     inputs.shift();
@@ -139,7 +138,6 @@ $("#submitForm").on("click", function(){
 
 
     var selectedEvents = getCheckedEvents();
-    console.log(selectedEvents);
     $.each(selectedEvents, function(i, e){
         var elem = $("<li></li>");
         var eventInput = $("<input type='text'></input>");
@@ -148,9 +146,8 @@ $("#submitForm").on("click", function(){
         elem.append(eventInput);
         $("#ancestryAjaxForm").append(elem);
     });
-    console.log(ancestryForm.serialize());
+
     r = editSubscription(selectedSub, ancestryForm.serialize(), selectedEvents);
-    console.log(r);
     window.editSubscriptionDialog.dialog("close");
 });
 

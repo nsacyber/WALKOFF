@@ -23,7 +23,7 @@ function executeWorkflow(currentPlaybook, currentWorkflow){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbook/" +currentPlaybook + "/" + currentWorkflow + "/execute",
+            'url': "playbooks/" +currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
                 tmp = data;
                 $("#eventList").append("<ul>" + currentWorkflow + " is executing </ul>");

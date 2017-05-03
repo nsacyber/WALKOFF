@@ -4,18 +4,16 @@ import json
 from gevent.wsgi import WSGIServer
 import core.case.database as case_database
 from core.config import config, paths
-from server import flaskserver, app
+from server import flaskserver
 
 
 def get_logging_config():
     if isfile(paths.logging_config_path):
-        #try:
-        with open(paths.logging_config_path, 'rt') as log_config_file:
-            ll = json.loads(log_config_file.read())
-            print(ll)
-            return ll
-        #except:
-        #    return None
+        try:
+            with open(paths.logging_config_path, 'rt') as log_config_file:
+                return json.loads(log_config_file.read())
+        except:
+            return None
     else:
         return None
 

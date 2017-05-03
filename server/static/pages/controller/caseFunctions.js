@@ -30,11 +30,11 @@ function removeCase(id){
         var tmp = null;
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/" + id + "/delete",
+            'url': "/cases/" + id,
             'success': function (data) {
                 tmp = data;
             }
@@ -58,14 +58,13 @@ function addNewSubscription(selectedCase, subscriptionId){
             'data':JSON.stringify({"ancestry":[], "events":[]}),
             'dataType':"application/json",
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase ,
+            'url': "/cases/" + selectedCase + "subscriptions/",
             'success': function (data) {
                 tmp = data;
             }
         });
         return tmp;
     }();
-    console.log(status);
     return status;
 }
 
@@ -74,11 +73,11 @@ function removeSelectedSubscription(selectedCase){
         var tmp = null;
         $.ajax({
             'async': false,
-            'type': "POST",
+            'type': "DELETE",
             'global': false,
             'data':{"format":"cytoscape"},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/subscriptions/" + selectedCase + "/subscription/delete",
+            'url': "/cases/" + selectedCase + "subscriptions/",
             'success': function (data) {
                 tmp = data;
             }
@@ -107,13 +106,12 @@ function editSubscription(selectedCase, ancestry, events){
         });
         return tmp;
     }();
-    console.log(status);
     $("#ancestryAjaxForm > li").remove();
     return stat;
 }
 
 function getWorkflowElements(playbook, workflow, elements){
-    var url = "/playbook/" + playbook + "/" + workflow + "/display";
+    var url = "/playbook/" + playbook + "/" + workflow;
     //var ancestry = {"ancestry":{"ancestry":["start"]}};
     var ancestry = {"ancestry":elements};
     var status = function () {
@@ -151,7 +149,6 @@ function getCaseDetails(selectedCase){
         });
         return tmp;
     }();
-    console.log(status);
     stat = {"status": 1}
     return stat;
 }
@@ -172,14 +169,61 @@ function getSubscriptionDetails(selectedCase){
         });
         return tmp;
     }();
-    console.log(status);
-    stat = {"status": 1}
-    return stat;
+    return status;
+}
+
+function clearCaseDetails(){
+    $(".remove").filter(function(){
+
+        if($(this).parent().parent().find(".rowLabel").text() == "Controller"){
+            return false;
+        }
+        return true;
+    }).trigger("click");
+    $(".subscriptionSelection").empty()
 }
 
 function displayCaseDetails(subscriptionDetails){
-    for(item in subscriptionDetails){
+    var subscriptionDetails = JSON.parse(subscriptionDetails);
 
+    //Grabs the data needed
+    var ancestry = [], counter=0, events=[];
+    var item = subscriptionDetails["subscriptions"];
+    while(item !== {} && typeof item !== "undefined" && item != null){
+        if(counter == 1){
+            var value = Object.keys(item)[0];
+            if(typeof value !== "undefined" && value !== null){
+                Array.prototype.push.apply(ancestry, value.split("-"));
+            }
+
+        }
+        else{
+            var value = Object.keys(item)[0];
+            if(typeof value !== "undefined" && value !== null){
+                ancestry.push(value);
+            }
+        }
+
+        var next = Object.keys(item)[0];
+        if(typeof next !== "undefined" && next != null){
+            events = item[next]["events"];
+            item = item[next]["subscriptions"];
+            counter++;
+        }
+        else{
+            break;
+        }
+    }
+
+    clearCaseDetails();
+    //Fills in the ancestry
+    for(ancestor in ancestry){
+        $(".add").trigger("click");
+        $("input[name='ancestry-" + ancestor + "']").val(ancestry[ancestor]);
+    }
+    //Checks the appropriate boxes
+    for(x in events){
+        $("input[name='" + events[x] + "']").attr("checked", true);
     }
 }
 

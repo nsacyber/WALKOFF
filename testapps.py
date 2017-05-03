@@ -38,7 +38,7 @@ def test_app(app_name):
         suite.addTests([unittest.TestLoader().loadTestsFromModule(test_module)
                         for test_module in test_modules])
         return unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
-    elif len(test_modules) == 0:
+    elif test_modules is None or len(test_modules) == 0:
         print("App {0} has no tests. Don't be that person. Write your tests.")
         return True
 

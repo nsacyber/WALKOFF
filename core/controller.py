@@ -112,8 +112,8 @@ class Controller(object):
         self.add_child_workflows()
         self.add_workflow_scheduled_jobs()
 
-    def load_all_workflows_from_directory(self, path=core.config.paths.workflows_path):
-        if not path:
+    def load_all_workflows_from_directory(self, path=None):
+        if path is None:
             path = core.config.paths.workflows_path
         for workflow in locate_workflows_in_directory(path):
             self.load_workflows_from_file(os.path.join(path, workflow))

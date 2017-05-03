@@ -43,11 +43,3 @@ def scheduler_actions_by_id(job_id, action):
 # @roles_accepted(*userRoles["/execution/listener"])
 def get_scheduler():
     return running_context.controller.get_scheduled_jobs()
-
-
-#TODO: DELETE
-@scheduler_page.route('/jobs', methods=['POST'])
-@auth_token_required
-# @roles_accepted(*userRoles["/execution/listener"])
-def scheduler():
-    return running_context.controller.get_scheduled_jobs()
