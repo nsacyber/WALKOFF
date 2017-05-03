@@ -1,25 +1,44 @@
 (function () {
     triggerData = [];
     params = {};
+    var flagsList = [];
+    var filtersList = [];
+    var triggerEditor = null;
+
     $("#editformSubmit").prop("disabled",true);
     $("#editTrigger").prop("disabled",true);
 
     //Get List of flags
-     $.ajax({
-            url: "/flags",
-            data: {},
-            headers: {"Authentication-Token": authKey},
-            type: "GET",
-            success: function (e) {
-//               console.log(JSON.parse(e));
-               parameters = JSON.parse(e);
-            },
-            error: function (e) {
-                console.log("failed")
-                $("#templatesPath").val("Error");
-            }
-        });
+    $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/flags",
+        'dataType': 'json',
+        'success': function (data) {
+            flagsList = [];
+            $.each(data.flags, function( key, value ) {
+                flagsList.push(key);
+            });
+        }
+    });
 
+    // Get list of all filters
+    $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "/filters",
+        'dataType': 'json',
+        'success': function (data) {
+            filtersList = [];
+            $.each(data.filters, function( key, value ) {
+                filtersList.push(key);
+            });
+        }
+    });
 
     //Get and display the list of triggers
     function getTriggerList(){
@@ -45,7 +64,6 @@
     getTriggerList();
 
 
-//    $("#parameterEdit").hide();
     var $slidee = $("#smart").children('ul').eq(0);
 
     // Add item
@@ -56,20 +74,11 @@
         trigger = triggerData['triggers'][''+ val +''];
         $(".workflow").empty().append('<div>' + trigger['workflow'] + '</div>');
         $(".playbook").empty().append('<div>' + trigger['playbook'] + '</div>');
+        $(".conditional").empty().append('<div>' + JSON.stringify(trigger['conditions']) + '</div>');
 
     });
-    function createSchema(parameters) {
-        var appNames = [];
-        var appActions = {};
-        $.each(appData, function( appName, actions ) {
-            appNames.push(appName);
-            appActions[appName] = [];
-            $.each(actions, function( actionName, actionProperties ) {
-                appActions[appName].push(actionName);
-            });
-        });
 
-        // Create a schema
+    function createSchema() {
 
         var argProperties = {
             type: "array",
@@ -103,56 +112,51 @@
         var schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             type: "object",
-            title: "Node Parameters",
+            title: "Trigger Parameters",
+            options: {
+                disable_collapse: true
+            },
             properties: {
                 name: {
                     type: "string",
                     title: "Name",
                 },
-                input: deepcopy(argProperties),
-                next: {
-                    options: {
-                        hidden: true
-                    }
+                playbook: {
+                    type: "string",
+                    title: "Playbook",
                 },
-                errors: {
-                    options: {
-                        hidden: true
-                    }
-                }
-            }
-        };
-
-
-
-        schema.properties.next = {
-            flags: {
-                type: "array",
-                headerTemplate: "Flags",
-                items: {
-                    type: "object",
-                    title: "Next Step Flag",
-                    headerTemplate: "Flag {{ i1 }}",
-                    properties: {
-                        action: {
-                            type: "string",
-                            title: "Select Flag",
-                            enum: flagsList
-                        },
-                        args: deepcopy(argProperties),
-                        filters: {
-                            type: "array",
-                            title: "Filters",
-                            items: {
-                                type: "object",
-                                title: "Filter",
-                                properties: {
-                                    action: {
-                                        type: "string",
-                                        title: "Select Filter",
-                                        enum: filtersList
-                                    },
-                                    args: deepcopy(argProperties),
+                workflow: {
+                    type: "string",
+                    title: "Workflow",
+                },
+                conditional: {
+                    type: "array",
+                    headerTemplate: "Conditionals",
+                    items: {
+                        type: "object",
+                        title: "Next Conditional",
+                        headerTemplate: "Conditional {{ i1 }}",
+                        properties: {
+                            action: {
+                                type: "string",
+                                title: "Select Conditional",
+                                enum: flagsList
+                            },
+                            args: deepcopy(argProperties),
+                            filters: {
+                                type: "array",
+                                title: "Filters",
+                                items: {
+                                    type: "object",
+                                    title: "Filter",
+                                    properties: {
+                                        action: {
+                                            type: "string",
+                                            title: "Select Filter",
+                                            enum: filtersList
+                                        },
+                                        args: deepcopy(argProperties),
+                                    }
                                 }
                             }
                         }
@@ -161,7 +165,6 @@
             }
         };
 
-
         return schema;
     }
 
@@ -169,92 +172,59 @@
         return JSON.parse(JSON.stringify(obj));
     }
 
-    // Modify the parameters JSON object a little to conform to the schema expected by the parameters form
-    function transformParametersToSchema(parameters) {
-        parameters = deepcopy(parameters);
-
-        var newInputs = [];
-        $.each(parameters.input, function( key, input ) {
-            newInputs.push(input);
+    // Initialize the editor with a JSON schema. Note that the form
+    // element is hidden. It is only used to simplify uploading the
+    // form to the server by transferring the data from the JSON
+    // editor to the hidden form and then serializing the form data.
+    function initAddTriggerForm() {
+        var schema = createSchema();
+        JSONEditor.defaults.options.theme = 'bootstrap3';
+        JSONEditor.defaults.options.iconlib = "bootstrap3";
+        triggerEditor = new JSONEditor(document.getElementById('conditionalParameters'),{
+            schema: schema,
+            startval: {},
+            disable_edit_json: true,
+            disable_properties: true,
+            no_additional_properties: true,
+            required_by_default: true
         });
-        parameters.input = newInputs;
-
-        $.each(parameters.next, function( nextIndex, nextStep ) {
-            $.each(nextStep.flags, function( index, flag ) {
-
-                var newArgs = [];
-                $.each(flag.args, function( key, arg ) {
-                    newArgs.push(arg);
-                });
-                flag.args = newArgs;
-
-                $.each(flag.filters, function( index, filter ) {
-                    var newArgs = [];
-                    $.each(filter.args, function( key, arg ) {
-                        newArgs.push(arg);
-                    });
-                    filter.args = newArgs;
-                });
-            });
-        });
-
-        return parameters;
     }
 
-    // Revert changes to the parameters JSON object of previous function
-    function transformParametersFromSchema(parameters) {
-        parameters = deepcopy(parameters);
-
-        var newInputs = {};
-        $.each(parameters.input, function( index, input ) {
-            newInputs[input.key] = input;
-        });
-        parameters.input = newInputs;
-
-        $.each(parameters.next, function( nextIndex, nextStep ) {
-            $.each(nextStep.flags, function( index, flag ) {
-
-                var newArgs = {};
-                $.each(flag.args, function( index, arg ) {
-                    newArgs[arg.key] = arg;
-                });
-                flag.args = newArgs;
-
-                $.each(flag.filters, function( index, filter ) {
-                    var newArgs = {};
-                    $.each(filter.args, function( index, arg ) {
-                        newArgs[arg.key] = arg;
-                    });
-                    filter.args = newArgs;
-                });
-            });
-        });
-
-        return parameters;
+    function resetTriggerEditor() {
+        triggerEditor.setValue({});
+        $("#editformSubmit").prop("disabled",true);
     }
 
-    // Initialize the editor with a JSON schema
-//    console.log(parameters)
-//    parameters = transformParametersToSchema(parameters);
-//   console.log(parameters);
+
     $(document).ready(function() {
+
+        initAddTriggerForm();
+
         $('#addTrigger').on('click', function () {
-            name = $('#deviceForm #name').val();
+
+            // Transfer the data from the JSON editor to the hidden form.
+            // This makes it easier to serialize.
+            var values = triggerEditor.getValue()
+            $("#name").val(values.name);
+            $("#playbook").val(values.playbook);
+            $("#workflow").val(values.workflow);
+            $("#conditional").val(JSON.stringify(values.conditional));
+
             $.ajax({
-            url: 'execution/listener/triggers/' + name,
-            data: $("#deviceForm").serialize(),
-            headers: {"Authentication-Token": authKey},
-            type: "PUT",
-            success: function (data) {
-                console.log('trigger add success');
-                getTriggerList();
-                $("#deviceForm").trigger("reset");
-            },
-            error: function (e) {
-                console.log('trigger add failed');
-                console.log(e);
-            }
-        });
+                url: 'execution/listener/triggers/' + values.name,
+                data: $("#deviceForm").serialize(),
+                headers: {"Authentication-Token": authKey},
+                type: "PUT",
+                success: function (data) {
+                    console.log('trigger add success');
+                    getTriggerList();
+                    resetTriggerEditor();
+                },
+                error: function (e) {
+                    console.log('trigger add failed');
+                    console.log(e);
+                }
+            });
 
         });
 
@@ -265,38 +235,53 @@
             trigger = triggerData['triggers'][''+index];
             if($("#trigger option:selected").attr('value') == 'none'){
             }else{
-    //            $("#parameterEdit").show();
-                $("#name").val(trigger['name']);
-                $("#playbook").val(trigger['playbook']);
-                $("#workflow").val(trigger['workflow']);
-                $("#conditional").val(trigger['conditional']);
+                triggerEditor.setValue({
+                    name: trigger['name'],
+                    playbook: trigger['playbook'],
+                    workflow: trigger['workflow'],
+                    conditional: trigger['conditions']
+                });
             };
-
         });
+
         //Edit item
         $("#editformSubmit").on('click',function(){
             if($("#trigger option:selected").attr('value') == 'none'){
                 alert("Select a trigger");
             }else{
-                name = $("#trigger option:selected").text();
-                 $.ajax({
-                url:'execution/listener/triggers/'+ name ,
-                data: $("#deviceForm").serialize(),
+                var name = $("#trigger option:selected").text();
 
-                headers:{"Authentication-Token":authKey},
-                type:"POST",
-                success:function(e){
-                    //refresh the list of triggers
+                // Transfer the data from the JSON editor to the hidden form.
+                // This makes it easier to serialize.
+                var values = triggerEditor.getValue()
 
-                    getTriggerList();
-                    $("#editDeviceForm").trigger("reset");
-                },
-                error: function(e){
-                    console.log("ERROR");
-                }
-            });
+                // Only send a name over if the user changed it. If
+                // not, leave it blank since then an error will occur.
+                if (name !== values.name)
+                    $("#name").val(values.name);
+                else
+                    $("#name").val("");
+                $("#playbook").val(values.playbook);
+                $("#workflow").val(values.workflow);
+                $("#conditional").val(JSON.stringify(values.conditional));
+
+                $.ajax({
+                    url:'execution/listener/triggers/' + name ,
+                    data: $("#deviceForm").serialize(),
+                    headers:{"Authentication-Token":authKey},
+                    type:"POST",
+                    success:function(e){
+                        //refresh the list of triggers
+                        getTriggerList();
+                        resetTriggerEditor();
+                    },
+                    error: function(e){
+                        console.log("ERROR");
+                    }
+                });
             };
         })
+
         // Remove item
         $('.remove').on('click', function () {
             if($("#trigger option:selected").attr('value') == 'none'){

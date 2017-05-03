@@ -99,16 +99,16 @@
             </div>
             <div class="row">
 
-                <div id="parameterSelect" class="col-md-2 ">
-                    <h2> Add Trigger </h2>
-                    <form id="deviceForm">
+                <div id="parameterSelect" class="col-md-4 ">
+                    <form id="deviceForm" class="hidden">
                         {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
                         {{ render_field(form.name) }}
                         {{ render_field(form.conditional) }}
                         {{ render_field(form.playbook) }}
                         {{ render_field(form.workflow) }}
-
                     </form>
+                    <div id="conditionalParameters">
+                    </div>
                     <button id="addTrigger" class="btn btn-primary">Add</button>
                     <button id="editformSubmit" class="btn btn-success">Submit Edits</button>
 
@@ -121,6 +121,7 @@
         <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
         <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+        <script src="{{ url_for('static', filename='pages/triggers/jsoneditor.min.js') }}"></script>
         <script type="app/javascript">
             var triggers = {{triggers|safe}};
         </script>
