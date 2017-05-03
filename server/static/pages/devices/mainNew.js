@@ -113,7 +113,7 @@ $("#addNewDevice").on("click", function(){
             'global': false,
             'data':formData,
             'headers':{"Authentication-Token":authKey},
-            'url': "/apps/" + activeApp + "/devices/" + $("#deviceForm #name").val();,
+            'url': "/apps/" + activeApp + "/devices/" + $("#deviceForm #name").val(),
             'success': function (data) {
                 var result = JSON.parse(data);
                 $("#deviceForm").trigger("reset");
