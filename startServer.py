@@ -1,3 +1,4 @@
+import logging.config
 from gevent import ssl
 from os.path import isfile
 import json
@@ -5,17 +6,6 @@ from gevent.wsgi import WSGIServer
 import core.case.database as case_database
 from core.config import config, paths
 from server import flaskserver
-
-
-def get_logging_config():
-    if isfile(paths.logging_config_path):
-        try:
-            with open(paths.logging_config_path, 'rt') as log_config_file:
-                return json.loads(log_config_file.read())
-        except:
-            return None
-    else:
-        return None
 
 
 def get_ssl_context():
@@ -37,25 +27,40 @@ def get_ssl_context():
     return None
 
 
-if __name__ == "__main__":
-    import logging, logging.config
-    case_database.initialize()
-    ssl_context = get_ssl_context()
-    flaskserver.running_context.init_threads()
-    log_config = get_logging_config()
+def setup_logger():
+    log_config = None
+    if isfile(paths.logging_config_path):
+        try:
+            with open(paths.logging_config_path, 'rt') as log_config_file:
+                log_config = json.loads(log_config_file.read())
+        except:
+            print('Invalid JSON in logging config file')
+            pass
+    else:
+        print('No logging config found')
+
     if log_config is not None:
         logging.config.dictConfig(log_config)
     else:
         logging.basicConfig()
+        logging.info("Basic logging is being used")
+
+
+if __name__ == "__main__":
+    case_database.initialize()
+    ssl_context = get_ssl_context()
+    flaskserver.running_context.init_threads()
     try:
         port = int(config.port)
+    except ValueError:
+        print('Invalid port {0}. Port must be an integer'.format(config.port))
+    else:
         host = config.host
         if ssl_context:
             server = WSGIServer((host, port), application=flaskserver.app, ssl_context=ssl_context)
-            print('Listening on host https://' + host + ':' + str(port))
+
         else:
             server = WSGIServer((host, port), application=flaskserver.app)
-            print('Listening on host http://'+host+':'+str(port))
+        setup_logger()
+        logging.info('Listening on host https://' + host + ':' + str(port))
         server.serve_forever()
-    except ValueError:
-        print('Invalid port {0}. Port must be an integer'.format(config.port))

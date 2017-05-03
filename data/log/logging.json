@@ -3,7 +3,10 @@
   "disable_existing_loggers": false,
   "formatters": {
     "simple": {
-      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      "format": "[%(asctime)s]  %(name)s::%(levelname)s - %(message)s"
+    },
+    "detailed": {
+      "format": "[%(asctime)s] %(levelname)s: %(message)s  <in %(name)s.%(funcName)s:%(lineno)d)>"
     }
   },
   "handlers": {
@@ -23,11 +26,19 @@
       "encoding": "utf8"
     }
   },
+  "loggers": {
+    "server": {
+      "level": "INFO",
+      "handlers": ["file_handler", "console"],
+      "propagate": 0
+    },
+    "core": {
+      "level": "WARNING",
+      "handlers": ["file_handler"]
+    }
+  },
   "root": {
-    "level": "NOTSET",
-    "handlers": [
-      "console",
-      "file_handler"
-    ]
+    "level": "DEBUG",
+    "handlers": ["console"]
   }
 }

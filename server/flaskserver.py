@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import logging
 
 from flask import render_template
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
@@ -18,6 +19,7 @@ from core.helpers import combine_dicts
 from server.context import running_context
 from . import database, interface
 from server import app
+
 
 monkey.patch_all()
 
@@ -40,9 +42,7 @@ def create_user():
                                                                 pages=default_urls)
 
         u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-
         running_context.user_datastore.add_role_to_user(u, admin_role)
-
         running_context.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
@@ -53,9 +53,7 @@ def create_user():
 
     running_context.CaseSubscription.sync_to_subscriptions()
 
-"""
-    URLS
-"""
+    app.logger.handlers = logging.getLogger('server').handlers
 
 
 @app.route('/')
@@ -70,6 +68,7 @@ def default():
         return render_template("container.html", **args)
     else:
         return {"status": "Could Not Log In."}
+
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required
@@ -121,7 +120,7 @@ def sys_pages(name):
         return {"status": "Could Not Log In."}
 
 
-#TODO: DELETE
+# TODO: DELETE
 @app.route('/interface/<string:name>/display', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/interface'])
