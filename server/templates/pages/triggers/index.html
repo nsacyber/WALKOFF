@@ -81,8 +81,8 @@
 
                 </div>
                 <div class="col-md-3">
-                    <h2>Conditional</h2>
-                    <div class="list-group conditional">
+                    <h2>Playbook</h2>
+                    <div class="list-group playbook">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -91,8 +91,8 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <h2>Playbook</h2>
-                    <div class="list-group playbook">
+                    <h2>Conditional</h2>
+                    <div class="list-group conditional">
                     </div>
                 </div>
 
@@ -103,9 +103,9 @@
                     <form id="deviceForm" class="hidden">
                         {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
                         {{ render_field(form.name) }}
-                        {{ render_field(form.conditional) }}
                         {{ render_field(form.playbook) }}
                         {{ render_field(form.workflow) }}
+                        {{ render_field(form.conditional) }}
                     </form>
                     <div id="conditionalParameters">
                     </div>
