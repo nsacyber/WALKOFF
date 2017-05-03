@@ -5,6 +5,12 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
         <style>
+
+
+                body {
+                    overflow-x:hidden;
+                }
+
                 .selectColumn{
                     display:inline-block;
         {#            background-color:#f8f8f8;#}
@@ -31,10 +37,10 @@
                     position: relative;
                     display: inline-block;
 
-                    width:75px;
-                    height:50px;
+                    width:80px;
+                    height:40px;
 
-                    padding: 4px 12px;
+                    margin-top: 6px;
                     margin-bottom: 0;
                     line-height: 30px;
                     color: #333333;
@@ -52,6 +58,7 @@
 
                     /* Frame */
                     .vframe {
+                        overflow-x: hidden;
                         overflow-y: scroll;
                         min-height:100px;
                         border: 1px solid #444;
@@ -215,7 +222,7 @@
                 <button id="editformSubmit" class="btn btn-primary">Submit</button>
 
             </div>
-            <div class="selectColumn col-md-3">
+            <div class="col-md-3">
                 <h2> Add Trigger </h2>
                 <form id="deviceForm">
                     {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
@@ -227,7 +234,6 @@
                 </form>
                 <button id="addTrigger" class="btn btn-primary">Add</button>
             </div>
-            <div id="parameters"></div>
         </div>
     </body>
 </html>
