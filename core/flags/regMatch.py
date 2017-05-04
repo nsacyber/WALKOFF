@@ -2,6 +2,11 @@ import re
 
 
 def main(args, value):
+    """
+    Matches the input using a regular expression matcher. See data/functions.json for argument information
+    Returns:
+        The result of the comparison
+    """
     regex = args["regex"]()
 
     # Accounts for python wildcard bug

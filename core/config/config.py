@@ -1,6 +1,7 @@
 import importlib
 import json
 import sys
+import logging
 from os import listdir, environ, pathsep
 from os.path import isfile, join, splitext
 import core.config.paths
@@ -8,8 +9,9 @@ from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
 
-
 def load_config():
+    """ Loads Walkoff configuration from JSON file
+    """
     global https
     self = sys.modules[__name__]
     with open(core.config.paths.config_path) as config_file:
@@ -23,6 +25,8 @@ def load_config():
 
 
 def write_values_to_file(values=None):
+    """ Writes the current walkoff configuration to a file
+    """
     if values is None:
         values = ["graphviz_path", "templates_path", "profile_visualizations_path", "keywords_path", "db_path",
                   "tls_version",
@@ -77,6 +81,8 @@ function_info = None
 
 
 def load_function_info():
+    """ Loads the app action metadata
+    """
     global function_info
     try:
         with open(core.config.paths.function_info_path) as f:
@@ -88,14 +94,14 @@ def load_function_info():
         function_info['apps'] = app_funcs
 
     except Exception as e:
-        print("caught!")
-        print(e)
+        logging.getLogger(__name__).error('Cannot load function metadata: Error {0}'.format(e))
 
 load_config()
 try:
     with open(core.config.paths.events_path) as f:
         possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
 except (IOError, OSError):
+    logging.getLogger(__name__).error('Cannot load events metadata. Returning empty dict: Error {0}'.format(e))
     possible_events = {}
 
 

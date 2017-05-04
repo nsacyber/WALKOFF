@@ -2,6 +2,7 @@ from server import forms
 from server.context import running_context
 import json
 
+
 def devices():
     return {"apps": running_context.get_apps(),
             "form": forms.AddNewDeviceForm(),

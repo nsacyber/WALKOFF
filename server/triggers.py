@@ -7,7 +7,11 @@ from .database import db, Base
 
 logger = logging.getLogger(__name__)
 
+
 class Triggers(Base):
+    """
+    ORM for the triggers in the Walkoff database
+    """
     __tablename__ = "triggers"
     name = db.Column(db.String(255), nullable=False)
     playbook = db.Column(db.String(255), nullable=False)
@@ -15,12 +19,27 @@ class Triggers(Base):
     condition = db.Column(db.String(255, convert_unicode=False), nullable=False)
 
     def __init__(self, name, playbook, workflow, condition):
+        """
+        Constructs a Trigger object
+        Args:
+            name (str): Name of the trigger object
+            playbook (str): Playbook of the workflow to be connected to the trigger
+            workflow (str): The workflow to be connected to the trigger
+            condition (str): String of the JSON representation of the conditional to be checked by the trigger
+        """
         self.name = name
         self.playbook = playbook
         self.workflow = workflow
         self.condition = condition
 
     def edit_trigger(self, form=None):
+        """
+        Edits a trigger
+        Args:
+            form (form, optional): Wtf-form containing the edited information
+        Returns:
+            True on successful edit, False otherwise.
+        """
         if form:
             if form.name.data:
                 self.name = form.name.data
@@ -40,6 +59,10 @@ class Triggers(Base):
         return True
 
     def as_json(self):
+        """ Gets the JSON representation of all the Trigger object.
+        Returns:
+            The JSON representation of the Trigger object.
+        """
         return {'name': self.name,
                 'conditions': json.loads(self.condition),
                 'playbook': self.playbook,
@@ -47,6 +70,14 @@ class Triggers(Base):
 
     @staticmethod
     def execute(data_in, input_in):
+        """
+        Tries to match the data_in against the conditionals of all the triggers registered in the database
+        Args:
+            data_in (str): Data to be used to match against the conditionals
+            intput_in (str): The input to teh first step of the workflow
+        Returns:
+            Dictionary of {"status": <status string>}
+        """
         triggers = Triggers.query.all()
         from server.flaskserver import running_context
         for trigger in triggers:
@@ -56,12 +87,12 @@ class Triggers(Base):
                 if workflow_to_be_executed:
                     if input_in:
                         input_args = {arg['key']: Argument(key=arg['key'],
-                                                          value=arg['value'],
-                                                          format=arg.get('format', 'str'))
-                                     for arg in input_in}
+                                                           value=arg['value'],
+                                                           format=arg.get('format', 'str'))
+                                      for arg in input_in}
                         workflow_to_be_executed.execute(input=input_args)
                         logger.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
-                                                                                   input_args))
+                                                                                  input_args))
                     else:
                         workflow_to_be_executed.execute()
                         logger.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
