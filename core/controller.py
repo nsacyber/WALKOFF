@@ -397,6 +397,14 @@ class Controller(object):
             self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
 
     def pause_workflow(self, playbook_name, workflow_name):
+        """Pauses a workflow that is currently executing.
+        Args:
+            playbook_name (str): Playbook name under which the workflow is located.
+            workflow_name (str): The name of the workflow.
+        Returns:
+            A randomly-generated key that needs to be used in order to resume the workflow. This feature is added for
+            security purposes.
+        """
         workflow = self.get_workflow(playbook_name, workflow_name)
         wf_key = _WorkflowKey(playbook_name, workflow_name)
         self.paused_workflows[wf_key] = uuid.uuid4()
@@ -405,6 +413,15 @@ class Controller(object):
         return self.paused_workflows[wf_key].hex
 
     def resume_workflow(self, playbook_name, workflow_name, validate_uuid):
+        """Resumes a workflow that has been paused.
+        Args:
+            playbook_name (str): Playbook name under which the workflow is located.
+            workflow_name (str): The name of the workflow.
+            validate_uuid (str): The randomly-generated hexadecimal key that was returned from pause_workflow(). This
+            is needed to resume a workflow for security purposes.
+        Returns:
+            "Success" if it is successful, or other error messages.
+        """
         workflow = self.get_workflow(playbook_name, workflow_name)
         wf_key = _WorkflowKey(playbook_name, workflow_name)
         if workflow:
@@ -416,12 +433,21 @@ class Controller(object):
         return "error: invalid playbook and/or workflow name"
 
     def resume_breakpoint_step(self, playbook_name, workflow_name):
+        """Resumes a step that has been specified as a breakpoint.
+        Args:
+            playbook_name (str): Playbook name under which the workflow is located.
+            workflow_name (str): The name of the workflow.
+        """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
             workflow.resume_breakpoint_step()
 
     # Starts active execution
     def start(self):
+        """Starts the scheduler for active execution. This function must be called before any workflows are executed.
+        Returns:
+            The state of the scheduler if successful, error message if scheduler is in "stopped" state.
+        """
         if self.scheduler.state != STATE_RUNNING and self.scheduler.state != STATE_PAUSED:
             self.scheduler.start()
         else:
@@ -430,6 +456,13 @@ class Controller(object):
 
     # Stops active execution
     def stop(self, wait=True):
+        """Stops active execution. 
+        Args:
+            wait (bool, optional): Boolean to synchronously or asynchronously wait for the scheduler to shutdown.
+                Default is True.
+        Returns:
+            The state of the scheduler if successful, error message if scheduler is already in "stopped" state.
+        """
         if self.scheduler.state != STATE_STOPPED:
             self.scheduler.shutdown(wait=wait)
         else:
@@ -438,6 +471,10 @@ class Controller(object):
 
     # Pauses active execution
     def pause(self):
+        """Pauses active execution.
+        Returns:
+            The state of the scheduler if successful, error message if scheduler is not in the "running" state.
+        """
         if self.scheduler.state == STATE_RUNNING:
             self.scheduler.pause()
         elif self.scheduler.state == STATE_PAUSED:
@@ -448,6 +485,10 @@ class Controller(object):
 
     # Resumes active execution
     def resume(self):
+        """Resumes active execution.
+        Returns:
+            The state of the scheduler if successful, error message if scheduler is not in the "paused" state.
+        """
         if self.scheduler.state == STATE_PAUSED:
             self.scheduler.resume()
         else:
@@ -456,14 +497,26 @@ class Controller(object):
 
     # Pauses active execution of specific job
     def pause_job(self, job_id):
+        """Pauses active execution of a specific job.
+        Args:
+            job_id (str): ID of the job to pause.
+        """
         self.scheduler.pause_job(job_id=job_id)
 
     # Resumes active execution of specific job
     def resume_job(self, job_id):
+        """Resumes active execution of a specific job.
+        Args:
+            job_id (str): ID of the job to resume.
+        """
         self.scheduler.resume_job(job_id=job_id)
 
     # Returns jobs scheduled for active execution
     def get_scheduled_jobs(self):
+        """Get all actively scheduled jobs.
+        Returns:
+             A list of all actively scheduled jobs.
+        """
         self.scheduler.get_jobs()
 
     def __scheduler_listener(self):
