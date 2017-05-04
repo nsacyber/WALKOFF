@@ -1,0 +1,21 @@
+{
+  "begin_monitoring":{
+    "description":"Begins monitoring",
+    "args":[]
+  },
+
+  "get_exe_pids":{
+    "description":"Gets exe",
+    "args":[]
+  },
+
+  "get_exe_pids_by_name":{
+    "description":"Gets exe",
+    "args":[
+      {
+        "name":"name",
+        "type":"str"
+      }
+    ]
+  }
+}
