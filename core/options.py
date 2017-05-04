@@ -4,6 +4,17 @@ from core.helpers import construct_workflow_name_key
 
 class Options(object):
     def __init__(self, xml=None, scheduler=None, children=None, enabled=False, playbook_name=''):
+        """Initializes a new Options object.
+        Args:
+            xml (cElementTree, optional): The XML element tree object. Defaults to None.
+            scheduler (dict, optional): The scheduler dictionary, which has "autorun", "type", and "args" fields. 
+                Defaults to None.
+            children (dict, optional): Dict of children options. Defaults to None.
+            enabled (bool, optional): Boolean to determine whether or not the options are enabled or disabled. Defaults
+                to False.
+            playbook_name (str, optional): The name of the playbook to which the options should be applied. Defaults to
+                an empty string.
+        """
         if xml is not None:
             self._from_xml(xml, filename=playbook_name)
         else:
@@ -20,6 +31,10 @@ class Options(object):
                          for child in xml_element.findall('.//children/child')}
 
     def to_xml(self):
+        """Converts the Options object to XML format.
+        Returns:
+            The XML representation of the Options object.
+        """
         options = cElementTree.Element('options')
 
         enabled = cElementTree.SubElement(options, 'enabled')
@@ -36,6 +51,10 @@ class Options(object):
         return options
 
     def as_json(self):
+        """Gets the JSON representation of an Options object.
+        Returns:
+            The JSON representation of an Options object.
+        """
         return {'scheduler': self.scheduler,
                 'enabled': str(self.enabled),
                 'children': self.children}
