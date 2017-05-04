@@ -9,11 +9,20 @@ userRoles = {}
 
 
 def initialize_user_roles(urls):
+    """Initializes the roles dictionary, used in determining which role can access which page(s).
+    Args:
+        urls (list[str]): The list of all root endpoints.
+    """
     for url in urls:
         userRoles[url] = ["admin"]
 
 
 def add_to_user_roles(role_name, urls):
+    """Adds a role to the list of allowed roles for a list of root endpoints.
+    Args:
+        role_name (str): The name of the role to add to the allowed roles list.
+        urls (list[str]): The list of root endpoints to which to add the role.
+    """
     for url in urls:
         userRoles[url].append(role_name)
 
@@ -32,17 +41,36 @@ class Role(Base, RoleMixin):
     description = db.Column(db.String(255))
 
     def __init__(self, name, description, pages):
+        """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
+            permissions.
+        Args:
+            name (str): The name of the Role.
+            description (str, optional): A description of the role.
+            pages (list[str]): The list of root endpoints that a user with this Role can access.
+        """
         self.name = name
         self.description = description
         self.pages = pages
 
     def set_description(self, description):
+        """Sets the description of the Role.
+        Args:
+            description (str): The description of the Role.
+        """
         self.description = description
 
     def to_string(self):
+        """Returns the dictionary representation of the Role object.
+        Returns:
+            The dictionary representation of the Role object.
+        """
         return {"name": self.name, "description": self.description}
 
     def display(self):
+        """Returns the dictionary representation of the Role object.
+        Returns:
+            The dictionary representation of the Role object.
+        """
         return {"name": self.name,
                 "description": self.description}
 
@@ -70,11 +98,19 @@ class User(Base, UserMixin):
     login_count = db.Column(db.Integer)
 
     def display(self):
+        """Returns the dictionary representation of a User object.
+        Returns:
+            The dictionary representation of a User object.
+        """
         return {"username": self.email,
                 "roles": [role.to_string() for role in self.roles],
                 "active": self.active}
 
     def set_roles(self, roles):
+        """Adds the given list of roles to the User object.
+        Args:
+            roles (list[str]): A list of Role names with which the User will be associated.
+        """
         for role in roles:
             if role and not self.has_role(role):
                 q = user_datastore.find_role(role)
