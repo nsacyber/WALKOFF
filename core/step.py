@@ -47,6 +47,26 @@ class Step(ExecutionElement):
                  ancestry=None,
                  widgets=None,
                  risk=0):
+        """Initializes a new Step object. A Workflow has many steps that it executes.
+        Args:
+            xml (cElementTree, optional): The XML element tree object. Defaults to None.
+            name (str, optional): The name of the Step object. Defaults to an empty string.
+            action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
+            app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
+            device (str, optional): The name of the device associated with the app associated with the Step. Defaults
+                to an empty string.
+            inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
+                to None.
+            next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
+            errors (list[NextStep], optional): A list of NextStep error objects for the Step object. Defaults to None.
+            parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
+            position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
+                for UI display purposes. Defaults to None.
+            ancestry (list[str], optional): The ancestry for the Step object. Defaults to None.
+            widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the 
+                corresponding widget. Defaults to None.
+            risk (int, optional): The risk associated with the Step. Defaults to 0.
+        """
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.raw_xml = xml
 
@@ -68,6 +88,10 @@ class Step(ExecutionElement):
         self.next_up = None
 
     def reconstruct_ancestry(self, parent_ancestry):
+        """Reconstructs the ancestry for a Step object. This is needed in case a workflow and/or playbook is renamed.
+        Args:
+            parent_ancestry(list[str]): The parent ancestry list.
+        """
         self._construct_ancestry(parent_ancestry)
         for next_step in self.conditionals:
             next_step.reconstruct_ancestry(self.ancestry)
@@ -118,6 +142,10 @@ class Step(ExecutionElement):
 
     @contextdecorator.context
     def render_step(self, **kwargs):
+        """Uses JINJA templating to render a Step object. 
+        Args:
+            kwargs (list[str]): Arguments to use in the JINJA templating.
+        """
         if sys.version_info[0] > 2:
             content = cElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
         else:
@@ -127,6 +155,10 @@ class Step(ExecutionElement):
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
     def validate_input(self):
+        """Ensures that the inputs passed in are properly formed.
+        Returns:
+             True if inputs are valid, False otherwise.
+        """
         if (self.app in core.config.config.function_info['apps']
                 and self.action in core.config.config.function_info['apps'][self.app]):
             possible_args = core.config.config.function_info['apps'][self.app][self.action]['args']
@@ -148,6 +180,12 @@ class Step(ExecutionElement):
         raise InvalidStepActionError(self.app, self.action)
 
     def execute(self, instance=None):
+        """Executes a Step by calling the associated app function.
+        Args:
+            instance (App): The instance of an App object to be used to execute the associated function.
+        Returns:
+            The result of the executed function.
+        """
         if self.validate_input():
             callbacks.StepInputValidated.send(self)
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
@@ -162,6 +200,13 @@ class Step(ExecutionElement):
             raise InvalidStepInputError(self.app, self.action)
 
     def get_next_step(self, error=False):
+        """Gets the NextStep object to be executed after the current Step.
+        Args:
+            error (bool, optional): Boolean to determine whether or not to use the errors field or the conditionals
+                field to find the NextStep object. 
+        Returns:
+            The NextStep object to be executed.
+        """
         next_steps = self.errors if error else self.conditionals
         for n in next_steps:
             next_step = n(output=self.output)
@@ -171,6 +216,10 @@ class Step(ExecutionElement):
                 return next_step
 
     def to_xml(self, *args):
+        """Converts the Step object to XML format.
+        Returns:
+            The XML representation of the Step object.
+        """
         step = cElementTree.Element('step')
         step.set("id", self.name)
 
@@ -238,6 +287,13 @@ class Step(ExecutionElement):
         return str(output)
 
     def as_json(self, with_children=True):
+        """Gets the JSON representation of a Step object.
+        Args:
+            with_children (bool, optional): A boolean to determine whether or not the children elements of the Step
+                object should be included in the output.
+        Returns:
+            The JSON representation of a Step object.
+        """
         output = {"name": str(self.name),
                   "action": str(self.action),
                   "app": str(self.app),
@@ -258,6 +314,14 @@ class Step(ExecutionElement):
 
     @staticmethod
     def from_json(json_in, position, parent_name='', ancestry=None):
+        """Forms a Step object from the provided JSON object.
+        Args:
+            json (JSON object): The JSON object to convert from.
+            parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
+            ancestry (list[str], optional): The ancestry for the new Step object. Defaults to None.
+        Returns:
+            The Step object parsed from the JSON object.
+        """
         device = json_in['device'] if ('device' in json_in
                                        and json_in['device'] is not None
                                        and json_in['device'] != 'None') else ''
@@ -288,6 +352,12 @@ class Step(ExecutionElement):
         return step
 
     def get_children(self, ancestry):
+        """Gets the children NextSteps of the Step in JSON format.
+        Args:
+            ancestry (list[str]): The ancestry list for the NextStep to be returned.
+        Returns:
+            The NextStep in the ancestry (if provided) as a JSON, otherwise None.
+        """
         if not ancestry:
             return self.as_json(with_children=False)
         else:
