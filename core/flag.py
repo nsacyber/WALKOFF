@@ -141,6 +141,9 @@ class Flag(ExecutionElement):
 
     def as_json(self, with_children=True):
         """Gets the JSON representation of a Flag object.
+        Args:
+            with_children (bool, optional): A boolean to determine whether or not the children elements of the Flag
+                object should be included in the output.
         Returns:
             The JSON representation of a Flag object.
         """
