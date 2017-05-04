@@ -1,8 +1,10 @@
 from xml.etree import cElementTree
-
+import logging
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.flag import Flag
+
+logger = logging.getLogger(__name__)
 
 
 class NextStep(ExecutionElement):
@@ -75,8 +77,10 @@ class NextStep(ExecutionElement):
         """
         try:
             self.flags.remove(self.flags[index])
+            logger.debug('Flag {0} removed from next step {1}'.format(index, self.ancestry))
             return True
         except IndexError:
+            logger.error('Cannot remove flag {0} from NextStep {1}. Index out of bounds'.format(index, self.ancestry))
             return False
 
     def __eq__(self, other):
@@ -85,8 +89,10 @@ class NextStep(ExecutionElement):
     def __call__(self, output=None):
         if all(flag(output=output) for flag in self.flags):
             callbacks.NextStepTaken.send(self)
+            logger.debug('NextStep is valid for input {0}'.format(output))
             return self.name
         else:
+            logger.debug('NextStep is not valid for input {0}'.format(output))
             callbacks.NextStepNotTaken.send(self)
             return None
 
