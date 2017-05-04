@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Blueprint, request, Response
+from flask import Blueprint, request, Response, current_app
 from flask_security import auth_token_required, roles_accepted
 from server.flaskserver import running_context
 import core.case.database as case_database
@@ -43,11 +43,14 @@ def import_cases():
                 running_context.CaseSubscription.update(case)
                 running_context.db.session.commit()
             return json.dumps({"status": "success", "cases": case_subscription.subscriptions_as_json()})
-        except (OSError, IOError):
+        except (OSError, IOError) as e:
+            current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, e))
             return json.dumps({"status": "error reading file"})
-        except ValueError:
+        except ValueError as e:
+            current_app.logger.error('Error importing cases from file {0}: Invalid JSON {1}'.format(filename, e))
             return json.dumps({"status": "file contains invalid JSON"})
     else:
+        current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
         return json.dumps({"status": "error: file does not exist"})
 
 
@@ -60,8 +63,10 @@ def export_cases():
     try:
         with open(filename, 'w') as cases_file:
             cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))
+        current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
         return json.dumps({"status": "success"})
-    except (OSError, IOError):
+    except (OSError, IOError) as e:
+        current_app.logger.error('Error exporting cases to {0}'.format(filename))
         return json.dumps({"status": "error writing to file"})
 
 
@@ -75,6 +80,7 @@ def add_case(case_name):
     if not case:
         running_context.db.session.add(running_context.CaseSubscription(name=case_name))
         running_context.db.session.commit()
+        current_app.logger.debug('Case added: {0}'.format(case_name))
     return json.dumps(case_subscription.subscriptions_as_json())
 
 
@@ -102,8 +108,10 @@ def update_case(case_name):
             if case:
                 case.name = form.name.data
                 running_context.db.session.commit()
+
             if form.note.data:
                 case_database.case_db.edit_case_note(form.name.data, form.note.data)
+            current_app.logger.debug('Case name changed from {0} to {1}'.format(case_name, form.name.data))
         elif form.note.data:
             case_database.case_db.edit_case_note(case_name, form.note.data)
         return json.dumps(case_database.case_db.cases_as_json())
@@ -118,6 +126,7 @@ def delete_case(case_name):
     if case:
         running_context.db.session.delete(case)
         running_context.db.session.commit()
+        current_app.logger.debug('Case deleted {0}'.format(case_name))
     return json.dumps(case_subscription.subscriptions_as_json())
 
 
@@ -148,6 +157,7 @@ __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
 def convert_scheduler_events(events):
     return [__scheduler_event_conversion[event] for event in events if event in __scheduler_event_conversion]
 
+
 def convert_to_event_names(events):
     result = []
     for event in events:
@@ -155,6 +165,7 @@ def convert_to_event_names(events):
             if __scheduler_event_conversion[key] == event:
                 result.append(key)
     return result
+
 
 @cases_page.route('/<string:case_name>/subscriptions', methods=['PUT'])
 @auth_token_required
@@ -166,13 +177,17 @@ def add_subscription(case_name):
             events = data['events'] if 'events' in data else []
             if len(data['ancestry']) == 1 and events:
                 events = convert_scheduler_events(events)
-            case_subscription.add_subscription(case_name, convert_ancestry(data['ancestry']), events)
+            converted_ancestry = convert_ancestry(data['ancestry'])
+            case_subscription.add_subscription(case_name, converted_ancestry, events)
             running_context.CaseSubscription.update(case_name)
             running_context.db.session.commit()
+            current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
             return json.dumps(case_subscription.subscriptions_as_json())
         else:
+            current_app.logger.error('malformed json received in add_subscription: {0}'.format(data))
             return json.dumps({"status": "Error: malformed JSON"})
     else:
+        current_app.logger.error('No JSON received in add_subscription')
         return json.dumps({"status": "Error: no JSON in request"})
 
 
@@ -206,12 +221,17 @@ def update_subscription(case_name):
             running_context.CaseSubscription.update(case_name)
             running_context.db.session.commit()
             if success:
+                current_app.logger.error('Edited subscription {0} to {1}'.format(data['ancestry'], data['events']))
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
+                current_app.logger.error('Error occurred while editing subscription {0} to {1}'.format(data['ancestry'],
+                                                                                                       data['events']))
                 return json.dumps({"status": "Error occurred while editing subscription"})
         else:
+            current_app.logger.error('malformed json received in edit_subscription: {0}'.format(data))
             return json.dumps({"status": "Error: malformed JSON"})
     else:
+        current_app.logger.error('No JSON received in edit_subscription')
         return json.dumps({"status": "Error: no JSON in request"})
 
 
@@ -222,13 +242,17 @@ def delete_subscription(case_name):
     if request.get_json():
         data = request.get_json()
         if 'ancestry' in data:
-            case_subscription.remove_subscription_node(case_name, convert_ancestry(data['ancestry']))
+            converted_ancestry = convert_ancestry(data['ancestry'])
+            case_subscription.remove_subscription_node(case_name, converted_ancestry)
             running_context.CaseSubscription.update(case_name)
             running_context.db.session.commit()
+            current_app.logger.debug('Deleted subscription {0}'.format(converted_ancestry))
             return json.dumps(case_subscription.subscriptions_as_json())
         else:
+            current_app.logger.error('malformed json received in delete_subscription: {0}'.format(data))
             return json.dumps({"status": "Error: malformed JSON"})
     else:
+        current_app.logger.error('No JSON received in delete_subscription')
         return json.dumps({"status": "Error: no JSON in request"})
 
 

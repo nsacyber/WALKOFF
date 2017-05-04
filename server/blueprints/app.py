@@ -2,7 +2,7 @@ import os
 import sys
 import importlib
 import json
-from flask import Blueprint, render_template, request, g, Response
+from flask import Blueprint, render_template, request, g, current_app
 from flask_security import roles_required, auth_token_required, roles_accepted
 from server import forms
 from server.flaskserver import running_context
@@ -76,7 +76,6 @@ def add_device(device_name):
     if form.validate():
         if len(running_context.Device.query.filter_by(name=device_name).all()) > 0:
             return json.dumps({"status": "device could not be added"})
-
         running_context.Device.add_device(name=device_name, username=form.username.data,
                                           password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
                                           app_server=g.app,
@@ -104,6 +103,10 @@ def update_device(device_name):
     if form.validate() and dev is not None:
         dev.edit_device(form)
         running_context.db.session.commit()
+        current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
+                                                                       dev.name,
+                                                                       dev.as_json(with_apps=False)))
+
         return json.dumps({"status": "device successfully edited"})
     return json.dumps({"status": "device could not be edited"})
 
@@ -115,6 +118,7 @@ def delete_device(device_name):
     dev = running_context.Device.query.filter_by(name=device_name).first()
     if dev is not None:
         running_context.db.session.delete(dev)
+        current_app.logger.info('Device removed {0}:{1}'.format(g.app, device_name))
         running_context.db.session.commit()
         return json.dumps({"status": "removed device"})
     return json.dumps({"status": "could not remove device"})
@@ -131,7 +135,8 @@ def import_devices():
             read_file = appdevice_file.read()
             read_file = read_file.replace('\n', '')
             apps_devices = json.loads(read_file)
-    except (OSError, IOError):
+    except (OSError, IOError) as e:
+        current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
         return json.dumps({"status": "error reading file"})
     for app in apps_devices:
         for device in apps_devices[app]:
@@ -143,6 +148,7 @@ def import_devices():
             running_context.Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
                                               port=device['port'],
                                               extra_fields=extra_fields_str, app_server=app, password='')
+    current_app.logger.debug('Imported devices from {0}'.format(filename))
     return json.dumps({"status": "success"})
 
 
@@ -162,12 +168,13 @@ def export_devices():
             device_json.pop('id', None)
             devices.append(device_json)
         returned_json[app.as_json()['name']] = devices
-
     try:
         with open(filename, 'w') as appdevice_file:
             appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
-    except (OSError, IOError):
+    except (OSError, IOError) as e:
+        current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
         return json.dumps({"status": "error writing file"})
+    current_app.logger.debug('Exported devices to {0}'.format(filename))
     return json.dumps({"status": "success"})
 
 

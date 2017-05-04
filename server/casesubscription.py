@@ -1,4 +1,5 @@
 import json
+import logging
 
 from .database import db, Base
 import core.case.subscription
@@ -35,6 +36,7 @@ class CaseSubscription(Base):
 
     @staticmethod
     def sync_to_subscriptions():
+        logging.getLogger(__name__).debug('Syncing cases')
         subscriptions = {case.name: core.case.subscription.CaseSubscriptions.from_json(json.loads(case.subscription))
                          for case in CaseSubscription.query.all()}
         core.case.subscription.set_subscriptions(subscriptions)

@@ -47,6 +47,7 @@ def create_user():
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in running_context.db.session.query(running_context.App).all()])
+    app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
         running_context.db.session.add(running_context.App(app=app_name, devices=[]))
     running_context.db.session.commit()
@@ -117,6 +118,7 @@ def sys_pages(name):
         combine_dicts(args, {"authKey": current_user.get_auth_token()})
         return render_template("pages/" + name + "/index.html", **args)
     else:
+        app.logger.debug('Unsuccessful login attempt')
         return {"status": "Could Not Log In."}
 
 
@@ -140,6 +142,7 @@ def login_info():
     if current_user.is_authenticated:
         return json.dumps({"auth_token": current_user.get_auth_token()})
     else:
+        app.logger.debug('Unsuccessful login attempt')
         return {"status": "Could Not Log In."}
 
 
@@ -151,6 +154,7 @@ def list_all_widgets():
 
 
 def write_playbook_to_file(playbook_name):
+    app.logger.debug('Writing playbook {0} to file'.format(playbook_name))
     write_format = 'w' if sys.version_info[0] == 2 else 'wb'
     playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))
     with open(playbook_filename, write_format) as workflow_out:

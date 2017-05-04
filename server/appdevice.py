@@ -1,6 +1,6 @@
 import json
 from abc import abstractmethod
-
+from flask import current_app
 from sqlalchemy import Integer, String
 
 from . import database
@@ -79,6 +79,7 @@ class Device(database.Base):
                         app_id=app_server)
         db.session.add(device)
         db.session.commit()
+        current_app.logger.info('Adding device to app {0}: {1}'.format(app_server, device.as_json(with_apps=False)))
 
     def edit_device(self, form):
         if form.name.data:

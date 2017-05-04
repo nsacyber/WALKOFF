@@ -1,5 +1,5 @@
 import json
-
+import logging
 from core.arguments import Argument
 from core.filter import Filter
 from core.flag import Flag
@@ -54,16 +54,21 @@ class Triggers(Base):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
                     if input_in:
-                        input = {arg['key']: Argument(key=arg['key'],
+                        input_args = {arg['key']: Argument(key=arg['key'],
                                                           value=arg['value'],
                                                           format=arg.get('format', 'str'))
                                      for arg in input_in}
-                        workflow_to_be_executed.execute(input=input)
+                        workflow_to_be_executed.execute(input=input_args)
+                        logging.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
+                                                                                   input_args))
                     else:
                         workflow_to_be_executed.execute()
+                        logging.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
                     return {"status": "success"}
                 else:
+                    logging.error('Workflow associated with trigger is not in controller')
                     return {"status": "error: workflow could not be found"}
+        logging.debug('No trigger matches data input')
         return {"status": "warning: no trigger found valid for data in"}
 
     @staticmethod

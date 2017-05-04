@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from flask_security import auth_token_required, roles_accepted
 from server.flaskserver import running_context
 from server import forms
@@ -12,11 +12,17 @@ triggers_page = Blueprint('triggers_page', __name__)
 @roles_accepted(*running_context.user_roles['/execution/listener'])
 def listener():
     form = forms.IncomingDataForm(request.form)
-    input = None
-    if form.input.data:
-        input = json.loads(form.input.data)
-    returned_json = running_context.Triggers.execute(form.data.data, input) if form.validate() else {}
-    return json.dumps(returned_json)
+    data_input = None
+    if form.validate():
+        if form.input.data:
+            data_input = json.loads(form.input.data)
+        returned_json = running_context.Triggers.execute(form.data.data, data_input)
+        current_app.logger.info('Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
+                                                                                                         data_input))
+        return json.dumps(returned_json)
+    else:
+        current_app.logger.error('Received invalid form for trigger execution')
+        return json.dumps({})
 
 
 @triggers_page.route('/triggers', methods=['GET'])
@@ -44,11 +50,19 @@ def create_trigger(name):
                                              workflow=form.workflow.data))
 
                 running_context.db.session.commit()
+                current_app.logger.info('Added trigger: '
+                                        '{0}'.format(json.dumps({"name": name,
+                                                                 "condition": form.conditional.data,
+                                                                 "workflow": "{0}-{1}".format(form.playbook.data,
+                                                                                              form.workflow.data)})))
                 return json.dumps({"status": "success"})
             except ValueError:
+                current_app.logger.error('Cannot create trigger {0}. Invalid JSON in conditional field'.format(name))
                 return json.dumps({"status": "error: invalid json in conditional field"})
         else:
+            current_app.logger.warning('Cannot create trigger {0}. Trigger already exists'.format(name))
             return json.dumps({"status": "warning: trigger with that name already exists"})
+    current_app.logger.error('Cannot create trigger {0}. Invalid form'.format(name))
     return json.dumps({"status": "error: form not valid"})
 
 
@@ -59,6 +73,7 @@ def read_trigger(name):
     query = running_context.Triggers.query.filter_by(name=name).first()
     if query:
         return json.dumps({"status": 'success', "trigger": query.as_json()})
+    current_app.logger.error('Cannot display trigger {0}. Does not exist'.format(name))
     return json.dumps({"status": "error: trigger not found"})
 
 
@@ -78,9 +93,12 @@ def update_trigger(name):
 
         if result:
             running_context.db.session.commit()
+            current_app.logger.info('Edited trigger {0}'.format(name))
             return json.dumps({"status": "success"})
         else:
+            current_app.logger.error('Could not edit trigger {0}. Malformed JSON in conditional'.format(name))
             return json.dumps({"status": "error: invalid json in conditional field"})
+    current_app.logger.error('Could not edit trigger {0}. Form is invalid'.format(name))
     return json.dumps({"status": "trigger could not be edited"})
 
 
@@ -92,8 +110,10 @@ def delete_trigger(name):
     if query:
         running_context.Triggers.query.filter_by(name=name).delete()
         running_context.db.session.commit()
+        current_app.logger.info('Deleted trigger {0}'.format(name))
         return json.dumps({"status": "success"})
     elif query is None:
+        current_app.logger.warning('Cannot delete trigger {0}. Trigger does not exist'.format(name))
         return json.dumps({"status": "error: trigger does not exist"})
     return json.dumps({"status": "error: could not remove trigger"})
 

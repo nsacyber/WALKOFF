@@ -1,7 +1,7 @@
 import os
 import sys
 import importlib
-from flask import Blueprint, render_template, request, g, Response
+from flask import Blueprint, render_template, request, g, current_app
 from flask_security import roles_required, auth_token_required
 from server import forms
 
@@ -36,6 +36,7 @@ def load_module(app_name, widget_name):
     try:
         return importlib.import_module(module, '')
     except ImportError:
+        current_app.logger.error('Could not load widget module {0} for app {1}'.format(widget_name, app_name))
         return None
 
 
