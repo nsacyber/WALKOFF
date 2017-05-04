@@ -7,6 +7,7 @@
 
     $("#editformSubmit").prop("disabled",true);
     $("#editTrigger").prop("disabled",true);
+    $(".remove").prop("disabled",true);
 
     //Get List of flags
     $.ajax({
@@ -69,6 +70,7 @@
     // Add item
     $("#trigger").on("change",function(){
         $("#editTrigger").prop("disabled",false);
+        $(".remove").prop("disabled",false);
         val = $("#trigger option:selected").val();
         index = $("#trigger option:selected").val();
         trigger = triggerData['triggers'][''+ val +''];
