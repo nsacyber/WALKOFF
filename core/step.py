@@ -2,7 +2,7 @@ import json
 import sys
 from xml.etree import cElementTree
 from collections import namedtuple
-
+import logging
 from jinja2 import Template, Markup
 
 from core import arguments
@@ -15,7 +15,8 @@ from core.helpers import load_app_function
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 
-import xml.dom.minidom as minidom
+logger = logging.getLogger(__name__)
+
 
 class InvalidStepInputError(Exception):
     def __init__(self, app, action):
@@ -68,10 +69,10 @@ class Step(ExecutionElement):
 
     def reconstruct_ancestry(self, parent_ancestry):
         self._construct_ancestry(parent_ancestry)
-        for nextstep in self.conditionals:
-            nextstep.reconstruct_ancestry(self.ancestry)
-        for nextstep in self.errors:
-            nextstep.reconstruct_ancestry(self.ancestry)
+        for next_step in self.conditionals:
+            next_step.reconstruct_ancestry(self.ancestry)
+        for next_step in self.errors:
+            next_step.reconstruct_ancestry(self.ancestry)
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get('id')
@@ -134,6 +135,7 @@ class Step(ExecutionElement):
                         and all(self.input[arg].validate(possible_args) for arg in self.input))
             else:
                 return True
+        logger.warning('app {0} or app action {1} not found in app action metadata'.format(self.app, self.action))
         return False
 
     def __lookup_function(self):
@@ -153,6 +155,7 @@ class Step(ExecutionElement):
             for widget in self.widgets:
                 get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
             self.output = result
+            logger.debug('Step {0} executed successfully'.format(self.ancestry))
             return result
         else:
             callbacks.StepInputInvalid.send(self)

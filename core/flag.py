@@ -6,6 +6,9 @@ from core.executionelement import ExecutionElement
 from core.filter import Filter
 from core.helpers import import_lib
 import core.config.config
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Flag(ExecutionElement):
@@ -128,8 +131,10 @@ class Flag(ExecutionElement):
             if self.validate_args():
                 result = getattr(module, 'main')(args=self.args, value=data)
                 callbacks.FlagArgsValid.send(self)
+                logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
             else:
-                print("ARGS INVALID")
+                logger.warning('Arguments passed to flag {0} are invalid. Arguments {1}'.format(self.ancestry,
+                                                                                                self.args))
                 callbacks.FlagArgsInvalid.send(self)
             return result
 

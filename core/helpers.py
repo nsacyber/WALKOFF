@@ -3,8 +3,11 @@ import sys
 import os
 from xml.etree import ElementTree
 import pkgutil
+import logging
 
 import core.config.paths
+
+logger = logging.getLogger(__name__)
 
 
 def import_py_file(module_name, path_to_file):
@@ -34,11 +37,14 @@ def import_lib(directory, module_name):
         The module object that was imported.
     """
     module = None
+    module_name = '.'.join(['core', directory, module_name])
     try:
-        module = importlib.import_module('.'.join(['core', directory, module_name]))
+        module = importlib.import_module(module_name)
     except ImportError:
+        logger.error('Cannot import module {0}. Returning None'.format(module_name))
         pass
     finally:
+
         return module
 
 
@@ -71,7 +77,8 @@ def import_app_main(app_name):
         module = import_py_file(module_name, app_path)
         sys.modules[module_name] = module
         return module
-    except (ImportError, IOError, OSError):
+    except (ImportError, IOError, OSError) as e:
+        logger.error('Cannot app main for app {0}. Error: {1}'.format(app_name, e))
         pass
 
 
@@ -80,9 +87,9 @@ def __list_valid_directories(path):
         return [f for f in os.listdir(path)
                 if (os.path.isdir(os.path.join(path, f))
                     and not f.startswith('__'))]
-    except (IOError, OSError):
+    except (IOError, OSError) as e:
+        logger.error('Cannot get valid directories inside {0}. Error: {1}'.format(path, e))
         return []
-
 
 
 def list_apps(path=None):
@@ -137,6 +144,7 @@ def load_app_function(app_instance, function_name):
         fn = getattr(app_instance, function_name)
         return fn
     except AttributeError:
+        logger.error('Could not load action {0} in app {1}.'.format(app_instance.name, function_name))
         return None
 
 
@@ -152,6 +160,7 @@ def locate_workflows_in_directory(path=None):
         return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                               and workflow.endswith('.workflow'))]
     else:
+        logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
         return []
 
 

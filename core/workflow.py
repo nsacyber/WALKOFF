@@ -1,6 +1,7 @@
 from xml.etree import cElementTree
 from os.path import join, isfile
 import json
+import logging
 from core import arguments
 from core.config import paths
 from core.instance import Instance
@@ -9,6 +10,8 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.step import Step
 from core.helpers import construct_workflow_name_key, extract_workflow_name
+
+logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
@@ -62,13 +65,16 @@ class Workflow(ExecutionElement):
                                 next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name,
                                 risk=risk)
         self.total_risk += risk
+        logger.info('Step added to workflow {0}. Step: {1}'.format(self.ancestry, self.steps[name].as_json()))
 
     def remove_step(self, name=''):
         if name in self.steps:
             new_dict = dict(self.steps)
             del new_dict[name]
             self.steps = new_dict
+            logger.debug('Removed step {0} from workflow {1}'.format(name, self.ancestry))
             return True
+        logger.warning('Could not remove step {0} from workflow {1}. Step does nto exist'.format(name, self.ancestry))
         return False
 
     def to_xml(self, *args):
@@ -92,22 +98,28 @@ class Workflow(ExecutionElement):
 
     def pause(self):
         if self.executor is not None:
+            logger.info('Pausing workflow {0}'.format(self.ancestry))
             self.is_paused = True
 
     def resume(self):
         try:
+            logger.info('Attempting to resume workflow {0}'.format(self.ancestry))
             self.is_paused = False
             self.executor.send(None)
-        except (StopIteration, AttributeError):
+        except (StopIteration, AttributeError) as e:
+            logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.ancestry, e))
             pass
 
     def resume_breakpoint_step(self):
         try:
+            logger.debug('Attempting to resume workflow {0} from breakpoint'.format(self.ancestry))
             self.executor.send(None)
-        except (StopIteration, AttributeError):
+        except (StopIteration, AttributeError) as e:
+            logger.warning('Cannot resume workflow {0} from breakpoint. Reason: {1}'.format(self.ancestry, e))
             pass
 
     def execute(self, start='start', input=""):
+        logger.info('Executing workflow {0}'.format(self.ancestry))
         callbacks.WorkflowExecutionStart.send(self)
         self.executor = self.__execute(start, input)
         next(self.executor)
@@ -118,6 +130,7 @@ class Workflow(ExecutionElement):
         steps = self.__steps(start=start)
         first = True
         for step in steps:
+            logger.debug('Executing step {0} of workflow {1}'.format(step, self.ancestry))
             while self.is_paused:
                 _ = yield
             if step:
@@ -127,10 +140,12 @@ class Workflow(ExecutionElement):
                 if step.device not in instances:
                     instances[step.device] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
+                    logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
 
                 if first:
                     if input:
+                        logger.debug('Swapping input to first step of workflow {0}'.format(self.ancestry))
                         step.input = input
                     first = False
 
@@ -181,6 +196,7 @@ class Workflow(ExecutionElement):
             error_flag = True
             step.output = str(e)
             self.accumulated_risk += float(step.risk) / self.total_risk
+            logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry, e))
         finally:
             return error_flag
 
@@ -190,20 +206,23 @@ class Workflow(ExecutionElement):
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
             child_name = construct_workflow_name_key(self.playbook_name, child_name)
             if (child_name in self.options.children
-                    and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.ancestry))
                 callbacks.WorkflowExecutionStart.send(self.options.children[child_name])
                 child_step_generator = self.options.children[child_name].__steps(start=child_start)
                 return child_step_generator, child_next, child_name
         return None, None
 
     def __shutdown(self, instances):
-        try:
-            # Upon finishing shuts down instances
-            for instance in instances:
+        # Upon finishing shuts down instances
+        for instance in instances:
+            try:
+                logger.debug('Shutting down app instance: Device: {0}'.format(instance))
                 instances[instance].shutdown()
-            callbacks.WorkflowShutdown.send(self)
-        except:
-            pass
+            except Exception as e:
+                logger.error('Error caught while shutting down app instance. '
+                             'Device: {0}. Error {1}'.format(instance, e))
+        callbacks.WorkflowShutdown.send(self)
 
     def get_cytoscape_data(self):
         output = []

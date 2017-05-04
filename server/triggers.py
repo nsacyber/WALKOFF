@@ -5,6 +5,7 @@ from core.filter import Filter
 from core.flag import Flag
 from .database import db, Base
 
+logger = logging.getLogger(__name__)
 
 class Triggers(Base):
     __tablename__ = "triggers"
@@ -59,14 +60,14 @@ class Triggers(Base):
                                                           format=arg.get('format', 'str'))
                                      for arg in input_in}
                         workflow_to_be_executed.execute(input=input_args)
-                        logging.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
+                        logger.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
                                                                                    input_args))
                     else:
                         workflow_to_be_executed.execute()
-                        logging.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
+                        logger.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
                     return {"status": "success"}
                 else:
-                    logging.error('Workflow associated with trigger is not in controller')
+                    logger.error('Workflow associated with trigger is not in controller')
                     return {"status": "error: workflow could not be found"}
         logging.debug('No trigger matches data input')
         return {"status": "warning: no trigger found valid for data in"}

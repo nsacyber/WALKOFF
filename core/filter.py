@@ -8,6 +8,7 @@ import core.config.config
 
 
 class Filter(ExecutionElement):
+
     def __init__(self, xml=None, parent_name='', action='', args=None, ancestry=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
         Args:
@@ -110,3 +111,12 @@ class Filter(ExecutionElement):
                             ancestry=ancestry)
         out_filter.args = args
         return out_filter
+
+    def get_children(self, ancestry):
+        """Gets the children Filters of the Flag in JSON format.
+        Args:
+            ancestry (list[str]): The ancestry list for the Filter to be returned.
+        Returns:
+            Empty dictionary {}
+        """
+        return {}

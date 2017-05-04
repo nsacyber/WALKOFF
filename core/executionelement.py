@@ -4,7 +4,7 @@ class ExecutionElement(object):
         Args:
             name (str, optional): The name of the ExecutionElement. Defaults to an empty string.
             parent_name (str, optional): The name of the parent of the ExecutionElement. Defaults to an empty string.
-            ancestry (str, optional): The ancestry for the ExecutionElement. Defaults to None.
+            ancestry (str, optional): The ancestry for the ExecutionElement. Defaults to [<parent_name>].
         """
         self.name = name
         self.parent_name = parent_name

@@ -1,15 +1,15 @@
 import xml.etree.cElementTree as et
-
+import logging
 from jinja2 import Template
-
 import core.config.config
 
+logger = logging.getLogger(__name__)
 
 class Argument(object):
     def __init__(self, key=None, value=None, format='str'):
         """Initializes a new Argument object.
         Args:
-            key (any): Name of argument
+            key (str): Name of argument
             value (any): Value of argument
             format (str, optional): Format to which to convert value
         """
@@ -37,12 +37,16 @@ class Argument(object):
             try:
                 output = str(output)
             except ValueError:
+                logger.warning('Conversion of argument {0} to {1}  failed'.format(value, conversion_type))
                 return output
         elif conversion_type == 'int':
             try:
                 output = int(output)
             except (ValueError, TypeError):
+                logger.warning('Conversion of argument {0} to {1}  failed'.format(value, conversion_type))
                 return output
+        else:
+            logger.error('Unhandled conversion type {0} encountered in argument'.format(conversion_type))
         return output
 
     def template(self, **kwargs):
@@ -79,7 +83,8 @@ class Argument(object):
         if arg['type'] != self.format:
             try:
                 self.value = Argument.convert(value=self.value, conversion_type=arg['type'])
-            except:
+            except Exception as e:
+                logger.error('Unhandled conversion exception found when validating arguments: {0}'.format(e))
                 return False
         return arg['name'] == self.key and arg['type'] == self.format
 

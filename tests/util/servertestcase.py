@@ -47,7 +47,6 @@ class ServerTestCase(unittest.TestCase):
                 shutil.rmtree(tests.config.test_data_path)
 
     def setUp(self):
-        logging.disable(logging.CRITICAL)
         core.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
         core.config.paths.apps_path = tests.config.test_apps_path
         core.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup

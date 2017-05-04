@@ -2,9 +2,11 @@ import unittest
 import sys
 from multiprocessing import freeze_support
 from tests import suites as test_suites
+import logging
 
 if __name__ == '__main__':
     freeze_support()
+    logging.disable(logging.CRITICAL)
     ret = True
     print('Testing Workflows:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite).wasSuccessful()
