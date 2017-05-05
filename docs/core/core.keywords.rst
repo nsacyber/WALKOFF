@@ -1,11 +1,11 @@
-core.keywords package
-=============================
+core\.keywords package
+======================
 
 Submodules
 ----------
 
-core.keywords.outputFrom module
----------------------------------------
+core\.keywords\.outputFrom module
+---------------------------------
 
 .. automodule:: core.keywords.outputFrom
     :members:

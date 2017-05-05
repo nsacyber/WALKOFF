@@ -245,7 +245,7 @@ def import_submodules(package, recursive=False):
     Args:
         package (str): The name of the package from which to import the submodules.
         recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules. Defaults to
-            False.
+        False.
             
     Returns:
         A dictionary containing the imported module objects.

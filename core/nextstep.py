@@ -63,7 +63,7 @@ class NextStep(ExecutionElement):
         Args:
             action (str, optional): The action name for the Flag. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
-                converted to a dictionary of str:Argument. Defaults to None.
+            converted to a dictionary of str:Argument. Defaults to None.
             filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
         """
         new_flag = Flag(action=action,

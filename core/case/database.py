@@ -90,7 +90,7 @@ class Event(_Base):
         
         Args:
             sender (cls): A boolean to determine whether or not the events of the Case object should be
-                included in the output.
+            included in the output.
             timestamp (str): A string representation of a timestamp
             entry_message (str): The message associated with the event
             entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)

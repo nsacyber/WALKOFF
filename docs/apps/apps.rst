@@ -1,11 +1,13 @@
 apps package
-====================
+============
 
 Subpackages
 -----------
 
 .. toctree::
 
+    apps.CyberAnalytic
+    apps.DailyQuote
     apps.HelloWorld
 
 Module contents

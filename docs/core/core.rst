@@ -1,11 +1,13 @@
 core package
-====================
+============
 
 Subpackages
 -----------
 
 .. toctree::
 
+    core.case
+    core.config
     core.filters
     core.flags
     core.keywords
@@ -13,112 +15,104 @@ Subpackages
 Submodules
 ----------
 
-core.appBlueprint module
---------------------------------
-
-.. automodule:: core.appBlueprint
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-core.arguments module
------------------------------
+core\.arguments module
+----------------------
 
 .. automodule:: core.arguments
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.case module
-------------------------
+core\.contextdecorator module
+-----------------------------
 
-.. automodule:: core.case
+.. automodule:: core.contextdecorator
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.config module
---------------------------
-
-.. automodule:: core.config
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-core.controller module
-------------------------------
+core\.controller module
+-----------------------
 
 .. automodule:: core.controller
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.ffk module
------------------------
+core\.executionelement module
+-----------------------------
 
-.. automodule:: core.ffk
+.. automodule:: core.executionelement
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.forms module
--------------------------
+core\.filter module
+-------------------
 
-.. automodule:: core.forms
+.. automodule:: core.filter
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.graphDecorator module
-----------------------------------
+core\.flag module
+-----------------
 
-.. automodule:: core.graphDecorator
+.. automodule:: core.flag
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.instance module
-----------------------------
+core\.helpers module
+--------------------
+
+.. automodule:: core.helpers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.instance module
+---------------------
 
 .. automodule:: core.instance
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.interface module
------------------------------
+core\.nextstep module
+---------------------
 
-.. automodule:: core.interface
+.. automodule:: core.nextstep
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.logging module
----------------------------
-
-.. automodule:: core.logging
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-core.options module
----------------------------
+core\.options module
+--------------------
 
 .. automodule:: core.options
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.step module
-------------------------
+core\.step module
+-----------------
 
 .. automodule:: core.step
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.workflow module
-----------------------------
+core\.widgetsignals module
+--------------------------
+
+.. automodule:: core.widgetsignals
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.workflow module
+---------------------
 
 .. automodule:: core.workflow
     :members:

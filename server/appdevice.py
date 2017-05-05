@@ -117,9 +117,9 @@ class Device(database.Base):
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
             port (int, optional): The port for the Device object. Defaults to 0.
             exra_fields (str, optional): The string representation of a dictionary that holds various custom
-                extra fields for the Device object. Defaults to an empty string.
+            extra fields for the Device object. Defaults to an empty string.
             app_server (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
-                empty string.
+            empty string.
         """
         device = Device(name=name, username=username, password=password, ip=ip, port=port, extra_fields=extra_fields,
                         app_id=app_server)

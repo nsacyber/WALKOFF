@@ -1,19 +1,19 @@
-core.flags package
-==========================
+core\.flags package
+===================
 
 Submodules
 ----------
 
-core.flags.count module
--------------------------------
+core\.flags\.count module
+-------------------------
 
 .. automodule:: core.flags.count
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.flags.regMatch module
-----------------------------------
+core\.flags\.regMatch module
+----------------------------
 
 .. automodule:: core.flags.regMatch
     :members:

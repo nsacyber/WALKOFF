@@ -85,12 +85,13 @@ class Workflow(ExecutionElement):
             action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
             app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
             device (str, optional): The name of the device associated with the app associated with the Step. Defaults
-                to an empty string.
+            to an empty string.
             arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
-                to None.
+            to None.
             next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
             errors (list[NextStep], optional): A list of NextStep error objects for the Step object. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
+            
         """
         arg_input = arg_input if arg_input is not None else {}
         next_steps = next_steps if next_steps is not None else []

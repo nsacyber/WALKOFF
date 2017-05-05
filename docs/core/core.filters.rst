@@ -1,11 +1,11 @@
-core.filters package
-============================
+core\.filters package
+=====================
 
 Submodules
 ----------
 
-core.filters.length module
-----------------------------------
+core\.filters\.length module
+----------------------------
 
 .. automodule:: core.filters.length
     :members:

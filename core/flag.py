@@ -87,9 +87,9 @@ class Flag(ExecutionElement):
         Args:
             action (str, optional): The action name for the filter. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
-                converted to a dictionary of str:Argument. Defaults to None.
+            converted to a dictionary of str:Argument. Defaults to None.
             index (any, optional): If index is not None, then the Filter will be inserted at the front of the Filters
-                list. Otherwise, it will be appended to the back. Defaults to None.
+            list. Otherwise, it will be appended to the back. Defaults to None.
                 
         Returns:
             True upon completion.
