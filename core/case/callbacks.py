@@ -14,10 +14,9 @@ logging.basicConfig()  # needed so apscheduler can log to console when an error 
 
 
 class _EventEntry(object):
-    """
-    Container for event entries
+    """Container for event entries.
 
-    Attributes:
+    Args:
         uuid (str): a unique identifier
         timestamp (str): time of creation
         type (str): type of event logged
@@ -60,14 +59,17 @@ def __add_entry_to_case_wrapper(sender, data, event_type, message_name, entry_me
 
 
 def __construct_logging_signal(event_type, message_name, entry_message):
-    """
-    Constructs a blinker Signal to log an event to the log database. Note: The returned callback must be stored to a
-    module variable for the signal to work.
-    :param event_type (str): Type of event whcih is logged 'Workflow, Step, etc.'
-    :param message_name (str): Name of message
-    :param entry_message (str): More detailed message to log
-    :param data (str): Extra information
-    :return: (signal, callback): The constructed blinker signal and its associated callback.
+    """Constructs a blinker Signal to log an event to the log database. Note: The returned callback must be stored to a
+        module variable for the signal to work.
+        
+    Args:
+        event_type (str): Type of event whcih is logged 'Workflow, Step, etc.'
+        message_name (str): Name of message
+        entry_message (str): More detailed message to log
+        data (str): Extra information
+        
+    Returns:
+        (signal, callback): The constructed blinker signal and its associated callback.
     """
     signal = Signal(message_name)
     signal_callback = partial(__add_entry_to_case_wrapper,

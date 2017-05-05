@@ -21,6 +21,7 @@ class Triggers(Base):
     def __init__(self, name, playbook, workflow, condition):
         """
         Constructs a Trigger object
+        
         Args:
             name (str): Name of the trigger object
             playbook (str): Playbook of the workflow to be connected to the trigger
@@ -33,10 +34,11 @@ class Triggers(Base):
         self.condition = condition
 
     def edit_trigger(self, form=None):
-        """
-        Edits a trigger
+        """Edits a trigger
+        
         Args:
             form (form, optional): Wtf-form containing the edited information
+            
         Returns:
             True on successful edit, False otherwise.
         """
@@ -60,6 +62,7 @@ class Triggers(Base):
 
     def as_json(self):
         """ Gets the JSON representation of all the Trigger object.
+        
         Returns:
             The JSON representation of the Trigger object.
         """
@@ -70,11 +73,12 @@ class Triggers(Base):
 
     @staticmethod
     def execute(data_in, input_in):
-        """
-        Tries to match the data_in against the conditionals of all the triggers registered in the database
+        """Tries to match the data_in against the conditionals of all the triggers registered in the database.
+        
         Args:
             data_in (str): Data to be used to match against the conditionals
             intput_in (str): The input to teh first step of the workflow
+            
         Returns:
             Dictionary of {"status": <status string>}
         """

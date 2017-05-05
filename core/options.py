@@ -5,6 +5,7 @@ from core.helpers import construct_workflow_name_key
 class Options(object):
     def __init__(self, xml=None, scheduler=None, children=None, enabled=False, playbook_name=''):
         """Initializes a new Options object.
+        
         Args:
             xml (cElementTree, optional): The XML element tree object. Defaults to None.
             scheduler (dict, optional): The scheduler dictionary, which has "autorun", "type", and "args" fields. 
@@ -32,6 +33,7 @@ class Options(object):
 
     def to_xml(self):
         """Converts the Options object to XML format.
+        
         Returns:
             The XML representation of the Options object.
         """
@@ -52,6 +54,7 @@ class Options(object):
 
     def as_json(self):
         """Gets the JSON representation of an Options object.
+        
         Returns:
             The JSON representation of an Options object.
         """

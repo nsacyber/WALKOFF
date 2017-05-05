@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class NextStep(ExecutionElement):
     def __init__(self, xml=None, parent_name='', name='', flags=None, ancestry=None):
         """Initializes a new NextStep object.
+        
         Args:
             xml (cElementTree, optional): The XML element tree object. Defaults to None.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
@@ -25,6 +26,7 @@ class NextStep(ExecutionElement):
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a NextStep object. This is needed in case a workflow and/or playbook is renamed.
+        
         Args:
             parent_ancestry(list[str]): The parent ancestry list.
         """
@@ -40,8 +42,10 @@ class NextStep(ExecutionElement):
 
     def to_xml(self, tag='next'):
         """Converts the NextStep object to XML format.
+        
         Args:
             tag (str, optional): The tag name for the NextStep object. Defaults to "next".
+            
         Returns:
             The XML representation of the NextStep object.
         """
@@ -55,6 +59,7 @@ class NextStep(ExecutionElement):
 
     def create_flag(self, action="", args=None, filters=None):
         """Creates a new Flag object and adds it to the NextStep object's list of Flags.
+        
         Args:
             action (str, optional): The action name for the Flag. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
@@ -70,8 +75,10 @@ class NextStep(ExecutionElement):
 
     def remove_flag(self, index=-1):
         """Removes a Flag object from the NextStep's list of Flags at a given index.
+        
         Args:
             index(int): The index of the Flag object to be removed.
+            
         Returns:
             True on success, False otherwise.
         """
@@ -103,9 +110,11 @@ class NextStep(ExecutionElement):
 
     def as_json(self, with_children=True):
         """Gets the JSON representation of a NextStep object.
+        
         Args:
             with_children (bool, optional): A boolean to determine whether or not the children elements of the NextStep
                 object should be included in the output.
+                
         Returns:
             The JSON representation of a NextStep object.
         """
@@ -120,10 +129,12 @@ class NextStep(ExecutionElement):
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
         """Forms a NextStep object from the provided JSON object.
+        
         Args:
             json (JSON object): The JSON object to convert from.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             ancestry (list[str], optional): The ancestry for the new NextStep object. Defaults to None.
+            
         Returns:
             The NextStep object parsed from the JSON object.
         """
@@ -136,8 +147,10 @@ class NextStep(ExecutionElement):
 
     def get_children(self, ancestry):
         """Gets the children Flags of the NextStep in JSON format.
+        
         Args:
             ancestry (list[str]): The ancestry list for the Flag to be returned.
+            
         Returns:
             The Flag in the ancestry (if provided) as a JSON, otherwise None.
         """

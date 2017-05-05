@@ -17,6 +17,7 @@ class App(database.Base, object):
 
     def as_json(self, with_devices=False):
         """Gets the JSON representation of an App object.
+        
         Returns:
             The JSON representation of an App object.
         """
@@ -27,6 +28,7 @@ class App(database.Base, object):
 
     def __init__(self, app=None, devices=None):
         """Initializes an App object.
+        
         Args:
             app (str, optional): The name of the app. Defaults to None.
             device (list[str], optional): The list of device names to be associated with the App object. There is a 
@@ -39,8 +41,10 @@ class App(database.Base, object):
 
     def get_config(self, device):
         """Gets the Device object from the given device name.
+        
         Args:
             device (str): The name of the device.
+            
         Returns:
             The Device if found by the name, else an empty dictionary.
         """
@@ -79,6 +83,7 @@ class Device(database.Base):
 
     def __init__(self, name="", username="", password="", ip="0.0.0.0", port=0, extra_fields="", app_id=""):
         """Initializes a new Device object, which will be associated with an App object.
+        
         Args:
             name (str, optional): The name of the Device object. Defaults to an empty string.
             username (str, optional): The username for the Device object. Defaults to an empty string.
@@ -104,6 +109,7 @@ class Device(database.Base):
     @staticmethod
     def add_device(name, username, password, ip, port, extra_fields, app_server):
         """Adds a new Device object.
+        
         Args:
             name (str, optional): The name of the Device object. Defaults to an empty string.
             username (str, optional): The username for the Device object. Defaults to an empty string.
@@ -123,6 +129,7 @@ class Device(database.Base):
 
     def edit_device(self, form):
         """Edits various fields of the Device object. 
+        
         Args:
             form (WTForm): The WTForm object containing the fields that the user wishes to change.
         """
@@ -153,9 +160,11 @@ class Device(database.Base):
 
     def as_json(self, with_apps=True):
         """Gets the JSON representation of a Device object.
+        
         Args:
             with_apps (bool, optional): A boolean to determine whether or not to include the App to which the Device
                 is associated in the JSON output. Defaults to True.
+                
         Returns:
             The JSON representation of a Device object.
         """

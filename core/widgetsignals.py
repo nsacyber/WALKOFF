@@ -8,6 +8,7 @@ __widget_signal_name_separator = '-'
 
 def create_widget_signal_name(app_name, widget_name):
     """ Creates a consistent widget signal name
+    
     Args:
         app_name (str): The app name
         widget_name (str): The widget anme
@@ -17,9 +18,11 @@ def create_widget_signal_name(app_name, widget_name):
 
 def get_widget_signal(app_name, widget_name):
     """ Gets a widget signal for the given app and widget. If none exists, it creates one.
+    
     Args:
         app_name (str): The app name
         widget_name (str): The widget name
+        
     Returns:
          A blinker Signal object used for the app widget
     """

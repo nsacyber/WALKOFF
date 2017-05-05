@@ -18,6 +18,7 @@ class Workflow(ExecutionElement):
     def __init__(self, name='', xml=None, children=None, parent_name='', playbook_name=''):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
+            
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
             xml (cElementTree, optional): The XML element tree object. Defaults to None.
@@ -41,6 +42,7 @@ class Workflow(ExecutionElement):
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Workflow object. This is needed in case a workflow and/or playbook is renamed.
+        
         Args:
             parent_ancestry(list[str]): The parent ancestry list.
         """
@@ -51,8 +53,10 @@ class Workflow(ExecutionElement):
     @staticmethod
     def get_workflow(workflow_name):
         """Retrieve a workflow from the name of the workflow.
+        
         Args:
             workflow_name: The name of the Workflow objet to be retrieved.
+            
         Returns:
             The Workflow object from the provided workflow name.
         """
@@ -75,6 +79,7 @@ class Workflow(ExecutionElement):
 
     def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, errors=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
+        
         Args:
             name (str, optional): The name of the Step object. Defaults to an empty string.
             action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
@@ -102,8 +107,10 @@ class Workflow(ExecutionElement):
 
     def remove_step(self, name=''):
         """Removes a Step object from the Workflow's list of Steps given the Step name.
+        
         Args:
             name (str): The name of the Step object to be removed.
+            
         Returns:
             True on success, False otherwise.
         """
@@ -118,6 +125,7 @@ class Workflow(ExecutionElement):
 
     def to_xml(self, *args):
         """Converts the Workflow object to XML format.
+        
         Returns:
             The XML representation of the Workflow object.
         """
@@ -169,6 +177,7 @@ class Workflow(ExecutionElement):
 
     def execute(self, start='start', input=""):
         """Executes a Workflow by executing all Steps in the Workflow list of Step objects.
+        
         Args:
             start (str, optional): The name of the first Step. Defaults to "start".
             input (str, optional): Input into the first Step. Defaults to an empty string.
@@ -280,6 +289,7 @@ class Workflow(ExecutionElement):
 
     def get_cytoscape_data(self):
         """Gets the cytoscape data for the Workflow object.
+        
         Returns:
             The cytoscape data for the Workflow.
         """
@@ -302,6 +312,7 @@ class Workflow(ExecutionElement):
 
     def from_cytoscape_data(self, data):
         """Reconstruct a Workflow object based on cytoscape data.
+        
         Args:
             data (JSON dict): The cytoscape data to be parsed and reconstructed into a Workflow object.
         """
@@ -317,8 +328,10 @@ class Workflow(ExecutionElement):
 
     def get_children(self, ancestry):
         """Gets the children Steps of the Workflow in JSON format.
+        
         Args:
             ancestry (list[str]): The ancestry list for the Step to be returned.
+            
         Returns:
             The Step in the ancestry (if provided) as a JSON, otherwise None.
         """
@@ -340,6 +353,7 @@ class Workflow(ExecutionElement):
 
     def as_json(self, *args):
         """Gets the JSON representation of a Step object.
+        
         Returns:
             The JSON representation of a Step object.
         """

@@ -7,7 +7,7 @@ class GlobalSubscriptions(object):
     """
     Specifies the events which are subscribed to by all types of a execution level
 
-    Attributes:
+    Args:
         controller (list[str]): Events subscribed to by all controllers
         workflow (list[str]): Events subscribed to by all workflows
         step (list[str]): Events subscribed to by all steps
@@ -34,6 +34,7 @@ class GlobalSubscriptions(object):
 
     def as_json(self):
         """Gets the JSON representation of all the GlobalSubscription object.
+        
         Returns:
             The JSON representation of the GlobalSubscription object.
         """
@@ -47,8 +48,10 @@ class GlobalSubscriptions(object):
     @staticmethod
     def from_json(json_in):
         """Forms a GlobalSubscription object from the provided JSON object.
+        
         Args:
             json_in (JSON object): The JSON object to convert from.
+            
         Returns:
             The GlobalSubscription object parsed from the JSON object.
         """
@@ -73,14 +76,14 @@ class Subscription(object):
     """
     Encapsulates the events which are subscribed to for one level of execution. Forms a tree.w
 
-    Attributes:
+    Args:
         events (_SubscriptionEventList): A list of events this level is subscribed to
         subscriptions (dict{str: Subscription}): A list of subscriptions to execution events one level lower
     """
 
     def __init__(self, events=None, subscriptions=None):
-        """
-        Constructs a subscription object
+        """Constructs a subscription object
+        
         Args:
             events (list, optional): A list of events ID's to subscribe to. Usually strings or ints. Some can be found
                 in core.case.callbacks. Defaults to an empty list
@@ -91,10 +94,11 @@ class Subscription(object):
         self.subscriptions = subscriptions if subscriptions is not None else {}  # in form of {'name' => Subscription()}
 
     def is_subscribed(self, message_name):
-        """
-        Is the given message subscribed to in this level of execution?
+        """Is the given message subscribed to in this level of execution?
+        
         Args:
              message_name (str): The given message
+             
         Returns:
              Is the message subscribed to?
         """
@@ -102,8 +106,10 @@ class Subscription(object):
 
     def as_json(self, names=False):
         """Gets the JSON representation of all the subscription object.
+        
         Args:
             names (bool, optional): Should the names of the controller events be converted to names? Defaults to False
+            
         Returns:
             The JSON representation of the subscription object.
         """
@@ -120,8 +126,10 @@ class Subscription(object):
     @staticmethod
     def from_json(json_in):
         """Forms a Subscription object from the provided JSON object.
+        
         Args:
             json_in (JSON object): The JSON object to convert from.
+            
         Returns:
             The Subscription object parsed from the JSON object.
         """
@@ -143,6 +151,7 @@ class CaseSubscriptions(object):
 
     def __init__(self, subscriptions=None, global_subscriptions=None):
         """ Constructs a case
+        
         Args:
             subscriptions (dict{str: Subscription}, optional): The case's subscriptions. Keys should represent the
                 controller names. Defaults to an empty dictionary
@@ -153,9 +162,11 @@ class CaseSubscriptions(object):
 
     def is_subscribed(self, ancestry, message_name):
         """ Checks if the case is subscribed to an event with the a given message and ancestry
+        
         Args:
             ancestry (list[str]): The ancestry of teh sender of the event
             message_name (str, int): The event type
+            
         Returns:
              A boolean describing if the case is subscribed to the event or not
         """
@@ -172,6 +183,7 @@ class CaseSubscriptions(object):
 
     def as_json(self):
         """Gets the JSON representation of all the CaseSubscription object.
+        
         Returns:
             The JSON representation of the CaseSubscription object.
         """
@@ -182,8 +194,10 @@ class CaseSubscriptions(object):
     @staticmethod
     def from_json(json_in):
         """Forms a CaseSubscription object from the provided JSON object.
+        
         Args:
             json_in (JSON object): The JSON object to convert from.
+            
         Returns:
             The CaseSubscription object parsed from the JSON object.
         """
@@ -207,6 +221,7 @@ subscriptions = {}
 
 def set_subscriptions(new_subscriptions):
     """ Resets the subscriptions
+    
     Args:
         new_subscriptions (dict({str: CaseSubscriptions}): The new subscriptions.
             Takes the form of "{subscription_name: CaseSubscriptions}"
@@ -218,6 +233,7 @@ def set_subscriptions(new_subscriptions):
 
 def add_cases(cases):
     """ Adds the cases to the subscriptions
+    
     Args:
         cases dict({str: CaseSubscription}): the cases and their associated subscriptions to add.
             Takes the form of "{subscription_name: CaseSubscriptions}"
@@ -232,6 +248,7 @@ def add_cases(cases):
 
 def delete_cases(cases):
     """ Deletes the cases from  the subscriptions
+    
     Args:
         cases (list[str]): The names of teh cases to remove
     """
@@ -245,6 +262,7 @@ def delete_cases(cases):
 
 def rename_case(old_case_name, new_case_name):
     """ Renames a case
+    
     Args:
         old_case_name (str): Case name to change
         new_case_name (str): Case's new name
@@ -269,6 +287,7 @@ def clear_subscriptions():
 
 def is_case_subscribed(case, ancestry, message_name):
     """ Checks if a case is subscribed to a message given a message and its sender's ancestry
+    
     Args:
         case (str): The name of the case
         ancestry (list[str]): The ancestry of the sender
@@ -285,9 +304,11 @@ def subscriptions_as_json():
 
 def edit_global_subscription(case_name, global_subscriptions):
     """ Edits a case's GlobalSubscription
+    
     Args:
         case_name (str): The name of the case to edit
-        global_subscriptions (GlobalSubscriptions): The case's new gloabl subscriptions
+        global_subscriptions (GlobalSubscriptions): The case's new global subscriptions
+        
     Returns:
         True if successfully edited. False otherwise.
     """
@@ -299,10 +320,12 @@ def edit_global_subscription(case_name, global_subscriptions):
 
 def edit_subscription(case, ancestry, events):
     """ Edits a subscription by changing the events to which a particular ancestry is subscribed to
+    
     Args:
         case (str): The name of the case to edit
         ancestry (list[str]): The ancestry to edit
         events (list[str,int]): The ancestry's new events to which it is subscribed to
+        
     Returns:
         True if successfully edited. False otherwise.
     """
@@ -341,6 +364,7 @@ def __construct_subscription_from_ancestry(ancestry, events):
 def add_subscription(case, ancestry, events):
     """
     Adds a subscription of a set events and ancestry to a case
+    
     Args:
         case (str): The case to add a subscription to
         ancestry (list[str]): The ancestry to add events to
@@ -372,6 +396,7 @@ def add_subscription(case, ancestry, events):
 def remove_subscription_node(case, ancestry):
     """
     Remove a case's subscription to an ancestry
+    
     Args:
         case (str): The case to remove a subscription from
         ancestry (list[str]): The ancestry to remove from the case's subscriptions
@@ -404,8 +429,10 @@ __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
 def convert_to_event_names(events):
     """
     Converts events to controller event names if event is a controller event
+    
     Args:
         events (list[str, int]): Events to be converted
+        
     Returns:
         List of event identifiers in which the controller events have been converted to their string representations
     """

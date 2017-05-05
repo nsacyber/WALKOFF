@@ -31,8 +31,10 @@ class Context(object):
     @staticmethod
     def get_apps(path=core.config.paths.apps_path):
         """Gets all the App instances.
+        
         Args:
             path (str, optional): The path to the apps. Defaults to the apps_path set in the configuration.
+            
         Returns:
             A list of App instances.
         """
@@ -41,8 +43,10 @@ class Context(object):
     @staticmethod
     def get_widgets(path=core.config.paths.apps_path):
         """Gets a dictionary of all Widgets for every App.
+        
         Args:
             path (str, optional): The path to the apps. Defaults to the apps_path set in the configuration.
+            
         Returns:
             A dictionary containing all App objects and any Widgets associated with them.
         """
@@ -54,6 +58,7 @@ class Context(object):
 
     def set(self, key, value):
         """Sets an attribute for the object.
+        
         Args:
             key (str): The name of the attribute to set.
             value (any): The value of the attribute to set.

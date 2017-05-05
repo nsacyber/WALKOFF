@@ -14,6 +14,7 @@ ERROR = -1
 class Instance(object):
     def __init__(self, instance=None, state=1):
         """Initializes a new Instance of an App.
+        
         Args:
             instance (Class): This is an instance of an App's module.
             state (int, optional): The state of the Instance. 1 is OK, 0 is SHUTDOWN, and -1 is ERROR. Defaults to OK.
@@ -24,9 +25,11 @@ class Instance(object):
     @staticmethod
     def create(app_name, device_name):
         """Creates a new Instance object from an app name and a device name.
+        
         Args:
             app_name (str): The name of the app from which to import the main module.
             device_name (str): A device pertaining to the App.
+            
         Returns:
             A new Instance object.
         """

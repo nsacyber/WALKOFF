@@ -17,8 +17,7 @@ class _CaseEventLink(_Base):
 
 
 class Case(_Base):
-    """
-    Case ORM for the events database
+    """Case ORM for the events database
     """
     __tablename__ = 'case'
     id = Column(Integer, primary_key=True)
@@ -28,9 +27,11 @@ class Case(_Base):
 
     def as_json(self, with_events=True):
         """Gets the JSON representation of a Case object.
+        
         Args:
             with_events (bool, optional): A boolean to determine whether or not the events of the Case object should be
                 included in the output.
+                
         Returns:
             The JSON representation of a Case object.
         """
@@ -43,8 +44,7 @@ class Case(_Base):
 
 
 class Event(_Base):
-    """
-    ORM for an Event in the events database
+    """ORM for an Event in the events database
     """
     __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
@@ -58,9 +58,11 @@ class Event(_Base):
 
     def as_json(self, with_cases=False):
         """Gets the JSON representation of an Event object.
+        
         Args:
             with_cases (bool, optional): A boolean to determine whether or not the cases of the event object should be
                 included in the output.
+                
         Returns:
             The JSON representation of an Event object.
         """
@@ -85,6 +87,7 @@ class Event(_Base):
     @staticmethod
     def create(sender, timestamp, entry_message, entry_type, data=''):
         """Factory method to construct an Event object.
+        
         Args:
             sender (cls): A boolean to determine whether or not the events of the Case object should be
                 included in the output.
@@ -92,6 +95,7 @@ class Event(_Base):
             entry_message (str): The message associated with the event
             entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
             data (str): Extra information to be logged with the event
+            
         Returns:
             An Event object.
         """
@@ -132,6 +136,7 @@ class CaseDatabase(object):
 
     def add_cases(self, case_names):
         """ Adds empty cases to the database
+        
         Args:
             case_names (list[str]): A list of case names to add
         """
@@ -141,6 +146,7 @@ class CaseDatabase(object):
 
     def delete_cases(self, case_names):
         """ Removes cases to the database
+        
         Args:
             case_names (list[str]): A list of case names to remove
         """
@@ -152,6 +158,7 @@ class CaseDatabase(object):
 
     def rename_case(self, old_case_name, new_case_name):
         """ Renames a case
+        
         Args:
             old_case_name (str): The case to rename
             new_case_name (str): The case's new name
@@ -164,6 +171,7 @@ class CaseDatabase(object):
 
     def edit_case_note(self, case_name, note):
         """ Edits the note attached to a case
+        
         Args:
             case_name (str): The case to edit
             note (str): The case's note
@@ -176,6 +184,7 @@ class CaseDatabase(object):
 
     def edit_event_note(self, event_id, note):
         """ Edits the note attached to an event
+        
         Args:
             event_id (int): The id of the event
             note (str): The event's note
@@ -188,6 +197,7 @@ class CaseDatabase(object):
 
     def add_event(self, event, cases):
         """ Adds an event to some cases
+        
         Args:
             event (cls): A core.case.callbacks._EventEntry object to add to the cases
             cases (list[str]): The cases to add the event to
@@ -211,6 +221,7 @@ class CaseDatabase(object):
 
     def cases_as_json(self):
         """Gets the JSON representation of all the cases in the case database.
+        
         Returns:
             The JSON representation of all Case objects without their events.
         """
@@ -219,6 +230,7 @@ class CaseDatabase(object):
 
     def event_as_json(self, event_id):
         """Gets the JSON representation of an event in the case database.
+        
         Returns:
             The JSON representation of an Event object.
         """
@@ -226,6 +238,7 @@ class CaseDatabase(object):
 
     def case_events_as_json(self, case_name):
         """Gets the JSON representation of all the events in the case database.
+        
         Returns:
             The JSON representation of all Event objects without their cases.
         """

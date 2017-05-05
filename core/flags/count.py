@@ -4,6 +4,7 @@ import json
 def main(args, value):
     """
     Compares the value of of an input using ==, >, <, >=, or <=. See data/functions.json for argument information
+    
     Returns:
         The result of the comparison
     """

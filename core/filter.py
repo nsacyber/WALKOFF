@@ -11,6 +11,7 @@ class Filter(ExecutionElement):
 
     def __init__(self, xml=None, parent_name='', action='', args=None, ancestry=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
+        
         Args:
             xml (cElementTree, optional): The XML element tree object. Defaults to None.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
@@ -30,6 +31,7 @@ class Filter(ExecutionElement):
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Filter object. This is needed in case a workflow and/or playbook is renamed.
+        
         Args:
             parent_ancestry(list[str]): The parent ancestry list.
         """
@@ -43,8 +45,10 @@ class Filter(ExecutionElement):
 
     def to_xml(self, *args):
         """Converts the Filter object to XML format.
+        
         Args:
             args (list[str], optional): A list of arguments to place in the XML.
+            
         Returns:
             The XML representation of the Filter object.
         """
@@ -57,6 +61,7 @@ class Filter(ExecutionElement):
 
     def validate_args(self):
         """Ensures that the arguments passed in are properly formed.
+        
         Returns:
              True if arguments are valid, False otherwise.
         """
@@ -88,6 +93,7 @@ class Filter(ExecutionElement):
 
     def as_json(self):
         """Gets the JSON representation of a Filter object.
+        
         Returns:
             The JSON representation of a Filter object.
         """
@@ -97,10 +103,12 @@ class Filter(ExecutionElement):
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
         """Forms a Filter object from the provided JSON object.
+        
         Args:
             json (JSON object): The JSON object to convert from.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             ancestry (list[str], optional): The ancestry for the new Filter object. Defaults to None.
+            
         Returns:
             The Filter object parsed from the JSON object.
         """
@@ -114,8 +122,10 @@ class Filter(ExecutionElement):
 
     def get_children(self, ancestry):
         """Gets the children Filters of the Flag in JSON format.
+        
         Args:
             ancestry (list[str]): The ancestry list for the Filter to be returned.
+            
         Returns:
             Empty dictionary {}
         """

@@ -1,6 +1,7 @@
 class ExecutionElement(object):
     def __init__(self, name='', parent_name='', ancestry=None):
         """Initializes a new ExecutionElement object. This is the parent class.
+        
         Args:
             name (str, optional): The name of the ExecutionElement. Defaults to an empty string.
             parent_name (str, optional): The name of the parent of the ExecutionElement. Defaults to an empty string.

@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class Flag(ExecutionElement):
     def __init__(self, xml=None, parent_name='', action='', args=None, filters=None, ancestry=None):
         """Initializes a new Flag object. 
+        
         Args:
             xml (cElementTree, optional): The XML element tree object. Defaults to None.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
@@ -33,6 +34,7 @@ class Flag(ExecutionElement):
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Flag object. This is needed in case a workflow and/or playbook is renamed.
+        
         Args:
             parent_ancestry(list[str]): The parent ancestry list.
         """
@@ -52,6 +54,7 @@ class Flag(ExecutionElement):
 
     def set(self, attribute=None, value=None):
         """Sets an attribute for the Flag object.
+        
         Args:
             attribute (str): The attribute key.
             value (any): The attribute value.
@@ -60,8 +63,10 @@ class Flag(ExecutionElement):
 
     def to_xml(self, *args):
         """Converts the Flag object to XML format.
+        
         Args:
             args (list[str], optional): A list of arguments to place in the XML.
+            
         Returns:
             The XML representation of the Flag object.
         """
@@ -78,12 +83,14 @@ class Flag(ExecutionElement):
 
     def add_filter(self, action='', args=None, index=None):
         """Adds a Filter object to the Flag's list of Filters.
+        
         Args:
             action (str, optional): The action name for the filter. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             index (any, optional): If index is not None, then the Filter will be inserted at the front of the Filters
                 list. Otherwise, it will be appended to the back. Defaults to None.
+                
         Returns:
             True upon completion.
         """
@@ -95,8 +102,10 @@ class Flag(ExecutionElement):
 
     def remove_filter(self, index=-1):
         """Removes a Filter object from the Flag's list of Filters at a given index.
+        
         Args:
             index(int): The index of the Filter object to be removed.
+            
         Returns:
             True on success, False otherwise.
         """
@@ -108,6 +117,7 @@ class Flag(ExecutionElement):
 
     def validate_args(self):
         """Ensures that the arguments passed in are properly formed.
+        
         Returns:
              True if arguments are valid, False otherwise.
         """
@@ -146,9 +156,11 @@ class Flag(ExecutionElement):
 
     def as_json(self, with_children=True):
         """Gets the JSON representation of a Flag object.
+        
         Args:
             with_children (bool, optional): A boolean to determine whether or not the children elements of the Flag
                 object should be included in the output.
+                
         Returns:
             The JSON representation of a Flag object.
         """
@@ -163,10 +175,12 @@ class Flag(ExecutionElement):
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
         """Forms a Flag object from the provided JSON object.
+        
         Args:
             json (JSON object): The JSON object to convert from.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             ancestry (list[str], optional): The ancestry for the new Flag object. Defaults to None.
+            
         Returns:
             The Flag object parsed from the JSON object.
         """
@@ -179,8 +193,10 @@ class Flag(ExecutionElement):
 
     def get_children(self, ancestry):
         """Gets the children Filters of the Flag in JSON format.
+        
         Args:
             ancestry (list[str]): The ancestry list for the Filter to be returned.
+            
         Returns:
             The Filter in the ancestry (if provided) as a JSON, otherwise None.
         """

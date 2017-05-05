@@ -10,6 +10,7 @@ userRoles = {}
 
 def initialize_user_roles(urls):
     """Initializes the roles dictionary, used in determining which role can access which page(s).
+    
     Args:
         urls (list[str]): The list of all root endpoints.
     """
@@ -19,6 +20,7 @@ def initialize_user_roles(urls):
 
 def add_to_user_roles(role_name, urls):
     """Adds a role to the list of allowed roles for a list of root endpoints.
+    
     Args:
         role_name (str): The name of the role to add to the allowed roles list.
         urls (list[str]): The list of root endpoints to which to add the role.
@@ -43,6 +45,7 @@ class Role(Base, RoleMixin):
     def __init__(self, name, description, pages):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
             permissions.
+            
         Args:
             name (str): The name of the Role.
             description (str, optional): A description of the role.
@@ -54,6 +57,7 @@ class Role(Base, RoleMixin):
 
     def set_description(self, description):
         """Sets the description of the Role.
+        
         Args:
             description (str): The description of the Role.
         """
@@ -61,6 +65,7 @@ class Role(Base, RoleMixin):
 
     def to_string(self):
         """Returns the dictionary representation of the Role object.
+        
         Returns:
             The dictionary representation of the Role object.
         """
@@ -68,6 +73,7 @@ class Role(Base, RoleMixin):
 
     def display(self):
         """Returns the dictionary representation of the Role object.
+        
         Returns:
             The dictionary representation of the Role object.
         """
@@ -99,6 +105,7 @@ class User(Base, UserMixin):
 
     def display(self):
         """Returns the dictionary representation of a User object.
+        
         Returns:
             The dictionary representation of a User object.
         """
@@ -108,6 +115,7 @@ class User(Base, UserMixin):
 
     def set_roles(self, roles):
         """Adds the given list of roles to the User object.
+        
         Args:
             roles (list[str]): A list of Role names with which the User will be associated.
         """

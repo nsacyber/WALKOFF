@@ -17,6 +17,7 @@ class CaseSubscription(Base):
     def __init__(self, name, subscription='{}'):
         """
         Constructs an instance of a CaseSubscription
+        
         Args:
             name (str): Name of the case subscription
             subscription (str): A string of the JSON representation of the subscription
@@ -30,6 +31,7 @@ class CaseSubscription(Base):
 
     def as_json(self):
         """ Gets the JSON representation of all the CaseSubscription object.
+        
         Returns:
             The JSON representation of the CaseSubscription object.
         """
@@ -39,6 +41,7 @@ class CaseSubscription(Base):
     @staticmethod
     def update(case_name):
         """ Synchronizes the subscription from the subscription in memory in the core
+        
         Args:
             case_name (str): The name of case to synchronize
         """
@@ -50,9 +53,11 @@ class CaseSubscription(Base):
     @staticmethod
     def from_json(name, subscription_json):
         """ Forms a CaseSubscription object from the provided JSON object.
+        
         Args:
             name (str): The name of the case
             subscription_json (dict): A JSON representation of the subscription
+            
         Returns:
             The CaseSubscription object parsed from the JSON object.
         """
