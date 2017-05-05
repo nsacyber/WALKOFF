@@ -63,4 +63,7 @@ if __name__ == "__main__":
             server = WSGIServer((host, port), application=flaskserver.app)
         setup_logger()
         logging.info('Listening on host https://' + host + ':' + str(port))
-        server.serve_forever()
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            logging.info('Shutting down server')
