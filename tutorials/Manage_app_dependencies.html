@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
 <style>
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
@@ -33,6 +34,8 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 }
 </style>
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 
 <!-- Navbar -->
 <div class="w3-top">
@@ -73,7 +76,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
             didn't need your app, we can spare them needing to install them by including them in them in your app's
         <code>setup.py</code> file. For our example, our setup.py would look like this:</p>
-        <pre class="code"><code>
+        <pre><code class="python">
 from setuptools import setup
 
 setup(install_requires=['scikit-learn'])
@@ -83,11 +86,11 @@ setup(install_requires=['scikit-learn'])
         <h3>Installing app dependencies</h3>
         <p>To install an app dependency, you can use the <code>installDependencies.py</code> script included at the top
             level of the repository.</p>
-        <pre class="code"><code>
+        <pre><code class="console">
 python installDependencies.py --apps App1
         </code></pre>
         <p>You can see more options using </p>
-        <pre class="code"><code>
+        <pre><code class="console">
 python installDependencies.py --help
         </code></pre>
         <p>Next, you'll learn how to make a custom interface for your app (right now the server will quietly complain if you try to display your app)</p>

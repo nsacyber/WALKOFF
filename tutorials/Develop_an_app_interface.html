@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
 <style>
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
@@ -34,7 +35,8 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 
 </style>
 <body>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 <!-- Navbar -->
 <div class="w3-top">
   <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
@@ -71,7 +73,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
             we developed in the last tutorial using the Jinja template engine to populate fields in an HTML</p>
         <h4><b>1. Under the Python package with the name of your app, create three directories called interface, static, and templates.</b></h4>
         <p>The <code>apps</code> directory should look like this:</p>
-        <pre class="code"><code>
+        <pre><code class="console">
 WALKOFF
 |-- apps
   |-- __init__.py
@@ -89,7 +91,7 @@ WALKOFF
             which will be used to populate the fields of our HTML. For right now, we just want to define an empty function
             to stop the server from complainign when you attempt to display your app in the webapp. </p>
 
-        <pre class="code"><code>
+        <pre><code class="python">
 def load(*args, **kwargs):
     return {}
         </code></pre>
@@ -97,7 +99,7 @@ def load(*args, **kwargs):
         <h4><b>3. Create a simple web page</b></h4>
         <p>Inside of the templates directory, we create an <code>index.html</code> page. This will be primary landing
             page of the app. Let's create a quick one that just says hello to the user.</p>
-        <pre class="code"><code>
+        <pre><code class="html">
 &ltdiv id="main" class="container-fluid"&gt
     &lth1&gtHello!&lt/h1&gt
 &lt/div&gt
@@ -107,7 +109,7 @@ def load(*args, **kwargs):
         <p>Jinja templating is a powerful way to template text. We will only be doing very simple templating for this
         example, but you can find much more involved examples online. We will modify our <code>load</code> function in
         <code> display.py</code> to return a few values which we will then reference in <code>index.html</code>.</p>
-        <pre class="code"><code>
+        <pre><code class="python">
 import random
 
 name = "John"
@@ -117,7 +119,7 @@ def load(*args, **kwargs):
         </code></pre>
         <p>This will export the name field and a random decimal number between 0 and 1 to <code>index.html</code>. We
         can access the values in <code>index.html</code>like this:</p>
-        <pre class="code"><code>
+        <pre><code class="html">
 &ltdiv id="main" class="container-fluid"&gt
     &lth1&gtHello {{ name }}!&lt/h1&gt
     {% if rand_num > 0.5 %}
@@ -133,7 +135,7 @@ def load(*args, **kwargs):
             create a <code>main.js</code> script. Inside of this script, we can write
         code that uses the jQuery and other helper plugins. We can include this script inside the HTML using some more
         Jinja templating:</p>
-        <pre class="code"><code>
+        <pre><code class="html">
 &ltscript src="{{ url_for('appPage.static', app=g.app, filename='main.js') }}"&gt&lt/script&gt
 
 &ltdiv id="main" class="container-fluid"&gt

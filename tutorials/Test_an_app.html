@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
 <style>
 body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 .w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
@@ -34,6 +35,8 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 
 </style>
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 
 <!-- Navbar -->
 <div class="w3-top">
@@ -70,7 +73,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
         <h4><b>1. Create a Python package in your app package named "test"</b></h4>
         <p>If you were testing your HelloWorld app described in the <a href="Develop_an_app.html">Develop an App</a>
         section, your directory structure will look like this:</p>
-        <pre class="code"><code>
+        <pre><code class="console">
 WALKOFF
 |-- apps
   |-- HelloWorld
@@ -83,7 +86,7 @@ WALKOFF
         <h4><b>2. Write your tests</b></h4>
         <p>Inside the test package, we then need to write some Python modules which use Python's builtin
             <code>unittest</code> package to test our module.</p>
-        <pre class="code"><code>
+        <pre><code>
 import unittest
 from apps.HelloWorld import main
 
@@ -109,11 +112,11 @@ class TestMain(unittest.TestCase):
 
         <p>You can run your tests by running the <code>testapps.py</code> script included at the root of the WALKOFF
             repository</p>
-            <pre class="code"><code>
+            <pre><code class="console">
 python testapps.py --apps HelloWorld
             </code></pre>
         <p>You can see more options using </p>
-        <pre class="code"><code>
+        <pre><code class="console">
 python testapps.py --help
         </code></pre>
         <div align="center" style="border:1px solid blue">
