@@ -1,6 +1,6 @@
 from xml.etree import cElementTree
-from flags import execute_flag, FlagExecutionNotImplementedError, FlagNotImplementedError
-from flags import *  # needed to put all flags in sys.modules for them to be registered
+from core.flags import execute_flag, FlagExecutionNotImplementedError, FlagNotImplementedError
+from core.flags import *  # needed to put all flags in sys.modules for them to be registered
 from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
