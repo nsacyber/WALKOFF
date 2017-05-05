@@ -67,10 +67,9 @@ class TestHelperFunctions(unittest.TestCase):
         expected_apps = ['HelloWorld']
         orderless_list_compare(self, expected_apps, list_apps())
 
-    def test_list_widgtes(self):
+    def test_list_widgets(self):
         orderless_list_compare(self, list_widgets('HelloWorld'), ['testWidget', 'testWidget2'])
         self.assertListEqual(list_widgets('JunkApp'), [])
-
 
     def test_construct_workflow_name_key(self):
         input_output = {('',''): '-',
@@ -96,11 +95,11 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_import_py_file(self):
         module_name = 'tests.apps.HelloWorld'
-        module = import_py_file(module_name, os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
-        self.assertIsInstance(module, types.ModuleType)
-        self.assertEqual(module.__name__, module_name)
+        imported_module = import_py_file(module_name, os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
+        self.assertIsInstance(imported_module, types.ModuleType)
+        self.assertEqual(imported_module.__name__, module_name)
         self.assertIn(module_name, sys.modules)
-        self.assertEqual(sys.modules[module_name], module)
+        self.assertEqual(sys.modules[module_name], imported_module)
 
     def test_import_py_file_invalid(self):
         error_type = IOError if sys.version_info[0] == 2 else OSError
@@ -109,11 +108,11 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_import_app_main(self):
         module_name = 'tests.apps.HelloWorld.main'
-        module = import_app_main('HelloWorld')
-        self.assertIsInstance(module, types.ModuleType)
-        self.assertEqual(module.__name__, module_name)
+        imported_module = import_app_main('HelloWorld')
+        self.assertIsInstance(imported_module, types.ModuleType)
+        self.assertEqual(imported_module.__name__, module_name)
         self.assertIn(module_name, sys.modules)
-        self.assertEqual(sys.modules[module_name], module)
+        self.assertEqual(sys.modules[module_name], imported_module)
 
     def test_import_app_main_invalid_app(self):
         self.assertIsNone(import_app_main('InvalidAppName'))
@@ -146,3 +145,28 @@ class TestHelperFunctions(unittest.TestCase):
         for name in expected_names:
             self.assertIn(name, results.keys())
             self.assertIn(name, sys.modules.keys())
+
+    def test_subclass_registry(self):
+        from six import with_metaclass
+
+        class Sub(with_metaclass(SubclassRegistry, object)):
+            pass
+
+        self.assertDictEqual(Sub.registry, {'Sub': Sub})
+
+        class Sub1(Sub):
+            pass
+
+        class Sub2(Sub):
+            pass
+
+        class Sub3(Sub):
+            pass
+
+        class Sub1(Sub):
+            pass
+
+        orderless_list_compare(self, Sub.registry.keys(), ['Sub', 'Sub1', 'Sub2', 'Sub3'])
+        orderless_list_compare(self, Sub.registry.values(), [Sub, Sub1, Sub2, Sub3])
+
+

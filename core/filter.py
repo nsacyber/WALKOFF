@@ -1,9 +1,9 @@
 from xml.etree import cElementTree
-
+from core.filters import *
+from core.filters import execute_filter
 from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import import_lib
 import core.config.config
 
 
@@ -75,10 +75,10 @@ class Filter(ExecutionElement):
         return False
 
     def __call__(self, output=None):
-        module = import_lib('filters', self.action)
-        if module and self.validate_args():
+        if self.validate_args():
             try:
-                result = getattr(module, "main")(args=self.args, value=output)
+                #result = getattr(module, "main")(args=self.args, value=output)
+                result = execute_filter(self.action, args=self.args, value=output)
                 callbacks.FilterSuccess.send(self)
                 return result
             except:

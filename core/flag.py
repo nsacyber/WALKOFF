@@ -1,10 +1,10 @@
 from xml.etree import cElementTree
-
+from flags import execute_flag, FlagExecutionNotImplementedError, FlagNotImplementedError
+from flags import *  # needed to put all flags in sys.modules for them to be registered
 from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
-from core.helpers import import_lib
 import core.config.config
 import logging
 
@@ -135,18 +135,27 @@ class Flag(ExecutionElement):
         for filter_element in self.filters:
             data = filter_element(output=data)
 
-        module = import_lib('flags', self.action)
-        if module:
-            result = None
-            if self.validate_args():
-                result = getattr(module, 'main')(args=self.args, value=data)
+        result = False
+        if self.validate_args():
+            try:
+                result = execute_flag(self.action, args=self.args, value=data)
                 callbacks.FlagArgsValid.send(self)
                 logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
-            else:
-                logger.warning('Arguments passed to flag {0} are invalid. Arguments {1}'.format(self.ancestry,
-                                                                                                self.args))
-                callbacks.FlagArgsInvalid.send(self)
-            return result
+            except FlagNotImplementedError:
+                logger.error('Flag {0} is not implemented'.format(self.action))
+                return False
+            except FlagExecutionNotImplementedError:
+                logger.error('Flag {0} execution is not properly implemented'.format(self.action))
+                return False
+            except Exception as e:
+                logger.error('Error encountered executing '
+                             'flag {0} with arguments {1} and value {2}'.format(self.action, self.args, data))
+                return False
+        else:
+            logger.warning('Arguments passed to flag {0} are invalid. Arguments {1}'.format(self.ancestry,
+                                                                                            self.args))
+            callbacks.FlagArgsInvalid.send(self)
+        return result
 
     def __repr__(self):
         output = {'action': self.action,

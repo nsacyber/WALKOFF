@@ -40,16 +40,16 @@ def import_lib(directory, module_name):
     Returns:
         The module object that was imported.
     """
-    module = None
+    imported_module = None
     module_name = '.'.join(['core', directory, module_name])
     try:
-        module = importlib.import_module(module_name)
+        imported_module = importlib.import_module(module_name)
     except ImportError:
         logger.error('Cannot import module {0}. Returning None'.format(module_name))
         pass
     finally:
 
-        return module
+        return imported_module
 
 
 def construct_module_name_from_path(path):
@@ -82,9 +82,9 @@ def import_app_main(app_name):
     except KeyError:
         pass
     try:
-        module = import_py_file(module_name, app_path)
-        sys.modules[module_name] = module
-        return module
+        imported_module = import_py_file(module_name, app_path)
+        sys.modules[module_name] = imported_module
+        return imported_module
     except (ImportError, IOError, OSError) as e:
         logger.error('Cannot app main for app {0}. Error: {1}'.format(app_name, e))
         pass
@@ -119,7 +119,7 @@ def list_widgets(app, app_path=None):
     
     Args:
         app (str): The app under which the widgets are located.
-        path (str, optional): The path to the widgets folder. Default is None.
+        app_path (str, optional): The path to the widgets folder. Default is None.
         
     Returns:
         A list of the widgets given the apps path or the apps_path in the configuration.
@@ -244,9 +244,9 @@ def import_submodules(package, recursive=False):
     
     Args:
         package (str): The name of the package from which to import the submodules.
-        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules. Defaults to
-        False.
-            
+        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules. 
+            Defaults to False.
+                        
     Returns:
         A dictionary containing the imported module objects.
     """
@@ -259,3 +259,14 @@ def import_submodules(package, recursive=False):
         if recursive and is_package:
             results.update(import_submodules(full_name))
     return results
+
+
+class SubclassRegistry(type):
+    """
+    Metaclass which registers its subclasses in a dict of {name: cls}
+    """
+    def __init__(cls, name, bases, nmspc):
+        super(SubclassRegistry, cls).__init__(name, bases, nmspc)
+        if not hasattr(cls, 'registry'):
+            cls.registry = dict()
+        cls.registry[name] = cls

@@ -191,8 +191,8 @@ class TestFlag(unittest.TestCase):
     def test_call_invalid_flag(self):
         flag = Flag(action='junkName', args={arg['name']: Argument(key=arg['name'], format=arg['type'])
                                              for arg in self.test_funcs['flags']['func_name2']['args']})
-        self.assertIsNone(flag())
-        self.assertIsNone(flag(output=6))
+        self.assertFalse(flag())
+        self.assertFalse(flag(output=6))
 
     def test_as_json(self):
         filters = [Filter(action='test_filter_action'), Filter()]
@@ -293,8 +293,8 @@ class TestFlag(unittest.TestCase):
 
     def test_name_parent_filter_rename(self):
         flag = Flag(ancestry=['flag_parent'], action='test_flag')
-        filter = Filter(action="test_filter", ancestry=flag.ancestry)
-        flag.filters = [filter]
+        filter_element = Filter(action="test_filter", ancestry=flag.ancestry)
+        flag.filters = [filter_element]
 
         new_ancestry = ["flag_parent_update"]
         flag.reconstruct_ancestry(new_ancestry)
@@ -304,9 +304,9 @@ class TestFlag(unittest.TestCase):
 
     def test_name_parent_multiple_filter_rename(self):
         flag = Flag(ancestry=['flag_parent'], action='test_flag')
-        filterOne = Filter(action="test_filter_one", ancestry=flag.ancestry)
-        filterTwo = Filter(action="test_filter_two", ancestry=flag.ancestry)
-        flag.filters = [filterOne, filterTwo]
+        filter_one = Filter(action="test_filter_one", ancestry=flag.ancestry)
+        filter_two = Filter(action="test_filter_two", ancestry=flag.ancestry)
+        flag.filters = [filter_one, filter_two]
 
         new_ancestry = ["flag_parent_update"]
         flag.reconstruct_ancestry(new_ancestry)

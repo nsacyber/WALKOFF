@@ -1,44 +1,47 @@
 import json
+from core.flags import FlagType
 
 
-def main(args, value):
-    """
-    Compares the value of of an input using ==, >, <, >=, or <=. See data/functions.json for argument information
-    
-    Returns:
-        The result of the comparison
-    """
-    if not args["type"] or args["type"] == "json":
-        var = len(json.loads(value))
-    else:
-        try:
-            var = int(value)
-        except ValueError:
-            var = len(value)
+class count(FlagType):
+    @staticmethod
+    def execute(args, value):
+        """
+        Compares the value of of an input using ==, >, <, >=, or <=. See data/functions.json for argument information
 
-    threshold = args["threshold"]
+        Returns:
+            The result of the comparison
+        """
+        if not args["type"] or args["type"] == "json":
+            var = len(json.loads(value))
+        else:
+            try:
+                var = int(value)
+            except ValueError:
+                var = len(value)
 
-    if args["operator"] == "g":
-        if var > threshold:
-            return True
+        threshold = args["threshold"]
 
-    elif args["operator"] == "ge":
-        if var >= threshold:
-            return True
+        if args["operator"] == "g":
+            if var > threshold:
+                return True
 
-    elif args["operator"] == "l":
-        if var < threshold:
-            return True
+        elif args["operator"] == "ge":
+            if var >= threshold:
+                return True
 
-    elif args["operator"] == "le":
-        if var <= threshold:
-            return True
+        elif args["operator"] == "l":
+            if var < threshold:
+                return True
 
-    elif args["operator"] == "e":
-        if var == threshold:
-            return True
-    else:
-        if var == threshold:
-            return True
+        elif args["operator"] == "le":
+            if var <= threshold:
+                return True
 
-    return False
+        elif args["operator"] == "e":
+            if var == threshold:
+                return True
+        else:
+            if var == threshold:
+                return True
+
+        return False
