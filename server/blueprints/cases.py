@@ -221,7 +221,7 @@ def update_subscription(case_name):
             running_context.CaseSubscription.update(case_name)
             running_context.db.session.commit()
             if success:
-                current_app.logger.error('Edited subscription {0} to {1}'.format(data['ancestry'], data['events']))
+                current_app.logger.info('Edited subscription {0} to {1}'.format(data['ancestry'], data['events']))
                 return json.dumps(case_subscription.subscriptions_as_json())
             else:
                 current_app.logger.error('Error occurred while editing subscription {0} to {1}'.format(data['ancestry'],

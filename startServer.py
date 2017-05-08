@@ -7,6 +7,7 @@ import core.case.database as case_database
 from core.config import config, paths
 from server import flaskserver
 
+logger = logging.getLogger('startserver')
 
 def get_ssl_context():
     if config.https.lower() == "true":
@@ -43,7 +44,7 @@ def setup_logger():
         logging.config.dictConfig(log_config)
     else:
         logging.basicConfig()
-        logging.info("Basic logging is being used")
+        logger.info("Basic logging is being used")
 
 
 if __name__ == "__main__":
@@ -62,8 +63,8 @@ if __name__ == "__main__":
         else:
             server = WSGIServer((host, port), application=flaskserver.app)
         setup_logger()
-        logging.info('Listening on host https://' + host + ':' + str(port))
+        logger.info('Listening on host https://{0}:{1}'.format(host, port))
         try:
             server.serve_forever()
         except KeyboardInterrupt:
-            logging.info('Shutting down server')
+            logger.info('Shutting down server')
