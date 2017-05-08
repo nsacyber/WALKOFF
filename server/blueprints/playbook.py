@@ -141,6 +141,7 @@ def copy_playbook(playbook_name):
             status = 'error: invalid playbook name'
         else:
             running_context.controller.copy_playbook(playbook_name, new_playbook_name)
+            write_playbook_to_file(new_playbook_name)
             current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
             status = 'success'
 
@@ -339,6 +340,7 @@ def copy_workflow(playbook_name, workflow_name):
         else:
             running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name,
                                                      new_workflow_name)
+            write_playbook_to_file(new_playbook_name)
             current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
                                                                                 new_playbook_name, new_workflow_name))
             status = 'success'
