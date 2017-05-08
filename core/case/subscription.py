@@ -181,13 +181,16 @@ class CaseSubscriptions(object):
                 ancestry_level_name = ancestry.pop()
         return False
 
-    def as_json(self):
+    def as_json(self, names=False):
         """Gets the JSON representation of all the CaseSubscription object.
-        
+
+        Args:
+            names (booloptional): Should the names of the controller events be converted to names? Defaults to False
+
         Returns:
             The JSON representation of the CaseSubscription object.
         """
-        return {"subscriptions": {str(name): subscription.as_json()
+        return {"subscriptions": {str(name): subscription.as_json(names=names)
                                   for name, subscription in self.subscriptions.items()},
                 "global_subscriptions": self.global_subscriptions.as_json()}
 
