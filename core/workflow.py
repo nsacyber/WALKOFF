@@ -32,6 +32,8 @@ class Workflow(ExecutionElement):
         self.steps = {}
         if xml:
             self._from_xml(xml)
+        else:
+            self.start_step = 'start'
         self.children = children if (children is not None) else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
@@ -69,6 +71,8 @@ class Workflow(ExecutionElement):
 
     def _from_xml(self, xml_element, *args):
         self.options = options.Options(xml=xml_element.find('.//options'), playbook_name=self.playbook_name)
+        start_step = xml_element.find('start')
+        self.start_step = start_step.text if start_step is not None else 'start'
         self.steps = {}
         for step_xml in xml_element.findall('.//steps/*'):
             step = Step(xml=step_xml, parent_name=self.name, ancestry=self.ancestry)
@@ -135,6 +139,9 @@ class Workflow(ExecutionElement):
 
         workflow_element.append(self.options.to_xml())
 
+        start = cElementTree.SubElement(workflow_element, 'start')
+        start.text = self.start_step
+
         steps = cElementTree.SubElement(workflow_element, 'steps')
         for step_name, step in self.steps.items():
             steps.append(step.to_xml())
@@ -176,7 +183,7 @@ class Workflow(ExecutionElement):
             logger.warning('Cannot resume workflow {0} from breakpoint. Reason: {1}'.format(self.ancestry, e))
             pass
 
-    def execute(self, start='start', input=""):
+    def execute(self, start=None, input=''):
         """Executes a Workflow by executing all Steps in the Workflow list of Step objects.
         
         Args:
@@ -185,10 +192,11 @@ class Workflow(ExecutionElement):
         """
         logger.info('Executing workflow {0}'.format(self.ancestry))
         callbacks.WorkflowExecutionStart.send(self)
+        start = start if start is not None else self.start_step
         self.executor = self.__execute(start, input)
         next(self.executor)
 
-    def __execute(self, start='start', input=""):
+    def __execute(self, start, input):
         instances = {}
         total_steps = []
         steps = self.__steps(start=start)

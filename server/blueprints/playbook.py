@@ -205,7 +205,8 @@ def create_workflow(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
             return json.dumps({'workflow': {'name': workflow_name,
                                             'steps': workflow.get_cytoscape_data(),
-                                            'options': workflow.options.as_json()},
+                                            'options': workflow.options.as_json(),
+                                            'start': workflow.start_step},
                                'status': status})
         else:
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
@@ -220,14 +221,13 @@ def create_workflow(playbook_name, workflow_name):
 @roles_accepted(*running_context.user_roles['/playbook'])
 def get_workflow(playbook_name, workflow_name):
     if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+        workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
         if not request.get_json():
             return json.dumps({"status": "success",
-                               "steps": running_context.controller.get_workflow(playbook_name,
-                                                                                workflow_name).get_cytoscape_data(),
-                               'options': running_context.controller.get_workflow(playbook_name,
-                                                                                  workflow_name).options.as_json()})
+                               "steps": workflow.get_cytoscape_data(),
+                               'options': workflow.options.as_json(),
+                               'start': workflow.start_step})
         elif 'ancestry' in request.get_json():
-            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
             info = workflow.get_children(request.get_json()['ancestry'])
             if info:
                 return json.dumps({"status": "success", "element": info})
@@ -267,8 +267,10 @@ def update_workflow(playbook_name, workflow_name):
                 workflow_name = data['new_name']
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
             if workflow:
-                returned_json = {'workflow': {'name': workflow_name, 'options': workflow.options.as_json()},
-                                   'status': 'success'}
+                returned_json = {'workflow': {'name': workflow_name,
+                                              'options': workflow.options.as_json(),
+                                              'start': workflow.start_step},
+                                 'status': 'success'}
                 current_app.logger.info('Updated workflow {0}-{1} to {2}'.format(playbook_name,
                                                                                  workflow_name,
                                                                                  returned_json))
