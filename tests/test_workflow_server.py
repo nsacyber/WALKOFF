@@ -485,6 +485,33 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn(step_name, resulting_workflow.steps.keys())
             self.assertDictEqual(loaded_step.as_json(), resulting_workflow.steps[step_name].as_json())
 
+    def test_save_workflow_new_start_step(self):
+        workflow_name = list(flask_server.running_context.controller.workflows.keys())[0].workflow
+        initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
+        initial_steps = dict(initial_workflow.steps)
+        initial_workflow_cytoscape = list(initial_workflow.get_cytoscape_data())
+        added_step_cytoscape = {'data': {'id': 'new_id',
+                                         'parameters': {'errors': [],
+                                                        'name': 'new_id',
+                                                        'app': 'new_app',
+                                                        'next': [],
+                                                        'device': 'new_device',
+                                                        'action': 'new_action',
+                                                        'input': {}},
+                                         },
+                                'group': 'nodes',
+                                'position': {'x': '5', 'y': '3'}}
+        initial_workflow_cytoscape.insert(0, added_step_cytoscape)
+        data = {"cytoscape": json.dumps(initial_workflow_cytoscape),
+                "start": "new_start"}
+        self.post_with_status_check('/playbooks/test/workflows/{0}/save'.format(workflow_name), 'success',
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    content_type='application/json')
+
+        resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
+        self.assertEqual(resulting_workflow.start_step, "new_start")
+
     def test_save_workflow_invalid_name(self):
         self.post_with_status_check('/playbooks/test/workflows/junkworkflowname/save', 'error: workflow name is not valid',
                                     headers=self.headers)

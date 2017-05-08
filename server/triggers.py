@@ -94,7 +94,7 @@ class Triggers(Base):
                                                            value=arg['value'],
                                                            format=arg.get('format', 'str'))
                                       for arg in input_in}
-                        workflow_to_be_executed.execute(input=input_args)
+                        workflow_to_be_executed.execute(start_input=input_args)
                         logger.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
                                                                                   input_args))
                     else:

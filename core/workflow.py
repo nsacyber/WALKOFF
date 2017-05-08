@@ -183,20 +183,20 @@ class Workflow(ExecutionElement):
             logger.warning('Cannot resume workflow {0} from breakpoint. Reason: {1}'.format(self.ancestry, e))
             pass
 
-    def execute(self, start=None, input=''):
+    def execute(self, start=None, start_input=''):
         """Executes a Workflow by executing all Steps in the Workflow list of Step objects.
         
         Args:
             start (str, optional): The name of the first Step. Defaults to "start".
-            input (str, optional): Input into the first Step. Defaults to an empty string.
+            start_input (str, optional): Input into the first Step. Defaults to an empty string.
         """
         logger.info('Executing workflow {0}'.format(self.ancestry))
         callbacks.WorkflowExecutionStart.send(self)
         start = start if start is not None else self.start_step
-        self.executor = self.__execute(start, input)
+        self.executor = self.__execute(start, start_input)
         next(self.executor)
 
-    def __execute(self, start, input):
+    def __execute(self, start, start_input):
         instances = {}
         total_steps = []
         steps = self.__steps(start=start)
@@ -216,9 +216,9 @@ class Workflow(ExecutionElement):
                 step.render_step(steps=total_steps)
 
                 if first:
-                    if input:
+                    if start_input:
                         logger.debug('Swapping input to first step of workflow {0}'.format(self.ancestry))
-                        step.input = input
+                        step.input = start_input
                     first = False
 
                 error_flag = self.__execute_step(step, instances[step.device])
@@ -227,7 +227,7 @@ class Workflow(ExecutionElement):
         self.__shutdown(instances)
         yield
 
-    def __steps(self, start='start'):
+    def __steps(self, start):
         initial_step_name = start
         current_name = initial_step_name
         current = self.steps[current_name]

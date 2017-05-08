@@ -410,6 +410,8 @@ def save_workflow(playbook_name, workflow_name):
             if 'cytoscape' in request.get_json():
                 workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
                 workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+                if 'start' in request.get_json():
+                    workflow.start_step = request.get_json()['start']
                 try:
                     write_playbook_to_file(playbook_name)
                     current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))

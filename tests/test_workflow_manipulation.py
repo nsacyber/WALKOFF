@@ -452,5 +452,5 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         FunctionExecutionSuccess.connect(step_finished_listener)
 
-        self.testWorkflow.execute(input=input_arg)
+        self.testWorkflow.execute(start_input=input_arg)
         self.assertDictEqual(json.loads(result['value']), {"result": "REPEATING: CHANGE INPUT"})
