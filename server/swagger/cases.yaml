@@ -11,128 +11,92 @@
       200:
         description: OK
 
-#'/cases/{case}':
-#  get:
-#    tags:
-#      - Cases
-#    summary: Get a case
-#    description: ''
-#    operationId: server.controllers.cases.get_case
-#    parameters:
-#      - name: case
-#        in: path
-#        description: 'The name that needs to be fetched. '
-#        required: true
-#        type: string
-#    produces:
-#      - application/json
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Case not found
-#      '405':
-#        description: Validation exception
-#  post:
-#    tags:
-#      - Cases
-#    summary: Update a case
-#    description: ''
-#    operationId: server.controllers.cases.edit_case
-#    consumes:
-#      - application/json
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: case
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#      - in: body
-#        name: body
-#        description: Created case object
-#        required: true
-#        schema:
-#          $ref: '#/definitions/case'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Case not found
-#      '405':
-#        description: Validation exception
-#  put:
-#    tags:
-#      - Cases
-#    summary: Add a case
-#    description: ''
-#    operationId: server.controllers.cases.create_case
-#    consumes:
-#      - application/json
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: case
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#      - in: body
-#        name: body
-#        description: Created role object
-#        required: true
-#        schema:
-#          $ref: '#/definitions/case'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Case not found
-#      '405':
-#        description: Validation exception'
-#  delete:
-#    tags:
-#      - Cases
-#    summary: Remove a case
-#    description: ''
-#    operationId: server.controllers.cases.delete_case
-#    consumes:
-#      - application/json
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: case
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Case not found
-#      '405':
-#        description: Validation exception
-#/cases/import:
-#  get:
-#    tags:
-#      - Cases
-#    summary: Import case data
-#    description: ''
-#    operationId: server.controllers.cases.import_cases
-#    produces:
-#      - application/json
-#    parameters:
-#      - in: body
-#        name: case_data
-#        description: Data to import into case database.
-#        required: true
-#        schema:
-#          $ref: '#/definitions/filename'
-#    responses:
-#      '400':
-#        description: Could not import case data
+/cases/{case}:
+  parameters:
+    - name: case
+      in: path
+      description: The name of the case
+      required: true
+      type: string
+  get:
+    tags:
+      - Cases
+    summary: Get a case
+    description: ''
+    operationId: server.endpoints.cases.get_case
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+  post:
+    tags:
+      - Cases
+    summary: Update a case
+    description: ''
+    operationId: server.endpoints.cases.edit_case
+    consumes:
+      - application/x-www-form-urlencoded
+    produces:
+      - application/json
+    parameters:
+      - in: formData
+        name: name
+        description: New name of the case.
+        required: false
+        type: string
+      - in: formData
+        name: note
+        description: Note to add to the case
+        required: false
+        type: string
+    responses:
+      200:
+        description: OK
+  put:
+    tags:
+      - Cases
+    summary: Add a case
+    description: ''
+    operationId: server.endpoints.cases.add_case
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+  delete:
+    tags:
+      - Cases
+    summary: Remove a case
+    description: ''
+    operationId: server.endpoints.cases.delete_case
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+
+/cases/import:
+  get:
+    tags:
+      - Cases
+    summary: Import case data
+    description: ''
+    operationId: server.endpoints.cases.import_cases
+    consumes:
+      - application/x-www-form-urlencoded
+    produces:
+      - application/json
+    parameters:
+      - in: formData
+        name: filename
+        description: Filename of JSON to import into case database.
+        required: false
+        type: string
+    responses:
+      200:
+        description: OK
+
 #/cases/export:
 #  get:
 #    tags:
@@ -140,18 +104,19 @@
 #    summary: Export case data
 #    description: ''
 #    operationId: server.controllers.cases.export_cases
+#    consumes:
+#      - application/x-www-form-urlencoded
 #    produces:
 #      - application/json
 #    parameters:
-#      - in: body
-#        name: case_data
-#        description: Data to export from case database.
-#        required: true
-#        schema:
-#          $ref: '#/definitions/filename'
+#      - in: formData
+#        name: filename
+#        description: Filename of JSON to import into case database.
+#        required: false
+#        type: string
 #    responses:
-#      '400':
-#        description: Could not export case data
+#      200:
+#        description: OK
 #/cases/subscriptions:
 #  get:
 #    tags:

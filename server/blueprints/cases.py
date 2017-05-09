@@ -18,35 +18,6 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
 cases_page = Blueprint('cases_page', __name__)
 
 
-@cases_page.route('/import', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/cases'])
-def import_cases():
-    form = forms.ImportCaseForm(request.form)
-    filename = form.filename.data if form.filename.data else core.config.paths.default_case_export_path
-    if os.path.isfile(filename):
-        try:
-            with open(filename, 'r') as cases_file:
-                cases_file = cases_file.read()
-                cases_file = cases_file.replace('\n', '')
-                cases = json.loads(cases_file)
-            case_subscription.add_cases(cases)
-            for case in cases.keys():
-                running_context.db.session.add(running_context.CaseSubscription(name=case))
-                running_context.CaseSubscription.update(case)
-                running_context.db.session.commit()
-            return json.dumps({"status": "success", "cases": case_subscription.subscriptions_as_json()})
-        except (OSError, IOError) as e:
-            current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, e))
-            return json.dumps({"status": "error reading file"})
-        except ValueError as e:
-            current_app.logger.error('Error importing cases from file {0}: Invalid JSON {1}'.format(filename, e))
-            return json.dumps({"status": "file contains invalid JSON"})
-    else:
-        current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
-        return json.dumps({"status": "error: file does not exist"})
-
-
 @cases_page.route('/export', methods=['POST'])
 @auth_token_required
 @roles_accepted(*running_context.user_roles['/cases'])
@@ -61,53 +32,6 @@ def export_cases():
     except (OSError, IOError) as e:
         current_app.logger.error('Error exporting cases to {0}'.format(filename))
         return json.dumps({"status": "error writing to file"})
-
-
-@cases_page.route('/<string:case_name>', methods=['PUT'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/cases'])
-def add_case(case_name):
-    case = CaseSubscriptions()
-    add_cases({"{0}".format(str(case_name)): case})
-    case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
-    if not case:
-        running_context.db.session.add(running_context.CaseSubscription(name=case_name))
-        running_context.db.session.commit()
-        current_app.logger.debug('Case added: {0}'.format(case_name))
-    return json.dumps(case_subscription.subscriptions_as_json())
-
-
-@cases_page.route('/<string:case_name>', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/cases'])
-def read_case(case_name):
-    case = case_database.case_db.session.query(case_database.Case) \
-        .filter(case_database.Case.name == case_name).first()
-    if case:
-        return json.dumps({'case': case.as_json()})
-    else:
-        return json.dumps({'status': 'Case with given name does not exist'})
-
-
-@cases_page.route('/<string:case_name>', methods=['POST'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/cases'])
-def update_case(case_name):
-    form = forms.EditCaseForm(request.form)
-    if form.validate():
-        if form.name.data:
-            rename_case(case_name, form.name.data)
-            case = running_context.CaseSubscription.query.filter_by(name=case_name).first()
-            if case:
-                case.name = form.name.data
-                running_context.db.session.commit()
-
-            if form.note.data:
-                case_database.case_db.edit_case_note(form.name.data, form.note.data)
-            current_app.logger.debug('Case name changed from {0} to {1}'.format(case_name, form.name.data))
-        elif form.note.data:
-            case_database.case_db.edit_case_note(case_name, form.note.data)
-        return json.dumps(case_database.case_db.cases_as_json())
 
 
 @cases_page.route('/<string:case_name>', methods=['DELETE'])
