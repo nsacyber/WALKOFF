@@ -4,7 +4,7 @@
       - Events
     summary: Edit an event note
     description: ''
-    operationId: server.controllers.events.edit_event_note
+    operationId: server.endpoints.events.edit_event_note
     produces:
       - application/json
     parameters:
@@ -20,9 +20,5 @@
         schema:
           $ref: '#/definitions/event_note'
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Configuration key not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
