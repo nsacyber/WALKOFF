@@ -58,7 +58,7 @@ paths:
   #$ref: ./playbooks.yaml
   $ref: ./roles.yaml
   #$ref: ./scheduler.yaml
-  #$ref: ./triggers.yaml
+  $ref: ./triggers.yaml
   $ref: ./users.yaml
 securityDefinitions:
   AuthenticationToken:

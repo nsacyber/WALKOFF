@@ -22,7 +22,6 @@ def register_blueprints():
     __flaskapp.register_blueprint(cases.cases_page, url_prefix='/cases')
     __flaskapp.register_blueprint(configuration.configurations_page, url_prefix='/configuration')
     __flaskapp.register_blueprint(events.events_page, url_prefix='/events')
-    __flaskapp.register_blueprint(trigger.triggers_page, url_prefix='/execution/listener')
     __flaskapp.register_blueprint(scheduler.scheduler_page, url_prefix='/execution/scheduler')
     __flaskapp.register_blueprint(metrics.metrics_page, url_prefix='/metrics')
     __register_all_app_blueprints()

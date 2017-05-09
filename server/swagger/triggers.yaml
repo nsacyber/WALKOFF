@@ -10,7 +10,7 @@
     responses:
       '200':
         description: Okay
-/execution/listener/triggers/execute:
+/execution/listener/execute:
   post:
     tags:
       - Triggers
@@ -36,7 +36,7 @@
     produces:
       - application/json
     parameters:
-      - name: trigger
+      - name: trigger_name
         in: path
         description: The name that needs to be fetched.
         required: true
@@ -46,7 +46,7 @@
         description: Created trigger object
         required: true
         schema:
-          $ref: '#/definitions/trigger'
+          $ref: '#/definitions/Trigger'
     responses:
       '200':
         description: Okay
@@ -57,7 +57,7 @@
     description: ''
     operationId: server.endpoints.triggers.read_trigger
     parameters:
-      - name: trigger
+      - name: trigger_name
         in: path
         description: 'The name that needs to be fetched. '
         required: true
@@ -78,7 +78,7 @@
     produces:
       - application/json
     parameters:
-      - name: trigger
+      - name: trigger_name
         in: path
         description: The name that needs to be fetched.
         required: true
@@ -88,7 +88,7 @@
         description: Created trigger object
         required: true
         schema:
-          $ref: '#/definitions/trigger'
+          $ref: '#/definitions/Trigger'
     responses:
       '200':
         description: Okay
@@ -101,7 +101,7 @@
     produces:
       - application/json
     parameters:
-      - name: trigger
+      - name: trigger_name
         in: path
         description: The name that needs to be fetched.
         required: true
