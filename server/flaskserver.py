@@ -1,9 +1,10 @@
+import json
 import os
 import sys
 import logging
 
 from flask import render_template
-from flask_security import login_required, current_user, auth_token_required, roles_accepted
+from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password
 from gevent import monkey
 import xml.dom.minidom as minidom
@@ -13,8 +14,8 @@ import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-from core.helpers import combine_dicts
 
+from core.helpers import combine_dicts
 from server.context import running_context
 from . import database, interface
 from server import app
@@ -22,8 +23,8 @@ from server import app
 
 monkey.patch_all()
 
-urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
-        '/triggers', '/metrics',
+urls = ['/', '/key', '/playbook', '/configuration', '/interface', '/execution/listener',
+        '/execution/listener/triggers', '/metrics',
         '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
 
 default_urls = urls
@@ -70,6 +71,57 @@ def default():
         return {"status": "Could Not Log In."}
 
 
+@app.route('/availablesubscriptions', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/cases'])
+def display_possible_subscriptions():
+    return json.dumps(core.config.config.possible_events)
+
+
+@app.route('/apps/', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/apps'])
+def list_all_apps():
+    return json.dumps({"apps": helpers.list_apps()})
+
+
+@app.route('/apps/actions', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/apps'])
+def list_all_apps_and_actions():
+    core.config.config.load_function_info()
+    return json.dumps(core.config.config.function_info['apps'])
+
+
+@app.route('/filters', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/playbook'])
+def display_filters():
+    return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
+
+
+@app.route('/flags', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/playbook'])
+def display_flags():
+    core.config.config.load_function_info()
+    return json.dumps({"status": "success", "flags": core.config.config.function_info['flags']})
+
+
+# Returns System-Level Interface Pages
+@app.route('/interface/<string:name>', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/interface'])
+def sys_pages(name):
+    if current_user.is_authenticated and name:
+        args = getattr(interface, name)()
+        combine_dicts(args, {"authKey": current_user.get_auth_token()})
+        return render_template("pages/" + name + "/index.html", **args)
+    else:
+        app.logger.debug('Unsuccessful login attempt')
+        return {"status": "Could Not Log In."}
+
+
 # TODO: DELETE
 @app.route('/interface/<string:name>/display', methods=['POST'])
 @auth_token_required
@@ -81,6 +133,24 @@ def system_pages(name):
         return render_template("pages/" + name + "/index.html", **args)
     else:
         return {"status": "Could Not Log In."}
+
+
+# Returns the API key for the user
+@app.route('/key', methods=['GET', 'POST'])
+@login_required
+def login_info():
+    if current_user.is_authenticated:
+        return json.dumps({"auth_token": current_user.get_auth_token()})
+    else:
+        app.logger.debug('Unsuccessful login attempt')
+        return {"status": "Could Not Log In."}
+
+
+@app.route('/widgets', methods=['GET'])
+@auth_token_required
+@roles_accepted(*running_context.user_roles['/apps'])
+def list_all_widgets():
+    return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})
 
 
 def write_playbook_to_file(playbook_name):
