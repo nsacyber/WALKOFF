@@ -10,7 +10,7 @@
     responses:
       '200':
         description: Okay
-'/users/{username}':
+'/users/{user_name}':
   put:
     tags:
       - Users
@@ -22,7 +22,7 @@
     produces:
       - application/json
     parameters:
-      - name: username
+      - name: user_name
         in: path
         description: The name that needs to be fetched.
         required: true
@@ -32,7 +32,7 @@
         description: Created user object
         required: true
         schema:
-          $ref: '#/definitions/user'
+          $ref: '#/definitions/User'
     responses:
       '200':
         description: Okay
@@ -41,9 +41,9 @@
       - Users
     summary: Get a user
     description: ''
-    operationId: server.controllers.users.read_user
+    operationId: server.endpoints.users.read_user
     parameters:
-      - name: username
+      - name: user_name
         in: path
         description: 'The name that needs to be fetched. '
         required: true
@@ -58,13 +58,13 @@
       - Users
     summary: Update a user
     description: ''
-    operationId: server.controllers.users.update_user
+    operationId: server.endpoints.users.update_user
     consumes:
       - multipart/form-data
     produces:
       - application/json
     parameters:
-      - name: username
+      - name: user_name
         in: path
         description: The name that needs to be fetched.
         required: true
@@ -74,7 +74,7 @@
         description: Created user object
         required: true
         schema:
-          $ref: '#/definitions/user'
+          $ref: '#/definitions/User'
     responses:
       '200':
         description: Okay
@@ -83,13 +83,13 @@
       - Users
     summary: Remove a user
     description: ''
-    operationId: server.controllers.users.delete_user
+    operationId: server.endpoints.users.delete_user
     consumes:
       - multipart/form-data
     produces:
       - application/json
     parameters:
-      - name: username
+      - name: user_name
         in: path
         description: The name that needs to be fetched.
         required: true

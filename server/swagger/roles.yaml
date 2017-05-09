@@ -4,13 +4,13 @@
       - Roles
     summary: Get all roles
     description: ''
-    operationId: server.endpoints.roles.display_roles
+    operationId: server.endpoints.roles.get_roles
     produces:
       - application/json
     responses:
       '200':
         description: Okay
-'/roles/{role}':
+'/roles/{role_name}':
   put:
     tags:
       - Roles
@@ -22,7 +22,7 @@
     produces:
       - application/json
     parameters:
-      - name: role
+      - name: role_name
         in: path
         description: The name that needs to be fetched.
         required: true
@@ -32,7 +32,7 @@
         description: Created role object
         required: true
         schema:
-          $ref: '#/definitions/role'
+          $ref: '#/definitions/Role'
     responses:
       '200':
         description: Okay
@@ -41,9 +41,9 @@
       - Roles
     summary: Get a role
     description: ''
-    operationId: server.endpoints.roles.get_role
+    operationId: server.endpoints.roles.read_role
     parameters:
-      - name: role
+      - name: role_name
         in: path
         description: 'The name that needs to be fetched. '
         required: true
@@ -58,13 +58,13 @@
       - Roles
     summary: Update a role
     description: ''
-    operationId: server.endpoints.roles.edit_role
+    operationId: server.endpoints.roles.update_role
     consumes:
       - multipart/form-data
     produces:
       - application/json
     parameters:
-      - name: role
+      - name: role_name
         in: path
         description: The name that needs to be fetched.
         required: true
@@ -74,7 +74,7 @@
         description: Created role object
         required: true
         schema:
-          $ref: '#/definitions/role'
+          $ref: '#/definitions/Role'
     responses:
       '200':
         description: Okay

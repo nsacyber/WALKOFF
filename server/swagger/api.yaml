@@ -50,16 +50,16 @@ schemes:
 
 paths:
   #$ref: ./apps.yaml
-  $ref: ./cases.yaml
+  #$ref: ./cases.yaml
   #$ref: ./configuration.yaml
   #$ref: ./events.yaml
   #$ref: ./metadata.yaml
   #$ref: ./metrics.yaml
   #$ref: ./playbooks.yaml
-  #$ref: ./roles.yaml
+  $ref: ./roles.yaml
   #$ref: ./scheduler.yaml
   #$ref: ./triggers.yaml
-  #$ref: ./users.yaml
+  $ref: ./users.yaml
 securityDefinitions:
   AuthenticationToken:
     type: apiKey

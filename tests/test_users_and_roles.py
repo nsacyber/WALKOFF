@@ -51,6 +51,7 @@ class TestUsersAndRoles(ServerTestCase):
     def test_add_user(self):
         data = {"username": self.email, "password": self.password}
         response = json.loads(self.app.put('/users/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
+        print(response)
         self.assertTrue("user added" in response["status"])
 
         self.put_with_status_check('/users/'+self.email, 'user exists', data=data, headers=self.headers)

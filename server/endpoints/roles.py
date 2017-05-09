@@ -1,9 +1,6 @@
-import json
 from flask import request, current_app
 from flask_security import roles_accepted
-from server.flaskserver import default_urls
 from server import forms
-from server.database import add_to_user_roles
 
 def get_roles():
     from server.context import running_context
@@ -12,14 +9,16 @@ def get_roles():
         roles = running_context.Role.query.all()
         if roles:
             result = [role.name for role in roles]
-            return json.dumps(result)
+            return result
         else:
             current_app.logger.error('Cannot display roles. No roles exist.')
-            return json.dumps({"status": "roles do not exist"})
+            return {"status": "roles do not exist"}
     return __func()
 
 def create_role(role_name):
     from server.context import running_context
+    from server.flaskserver import default_urls
+    from server.database import add_to_user_roles
     @roles_accepted(*running_context.user_roles['/roles'])
     def __func():
         form = forms.NewRoleForm(request.form)
@@ -37,13 +36,13 @@ def create_role(role_name):
                 add_to_user_roles(role_name, default_urls)
 
                 running_context.db.session.commit()
-                current_app.logger.info('Role added: {0}'.format(json.dumps({"name": role_name,
+                current_app.logger.info('Role added: {0}'.format({"name": role_name,
                                                                              "description": description,
-                                                                             "urls": default_urls})))
-                return json.dumps({"status": "role added " + role_name})
+                                                                             "urls": default_urls}))
+                return {"status": "role added " + role_name}
             else:
                 current_app.logger.warning('Cannot add role {0}. Role already exists'.format(role_name))
-                return json.dumps({"status": "role exists"})
+                return {"status": "role exists"}
     return __func()
 
 def read_role(role_name):
@@ -52,14 +51,15 @@ def read_role(role_name):
     def __func():
         role = running_context.Role.query.filter_by(name=role_name).first()
         if role:
-            return json.dumps(role.display())
+            return role.display()
         else:
             current_app.logger.error('Cannot display role {0}. Role does not exist.'.format(role_name))
-            return json.dumps({"status": "role does not exist"})
+            return {"status": "role does not exist"}
     return __func()
 
 def update_role(role_name):
     from server.context import running_context
+    from server.database import add_to_user_roles
     @roles_accepted(*running_context.user_roles['/roles'])
     def __func():
         role = running_context.Role.query.filter_by(name=role_name).first()
@@ -71,11 +71,11 @@ def update_role(role_name):
                 if form.pages.data:
                     add_to_user_roles(role_name, form.pages)
             current_app.logger.info('Edited role {0} to {1}'.format(role_name,
-                                                                    json.dumps({"name": role_name,
+                                                                    {"name": role_name,
                                                                                 "description": form.description.data,
-                                                                                "urls": form.pages.data})))
-            return json.dumps(role.display())
+                                                                                "urls": form.pages.data}))
+            return role.display()
         else:
             current_app.logger.error('Cannot edit role {0}. Role does not exist.'.format(role_name))
-            return json.dumps({"status": "role does not exist"})
+            return {"status": "role does not exist"}
     return __func()
