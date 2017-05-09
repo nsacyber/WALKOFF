@@ -150,7 +150,8 @@ $(function(){
                 },
                 start: {
                     type: "boolean",
-                    title: "Set as Start Node"
+                    title: "Set as Start Node",
+                    format: "checkbox"
                 },
                 app: {
                     type: "string",
