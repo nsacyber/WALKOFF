@@ -4,43 +4,43 @@
       - System
     summary: Renders available subscription options
     description: ''
-    operationId: server.controllers.system.display_possible_subscriptions
+    operationId: server.endpoints.metadata.display_possible_subscriptions
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
 /filters:
   get:
     tags:
       - System
     summary: Displays all filters
     description: ''
-    operationId: server.controllers.system.display_filters
+    operationId: server.endpoints.metadata.get_filters
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
 /flags:
   get:
     tags:
       - System
     summary: Displays all flags
     description: ''
-    operationId: server.controllers.system.display_flags
+    operationId: server.endpoints.metadata.get_flags
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
 '/interface/{interface_name}':
   post:
     tags:
       - System
     summary: Render interface
     description: ''
-    operationId: server.controllers.system.render_interface
+    operationId: server.endpoints.metadata.sys_pages
     produces:
       - application/json
     parameters:
@@ -56,33 +56,29 @@
         schema:
           $ref: '#/definitions/render_args'
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Configuration key not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
 /key:
   get:
     tags:
       - System
     summary: Displays api key
     description: ''
-    operationId: server.controllers.system.display_key
+    operationId: server.endpoints.metadata.login_info
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
 /widgets:
   get:
     tags:
       - System
     summary: Displays all widgets
     description: ''
-    operationId: server.controllers.system.list_all_widgets
+    operationId: server.endpoints.metadata.get_widgets
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
