@@ -1,0 +1,300 @@
+/cases:
+  get:
+    tags:
+      - Cases
+    summary: Render cases
+    description: ''
+    operationId: server.controllers.cases.display_cases
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Configuration key not found
+      '405':
+        description: Validation exception
+'/cases/{case}':
+  get:
+    tags:
+      - Cases
+    summary: Get a case
+    description: ''
+    operationId: server.controllers.cases.get_case
+    parameters:
+      - name: case
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Case not found
+      '405':
+        description: Validation exception
+  post:
+    tags:
+      - Cases
+    summary: Update a case
+    description: ''
+    operationId: server.controllers.cases.edit_case
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: case
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/case'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Case not found
+      '405':
+        description: Validation exception
+  put:
+    tags:
+      - Cases
+    summary: Add a case
+    description: ''
+    operationId: server.controllers.cases.create_case
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: case
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created role object
+        required: true
+        schema:
+          $ref: '#/definitions/case'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Case not found
+      '405':
+        description: Validation exception'
+  delete:
+    tags:
+      - Cases
+    summary: Remove a case
+    description: ''
+    operationId: server.controllers.cases.delete_case
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: case
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Case not found
+      '405':
+        description: Validation exception
+/cases/import:
+  get:
+    tags:
+      - Cases
+    summary: Import case data
+    description: ''
+    operationId: server.controllers.cases.import_cases
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: case_data
+        description: Data to import into case database.
+        required: true
+        schema:
+          $ref: '#/definitions/filename'
+    responses:
+      '400':
+        description: Could not import case data
+/cases/export:
+  get:
+    tags:
+      - Cases
+    summary: Export case data
+    description: ''
+    operationId: server.controllers.cases.export_cases
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: case_data
+        description: Data to export from case database.
+        required: true
+        schema:
+          $ref: '#/definitions/filename'
+    responses:
+      '400':
+        description: Could not export case data
+/cases/subscriptions:
+  get:
+    tags:
+      - Subscriptions
+    summary: Gets all subscriptions
+    description: ''
+    operationId: server.controllers.subscriptions.display_subscriptions
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not import case data
+'/cases/{case}/events':
+  get:
+    tags:
+      - Cases
+    summary: Get case events
+    description: ''
+    operationId: server.controllers.cases.get_events
+    parameters:
+      - name: case
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Events not found
+      '405':
+        description: Validation exception
+'/cases/{case}/subscriptions':
+  get:
+    tags:
+      - Subscriptions
+    summary: Get a subscription
+    description: ''
+    operationId: server.controllers.subscriptions.get_subscription
+    parameters:
+      - name: case
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Subscription not found
+      '405':
+        description: Validation exception
+  post:
+    tags:
+      - Subscriptions
+    summary: Update a subscription
+    description: ''
+    operationId: server.controllers.subscriptions.edit_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: case
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created subscription object
+        required: true
+        schema:
+          $ref: '#/definitions/subscription'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Subscription not found
+      '405':
+        description: Validation exception
+  put:
+    tags:
+      - Subscriptions
+    summary: Add a subscription
+    description: ''
+    operationId: server.controllers.subscriptions.create_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: case
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created subscription object
+        required: true
+        schema:
+          $ref: '#/definitions/subscription'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Subscription not found
+      '405':
+        description: Validation exception'
+  delete:
+    tags:
+      - Subscriptions
+    summary: Remove a subscription
+    description: ''
+    operationId: server.controllers.subscriptions.delete_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: case
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created subscription object
+        required: true
+        schema:
+          $ref: '#/definitions/subscription'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Subscription not found
+      '405':
+        description: Validation exception

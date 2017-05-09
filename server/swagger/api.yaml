@@ -1,0 +1,192 @@
+swagger: '2.0'
+info:
+  description: >-
+    An active cyber defense development framework enabling orchestration
+    capabilities to be written once and deployed across WALKOFF-enabled
+    orchestration tools. https://iadgov.github.io/WALKOFF/
+  version: 0.0.1
+  title: WALKOFF
+  contact:
+    email: walkoff@nsa.gov
+  license:
+    name: Creative-Commons
+    url: 'http://creativecommons.org/licenses/by/4.0/'
+tags:
+  - name: Apps
+    description: App Management Operations
+  - name: Cases
+    description: WALKOFF logging and case management operations
+  - name: Subscriptions
+    description: WALKOFF case subscription operations
+  - name: Configuration
+    description: System Configuration Operations
+  - name: Devices
+    description: Device Operations
+  - name: Users
+    description: User operations
+  - name: Roles
+    description: Role Operations
+  - name: Metrics
+    description: Metric Operations
+  - name: Playbooks
+    description: Playbook Operations
+  - name: Workflows
+    description: Workflow Operations
+  - name: Events
+    description: Event Operations
+  - name: Scheduler
+    description: Scheduler Operations
+  - name: Widget
+    description: Widget Operations
+  - name: Widgets
+    description: Multiple Widget Operations
+  - name: Triggers
+    description: Trigger Operations
+  - name: System
+    description: System Operations
+schemes:
+  - http
+  - https
+paths:
+  $ref: ./apps.yaml
+  $ref: ./cases.yaml
+  $ref: ./configuration.yaml
+  $ref: ./events.yaml
+  $ref: ./metadata.yaml
+  $ref: ./metrics.yaml
+  $ref: ./playbooks.yaml
+  $ref: ./roles.yaml
+  $ref: ./scheduler.yaml
+  $ref: ./triggers.yaml
+  $ref: ./users.yaml
+securityDefinitions:
+  AuthenticationToken:
+    type: apiKey
+    name: Authentication-Token
+    in: header
+security:
+  - AuthenticationToken: []
+definitions:
+  user:
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      role:
+        type: array
+        items:
+          type: string
+  role:
+    type: object
+    properties:
+      description:
+        type: string
+      pages:
+        type: array
+        items:
+          type: string
+  config_value:
+    type: object
+    properties:
+      value:
+        type: string
+  event_note:
+    type: object
+    properties:
+      value:
+        type: string
+  render_args:
+    type: object
+    properties:
+      page:
+        type: string
+      args:
+        type: object
+
+  case:
+    type: object
+    properties:
+      description:
+        type: string
+      pages:
+        type: array
+        items:
+          type: string
+  filename:
+    type: object
+    properties:
+      Filename:
+        type: string
+  subscription:
+    type: object
+    properties:
+      ancestry:
+        type: array
+        items:
+          type: string
+      events:
+        type: array
+        items:
+          type: string
+  device:
+    type: object
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+      ip_address:
+        type: string
+      port:
+        type: integer
+      extraFields:
+        type: string
+  trigger:
+    type: object
+    properties:
+      name:
+        type: string
+      conditional:
+        type: string
+      playbook:
+        type: string
+      workflow:
+        type: string
+  playbook:
+    type: object
+    properties:
+      name:
+        type: string
+  add_workflow:
+    type: object
+    properties:
+      playbook:
+        type: string
+      template:
+        type: string
+  playbook_workflow:
+    type: object
+    properties:
+      playbook:
+        type: string
+      workflow:
+        type: string
+  workflow:
+    type: object
+    properties:
+      name:
+        type: string
+      accumulated_risk:
+        type: string
+      options:
+        type: object
+      steps:
+        type: object
+  resume_workflow:
+    type: string
+  workflow_text:
+    type: object

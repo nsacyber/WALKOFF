@@ -1,0 +1,115 @@
+/users:
+  get:
+    tags:
+      - Users
+    summary: Get all users
+    description: ''
+    operationId: server.controllers.users.get_users
+    produces:
+      - application/json
+    responses:
+      '405':
+        description: Invalid input
+'/users/{username}':
+  get:
+    tags:
+      - Users
+    summary: Get a user
+    description: ''
+    operationId: server.controllers.users.read_user
+    parameters:
+      - name: username
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: User not found
+      '405':
+        description: Validation exception
+  post:
+    tags:
+      - Users
+    summary: Update a user
+    description: ''
+    operationId: server.controllers.users.update_user
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: username
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created user object
+        required: true
+        schema:
+          $ref: '#/definitions/user'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: User not found
+      '405':
+        description: Validation exception
+  put:
+    tags:
+      - Users
+    summary: Add a user
+    description: ''
+    operationId: server.controllers.users.add_user
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: username
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created user object
+        required: true
+        schema:
+          $ref: '#/definitions/user'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: User not found
+      '405':
+        description: Validation exception
+  delete:
+    tags:
+      - Users
+    summary: Remove a user
+    description: ''
+    operationId: server.controllers.users.delete_user
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: username
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: User not found
+      '405':
+        description: Validation exception

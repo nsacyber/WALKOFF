@@ -1,0 +1,474 @@
+/playbooks:
+  get:
+    tags:
+      - Playbooks
+    summary: Displays all playbooks
+    description: ''
+    operationId: server.controllers.playbooks.list_available_playbooks
+    produces:
+      - application/json
+    responses:
+      '405':
+        description: Invalid input
+'/playbooks/{playbook_name}':
+  get:
+    tags:
+      - Playbooks
+    summary: Get a playbook
+    description: ''
+    operationId: server.controllers.playbooks.get_playbook
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/playbook'
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Playbook not found
+      '405':
+        description: Validation exception
+  post:
+    tags:
+      - Playbooks
+    summary: Update a playbook
+    description: ''
+    operationId: server.controllers.playbooks.edit_playbook
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/playbook'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Playbook not found
+      '405':
+        description: Validation exception
+  put:
+    tags:
+      - Playbooks
+    summary: Add a playbook
+    description: ''
+    operationId: server.controllers.playbooks.create_playbook
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created role object
+        required: true
+        schema:
+          $ref: '#/definitions/playbook'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Playbook not found
+      '405':
+        description: Validation exception'
+  delete:
+    tags:
+      - Playbooks
+    summary: Remove a playbook
+    description: ''
+    operationId: server.controllers.playbooks.delete_playbook
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Playbook not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/copy':
+  post:
+    tags:
+      - Playbooks
+    summary: copy a playbook
+    description: ''
+    operationId: server.controllers.playbooks.copy_playbook
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Playbook name
+        required: true
+        schema:
+          $ref: '#/definitions/playbook'
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Playbook not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows':
+  get:
+    tags:
+      - Playbooks
+    summary: display all workflows in playbook
+    description: ''
+    operationId: server.controllers.playbooks.display_workflows_for_playbook
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Playbook not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}':
+  get:
+    tags:
+      - Workflows
+    summary: Get a workflow
+    description: ''
+    operationId: server.controllers.workflows.get_workflow
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+  post:
+    tags:
+      - Workflows
+    summary: Update a workflow
+    description: ''
+    operationId: server.controllers.workflows.edit_workflow
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/workflow'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+  put:
+    tags:
+      - Workflows
+    summary: Add a workflow
+    description: ''
+    operationId: server.controllers.workflows.create_workflow
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created role object
+        required: true
+        schema:
+          $ref: '#/definitions/add_workflow'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception'
+  delete:
+    tags:
+      - Workflows
+    summary: Remove a workflow
+    description: ''
+    operationId: server.controllers.workflows.delete_workflow
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}/risk':
+  get:
+    tags:
+      - Workflows
+    summary: Get a workflow's risk value
+    description: ''
+    operationId: server.controllers.workflows.get_workflow_risk
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}/copy':
+  post:
+    tags:
+      - Workflows
+    summary: Copy a workflow
+    description: ''
+    operationId: server.controllers.workflows.copy_workflow
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/playbook_workflow'
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}/execute':
+  post:
+    tags:
+      - Workflows
+    summary: Execute a workflow
+    description: ''
+    operationId: server.controllers.workflows.execute_workflow
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}/pause':
+  post:
+    tags:
+      - Workflows
+    summary: Pause a workflow
+    description: ''
+    operationId: server.controllers.workflows.pause_workflow
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}/resume':
+  post:
+    tags:
+      - Workflows
+    summary: Resume a workflow
+    description: ''
+    operationId: server.controllers.workflows.resume_workflow
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/resume_workflow'
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception
+'/playbooks/{playbook_name}/workflows/{workflow_name}/save':
+  post:
+    tags:
+      - Workflows
+    summary: Save a workflow
+    description: ''
+    operationId: server.controllers.workflows.save_workflow
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - name: workflow_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created case object
+        required: true
+        schema:
+          $ref: '#/definitions/workflow_text'
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Workflow not found
+      '405':
+        description: Validation exception

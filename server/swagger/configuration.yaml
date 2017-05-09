@@ -1,0 +1,63 @@
+/configuration:
+  get:
+    tags:
+      - Configuration
+    summary: Get whole configuration
+    description: ''
+    operationId: server.controllers.configuration.display_configuration
+    produces:
+      - application/json
+    responses:
+      '405':
+        description: Invalid input
+'/configuration/{key}':
+  get:
+    tags:
+      - Configuration
+    summary: Get a configuration key
+    description: ''
+    operationId: server.controllers.configuration.get_configuration_key
+    parameters:
+      - name: key
+        in: path
+        description: 'The configuration key '
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Configuration key not found
+      '405':
+        description: Validation exception
+  post:
+    tags:
+      - Configuration
+    summary: Edits a configuration value
+    description: ''
+    operationId: server.controllers.configuration.edit_configuration
+    consumes:
+      - string
+    produces:
+      - application/json
+    parameters:
+      - name: key
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: config_value
+        description: Value for configuration key
+        required: true
+        schema:
+          $ref: '#/definitions/config_value'
+    responses:
+      '400':
+        description: Invalid ID supplied
+      '404':
+        description: Configuration key not found
+      '405':
+        description: Validation exception

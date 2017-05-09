@@ -1,0 +1,96 @@
+/scheduler/start:
+  post:
+    tags:
+      - Scheduler
+    summary: Starts the scheduler
+    description: ''
+    operationId: server.controllers.scheduler.start_scheduler
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not start
+/scheduler/stop:
+  post:
+    tags:
+      - Scheduler
+    summary: Stops the scheduler
+    description: ''
+    operationId: server.controllers.scheduler.stop_scheduler
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not start
+/scheduler/pause:
+  post:
+    tags:
+      - Scheduler
+    summary: Pause the scheduler
+    description: ''
+    operationId: server.controllers.scheduler.pause_scheduler
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not start
+/scheduler/resume:
+  post:
+    tags:
+      - Scheduler
+    summary: Resume the scheduler
+    description: ''
+    operationId: server.controllers.scheduler.resume_scheduler
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not start
+'/scheduler/{job_id}/pause':
+  post:
+    tags:
+      - Scheduler
+    summary: Resume the scheduler
+    description: ''
+    operationId: server.controllers.scheduler.pause_scheduler_job
+    produces:
+      - application/json
+    parameters:
+      - name: job_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      '400':
+        description: Could not pause job
+'/scheduler/{job_id}/resume':
+  post:
+    tags:
+      - Scheduler
+    summary: Resume the scheduler
+    description: ''
+    operationId: server.controllers.scheduler.resume_scheduler_job
+    produces:
+      - application/json
+    parameters:
+      - name: job_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      '400':
+        description: Could not resume job
+/scheduler/jobs:
+  get:
+    tags:
+      - Scheduler
+    summary: Get Scheduler Jobs
+    description: ''
+    operationId: server.controllers.scheduler.get_scheduler_jobs
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not get jobs

@@ -1,0 +1,24 @@
+/metrics/apps:
+  get:
+    tags:
+      - Metrics
+    summary: get app usage metrics
+    description: ''
+    operationId: server.controllers.metrics.get_app_metrics
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not get jobs
+/metrics/workflows:
+  get:
+    tags:
+      - Metrics
+    summary: Get Workflow Metrics
+    description: ''
+    operationId: server.controllers.metrics.get_workflow_metrics
+    produces:
+      - application/json
+    responses:
+      '400':
+        description: Could not get jobs
