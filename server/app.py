@@ -12,7 +12,7 @@ monkey.patch_all()
 logger = logging.getLogger(__name__)
 
 
-app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
+#app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
 
 def read_and_indent(filename, indent):
@@ -46,13 +46,13 @@ def compose_yamls():
 
 
 def create_app():
-    connexion_app = connexion.App(__name__, specification_dir='swagger/')
-    app = connexion_app.app
+    connexion_app = connexion.App(__name__, specification_dir='swagger/', server='gevent')
+    _app = connexion_app.app
     compose_yamls()
     #app.json_encoder = JSONEncoder
-    app.jinja_loader = FileSystemLoader(['server/templates'])
+    _app.jinja_loader = FileSystemLoader(['server/templates'])
 
-    app.config.update(
+    _app.config.update(
             # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
             SECRET_KEY = "SHORTSTOPKEYTEST",
             SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.abspath(paths.db_path),
@@ -64,19 +64,17 @@ def create_app():
             STATIC_FOLDER=os.path.abspath('server/static')
         )
 
-
-
-    app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
+    _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     connexion_app.add_api('composed_api.yaml')
-
-    app.register_blueprint(app_page, url_prefix='/apps/<app>')
-    return app
+    #_app.register_blueprint(app_page, url_prefix='/apps/<app>')
+    return _app
 
 # Template Loader
 env = Environment(loader=FileSystemLoader("apps"))
 app = create_app()
+
 
 # Creates Test Data
 @app.before_first_request
@@ -107,7 +105,7 @@ def create_user():
     app.logger.handlers = logging.getLogger('server').handlers
 
 
-@app_page.url_value_preprocessor
-def static_request_handler(endpoint, values):
-    g.app = values.pop('app', None)
-    app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))
+#@app_page.url_value_preprocessor
+#def static_request_handler(endpoint, values):
+#    g.app = values.pop('app', None)
+#    app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))

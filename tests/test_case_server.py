@@ -42,7 +42,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_cases_typical(self):
         cases = TestCaseServer.__basic_case_setup()
-        response = self.app.get('/cases/', headers=self.headers)
+        response = self.app.get('/cases', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = set(cases.keys())
@@ -50,12 +50,10 @@ class TestCaseServer(ServerTestCase):
         orderless_list_compare(self, received_cases, expected_cases)
 
     def test_display_cases_none(self):
-        response = self.app.get('/cases/', headers=self.headers)
+        response = self.app.get('/cases', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
-        expected_cases = []
-        received_cases = [case['name'] for case in response['cases']]
-        orderless_list_compare(self, received_cases, expected_cases)
+        self.assertListEqual(response['cases'], [])
 
     def test_display_case_not_found(self):
         response = self.get_with_status_check('/cases/hiThere', 'Case with given name does not exist',
