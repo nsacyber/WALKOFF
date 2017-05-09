@@ -1,122 +1,122 @@
 User:
-type: object
-properties:
-  username:
-    type: string
-  password:
-    type: string
-  role:
-    type: array
-    items:
-      type: string
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      role:
+        type: array
+        items:
+          type: string
 Role:
-type: object
-properties:
-  description:
-    type: string
-  pages:
-    type: array
-    items:
-      type: string
+    type: object
+    properties:
+      description:
+        type: string
+      pages:
+        type: array
+        items:
+          type: string
 ConfigValue:
-type: object
-properties:
-  value:
-    type: string
+    type: object
+    properties:
+      value:
+        type: string
 EventNote:
-type: object
-properties:
-  value:
-    type: string
+    type: object
+    properties:
+      value:
+        type: string
 RenderArgs:
-type: object
-properties:
-  page:
-    type: string
-  args:
     type: object
+    properties:
+      page:
+        type: string
+      args:
+        type: object
 Case:
-type: object
-properties:
-  description:
-    type: string
-  pages:
-    type: array
-    items:
-      type: string
+    type: object
+    properties:
+      description:
+        type: string
+      pages:
+        type: array
+        items:
+          type: string
 Filename:
-type: object
-properties:
-  Filename:
-    type: string
+    type: object
+    properties:
+      Filename:
+        type: string
 Subscription:
-type: object
-properties:
-  ancestry:
-    type: array
-    items:
-      type: string
-  events:
-    type: array
-    items:
-      type: string
+    type: object
+    properties:
+      ancestry:
+        type: array
+        items:
+          type: string
+      events:
+        type: array
+        items:
+          type: string
 Device:
-type: object
-properties:
-  name:
-    type: string
-  username:
-    type: string
-  password:
-    type: string
-  ip_address:
-    type: string
-  port:
-    type: integer
-  extraFields:
-    type: string
+    type: object
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+      ip_address:
+        type: string
+      port:
+        type: integer
+      extraFields:
+        type: string
 Trigger:
-type: object
-properties:
-  name:
-    type: string
-  conditional:
-    type: string
-  playbook:
-    type: string
-  workflow:
-    type: string
+    type: object
+    properties:
+      name:
+        type: string
+      conditional:
+        type: string
+      playbook:
+        type: string
+      workflow:
+        type: string
 Playbook:
-type: object
-properties:
-  name:
-    type: string
+    type: object
+    properties:
+      name:
+        type: string
 AddWorkflow:
-type: object
-properties:
-  playbook:
-    type: string
-  template:
-    type: string
+    type: object
+    properties:
+      playbook:
+        type: string
+      template:
+        type: string
 PlaybookWorkflow:
-type: object
-properties:
-  playbook:
-    type: string
-  workflow:
-    type: string
+    type: object
+    properties:
+      playbook:
+        type: string
+      workflow:
+        type: string
 Workflow:
-type: object
-properties:
-  name:
-    type: string
-  accumulated_risk:
-    type: string
-  options:
     type: object
-  steps:
-    type: object
+    properties:
+      name:
+        type: string
+      accumulated_risk:
+        type: string
+      options:
+        type: object
+      steps:
+        type: object
 ResumeWorkflow:
-type: string
+    type: string
 WorkflowText:
-type: object
+    type: object
