@@ -4,19 +4,44 @@
       - Roles
     summary: Get all roles
     description: ''
-    operationId: server.controllers.roles.display_roles
+    operationId: server.endpoints.roles.display_roles
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
 '/roles/{role}':
+  put:
+    tags:
+      - Roles
+    summary: Add a role
+    description: ''
+    operationId: server.endpoints.roles.create_role
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - name: role
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created role object
+        required: true
+        schema:
+          $ref: '#/definitions/role'
+    responses:
+      '200':
+        description: Okay
   get:
     tags:
       - Roles
     summary: Get a role
     description: ''
-    operationId: server.controllers.roles.get_role
+    operationId: server.endpoints.roles.get_role
     parameters:
       - name: role
         in: path
@@ -26,20 +51,16 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Role not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
   post:
     tags:
       - Roles
     summary: Update a role
     description: ''
-    operationId: server.controllers.roles.edit_role
+    operationId: server.endpoints.roles.edit_role
     consumes:
-      - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -55,38 +76,5 @@
         schema:
           $ref: '#/definitions/role'
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Role not found
-      '405':
-        description: Validation exception
-  put:
-    tags:
-      - Roles
-    summary: Add a role
-    description: ''
-    operationId: server.controllers.roles.create_role
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - name: role
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: body
-        description: Created role object
-        required: true
-        schema:
-          $ref: '#/definitions/role'
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Role not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay

@@ -1,4 +1,4 @@
-/scheduler/start:
+/execution/scheduler/start:
   post:
     tags:
       - Scheduler
@@ -8,9 +8,9 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Could not start
-/scheduler/stop:
+      '200':
+        description: Okay
+/execution/scheduler/stop:
   post:
     tags:
       - Scheduler
@@ -20,9 +20,9 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Could not start
-/scheduler/pause:
+      '200':
+        description: Okay
+/execution/scheduler/pause:
   post:
     tags:
       - Scheduler
@@ -32,9 +32,9 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Could not start
-/scheduler/resume:
+      '200':
+        description: Okay
+/execution/scheduler/resume:
   post:
     tags:
       - Scheduler
@@ -44,9 +44,9 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Could not start
-'/scheduler/{job_id}/pause':
+      '200':
+        description: Okay
+'/execution/scheduler/{job_id}/pause':
   post:
     tags:
       - Scheduler
@@ -62,9 +62,9 @@
         required: true
         type: string
     responses:
-      '400':
-        description: Could not pause job
-'/scheduler/{job_id}/resume':
+      '200':
+        description: Okay
+'/execution/scheduler/{job_id}/resume':
   post:
     tags:
       - Scheduler
@@ -80,9 +80,9 @@
         required: true
         type: string
     responses:
-      '400':
-        description: Could not resume job
-/scheduler/jobs:
+      '200':
+        description: Okay
+/execution/scheduler/jobs:
   get:
     tags:
       - Scheduler
@@ -92,5 +92,5 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Could not get jobs
+      '200':
+        description: Okay

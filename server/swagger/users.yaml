@@ -4,13 +4,38 @@
       - Users
     summary: Get all users
     description: ''
-    operationId: server.controllers.users.get_users
+    operationId: server.endpoints.users.get_users
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      '200':
+        description: Okay
 '/users/{username}':
+  put:
+    tags:
+      - Users
+    summary: Add a user
+    description: ''
+    operationId: server.endpoints.users.create_user
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - name: username
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created user object
+        required: true
+        schema:
+          $ref: '#/definitions/user'
+    responses:
+      '200':
+        description: Okay
   get:
     tags:
       - Users
@@ -26,12 +51,8 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: User not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
   post:
     tags:
       - Users
@@ -39,7 +60,7 @@
     description: ''
     operationId: server.controllers.users.update_user
     consumes:
-      - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -55,41 +76,8 @@
         schema:
           $ref: '#/definitions/user'
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: User not found
-      '405':
-        description: Validation exception
-  put:
-    tags:
-      - Users
-    summary: Add a user
-    description: ''
-    operationId: server.controllers.users.add_user
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - name: username
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: body
-        description: Created user object
-        required: true
-        schema:
-          $ref: '#/definitions/user'
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: User not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
   delete:
     tags:
       - Users
@@ -97,7 +85,7 @@
     description: ''
     operationId: server.controllers.users.delete_user
     consumes:
-      - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -107,9 +95,5 @@
         required: true
         type: string
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: User not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay

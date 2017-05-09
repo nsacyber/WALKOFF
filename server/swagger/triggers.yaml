@@ -1,38 +1,61 @@
-/triggers:
+/execution/listener/triggers:
   get:
     tags:
       - Triggers
     summary: Render triggers
     description: ''
-    operationId: server.controllers.triggers.display_triggers
+    operationId: server.endpoints.triggers.get_triggers
     produces:
       - application/json
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Configuration key not found
-      '405':
-        description: Validation exception
-/triggers/execute:
-  get:
+      '200':
+        description: Okay
+/execution/listener/triggers/execute:
+  post:
     tags:
       - Triggers
     summary: Trigger Listener
     description: ''
-    operationId: server.controllers.triggers.listener
+    operationId: server.endpoints.triggers.listener
+    consumes:
+      - multipart/form-data
     produces:
       - application/json
     responses:
-      '400':
-        description: Could not execute trigger
-'/triggers/{trigger}':
+      '200':
+        description: Okay
+'/execution/listener/triggers/{trigger_name}':
+  put:
+    tags:
+      - Triggers
+    summary: Add a trigger
+    description: ''
+    operationId: server.endpoints.triggers.create_trigger
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - name: trigger
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Created trigger object
+        required: true
+        schema:
+          $ref: '#/definitions/trigger'
+    responses:
+      '200':
+        description: Okay
   get:
     tags:
       - Triggers
     summary: Get a trigger
     description: ''
-    operationId: server.controllers.triggers.get_trigger
+    operationId: server.endpoints.triggers.read_trigger
     parameters:
       - name: trigger
         in: path
@@ -42,20 +65,16 @@
     produces:
       - application/json
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Trigger not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
   post:
     tags:
       - Triggers
     summary: Update a trigger
     description: ''
-    operationId: server.controllers.triggers.edit_trigger
+    operationId: server.endpoints.triggers.update_trigger
     consumes:
-      - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -71,49 +90,14 @@
         schema:
           $ref: '#/definitions/trigger'
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Trigger not found
-      '405':
-        description: Validation exception
-  put:
-    tags:
-      - Triggers
-    summary: Add a trigger
-    description: ''
-    operationId: server.controllers.triggers.create_trigger
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - name: trigger
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: body
-        description: Created trigger object
-        required: true
-        schema:
-          $ref: '#/definitions/trigger'
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Trigger not found
-      '405':
-        description: Validation exception'
+      '200':
+        description: Okay
   delete:
     tags:
       - Triggers
     summary: Remove a trigger
     description: ''
-    operationId: server.controllers.triggers.delete_trigger
-    consumes:
-      - application/json
+    operationId: server.endpoints.triggers.delete_trigger
     produces:
       - application/json
     parameters:
@@ -123,9 +107,5 @@
         required: true
         type: string
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Trigger not found
-      '405':
-        description: Validation exception
+      '200':
+        description: Okay
