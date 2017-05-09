@@ -9,12 +9,46 @@ from flask_security.utils import encrypt_password
 from flask import Blueprint, g
 monkey.patch_all()
 
+logger = logging.getLogger(__name__)
+
 
 app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
+
+
+def read_and_indent(filename, indent):
+    indent = '  '*indent
+    with open(filename, 'r') as file_open:
+        return ['{0}{1}'.format(indent, line) for line in file_open]
+
+
+def compose_yamls():
+    yaml_files = os.listdir(paths.swagger_apis)
+    yaml_file_lookup = {}
+    for api_yaml_file in yaml_files:
+        with open(os.path.join(paths.swagger_apis, api_yaml_file), 'r') as yaml_file:
+            yaml_file_lookup['./{0}'.format(api_yaml_file)] = yaml_file.read()
+    with open(os.path.join(paths.swagger_apis, 'api.yaml'), 'r') as api_yaml:
+        final_yaml = []
+        for line in api_yaml:
+            if line.lstrip().startswith('$ref:'):
+                split_line = line.split('$ref:')
+                reference = split_line[1].strip()
+                indentation = split_line[0].count('  ')
+                if reference in yaml_file_lookup:
+                    final_yaml.extend(read_and_indent(os.path.join(paths.swagger_apis, reference), indentation))
+                    final_yaml.append('\n')
+                else:
+                    logger.error('Could not find referenced YAML file {0}'.format(reference))
+            else:
+                final_yaml.append(line)
+    with open(os.path.join(paths.swagger_apis, 'composed_api.yaml'), 'w') as composed_yaml:
+        composed_yaml.writelines(final_yaml)
+
 
 def create_app():
     connexion_app = connexion.App(__name__, specification_dir='swagger/')
     app = connexion_app.app
+    compose_yamls()
     #app.json_encoder = JSONEncoder
     app.jinja_loader = FileSystemLoader(['server/templates'])
 
@@ -35,7 +69,7 @@ def create_app():
     app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    connexion_app.add_api('api.yaml')
+    connexion_app.add_api('composed_api.yaml')
 
     app.register_blueprint(app_page, url_prefix='/apps/<app>')
     return app
