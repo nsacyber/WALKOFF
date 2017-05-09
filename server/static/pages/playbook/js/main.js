@@ -2,7 +2,6 @@ $(function(){
     "use strict";
 
     $(".nav-tabs ul li a").each(function() {
-        console.log("HERE");
         $(this).attr("href", location.href.toString()+$(this).attr("href"));
     });
 
@@ -18,6 +17,7 @@ $(function(){
     var appData = null;
     var flagsList = [];
     var filtersList = [];
+    var startNode = null;
 
     //--------------------
     // Top level functions
@@ -80,6 +80,22 @@ $(function(){
         return jstreeData;
     }
 
+    function getStartNode() {
+        return startNode;
+    }
+
+    function setStartNode(start) {
+        // If no start was given set it to one of the root nodes
+        if (start) {
+            startNode = start;
+        }
+        else {
+            var roots = cy.nodes().roots();
+            if (roots.size() > 0) {
+                startNode = roots[0].data("parameters").name;
+            }
+        }
+    }
 
     function createSchema(parameters) {
         var appNames = [];
@@ -131,6 +147,10 @@ $(function(){
                 name: {
                     type: "string",
                     title: "Name",
+                },
+                start: {
+                    type: "boolean",
+                    title: "Set as Start Node"
                 },
                 app: {
                     type: "string",
@@ -256,6 +276,8 @@ $(function(){
             });
         });
 
+        parameters.start = (getStartNode() === parameters.name);
+
         return parameters;
     }
 
@@ -304,9 +326,8 @@ $(function(){
         $("#parameters").removeClass('hidden');
         $("#parameters").empty();
 
-        console.log(parameters)
         parameters = transformParametersToSchema(parameters);
-        console.log(parameters);
+
         // Initialize the editor with a JSON schema
         var schema = createSchema(parameters);
         JSONEditor.defaults.options.theme = 'bootstrap3';
@@ -330,11 +351,19 @@ $(function(){
         editor.getEditor('root.app').disable();
         editor.getEditor('root.name').disable();
 
+        // Hack: It appears this function is called as soon as you click on the node.
+        // Therefore ignore the first time this function is called.
+        var firstCall = true;
         editor.on('change',function() {
+            if (firstCall) {
+                firstCall = false;
+                return;
+            }
             var updatedParameters = editor.getValue();
             updatedParameters = transformParametersFromSchema(updatedParameters);
             ele.data('parameters', updatedParameters);
             ele.data('label', updatedParameters.action);
+            setStartNode(updatedParameters.name);
         });
     }
 
@@ -396,6 +425,10 @@ $(function(){
     }
 
 
+    function getNumberOfNodesInGraph() {
+        return cy.nodes().size();
+    }
+
     // This function removes selected nodes and edges
     function removeSelectedNodes() {
         var selecteds = cy.$(":selected");
@@ -403,6 +436,22 @@ $(function(){
             ur.do("remove", selecteds);
     }
 
+    function onNodeAdded(event) {
+        var node = event.cyTarget;
+        // If the number of nodes in the graph is one, set the start node to it.
+        if (node.isNode() && getNumberOfNodesInGraph() === 1) {
+            setStartNode(node.data("parameters").name);
+        }
+    }
+
+    function onNodeRemoved(event) {
+        var node = event.cyTarget;
+        var parameters = node.data("parameters");
+        // If the start node was deleted, set it to one of the roots of the graph
+        if (parameters && node.isNode() && getStartNode() == parameters.name) {
+            setStartNode();
+        }
+    }
 
     function cut() {
         var selecteds = cy.$(":selected");
@@ -533,7 +582,7 @@ $(function(){
 
 
     function saveWorkflow(playbookName, workflowName, workflowData) {
-        var data = JSON.stringify({filename: "", cytoscape: JSON.stringify(workflowData)});
+        var data = JSON.stringify({start: startNode, cytoscape: JSON.stringify(workflowData)});
         $.ajax({
             'async': false,
             'type': "POST",
@@ -676,22 +725,28 @@ $(function(){
 
         // Load the data into the graph
         workflowData = JSON.parse(workflowData);
+
         // If a node does not have a label field, set it to
         // the action. The label is what is displayed in the graph.
-        workflowData = workflowData.steps.map(function(value) {
+        var steps = workflowData.steps.map(function(value) {
             if (!value.data.hasOwnProperty("label")) {
                 value.data.label = value.data.parameters.action;
             }
             return value;
         });
 
-        cy.add(workflowData);
+        cy.add(steps);
 
         cy.fit();
+
+        setStartNode(workflowData.start);
 
         // Configure handler when user clicks on node or edge
         cy.$('*').on('click', onClick);
 
+        // Configure handlers when nodes are added or removed
+        cy.on('add', onNodeAdded);
+        cy.on('remove', onNodeRemoved);
     }
 
 
@@ -974,7 +1029,6 @@ $(function(){
     // Configure event handlers
     //-------------------------
     $("#palette ul li a").each(function() {
-        console.log("CHANGED HREF");
         $(this).attr("href", location.href.toString()+$(this).attr("href"));
     });
 
