@@ -2,7 +2,7 @@ from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 from tests import config
 import server.metrics as metrics
-from server.blueprints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
+from server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 import json
 from datetime import timedelta
 

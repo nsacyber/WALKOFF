@@ -1,6 +1,5 @@
 from flask_security import roles_accepted
 import server.metrics as metrics
-import json
 from copy import deepcopy
 
 
@@ -8,14 +7,14 @@ def get_app_metrics():
     from server.context import running_context
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
-        return json.dumps(_convert_action_time_averages())
+        return _convert_action_time_averages()
     return __func()
 
 def get_workflow_metrics():
     from server.context import running_context
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
-        return json.dumps(_convert_workflow_time_averages())
+        return _convert_workflow_time_averages()
     return __func()
 
 def _convert_action_time_averages():
