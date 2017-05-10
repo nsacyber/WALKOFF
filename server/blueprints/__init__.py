@@ -1,4 +1,5 @@
 from server import app as __flaskapp
+from .events import setup_case_stream
 
 
 class _BlueprintInjection(object):

@@ -35,15 +35,6 @@ RenderArgs:
         type: string
       args:
         type: object
-Case:
-    type: object
-    properties:
-      description:
-        type: string
-      pages:
-        type: array
-        items:
-          type: string
 Filename:
     type: object
     properties:

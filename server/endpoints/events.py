@@ -1,25 +1,33 @@
-import json
-from flask import request
 from flask_security import auth_token_required, roles_accepted
-from server.flaskserver import running_context
 import core.case.database as case_database
-from server import forms
 
 
-def edit_event_note(event_id):
+def edit_event_note(event_id, note):
     from server.context import running_context
+
+    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
-        form = forms.EditEventForm(request.form)
-        if form.validate():
-            if form.note.data:
-                valid_event_id = case_database.case_db.session.query(case_database.Event) \
-                    .filter(case_database.Event.id == event_id).all()
-                if valid_event_id:
-                    case_database.case_db.edit_event_note(event_id, form.note.data)
-                    return json.dumps(case_database.case_db.event_as_json(event_id))
-                else:
-                    return json.dumps({"status": "invalid event"})
+        valid_event_id = case_database.case_db.session.query(case_database.Event) \
+            .filter(case_database.Event.id == event_id).all()
+        if valid_event_id:
+            case_database.case_db.edit_event_note(event_id, note)
+            return case_database.case_db.event_as_json(event_id)
         else:
-            return json.dumps({"status": "Invalid form"})
+            return {"status": "invalid event"}
+    return __func()
+
+
+def get_event_note(event_id):
+    from server.context import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        valid_event_id = case_database.case_db.session.query(case_database.Event) \
+            .filter(case_database.Event.id == event_id).all()
+        if valid_event_id:
+            return case_database.case_db.event_as_json(event_id)
+        else:
+            return {"status": "invalid event"}
     return __func()

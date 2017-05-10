@@ -232,16 +232,3 @@
     responses:
       200:
         description: OK
-
-/cases/events:
-    get:
-      tags:
-        - Cases
-      summary: Stream of the case events
-      description: ''
-      operationId: server.endpoints.cases.stream_case_events
-      produces:
-        - text/event-stream
-      responses:
-        200:
-          description: OK

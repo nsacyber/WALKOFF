@@ -974,7 +974,7 @@ class TestCaseServer(ServerTestCase):
         expected_event = altered_event[0].as_json()
         expected_event['note'] = 'Note1'
 
-        data = {"note": 'Note1'}
+        data = 'Note1'
         response = self.app.post('/events/{0}'.format(smallest_id), data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
@@ -982,7 +982,7 @@ class TestCaseServer(ServerTestCase):
 
         expected_event['note'] = 'Note2'
 
-        data = {"note": 'Note2'}
+        data = 'Note2'
         response = self.app.post('/events/{0}'.format(smallest_id), data=data, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))

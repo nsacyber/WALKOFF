@@ -1,24 +1,53 @@
-'/events/{event_id}':
+/events/{event_id}:
+  parameters:
+    - name: event_id
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
   post:
     tags:
       - Events
     summary: Edit an event note
     description: ''
     operationId: server.endpoints.events.edit_event_note
+    consumes:
+      - text/plain
     produces:
       - application/json
     parameters:
-      - name: event_id
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
-        name: config_value
-        description: Value for configuration key
+        name: note
+        description: Note to add to the case
         required: true
         schema:
-          $ref: '#/definitions/event_note'
+          type: string
     responses:
-      '200':
-        description: Okay
+      200:
+        description: OK
+  get:
+    tags:
+      - Events
+    summary: Edit an event note
+    description: ''
+    operationId: server.endpoints.events.get_event_note
+    consumes:
+      - text/plain
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+
+#/events:
+#    get:
+#      tags:
+#        - Cases
+#      summary: Stream of the case events
+#      description: ''
+#      operationId: server.endpoints.cases.stream_case_events
+#      produces:
+#        - text/event-stream
+#      responses:
+#        200:
+#          description: OK
