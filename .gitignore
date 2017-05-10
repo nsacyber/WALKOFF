@@ -17,3 +17,4 @@ build/*
 *.egg
 *.pem
 data/log/*.log
+node_modules/
