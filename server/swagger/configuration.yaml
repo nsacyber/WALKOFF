@@ -27,18 +27,12 @@
       - multipart/form-data
     produces:
       - application/json
-    parameters:
-      - name: key
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: config_value
-        description: Value for configuration key
-        required: true
-        schema:
-          $ref: '#/definitions/config_value'
+#    parameters:
+#      - name: key
+#        in: formData
+#        description: The name that needs to be fetched.
+#        required: true
+#        type: string
     responses:
       '200':
         description: Okay
