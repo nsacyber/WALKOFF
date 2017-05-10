@@ -2,7 +2,7 @@
     <head>
         <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='pages/playbook/css/jstree/style.min.css' ) }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='plugins/jstree/style.min.css' ) }}">
 
         <style>
 
@@ -180,8 +180,8 @@
             <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
             <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
             <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
-            <script src="{{ url_for('static', filename='pages/playbook/js/jstree.min.js') }}"></script>
-            <script src="{{ url_for('static', filename='pages/controller/repeatableFields/repeatable-fields.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/jstree/jstree.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/repeatableFields/repeatable-fields.js') }}"></script>
             <script type="text/javascript">
                 loadedWorkflows = {{loadedWorkflows | safe}};
                 schedulerStatusNo = {{schedulerStatus}};
