@@ -127,13 +127,12 @@ $(function(){
                     },
                     format: {
                         type: "string",
-                        options: {
-                            hidden: true
-                        }
+                        title: "Format",
+                        enum: ['str', 'int', 'float', 'bool']
                     },
                     value: {
                         type: "string",
-                        title: "Input Value"
+                        title: "Value"
                     }
                 }
             }
