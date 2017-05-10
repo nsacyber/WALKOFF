@@ -51,6 +51,9 @@ Filename:
         type: string
 Subscription:
     type: object
+    required:
+      - ancestry
+      - events
     properties:
       ancestry:
         type: array

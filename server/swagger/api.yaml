@@ -50,7 +50,7 @@ schemes:
 
 paths:
   #$ref: ./apps.yaml
-  #$ref: ./cases.yaml
+  $ref: ./cases.yaml
   #$ref: ./configuration.yaml
   #$ref: ./events.yaml
   #$ref: ./metadata.yaml

@@ -1,5 +1,4 @@
 from server import app as __flaskapp
-from server.blueprints.cases import setup_case_stream
 
 
 class _BlueprintInjection(object):
@@ -13,13 +12,12 @@ WidgetBlueprint = _BlueprintInjection
 
 def register_blueprints():
     from server.blueprints import app as app
-    from server.blueprints import widget, playbook, cases, configuration, events, metrics, widgets
+    from server.blueprints import widget, playbook, configuration, events, metrics, widgets
     __flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
     __flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     __flaskapp.register_blueprint(playbook.playbook_page, url_prefix='/playbook')
     __flaskapp.register_blueprint(playbook.playbooks_page, url_prefix='/playbooks')
-    __flaskapp.register_blueprint(cases.cases_page, url_prefix='/cases')
     __flaskapp.register_blueprint(configuration.configurations_page, url_prefix='/configuration')
     __flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     __flaskapp.register_blueprint(metrics.metrics_page, url_prefix='/metrics')

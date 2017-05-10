@@ -127,3 +127,179 @@ def import_cases():
             current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
             return {"status": "error: file does not exist"}
     return __func()
+
+
+def export_cases():
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        form = forms.ExportCaseForm(request.form)
+        filename = form.filename.data if form.filename.data else core.config.paths.default_case_export_path
+        try:
+            with open(filename, 'w') as cases_file:
+                cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))
+            current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
+            return {"status": "success"}
+        except (OSError, IOError) as e:
+            current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, e))
+            return {"status": "error writing to file"}
+    return __func()
+
+
+def display_subscriptions():
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        return case_subscription.subscriptions_as_json()
+    return __func()
+
+
+def get_events(case):
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        result = case_database.case_db.case_events_as_json(case)
+        return result
+    return __func()
+
+
+def get_subscription(case):
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        if case in core.case.subscription.subscriptions:
+            result = core.case.subscription.subscriptions[case].as_json(names=True)
+            return result
+    return __func()
+
+
+def convert_ancestry(ancestry):
+    if len(ancestry) >= 3:
+        ancestry[1] = construct_workflow_name_key(ancestry[1], ancestry[2])
+        del ancestry[2]
+    return ancestry
+
+__scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
+                                'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
+                                'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
+                                'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
+                                'Job Added': EVENT_JOB_ADDED,
+                                'Job Removed': EVENT_JOB_REMOVED,
+                                'Job Executed': EVENT_JOB_EXECUTED,
+                                'Job Error': EVENT_JOB_ERROR}
+
+
+def convert_scheduler_events(events):
+    return [__scheduler_event_conversion[event] for event in events if event in __scheduler_event_conversion]
+
+
+def convert_to_event_names(events):
+    result = []
+    for event in events:
+        for key in __scheduler_event_conversion:
+            if __scheduler_event_conversion[key] == event:
+                result.append(key)
+    return result
+
+
+def update_subscription(case, element):
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func(element):
+        ancestry = convert_ancestry(element['ancestry'])
+        if len(ancestry) == 1 and element['events']:
+            element['events'] = convert_scheduler_events(element['events'])
+        success = case_subscription.edit_subscription(case, ancestry, element['events'])
+        running_context.CaseSubscription.update(case)
+        running_context.db.session.commit()
+        if success:
+            current_app.logger.info('Edited subscription {0} to {1}'.format(ancestry, element['events']))
+            return case_subscription.subscriptions_as_json()
+        else:
+            current_app.logger.error('Error occurred while editing subscription '
+                                     '{0} to {1}'.format(ancestry, element['events']))
+            return {"status": "Error occurred while editing subscription"}
+    return __func(element)
+
+
+def add_subscription(case, element):
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        events = element['events']
+        if len(element['ancestry']) == 1 and events:
+            events = convert_scheduler_events(events)
+        converted_ancestry = convert_ancestry(element['ancestry'])
+        case_subscription.add_subscription(case, converted_ancestry, events)
+        running_context.CaseSubscription.update(case)
+        running_context.db.session.commit()
+        current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
+        return case_subscription.subscriptions_as_json()
+    return __func()
+
+
+def delete_subscription(case, ancestry):
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        converted_ancestry = convert_ancestry(ancestry['ancestry'])
+        case_subscription.remove_subscription_node(case, converted_ancestry)
+        running_context.CaseSubscription.update(case)
+        running_context.db.session.commit()
+        current_app.logger.debug('Deleted subscription {0}'.format(converted_ancestry))
+        return case_subscription.subscriptions_as_json()
+    return __func()
+
+__case_event_json = AsyncResult()
+__sync_signal = Event()
+
+
+def __case_event_stream():
+    while True:
+        data = __case_event_json.get()
+        yield 'data: %s\n\n' % data
+        __sync_signal.wait()
+
+
+def __push_to_case_stream(sender, **kwargs):
+    out = {'name': sender.name,
+           'ancestry': sender.ancestry}
+    if 'data' in kwargs:
+        out['data'] = kwargs['data']
+    __case_event_json.set(json.dumps(out))
+    __sync_signal.set()
+    __sync_signal.clear()
+
+
+def setup_case_stream():
+    from blinker import NamedSignal
+    import core.case.callbacks as callbacks
+    signals = [getattr(callbacks, field) for field in dir(callbacks) if (not field.startswith('__')
+                                                                             and isinstance(getattr(callbacks, field),
+                                                                                           NamedSignal))]
+    for signal in signals:
+        signal.connect(__push_to_case_stream)
+
+
+def stream_case_events():
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        return Response(__case_event_stream(), mimetype='text/event-stream')
+    return __func()

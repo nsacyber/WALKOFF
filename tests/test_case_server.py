@@ -11,7 +11,7 @@ from core.case.callbacks import _EventEntry
 import core.config.paths
 from os.path import join
 from tests.util.servertestcase import ServerTestCase
-from server.blueprints.cases import convert_ancestry, convert_scheduler_events
+from server.endpoints.cases import convert_ancestry, convert_scheduler_events
 from core.helpers import construct_workflow_name_key
 from tests.util.assertwrappers import orderless_list_compare
 import server.flaskserver as server
@@ -411,7 +411,7 @@ class TestCaseServer(ServerTestCase):
 
         expected_response = {key: case.as_json() for key, case in cases.items()}
 
-        response = self.app.get('/cases/subscriptions/', headers=self.headers)
+        response = self.app.get('/cases/subscriptions', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(expected_response, response)
@@ -557,11 +557,11 @@ class TestCaseServer(ServerTestCase):
         add1 = {"ancestry": ["sub8", "add1"],
                 "events": ["a", "b"]}
 
-        self.post_with_status_check('/cases/case1/subscriptions',
-                                    'Error: no JSON in request',
-                                    data=add1,
-                                    headers=self.headers,
-                                    content_type='application/json')
+        response = self.app.put('/cases/case1/subscriptions',
+                                data=add1,
+                                headers=self.headers,
+                                content_type='application/json')
+        self.assertEqual(response._status_code, 400)
 
     def test_add_subscription_malformed_json(self):
         sub1 = Subscription()
@@ -585,11 +585,11 @@ class TestCaseServer(ServerTestCase):
                 "events_bad": ["a", "b"]}
 
         for bad_json in [bad1, bad3]:
-            self.post_with_status_check('/cases/case1/subscriptions',
-                                        'Error: malformed JSON',
-                                        data=json.dumps(bad_json),
-                                        headers=self.headers,
-                                        content_type='application/json')
+            response = self.app.put('/cases/case1/subscriptions',
+                                    data=json.dumps(bad_json),
+                                    headers=self.headers,
+                                    content_type='application/json')
+            self.assertEqual(response._status_code, 400)
 
     def test_edit_controller_subscription(self):
         input_events = ["Scheduler Start", "Scheduler Shutdown", "Scheduler Paused", "Scheduler Resumed", "Job Added",
@@ -727,13 +727,10 @@ class TestCaseServer(ServerTestCase):
 
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': case2})
 
-        edit1 = {"ancestry": ["sub8", "sub5", "junk"],
-                 "events": ["a", "b"]}
-        self.post_with_status_check('/cases/case2/subscriptions',
-                                    'Error: no JSON in request',
-                                    data=edit1,
-                                    headers=self.headers,
-                                    content_type='application/json')
+        response = self.app.post('/cases/case2/subscriptions',
+                                 headers=self.headers,
+                                 content_type='application/json')
+        self.assertEqual(response._status_code, 400)
 
     def test_edit_subscriptions_invalid_json(self):
         sub1 = Subscription()
@@ -759,11 +756,11 @@ class TestCaseServer(ServerTestCase):
                  "events_bad": ["a", "b"]}
 
         for edit in [edit1, edit2, edit3]:
-            self.post_with_status_check('/cases/case2/subscriptions',
-                                        'Error: malformed JSON',
-                                        data=json.dumps(edit),
-                                        headers=self.headers,
-                                        content_type='application/json')
+            response = self.app.post('/cases/case2/subscriptions',
+                                     headers=self.headers,
+                                     data=json.dumps(edit),
+                                     content_type='application/json')
+            self.assertEqual(response._status_code, 400)
 
     def test_remove_subscription(self):
         sub1 = Subscription()
@@ -937,8 +934,7 @@ class TestCaseServer(ServerTestCase):
                                    data=data,
                                    headers=self.headers,
                                    content_type='application/json')
-        response = json.loads(response.get_data(as_text=True))
-        self.assertEqual(response["status"], 'Error: no JSON in request')
+        self.assertEqual(response._status_code, 400)
 
     def test_remove_subscription_invalid_json(self):
         data = {"ancestry_bad": ["sub1"]}
@@ -947,8 +943,7 @@ class TestCaseServer(ServerTestCase):
                                    data=json.dumps(data),
                                    headers=self.headers,
                                    content_type='application/json')
-        response = json.loads(response.get_data(as_text=True))
-        self.assertEqual(response["status"], 'Error: malformed JSON')
+        self.assertEqual(response._status_code, 400)
 
     def test_edit_event_note(self):
         case1, _ = construct_case1()

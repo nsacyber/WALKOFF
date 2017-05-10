@@ -2,7 +2,7 @@
   get:
     tags:
       - Cases
-    summary: Render cases
+    summary: Get all cases
     description: ''
     operationId: server.endpoints.cases.display_cases
     produces:
@@ -97,166 +97,151 @@
       200:
         description: OK
 
-#/cases/export:
-#  get:
-#    tags:
-#      - Cases
-#    summary: Export case data
-#    description: ''
-#    operationId: server.controllers.cases.export_cases
-#    consumes:
-#      - application/x-www-form-urlencoded
-#    produces:
-#      - application/json
-#    parameters:
-#      - in: formData
-#        name: filename
-#        description: Filename of JSON to import into case database.
-#        required: false
-#        type: string
-#    responses:
-#      200:
-#        description: OK
-#/cases/subscriptions:
-#  get:
-#    tags:
-#      - Subscriptions
-#    summary: Gets all subscriptions
-#    description: ''
-#    operationId: server.controllers.subscriptions.display_subscriptions
-#    produces:
-#      - application/json
-#    responses:
-#      '400':
-#        description: Could not import case data
-#'/cases/{case}/events':
-#  get:
-#    tags:
-#      - Cases
-#    summary: Get case events
-#    description: ''
-#    operationId: server.controllers.cases.get_events
-#    parameters:
-#      - name: case
-#        in: path
-#        description: 'The name that needs to be fetched. '
-#        required: true
-#        type: string
-#    produces:
-#      - application/json
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Events not found
-#      '405':
-#        description: Validation exception
-#'/cases/{case}/subscriptions':
-#  get:
-#    tags:
-#      - Subscriptions
-#    summary: Get a subscription
-#    description: ''
-#    operationId: server.controllers.subscriptions.get_subscription
-#    parameters:
-#      - name: case
-#        in: path
-#        description: 'The name that needs to be fetched. '
-#        required: true
-#        type: string
-#    produces:
-#      - application/json
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Subscription not found
-#      '405':
-#        description: Validation exception
-#  post:
-#    tags:
-#      - Subscriptions
-#    summary: Update a subscription
-#    description: ''
-#    operationId: server.controllers.subscriptions.edit_subscription
-#    consumes:
-#      - application/json
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: case
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#      - in: body
-#        name: body
-#        description: Created subscription object
-#        required: true
-#        schema:
-#          $ref: '#/definitions/subscription'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Subscription not found
-#      '405':
-#        description: Validation exception
-#  put:
-#    tags:
-#      - Subscriptions
-#    summary: Add a subscription
-#    description: ''
-#    operationId: server.controllers.subscriptions.create_subscription
-#    consumes:
-#      - application/json
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: case
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#      - in: body
-#        name: body
-#        description: Created subscription object
-#        required: true
-#        schema:
-#          $ref: '#/definitions/subscription'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Subscription not found
-#      '405':
-#        description: Validation exception'
-#  delete:
-#    tags:
-#      - Subscriptions
-#    summary: Remove a subscription
-#    description: ''
-#    operationId: server.controllers.subscriptions.delete_subscription
-#    consumes:
-#      - application/json
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: case
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#      - in: body
-#        name: body
-#        description: Created subscription object
-#        required: true
-#        schema:
-#          $ref: '#/definitions/subscription'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Subscription not found
-#      '405':
-#        description: Validation exception
+/cases/export:
+  post:
+    tags:
+      - Cases
+    summary: Export case data
+    description: ''
+    operationId: server.endpoints.cases.export_cases
+    consumes:
+      - application/x-www-form-urlencoded
+    produces:
+      - application/json
+    parameters:
+      - in: formData
+        name: filename
+        description: Filename of JSON to import into case database.
+        required: false
+        type: string
+    responses:
+      200:
+        description: OK
+/cases/subscriptions:
+  get:
+    tags:
+      - Subscriptions
+    summary: Gets all subscriptions for all cases
+    description: ''
+    operationId: server.endpoints.cases.display_subscriptions
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+/cases/{case}/events:
+  get:
+    tags:
+      - Cases
+    summary: Get case events
+    description: ''
+    operationId: server.endpoints.cases.get_events
+    parameters:
+      - name: case
+        in: path
+        description: The name of the case
+        required: true
+        type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+/cases/{case}/subscriptions:
+  parameters:
+    - name: case
+      in: path
+      description: The name of the case
+      required: true
+      type: string
+  get:
+    tags:
+      - Subscriptions
+    summary: Get a subscription
+    description: ''
+    operationId: server.endpoints.cases.get_subscription
+    produces:
+      - application/json
+    responses:
+      200:
+        description: OK
+  post:
+    tags:
+      - Subscriptions
+    summary: Update a subscription
+    description: ''
+    operationId: server.endpoints.cases.update_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: element
+        description: Edited subscription object
+        required: true
+        schema:
+          $ref: '#/definitions/Subscription'
+    responses:
+      200:
+        description: OK
+  put:
+    tags:
+      - Subscriptions
+    summary: Add a subscription
+    description: ''
+    operationId: server.endpoints.cases.add_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: element
+        description: Created subscription object
+        required: true
+        schema:
+          $ref: '#/definitions/Subscription'
+    responses:
+      200:
+        description: OK
+  delete:
+    tags:
+      - Subscriptions
+    summary: Remove a subscription
+    description: ''
+    operationId: server.endpoints.cases.delete_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: ancestry
+        description: Ancestry of execution element
+        required: true
+        schema:
+          type: object
+          required:
+            - ancestry
+          properties:
+            ancestry:
+              type: array
+              items:
+                type: string
+    responses:
+      200:
+        description: OK
+
+/cases/events:
+    get:
+      tags:
+        - Cases
+      summary: Stream of the case events
+      description: ''
+      operationId: server.endpoints.cases.stream_case_events
+      produces:
+        - text/event-stream
+      responses:
+        200:
+          description: OK
