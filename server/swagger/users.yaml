@@ -9,7 +9,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/users/{user_name}':
   put:
     tags:
@@ -35,7 +35,7 @@
           $ref: '#/definitions/User'
     responses:
       '200':
-        description: Okay
+        description: Success
   get:
     tags:
       - Users
@@ -52,7 +52,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
   post:
     tags:
       - Users
@@ -77,7 +77,7 @@
           $ref: '#/definitions/User'
     responses:
       '200':
-        description: Okay
+        description: Success
   delete:
     tags:
       - Users
@@ -96,4 +96,4 @@
         type: string
     responses:
       '200':
-        description: Okay
+        description: Success

@@ -15,7 +15,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 /configuration/set:
   post:
     tags:
@@ -27,12 +27,6 @@
       - multipart/form-data
     produces:
       - application/json
-#    parameters:
-#      - name: key
-#        in: formData
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
     responses:
       '200':
-        description: Okay
+        description: Success

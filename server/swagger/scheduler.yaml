@@ -9,7 +9,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 /execution/scheduler/stop:
   post:
     tags:
@@ -21,7 +21,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 /execution/scheduler/pause:
   post:
     tags:
@@ -33,7 +33,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 /execution/scheduler/resume:
   post:
     tags:
@@ -45,7 +45,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/execution/scheduler/{job_id}/pause':
   post:
     tags:
@@ -63,7 +63,7 @@
         type: string
     responses:
       '200':
-        description: Okay
+        description: Success
 '/execution/scheduler/{job_id}/resume':
   post:
     tags:
@@ -81,7 +81,7 @@
         type: string
     responses:
       '200':
-        description: Okay
+        description: Success
 /execution/scheduler/jobs:
   get:
     tags:
@@ -93,4 +93,4 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success

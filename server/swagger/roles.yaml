@@ -9,7 +9,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/roles/{role_name}':
   put:
     tags:
@@ -35,7 +35,7 @@
           $ref: '#/definitions/Role'
     responses:
       '200':
-        description: Okay
+        description: Success
   get:
     tags:
       - Roles
@@ -52,7 +52,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
   post:
     tags:
       - Roles
@@ -77,4 +77,4 @@
           $ref: '#/definitions/Role'
     responses:
       '200':
-        description: Okay
+        description: Success

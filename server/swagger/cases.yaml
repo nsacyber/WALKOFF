@@ -9,7 +9,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 
 /cases/{case}:
   parameters:
@@ -28,7 +28,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
   post:
     tags:
       - Cases
@@ -52,7 +52,7 @@
         type: string
     responses:
       200:
-        description: OK
+        description: Success
   put:
     tags:
       - Cases
@@ -63,7 +63,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
   delete:
     tags:
       - Cases
@@ -74,7 +74,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 
 /cases/import:
   get:
@@ -95,7 +95,7 @@
         type: string
     responses:
       200:
-        description: OK
+        description: Success
 
 /cases/export:
   post:
@@ -116,7 +116,7 @@
         type: string
     responses:
       200:
-        description: OK
+        description: Success
 /cases/subscriptions:
   get:
     tags:
@@ -128,7 +128,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 /cases/{case}/events:
   get:
     tags:
@@ -146,7 +146,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 /cases/{case}/subscriptions:
   parameters:
     - name: case
@@ -164,7 +164,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
   post:
     tags:
       - Subscriptions
@@ -184,7 +184,7 @@
           $ref: '#/definitions/Subscription'
     responses:
       200:
-        description: OK
+        description: Success
   put:
     tags:
       - Subscriptions
@@ -204,7 +204,7 @@
           $ref: '#/definitions/Subscription'
     responses:
       200:
-        description: OK
+        description: Success
   delete:
     tags:
       - Subscriptions
@@ -231,4 +231,4 @@
                 type: string
     responses:
       200:
-        description: OK
+        description: Success

@@ -9,7 +9,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}':
   put:
     tags:
@@ -35,7 +35,7 @@
           $ref: '#/definitions/Playbook'
     responses:
       '200':
-        description: Okay
+        description: Success
   get:
     tags:
       - Playbooks
@@ -52,7 +52,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
   post:
     tags:
       - Playbooks
@@ -77,7 +77,7 @@
           $ref: '#/definitions/Playbook'
     responses:
       '200':
-        description: Okay
+        description: Success
   delete:
     tags:
       - Playbooks
@@ -94,7 +94,7 @@
         type: string
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/copy':
   post:
     tags:
@@ -120,7 +120,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows':
   get:
     tags:
@@ -138,7 +138,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}':
   put:
     tags:
@@ -169,7 +169,7 @@
           $ref: '#/definitions/AddWorkflow'
     responses:
       '200':
-        description: Okay
+        description: Success
   get:
     tags:
       - Workflows
@@ -191,7 +191,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
   post:
     tags:
       - Workflows
@@ -221,7 +221,7 @@
           $ref: '#/definitions/Workflow'
     responses:
       '200':
-        description: Okay
+        description: Success
   delete:
     tags:
       - Workflows
@@ -243,7 +243,7 @@
         type: string
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}/risk':
   get:
     tags:
@@ -266,7 +266,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}/copy':
   post:
     tags:
@@ -297,7 +297,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}/execute':
   post:
     tags:
@@ -320,7 +320,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}/pause':
   post:
     tags:
@@ -343,7 +343,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}/resume':
   post:
     tags:
@@ -374,7 +374,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/playbooks/{playbook_name}/workflows/{workflow_name}/save':
   post:
     tags:
@@ -397,4 +397,4 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success

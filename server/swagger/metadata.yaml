@@ -9,7 +9,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 
 /filters:
   get:
@@ -22,7 +22,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 
 /flags:
   get:
@@ -35,7 +35,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 
 /interface/{interface_name}:
   post:
@@ -60,7 +60,7 @@
           $ref: '#/definitions/RenderArgs'
     responses:
       200:
-        description: OK
+        description: Success
 
 /key:
   get:
@@ -73,7 +73,7 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success
 
 /widgets:
   get:
@@ -86,4 +86,4 @@
       - application/json
     responses:
       200:
-        description: OK
+        description: Success

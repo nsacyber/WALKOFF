@@ -9,7 +9,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 /execution/listener/execute:
   post:
     tags:
@@ -23,7 +23,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 '/execution/listener/triggers/{trigger_name}':
   put:
     tags:
@@ -49,7 +49,7 @@
           $ref: '#/definitions/Trigger'
     responses:
       '200':
-        description: Okay
+        description: Success
   get:
     tags:
       - Triggers
@@ -66,7 +66,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
   post:
     tags:
       - Triggers
@@ -91,7 +91,7 @@
           $ref: '#/definitions/Trigger'
     responses:
       '200':
-        description: Okay
+        description: Success
   delete:
     tags:
       - Triggers
@@ -108,4 +108,4 @@
         type: string
     responses:
       '200':
-        description: Okay
+        description: Success

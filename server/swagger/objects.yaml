@@ -40,6 +40,52 @@ Filename:
     properties:
       Filename:
         type: string
+Case:
+  type: object
+  required:
+    - name
+    - note
+  properties:
+#    id:
+#      type: int
+    name:
+      type: string
+    note:
+      type: string
+    #events:
+    #  type: array
+    #  items:
+    #    type: '#/descriptions/Event'
+Event:
+  type: object
+  required:
+    - timestamp
+    - event_type
+    - ancestry
+    - message
+    - note
+    - data
+  properties:
+#    id:
+#      type: int
+    timestamp:
+      type: string
+    event_type:
+      type: string
+    ancestry:
+      type: array
+      items:
+        type: string
+    message:
+      type: string
+    note:
+      type: string
+    data:
+      type: object
+#    cases:
+#      type: array
+#      items:
+#        type: '#/descriptions/Case'
 Subscription:
     type: object
     required:

@@ -9,7 +9,7 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success
 /metrics/workflows:
   get:
     tags:
@@ -21,4 +21,4 @@
       - application/json
     responses:
       '200':
-        description: Okay
+        description: Success

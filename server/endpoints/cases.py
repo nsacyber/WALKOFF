@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Blueprint, request, Response, current_app
+from flask import request, current_app
 from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
@@ -10,7 +10,6 @@ from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
 import core.config.config
 import core.config.paths
 from core.helpers import construct_workflow_name_key
-from gevent.event import Event, AsyncResult
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
