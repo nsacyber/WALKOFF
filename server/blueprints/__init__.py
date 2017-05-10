@@ -13,7 +13,7 @@ WidgetBlueprint = _BlueprintInjection
 
 def register_blueprints():
     from server.blueprints import app as app
-    from server.blueprints import widget, playbook, cases, configuration, trigger, scheduler, events, metrics, widgets
+    from server.blueprints import widget, playbook, cases, configuration, events, metrics, widgets
     __flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
     __flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
@@ -22,7 +22,6 @@ def register_blueprints():
     __flaskapp.register_blueprint(cases.cases_page, url_prefix='/cases')
     __flaskapp.register_blueprint(configuration.configurations_page, url_prefix='/configuration')
     __flaskapp.register_blueprint(events.events_page, url_prefix='/events')
-    __flaskapp.register_blueprint(scheduler.scheduler_page, url_prefix='/execution/scheduler')
     __flaskapp.register_blueprint(metrics.metrics_page, url_prefix='/metrics')
     __register_all_app_blueprints()
 

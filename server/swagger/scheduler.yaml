@@ -4,7 +4,7 @@
       - Scheduler
     summary: Starts the scheduler
     description: ''
-    operationId: server.controllers.scheduler.start_scheduler
+    operationId: server.endpoints.scheduler.start_scheduler
     produces:
       - application/json
     responses:
@@ -16,7 +16,7 @@
       - Scheduler
     summary: Stops the scheduler
     description: ''
-    operationId: server.controllers.scheduler.stop_scheduler
+    operationId: server.endpoints.scheduler.stop_scheduler
     produces:
       - application/json
     responses:
@@ -28,7 +28,7 @@
       - Scheduler
     summary: Pause the scheduler
     description: ''
-    operationId: server.controllers.scheduler.pause_scheduler
+    operationId: server.endpoints.scheduler.pause_scheduler
     produces:
       - application/json
     responses:
@@ -40,7 +40,7 @@
       - Scheduler
     summary: Resume the scheduler
     description: ''
-    operationId: server.controllers.scheduler.resume_scheduler
+    operationId: server.endpoints.scheduler.resume_scheduler
     produces:
       - application/json
     responses:
@@ -52,7 +52,7 @@
       - Scheduler
     summary: Resume the scheduler
     description: ''
-    operationId: server.controllers.scheduler.pause_scheduler_job
+    operationId: server.endpoints.scheduler.pause_job
     produces:
       - application/json
     parameters:
@@ -70,7 +70,7 @@
       - Scheduler
     summary: Resume the scheduler
     description: ''
-    operationId: server.controllers.scheduler.resume_scheduler_job
+    operationId: server.endpoints.scheduler.resume_job
     produces:
       - application/json
     parameters:
@@ -88,7 +88,7 @@
       - Scheduler
     summary: Get Scheduler Jobs
     description: ''
-    operationId: server.controllers.scheduler.get_scheduler_jobs
+    operationId: server.endpoints.scheduler.get_jobs
     produces:
       - application/json
     responses:
