@@ -18,3 +18,4 @@ build/*
 *.pem
 data/log/*.log
 server/swagger/composed_api.yaml
+node_modules/
