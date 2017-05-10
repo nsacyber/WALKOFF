@@ -28,11 +28,9 @@
   get:
     tags:
       - Events
-    summary: Edit an event note
+    summary: Get an event
     description: ''
     operationId: server.endpoints.events.get_event_note
-    consumes:
-      - text/plain
     produces:
       - application/json
     responses:
