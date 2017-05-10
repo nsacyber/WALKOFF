@@ -11,6 +11,7 @@ info:
   license:
     name: Creative-Commons
     url: 'http://creativecommons.org/licenses/by/4.0/'
+
 tags:
   - name: Apps
     description: App Management Operations
@@ -44,6 +45,7 @@ tags:
     description: Trigger Operations
   - name: System
     description: System Operations
+
 schemes:
   - http
   - https
@@ -53,19 +55,22 @@ paths:
   $ref: ./cases.yaml
   #$ref: ./configuration.yaml
   $ref: ./events.yaml
-  #$ref: ./metadata.yaml
+  $ref: ./metadata.yaml
   $ref: ./metrics.yaml
   $ref: ./playbooks.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
+
 securityDefinitions:
   AuthenticationToken:
     type: apiKey
     name: Authentication-Token
     in: header
+
 security:
   - AuthenticationToken: []
+
 definitions:
     $ref: ./objects.yaml

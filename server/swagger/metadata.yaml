@@ -2,14 +2,15 @@
   get:
     tags:
       - System
-    summary: Renders available subscription options
+    summary: Gets available subscription options
     description: ''
-    operationId: server.endpoints.metadata.display_possible_subscriptions
+    operationId: server.endpoints.metadata.get_possible_subscriptions
     produces:
       - application/json
     responses:
-      '200':
-        description: Okay
+      200:
+        description: OK
+
 /filters:
   get:
     tags:
@@ -20,8 +21,9 @@
     produces:
       - application/json
     responses:
-      '200':
-        description: Okay
+      200:
+        description: OK
+
 /flags:
   get:
     tags:
@@ -32,9 +34,10 @@
     produces:
       - application/json
     responses:
-      '200':
-        description: Okay
-'/interface/{interface_name}':
+      200:
+        description: OK
+
+/interface/{interface_name}:
   post:
     tags:
       - System
@@ -54,10 +57,11 @@
         description: Pass page and arguments to render widget.
         required: false
         schema:
-          $ref: '#/definitions/render_args'
+          $ref: '#/definitions/RenderArgs'
     responses:
-      '200':
-        description: Okay
+      200:
+        description: OK
+
 /key:
   get:
     tags:
@@ -68,8 +72,9 @@
     produces:
       - application/json
     responses:
-      '200':
-        description: Okay
+      200:
+        description: OK
+
 /widgets:
   get:
     tags:
@@ -80,5 +85,5 @@
     produces:
       - application/json
     responses:
-      '200':
-        description: Okay
+      200:
+        description: OK
