@@ -26,7 +26,7 @@ function getCases(){
             'global': false,
             'data':{},
             'headers':{"Authentication-Token":authKey},
-            'url': "/cases/",
+            'url': "/cases",
             'success': function (data) {
                 tmp = JSON.parse(data);
             }
