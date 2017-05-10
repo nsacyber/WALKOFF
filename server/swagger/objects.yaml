@@ -113,13 +113,7 @@ Workflow:
     properties:
       name:
         type: string
-      accumulated_risk:
-        type: string
       options:
-        type: object
-      steps:
         type: object
 ResumeWorkflow:
     type: string
-WorkflowText:
-    type: object

@@ -23,7 +23,7 @@ from server import app
 
 monkey.patch_all()
 
-urls = ['/', '/key', '/playbook', '/configuration', '/interface', '/execution/listener',
+urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
         '/execution/listener/triggers', '/metrics',
         '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
 
@@ -95,14 +95,14 @@ def list_all_apps_and_actions():
 
 @app.route('/filters', methods=['GET'])
 @auth_token_required
-@roles_accepted(*running_context.user_roles['/playbook'])
+@roles_accepted(*running_context.user_roles['/playbooks'])
 def display_filters():
     return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
 
 
 @app.route('/flags', methods=['GET'])
 @auth_token_required
-@roles_accepted(*running_context.user_roles['/playbook'])
+@roles_accepted(*running_context.user_roles['/playbooks'])
 def display_flags():
     core.config.config.load_function_info()
     return json.dumps({"status": "success", "flags": core.config.config.function_info['flags']})

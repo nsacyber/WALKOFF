@@ -32,7 +32,7 @@
         description: Created role object
         required: true
         schema:
-          $ref: '#/definitions/playbook'
+          $ref: '#/definitions/Playbook'
     responses:
       '200':
         description: Okay
@@ -48,12 +48,6 @@
         description: 'The name that needs to be fetched. '
         required: true
         type: string
-      - in: body
-        name: body
-        description: Created case object
-        required: true
-        schema:
-          $ref: '#/definitions/playbook'
     produces:
       - application/json
     responses:
@@ -80,7 +74,7 @@
         description: Created case object
         required: true
         schema:
-          $ref: '#/definitions/playbook'
+          $ref: '#/definitions/Playbook'
     responses:
       '200':
         description: Okay
@@ -119,7 +113,7 @@
         description: Playbook name
         required: true
         schema:
-          $ref: '#/definitions/playbook'
+          $ref: '#/definitions/Playbook'
     consumes:
       - multipart/form-data
     produces:
@@ -151,7 +145,7 @@
       - Workflows
     summary: Add a workflow
     description: ''
-    operationId: server.endpoints.workflows.create_workflow
+    operationId: server.endpoints.playbooks.create_workflow
     consumes:
       - multipart/form-data
     produces:
@@ -172,7 +166,7 @@
         description: Created role object
         required: true
         schema:
-          $ref: '#/definitions/add_workflow'
+          $ref: '#/definitions/AddWorkflow'
     responses:
       '200':
         description: Okay
@@ -181,7 +175,7 @@
       - Workflows
     summary: Get a workflow
     description: ''
-    operationId: server.endpoints.workflows.get_workflow
+    operationId: server.endpoints.playbooks.read_workflow
     parameters:
       - name: playbook_name
         in: path
@@ -203,7 +197,7 @@
       - Workflows
     summary: Update a workflow
     description: ''
-    operationId: server.endpoints.workflows.update_workflow
+    operationId: server.endpoints.playbooks.update_workflow
     consumes:
       - application/json
     produces:
@@ -224,7 +218,7 @@
         description: Created case object
         required: true
         schema:
-          $ref: '#/definitions/workflow'
+          $ref: '#/definitions/Workflow'
     responses:
       '200':
         description: Okay
@@ -233,7 +227,7 @@
       - Workflows
     summary: Remove a workflow
     description: ''
-    operationId: server.endpoints.workflows.delete_workflow
+    operationId: server.endpoints.playbooks.delete_workflow
     produces:
       - application/json
     parameters:
@@ -256,7 +250,7 @@
       - Workflows
     summary: Get a workflow's risk value
     description: ''
-    operationId: server.endpoints.workflows.read_workflow_risk
+    operationId: server.endpoints.playbooks.read_workflow_risk
     parameters:
       - name: playbook_name
         in: path
@@ -279,7 +273,7 @@
       - Workflows
     summary: Copy a workflow
     description: ''
-    operationId: server.endpoints.workflows.copy_workflow
+    operationId: server.endpoints.playbooks.copy_workflow
     parameters:
       - name: playbook_name
         in: path
@@ -296,7 +290,7 @@
         description: Created case object
         required: true
         schema:
-          $ref: '#/definitions/playbook_workflow'
+          $ref: '#/definitions/PlaybookWorkflow'
     consumes:
       - multipart/form-data
     produces:
@@ -310,7 +304,7 @@
       - Workflows
     summary: Execute a workflow
     description: ''
-    operationId: server.endpoints.workflows.execute_workflow
+    operationId: server.endpoints.playbooks.execute_workflow
     parameters:
       - name: playbook_name
         in: path
@@ -333,7 +327,7 @@
       - Workflows
     summary: Pause a workflow
     description: ''
-    operationId: server.endpoints.workflows.pause_workflow
+    operationId: server.endpoints.playbooks.pause_workflow
     parameters:
       - name: playbook_name
         in: path
@@ -356,7 +350,7 @@
       - Workflows
     summary: Resume a workflow
     description: ''
-    operationId: server.endpoints.workflows.resume_workflow
+    operationId: server.endpoints.playbooks.resume_workflow
     parameters:
       - name: playbook_name
         in: path
@@ -373,7 +367,7 @@
         description: Created case object
         required: true
         schema:
-          $ref: '#/definitions/resume_workflow'
+          $ref: '#/definitions/ResumeWorkflow'
     consumes:
       - multipart/form-data
     produces:
@@ -387,7 +381,7 @@
       - Workflows
     summary: Save a workflow
     description: ''
-    operationId: server.endpoints.workflows.save_workflow
+    operationId: server.endpoints.playbooks.save_workflow
     parameters:
       - name: playbook_name
         in: path
@@ -399,12 +393,6 @@
         description: 'The name that needs to be fetched. '
         required: true
         type: string
-      - in: body
-        name: body
-        description: Created case object
-        required: true
-        schema:
-          $ref: '#/definitions/workflow_text'
     produces:
       - application/json
     responses:

@@ -55,7 +55,7 @@ paths:
   #$ref: ./events.yaml
   #$ref: ./metadata.yaml
   #$ref: ./metrics.yaml
-  #$ref: ./playbooks.yaml
+  $ref: ./playbooks.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
   $ref: ./triggers.yaml
