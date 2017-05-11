@@ -25,6 +25,8 @@
     responses:
       200:
         description: Success
+        schema:
+          $ref: '#/definitions/Event'
   get:
     tags:
       - Events
