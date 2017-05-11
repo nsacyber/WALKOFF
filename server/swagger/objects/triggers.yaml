@@ -1,0 +1,32 @@
+Trigger:
+    type: object
+    properties:
+      name:
+        description: Name of the trigger
+        type: string
+      conditional:
+        description: String representation of a list of Flag objects
+        type: string
+      playbook:
+        description: The name of the playbook that relates to this trigger
+        type: string
+      workflow:
+        description: The name of the workflow that relates to this trigger
+        type: string
+DisplayTrigger:
+    type: object
+    properties:
+      name:
+        description: Name of the trigger
+        type: string
+      conditions:
+        description: A list of Flag objects (see Flag for further description)
+        type: array
+        items:
+          $ref: '#/definitions/Flag'
+      playbook:
+        description: The name of the playbook that relates to this trigger
+        type: string
+      workflow:
+        description: The name of the workflow that relates to this trigger
+        type: string

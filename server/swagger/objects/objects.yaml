@@ -64,30 +64,6 @@ Device:
         type: integer
       extraFields:
         type: string
-Trigger:
-    type: object
-    properties:
-      name:
-        type: string
-      conditional:
-        type: string
-      playbook:
-        type: string
-      workflow:
-        type: string
-DisplayTrigger:
-    type: object
-    properties:
-      name:
-        type: string
-      conditions:
-        type: array
-        items:
-          $ref: '#/definitions/Flag'
-      playbook:
-        type: string
-      workflow:
-        type: string
 Argument:
   type: object
   properties:
