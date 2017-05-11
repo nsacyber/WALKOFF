@@ -220,3 +220,49 @@ Workflow:
         type: object
 ResumeWorkflow:
     type: string
+ActionMetricDetails:
+  type: object
+  required: [count, avg_time]
+  properties:
+    count:
+      description: Number of times the action has been called
+      type: integer
+    avg_time:
+      description: Average execution time for the action. As a timestam format
+      type: string
+ActionMetric:
+  type: object
+  required: [name]
+  properties:
+    name:
+      description: Action name
+      type: string
+    success_metrics:
+      $ref: '#/definitions/ActionMetricDetails'
+    error_metrics:
+      $ref: '#/definitions/ActionMetricDetails'
+AppMetricDetails:
+  type: object
+  required: [name, count, actions]
+  properties:
+    name:
+      description: Name of app
+      type: string
+    count:
+      description: Number of times the app has been used
+      type: integer
+    actions:
+      description: Metrics of the app's actions
+      type: array
+      items:
+        $ref: '#/definitions/ActionMetric'
+AppMetrics:
+  type: object
+  required: [apps]
+  properties:
+    apps:
+      description: Metrics of apps
+      type: array
+      items:
+        $ref: '#/definitions/AppMetricDetails'
+

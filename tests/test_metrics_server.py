@@ -23,19 +23,29 @@ class MetricsServerTest(ServerTestCase):
         test1 = {'app1': {'actions': {'action1': {'success': {'count': 0,
                                                               'avg_time': timedelta(100, 0, 1)}},
                                       'action2': {'error': {'count': 2,
-                                                            'avg_time': timedelta(0, 0, 1000)}}}},
+                                                            'avg_time': timedelta(0, 0, 1000)}}},
+                          'count': 2},
                  'app2': {'actions': {'action1': {'success': {'count': 0,
                                                               'avg_time': timedelta(0, 100, 1)},
                                                   'error': {'count': 100,
-                                                            'avg_time': timedelta(1, 100, 500)}}}}}
-        expected_json = {'app1': {'actions': {'action1': {'success': {'count': 0,
-                                                                      'avg_time': '100 days, 0:00:00.000001'}},
-                                              'action2': {'error': {'count': 2,
-                                                                    'avg_time': '0:00:00.001000'}}}},
-                         'app2': {'actions': {'action1': {'success': {'count': 0,
-                                                                      'avg_time': '0:01:40.000001'},
-                                                          'error': {'count': 100,
-                                                                    'avg_time': '1 day, 0:01:40.000500'}}}}}
+                                                            'avg_time': timedelta(1, 100, 500)}}},
+                          'count': 100}}
+        expected_json = {'apps': [{'count': 100,
+                                   'name': 'app2',
+                                   'actions': [{'error_metrics': {'count': 100,
+                                                                  'avg_time': '1 day, 0:01:40.000500'},
+                                                'success_metrics': {'count': 0,
+                                                                    'avg_time': '0:01:40.000001'},
+                                                'name': 'action1'}]},
+                                  {'count': 2,
+                                   'name': 'app1',
+                                   'actions': [{'success_metrics': {'count': 0,
+                                                                    'avg_time': '100 days, 0:00:00.000001'},
+                                                'name': 'action1'},
+                                               {'error_metrics': {'count': 2,
+                                                                  'avg_time': '0:00:00.001000'},
+                                                'name': 'action2'}]}]}
+
         metrics.app_metrics = test1
         self.assertDictEqual(_convert_action_time_averages(), expected_json)
 
@@ -48,14 +58,18 @@ class MetricsServerTest(ServerTestCase):
                                'avg_time': timedelta(0, 100, 1)},
                  'worfklow4': {'count': 100,
                                'avg_time': timedelta(1, 100, 500)}}
-        expected_json = {'worfklow1': {'count': 0,
-                                       'avg_time': '100 days, 0:00:00.000001'},
-                         'worfklow2': {'count': 2,
-                                       'avg_time': '0:00:00.001000'},
-                         'worfklow3': {'count': 0,
-                                       'avg_time': '0:01:40.000001'},
-                         'worfklow4': {'count': 100,
-                                       'avg_time': '1 day, 0:01:40.000500'}}
+        expected_json = {'workflows': [{'count': 100,
+                                        'avg_time': '1 day, 0:01:40.000500',
+                                        'name': 'worfklow4'},
+                                       {'count': 2,
+                                        'avg_time': '0:00:00.001000',
+                                        'name': 'worfklow2'},
+                                       {'count': 0,
+                                        'avg_time': '0:01:40.000001',
+                                        'name': 'worfklow3'},
+                                       {'count': 0,
+                                        'avg_time': '100 days, 0:00:00.000001',
+                                        'name': 'worfklow1'}]}
         metrics.workflow_metrics = test1
         self.assertDictEqual(_convert_workflow_time_averages(), expected_json)
 

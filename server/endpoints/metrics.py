@@ -5,30 +5,45 @@ from copy import deepcopy
 
 def get_app_metrics():
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
         return _convert_action_time_averages()
+
     return __func()
+
 
 def get_workflow_metrics():
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
         return _convert_workflow_time_averages()
+
     return __func()
 
+
 def _convert_action_time_averages():
-    ret = deepcopy(metrics.app_metrics)
-    for app_name, app in ret.items():
+    apps_json = []
+    for app_name, app in metrics.app_metrics.items():
+        app_json = {"name": app_name, "count": app['count']}
+        actions = []
         for action_name, action in app['actions'].items():
+            action_json = {"name": action_name}
             if 'success' in action:
-                action['success']['avg_time'] = str(action['success']['avg_time'])
+                action_json["success_metrics"] = {"count": action['success']['count'],
+                                                  "avg_time": str(action['success']['avg_time'])}
             if 'error' in action:
-                action['error']['avg_time'] = str(action['error']['avg_time'])
-    return ret
+                action_json["error_metrics"] = {"count": action['error']['count'],
+                                                "avg_time": str(action['error']['avg_time'])}
+            actions.append(action_json)
+        app_json["actions"] = actions
+        apps_json.append(app_json)
+    return {"apps": apps_json}
+
 
 def _convert_workflow_time_averages():
-    ret = deepcopy(metrics.workflow_metrics)
-    for workflow in ret.values():
-        workflow['avg_time'] = str(workflow['avg_time'])
-    return ret
+    return {"workflows": [{"name": workflow_name,
+                           "count": workflow["count"],
+                           "avg_time": str(workflow["avg_time"])}
+                          for workflow_name, workflow in metrics.workflow_metrics.items()]}
