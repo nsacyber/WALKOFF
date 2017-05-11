@@ -4,6 +4,7 @@ from flask_security import roles_accepted
 
 def start_scheduler():
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         status = running_context.controller.start()
@@ -11,8 +12,10 @@ def start_scheduler():
         return {"status": status}
     return __func()
 
+
 def stop_scheduler():
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         status = running_context.controller.stop()
@@ -20,8 +23,10 @@ def stop_scheduler():
         return {"status": status}
     return __func()
 
+
 def pause_scheduler():
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         status = running_context.controller.pause()
@@ -29,8 +34,10 @@ def pause_scheduler():
         return {"status": status}
     return __func()
 
+
 def resume_scheduler():
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         status = running_context.controller.resume()
@@ -38,8 +45,10 @@ def resume_scheduler():
         return {"status": status}
     return __func()
 
+
 def pause_job(job_id):
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         running_context.controller.pause_job(job_id)
@@ -48,7 +57,9 @@ def pause_job(job_id):
     return __func()
 
 def resume_job(job_id):
+
     from server.context import running_context
+
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         running_context.controller.resume_job(job_id)
@@ -56,9 +67,11 @@ def resume_job(job_id):
         return {"status": "Job Resumed"}
     return __func()
 
+
 def read_all_jobs():
     from server.context import running_context
-    #@roles_accepted(*running_context.user_roles['/execution/scheduler'])
+
+    # @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         jobs = []
         for job in running_context.controller.get_scheduled_jobs():
