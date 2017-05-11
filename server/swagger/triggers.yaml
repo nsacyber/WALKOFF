@@ -10,6 +10,13 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            triggers:
+              type: array
+              items:
+                $ref: '#/definitions/DisplayTrigger'
 /execution/listener/execute:
   post:
     tags:
@@ -25,6 +32,12 @@
       '200':
         description: Success
 '/execution/listener/triggers/{trigger_name}':
+  parameters:
+    - name: trigger_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
   put:
     tags:
       - Triggers
@@ -36,11 +49,6 @@
     produces:
       - application/json
     parameters:
-      - name: trigger_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created trigger object
@@ -56,17 +64,16 @@
     summary: Get a trigger
     description: ''
     operationId: server.endpoints.triggers.read_trigger
-    parameters:
-      - name: trigger_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     produces:
       - application/json
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            trigger:
+              $ref: '#/definitions/DisplayTrigger'
   post:
     tags:
       - Triggers
@@ -78,11 +85,6 @@
     produces:
       - application/json
     parameters:
-      - name: trigger_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created trigger object
@@ -100,12 +102,6 @@
     operationId: server.endpoints.triggers.delete_trigger
     produces:
       - application/json
-    parameters:
-      - name: trigger_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
     responses:
       '200':
         description: Success
