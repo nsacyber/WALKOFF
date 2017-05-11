@@ -10,7 +10,20 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            users:
+              type: array
+              items:
+                type: string
 '/users/{user_name}':
+  parameters:
+    - name: user_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
   put:
     tags:
       - Users
@@ -22,11 +35,6 @@
     produces:
       - application/json
     parameters:
-      - name: user_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created user object
@@ -42,17 +50,16 @@
     summary: Get a user
     description: ''
     operationId: server.endpoints.users.read_user
-    parameters:
-      - name: user_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     produces:
       - application/json
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            user:
+              $ref: '#/definitions/DisplayUser'
   post:
     tags:
       - Users
@@ -64,20 +71,20 @@
     produces:
       - application/json
     parameters:
-      - name: user_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created user object
         required: true
         schema:
-          $ref: '#/definitions/User'
+          $ref: '#/definitions/EditUser'
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            user:
+              $ref: '#/definitions/DisplayUser'
   delete:
     tags:
       - Users
@@ -88,12 +95,6 @@
       - multipart/form-data
     produces:
       - application/json
-    parameters:
-      - name: user_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
     responses:
       '200':
         description: Success
