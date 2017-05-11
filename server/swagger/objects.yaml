@@ -309,4 +309,12 @@ AppMetrics:
       type: array
       items:
         $ref: '#/definitions/AppMetricDetails'
-
+Job:
+  type: object
+  properties:
+    name:
+      description: Job name
+      type: string
+    id:
+      description: Job ID
+      type: string

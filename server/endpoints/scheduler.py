@@ -1,4 +1,3 @@
-import json
 from flask import current_app
 from flask_security import roles_accepted
 
@@ -61,5 +60,8 @@ def get_jobs():
     from server.context import running_context
     #@roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
-        return running_context.controller.get_scheduled_jobs()
+        jobs = []
+        for job in running_context.controller.get_scheduled_jobs():
+            jobs.append({ "name": job.name, "id": job.id })
+        return {"jobs": jobs}
     return __func()

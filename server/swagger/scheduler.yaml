@@ -10,6 +10,12 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
 /execution/scheduler/stop:
   post:
     tags:
@@ -22,6 +28,12 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
 /execution/scheduler/pause:
   post:
     tags:
@@ -34,6 +46,12 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
 /execution/scheduler/resume:
   post:
     tags:
@@ -46,11 +64,17 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
 '/execution/scheduler/{job_id}/pause':
   post:
     tags:
       - Scheduler
-    summary: Resume the scheduler
+    summary: Pause a specific job
     description: ''
     operationId: server.endpoints.scheduler.pause_job
     produces:
@@ -64,11 +88,17 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of job
+              type: string
 '/execution/scheduler/{job_id}/resume':
   post:
     tags:
       - Scheduler
-    summary: Resume the scheduler
+    summary: Resume a specific job
     description: ''
     operationId: server.endpoints.scheduler.resume_job
     produces:
@@ -82,6 +112,12 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of job
+              type: string
 /execution/scheduler/jobs:
   get:
     tags:
@@ -94,3 +130,8 @@
     responses:
       '200':
         description: Success
+        schema:
+          type: object
+          properties:
+            jobs:
+              $ref: '#/definitions/Job'
