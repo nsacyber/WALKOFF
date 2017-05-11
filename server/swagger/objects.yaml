@@ -60,6 +60,26 @@ Filename:
     properties:
       Filename:
         type: string
+ActionArgument:
+  type: object
+  required: [name, type]
+  properties:
+    name:
+      type: string
+    type:
+      type: string
+Action:
+  type: object
+  required: [args]
+  properties:
+    description:
+      description: description of the action
+      type: string
+    args:
+      description: accepted arguments to the action
+      type: array
+      items:
+        $ref: '#/definitions/ActionArgument'
 Case:
   type: object
   required: [name, note]

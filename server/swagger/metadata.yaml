@@ -60,6 +60,13 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              description: All the available filters. Form of '{filter_name -> Action}'
+              type: object
 
 /flags:
   get:
@@ -73,6 +80,13 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          required: [flags]
+          properties:
+            filters:
+              description: All the available flags. Form of '{flag_name -> Action}'
+              type: object
 
 /interface/{interface_name}:
   post:
@@ -111,6 +125,13 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          required: [auth_token]
+          properties:
+            auth_token:
+              description: API Authentication Token
+              type: string
 
 /widgets:
   get:
@@ -124,3 +145,6 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'
