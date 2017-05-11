@@ -2,7 +2,7 @@ from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 
 
-def edit_event_note(event_id, note):
+def update_event_note(event_id, note):
     from server.context import running_context
 
     @auth_token_required
@@ -18,7 +18,7 @@ def edit_event_note(event_id, note):
     return __func()
 
 
-def get_event(event_id):
+def read_event(event_id):
     from server.context import running_context
 
     @auth_token_required

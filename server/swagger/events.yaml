@@ -10,7 +10,7 @@
       - Events
     summary: Edit an event note
     description: ''
-    operationId: server.endpoints.events.edit_event_note
+    operationId: server.endpoints.events.update_event_note
     consumes:
       - application/json
     produces:
@@ -36,7 +36,7 @@
       - Events
     summary: Get an event
     description: ''
-    operationId: server.endpoints.events.get_event
+    operationId: server.endpoints.events.read_event
     produces:
       - application/json
     responses:
