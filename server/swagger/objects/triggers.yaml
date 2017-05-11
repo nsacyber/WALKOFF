@@ -1,5 +1,6 @@
 Trigger:
     type: object
+    required: [conditional, playbook, workflow]
     properties:
       name:
         description: Name of the trigger

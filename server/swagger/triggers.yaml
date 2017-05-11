@@ -4,7 +4,7 @@
       - Triggers
     summary: Render triggers
     description: ''
-    operationId: server.endpoints.triggers.get_triggers
+    operationId: server.endpoints.triggers.read_all_triggers
     produces:
       - application/json
     responses:
