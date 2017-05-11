@@ -10,7 +10,7 @@ from core import helpers
 from core.helpers import combine_dicts
 
 
-def get_possible_subscriptions():
+def read_all_possible_subscriptions():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/cases'])
@@ -41,7 +41,7 @@ def get_app_actions():
     return __func()
 
 
-def get_filters():
+def read_all_filters():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
@@ -51,7 +51,7 @@ def get_filters():
     return __func()
 
 
-def get_flags():
+def read_all_flags():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
@@ -91,7 +91,7 @@ def login_info():
     return __func()
 
 
-def get_widgets():
+def read_all_widgets():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/apps'])

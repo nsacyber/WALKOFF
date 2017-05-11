@@ -2,9 +2,9 @@
   get:
     tags:
       - System
-    summary: Gets available subscription options
+    summary: Read all available subscription options
     description: ''
-    operationId: server.endpoints.metadata.get_possible_subscriptions
+    operationId: server.endpoints.metadata.read_all_possible_subscriptions
     produces:
       - application/json
     responses:
@@ -52,9 +52,9 @@
   get:
     tags:
       - System
-    summary: Displays all filters
+    summary: Read all filters
     description: ''
-    operationId: server.endpoints.metadata.get_filters
+    operationId: server.endpoints.metadata.read_all_filters
     produces:
       - application/json
     responses:
@@ -72,9 +72,9 @@
   get:
     tags:
       - System
-    summary: Displays all flags
+    summary: Read all flags
     description: ''
-    operationId: server.endpoints.metadata.get_flags
+    operationId: server.endpoints.metadata.read_all_flags
     produces:
       - application/json
     responses:
@@ -117,7 +117,7 @@
   get:
     tags:
       - System
-    summary: Displays api key
+    summary: Read api key
     description: ''
     operationId: server.endpoints.metadata.login_info
     produces:
@@ -137,9 +137,9 @@
   get:
     tags:
       - System
-    summary: Displays all widgets
+    summary: Read all widgets
     description: ''
-    operationId: server.endpoints.metadata.get_widgets
+    operationId: server.endpoints.metadata.read_all_widgets
     produces:
       - application/json
     responses:
