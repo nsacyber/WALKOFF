@@ -2,9 +2,9 @@
   get:
     tags:
       - Cases
-    summary: Get all cases
+    summary: Read all cases
     description: ''
-    operationId: server.endpoints.cases.display_cases
+    operationId: server.endpoints.cases.read_all_cases
     produces:
       - application/json
     responses:
@@ -17,7 +17,6 @@
               type: array
               items:
                 $ref: '#/definitions/Case'
-
 /cases/{case}:
   parameters:
     - name: case
@@ -25,12 +24,26 @@
       description: The name of the case
       required: true
       type: string
+  put:
+    tags:
+      - Cases
+    summary: Create a case
+    description: ''
+    operationId: server.endpoints.cases.create_case
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
   get:
     tags:
       - Cases
-    summary: Get a case
+    summary: Read a case
     description: ''
-    operationId: server.endpoints.cases.get_case
+    operationId: server.endpoints.cases.read_case
     produces:
       - application/json
     responses:
@@ -46,7 +59,7 @@
       - Cases
     summary: Update a case
     description: ''
-    operationId: server.endpoints.cases.edit_case
+    operationId: server.endpoints.cases.update_case
     consumes:
       - application/x-www-form-urlencoded
     produces:
@@ -72,21 +85,6 @@
               type: array
               items:
                 $ref: '#/definitions/Case'
-  put:
-    tags:
-      - Cases
-    summary: Add a case
-    description: ''
-    operationId: server.endpoints.cases.add_case
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-
   delete:
     tags:
       - Cases
@@ -98,7 +96,6 @@
     responses:
       200:
         description: Success
-
 /cases/import:
   get:
     tags:
@@ -119,7 +116,6 @@
     responses:
       200:
         description: Success
-
 /cases/export:
   post:
     tags:
@@ -144,9 +140,9 @@
   get:
     tags:
       - Subscriptions
-    summary: Gets all subscriptions for all cases
+    summary: Read all subscriptions for all cases
     description: ''
-    operationId: server.endpoints.cases.display_subscriptions
+    operationId: server.endpoints.cases.read_all_subscriptions
     produces:
       - application/json
     responses:
@@ -159,9 +155,9 @@
   get:
     tags:
       - Cases
-    summary: Get case events
+    summary: Read all case events
     description: ''
-    operationId: server.endpoints.cases.get_events
+    operationId: server.endpoints.cases.read_all_events
     parameters:
       - name: case
         in: path
@@ -185,12 +181,35 @@
       description: The name of the case
       required: true
       type: string
+  put:
+    tags:
+      - Subscriptions
+    summary: Create a subscription
+    description: ''
+    operationId: server.endpoints.cases.create_subscription
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: element
+        description: Created subscription object
+        required: true
+        schema:
+          $ref: '#/definitions/SubscriptionChange'
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
   get:
     tags:
       - Subscriptions
-    summary: Get a subscription
+    summary: Read a subscription
     description: ''
-    operationId: server.endpoints.cases.get_subscription
+    operationId: server.endpoints.cases.read_subscription
     produces:
       - application/json
     responses:
@@ -222,33 +241,10 @@
         schema:
           type: object
           description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-  put:
-    tags:
-      - Subscriptions
-    summary: Add a subscription
-    description: ''
-    operationId: server.endpoints.cases.add_subscription
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: element
-        description: Created subscription object
-        required: true
-        schema:
-          $ref: '#/definitions/SubscriptionChange'
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
   delete:
     tags:
       - Subscriptions
-    summary: Remove a subscription
+    summary: Delete a subscription
     description: ''
     operationId: server.endpoints.cases.delete_subscription
     consumes:

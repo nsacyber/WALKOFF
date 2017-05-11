@@ -14,7 +14,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
 
-def display_cases():
+def read_all_cases():
     from server.flaskserver import running_context
 
     @auth_token_required
@@ -24,7 +24,7 @@ def display_cases():
     return __func()
 
 
-def add_case(case):
+def create_case(case):
     from server.flaskserver import running_context
 
     @auth_token_required
@@ -41,7 +41,7 @@ def add_case(case):
     return __func()
 
 
-def get_case(case):
+def read_case(case):
     from server.flaskserver import running_context
 
     @auth_token_required
@@ -56,27 +56,27 @@ def get_case(case):
     return __func()
 
 
-def edit_case(case):
+def update_case(case):
     from server.flaskserver import running_context
 
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         form = forms.EditCaseForm(request.form)
-        if form.validate():
-            if form.name.data:
-                rename_case(case, form.name.data)
-                case_obj = running_context.CaseSubscription.query.filter_by(name=case).first()
-                if case_obj:
-                    case_obj.name = form.name.data
-                    running_context.db.session.commit()
+        if form.name.data:
+            rename_case(case, form.name.data)
+            case_obj = running_context.CaseSubscription.query.filter_by(name=case).first()
+            if case_obj:
+                case_obj.name = form.name.data
+                running_context.db.session.commit()
 
-                if form.note.data:
-                    case_database.case_db.edit_case_note(form.name.data, form.note.data)
-                current_app.logger.debug('Case name changed from {0} to {1}'.format(case, form.name.data))
-            elif form.note.data:
-                case_database.case_db.edit_case_note(case, form.note.data)
-            return case_database.case_db.cases_as_json()
+            if form.note.data:
+                case_database.case_db.edit_case_note(form.name.data, form.note.data)
+            current_app.logger.debug('Case name changed from {0} to {1}'.format(case, form.name.data))
+        #TODO: YAML says that name AND note are required...is this second branch necessary?
+        elif form.note.data:
+            case_database.case_db.edit_case_note(case, form.note.data)
+        return case_database.case_db.cases_as_json()
     return __func()
 
 
@@ -147,7 +147,7 @@ def export_cases():
     return __func()
 
 
-def display_subscriptions():
+def read_all_subscriptions():
     from server.flaskserver import running_context
 
     @auth_token_required
@@ -157,7 +157,7 @@ def display_subscriptions():
     return __func()
 
 
-def get_events(case):
+def read_all_events(case):
     from server.flaskserver import running_context
 
     @auth_token_required
@@ -168,7 +168,25 @@ def get_events(case):
     return __func()
 
 
-def get_subscription(case):
+def create_subscription(case, element):
+    from server.flaskserver import running_context
+
+    @auth_token_required
+    @roles_accepted(*running_context.user_roles['/cases'])
+    def __func():
+        events = element['events']
+        if len(element['ancestry']) == 1 and events:
+            events = convert_scheduler_events(events)
+        converted_ancestry = convert_ancestry(element['ancestry'])
+        case_subscription.add_subscription(case, converted_ancestry, events)
+        running_context.CaseSubscription.update(case)
+        running_context.db.session.commit()
+        current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
+        return case_subscription.subscriptions_as_json()
+    return __func()
+
+
+def read_subscription(case):
     from server.flaskserver import running_context
 
     @auth_token_required
@@ -229,24 +247,6 @@ def update_subscription(case, element):
                                      '{0} to {1}'.format(ancestry, element['events']))
             return {"status": "Error occurred while editing subscription"}
     return __func(element)
-
-
-def add_subscription(case, element):
-    from server.flaskserver import running_context
-
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
-        events = element['events']
-        if len(element['ancestry']) == 1 and events:
-            events = convert_scheduler_events(events)
-        converted_ancestry = convert_ancestry(element['ancestry'])
-        case_subscription.add_subscription(case, converted_ancestry, events)
-        running_context.CaseSubscription.update(case)
-        running_context.db.session.commit()
-        current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
-        return case_subscription.subscriptions_as_json()
-    return __func()
 
 
 def delete_subscription(case, ancestry):
