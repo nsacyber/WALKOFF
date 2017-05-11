@@ -122,9 +122,9 @@
   get:
     tags:
       - Scheduler
-    summary: Get Scheduler Jobs
+    summary: Read all Scheduler Jobs
     description: ''
-    operationId: server.endpoints.scheduler.get_jobs
+    operationId: server.endpoints.scheduler.read_all_jobs
     produces:
       - application/json
     responses:

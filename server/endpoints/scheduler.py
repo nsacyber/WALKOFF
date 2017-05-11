@@ -56,7 +56,7 @@ def resume_job(job_id):
         return {"status": "Job Resumed"}
     return __func()
 
-def get_jobs():
+def read_all_jobs():
     from server.context import running_context
     #@roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
