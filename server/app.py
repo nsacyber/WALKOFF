@@ -81,13 +81,14 @@ app = create_app()
 def create_user():
     from server.context import running_context
     from . import database
+    from server import flaskserver
 
     running_context.db.create_all()
 
     if not database.User.query.first():
         admin_role = running_context.user_datastore.create_role(name='admin',
                                                                 description='administrator',
-                                                                pages=database.default_urls)
+                                                                pages=flaskserver.default_urls)
 
         u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
         running_context.user_datastore.add_role_to_user(u, admin_role)
