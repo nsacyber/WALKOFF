@@ -116,13 +116,36 @@ SubscriptionChange:
     required: [ancestry, events]
     properties:
       ancestry:
+        description: The ancestry of the execution element to modify
         type: array
         items:
           type: string
       events:
+        description: The list of events to subscribe to
         type: array
         items:
           type: string
+Subscription:
+  type: object
+  required: [events, subscriptions]
+  properties:
+    events:
+      description: A list of events subscribed to
+      type: array
+      items:
+        type: string
+    subscriptions:
+      description: Subscriptions for this element's sub-elements. Form of '{<sub-element-name> -> subscriptions}'
+      type: object
+
+CaseSubscription:
+  type: object
+  required: [subscriptions]
+  properties:
+    subscriptions:
+      description: The subscriptions in the case Form of '{controllerName -> subscriptions}'
+      type: object
+
 Device:
     type: object
     properties:

@@ -83,6 +83,10 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
+
   delete:
     tags:
       - Cases
@@ -148,6 +152,9 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
 /cases/{case}/events:
   get:
     tags:
@@ -166,6 +173,11 @@
     responses:
       200:
         description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Event'
+
 /cases/{case}/subscriptions:
   parameters:
     - name: case
@@ -184,6 +196,9 @@
     responses:
       200:
         description: Success
+        schema:
+          description: The subscriptions of the case
+          $ref: '#definitions/CaseSubscription'
   post:
     tags:
       - Subscriptions
@@ -204,6 +219,9 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
   put:
     tags:
       - Subscriptions
@@ -224,6 +242,9 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
   delete:
     tags:
       - Subscriptions
