@@ -2,9 +2,9 @@
   get:
     tags:
       - Roles
-    summary: Get all roles
+    summary: Read all roles
     description: ''
-    operationId: server.endpoints.roles.get_roles
+    operationId: server.endpoints.roles.read_all_roles
     produces:
       - application/json
     responses:
