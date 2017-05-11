@@ -123,12 +123,3 @@ Workflow:
         type: object
 ResumeWorkflow:
     type: string
-Job:
-  type: object
-  properties:
-    name:
-      description: Job name
-      type: string
-    id:
-      description: Job ID
-      type: string
