@@ -12,7 +12,7 @@
     description: ''
     operationId: server.endpoints.events.edit_event_note
     consumes:
-      - text/plain
+      - application/json
     produces:
       - application/json
     parameters:
@@ -21,7 +21,11 @@
         description: Note to add to the case
         required: true
         schema:
-          type: string
+          type: object
+          required: [note]
+          properties:
+            note:
+              type: string
     responses:
       200:
         description: Success

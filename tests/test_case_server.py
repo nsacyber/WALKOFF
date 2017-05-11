@@ -974,16 +974,18 @@ class TestCaseServer(ServerTestCase):
         expected_event = altered_event[0].as_json()
         expected_event['note'] = 'Note1'
 
-        data = 'Note1'
-        response = self.app.post('/events/{0}'.format(smallest_id), data=data, headers=self.headers)
+        data = {'note': 'Note1'}
+        response = self.app.post('/events/{0}'.format(smallest_id), data=json.dumps(data), headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_event)
 
         expected_event['note'] = 'Note2'
 
-        data = 'Note2'
-        response = self.app.post('/events/{0}'.format(smallest_id), data=data, headers=self.headers)
+        data = {'note': 'Note2'}
+        response = self.app.post('/events/{0}'.format(smallest_id), data=json.dumps(data), headers=self.headers,
+                                 content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_event)
@@ -1016,4 +1018,4 @@ class TestCaseServer(ServerTestCase):
 
         data = {"note": 'Note2'}
         self.post_with_status_check('/events/{0}'.format(invalid_id), 'invalid event',
-                                    data=data, headers=self.headers)
+                                    data=json.dumps(data), headers=self.headers, content_type='application/json')
