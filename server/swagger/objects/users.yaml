@@ -1,0 +1,39 @@
+User:
+    type: object
+    properties:
+      username:
+        description: Username or email of the user
+        type: string
+      password:
+        description: Password for the user
+        type: string
+      role:
+        description: A list of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+        type: array
+        items:
+          type: string
+EditUser:
+    type: object
+    properties:
+      password:
+        description: New password for the user
+        type: string
+      role:
+        description: New list of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+        type: array
+        items:
+          type: string
+DisplayUser:
+    type: object
+    properties:
+      username:
+        description: Username or email of the user
+        type: string
+      role:
+        description: List of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+        type: array
+        items:
+          type: string
+      active:
+        description: A boolean displaying whether or not a user is currently active
+        type: string

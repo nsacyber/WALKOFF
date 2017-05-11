@@ -1,34 +1,3 @@
-User:
-    type: object
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-      role:
-        type: array
-        items:
-          type: string
-EditUser:
-    type: object
-    properties:
-      password:
-        type: string
-      role:
-        type: array
-        items:
-          type: string
-DisplayUser:
-    type: object
-    properties:
-      username:
-        type: string
-      role:
-        type: array
-        items:
-          type: string
-      active:
-        type: string
 Role:
     type: object
     properties:
@@ -80,8 +49,6 @@ Action:
       type: array
       items:
         $ref: '#/definitions/ActionArgument'
-
-
 Device:
     type: object
     properties:
