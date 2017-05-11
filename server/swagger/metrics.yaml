@@ -2,9 +2,9 @@
   get:
     tags:
       - Metrics
-    summary: get app usage metrics
+    summary: Read app usage metrics
     description: ''
-    operationId: server.endpoints.metrics.get_app_metrics
+    operationId: server.endpoints.metrics.read_app_metrics
     produces:
       - application/json
     responses:
@@ -14,9 +14,9 @@
   get:
     tags:
       - Metrics
-    summary: Get Workflow Metrics
+    summary: Read Workflow Metrics
     description: ''
-    operationId: server.endpoints.metrics.get_workflow_metrics
+    operationId: server.endpoints.metrics.read_workflow_metrics
     produces:
       - application/json
     responses:

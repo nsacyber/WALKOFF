@@ -1,9 +1,8 @@
 from flask_security import roles_accepted
 import server.metrics as metrics
-from copy import deepcopy
 
 
-def get_app_metrics():
+def read_app_metrics():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/metrics'])
@@ -13,7 +12,7 @@ def get_app_metrics():
     return __func()
 
 
-def get_workflow_metrics():
+def read_workflow_metrics():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/metrics'])
