@@ -76,4 +76,8 @@ definitions:
     $ref: ./objects/objects.yaml
     $ref: ./objects/cases.yaml
     $ref: ./objects/metrics.yaml
+    $ref: ./objects/users.yaml
+    $ref: ./objects/triggers.yaml
+    $ref: ./objects/scheduler.yaml
+    $ref: ./objects/roles.yaml
 

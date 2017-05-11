@@ -11,12 +11,10 @@
       '200':
         description: Success
         schema:
-          type: object
-          properties:
-            users:
-              type: array
-              items:
-                type: string
+          description: A list of usernames
+          type: array
+          items:
+            type: string
 '/users/{user_name}':
   parameters:
     - name: user_name

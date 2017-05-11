@@ -10,7 +10,18 @@
     responses:
       '200':
         description: Success
+        schema:
+          description: A list of roles
+          type: array
+          items:
+            type: string
 '/roles/{role_name}':
+  parameters:
+    - name: role_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
   put:
     tags:
       - Roles
@@ -22,11 +33,6 @@
     produces:
       - application/json
     parameters:
-      - name: role_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created role object
@@ -42,17 +48,13 @@
     summary: Get a role
     description: ''
     operationId: server.endpoints.roles.read_role
-    parameters:
-      - name: role_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     produces:
       - application/json
     responses:
       '200':
         description: Success
+        schema:
+          $ref: '#/definitions/Role'
   post:
     tags:
       - Roles
@@ -64,17 +66,14 @@
     produces:
       - application/json
     parameters:
-      - name: role_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created role object
         required: true
         schema:
-          $ref: '#/definitions/Role'
+          $ref: '#/definitions/EditRole'
     responses:
       '200':
         description: Success
+        schema:
+          $ref: '#/definitions/Role'

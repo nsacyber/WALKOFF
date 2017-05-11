@@ -1,0 +1,18 @@
+Role:
+    type: object
+    properties:
+      name:
+        description: Name of the role
+        type: string
+      description:
+        description: Description of the role
+        type: string
+EditRole:
+    type: object
+    properties:
+      name:
+        description: Name of the role
+        type: string
+      pages:
+        description: A string representation of a list of pages that a user with this role can access
+        type: string

@@ -1,12 +1,3 @@
-Role:
-    type: object
-    properties:
-      description:
-        type: string
-      pages:
-        type: array
-        items:
-          type: string
 ConfigValue:
     type: object
     properties:
