@@ -2,9 +2,9 @@
   get:
     tags:
       - Users
-    summary: Get all users
+    summary: Read all users
     description: ''
-    operationId: server.endpoints.users.get_users
+    operationId: server.endpoints.users.read_all_users
     produces:
       - application/json
     responses:
