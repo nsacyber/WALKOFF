@@ -22,23 +22,19 @@ def read_and_indent(filename, indent):
 
 
 def compose_yamls():
-    yaml_files = os.listdir(paths.swagger_apis)
-    yaml_file_lookup = {}
-    for api_yaml_file in yaml_files:
-        with open(os.path.join(paths.swagger_apis, api_yaml_file), 'r') as yaml_file:
-            yaml_file_lookup['./{0}'.format(api_yaml_file)] = yaml_file.read()
     with open(os.path.join(paths.swagger_apis, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
-        for line in api_yaml:
+        for line_num, line in enumerate(api_yaml):
             if line.lstrip().startswith('$ref:'):
                 split_line = line.split('$ref:')
                 reference = split_line[1].strip()
                 indentation = split_line[0].count('  ')
-                if reference in yaml_file_lookup:
+                try:
                     final_yaml.extend(read_and_indent(os.path.join(paths.swagger_apis, reference), indentation))
                     final_yaml.append('\n')
-                else:
-                    logger.error('Could not find referenced YAML file {0}'.format(reference))
+                except (IOError, OSError):
+                    logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
+                                                                                                      line_num))
             else:
                 final_yaml.append(line)
     with open(os.path.join(paths.swagger_apis, 'composed_api.yaml'), 'w') as composed_yaml:
