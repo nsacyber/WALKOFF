@@ -7,7 +7,8 @@ import core.config.paths
 
 def config_values(key):
     from server.context import running_context
-    from server.flaskserver import current_user, write_playbook_to_file
+    from server.flaskserver import current_user
+
     @roles_accepted(*running_context.user_roles['/configuration'])
     def __func():
         if current_user.is_authenticated and key:
@@ -24,9 +25,11 @@ def config_values(key):
             return {str(key): "Error: user is not authenticated or key is empty"}
     return __func()
 
+
 def set_configuration():
     from server.context import running_context
     from server.flaskserver import current_user, write_playbook_to_file
+
     @roles_accepted(*running_context.user_roles['/configuration'])
     def __func():
         if current_user.is_authenticated:

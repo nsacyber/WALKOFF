@@ -30,12 +30,14 @@
       - Events
     summary: Get an event
     description: ''
-    operationId: server.endpoints.events.get_event_note
+    operationId: server.endpoints.events.get_event
     produces:
       - application/json
     responses:
       200:
         description: Success
+        schema:
+          $ref: '#/definitions/Event'
 
 #/events:
 #    get:

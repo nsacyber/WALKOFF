@@ -42,55 +42,58 @@ Filename:
         type: string
 Case:
   type: object
-  required:
-    - name
-    - note
+  required: [name, note]
   properties:
-#    id:
-#      type: int
+    id:
+      description: Unique identifier for the case
+      type: integer
     name:
+      description: Name of the case
       type: string
     note:
+      description: A user-created note attached to the event
       type: string
-    #events:
-    #  type: array
-    #  items:
-    #    type: '#/descriptions/Event'
+    events:
+      description: The events which are logged to this case
+      type: array
+      items:
+        $ref: '#/definitions/Event'
 Event:
   type: object
-  required:
-    - timestamp
-    - event_type
-    - ancestry
-    - message
-    - note
-    - data
+  required: [timestamp, event_type, ancestry, message, note, data]
   properties:
-#    id:
-#      type: int
+    id:
+      description: Unique identifier for the event
+      type: integer
     timestamp:
+      description: String representation of the time at which the event happened
       type: string
     event_type:
+      description: The type of event
       type: string
+      enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
     ancestry:
+      description: An indentifier of the event through its trace through the ancestry
       type: array
       items:
         type: string
     message:
+      description: The message attached to the event
       type: string
     note:
+      description: A user-created note attached to the event
       type: string
     data:
+      description: An object providing additional information about the event
       type: object
-#    cases:
-#      type: array
-#      items:
-#        type: '#/descriptions/Case'
-Subscription:
+    cases:
+      description: The cases this event belongs to
+      type: array
+      items:
+        $ref: '#/definitions/Case'
+SubscriptionChange:
     type: object
-    required:
-      - ancestry
-      - events
+    required: [ancestry, events]
     properties:
       ancestry:
         type: array

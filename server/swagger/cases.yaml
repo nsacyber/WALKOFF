@@ -10,6 +10,13 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          properties:
+            cases:
+              type: array
+              items:
+                $ref: '#/definitions/Case'
 
 /cases/{case}:
   parameters:
@@ -29,6 +36,11 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          properties:
+            case:
+              $ref: '#/definitions/Case'
   post:
     tags:
       - Cases
@@ -53,6 +65,13 @@
     responses:
       200:
         description: Success
+        schema:
+          type: object
+          properties:
+            cases:
+              type: array
+              items:
+                $ref: '#/definitions/Case'
   put:
     tags:
       - Cases
@@ -181,7 +200,7 @@
         description: Edited subscription object
         required: true
         schema:
-          $ref: '#/definitions/Subscription'
+          $ref: '#/definitions/SubscriptionChange'
     responses:
       200:
         description: Success
@@ -201,7 +220,7 @@
         description: Created subscription object
         required: true
         schema:
-          $ref: '#/definitions/Subscription'
+          $ref: '#/definitions/SubscriptionChange'
     responses:
       200:
         description: Success

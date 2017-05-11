@@ -18,7 +18,7 @@ def edit_event_note(event_id, note):
     return __func()
 
 
-def get_event_note(event_id):
+def get_event(event_id):
     from server.context import running_context
 
     @auth_token_required

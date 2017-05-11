@@ -14,8 +14,11 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          type: object
+          description: '{[key]: <current value>}'
 /configuration/set:
   post:
     tags:
@@ -28,5 +31,5 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
