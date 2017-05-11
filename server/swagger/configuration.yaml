@@ -2,9 +2,9 @@
   get:
     tags:
       - Configuration
-    summary: Get a configuration key
+    summary: Read a configuration key
     description: ''
-    operationId: server.endpoints.configuration.config_values
+    operationId: server.endpoints.configuration.read_config_values
     parameters:
       - name: key
         in: path
@@ -23,9 +23,9 @@
   post:
     tags:
       - Configuration
-    summary: Edits a configuration value
+    summary: Update a configuration value
     description: ''
-    operationId: server.endpoints.configuration.set_configuration
+    operationId: server.endpoints.configuration.update_configuration
     consumes:
       - multipart/form-data
     produces:
