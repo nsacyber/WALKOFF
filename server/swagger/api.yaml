@@ -74,3 +74,6 @@ security:
 
 definitions:
     $ref: ./objects/objects.yaml
+    $ref: ./objects/cases.yaml
+    $ref: ./objects/metrics.yaml
+
