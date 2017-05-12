@@ -8,9 +8,22 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}':
+        schema:
+          type: object
+          required: [playbooks]
+          properties:
+            playbooks:
+              type: object
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+/playbooks/{playbook_name}:
+  parameters:
+    - name: playbook_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
   put:
     tags:
       - Playbooks
@@ -22,11 +35,6 @@
     produces:
       - application/json
     parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created role object
@@ -34,25 +42,33 @@
         schema:
           $ref: '#/definitions/Playbook'
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          type: object
+          required: [playbooks]
+          properties:
+            playbooks:
+              type: object
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
   get:
     tags:
       - Playbooks
     summary: Get a playbook
     description: ''
     operationId: server.endpoints.playbooks.read_playbook
-    parameters:
-      - name: playbook_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          type: object
+          required: [workflows]
+          properties:
+            workflows:
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+              type: object
   post:
     tags:
       - Playbooks
@@ -64,11 +80,6 @@
     produces:
       - application/json
     parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
       - in: body
         name: body
         description: Created case object
@@ -76,8 +87,15 @@
         schema:
           $ref: '#/definitions/Playbook'
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          type: object
+          required: [workflows]
+          properties:
+            workflows:
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+              type: object
   delete:
     tags:
       - Playbooks
@@ -86,16 +104,17 @@
     operationId: server.endpoints.playbooks.delete_playbook
     produces:
       - application/json
-    parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/copy':
+        schema:
+          type: object
+          required: [workflows]
+          properties:
+            workflows:
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+              type: object
+/playbooks/{playbook_name}/copy:
   post:
     tags:
       - Playbooks
@@ -119,9 +138,9 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows':
+/playbooks/{playbook_name}/workflows:
   get:
     tags:
       - Playbooks
@@ -137,9 +156,18 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}':
+        schema:
+          type: object
+          required: [workflows]
+          properties:
+            workflows:
+              description: All the workflows
+              type: array
+              items:
+                type: string
+/playbooks/{playbook_name}/workflows/{workflow_name}:
   put:
     tags:
       - Workflows
@@ -168,8 +196,14 @@
         schema:
           $ref: '#/definitions/AddWorkflow'
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          type: object
+          required: [workflow]
+          properties:
+            workflow:
+              $ref: '#/definitions/Workflow'
   get:
     tags:
       - Workflows
@@ -190,8 +224,10 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          $ref: '#/definitions/Workflow'
   post:
     tags:
       - Workflows
@@ -218,10 +254,16 @@
         description: Created case object
         required: true
         schema:
-          $ref: '#/definitions/Workflow'
+          $ref: '#/definitions/WorkflowUpdate'
     responses:
-      '200':
+      200:
         description: Success
+        schema:
+          type: object
+          required: [workflow]
+          properties:
+            workflow:
+              $ref: '#/definitions/Workflow'
   delete:
     tags:
       - Workflows
@@ -242,9 +284,16 @@
         required: true
         type: string
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}/risk':
+        schema:
+          type: object
+          required: [playbooks]
+          properties:
+            playbooks:
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+              type: object
+/playbooks/{playbook_name}/workflows/{workflow_name}/risk:
   get:
     tags:
       - Workflows
@@ -265,9 +314,21 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}/copy':
+        schema:
+          type: object
+          required: [risk_percent, risk_number]
+          properties:
+            risk_percent:
+              description: Percentage of total risk accumulated
+              type: number
+              example: 25.63
+            risk_number:
+              description: Raw number of the risk accumulated by the workflow
+              type: number
+              example: 153.5
+/playbooks/{playbook_name}/workflows/{workflow_name}/copy:
   post:
     tags:
       - Workflows
@@ -296,9 +357,9 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}/execute':
+/playbooks/{playbook_name}/workflows/{workflow_name}/execute:
   post:
     tags:
       - Workflows
@@ -319,9 +380,9 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}/pause':
+/playbooks/{playbook_name}/workflows/{workflow_name}/pause:
   post:
     tags:
       - Workflows
@@ -342,9 +403,9 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}/resume':
+/playbooks/{playbook_name}/workflows/{workflow_name}/resume:
   post:
     tags:
       - Workflows
@@ -373,9 +434,9 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/playbooks/{playbook_name}/workflows/{workflow_name}/save':
+/playbooks/{playbook_name}/workflows/{workflow_name}/save:
   post:
     tags:
       - Workflows
@@ -395,6 +456,8 @@
         type: string
     produces:
       - application/json
+    consumes:
+      - application/json
     responses:
-      '200':
+      200:
         description: Success

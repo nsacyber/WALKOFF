@@ -80,4 +80,5 @@ definitions:
     $ref: ./objects/triggers.yaml
     $ref: ./objects/scheduler.yaml
     $ref: ./objects/roles.yaml
+    $ref: ./objects/playbooks.yaml
 

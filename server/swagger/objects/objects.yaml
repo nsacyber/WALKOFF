@@ -55,37 +55,7 @@ Device:
         type: integer
       extraFields:
         type: string
-Argument:
-  type: object
-  properties:
-    key:
-      type: string
-    value:
-      type: string
-    format:
-      type: string
-Filter:
-  type: object
-  properties:
-    action:
-      type: string
-    args:
-      type: array
-      items:
-        $ref: '#/definitions/Argument'
-Flag:
-  type: object
-  properties:
-    action:
-      type: string
-    args:
-      type: array
-      items:
-        $ref: '#/definitions/Argument'
-    filters:
-      type: array
-      items:
-        $ref: '#/definitions/Filter'
+
 Playbook:
     type: object
     properties:
@@ -105,7 +75,7 @@ PlaybookWorkflow:
         type: string
       workflow:
         type: string
-Workflow:
+WorkflowUpdate:
     type: object
     properties:
       name:
