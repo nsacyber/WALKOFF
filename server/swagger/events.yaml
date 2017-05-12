@@ -8,7 +8,7 @@
   post:
     tags:
       - Events
-    summary: Edit an event note
+    summary: Update an event note
     description: ''
     operationId: server.endpoints.events.update_event_note
     consumes:
@@ -34,7 +34,7 @@
   get:
     tags:
       - Events
-    summary: Get an event
+    summary: Read an event
     description: ''
     operationId: server.endpoints.events.read_event
     produces:
