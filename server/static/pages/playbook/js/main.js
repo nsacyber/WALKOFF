@@ -26,7 +26,7 @@ $(function(){
     // Reformat the JSON data returned from the /playbook endpoint
     // into a format that jsTree can understand.
     function formatWorkflowJsonDataForJsTree(data) {
-        data = JSON.parse(data).playbooks;
+        data = data.playbooks;
         workflowList = data;
         var jstreeData = [];
         $.each(data, function( playbookName, workflows ) {
@@ -675,7 +675,6 @@ $(function(){
 
 
         // Load the data into the graph
-        workflowData = JSON.parse(workflowData);
         // If a node does not have a label field, set it to
         // the action. The label is what is displayed in the graph.
         workflowData = workflowData.steps.map(function(value) {

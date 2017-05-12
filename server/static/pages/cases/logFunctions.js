@@ -9,7 +9,7 @@ function getEventLogs(case_name){
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/" + case_name + "/events",
             'success': function (data) {
-                tmp = JSON.parse(data);
+                tmp = data;
             }
         });
         return tmp;
@@ -28,7 +28,7 @@ function getCases(){
             'headers':{"Authentication-Token":authKey},
             'url': "/cases",
             'success': function (data) {
-                tmp = JSON.parse(data);
+                tmp = data;
             }
         });
         return tmp;
