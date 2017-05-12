@@ -25,7 +25,7 @@
   put:
     tags:
       - Roles
-    summary: Add a role
+    summary: Create a role
     description: ''
     operationId: server.endpoints.roles.create_role
     consumes:
@@ -35,7 +35,7 @@
     parameters:
       - in: body
         name: body
-        description: Created role object
+        description: The role object to be created
         required: true
         schema:
           $ref: '#/definitions/Role'
@@ -45,7 +45,7 @@
   get:
     tags:
       - Roles
-    summary: Get a role
+    summary: Read a role
     description: ''
     operationId: server.endpoints.roles.read_role
     produces:
@@ -68,7 +68,7 @@
     parameters:
       - in: body
         name: body
-        description: Created role object
+        description: Updated fields for the role object
         required: true
         schema:
           $ref: '#/definitions/EditRole'
