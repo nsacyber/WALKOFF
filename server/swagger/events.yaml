@@ -26,6 +26,7 @@
           properties:
             note:
               type: string
+              example: This event was import somehow. I should make a note about it
     responses:
       200:
         description: Success

@@ -5,12 +5,15 @@ Case:
     id:
       description: Unique identifier for the case
       type: integer
+      example: 42
     name:
       description: Name of the case
       type: string
+      example: case1
     note:
       description: A user-created note attached to the event
       type: string
+      example: This case does some things I want it to do.
     events:
       description: The events which are logged to this case
       type: array
@@ -23,30 +26,38 @@ Event:
     id:
       description: Unique identifier for the event
       type: integer
+      example: 42
     timestamp:
       description: String representation of the time at which the event happened
       type: string
+      example: '2017-05-12 15:54:18.121421'
     event_type:
       description: The type of event
       type: string
       enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
+      example: Step
     ancestry:
       description: An indentifier of the event through its trace through the ancestry
       type: array
       items:
         type: string
+      example: [defaultController, myplaybook, montiroingworkflow, step1, step3, flag_action1]
     message:
       description: The message attached to the event
       type: string
+      example: Next step not taken
     note:
       description: A user-created note attached to the event
       type: string
+      example: This event handled that thing I wanted to stop
     data:
       description: An object providing additional information about the event
       type: object
+      example: 'Output: This action output this: 1423'
     cases:
       description: The cases this event belongs to
       type: array
+      example: [case1, mycase, thatonecase, thatothercase]
       items:
         $ref: '#/definitions/Case'
 SubscriptionChange:
@@ -58,11 +69,16 @@ SubscriptionChange:
         type: array
         items:
           type: string
+        example: [defaultController, myplaybook, montiroingworkflow, step1, step3, flag_action1]
       events:
         description: The list of events to subscribe to
         type: array
         items:
           type: string
+        example:
+          - Workflow Execution Start
+          - App Instance Created
+          - Step Execution Success
 Subscription:
   type: object
   required: [events, subscriptions]
@@ -72,8 +88,12 @@ Subscription:
       type: array
       items:
         type: string
+      example:
+        - Workflow Execution Start
+        - App Instance Created
+        - Step Execution Success
     subscriptions:
-      description: Subscriptions for this element's sub-elements. Form of '{<sub-element-name> -> subscriptions}'
+      description: Subscriptions for this elements sub-elements. Form of '{<sub-element-name> -> subscriptions}'
       type: object
 
 CaseSubscription:

@@ -262,9 +262,11 @@
             - ancestry
           properties:
             ancestry:
+              description: The ancestry of execution element whose subscription is to be deleted
               type: array
               items:
                 type: string
+              example: [defaultController, myplaybook, step3]
     responses:
       200:
         description: Success

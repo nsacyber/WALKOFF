@@ -167,6 +167,7 @@
               type: array
               items:
                 type: string
+              example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
 /playbooks/{playbook_name}/workflows/{workflow_name}:
   put:
     tags:
