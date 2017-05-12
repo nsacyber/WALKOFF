@@ -138,16 +138,22 @@ $("#submitForm").on("click", function(){
 
 
     var selectedEvents = getCheckedEvents();
-    $.each(selectedEvents, function(i, e){
-        var elem = $("<li></li>");
-        var eventInput = $("<input type='text'></input>");
-        eventInput.attr("name", "events-" + i);
-        eventInput.attr("value", e);
-        elem.append(eventInput);
-        $("#ancestryAjaxForm").append(elem);
-    });
+//    $.each(selectedEvents, function(i, e){
+//        var elem = $("<li></li>");
+//        var eventInput = $("<input type='text'></input>");
+//        eventInput.attr("name", "events-" + i);
+//        eventInput.attr("value", e);
+//        elem.append(eventInput);
+//        $("#ancestryAjaxForm").append(elem);
+//    });
 
-    r = editSubscription(selectedSub, ancestryForm.serialize(), selectedEvents);
+    var elements = ancestryForm.serializeArray();
+    var ancestry = [];
+    for(var x in elements){
+        ancestry.push(elements[x]["value"]);
+    }
+    console.log(ancestry, selectedEvents);
+    r = editSubscription(selectedSub, JSON.stringify(ancestry), JSON.stringify(selectedEvents));
     window.editSubscriptionDialog.dialog("close");
 });
 

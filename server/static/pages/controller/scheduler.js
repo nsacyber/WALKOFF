@@ -27,7 +27,7 @@ $("#startSchedulerBtn").on("click", function(e){
                 tmp = data;
             }
         });
-        return JSON.parse(tmp);
+        return tmp;
     }();
     message = schedulerStatus(result["status"]);
     if(message == "error"){
@@ -52,7 +52,7 @@ $("#pauseSchedulerBtn").on("click", function(e){
                 tmp = data;
             }
         });
-        return JSON.parse(tmp);
+        return tmp;
     }();
     console.log(result);
     message = schedulerStatus(result["status"]);
@@ -83,7 +83,7 @@ $("#stopSchedulerBtn").on("click", function(e){
                 tmp = data;
             }
         });
-        return JSON.parse(tmp);
+        return tmp;
     }();
     message = schedulerStatus(result["status"]);
     if(message == "error"){
