@@ -1,5 +1,6 @@
 User:
     type: object
+    required: [username, password]
     properties:
       username:
         description: Username or email of the user

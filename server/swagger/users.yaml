@@ -25,7 +25,7 @@
   put:
     tags:
       - Users
-    summary: Add a user
+    summary: Create a user
     description: ''
     operationId: server.endpoints.users.create_user
     consumes:
@@ -35,7 +35,7 @@
     parameters:
       - in: body
         name: body
-        description: Created user object
+        description: The new user object to be created
         required: true
         schema:
           $ref: '#/definitions/User'
@@ -54,6 +54,7 @@
       '200':
         description: Success
         schema:
+          description: A list of user objects
           type: object
           properties:
             user:
@@ -71,7 +72,7 @@
     parameters:
       - in: body
         name: body
-        description: Created user object
+        description: Updated fields for the user object
         required: true
         schema:
           $ref: '#/definitions/EditUser'
@@ -79,6 +80,7 @@
       '200':
         description: Success
         schema:
+          description: A list of user objects
           type: object
           properties:
             user:
@@ -86,7 +88,7 @@
   delete:
     tags:
       - Users
-    summary: Remove a user
+    summary: Delete a user
     description: ''
     operationId: server.endpoints.users.delete_user
     consumes:

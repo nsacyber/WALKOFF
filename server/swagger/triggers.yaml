@@ -2,7 +2,7 @@
   get:
     tags:
       - Triggers
-    summary: Render triggers
+    summary: Get all triggers
     description: ''
     operationId: server.endpoints.triggers.read_all_triggers
     produces:
@@ -11,6 +11,7 @@
       '200':
         description: Success
         schema:
+          description: A list of trigger objects
           type: object
           properties:
             triggers:
@@ -21,7 +22,7 @@
   post:
     tags:
       - Triggers
-    summary: Trigger Listener
+    summary: Execute the trigger listener
     description: ''
     operationId: server.endpoints.triggers.listener
     consumes:
@@ -41,7 +42,7 @@
   put:
     tags:
       - Triggers
-    summary: Add a trigger
+    summary: Create a trigger
     description: ''
     operationId: server.endpoints.triggers.create_trigger
     consumes:
@@ -51,7 +52,7 @@
     parameters:
       - in: body
         name: body
-        description: Created trigger object
+        description: Trigger object to be created
         required: true
         schema:
           $ref: '#/definitions/Trigger'
@@ -70,6 +71,7 @@
       '200':
         description: Success
         schema:
+          description: The trigger object
           type: object
           properties:
             trigger:
@@ -87,7 +89,7 @@
     parameters:
       - in: body
         name: body
-        description: Created trigger object
+        description: Updated fields for the trigger object
         required: true
         schema:
           $ref: '#/definitions/Trigger'
@@ -97,7 +99,7 @@
   delete:
     tags:
       - Triggers
-    summary: Remove a trigger
+    summary: Delete a trigger
     description: ''
     operationId: server.endpoints.triggers.delete_trigger
     produces:
