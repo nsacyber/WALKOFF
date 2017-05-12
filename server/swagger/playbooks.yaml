@@ -2,7 +2,7 @@
   get:
     tags:
       - Playbooks
-    summary: Displays all playbooks
+    summary: Read all playbooks
     description: ''
     operationId: server.endpoints.playbooks.get_playbooks
     produces:
@@ -27,7 +27,7 @@
   put:
     tags:
       - Playbooks
-    summary: Add a playbook
+    summary: Create a playbook
     description: ''
     operationId: server.endpoints.playbooks.create_playbook
     consumes:
@@ -37,7 +37,7 @@
     parameters:
       - in: body
         name: body
-        description: Created role object
+        description: The playbook object to be created
         required: true
         schema:
           $ref: '#/definitions/Playbook'
@@ -54,7 +54,7 @@
   get:
     tags:
       - Playbooks
-    summary: Get a playbook
+    summary: Read a playbook
     description: ''
     operationId: server.endpoints.playbooks.read_playbook
     produces:
@@ -82,7 +82,7 @@
     parameters:
       - in: body
         name: body
-        description: Created case object
+        description: Fields of the playbook object to be updated
         required: true
         schema:
           $ref: '#/definitions/Playbook'
@@ -99,7 +99,7 @@
   delete:
     tags:
       - Playbooks
-    summary: Remove a playbook
+    summary: Delete a playbook
     description: ''
     operationId: server.endpoints.playbooks.delete_playbook
     produces:
@@ -118,7 +118,7 @@
   post:
     tags:
       - Playbooks
-    summary: copy a playbook
+    summary: Copy a playbook
     description: ''
     operationId: server.endpoints.playbooks.copy_playbook
     parameters:
@@ -144,7 +144,7 @@
   get:
     tags:
       - Playbooks
-    summary: display all workflows in playbook
+    summary: Read all workflows in playbook
     description: ''
     operationId: server.endpoints.playbooks.get_workflows
     parameters:
@@ -169,10 +169,21 @@
                 type: string
               example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
 /playbooks/{playbook_name}/workflows/{workflow_name}:
+  parameters:
+  - name: playbook_name
+    in: path
+    description: The name that needs to be fetched.
+    required: true
+    type: string
+  - name: workflow_name
+    in: path
+    description: 'The name that needs to be fetched. '
+    required: true
+    type: string
   put:
     tags:
       - Workflows
-    summary: Add a workflow
+    summary: Create a workflow
     description: ''
     operationId: server.endpoints.playbooks.create_workflow
     consumes:
@@ -180,19 +191,9 @@
     produces:
       - application/json
     parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - name: workflow_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
       - in: body
         name: body
-        description: Created role object
+        description: The workflow object to be created
         required: true
         schema:
           $ref: '#/definitions/AddWorkflow'
@@ -208,20 +209,9 @@
   get:
     tags:
       - Workflows
-    summary: Get a workflow
+    summary: Read a workflow
     description: ''
     operationId: server.endpoints.playbooks.read_workflow
-    parameters:
-      - name: playbook_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-      - name: workflow_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     produces:
       - application/json
     responses:
@@ -240,19 +230,9 @@
     produces:
       - application/json
     parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - name: workflow_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
       - in: body
         name: body
-        description: Created case object
+        description: The fields of the workflow object to be updated
         required: true
         schema:
           $ref: '#/definitions/WorkflowUpdate'
@@ -268,22 +248,11 @@
   delete:
     tags:
       - Workflows
-    summary: Remove a workflow
+    summary: Delete a workflow
     description: ''
     operationId: server.endpoints.playbooks.delete_workflow
     produces:
       - application/json
-    parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - name: workflow_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     responses:
       200:
         description: Success
@@ -298,7 +267,7 @@
   get:
     tags:
       - Workflows
-    summary: Get a workflow's risk value
+    summary: Read a workflow's risk value
     description: ''
     operationId: server.endpoints.playbooks.read_workflow_risk
     parameters:
@@ -349,7 +318,7 @@
         type: string
       - in: body
         name: body
-        description: Created case object
+        description: The new playbook and/or workflow name
         required: true
         schema:
           $ref: '#/definitions/PlaybookWorkflow'
@@ -406,6 +375,13 @@
     responses:
       200:
         description: Success
+        schema:
+          description: The UUID necessary to resume the workflow (for security purposes)
+          type: object
+          properties:
+            uuid:
+              type: string
+
 /playbooks/{playbook_name}/workflows/{workflow_name}/resume:
   post:
     tags:
@@ -426,7 +402,7 @@
         type: string
       - in: body
         name: body
-        description: Created case object
+        description: The UUID for this transaction, returned from pause_workflow
         required: true
         schema:
           $ref: '#/definitions/ResumeWorkflow'
