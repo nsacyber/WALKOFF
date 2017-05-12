@@ -2,7 +2,7 @@
   post:
     tags:
       - Scheduler
-    summary: Starts the scheduler
+    summary: Start the scheduler
     description: ''
     operationId: server.endpoints.scheduler.start_scheduler
     produces:
@@ -20,7 +20,7 @@
   post:
     tags:
       - Scheduler
-    summary: Stops the scheduler
+    summary: Stop the scheduler
     description: ''
     operationId: server.endpoints.scheduler.stop_scheduler
     produces:
@@ -122,7 +122,7 @@
   get:
     tags:
       - Scheduler
-    summary: Read all Scheduler Jobs
+    summary: Read all jobs
     description: ''
     operationId: server.endpoints.scheduler.read_all_jobs
     produces:
@@ -131,6 +131,7 @@
       '200':
         description: Success
         schema:
+          description: A list of job objects
           type: object
           properties:
             jobs:
