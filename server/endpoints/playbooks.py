@@ -25,31 +25,27 @@ def create_playbook(playbook_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         form = forms.AddPlaybookForm(request.form)
-        if form.validate():
-            status = 'success'
-            template_playbook = form.playbook_template.data
-            if template_playbook:
-                if template_playbook in [os.path.splitext(workflow)[0]
-                                         for workflow in
-                                         helpers.locate_workflows_in_directory(core.config.paths.templates_path)]:
-                    running_context.controller.create_playbook_from_template(playbook_name=playbook_name,
-                                                                             template_playbook=template_playbook)
-                    current_app.logger.info('Playbook {0} created from template {1}'.format(playbook_name,
-                                                                                            template_playbook))
-                else:
-                    running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
-                    current_app.logger.info(
-                        'Playbook {0} cannot be created from template {1} because it doesn\'t exist. '
-                        'Using default template instead'.format(playbook_name, template_playbook))
-                    status = 'warning: template playbook not found. Using default template'
+        status = 'success'
+        template_playbook = form.playbook_template.data
+        if template_playbook:
+            if template_playbook in [os.path.splitext(workflow)[0]
+                                     for workflow in
+                                     helpers.locate_workflows_in_directory(core.config.paths.templates_path)]:
+                running_context.controller.create_playbook_from_template(playbook_name=playbook_name,
+                                                                         template_playbook=template_playbook)
+                current_app.logger.info('Playbook {0} created from template {1}'.format(playbook_name,
+                                                                                        template_playbook))
             else:
                 running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
-                current_app.logger.info('Playbook {0} created from default template'.format(playbook_name))
-            return {"status": status,
-                    "playbooks": running_context.controller.get_all_workflows()}
+                current_app.logger.info(
+                    'Playbook {0} cannot be created from template {1} because it doesn\'t exist. '
+                    'Using default template instead'.format(playbook_name, template_playbook))
+                status = 'warning: template playbook not found. Using default template'
         else:
-            current_app.logger.error('Invalid form received in create_playbook')
-            return {'status': 'error: invalid form'}
+            running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
+            current_app.logger.info('Playbook {0} created from default template'.format(playbook_name))
+        return {"status": status,
+                "playbooks": running_context.controller.get_all_workflows()}
 
     return __func()
 
@@ -85,27 +81,22 @@ def update_playbook(playbook_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_playbook_registered(playbook_name):
-            if request.get_json():
-                data = request.get_json()
-                if 'new_name' in data and data['new_name']:
-                    new_name = data['new_name']
-                    running_context.controller.update_playbook_name(playbook_name, new_name)
-                    saved_playbooks = [os.path.splitext(playbook)[0]
-                                       for playbook in
-                                       helpers.locate_workflows_in_directory(core.config.paths.workflows_path)]
-                    if playbook_name in saved_playbooks:
-                        os.rename(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)),
-                                  os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(new_name)))
-                    current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
-                    return {"status": 'success',
-                            "playbooks": running_context.controller.get_all_workflows()}
-                else:
-                    current_app.logger.error('No new name provided to update playbook')
-                    return {"status": 'error: no name provided',
-                            "playbooks": running_context.controller.get_all_workflows()}
+            data = request.get_json()
+            if 'new_name' in data and data['new_name']:
+                new_name = data['new_name']
+                running_context.controller.update_playbook_name(playbook_name, new_name)
+                saved_playbooks = [os.path.splitext(playbook)[0]
+                                   for playbook in
+                                   helpers.locate_workflows_in_directory(core.config.paths.workflows_path)]
+                if playbook_name in saved_playbooks:
+                    os.rename(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)),
+                              os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(new_name)))
+                current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
+                return {"status": 'success',
+                        "playbooks": running_context.controller.get_all_workflows()}
             else:
-                current_app.logger.error('Invalid JSON provided to update playbook')
-                return {"status": 'error: invalid json',
+                current_app.logger.error('No new name provided to update playbook')
+                return {"status": 'error: no name provided',
                         "playbooks": running_context.controller.get_all_workflows()}
 
     return __func()
@@ -140,23 +131,22 @@ def copy_playbook(playbook_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         form = forms.CopyPlaybookForm(request.form)
-        if form.validate():
-            if form.playbook.data:
-                new_playbook_name = form.playbook.data
-            else:
-                new_playbook_name = playbook_name + "_Copy"
+        if form.playbook.data:
+            new_playbook_name = form.playbook.data
+        else:
+            new_playbook_name = playbook_name + "_Copy"
 
-            if running_context.controller.is_playbook_registered(new_playbook_name):
-                current_app.logger.error('Cannot copy playbook {0} to {1}. Name already exists'.format(playbook_name,
-                                                                                                       new_playbook_name))
-                status = 'error: invalid playbook name'
-            else:
-                running_context.controller.copy_playbook(playbook_name, new_playbook_name)
-                write_playbook_to_file(new_playbook_name)
-                current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
-                status = 'success'
+        if running_context.controller.is_playbook_registered(new_playbook_name):
+            current_app.logger.error('Cannot copy playbook {0} to {1}. Name already exists'.format(playbook_name,
+                                                                                                   new_playbook_name))
+            status = 'error: invalid playbook name'
+        else:
+            running_context.controller.copy_playbook(playbook_name, new_playbook_name)
+            write_playbook_to_file(new_playbook_name)
+            current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
+            status = 'success'
 
-            return {"status": status}
+        return {"status": status}
 
     return __func()
 
@@ -185,52 +175,48 @@ def create_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         form = forms.AddWorkflowForm(request.form)
-        if form.validate():
-            status = 'success'
-            template_playbook = form.playbook.data
-            template = form.template.data
-            if template and template_playbook:
-                if template_playbook in [os.path.splitext(workflow)[0]
-                                         for workflow in
-                                         helpers.locate_workflows_in_directory(core.config.paths.templates_path)]:
-                    res = running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
-                                                                                   workflow_name=workflow_name,
-                                                                                   template_playbook=template_playbook,
-                                                                                   template_name=template)
-                    if not res:
-                        add_default_template(playbook_name, workflow_name)
-                        current_app.logger.warning('Workflow {0}-{1} could not be created from template {2}-{3}. '
-                                                   'Using default template'.format(playbook_name, workflow_name,
-                                                                                   template_playbook, template))
-                        status = 'warning: template not found in playbook. Using default template'
-                    else:
-                        current_app.logger.info('Workflow {0}-{1} created from template {2}-{3}. '
-                                                'Using default template'.format(playbook_name, workflow_name,
-                                                                                template_playbook, template))
-                else:
+        status = 'success'
+        template_playbook = form.playbook.data
+        template = form.template.data
+        if template and template_playbook:
+            if template_playbook in [os.path.splitext(workflow)[0]
+                                     for workflow in
+                                     helpers.locate_workflows_in_directory(core.config.paths.templates_path)]:
+                res = running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
+                                                                               workflow_name=workflow_name,
+                                                                               template_playbook=template_playbook,
+                                                                               template_name=template)
+                if not res:
                     add_default_template(playbook_name, workflow_name)
-                    current_app.logger.info('Workflow {0}-{1} could not be created from template playbook {0} '
-                                            'because template playbook is not found. '
-                                            'Using default template'.format(playbook_name,
-                                                                            workflow_name))
-                    status = 'warning: template playbook not found. Using default template'
+                    current_app.logger.warning('Workflow {0}-{1} could not be created from template {2}-{3}. '
+                                               'Using default template'.format(playbook_name, workflow_name,
+                                                                               template_playbook, template))
+                    status = 'warning: template not found in playbook. Using default template'
+                else:
+                    current_app.logger.info('Workflow {0}-{1} created from template {2}-{3}. '
+                                            'Using default template'.format(playbook_name, workflow_name,
+                                                                            template_playbook, template))
             else:
                 add_default_template(playbook_name, workflow_name)
-                current_app.logger.info('Workflow {0}-{1} created from default template'.format(playbook_name,
-                                                                                                workflow_name))
-            if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-                return {'workflow': {'name': workflow_name,
-                                     'steps': workflow.get_cytoscape_data(),
-                                     'options': workflow.options.as_json(),
-                                     'start': workflow.start_step},
-                        'status': status}
-            else:
-                current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
-                return {'status': 'error: could not add workflow'}
+                current_app.logger.info('Workflow {0}-{1} could not be created from template playbook {0} '
+                                        'because template playbook is not found. '
+                                        'Using default template'.format(playbook_name,
+                                                                        workflow_name))
+                status = 'warning: template playbook not found. Using default template'
         else:
-            current_app.logger.error('Invalid form to add workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {'status': 'error: invalid form'}
+            add_default_template(playbook_name, workflow_name)
+            current_app.logger.info('Workflow {0}-{1} created from default template'.format(playbook_name,
+                                                                                            workflow_name))
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+            return {'workflow': {'name': workflow_name,
+                                 'steps': workflow.get_cytoscape_data(),
+                                 'options': workflow.options.as_json(),
+                                 'start': workflow.start_step},
+                    'status': status}
+        else:
+            current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
+            return {'status': 'error: could not add workflow'}
 
     return __func()
 
@@ -273,40 +259,35 @@ def update_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func(wf_name):
         if running_context.controller.is_workflow_registered(playbook_name, wf_name):
-            if request.get_json():
-                data = request.get_json()
-                if 'scheduler' in data:
-                    enabled = data['scheduler']['enabled'] if 'enabled' in data['scheduler'] else False
-                    scheduler = {'type': data['scheduler']['type'] if 'type' in data['scheduler'] else 'cron',
-                                 'autorun': (str(data['scheduler']['autorun']).lower()
-                                             if 'autorun' in data['scheduler'] else 'false'),
-                                 'args': json.loads(data['scheduler']['args']) if 'args' in data['scheduler'] else {}}
-                    running_context.controller.get_workflow(playbook_name, wf_name).options = \
-                        Options(scheduler=scheduler, enabled=enabled)
-                if 'new_name' in data and data['new_name']:
-                    running_context.controller.update_workflow_name(playbook_name,
-                                                                    wf_name,
-                                                                    playbook_name,
-                                                                    data['new_name'])
-                    wf_name = data['new_name']
-                workflow = running_context.controller.get_workflow(playbook_name, wf_name)
-                if workflow:
-                    returned_json = {'workflow': {'name': wf_name,
-                                                  'options': workflow.options.as_json(),
-                                                  'start': workflow.start_step},
-                                     'status': 'success'}
-                    current_app.logger.info('Updated workflow {0}-{1} to {2}'.format(playbook_name,
-                                                                                     wf_name,
-                                                                                     returned_json))
-                    return returned_json
-                else:
-                    current_app.logger.error('Altered workflow {0}-{1} no longer in controller'.format(playbook_name,
-                                                                                                       wf_name))
-                    return {'status': 'error: altered workflow can no longer be located'}
+            data = request.get_json()
+            if 'scheduler' in data:
+                enabled = data['scheduler']['enabled'] if 'enabled' in data['scheduler'] else False
+                scheduler = {'type': data['scheduler']['type'] if 'type' in data['scheduler'] else 'cron',
+                             'autorun': (str(data['scheduler']['autorun']).lower()
+                                         if 'autorun' in data['scheduler'] else 'false'),
+                             'args': json.loads(data['scheduler']['args']) if 'args' in data['scheduler'] else {}}
+                running_context.controller.get_workflow(playbook_name, wf_name).options = \
+                    Options(scheduler=scheduler, enabled=enabled)
+            if 'new_name' in data and data['new_name']:
+                running_context.controller.update_workflow_name(playbook_name,
+                                                                wf_name,
+                                                                playbook_name,
+                                                                data['new_name'])
+                wf_name = data['new_name']
+            workflow = running_context.controller.get_workflow(playbook_name, wf_name)
+            if workflow:
+                returned_json = {'workflow': {'name': wf_name,
+                                              'options': workflow.options.as_json(),
+                                              'start': workflow.start_step},
+                                 'status': 'success'}
+                current_app.logger.info('Updated workflow {0}-{1} to {2}'.format(playbook_name,
+                                                                                 wf_name,
+                                                                                 returned_json))
+                return returned_json
             else:
-                current_app.logger.error('Invalid json ecountered when updating workflow '
-                                         '{0}-{1}: {2}'.format(playbook_name, wf_name, request.get_json()))
-                return {'status': 'error: invalid json'}
+                current_app.logger.error('Altered workflow {0}-{1} no longer in controller'.format(playbook_name,
+                                                                                                   wf_name))
+                return {'status': 'error: altered workflow can no longer be located'}
         else:
             current_app.logger.error(
                 'Workflow {0}-{1} not found in controller. Cannot be updated.'.format(playbook_name,
@@ -359,31 +340,30 @@ def copy_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         form = forms.CopyWorkflowForm(request.form)
-        if form.validate():
-            if form.playbook.data:
-                new_playbook_name = form.playbook.data
-            else:
-                new_playbook_name = playbook_name
-            if form.workflow.data:
-                new_workflow_name = form.workflow.data
-            else:
-                new_workflow_name = workflow_name + "_Copy"
+        if form.playbook.data:
+            new_playbook_name = form.playbook.data
+        else:
+            new_playbook_name = playbook_name
+        if form.workflow.data:
+            new_workflow_name = form.workflow.data
+        else:
+            new_workflow_name = workflow_name + "_Copy"
 
-            if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
-                current_app.logger.error('Cannot copy workflow {0}-{1} to {2}-{3}. '
-                                         'Workflow already exists.'.format(workflow_name, playbook_name,
-                                                                           new_workflow_name, new_playbook_name))
-                status = 'error: invalid playbook and/or workflow name'
-            else:
-                running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name,
-                                                         new_workflow_name)
-                write_playbook_to_file(new_playbook_name)
-                current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
-                                                                                    new_playbook_name,
-                                                                                    new_workflow_name))
-                status = 'success'
+        if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
+            current_app.logger.error('Cannot copy workflow {0}-{1} to {2}-{3}. '
+                                     'Workflow already exists.'.format(workflow_name, playbook_name,
+                                                                       new_workflow_name, new_playbook_name))
+            status = 'error: invalid playbook and/or workflow name'
+        else:
+            running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name,
+                                                     new_workflow_name)
+            write_playbook_to_file(new_playbook_name)
+            current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
+                                                                                new_playbook_name,
+                                                                                new_workflow_name))
+            status = 'success'
 
-            return {"status": status}
+        return {"status": status}
 
     return __func()
 
@@ -433,18 +413,13 @@ def resume_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         form = forms.ResumeWorkflowForm(request.form)
-        if form.validate():
-            if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-                uuid = form.uuid.data
-                status = running_context.controller.resume_workflow(playbook_name, workflow_name, uuid)
-            else:
-                current_app.logger.error(
-                    'Cannot resume workflow {0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
-                status = 'error: invalid playbook and/or workflow name'
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            uuid = form.uuid.data
+            status = running_context.controller.resume_workflow(playbook_name, workflow_name, uuid)
         else:
             current_app.logger.error(
-                'Cannot resume workflow {0}-{1}. Invalid form'.format(playbook_name, workflow_name))
-            status = 'error: invalid form'
+                'Cannot resume workflow {0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
+            status = 'error: invalid playbook and/or workflow name'
         return {"status": status}
 
     return __func()
@@ -457,29 +432,24 @@ def save_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            if request.get_json():
-                if 'cytoscape' in request.get_json():
-                    workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-                    workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
-                    if 'start' in request.get_json():
-                        workflow.start_step = request.get_json()['start']
-                    try:
-                        write_playbook_to_file(playbook_name)
-                        current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
-                        return {"status": "success", "steps": workflow.get_cytoscape_data()}
-                    except (OSError, IOError) as e:
-                        current_app.logger.info(
-                            'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
-                        return {"status": "Error saving: {0}".format(e.message),
-                                "steps": workflow.get_cytoscape_data()}
-                else:
-                    current_app.logger.info('Cannot save workflow {0}-{1}. Malformed JSON'.format(playbook_name,
-                                                                                                  workflow_name))
-                    return {"status": "error: malformed json"}
+            if 'cytoscape' in request.get_json():
+                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+                if 'start' in request.get_json():
+                    workflow.start_step = request.get_json()['start']
+                try:
+                    write_playbook_to_file(playbook_name)
+                    current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
+                    return {"status": "success", "steps": workflow.get_cytoscape_data()}
+                except (OSError, IOError) as e:
+                    current_app.logger.info(
+                        'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
+                    return {"status": "Error saving: {0}".format(e.message),
+                            "steps": workflow.get_cytoscape_data()}
             else:
-                current_app.logger.info('Cannot save workflow {0}-{1}. No JSON received'.format(playbook_name,
-                                                                                                workflow_name))
-                return {"status": "error: no information received"}
+                current_app.logger.info('Cannot save workflow {0}-{1}. Malformed JSON'.format(playbook_name,
+                                                                                              workflow_name))
+                return {"status": "error: malformed json"}
         else:
             current_app.logger.info('Cannot save workflow {0}-{1}. Workflow not in controller'.format(playbook_name,
                                                                                                       workflow_name))
