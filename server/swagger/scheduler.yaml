@@ -16,6 +16,7 @@
             status:
               description: State of scheduler or error message
               type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
 /execution/scheduler/stop:
   post:
     tags:
@@ -34,6 +35,7 @@
             status:
               description: State of scheduler or error message
               type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
 /execution/scheduler/pause:
   post:
     tags:
@@ -52,6 +54,7 @@
             status:
               description: State of scheduler or error message
               type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
 /execution/scheduler/resume:
   post:
     tags:
@@ -70,6 +73,7 @@
             status:
               description: State of scheduler or error message
               type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
 '/execution/scheduler/{job_id}/pause':
   post:
     tags:
@@ -82,7 +86,7 @@
     parameters:
       - name: job_id
         in: path
-        description: The name that needs to be fetched.
+        description: The job ID that needs to be fetched.
         required: true
         type: string
     responses:
@@ -94,6 +98,7 @@
             status:
               description: State of job
               type: string
+              example: Job Paused
 '/execution/scheduler/{job_id}/resume':
   post:
     tags:
@@ -106,7 +111,7 @@
     parameters:
       - name: job_id
         in: path
-        description: The name that needs to be fetched.
+        description: The job ID that needs to be fetched.
         required: true
         type: string
     responses:
@@ -118,6 +123,7 @@
             status:
               description: State of job
               type: string
+              example: Job Resumed
 /execution/scheduler/jobs:
   get:
     tags:
