@@ -15,6 +15,9 @@
           type: array
           items:
             type: string
+          example:
+            - administrative_role
+            - guest
 '/roles/{role_name}':
   parameters:
     - name: role_name
