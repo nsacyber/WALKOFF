@@ -8,7 +8,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           description: A list of usernames
@@ -18,7 +18,7 @@
           example:
             - administrator
             - guest
-'/users/{user_name}':
+/users/{user_name}:
   parameters:
     - name: user_name
       in: path
@@ -43,7 +43,7 @@
         schema:
           $ref: '#/definitions/User'
     responses:
-      '200':
+      200:
         description: Success
   get:
     tags:
@@ -54,7 +54,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           description: A list of user objects
@@ -80,7 +80,7 @@
         schema:
           $ref: '#/definitions/EditUser'
     responses:
-      '200':
+      200:
         description: Success
         schema:
           description: A list of user objects
@@ -99,5 +99,5 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success

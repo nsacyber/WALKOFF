@@ -432,24 +432,19 @@ def save_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            if 'cytoscape' in request.get_json():
-                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-                workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
-                if 'start' in request.get_json():
-                    workflow.start_step = request.get_json()['start']
-                try:
-                    write_playbook_to_file(playbook_name)
-                    current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
-                    return {"status": "success", "steps": workflow.get_cytoscape_data()}
-                except (OSError, IOError) as e:
-                    current_app.logger.info(
-                        'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
-                    return {"status": "Error saving: {0}".format(e.message),
-                            "steps": workflow.get_cytoscape_data()}
-            else:
-                current_app.logger.info('Cannot save workflow {0}-{1}. Malformed JSON'.format(playbook_name,
-                                                                                              workflow_name))
-                return {"status": "error: malformed json"}
+            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+            workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+            if 'start' in request.get_json():
+                workflow.start_step = request.get_json()['start']
+            try:
+                write_playbook_to_file(playbook_name)
+                current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
+                return {"status": "success", "steps": workflow.get_cytoscape_data()}
+            except (OSError, IOError) as e:
+                current_app.logger.info(
+                    'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
+                return {"status": "Error saving: {0}".format(e.message),
+                        "steps": workflow.get_cytoscape_data()}
         else:
             current_app.logger.info('Cannot save workflow {0}-{1}. Workflow not in controller'.format(playbook_name,
                                                                                                       workflow_name))

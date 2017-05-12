@@ -56,8 +56,8 @@ def pause_job(job_id):
         return {"status": "Job Paused"}
     return __func()
 
-def resume_job(job_id):
 
+def resume_job(job_id):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
@@ -75,6 +75,6 @@ def read_all_jobs():
     def __func():
         jobs = []
         for job in running_context.controller.get_scheduled_jobs():
-            jobs.append({ "name": job.name, "id": job.id })
+            jobs.append({"name": job.name, "id": job.id})
         return {"jobs": jobs}
     return __func()

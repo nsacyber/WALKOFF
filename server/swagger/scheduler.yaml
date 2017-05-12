@@ -8,7 +8,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           type: object
@@ -27,7 +27,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           type: object
@@ -46,7 +46,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           type: object
@@ -65,7 +65,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           type: object
@@ -74,7 +74,7 @@
               description: State of scheduler or error message
               type: string
               example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-'/execution/scheduler/{job_id}/pause':
+/execution/scheduler/{job_id}/pause:
   post:
     tags:
       - Scheduler
@@ -90,7 +90,7 @@
         required: true
         type: string
     responses:
-      '200':
+      200:
         description: Success
         schema:
           type: object
@@ -99,7 +99,7 @@
               description: State of job
               type: string
               example: Job Paused
-'/execution/scheduler/{job_id}/resume':
+/execution/scheduler/{job_id}/resume:
   post:
     tags:
       - Scheduler
@@ -134,7 +134,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           description: A list of job objects

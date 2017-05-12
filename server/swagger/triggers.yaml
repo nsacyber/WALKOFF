@@ -8,7 +8,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           description: A list of trigger objects
@@ -30,9 +30,9 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
-'/execution/listener/triggers/{trigger_name}':
+/execution/listener/triggers/{trigger_name}:
   parameters:
     - name: trigger_name
       in: path
@@ -57,7 +57,7 @@
         schema:
           $ref: '#/definitions/Trigger'
     responses:
-      '200':
+      200:
         description: Success
   get:
     tags:
@@ -68,7 +68,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           description: The trigger object
@@ -94,7 +94,7 @@
         schema:
           $ref: '#/definitions/Trigger'
     responses:
-      '200':
+      200:
         description: Success
   delete:
     tags:
@@ -105,5 +105,5 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success

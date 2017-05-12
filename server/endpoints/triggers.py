@@ -10,7 +10,8 @@ def read_all_triggers():
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         return {"status": "success", "triggers": [trigger.as_json()
-                                                             for trigger in running_context.Triggers.query.all()]}
+                                                  for trigger in running_context.Triggers.query.all()]}
+
     return __func()
 
 
@@ -28,6 +29,7 @@ def listener():
             'Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
                                                                                      data_input))
         return returned_json
+
     return __func()
 
 
@@ -50,9 +52,9 @@ def create_trigger(trigger_name):
                 running_context.db.session.commit()
                 current_app.logger.info('Added trigger: '
                                         '{0}'.format({"name": trigger_name,
-                                                                 "condition": form.conditional.data,
-                                                                 "workflow": "{0}-{1}".format(form.playbook.data,
-                                                                                              form.workflow.data)}))
+                                                      "condition": form.conditional.data,
+                                                      "workflow": "{0}-{1}".format(form.playbook.data,
+                                                                                   form.workflow.data)}))
                 return {"status": "success"}
             except ValueError:
                 current_app.logger.error(
@@ -61,6 +63,7 @@ def create_trigger(trigger_name):
         else:
             current_app.logger.warning('Cannot create trigger {0}. Trigger already exists'.format(trigger_name))
             return {"status": "warning: trigger with that name already exists"}
+
     return __func()
 
 
@@ -74,6 +77,7 @@ def read_trigger(trigger_name):
             return {"status": 'success', "trigger": query.as_json()}
         current_app.logger.error('Cannot display trigger {0}. Does not exist'.format(trigger_name))
         return {"status": "error: trigger not found"}
+
     return __func()
 
 
@@ -101,6 +105,7 @@ def update_trigger(trigger_name):
                 return {"status": "error: invalid json in conditional field"}
         current_app.logger.error('Could not edit trigger {0}. Trigger does not exist'.format(trigger))
         return {"status": "trigger could not be edited"}
+
     return __func()
 
 
@@ -119,4 +124,5 @@ def delete_trigger(trigger_name):
             current_app.logger.warning('Cannot delete trigger {0}. Trigger does not exist'.format(trigger_name))
             return {"status": "error: trigger does not exist"}
         return {"status": "error: could not remove trigger"}
+
     return __func()
