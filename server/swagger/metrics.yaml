@@ -10,6 +10,8 @@
     responses:
       '200':
         description: Success
+        schema:
+          $ref: '#/definitions/AppMetrics'
 /metrics/workflows:
   get:
     tags:
@@ -22,3 +24,5 @@
     responses:
       '200':
         description: Success
+        schema:
+          $ref: '#/definitions/WorkflowMetrics'
