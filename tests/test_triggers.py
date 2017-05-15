@@ -3,6 +3,7 @@ import json
 from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 from server.triggers import Triggers
+from server.return_codes import *
 
 from core.case.callbacks import FunctionExecutionSuccess
 
@@ -24,7 +25,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
         triggers = [trigger.as_json() for trigger in Triggers.query.all()]
         self.assertEqual(len(triggers), 1)
 
@@ -61,14 +62,15 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(len(triggers), 0)
 
         self.get_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: trigger not found", headers=self.headers)
+                                    "error: trigger not found", headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_add_trigger_invalid_form(self):
         data = {"playbrook": "test",
                 "workbro": self.test_trigger_workflow,
                 "conditional-0": ""}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: invalid json in conditional field", headers=self.headers, data=data)
+                                    "error: invalid json in conditional field", headers=self.headers, data=data,
+                                    status_code=INVALID_INPUT_ERROR)
 
     def test_add_trigger_add_duplicate(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -76,13 +78,14 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "warning: trigger with that name already exists", headers=self.headers, data=data)
+                                    "warning: trigger with that name already exists", headers=self.headers, data=data,
+                                   status_code=OBJECT_EXISTS_ERROR)
 
     def test_remove_trigger_does_not_exist(self):
         self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: trigger does not exist", headers=self.headers)
+                                    "error: trigger does not exist", headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_edit_trigger(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -90,7 +93,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
         edited_data = {"name": "{0}rename".format(self.test_trigger_name),
                        "playbook": "testrename",
                        "workflow": '{0}rename'.format(self.test_trigger_workflow),
@@ -104,7 +107,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data={"data": "hellohellohello"})
@@ -115,7 +118,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": "invalid_workflow_name",
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "error: workflow could not be found",
@@ -127,7 +130,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
                                     "warning: no trigger found valid for data in", headers=self.headers,
@@ -139,7 +142,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data)
+                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         result = {'value': None}
 

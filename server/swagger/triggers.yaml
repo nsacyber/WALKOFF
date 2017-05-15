@@ -57,8 +57,12 @@
         schema:
           $ref: '#/definitions/Trigger'
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created.
+      462:
+        description: Object with that name already exists.
+      463:
+        description: Invalid form data.
   get:
     tags:
       - Triggers
@@ -76,6 +80,8 @@
           properties:
             trigger:
               $ref: '#/definitions/DisplayTrigger'
+      461:
+        description: Object does not exist.
   post:
     tags:
       - Triggers
@@ -96,6 +102,10 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.
+      463:
+        description: Invalid form data.
   delete:
     tags:
       - Triggers
@@ -107,3 +117,5 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.
