@@ -73,7 +73,7 @@ def update_case(case):
             if form.note.data:
                 case_database.case_db.edit_case_note(form.name.data, form.note.data)
             current_app.logger.debug('Case name changed from {0} to {1}'.format(case, form.name.data))
-        #TODO: YAML says that name AND note are required...is this second branch necessary?
+        # TODO: YAML says that name AND note are required...is this second branch necessary?
         elif form.note.data:
             case_database.case_db.edit_case_note(case, form.note.data)
         return case_database.case_db.cases_as_json()

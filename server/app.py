@@ -12,9 +12,6 @@ monkey.patch_all()
 logger = logging.getLogger(__name__)
 
 
-#app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
-
-
 def read_and_indent(filename, indent):
     indent = '  '*indent
     with open(filename, 'r') as file_open:
@@ -45,7 +42,6 @@ def create_app():
     connexion_app = connexion.App(__name__, specification_dir='swagger/', server='gevent')
     _app = connexion_app.app
     compose_yamls()
-    #app.json_encoder = JSONEncoder
     _app.jinja_loader = FileSystemLoader(['server/templates'])
 
     _app.config.update(
@@ -64,7 +60,6 @@ def create_app():
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     connexion_app.add_api('composed_api.yaml')
-    #_app.register_blueprint(app_page, url_prefix='/apps/<app>')
     return _app
 
 # Template Loader
@@ -100,9 +95,3 @@ def create_user():
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers
-
-
-#@app_page.url_value_preprocessor
-#def static_request_handler(endpoint, values):
-#    g.app = values.pop('app', None)
-#    app_page.static_folder = os.path.abspath(os.path.join('apps', g.app, 'interface', 'static'))

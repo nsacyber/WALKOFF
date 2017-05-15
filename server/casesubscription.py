@@ -71,4 +71,3 @@ class CaseSubscription(Base):
         subscriptions = {case.name: core.case.subscription.CaseSubscriptions.from_json(json.loads(case.subscription))
                          for case in CaseSubscription.query.all()}
         core.case.subscription.set_subscriptions(subscriptions)
-

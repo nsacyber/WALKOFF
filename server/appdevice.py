@@ -90,7 +90,7 @@ class Device(database.Base):
             password (str, optional): The password for the Device object. Defaults to an empty string.
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
             port (int, optional): The port for the Device object. Defaults to 0.
-            exra_fields (str, optional): The string representation of a dictionary that holds various custom
+            extra_fields (str, optional): The string representation of a dictionary that holds various custom
                 extra fields for the Device object. Defaults to an empty string.
             app_id (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
                 empty string.
