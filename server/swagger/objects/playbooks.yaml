@@ -1,0 +1,202 @@
+Workflow:
+  type: object
+  required: [name]
+  description: A workflow object
+  properties:
+    name:
+      description: The name of the workflow. Composed of both its enclosing playbook and its own name
+      type: string
+      example: HelloWorldWorkflow
+    steps:
+      description: The steps definied in this workflow. Form of '{step_name -> step}'
+      type: object
+    accumulated_risk:
+      description: The risk which has been accumulated as this workflow has been executed
+      type: number
+      example: 0.43
+    options:
+      $ref: '#/definitions/WorkflowOptions'
+    start:
+      description: Name of the starting step
+      type: string
+      default: start
+      example: step1
+
+WorkflowOptions:
+  type: object
+  description: Options attached to a workflow such as child workflows and schedulers
+  properties:
+    scheduler:
+      type: object
+      required: [autorun, type]
+      properties:
+        autorun:
+          description: Should this workfoow be run automatically?
+          type: boolean
+          example: true
+        type:
+          description: Type of scheduler
+          type: string
+          enum: [cron]
+          example: cron
+        args:
+          description: additional arguments
+          type: object
+    enabled:
+      description: determines if these options are enabled or disabled
+      type: boolean
+      example: true
+    children:
+      description: List of child workflows. Form of {worklfow_name -> Workflow}
+      type: object
+
+Step:
+  type: object
+  required: [name, action, app]
+  description: Encapsulation of executing an action in an app
+  properties:
+    name:
+      description: Name of the step
+      type: string
+      example: step1
+    action:
+      description: The action the step will take
+      type: string
+      example: pause
+    app:
+      description: The app to which the action belongs
+      type: string
+      example: CyberAnalytics
+    device:
+      description: Name of the device to use
+      type: string
+      example: server4
+    risk:
+      description: risk associated with this step failing
+      type: number
+      default: 0
+      example: 20
+    input:
+      description: The input arguments to the action
+      type: array
+      items:
+        $ref: '#/definitions/Argument'
+    output:
+      description: The output of teh step after it has been executed
+      type: string
+      example: result_from_step
+    widgets:
+      description: The widgets to which this app should send its output
+      type: array
+      items:
+        type: object
+        required: [app, name]
+        properties:
+          app:
+            description: Name of the app
+            type: string
+            example: HelloWorld
+          widget:
+            description: Name of the widget
+            type: string
+            example: testWidget
+    position:
+      description:  position of the step onthe workflow editor
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          description: x position
+          type: number
+          example: 443.22
+        y:
+          description: y position
+          type: number
+          example: -12.036
+    next:
+      description: The possible next steps
+      type: array
+      items:
+        $ref: '#/definitions/NextStep'
+    errors:
+      description: The possible next steps to take if this step fails
+      type: array
+      items:
+        $ref: '#/definitions/NextStep'
+
+NextStep:
+  type: object
+  required: [name]
+  description: Encapsualtion of a list of possible steps to take and conditionals (flags) required to be met before taking that step
+  properties:
+    name:
+      description: The name of the next step
+      type: string
+      example: step2
+    flags:
+      description: List of flags to evaluate
+      type: array
+      items:
+        $ref: '#/definitions/Flag'
+
+Flag:
+  type: object
+  required: [action]
+  description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
+  properties:
+    action:
+      description: The action encapsulated by this flag
+      type: string
+      example: regMatch
+    args:
+      description: The inputs to the flag
+      type: array
+      items:
+        $ref: '#/definitions/Argument'
+    filters:
+      description: filters for the data before passing it into the flags
+      type: array
+      items:
+        $ref: '#/definitions/Filter'
+
+Filter:
+  type: object
+  required: [action]
+  description: Filters or otherwise transforms the data given to it
+  properties:
+    action:
+      description: The action encapsulated by this filter
+      type: string
+      example: count
+    args:
+      description: The inputs to the filter
+      type: array
+      items:
+        $ref: '#/definitions/Argument'
+
+Argument:
+  type: object
+  required: [key, value]
+  description: Obejct used for passing an argument into various actions
+  properties:
+    key:
+      type: string
+      example: regex
+    value:
+      type: string
+      example: WALK(.*)
+    format:
+      type: string
+      default: str
+      example: string
+      enum: [str, string, unicode, int]
+
+WorkflowFromCytoscape:
+  type: object
+  properties:
+    start:
+      description: starting step name
+      type: string
+      example: step1
+    cytoscape:
+      type: object

@@ -1,0 +1,75 @@
+ActionMetricDetails:
+  type: object
+  required: [count, avg_time]
+  properties:
+    count:
+      description: Number of times the action has been called
+      type: integer
+      example: 102
+    avg_time:
+      description: Average execution time for the action. As a timestamp format
+      type: string
+      example: '0:00:00.001000'
+ActionMetric:
+  type: object
+  required: [name]
+  properties:
+    name:
+      description: Action name
+      type: string
+      example: repeatBackToMe
+    success_metrics:
+      $ref: '#/definitions/ActionMetricDetails'
+    error_metrics:
+      $ref: '#/definitions/ActionMetricDetails'
+AppMetricDetails:
+  type: object
+  required: [name, count, actions]
+  properties:
+    name:
+      description: Name of app
+      type: string
+      example: HelloWorld
+    count:
+      description: Number of times the app has been used
+      type: integer
+      example: 42
+    actions:
+      description: Metrics of the app's actions
+      type: array
+      items:
+        $ref: '#/definitions/ActionMetric'
+AppMetrics:
+  type: object
+  required: [apps]
+  properties:
+    apps:
+      description: Metrics of apps
+      type: array
+      items:
+        $ref: '#/definitions/AppMetricDetails'
+
+WorkflowMetric:
+  type: object
+  required: [name, count, avg_time]
+  properties:
+    name:
+      description: Name of the workflow
+      type: string
+      example: HelloWorldWorkflow
+    count:
+      description: Number of times the workflwo has been used
+      type: integer
+      example: 42
+    avg_time:
+      description: The average run time of this workflow
+      type: string
+      example: '1 day, 0:01:40.000500'
+WorkflowMetrics:
+  type: object
+  required: [workflows]
+  properties:
+    workflows:
+      type: array
+      items:
+        $ref: '#/definitions/WorkflowMetric'

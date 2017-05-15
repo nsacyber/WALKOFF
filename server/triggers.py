@@ -128,5 +128,5 @@ class Triggers(Base):
     def __str__(self):
         out = {'name': self.name,
                'conditions': json.loads(self.condition),
-               'play': self.play}
+               'play': self.playbook}
         return json.dumps(out)

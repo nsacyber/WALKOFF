@@ -5,13 +5,15 @@ from core.case.callbacks import StepInputValidated, FunctionExecutionSuccess, St
 
 app_metrics = {}
 '''
-form of {<app>: {'actions': {<action>: {'count': <count>
-                                        'avg_time': <average_execution_time>}
+form of {<app>: {'actions': {<action>: {"success" : {'count': <count>
+                                                     'avg_time': <average_execution_time>}
+                                        "error": {'count': <count>
+                                                  'avg_time': <average_execution_time>}
                  'count': <count>}}
 '''
 workflow_metrics = {}
 '''
-for  of {<workflow-name>: {'count': <count>, 'avg_time': <average_execution_time>}}
+form  of {<workflow-name>: {'count': <count>, 'avg_time': <average_execution_time>}}
 '''
 
 __action_tmp = {}

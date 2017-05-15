@@ -96,7 +96,7 @@ function editSubscription(selectedCase, ancestry, events){
             'async': false,
             'type': "POST",
             'global': false,
-            'data':ancestry,
+            'data':{"ancestry": ancestry, "events" : events},
             'headers':{"Authentication-Token":authKey},
             'url': "/cases/" + selectedCase + "/subscriptions",
             'success': function (data) {
@@ -184,7 +184,7 @@ function clearCaseDetails(){
 }
 
 function displayCaseDetails(subscriptionDetails){
-    var subscriptionDetails = JSON.parse(subscriptionDetails);
+    var subscriptionDetails = subscriptionDetails;
 
     //Grabs the data needed
     var ancestry = [], counter=0, events=[];

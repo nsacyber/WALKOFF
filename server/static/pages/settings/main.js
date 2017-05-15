@@ -30,7 +30,6 @@ $(function() {
             headers: {"Authentication-Token": authKey},
             type: "GET",
             success: function (e) {
-                e = JSON.parse(e);
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                 }
@@ -55,7 +54,6 @@ $(function() {
             headers: {"Authentication-Token": authKey},
             type: "POST",
             success: function (e) {
-                data = JSON.parse(e);
                 alert("user info" + data);
                 getUserList();
             },
@@ -95,7 +93,6 @@ $("#username").change(function () {
             headers: {"Authentication-Token": authKey},
             type: "GET",
             success: function (e) {
-                e = JSON.parse(e);
                 $currentUser = e;
                 for (i = 0; i < e['roles'].length; i++) {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
@@ -118,7 +115,7 @@ $("#saveNewUser").click(function(){
         headers: {"Authentication-Token": authKey},
         type: "PUT",
         success: function (e) {
-            data = JSON.parse(e);
+            data = e;
             alert("new user added" + e);
             if(e['status'] != 'invalid input'){
                 $('#username').append('<option class="userOption" value="' + username + '">' + username + '</option>');
@@ -139,7 +136,7 @@ function getRole(user){
         headers: {"Authentication-Token": authKey},
         type: "GET",
         success: function (e) {
-            data = JSON.parse(e);
+            data = e;
             $userRoles = data;
 //            addRole($("#addUserForm #username").val())
         },
@@ -155,7 +152,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#workflows_path").val(data["workflows_path"]);
     },
     error: function (e) {
@@ -169,7 +166,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#templates_path").val(data["templates_path"]);
     },
     error: function (e) {
@@ -183,7 +180,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#profile_visualizations_path").val(data["profile_visualizations_path"]);
     },
     error: function (e) {
@@ -197,7 +194,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#keywords_path").val(data["keywords_path"]);
     },
     error: function (e) {
@@ -210,7 +207,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#db_path").val(data["db_path"]);
     },
     error: function (e) {
@@ -224,7 +221,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#tls_version").val(data["tls_version"]);
     },
     error: function (e) {
@@ -237,7 +234,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#certificate_path").val(data["certificate_path"]);
     },
     error: function (e) {
@@ -250,7 +247,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#https").val(data["https"]);
     },
     error: function (e) {
@@ -263,7 +260,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#private_key_path").val(data["private_key_path"]);
     },
     error: function (e) {
@@ -277,7 +274,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#debug").val(data["debug"]);
     },
     error: function (e) {
@@ -290,7 +287,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#default_server").val(data["default_server"]);
     },
     error: function (e) {
@@ -303,7 +300,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#host").val(data["host"]);
     },
     error: function (e) {
@@ -316,7 +313,7 @@ $.ajax({
     headers: {"Authentication-Token": authKey},
     type: "GET",
     success: function (e) {
-        data = JSON.parse(e);
+        data = e;
         $("#port").val(data["port"]);
     },
     error: function (e) {
@@ -345,7 +342,7 @@ $("#setForm").on("submit", function (e) {
         headers: {"Authentication-Token": authKey},
         type: "POST",
         success: function (e) {
-            data = JSON.parse(e);
+            data = e;
             console.log(data);
         },
         error: function (e) {

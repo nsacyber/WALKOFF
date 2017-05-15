@@ -23,6 +23,10 @@ class TestUsersAndRoles(ServerTestCase):
             if u:
                 server.running_context.user_datastore.delete_user(u)
 
+            testu = server.running_context.user_datastore.get_user("test")
+            if testu:
+                server.running_context.user_datastore.delete_user(testu)
+
             server.running_context.Role.query.filter_by(name=self.name).delete()
             server.database.db.session.commit()
 
@@ -90,3 +94,17 @@ class TestUsersAndRoles(ServerTestCase):
         self.assertEqual(len(roles), len(response["roles"]))
         self.assertEqual(response["roles"][0]["name"], "admin")
         self.assertEqual(response["roles"][1]["name"], self.name)
+
+    def test_add_user(self):
+        data = {"username": self.email, "password": self.password}
+        response = json.loads(self.app.put('/users/'+self.email, data=data, headers=self.headers).get_data(as_text=True))
+        self.assertTrue("user added" in response["status"])
+
+        data = {"username": "test", "password": self.password}
+        response = json.loads(
+            self.app.put('/users/' + "test", data=data, headers=self.headers).get_data(as_text=True))
+        self.assertTrue("user added" in response["status"])
+
+        response = self.app.get('/users').get_data(as_text=True)
+        self.assertIn(self.email, response)
+        self.assertIn("test", response)
