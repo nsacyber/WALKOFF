@@ -5,7 +5,14 @@ from jinja2 import Environment, FileSystemLoader
 
 from core.config import paths
 
-app = Flask(__name__, static_folder=os.path.abspath('server/static'))
+class CustomFlask(Flask):
+    jinja_options = Flask.jinja_options.copy()
+    jinja_options.update(dict(
+        variable_start_string='<%',
+        variable_end_string='%>',
+    ))
+
+app = CustomFlask(__name__, static_folder=os.path.abspath('server/static'))
 app.jinja_loader = FileSystemLoader(['server/templates'])
 
 app.config.update(
