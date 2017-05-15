@@ -48,7 +48,7 @@
             headers:{"Authentication-Token":authKey},
             type:"GET",
             success:function(data){
-                result = JSON.parse(data);
+                result = data;
                 triggers = result['triggers'];
                 $("#trigger .triggerOption").remove();
                 for(i=0;i<triggers.length;i++){

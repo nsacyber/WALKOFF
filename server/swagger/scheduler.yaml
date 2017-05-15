@@ -1,0 +1,144 @@
+/execution/scheduler/start:
+  post:
+    tags:
+      - Scheduler
+    summary: Start the scheduler
+    description: ''
+    operationId: server.endpoints.scheduler.start_scheduler
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
+/execution/scheduler/stop:
+  post:
+    tags:
+      - Scheduler
+    summary: Stop the scheduler
+    description: ''
+    operationId: server.endpoints.scheduler.stop_scheduler
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
+/execution/scheduler/pause:
+  post:
+    tags:
+      - Scheduler
+    summary: Pause the scheduler
+    description: ''
+    operationId: server.endpoints.scheduler.pause_scheduler
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
+/execution/scheduler/resume:
+  post:
+    tags:
+      - Scheduler
+    summary: Resume the scheduler
+    description: ''
+    operationId: server.endpoints.scheduler.resume_scheduler
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler or error message
+              type: string
+              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
+/execution/scheduler/{job_id}/pause:
+  post:
+    tags:
+      - Scheduler
+    summary: Pause a specific job
+    description: ''
+    operationId: server.endpoints.scheduler.pause_job
+    produces:
+      - application/json
+    parameters:
+      - name: job_id
+        in: path
+        description: The job ID that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of job
+              type: string
+              example: Job Paused
+/execution/scheduler/{job_id}/resume:
+  post:
+    tags:
+      - Scheduler
+    summary: Resume a specific job
+    description: ''
+    operationId: server.endpoints.scheduler.resume_job
+    produces:
+      - application/json
+    parameters:
+      - name: job_id
+        in: path
+        description: The job ID that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      '200':
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of job
+              type: string
+              example: Job Resumed
+/execution/scheduler/jobs:
+  get:
+    tags:
+      - Scheduler
+    summary: Read all jobs
+    description: ''
+    operationId: server.endpoints.scheduler.read_all_jobs
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: A list of job objects
+          type: object
+          properties:
+            jobs:
+              $ref: '#/definitions/Job'

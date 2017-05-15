@@ -68,7 +68,7 @@ class TestTriggers(ServerTestCase):
                 "workbro": self.test_trigger_workflow,
                 "conditional-0": ""}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: form not valid", headers=self.headers, data=data)
+                                    "error: invalid json in conditional field", headers=self.headers, data=data)
 
     def test_add_trigger_add_duplicate(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}

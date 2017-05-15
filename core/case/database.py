@@ -82,7 +82,7 @@ class Event(_Base):
         else:
             output['data'] = ''
         if with_cases:
-            output['cases'] = [case.as_json() for case in self.cases]
+            output['cases'] = [case.as_json(with_events=False) for case in self.cases]
         return output
 
     @staticmethod

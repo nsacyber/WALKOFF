@@ -31,7 +31,6 @@ function executeWorkflow(currentPlaybook, currentWorkflow){
         });
         return tmp;
     }();
-    result = JSON.parse(result);
     if(result.status == "success"){
         $("#eventList").append("<li>" + currentWorkflow + " executed successfully </li>");
     }

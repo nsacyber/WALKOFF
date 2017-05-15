@@ -1,0 +1,82 @@
+/roles:
+  get:
+    tags:
+      - Roles
+    summary: Read all roles
+    description: ''
+    operationId: server.endpoints.roles.read_all_roles
+    produces:
+      - application/json
+    responses:
+      '200':
+        description: Success
+        schema:
+          description: A list of roles
+          type: array
+          items:
+            type: string
+          example:
+            - administrative_role
+            - guest
+'/roles/{role_name}':
+  parameters:
+    - name: role_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
+  put:
+    tags:
+      - Roles
+    summary: Create a role
+    description: ''
+    operationId: server.endpoints.roles.create_role
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The role object to be created
+        required: true
+        schema:
+          $ref: '#/definitions/Role'
+    responses:
+      '200':
+        description: Success
+  get:
+    tags:
+      - Roles
+    summary: Read a role
+    description: ''
+    operationId: server.endpoints.roles.read_role
+    produces:
+      - application/json
+    responses:
+      '200':
+        description: Success
+        schema:
+          $ref: '#/definitions/Role'
+  post:
+    tags:
+      - Roles
+    summary: Update a role
+    description: ''
+    operationId: server.endpoints.roles.update_role
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Updated fields for the role object
+        required: true
+        schema:
+          $ref: '#/definitions/EditRole'
+    responses:
+      '200':
+        description: Success
+        schema:
+          $ref: '#/definitions/Role'

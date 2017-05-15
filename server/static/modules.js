@@ -19,15 +19,6 @@ function changeInterface(page_url, opt){
                       var position = data.search("<head>");
                       var insertion = $("#globalVariables").prop("outerHTML");
                       data = [data.slice(0, position), insertion, data.slice(position)].join('');
-
-//                      var position2 = data.search("<body>");
-//                      var insertion2 = `<script> (function (){ $(document).bind({
-//                       beforeunload: function(e){ e.preventDefault(); },
-//                       unload: function(e){ e.preventDefault(); }
-//                       });}());</script>`
-//                      data = [data.slice(0, position2), insertion2, data.slice(position2)].join('');
-
-
                       $(content).attr("srcdoc", data);
                   },
                   error: function(e){
