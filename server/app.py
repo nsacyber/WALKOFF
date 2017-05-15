@@ -7,6 +7,7 @@ import core.config.config
 import connexion
 from gevent import monkey
 from flask_security.utils import encrypt_password
+from core.helpers import format_db_path
 
 monkey.patch_all()
 
@@ -48,7 +49,7 @@ def create_app():
     _app.config.update(
             # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
             SECRET_KEY = "SHORTSTOPKEYTEST",
-            SQLALCHEMY_DATABASE_URI='{0}:///{1}'.format(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
+            SQLALCHEMY_DATABASE_URI=format_db_path(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
             SECURITY_PASSWORD_HASH = 'pbkdf2_sha512',
             SECURITY_TRACKABLE = False,
             SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production',

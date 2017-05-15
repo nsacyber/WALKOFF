@@ -141,13 +141,17 @@ ConditionalsExecuted, __conditionals_executed_callback = __construct_logging_sig
                                                                                     'Conditionals executed')
 
 # Next step callbacks
-NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step', 'Next Step Taken', 'Next step taken')
+NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step',
+                                                                       'Next Step Taken',
+                                                                       'Next step taken')
 NextStepNotTaken, __next_step_not_taken_callback = __construct_logging_signal('Next Step',
                                                                               'Next Step Not Taken',
                                                                               'Next step not taken')
 
 # Flag callbacks
-FlagArgsValid, __flag_args_valid_callback = __construct_logging_signal('Flag', 'Flag Arguments Valid', 'Flag arguments valid')
+FlagArgsValid, __flag_args_valid_callback = __construct_logging_signal('Flag',
+                                                                       'Flag Arguments Valid',
+                                                                       'Flag arguments valid')
 FlagArgsInvalid, __flag_args_invalid_callback = __construct_logging_signal('Flag',
                                                                            'Flag Arguments Invalid',
                                                                            'Flag arguments invalid')
