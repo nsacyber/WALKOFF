@@ -23,17 +23,17 @@ function executeWorkflow(currentPlaybook, currentWorkflow){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "playbooks/" +currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
+            'url': "playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
                 tmp = data;
-                $("#eventList").append("<ul>" + currentWorkflow + " is executing </ul>");
+                $("#eventList").append("<li>" + currentWorkflow + " is executing </li>");
             }
         });
         return tmp;
     }();
     result = JSON.parse(result);
     if(result.status == "success"){
-        $("#eventList").append("<ul>" + currentWorkflow + " executed successfully </ul>");
+        $("#eventList").append("<li>" + currentWorkflow + " executed successfully </li>");
     }
     notifyMe();
 }
