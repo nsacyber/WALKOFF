@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
 from core.config.paths import case_db_path
+import core.config.config
 
 _Base = declarative_base()
 
@@ -116,7 +117,7 @@ class CaseDatabase(object):
     def create(self):
         """ Creates the database
         """
-        self.engine = create_engine('sqlite:///' + case_db_path)
+        self.engine = create_engine('{0}:///{1}'.format(core.config.config.case_db_type, case_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

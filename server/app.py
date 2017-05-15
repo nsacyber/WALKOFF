@@ -4,6 +4,7 @@ from flask import Flask
 from jinja2 import Environment, FileSystemLoader
 
 from core.config import paths
+import core.config.config
 
 app = Flask(__name__, static_folder=os.path.abspath('server/static'))
 app.jinja_loader = FileSystemLoader(['server/templates'])
@@ -11,7 +12,7 @@ app.jinja_loader = FileSystemLoader(['server/templates'])
 app.config.update(
         # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
         SECRET_KEY = "SHORTSTOPKEYTEST",
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.abspath(paths.db_path),
+        SQLALCHEMY_DATABASE_URI = '{0}:///{1}'.format(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
         SECURITY_PASSWORD_HASH = 'pbkdf2_sha512',
         SECURITY_TRACKABLE = False,
         SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production',
