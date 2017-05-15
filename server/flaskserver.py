@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 
-from flask import render_template
+from flask import render_template, redirect, url_for
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password
 from gevent import monkey
@@ -68,7 +68,7 @@ def default():
                 "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
-        return {"status": "Could Not Log In."}
+        return redirect(url_for('/login'))
 
 
 @app.route('/availablesubscriptions', methods=['GET'])
