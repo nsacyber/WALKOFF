@@ -5,6 +5,7 @@ import core.config.config
 
 logger = logging.getLogger(__name__)
 
+
 class Argument(object):
     def __init__(self, key=None, value=None, format='str'):
         """Initializes a new Argument object.

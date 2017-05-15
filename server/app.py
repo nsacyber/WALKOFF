@@ -1,4 +1,5 @@
-import os, logging
+import os
+import logging
 
 from jinja2 import Environment, FileSystemLoader
 from core import helpers
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def read_and_indent(filename, indent):
-    indent = '  '*indent
+    indent = '  ' * indent
     with open(filename, 'r') as file_open:
         return ['{0}{1}'.format(indent, line) for line in file_open]
 
@@ -47,22 +48,23 @@ def create_app():
     _app.jinja_loader = FileSystemLoader(['server/templates'])
 
     _app.config.update(
-            # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-            SECRET_KEY = "SHORTSTOPKEYTEST",
-            SQLALCHEMY_DATABASE_URI=format_db_path(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
-            SECURITY_PASSWORD_HASH = 'pbkdf2_sha512',
-            SECURITY_TRACKABLE = False,
-            SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production',
-            SECURITY_POST_LOGIN_VIEW = '/',
-            WTF_CSRF_ENABLED = False,
-            STATIC_FOLDER=os.path.abspath('server/static')
-        )
+        # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
+        SECRET_KEY="SHORTSTOPKEYTEST",
+        SQLALCHEMY_DATABASE_URI=format_db_path(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
+        SECURITY_PASSWORD_HASH='pbkdf2_sha512',
+        SECURITY_TRACKABLE=False,
+        SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
+        SECURITY_POST_LOGIN_VIEW='/',
+        WTF_CSRF_ENABLED=False,
+        STATIC_FOLDER=os.path.abspath('server/static')
+    )
 
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     connexion_app.add_api('composed_api.yaml')
     return _app
+
 
 # Template Loader
 env = Environment(loader=FileSystemLoader("apps"))

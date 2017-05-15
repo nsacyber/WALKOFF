@@ -31,7 +31,7 @@ class App(database.Base, object):
         
         Args:
             app (str, optional): The name of the app. Defaults to None.
-            device (list[str], optional): The list of device names to be associated with the App object. There is a 
+            devices (list[str], optional): The list of device names to be associated with the App object. There is a
                 one to many mapping from Apps to Devices.
         """
         self.name = app
@@ -90,7 +90,7 @@ class Device(database.Base):
             password (str, optional): The password for the Device object. Defaults to an empty string.
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
             port (int, optional): The port for the Device object. Defaults to 0.
-            exra_fields (str, optional): The string representation of a dictionary that holds various custom
+            extra_fields (str, optional): The string representation of a dictionary that holds various custom
                 extra fields for the Device object. Defaults to an empty string.
             app_id (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
                 empty string.
@@ -116,7 +116,7 @@ class Device(database.Base):
             password (str, optional): The password for the Device object. Defaults to an empty string.
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
             port (int, optional): The port for the Device object. Defaults to 0.
-            exra_fields (str, optional): The string representation of a dictionary that holds various custom
+            extra_fields (str, optional): The string representation of a dictionary that holds various custom
             extra fields for the Device object. Defaults to an empty string.
             app_server (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
             empty string.

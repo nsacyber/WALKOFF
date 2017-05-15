@@ -399,8 +399,8 @@ def pause_workflow(playbook_name, workflow_name):
             current_app.logger.info('Paused workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {"uuid": uuid}
         else:
-            current_app.logger.error('Cannot pause workflow {0}-{1}. Does not exist in controller'.format(playbook_name,
-                                                                                                          workflow_name))
+            current_app.logger.error('Cannot pause workflow '
+                                     '{0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
             status = 'error: invalid playbook and/or workflow name'
             return {"status": status}
 

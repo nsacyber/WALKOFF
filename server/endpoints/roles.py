@@ -15,6 +15,7 @@ def read_all_roles():
         else:
             current_app.logger.error('Cannot display roles. No roles exist.')
             return {"status": "roles do not exist"}
+
     return __func()
 
 
@@ -40,12 +41,13 @@ def create_role(role_name):
 
             running_context.db.session.commit()
             current_app.logger.info('Role added: {0}'.format({"name": role_name,
-                                                                         "description": description,
-                                                                         "urls": default_urls}))
+                                                              "description": description,
+                                                              "urls": default_urls}))
             return {"status": "role added " + role_name}
         else:
             current_app.logger.warning('Cannot add role {0}. Role already exists'.format(role_name))
             return {"status": "role exists"}
+
     return __func()
 
 
@@ -60,6 +62,7 @@ def read_role(role_name):
         else:
             current_app.logger.error('Cannot display role {0}. Role does not exist.'.format(role_name))
             return {"status": "role does not exist"}
+
     return __func()
 
 
@@ -78,10 +81,11 @@ def update_role(role_name):
                 add_to_user_roles(role_name, form.pages)
             current_app.logger.info('Edited role {0} to {1}'.format(role_name,
                                                                     {"name": role_name,
-                                                                                "description": form.description.data,
-                                                                                "urls": form.pages.data}))
+                                                                     "description": form.description.data,
+                                                                     "urls": form.pages.data}))
             return role.display()
         else:
             current_app.logger.error('Cannot edit role {0}. Role does not exist.'.format(role_name))
             return {"status": "role does not exist"}
+
     return __func()
