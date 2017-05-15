@@ -9,6 +9,7 @@ import connexion
 from gevent import monkey
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
+from flask import Flask
 
 monkey.patch_all()
 
@@ -46,7 +47,6 @@ def create_app():
     _app = connexion_app.app
     compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
-
     _app.config.update(
         # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
         SECRET_KEY="SHORTSTOPKEYTEST",
@@ -58,7 +58,11 @@ def create_app():
         WTF_CSRF_ENABLED=False,
         STATIC_FOLDER=os.path.abspath('server/static')
     )
-
+    _app.jinja_options = Flask.jinja_options.copy()
+    _app.jinja_options.update(dict(
+        variable_start_string='<%',
+        variable_end_string='%>',
+    ))
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

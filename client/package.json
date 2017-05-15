@@ -1,0 +1,30 @@
+{
+  "name": "WALKOFF",
+  "description": "WALKOFF",
+  "license": "MIT",
+  "dependencies": {
+    "@angular/animations": "~4.0.3",
+    "@angular/common": "~4.0.3",
+    "@angular/compiler": "~4.0.3",
+    "@angular/core": "~4.0.3",
+    "@angular/forms": "~4.0.3",
+    "@angular/http": "~4.0.3",
+    "@angular/platform-browser": "~4.0.3",
+    "@angular/platform-browser-dynamic": "~4.0.3",
+    "@angular/platform-server": "~4.0.3",
+    "@angular/router": "~4.0.3",
+    "@angularclass/conventions-loader": "^1.0.13",
+    "@angularclass/hmr": "~1.2.2",
+    "@angularclass/hmr-loader": "~3.0.2",
+    "core-js": "^2.4.1",
+    "rxjs": "~5.3.0",
+    "systemjs": "~0.20.12",
+    "typescript": "~2.3.2",
+    "zone.js": "~0.8.5"
+  },
+  "repository": {},
+  "engines": {
+    "node": ">= 4.2.1",
+    "npm": ">= 3"
+  }
+}
