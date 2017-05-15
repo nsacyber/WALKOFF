@@ -1,11 +1,12 @@
-# Successful
+# Success
 SUCCESS = 200
 OBJECT_CREATED = 201
 
-# User Error
+# Client Errors
+UNAUTHORIZED_ERROR = 401
 OBJECT_DNE_ERROR = 461
 OBJECT_EXISTS_ERROR = 462
 INVALID_INPUT_ERROR = 463
 
-# Internal Error
+# Server Errors
 IO_ERROR = 515
