@@ -33,11 +33,13 @@
     produces:
       - application/json
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created
         schema:
           type: object
           description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
+      462:
+        description: Object with that name already exists.
   get:
     tags:
       - Cases
@@ -54,6 +56,8 @@
           properties:
             case:
               $ref: '#/definitions/Case'
+      461:
+        description: Object does not exist.
   post:
     tags:
       - Cases
@@ -85,6 +89,8 @@
               type: array
               items:
                 $ref: '#/definitions/Case'
+      461:
+        description: Object does not exist.
   delete:
     tags:
       - Cases
@@ -96,6 +102,9 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.
+
 /cases/import:
   get:
     tags:
@@ -116,6 +125,11 @@
     responses:
       200:
         description: Success
+      463:
+        description: Invalid input error
+      515:
+        description: IO error
+
 /cases/export:
   post:
     tags:
@@ -136,6 +150,9 @@
     responses:
       200:
         description: Success
+      515:
+        description: IO Error
+
 /cases/subscriptions:
   get:
     tags:
@@ -151,6 +168,7 @@
         schema:
           type: object
           description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
+
 /cases/{case}/events:
   get:
     tags:
@@ -173,6 +191,8 @@
           type: array
           items:
             $ref: '#/definitions/Event'
+      461:
+        description: Object does not exist.
 
 /cases/{case}/subscriptions:
   parameters:
@@ -199,8 +219,8 @@
         schema:
           $ref: '#/definitions/SubscriptionChange'
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created
         schema:
           type: object
           description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
@@ -218,6 +238,8 @@
         schema:
           description: The subscriptions of the case
           $ref: '#definitions/CaseSubscription'
+      461:
+        description: Object does not exist.
   post:
     tags:
       - Subscriptions
@@ -241,6 +263,8 @@
         schema:
           type: object
           description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
+      461:
+        description: Object does not exist.
   delete:
     tags:
       - Subscriptions
@@ -270,3 +294,5 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.

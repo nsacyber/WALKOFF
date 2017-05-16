@@ -57,7 +57,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_case_not_found(self):
         response = self.get_with_status_check('/cases/hiThere', 'Case with given name does not exist',
-                                              headers=self.headers)
+                                              headers=self.headers, status_code=461)
         with self.assertRaises(KeyError):
             _ = response['cases']
 
@@ -108,7 +108,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_add_case_no_existing_cases(self):
         response = self.app.put('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json()})
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -124,7 +124,7 @@ class TestCaseServer(ServerTestCase):
         case1 = CaseSubscriptions()
         set_subscriptions({'case1': case1})
         response = self.app.put('/cases/case2', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json(),
                                     'case2': CaseSubscriptions().as_json()})
@@ -137,13 +137,33 @@ class TestCaseServer(ServerTestCase):
         for case in cases_config:
             self.assertEqual(case.subscription, '{}')
 
-    def test_add_case_duplicate_case(self):
+    def test_add_case_duplicate_case_out_of_sync(self):
         global_subs = GlobalSubscriptions(controller=['a'])
         case1 = CaseSubscriptions(global_subscriptions=global_subs)
         set_subscriptions({'case1': case1})
         expected_json = subscriptions_as_json()
         response = self.app.put('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertEqual(response, expected_json)
+
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
+        expected_cases = ['case1']
+        orderless_list_compare(self, cases, expected_cases)
+        cases_config = server.running_context.CaseSubscription.query.all()
+        self.assertEqual(len(cases_config), 1)
+        orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
+        for case in cases_config:
+            self.assertEqual(case.subscription, '{}')
+
+    def test_add_case_duplicate_case_in_sync(self):
+        global_subs = GlobalSubscriptions(controller=['a'])
+        case1 = CaseSubscriptions(global_subscriptions=global_subs)
+        set_subscriptions({'case1': case1})
+        expected_json = subscriptions_as_json()
+        self.app.put('/cases/case1', headers=self.headers)
+        response = self.app.put('/cases/case1', headers=self.headers)
+        self.assertEqual(response.status_code, 462)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, expected_json)
 
@@ -198,7 +218,7 @@ class TestCaseServer(ServerTestCase):
         self.app.put('/cases/case1', headers=self.headers)
         self.app.put('/cases/case2', headers=self.headers)
         response = self.app.delete('/cases/case3', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 461)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {name: case.as_json() for name, case in cases.items()})
 
@@ -213,7 +233,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_delete_case_no_cases(self):
         response = self.app.delete('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 461)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {})
 
@@ -301,7 +321,7 @@ class TestCaseServer(ServerTestCase):
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"name": "renamed"}
         response = self.app.post('/cases/case3', data=data, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 461)
         response = json.loads(response.get_data(as_text=True))
 
         result_cases = case_database.case_db.cases_as_json()
@@ -473,7 +493,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add1),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['add1'] = \
             {'events': ['a', 'b'],
@@ -485,7 +505,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add2),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['add2'] = \
             {'events': ['c', 'd', 'e'],
@@ -497,7 +517,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add3),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['add3'] = \
             {'events': [],
@@ -534,7 +554,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add1),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
 
@@ -701,7 +721,8 @@ class TestCaseServer(ServerTestCase):
                                     'Error occurred while editing subscription',
                                     data=json.dumps(edit1),
                                     headers=self.headers,
-                                    content_type='application/json')
+                                    content_type='application/json',
+                                    status_code=461)
 
     def test_edit_subscription_invalid_case(self):
         edit = {"ancestry": [], "events": []}
@@ -709,7 +730,8 @@ class TestCaseServer(ServerTestCase):
                                     'Error occurred while editing subscription',
                                     data=json.dumps(edit),
                                     headers=self.headers,
-                                    content_type='application/json')
+                                    content_type='application/json',
+                                    status_code=461)
 
     def test_edit_subscription_no_json(self):
         sub1 = Subscription()
