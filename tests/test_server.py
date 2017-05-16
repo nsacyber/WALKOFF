@@ -77,10 +77,11 @@ class TestServer(ServerTestCase):
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(response[key], str(value))
 
-        response = self.app.get('/configuration/junkName', headers=self.headers)
-        self.assertEqual(response.status_code, 461)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertEqual(response['junkName'], "Error: key not found")
+        self.get_with_status_check('/configuration/junkName',
+                                   'Configuration key does not exist.',
+                                   headers=self.headers,
+                                   error=True,
+                                   status_code=461)
 
     def test_set_configuration(self):
         original_config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and

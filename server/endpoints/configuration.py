@@ -19,7 +19,7 @@ def read_config_values(key):
                 return {str(key): str(getattr(core.config.config, key))}, SUCCESS
             else:
                 current_app.logger.warning('Configuration key {0} not found. Cannot get key.'.format(key))
-                return {str(key): "Error: key not found"}, OBJECT_DNE_ERROR
+                return {"error": "Configuration key does not exist."}, OBJECT_DNE_ERROR
         else:
             current_app.logger.warning(
                 'Configuration attempted to be grabbed by non authenticated user or key was empty')
@@ -56,5 +56,5 @@ def update_configuration():
             return {"status": 'success'}, SUCCESS
         else:
             current_app.logger.warning('Configuration attempted to be set by non authenticated user')
-            return {"status": 'error: user is not authenticated'}
+            return {"status": 'error: user is not authenticated'}, UNAUTHORIZED_ERROR
     return __func()

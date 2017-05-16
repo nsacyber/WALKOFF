@@ -20,7 +20,9 @@
           type: object
           description: '{[key]: <current value>}'
       461:
-        description: Object Does not exist.
+        description: Configuration key does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 /configuration/set:
   post:
     tags:
