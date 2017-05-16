@@ -26,7 +26,7 @@ $(function(){
     // Reformat the JSON data returned from the /playbook endpoint
     // into a format that jsTree can understand.
     function formatWorkflowJsonDataForJsTree(data) {
-        data = JSON.parse(data).playbooks;
+        data = data.playbooks;
         workflowList = data;
         var jstreeData = [];
         $.each(data, function( playbookName, workflows ) {
@@ -99,49 +99,132 @@ $(function(){
 
     function createSchema(parameters) {
         var appNames = [];
-        var appActions = {};
         $.each(appData, function( appName, value ) {
             appNames.push(appName);
-            appActions[appName] = [];
-            $.each(value.actions, function( actionName, actionProperties ) {
-                appActions[appName].push(actionName);
+        });
+
+        // This function creates a subschema for a single action. It contains
+        // all the inputs of the action so the user only needs to enter the value.
+        // When the user changes the action/flag/filter dropdown menu, the correct
+        // number of inputs will be displayed in the form.
+        function convertInputToSchema(args, inputName) {
+            var subSchema = {
+                type: "object",
+                title: "Inputs",
+                properties: {
+                    $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
+                        type: "string",
+                        enum: [inputName],
+                        options: {
+                            hidden: true
+                        }
+                    }
+                }
+            };
+
+            $.each(args, function( index, arg ) {
+                var pythonType = arg.type;
+                var valueSchema = null;
+                if (pythonType === "str") {
+                    valueSchema = {
+                        type: "string",
+                        title: "Type: string"
+                    };
+                }
+                else if (pythonType === "int") {
+                    valueSchema = {
+                        type: "integer",
+                        title: "Type: integer"
+                    };
+                }
+                else if (pythonType === "float") {
+                    valueSchema = {
+                        type: "number",
+                        title: "Type: float"
+                    };
+                }
+                else if (pythonType === "bool") {
+                    valueSchema = {
+                        type: "boolean",
+                        format: "checkbox",
+                        title: "Type: boolean"
+                    };
+                }
+
+                subSchema.properties[arg.name] = {
+                    type: "object",
+                    title: "Input " + (index+1) + ": " + arg.name,
+                    propertyOrder: index,
+                    options: {
+                        disable_collapse: true
+                    },
+                    properties: {
+                        value: valueSchema,
+                        key: { // This is hidden since it should not be modified by user
+                            type: "string",
+                            default: arg.name,
+                            options: {
+                                hidden: true
+                            }
+                        },
+                        format: { // This is hidden since it should not be modified by user
+                            type: "string",
+                            default: pythonType,
+                            options: {
+                                hidden: true
+                            }
+                        }
+                    }
+                }
+            });
+
+
+            return subSchema;
+        }
+
+        var definitions = {};
+
+        // Create the sub-schema for the actions
+        var actions = appData[parameters.app].actions;
+        var oneOfActions = [];
+        $.each(actions, function( actionName, actionProperties ) {
+            var args = actionProperties.args;
+            definitions["action_" + actionName] = convertInputToSchema(args, actionName);
+            oneOfActions.push({
+                $ref: "#/definitions/" + "action_" + actionName,
+                title: actionName
             });
         });
 
-        // Create a schema
+        // Create the sub-schema for the flags
+        var flags = flagsList;
+        var oneOfFlags = [];
+        $.each(flags, function( flagName, flagProperties ) {
+            var args = flagProperties.args;
+            definitions["flag_" + flagName] = convertInputToSchema(args, flagName);
+            oneOfFlags.push({
+                $ref: "#/definitions/" + "flag_" + flagName,
+                title: flagName
+            });
+        });
 
-        var argProperties = {
-            type: "array",
-            title: "Inputs",
-            format: "table",
-            items: {
-                type: "object",
-                id: "arr_item",
-                options: {
-                    disable_collapse: true
-                },
-                properties: {
-                    key: {
-                        type: "string",
-                        title: "Input Name"
-                    },
-                    format: {
-                        type: "string",
-                        title: "Format",
-                        enum: ['str', 'int', 'float', 'bool']
-                    },
-                    value: {
-                        type: "string",
-                        title: "Value"
-                    }
-                }
-            }
-        };
+        // Create the sub-schema for the filters
+        var filters = filtersList;
+        var oneOfFilters = [];
+        $.each(filters, function( filterName, filterProperties ) {
+            var args = filterProperties.args;
+            definitions["filter_" + filterName] = convertInputToSchema(args, filterName);
+            oneOfFilters.push({
+                $ref: "#/definitions/" + "filter_" + filterName,
+                title: filterName
+            });
+        });
 
         var schema = {
-            "$schema": "http://json-schema.org/draft-04/schema#",
+            $schema: "http://json-schema.org/draft-04/schema#",
             type: "object",
             title: "Node Parameters",
+            definitions: definitions,
             properties: {
                 name: {
                     type: "string",
@@ -157,17 +240,19 @@ $(function(){
                     title: "App",
                     enum: appNames
                 },
-                action: {
-                    type: "string",
-                    title: "Action",
-                    enum: appActions[parameters.app]
-                },
                 device: {
                     type: "string",
                     title: "Device",
                     enum: appData[parameters.app].devices
                 },
-                input: deepcopy(argProperties),
+                // Note instead of having a separate action
+                // property, we use a oneOf to include an
+                // action plus its inputs in a subschema.
+                // Similarly for flags and filters below.
+                input: {
+                    title: "Action",
+                    oneOf: deepcopy(oneOfActions)
+                },
                 next: {
                     options: {
                         hidden: true
@@ -210,12 +295,10 @@ $(function(){
                                 title: "Next Step Flag",
                                 headerTemplate: "Flag {{ i1 }}",
                                 properties: {
-                                    action: {
-                                        type: "string",
+                                    args: {
                                         title: "Select Flag",
-                                        enum: flagsList
+                                        oneOf: deepcopy(oneOfFlags) // See comment above regarding action inputs
                                     },
-                                    args: deepcopy(argProperties),
                                     filters: {
                                         type: "array",
                                         title: "Filters",
@@ -223,12 +306,10 @@ $(function(){
                                             type: "object",
                                             title: "Filter",
                                             properties: {
-                                                action: {
-                                                    type: "string",
+                                                args: {
                                                     title: "Select Filter",
-                                                    enum: filtersList
+                                                    oneOf: deepcopy(oneOfFilters) // See comment above regarding action inputs
                                                 },
-                                                args: deepcopy(argProperties),
                                             }
                                         }
                                     }
@@ -251,27 +332,21 @@ $(function(){
     function transformParametersToSchema(parameters) {
         parameters = deepcopy(parameters);
 
-        var newInputs = [];
-        $.each(parameters.input, function( key, input ) {
-            newInputs.push(input);
-        });
-        parameters.input = newInputs;
+        // We need to store a hidden property since in an oneOf,
+        // the schema must match exactly one of the options. There
+        // can be cases where two actions contain the exact same arguments,
+        // so to distinguish the two actions place the action name in
+        // in the $action property. This action is hidden and cannot be
+        // modified by the user.
+        parameters.input.$action = parameters.action;
 
         $.each(parameters.next, function( nextIndex, nextStep ) {
             $.each(nextStep.flags, function( index, flag ) {
 
-                var newArgs = [];
-                $.each(flag.args, function( key, arg ) {
-                    newArgs.push(arg);
-                });
-                flag.args = newArgs;
+                flag.args.$action = flag.action;
 
                 $.each(flag.filters, function( index, filter ) {
-                    var newArgs = [];
-                    $.each(filter.args, function( key, arg ) {
-                        newArgs.push(arg);
-                    });
-                    filter.args = newArgs;
+                    filter.args.$action = filter.action;
                 });
             });
         });
@@ -285,27 +360,18 @@ $(function(){
     function transformParametersFromSchema(parameters) {
         parameters = deepcopy(parameters);
 
-        var newInputs = {};
-        $.each(parameters.input, function( index, input ) {
-            newInputs[input.key] = input;
-        });
-        parameters.input = newInputs;
+        parameters.action = parameters.input.$action;
+        delete parameters.input.$action;
 
         $.each(parameters.next, function( nextIndex, nextStep ) {
             $.each(nextStep.flags, function( index, flag ) {
 
-                var newArgs = {};
-                $.each(flag.args, function( index, arg ) {
-                    newArgs[arg.key] = arg;
-                });
-                flag.args = newArgs;
+                flag.action = flag.args.$action;
+                delete flag.args.$action;
 
                 $.each(flag.filters, function( index, filter ) {
-                    var newArgs = {};
-                    $.each(filter.args, function( index, arg ) {
-                        newArgs[arg.key] = arg;
-                    });
-                    filter.args = newArgs;
+                    filter.action = filter.args.$action;
+                    delete filter.args.$action;
                 });
             });
         });
@@ -724,8 +790,6 @@ $(function(){
 
 
         // Load the data into the graph
-        workflowData = JSON.parse(workflowData);
-
         // If a node does not have a label field, set it to
         // the action. The label is what is displayed in the graph.
         var steps = workflowData.steps.map(function(value) {
@@ -1209,10 +1273,7 @@ $(function(){
         'url': "/flags",
         'dataType': 'json',
         'success': function (data) {
-            flagsList = [];
-            $.each(data.flags, function( key, value ) {
-                flagsList.push(key);
-            });
+            flagsList = data.flags;
         }
     });
 
@@ -1225,10 +1286,7 @@ $(function(){
         'url': "/filters",
         'dataType': 'json',
         'success': function (data) {
-            filtersList = [];
-            $.each(data.filters, function( key, value ) {
-                filtersList.push(key);
-            });
+            filtersList = data.filters;
         }
     });
 });

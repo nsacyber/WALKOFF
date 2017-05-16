@@ -1,5 +1,5 @@
 from server import app as __flaskapp
-from server.blueprints.cases import setup_case_stream
+from .events import setup_case_stream
 
 
 class _BlueprintInjection(object):
@@ -10,25 +10,14 @@ class _BlueprintInjection(object):
 AppBlueprint = _BlueprintInjection
 WidgetBlueprint = _BlueprintInjection
 
-setup_case_stream()
-
 
 def register_blueprints():
-    from server.blueprints import app as appblueprint
-    from server.blueprints import widget, playbook, cases, configuration, users, roles, trigger, scheduler, events, metrics, widgets
+    from server.blueprints import app as app
+    from server.blueprints import widget, events, widgets
+    __flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
     __flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
-    __flaskapp.register_blueprint(appblueprint.app_page, url_prefix='/apps/<app>')
-    __flaskapp.register_blueprint(playbook.playbook_page, url_prefix='/playbook')
-    __flaskapp.register_blueprint(playbook.playbooks_page, url_prefix='/playbooks')
-    __flaskapp.register_blueprint(cases.cases_page, url_prefix='/cases')
-    __flaskapp.register_blueprint(configuration.configurations_page, url_prefix='/configuration')
-    __flaskapp.register_blueprint(users.users_page, url_prefix='/users')
-    __flaskapp.register_blueprint(roles.roles_page, url_prefix='/roles')
     __flaskapp.register_blueprint(events.events_page, url_prefix='/events')
-    __flaskapp.register_blueprint(trigger.triggers_page, url_prefix='/execution/listener')
-    __flaskapp.register_blueprint(scheduler.scheduler_page, url_prefix='/execution/scheduler')
-    __flaskapp.register_blueprint(metrics.metrics_page, url_prefix='/metrics')
     __register_all_app_blueprints()
 
 

@@ -77,7 +77,7 @@ class Triggers(Base):
         
         Args:
             data_in (str): Data to be used to match against the conditionals
-            intput_in (str): The input to teh first step of the workflow
+            input_in (str): The input to the first step of the workflow
             
         Returns:
             Dictionary of {"status": <status string>}
@@ -128,5 +128,5 @@ class Triggers(Base):
     def __str__(self):
         out = {'name': self.name,
                'conditions': json.loads(self.condition),
-               'play': self.play}
+               'play': self.playbook}
         return json.dumps(out)

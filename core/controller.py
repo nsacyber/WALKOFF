@@ -27,6 +27,7 @@ threading_is_initialized = False
 
 logger = logging.getLogger(__name__)
 
+
 def initialize_threading():
     """Initializes the threadpool.
     """

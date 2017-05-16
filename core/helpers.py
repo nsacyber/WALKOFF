@@ -270,3 +270,7 @@ class SubclassRegistry(type):
         if not hasattr(cls, 'registry'):
             cls.registry = dict()
         cls.registry[name] = cls
+
+
+def format_db_path(db_type, path):
+    return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)

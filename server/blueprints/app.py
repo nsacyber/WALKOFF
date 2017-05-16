@@ -41,6 +41,7 @@ def list_app_actions():
     else:
         return json.dumps({'status': 'error: app name not found'})
 
+
 #TODO: DELETE
 @app_page.route('/display', methods=['POST'])
 @auth_token_required

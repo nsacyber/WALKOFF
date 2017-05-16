@@ -1,0 +1,40 @@
+Trigger:
+    type: object
+    required: [conditional, playbook, workflow]
+    properties:
+      name:
+        description: Name of the trigger
+        type: string
+        example: triggerOne
+      conditional:
+        description: String representation of a list of Flag objects
+        type: string
+        example: '[{"flag": "regMatch", "args": [{"key": "regex", "value": "(.*)"}], "filters": []}]'
+      playbook:
+        description: The name of the playbook that relates to this trigger
+        type: string
+        example: HelloWorldPlaybook
+      workflow:
+        description: The name of the workflow that relates to this trigger
+        type: string
+        example: HelloWorldWorkflow
+DisplayTrigger:
+    type: object
+    properties:
+      name:
+        description: Name of the trigger
+        type: string
+        example: triggerOne
+      conditions:
+        description: A list of Flag objects (see Flag for further description)
+        type: array
+        items:
+          $ref: '#/definitions/Flag'
+      playbook:
+        description: The name of the playbook that relates to this trigger
+        type: string
+        example: HelloWorldPlaybook
+      workflow:
+        description: The name of the workflow that relates to this trigger
+        type: string
+        example: HelloWorldWorkflow

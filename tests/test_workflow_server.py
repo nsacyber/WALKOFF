@@ -257,18 +257,22 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_edit_playbook_no_name(self):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
-        response = self.post_with_status_check('/playbooks/test', 'error: invalid json', headers=self.headers)
-        self.assertIn('playbooks', response)
-        self.assertDictEqual(response['playbooks'], expected_keys)
+        # response = self.post_with_status_check('/playbooks/test', 'error: invalid json', headers=self.headers)
+        response = self.app.post('/playbooks/test', headers=self.headers)
+        self.assertEqual(response._status_code, 400)
+        #self.assertIn('playbooks', response)
+        #self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
         self.assertTrue(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.workflow')))
 
     def test_edit_playbook_invalid_name(self):
         expected_keys = flask_server.running_context.controller.get_all_workflows()
-        response = self.post_with_status_check('/playbooks/junkPlaybookName',
-                                               'error: playbook name not found', headers=self.headers)
-        self.assertIn('playbooks', response)
-        self.assertDictEqual(response['playbooks'], expected_keys)
+        # response = self.post_with_status_check('/playbooks/junkPlaybookName',
+        #                                        'error: playbook name not found', headers=self.headers)
+        response = self.app.post('/playbooks/junkPlaybookName', headers=self.headers)
+        self.assertEqual(response._status_code, 400)
+        # self.assertIn('playbooks', response)
+        # self.assertDictEqual(response['playbooks'], expected_keys)
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_keys)
 
         self.assertFalse(
@@ -429,7 +433,7 @@ class TestWorkflowServer(ServerTestCase):
         data = {"new_name": workflow_name}
         initial_workflows = flask_server.running_context.controller.workflows.keys()
         self.post_with_status_check('/playbooks/test/workflows/junkworkflow', 'error: workflow name is not valid',
-                                    data=data, headers=self.headers)
+                                    data=json.dumps(data), headers=self.headers, content_type="application/json")
         final_workflows = flask_server.running_context.controller.workflows.keys()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 

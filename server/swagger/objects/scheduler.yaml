@@ -1,0 +1,11 @@
+Job:
+  type: object
+  properties:
+    name:
+      description: Job name
+      type: string
+      example: jobOne
+    id:
+      description: Job ID
+      type: string
+      example: 12345

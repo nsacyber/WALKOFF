@@ -1,0 +1,109 @@
+/execution/listener/triggers:
+  get:
+    tags:
+      - Triggers
+    summary: Get all triggers
+    description: ''
+    operationId: server.endpoints.triggers.read_all_triggers
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: A list of trigger objects
+          type: object
+          properties:
+            triggers:
+              type: array
+              items:
+                $ref: '#/definitions/DisplayTrigger'
+/execution/listener/execute:
+  post:
+    tags:
+      - Triggers
+    summary: Execute the trigger listener
+    description: ''
+    operationId: server.endpoints.triggers.listener
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+/execution/listener/triggers/{trigger_name}:
+  parameters:
+    - name: trigger_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
+  put:
+    tags:
+      - Triggers
+    summary: Create a trigger
+    description: ''
+    operationId: server.endpoints.triggers.create_trigger
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Trigger object to be created
+        required: true
+        schema:
+          $ref: '#/definitions/Trigger'
+    responses:
+      200:
+        description: Success
+  get:
+    tags:
+      - Triggers
+    summary: Get a trigger
+    description: ''
+    operationId: server.endpoints.triggers.read_trigger
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: The trigger object
+          type: object
+          properties:
+            trigger:
+              $ref: '#/definitions/DisplayTrigger'
+  post:
+    tags:
+      - Triggers
+    summary: Update a trigger
+    description: ''
+    operationId: server.endpoints.triggers.update_trigger
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Updated fields for the trigger object
+        required: true
+        schema:
+          $ref: '#/definitions/Trigger'
+    responses:
+      200:
+        description: Success
+  delete:
+    tags:
+      - Triggers
+    summary: Delete a trigger
+    description: ''
+    operationId: server.endpoints.triggers.delete_trigger
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success

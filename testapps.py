@@ -39,7 +39,7 @@ def test_app(app_name):
                         for test_module in test_modules])
         return unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
     elif test_modules is None or len(test_modules) == 0:
-        print("App {0} has no tests. Don't be that person. Write your tests.")
+        print("App {0} has no tests. Don't be that person. Write your tests.".format(app_name))
         return True
 
 if __name__ == '__main__':

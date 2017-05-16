@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 
-from flask import render_template
+from flask import render_template, redirect, url_for
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password
 from gevent import monkey
@@ -23,7 +23,7 @@ from server import app
 
 monkey.patch_all()
 
-urls = ['/', '/key', '/playbook', '/configuration', '/interface', '/execution/listener',
+urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
         '/execution/listener/triggers', '/metrics',
         '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
 
@@ -68,7 +68,7 @@ def default():
                 "default_page": default_page_name}
         return render_template("container.html", **args)
     else:
-        return {"status": "Could Not Log In."}
+        return redirect(url_for('/login'))
 
 
 @app.route('/availablesubscriptions', methods=['GET'])
@@ -95,14 +95,14 @@ def list_all_apps_and_actions():
 
 @app.route('/filters', methods=['GET'])
 @auth_token_required
-@roles_accepted(*running_context.user_roles['/playbook'])
+@roles_accepted(*running_context.user_roles['/playbooks'])
 def display_filters():
     return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
 
 
 @app.route('/flags', methods=['GET'])
 @auth_token_required
-@roles_accepted(*running_context.user_roles['/playbook'])
+@roles_accepted(*running_context.user_roles['/playbooks'])
 def display_flags():
     core.config.config.load_function_info()
     return json.dumps({"status": "success", "flags": core.config.config.function_info['flags']})

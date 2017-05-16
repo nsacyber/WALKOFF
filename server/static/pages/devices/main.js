@@ -60,7 +60,7 @@ for(var app in apps){
         }
 
         $.ajax({
-            url:'/apps/' + apps[sly.rel.activeItem] + '/devices/' + $("#deviceForm #name").val();,
+            url:'/apps/' + apps[sly.rel.activeItem] + '/devices/' + $("#deviceForm #name").val(),
             data:$("#deviceForm").serialize(),
             headers:{"Authentication-Token":authKey},
             type:"PUT",

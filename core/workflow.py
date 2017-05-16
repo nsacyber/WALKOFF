@@ -278,7 +278,7 @@ class Workflow(ExecutionElement):
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
             child_name = construct_workflow_name_key(self.playbook_name, child_name)
             if (child_name in self.options.children
-                and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                    and type(self.options.children[child_name]).__name__ == 'Workflow'):
                 logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.ancestry))
                 callbacks.WorkflowExecutionStart.send(self.options.children[child_name])
                 child_step_generator = self.options.children[child_name].__steps(start=child_start)

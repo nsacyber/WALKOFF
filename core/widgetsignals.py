@@ -30,4 +30,3 @@ def get_widget_signal(app_name, widget_name):
     if key not in _widget_signals:
         _widget_signals[key] = signal(create_widget_signal_name(app_name, widget_name))
     return _widget_signals[key]
-
