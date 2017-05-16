@@ -25,6 +25,8 @@ def create_playbook(playbook_name):
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
+        if playbook_name in running_context.controller.get_all_playbooks():
+            return {"error": "Playbook already exists."}, OBJECT_EXISTS_ERROR
         form = forms.AddPlaybookForm(request.form)
         status = 'success'
         template_playbook = form.playbook_template.data

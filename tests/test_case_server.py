@@ -17,7 +17,7 @@ from tests.util.assertwrappers import orderless_list_compare
 import server.flaskserver as server
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-
+from server.return_codes import *
 
 class TestCaseServer(ServerTestCase):
     def setUp(self):
@@ -43,7 +43,7 @@ class TestCaseServer(ServerTestCase):
     def test_display_cases_typical(self):
         cases = TestCaseServer.__basic_case_setup()
         response = self.app.get('/cases', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = set(cases.keys())
         received_cases = [case['name'] for case in response['cases']]
@@ -51,7 +51,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_cases_none(self):
         response = self.app.get('/cases', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertListEqual(response['cases'], [])
 
@@ -60,7 +60,7 @@ class TestCaseServer(ServerTestCase):
                                               'Case does not exist.',
                                               headers=self.headers,
                                               error=True,
-                                              status_code=461)
+                                              status_code=OBJECT_DNE_ERROR)
         with self.assertRaises(KeyError):
             _ = response['cases']
 
@@ -98,7 +98,7 @@ class TestCaseServer(ServerTestCase):
 
         for case_name, expected_events in expected_events_collection.items():
             response = self.app.get('/cases/{0}'.format(case_name), headers=self.headers)
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, SUCCESS)
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(case_name, response['case']['name'], 'Received case name differs from expected')
             received_events = [{key: event[key] for key in ['type', 'message', 'ancestry']}
@@ -111,7 +111,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_add_case_no_existing_cases(self):
         response = self.app.put('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json()})
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -127,7 +127,7 @@ class TestCaseServer(ServerTestCase):
         case1 = CaseSubscriptions()
         set_subscriptions({'case1': case1})
         response = self.app.put('/cases/case2', headers=self.headers)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json(),
                                     'case2': CaseSubscriptions().as_json()})
@@ -146,7 +146,7 @@ class TestCaseServer(ServerTestCase):
         set_subscriptions({'case1': case1})
         expected_json = subscriptions_as_json()
         response = self.app.put('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, expected_json)
 
@@ -169,7 +169,7 @@ class TestCaseServer(ServerTestCase):
                                               'Case already exists.',
                                               headers=self.headers,
                                               error=True,
-                                              status_code=462)
+                                              status_code=OBJECT_EXISTS_ERROR)
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
@@ -183,7 +183,7 @@ class TestCaseServer(ServerTestCase):
     def test_delete_case_only_case(self):
         self.app.put('/cases/case1', headers=self.headers)
         response = self.app.delete('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {})
 
@@ -200,7 +200,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(len(cases_config), 1)
         self.app.put('/cases/case2', headers=self.headers)
         response = self.app.delete('/cases/case1', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case2': case2.as_json()})
 
@@ -225,7 +225,7 @@ class TestCaseServer(ServerTestCase):
                                       'Case does not exist.',
                                       headers=self.headers,
                                       error=True,
-                                      status_code=461)
+                                      status_code=OBJECT_DNE_ERROR)
 
         db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = list(cases.keys())
@@ -241,7 +241,7 @@ class TestCaseServer(ServerTestCase):
                                       'Case does not exist.',
                                       headers=self.headers,
                                       error=True,
-                                      status_code=461)
+                                      status_code=OBJECT_DNE_ERROR)
 
         db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
@@ -258,7 +258,7 @@ class TestCaseServer(ServerTestCase):
                 "note": "note1"}
         self.app.put('/cases/case1', headers=self.headers)
         response = self.app.post('/cases/case1', data=data, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
 
         for case in original_cases_json['cases']:
@@ -282,7 +282,7 @@ class TestCaseServer(ServerTestCase):
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"note": "note1"}
         response = self.app.post('/cases/case2', data=data, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
 
         for case in original_cases_json['cases']:
@@ -304,7 +304,7 @@ class TestCaseServer(ServerTestCase):
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"name": "renamed"}
         response = self.app.post('/cases/case1', data=data, headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
 
         for case in original_cases_json['cases']:
@@ -331,7 +331,7 @@ class TestCaseServer(ServerTestCase):
                                     data=data,
                                     headers=self.headers,
                                     error=True,
-                                    status_code=461)
+                                    status_code=OBJECT_DNE_ERROR)
 
         result_cases = case_database.case_db.cases_as_json()
         self.assertDictEqual(result_cases, original_cases_json)
@@ -425,7 +425,7 @@ class TestCaseServer(ServerTestCase):
             expected_response = json.loads(f.read())
 
         response = self.app.get('/availablesubscriptions', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_response)
 
@@ -440,7 +440,7 @@ class TestCaseServer(ServerTestCase):
         expected_response = {key: case.as_json() for key, case in cases.items()}
 
         response = self.app.get('/cases/subscriptions', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(expected_response, response)
 
@@ -501,7 +501,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add1),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['add1'] = \
             {'events': ['a', 'b'],
@@ -513,7 +513,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add2),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['add2'] = \
             {'events': ['c', 'd', 'e'],
@@ -525,7 +525,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add3),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['add3'] = \
             {'events': [],
@@ -570,7 +570,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add1),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub8']['subscriptions']['add1'] = \
             {'events': ['a', 'b'],
@@ -582,7 +582,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add2),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['sub7']['subscriptions']['add2'] = \
             {'events': ['c', 'd', 'e'],
@@ -594,7 +594,7 @@ class TestCaseServer(ServerTestCase):
                                 data=json.dumps(add3),
                                 headers=self.headers,
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         expected_cases_json['case2']['subscriptions']['add3'] = \
             {'events': [],
@@ -632,7 +632,7 @@ class TestCaseServer(ServerTestCase):
                                    headers=self.headers,
                                    content_type='application/json',
                                    error=True,
-                                   status_code=461)
+                                   status_code=OBJECT_DNE_ERROR)
 
     def test_add_subscription_no_json(self):
         sub1 = Subscription()
@@ -700,7 +700,7 @@ class TestCaseServer(ServerTestCase):
                                  data=json.dumps(edit1),
                                  headers=self.headers,
                                  content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         subs = {'controller': {'events': output, 'subscriptions': {}}}
         expected_cases_json = {'case1': CaseSubscriptions().as_json()}
@@ -748,7 +748,7 @@ class TestCaseServer(ServerTestCase):
                                  data=json.dumps(edit1),
                                  headers=self.headers,
                                  content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
         self.__assert_subscriptions_synced('case2')
@@ -760,7 +760,7 @@ class TestCaseServer(ServerTestCase):
                                  data=json.dumps(edit2),
                                  headers=self.headers,
                                  content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
 
@@ -770,7 +770,7 @@ class TestCaseServer(ServerTestCase):
                                  data=json.dumps(edit3),
                                  headers=self.headers,
                                  content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_cases_json)
         self.__assert_subscriptions_synced('case2')
@@ -799,7 +799,7 @@ class TestCaseServer(ServerTestCase):
                                     headers=self.headers,
                                     content_type='application/json',
                                     error=True,
-                                    status_code=461)
+                                    status_code=OBJECT_DNE_ERROR)
 
     def test_edit_subscription_invalid_case(self):
         edit = {"ancestry": [], "events": []}
@@ -809,7 +809,7 @@ class TestCaseServer(ServerTestCase):
                                     headers=self.headers,
                                     content_type='application/json',
                                     error=True,
-                                    status_code=461)
+                                    status_code=OBJECT_DNE_ERROR)
 
     def test_edit_subscription_no_json(self):
         sub1 = Subscription()
@@ -927,7 +927,7 @@ class TestCaseServer(ServerTestCase):
                                        data=json.dumps(post_data),
                                        headers=self.headers,
                                        content_type='application/json')
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, SUCCESS)
             response = json.loads(response.get_data(as_text=True))
             expected_response = {'case1': construct_case_json(expected_tree_1),
                                  'case2': construct_case_json(expected_tree_2)}
@@ -986,7 +986,7 @@ class TestCaseServer(ServerTestCase):
                                       headers=self.headers,
                                       content_type='application/json',
                                       error=True,
-                                      status_code=461)
+                                      status_code=OBJECT_DNE_ERROR)
 
     def test_remove_subscription_invalid_ancestry(self):
         sub15 = Subscription()
@@ -1017,7 +1017,7 @@ class TestCaseServer(ServerTestCase):
                                           headers=self.headers,
                                           content_type='application/json',
                                           error=True,
-                                          status_code=461)
+                                          status_code=OBJECT_DNE_ERROR)
 
         test_junk_path('case2', ["sub21", "sub18", "sub15", "sub20"])
         test_junk_path('case2', ["sub1"])
@@ -1074,7 +1074,7 @@ class TestCaseServer(ServerTestCase):
         data = {'note': 'Note1'}
         response = self.app.post('/events/{0}'.format(smallest_id), data=json.dumps(data), headers=self.headers,
                                  content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_event)
 
@@ -1083,7 +1083,7 @@ class TestCaseServer(ServerTestCase):
         data = {'note': 'Note2'}
         response = self.app.post('/events/{0}'.format(smallest_id), data=json.dumps(data), headers=self.headers,
                                  content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected_event)
 
@@ -1120,4 +1120,4 @@ class TestCaseServer(ServerTestCase):
                                     headers=self.headers,
                                     content_type='application/json',
                                     error=True,
-                                    status_code=461)
+                                    status_code=OBJECT_DNE_ERROR)

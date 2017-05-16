@@ -186,6 +186,18 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_playbooks)
         self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
 
+    def test_add_playbook_already_exists(self):
+        expected_playbooks = flask_server.running_context.controller.get_all_workflows()
+        data = {'playbook_template': 'junkPlaybookTemplate'}
+        self.put_with_status_check('/playbooks/test_playbook',
+                                              'warning: template playbook not found. Using default template',
+                                              data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/playbooks/test_playbook',
+                                   'Playook already exists.',
+                                   data=data, headers=self.headers, status_code=OBJECT_EXISTS_ERROR, error=True)
+        self.assertDictEqual(flask_server.running_context.controller.get_all_workflows(), expected_playbooks)
+        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
+
     def test_add_workflow(self):
         initial_workflows = list(flask_server.running_context.controller.workflows.keys())
         workflow_name = 'test_name'

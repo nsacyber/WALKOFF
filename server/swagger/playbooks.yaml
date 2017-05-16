@@ -51,6 +51,10 @@
             playbooks:
               type: object
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+      462:
+        description: Playbook already exists.
+        schema:
+          $ref: '#/definitions/Error'
   get:
     tags:
       - Playbooks

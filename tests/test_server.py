@@ -7,6 +7,7 @@ from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
 from tests.util.servertestcase import ServerTestCase
+from server.return_codes import *
 
 
 class TestServer(ServerTestCase):
@@ -30,26 +31,26 @@ class TestServer(ServerTestCase):
 
     def test_login(self):
         response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld']
         response = self.app.get('/apps/', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response['apps'], expected_apps)
 
     def test_list_widgets(self):
         expected = {'HelloWorld': ['testWidget', 'testWidget2']}
         response = self.app.get('/widgets', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, expected)
 
     def test_get_all_list_actions(self):
         expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause']}
         response = self.app.get('/apps/actions', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response.keys(), expected_json.keys())
         for app, functions in response.items():
@@ -67,13 +68,13 @@ class TestServer(ServerTestCase):
         paths = {key: getattr(core.config.paths, key) for key in path_fields}
         for key, value in paths.items():
             response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, SUCCESS)
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(response[key], value)
 
         for key, value in configs.items():
             response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, SUCCESS)
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(response[key], str(value))
 
@@ -81,7 +82,7 @@ class TestServer(ServerTestCase):
                                    'Configuration key does not exist.',
                                    headers=self.headers,
                                    error=True,
-                                   status_code=461)
+                                   status_code=OBJECT_DNE_ERROR)
 
     def test_set_configuration(self):
         original_config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and
