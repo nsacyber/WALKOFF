@@ -60,10 +60,10 @@ def create_trigger(trigger_name):
             except ValueError:
                 current_app.logger.error(
                     'Cannot create trigger {0}. Invalid JSON in conditional field'.format(trigger_name))
-                return {"status": "error: invalid json in conditional field"}, INVALID_INPUT_ERROR
+                return {"status": 'Invalid JSON in conditional field.'}, INVALID_INPUT_ERROR
         else:
             current_app.logger.warning('Cannot create trigger {0}. Trigger already exists'.format(trigger_name))
-            return {"status": "warning: trigger with that name already exists"}, OBJECT_EXISTS_ERROR
+            return {"status": "Trigger already exists."}, OBJECT_EXISTS_ERROR
 
     return __func()
 
@@ -76,8 +76,9 @@ def read_trigger(trigger_name):
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:
             return {"status": 'success', "trigger": query.as_json()}, SUCCESS
-        current_app.logger.error('Cannot display trigger {0}. Does not exist'.format(trigger_name))
-        return {"status": "error: trigger not found"}, OBJECT_DNE_ERROR
+        else:
+            current_app.logger.error('Cannot display trigger {0}. Does not exist'.format(trigger_name))
+            return {"status": "Trigger does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -93,7 +94,7 @@ def update_trigger(trigger_name):
             # Ensures new name is unique
             if form.name.data:
                 if len(running_context.Triggers.query.filter_by(name=form.name.data).all()) > 0:
-                    return {"status": "error: duplicate names found. Trigger could not be edited"}, OBJECT_EXISTS_ERROR
+                    return {"status": "Trigger could not be edited."}, OBJECT_EXISTS_ERROR
 
             result = trigger.edit_trigger(form)
 
@@ -103,9 +104,10 @@ def update_trigger(trigger_name):
                 return {"status": "success"}, SUCCESS
             else:
                 current_app.logger.error('Could not edit trigger {0}. Malformed JSON in conditional'.format(trigger))
-                return {"status": "error: invalid json in conditional field"}, INVALID_INPUT_ERROR
-        current_app.logger.error('Could not edit trigger {0}. Trigger does not exist'.format(trigger))
-        return {"status": "trigger could not be edited"}, OBJECT_DNE_ERROR
+                return {"status": "Invalid json in conditional field"}, INVALID_INPUT_ERROR
+        else:
+            current_app.logger.error('Could not edit trigger {0}. Trigger does not exist'.format(trigger))
+            return {"status": "Trigger does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -121,9 +123,8 @@ def delete_trigger(trigger_name):
             running_context.db.session.commit()
             current_app.logger.info('Deleted trigger {0}'.format(trigger_name))
             return {"status": "success"}, SUCCESS
-        elif query is None:
+        else:
             current_app.logger.warning('Cannot delete trigger {0}. Trigger does not exist'.format(trigger_name))
-            return {"status": "error: trigger does not exist"}, OBJECT_DNE_ERROR
-        #return {"status": "error: could not remove trigger"}
+            return {"status": "Trigger does not exist."}, OBJECT_DNE_ERROR
 
     return __func()

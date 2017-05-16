@@ -62,14 +62,14 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(len(triggers), 0)
 
         self.get_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: trigger not found", headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                    "Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_add_trigger_invalid_form(self):
         data = {"playbrook": "test",
                 "workbro": self.test_trigger_workflow,
                 "conditional-0": ""}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: invalid json in conditional field", headers=self.headers, data=data,
+                                    "Invalid JSON in conditional field.", headers=self.headers, data=data,
                                     status_code=INVALID_INPUT_ERROR)
 
     def test_add_trigger_add_duplicate(self):
@@ -80,12 +80,12 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                     "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "warning: trigger with that name already exists", headers=self.headers, data=data,
+                                    "Trigger already exists.", headers=self.headers, data=data,
                                    status_code=OBJECT_EXISTS_ERROR)
 
     def test_remove_trigger_does_not_exist(self):
         self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "error: trigger does not exist", headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                    "Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_edit_trigger(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}

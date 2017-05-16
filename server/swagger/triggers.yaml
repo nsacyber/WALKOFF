@@ -58,11 +58,15 @@
           $ref: '#/definitions/Trigger'
     responses:
       201:
-        description: Object created.
+        description: Trigger created.
       462:
-        description: Object with that name already exists.
+        description: Trigger already exists.
+        schema:
+          $ref: '#/definitions/Error'
       463:
-        description: Invalid form data.
+        description: Invalid JSON in conditional field.
+        schema:
+          $ref: '#/definitions/Error'
   get:
     tags:
       - Triggers
@@ -81,7 +85,9 @@
             trigger:
               $ref: '#/definitions/DisplayTrigger'
       461:
-        description: Object does not exist.
+        description: Trigger does not exist.
+        schema:
+          $ref: '#/definitions/Error'
   post:
     tags:
       - Triggers
@@ -103,9 +109,17 @@
       200:
         description: Success
       461:
-        description: Object does not exist.
+        description: Trigger does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Trigger already exists.
+        schema:
+          $ref: '#/definitions/Error'
       463:
-        description: Invalid form data.
+        description: Invalid JSON in conditional field.
+        schema:
+          $ref: '#/definitions/Error'
   delete:
     tags:
       - Triggers
@@ -118,4 +132,6 @@
       200:
         description: Success
       461:
-        description: Object does not exist.
+        description: Trigger does not exist.
+        schema:
+          $ref: '#/definitions/Error'
