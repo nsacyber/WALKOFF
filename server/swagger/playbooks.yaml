@@ -42,8 +42,8 @@
         schema:
           $ref: '#/definitions/Playbook'
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created
         schema:
           type: object
           required: [playbooks]
@@ -69,6 +69,10 @@
             workflows:
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
+      461:
+        description: Object does not exist.
+      463:
+        description: Invalid input error.
   post:
     tags:
       - Playbooks
@@ -96,6 +100,8 @@
             workflows:
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
+      463:
+        description: Invalid input error.
   delete:
     tags:
       - Playbooks
@@ -114,6 +120,8 @@
             workflows:
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
+      515:
+        description: I/O error.
 /playbooks/{playbook_name}/copy:
   post:
     tags:
@@ -138,8 +146,10 @@
     produces:
       - application/json
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created.
+      463:
+        description: Invalid input error.
 /playbooks/{playbook_name}/workflows:
   get:
     tags:
@@ -168,6 +178,10 @@
               items:
                 type: string
               example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
+      461:
+        description: Object does not exist.
+      463:
+        description: Invalid input error.
 /playbooks/{playbook_name}/workflows/{workflow_name}:
   parameters:
   - name: playbook_name
@@ -198,14 +212,16 @@
         schema:
           $ref: '#/definitions/AddWorkflow'
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created.
         schema:
           type: object
           required: [workflow]
           properties:
             workflow:
               $ref: '#/definitions/Workflow'
+      463:
+        description: Invalid input error.
   get:
     tags:
       - Workflows
@@ -219,6 +235,10 @@
         description: Success
         schema:
           $ref: '#/definitions/Workflow'
+      461:
+        description: Object does not exist.
+      463:
+        description: Invalid input error.
   post:
     tags:
       - Workflows
@@ -245,6 +265,10 @@
           properties:
             workflow:
               $ref: '#/definitions/Workflow'
+      461:
+        description: Object does not exist.
+      463:
+        description: Invalid input error.
   delete:
     tags:
       - Workflows
@@ -263,6 +287,8 @@
             playbooks:
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
+      461:
+        description: Object does not exist.
 /playbooks/{playbook_name}/workflows/{workflow_name}/risk:
   get:
     tags:
@@ -298,6 +324,8 @@
               description: Raw number of the risk accumulated by the workflow
               type: number
               example: 153.5
+      461:
+        description: Object does not exist.
 /playbooks/{playbook_name}/workflows/{workflow_name}/copy:
   post:
     tags:
@@ -327,8 +355,10 @@
     produces:
       - application/json
     responses:
-      200:
-        description: Success
+      201:
+        description: Object created.
+      462:
+        description: Object exists error.
 /playbooks/{playbook_name}/workflows/{workflow_name}/execute:
   post:
     tags:
@@ -352,6 +382,8 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.
 /playbooks/{playbook_name}/workflows/{workflow_name}/pause:
   post:
     tags:
@@ -381,7 +413,8 @@
           properties:
             uuid:
               type: string
-
+      461:
+        description: Object does not exist.
 /playbooks/{playbook_name}/workflows/{workflow_name}/resume:
   post:
     tags:
@@ -413,6 +446,8 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.
 /playbooks/{playbook_name}/workflows/{workflow_name}/save:
   post:
     tags:
@@ -438,3 +473,7 @@
     responses:
       200:
         description: Success
+      461:
+        description: Object does not exist.
+      515:
+        description: I/O error.
