@@ -19,6 +19,8 @@
         schema:
           type: object
           description: '{[key]: <current value>}'
+      461:
+        description: Object Does not exist.
 /configuration/set:
   post:
     tags:

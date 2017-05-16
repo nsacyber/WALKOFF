@@ -78,7 +78,7 @@ class TestServer(ServerTestCase):
             self.assertEqual(response[key], str(value))
 
         response = self.app.get('/configuration/junkName', headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 461)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response['junkName'], "Error: key not found")
 
