@@ -69,6 +69,7 @@ WorkflowUpdate:
         type: object
 ResumeWorkflow:
     type: string
+
 Error:
   type: object
   required: [error]

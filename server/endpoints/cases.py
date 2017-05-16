@@ -40,7 +40,8 @@ def create_case(case):
             current_app.logger.debug('Case added: {0}'.format(case))
             return case_subscription.subscriptions_as_json(), OBJECT_CREATED
         else:
-            return case_subscription.subscriptions_as_json(), OBJECT_EXISTS_ERROR
+            current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case))
+            return {"error": "Case already exists."}, OBJECT_EXISTS_ERROR
     return __func()
 
 
@@ -55,7 +56,8 @@ def read_case(case):
         if case_obj:
             return {'case': case_obj.as_json()}, SUCCESS
         else:
-            return {'status': 'Case with given name does not exist'}, OBJECT_DNE_ERROR
+            current_app.logger.error('Cannot read case {0}. Case does not exist.'.format(case))
+            return {'error': 'Case does not exist.'}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -75,10 +77,11 @@ def update_case(case):
                 case_obj.name = form.name.data
                 running_context.db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(case, form.name.data))
-            status_code = SUCCESS
+            return case_database.case_db.cases_as_json(), SUCCESS
         else:
-            status_code = OBJECT_DNE_ERROR
-        return case_database.case_db.cases_as_json(), status_code
+            current_app.logger.error('Cannot update case {0}. Case does not exist.'.format(case))
+            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -94,10 +97,10 @@ def delete_case(case):
             running_context.db.session.delete(case_obj)
             running_context.db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case))
-            status_code = SUCCESS
+            return case_subscription.subscriptions_as_json(), SUCCESS
         else:
-            status_code = OBJECT_DNE_ERROR
-        return case_subscription.subscriptions_as_json(), status_code
+            current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case))
+            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -123,13 +126,13 @@ def import_cases():
                 return {"status": "success", "cases": case_subscription.subscriptions_as_json()}, SUCCESS
             except (OSError, IOError) as e:
                 current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, e))
-                return {"status": "error reading file"}, IO_ERROR
+                return {"error": "Error reading file."}, IO_ERROR
             except ValueError as e:
                 current_app.logger.error('Error importing cases from file {0}: Invalid JSON {1}'.format(filename, e))
-                return {"status": "file contains invalid JSON"}, INVALID_INPUT_ERROR
+                return {"error": "Invalid JSON file."}, INVALID_INPUT_ERROR
         else:
             current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
-            return {"status": "error: file does not exist"}, IO_ERROR
+            return {"error": "File does not exist."}, IO_ERROR
     return __func()
 
 
@@ -148,7 +151,7 @@ def export_cases():
             return {"status": "success"}, SUCCESS
         except (OSError, IOError) as e:
             current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, e))
-            return {"status": "error writing to file"}, IO_ERROR
+            return {"error": "Could not write to file."}, IO_ERROR
     return __func()
 
 
@@ -169,8 +172,11 @@ def read_all_events(case):
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         result = case_database.case_db.case_events_as_json(case)
-        status_code = SUCCESS if result else OBJECT_DNE_ERROR
-        return result, status_code
+        if result:
+            return result, SUCCESS
+        else:
+            current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case))
+            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -184,11 +190,15 @@ def create_subscription(case, element):
         if len(element['ancestry']) == 1 and events:
             events = convert_scheduler_events(events)
         converted_ancestry = convert_ancestry(element['ancestry'])
-        case_subscription.add_subscription(case, converted_ancestry, events)
-        running_context.CaseSubscription.update(case)
-        running_context.db.session.commit()
-        current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
-        return case_subscription.subscriptions_as_json(), OBJECT_CREATED
+        result = case_subscription.add_subscription(case, converted_ancestry, events)
+        if result:
+            running_context.CaseSubscription.update(case)
+            running_context.db.session.commit()
+            current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
+            return case_subscription.subscriptions_as_json(), OBJECT_CREATED
+        else:
+            current_app.logger.error("Cannot create subscription for case {0}. Case does not exist".format(case))
+            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -203,6 +213,7 @@ def read_subscription(case):
                 result = core.case.subscription.subscriptions[case].as_json(names=True)
                 return result, SUCCESS
             except KeyError:
+                current_app.logger.error("Cannot get subscriptions for case {0}. Case does not exist".format(case))
                 return {"error": "case does not exist"}, OBJECT_DNE_ERROR
     return __func()
 
@@ -254,7 +265,7 @@ def update_subscription(case, element):
         else:
             current_app.logger.error('Error occurred while editing subscription '
                                      '{0} to {1}'.format(ancestry, element['events']))
-            return {"status": "Error occurred while editing subscription"}, OBJECT_DNE_ERROR
+            return {"error": "Case or element does not exist."}, OBJECT_DNE_ERROR
     return __func(element)
 
 
@@ -265,9 +276,12 @@ def delete_subscription(case, ancestry):
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         converted_ancestry = convert_ancestry(ancestry['ancestry'])
-        case_subscription.remove_subscription_node(case, converted_ancestry)
-        running_context.CaseSubscription.update(case)
-        running_context.db.session.commit()
-        current_app.logger.debug('Deleted subscription {0}'.format(converted_ancestry))
-        return case_subscription.subscriptions_as_json()
+        result = case_subscription.remove_subscription_node(case, converted_ancestry)
+        if result:
+            running_context.CaseSubscription.update(case)
+            running_context.db.session.commit()
+            current_app.logger.debug('Deleted subscription {0}'.format(converted_ancestry))
+            return case_subscription.subscriptions_as_json()
+        else:
+            return {'error': 'Case or element does not exist.'}, OBJECT_DNE_ERROR
     return __func()
