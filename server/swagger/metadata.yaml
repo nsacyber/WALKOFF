@@ -112,6 +112,8 @@
     responses:
       200:
         description: Success
+      401:
+        description: User is unauthorized
 
 /key:
   get:
@@ -132,6 +134,8 @@
             auth_token:
               description: API Authentication Token
               type: string
+      401:
+        description: User is unauthorized
 
 /widgets:
   get:
