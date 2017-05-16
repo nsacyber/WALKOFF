@@ -38,17 +38,20 @@ def create_playbook(playbook_name):
                                                                          template_playbook=template_playbook)
                 current_app.logger.info('Playbook {0} created from template {1}'.format(playbook_name,
                                                                                         template_playbook))
+                return {"status": status,
+                        "playbooks": running_context.controller.get_all_workflows()}, OBJECT_CREATED
             else:
                 running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
                 current_app.logger.info(
                     'Playbook {0} cannot be created from template {1} because it doesn\'t exist. '
                     'Using default template instead'.format(playbook_name, template_playbook))
-                status = 'warning: template playbook not found. Using default template'
+                return {"status": status,
+                        "playbooks": running_context.controller.get_all_workflows()}, SUCCESS_WITH_WARNING
         else:
             running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
             current_app.logger.info('Playbook {0} created from default template'.format(playbook_name))
-        return {"status": status,
-                "playbooks": running_context.controller.get_all_workflows()}, OBJECT_CREATED
+            return {"status": status,
+                    "playbooks": running_context.controller.get_all_workflows()}, OBJECT_CREATED
 
     return __func()
 

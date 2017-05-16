@@ -51,6 +51,15 @@
             playbooks:
               type: object
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+      211:
+        description: Playbook created with empty template
+        schema:
+          type: object
+          required: [playbooks]
+          properties:
+            playbooks:
+              type: object
+              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
       462:
         description: Playbook already exists.
         schema:
