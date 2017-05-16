@@ -45,6 +45,8 @@ tags:
     description: Trigger Operations
   - name: System
     description: System Operations
+  - name: Client
+    description: Serves up client pages
 
 schemes:
   - http
