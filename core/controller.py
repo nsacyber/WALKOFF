@@ -58,7 +58,7 @@ def shutdown_pool():
     logger.debug('Controller thread pool shutdown')
 
 
-def execute_workflow_worker(workflow, start, subs):
+def execute_workflow_worker(workflow, subs, start=None):
     """Executes the workflow in a multi-threaded fashion.
     
     Args:
@@ -70,7 +70,10 @@ def execute_workflow_worker(workflow, start, subs):
         "Done" when the workflow has finished execution.
     """
     subscription.set_subscriptions(subs)
-    workflow.execute(start=start)
+    if start is not None:
+        workflow.execute(start=start)
+    else:
+        workflow.execute()
     return "done"
 
 
@@ -343,7 +346,7 @@ class Controller(object):
         if workflow:
             workflow.breakpoint_steps.extend(steps)
 
-    def execute_workflow(self, playbook_name, workflow_name, start='start'):
+    def execute_workflow(self, playbook_name, workflow_name, start=None):
         """Executes a workflow.
         
         Args:
@@ -363,8 +366,12 @@ class Controller(object):
             # If threading has not been initialized, initialize it.
             if not threading_is_initialized:
                 initialize_threading()
-            logger.info('Executing workflow {0} for step {1}'.format(key, start))
-            workflows.append(pool.submit(execute_workflow_worker, workflow, start, subs))
+            if start is not None:
+                logger.info('Executing workflow {0} for step {1}'.format(key, start))
+                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, start))
+            else:
+                logger.info('Executing workflow {0} with default starting step'.format(key, start))
+                workflows.append(pool.submit(execute_workflow_worker, workflow, subs))
             callbacks.SchedulerJobExecuted.send(self)
 
     def get_workflow(self, playbook_name, workflow_name):
