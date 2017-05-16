@@ -69,3 +69,12 @@ WorkflowUpdate:
         type: object
 ResumeWorkflow:
     type: string
+Error:
+  type: object
+  required: error
+  description: An error
+  properties:
+    error:
+      type: string
+      description: error message
+      example: Something really bad happened
