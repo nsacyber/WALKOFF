@@ -43,10 +43,12 @@
         schema:
           $ref: '#/definitions/User'
     responses:
-      200:
-        description: Success
       201:
-        description: Object created.
+        description: User created.
+      462:
+        description: Could not create user <username>. User already exists.
+        schema:
+          $ref: '#/definitions/Error'
   get:
     tags:
       - Users
@@ -65,7 +67,9 @@
             user:
               $ref: '#/definitions/DisplayUser'
       461:
-        description: Object does not exist.
+        description: Could not display user <username>. User does not exist.
+        schema:
+          $ref: '#/definitions/Error'
   post:
     tags:
       - Users
@@ -93,7 +97,9 @@
             user:
               $ref: '#/definitions/DisplayUser'
       461:
-        description: Object does not exist.
+        description: Could not edit user <username>. User does not exist.
+        schema:
+          $ref: '#/definitions/Error'
   delete:
     tags:
       - Users
@@ -108,6 +114,10 @@
       200:
         description: Success
       401:
-        description: Unauthorized.
+        description: Could not delete user <username>. User is current user.
+        schema:
+          $ref: '#/definitions/Error'
       461:
-        description: Object does not exist.
+        description: Could not delete user <username>. User does not exist.
+        schema:
+          $ref: '#/definitions/Error'

@@ -71,7 +71,7 @@ ResumeWorkflow:
     type: string
 Error:
   type: object
-  required: error
+  required: [error]
   description: An error
   properties:
     error:
