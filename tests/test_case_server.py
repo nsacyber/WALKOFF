@@ -1039,5 +1039,9 @@ class TestCaseServer(ServerTestCase):
         invalid_id = max([event.id for event in events]) + 1
 
         data = {"note": 'Note2'}
-        self.post_with_status_check('/events/{0}'.format(invalid_id), 'invalid event',
-                                    data=json.dumps(data), headers=self.headers, content_type='application/json')
+        self.post_with_status_check('/events/{0}'.format(invalid_id),
+                                    'invalid event',
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    content_type='application/json',
+                                    status_code=461)
