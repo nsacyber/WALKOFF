@@ -43,8 +43,10 @@
         schema:
           $ref: '#/definitions/Role'
     responses:
-      '200':
-        description: Success
+      '201':
+        description: Object created.
+      '462':
+        description: Object exists.
   get:
     tags:
       - Roles
@@ -58,6 +60,8 @@
         description: Success
         schema:
           $ref: '#/definitions/Role'
+      '461':
+        description: Object does not exist.
   post:
     tags:
       - Roles
@@ -80,3 +84,5 @@
         description: Success
         schema:
           $ref: '#/definitions/Role'
+      '461':
+        description: Object does not exist.
