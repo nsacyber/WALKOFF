@@ -34,6 +34,8 @@
           $ref: '#/definitions/Event'
       461:
         description: Object does not exist
+        schema:
+          $ref: '#/definitions/Error'
   get:
     tags:
       - Events
@@ -49,6 +51,8 @@
           $ref: '#/definitions/Event'
       461:
         description: Object does not exist
+        schema:
+          $ref: '#/definitions/Error'
 
 #/events:
 #    get:

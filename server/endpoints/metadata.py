@@ -75,7 +75,7 @@ def sys_pages(interface_name):
             return render_template("pages/" + interface_name + "/index.html", **args), SUCCESS
         else:
             current_app.logger.debug('Unsuccessful login attempt')
-            return {"status": "Could Not Log In."}, UNAUTHORIZED_ERROR
+            return {"error": "Could not Log In."}, UNAUTHORIZED_ERROR
 
     return __func()
 
@@ -87,7 +87,7 @@ def login_info():
             return json.dumps({"auth_token": current_user.get_auth_token()}), SUCCESS
         else:
             current_app.logger.debug('Unsuccessful login attempt')
-            return {"status": "Could Not Log In."}, UNAUTHORIZED_ERROR
+            return {"error": "Could not log in."}, UNAUTHORIZED_ERROR
 
     return __func()
 

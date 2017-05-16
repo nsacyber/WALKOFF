@@ -2,6 +2,7 @@ from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 from server.return_codes import *
 
+
 def update_event_note(event_id, note):
     from server.context import running_context
 
@@ -14,7 +15,7 @@ def update_event_note(event_id, note):
             case_database.case_db.edit_event_note(event_id, note['note'])
             return case_database.case_db.event_as_json(event_id), SUCCESS
         else:
-            return {"status": "invalid event"}, OBJECT_DNE_ERROR
+            return {"error": "Event does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -29,5 +30,5 @@ def read_event(event_id):
         if valid_event_id:
             return case_database.case_db.event_as_json(event_id), SUCCESS
         else:
-            return {"status": "invalid event"}, OBJECT_DNE_ERROR
+            return {"error": "Event does not exist."}, OBJECT_DNE_ERROR
     return __func()

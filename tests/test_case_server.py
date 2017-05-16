@@ -1115,8 +1115,9 @@ class TestCaseServer(ServerTestCase):
 
         data = {"note": 'Note2'}
         self.post_with_status_check('/events/{0}'.format(invalid_id),
-                                    'invalid event',
+                                    'Event does not exist.',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json',
+                                    error=True,
                                     status_code=461)

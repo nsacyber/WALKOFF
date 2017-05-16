@@ -114,6 +114,8 @@
         description: Success
       401:
         description: User is unauthorized
+        schema:
+          $ref: '#/definitions/Error'
 
 /key:
   get:
@@ -136,6 +138,8 @@
               type: string
       401:
         description: User is unauthorized
+        schema:
+          $ref: '#/definitions/Error'
 
 /widgets:
   get:
