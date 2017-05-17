@@ -9,20 +9,20 @@ Apps can also have custom interfaces enabling app developers to uniquely display
 Walkoff apps can be found at: https://github.com/iadgov/WALKOFF-Apps
 
 ## Features 
-1. Custom app interfaces
+1. #####Custom app interfaces
     *  Interfaces are built using HTML/CSS/Javascript with back-end functionality using Python. 
 
     *  Capability to stream data to interfaces.
 
-2. User and Role based authentication
+2. #####User and Role based authentication
   
-3. Case based logging 
+3. #####Case based logging 
     * Can granularly configure which events to log on a per-case basis
 
-4. Drag and Drop Workflow Editor
+4. #####Drag and Drop Workflow Editor
     * Makes creation and editing of workflows as easy as dragging and dropping capablities. 
     
-5. Flexible Workflow Execution
+5. #####Flexible Workflow Execution
     * Manual Execution - Execute a workflow by pressing a button
     * Active Execution - Cron style workflow execution
     
@@ -32,7 +32,7 @@ Walkoff apps can be found at: https://github.com/iadgov/WALKOFF-Apps
     
     * Ability to pause and resume workflows enabling *human in the loop* execution
 
-7. Metrics
+7. #####Metrics
     *How often are certain apps run? 
     
     *How often workflows are run? 
