@@ -50,12 +50,21 @@
     produces:
       - application/json
     parameters:
-      - in: body
-        name: body
-        description: Trigger object to be created
+      - in: formData
+        name: conditional
+        description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
+        type: string
         required: true
-        schema:
-          $ref: '#/definitions/Trigger'
+      - in: formData
+        name: playbook
+        description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
+        type: string
+        required: true
+      - in: formData
+        name: workflow
+        description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
+        type: string
+        required: true
     responses:
       201:
         description: Trigger created.
@@ -99,12 +108,21 @@
     produces:
       - application/json
     parameters:
-      - in: body
-        name: body
-        description: Updated fields for the trigger object
+      - in: formData
+        name: conditional
+        description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
+        type: string
         required: true
-        schema:
-          $ref: '#/definitions/Trigger'
+      - in: formData
+        name: playbook
+        description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
+        type: string
+        required: true
+      - in: formData
+        name: workflow
+        description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
+        type: string
+        required: true
     responses:
       200:
         description: Success
