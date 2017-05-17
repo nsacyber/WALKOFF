@@ -1,0 +1,91 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Case Overview</h1>
+            <p>WALKOFF contains a flexible, customizable logging system. It's better than your average,
+                fatal/error/warning/info/trace logging system -- it's a database-driven event subscription system which
+                allows you to visualize the workflow execution at any level of detail you feel is useful. You start by
+                creating and naming one or more "cases" which are collections of execution events you wish to log
+                together, we call these the case's event subscriptions. As a workflow or collection of workflows is
+                executed, the events to which the case is subscribed to are logged. Each level of execution contains
+                multiple events which can be subscribed to. Currently the available event subscriptions are as
+                follows:</p>
+
+            <h6>Controller</h6>
+            <ul style="list-style-type:circle">
+                <li>Scheduler Started</li>
+                <li>Scheduler Paused</li>
+                <li>Scheduler Resumed</li>
+                <li>Scheduler Shutdown</li>
+                <li>Job Added</li>
+                <li>Job Removed</li>
+                <li>Job Executed</li>
+                <li>Job Error</li>
+            </ul>
+
+            <h6>Workflow</h6>
+            <ul style="list-style-type:circle">
+                <li>New Workflow Created</li>
+                <li>Step Execution Success</li>
+                <li>Next Step Found</li>
+                <li>Workflow shutdown</li>
+            </ul>
+
+            <h6>Step</h6>
+            <ul style="list-style-type:circle">
+                <li>Function Execution Success</li>
+                <li>Input Validated</li>
+                <li>Conditionals Executed</li>
+            </ul>
+
+            <h6>Next Step</h6>
+            <ul style="list-style-type:circle">
+                <li>Next Step Taken</li>
+                <li>Next Step Not Taken</li>
+            </ul>
+
+
+            <h6>Flag</h6>
+            <ul style="list-style-type:circle">
+                <li>Flag Arguments Valid</li>
+                <li>Flag Arguments InValid</li>
+            </ul>
+
+            <h6>Filter</h6>
+            <ul style="list-style-type:circle">
+                <li>Filter Success</li>
+                <li>Filter Error</li>
+            </ul>
+
+
+            <p>Each case can be subscribed to multiple controllers which in turn can have multiple workflows which
+                can have multiple steps, and so on.
+                Each execution element can have multiple execution elements it manages, and for each execution
+                element instance, a case which can have an
+                individualized set of events it is subscribed to. So if you want one step in one workflow to be log
+                the events Function Execution Success
+                and Conditionals Executed, but a different step in that same workflow to only log its Input
+                Validated event, you can specify these.</p>
+
+            <p>Each event is logged with the following fields</p>
+            <dl>
+                <dt>Unique ID</dt>
+                <dt>Timestamp</dt>
+                <dt>Type</dt>
+                <dd> System, Workflow, Step, Next Step, Flag, Filter</dd>
+                <dt>Ancestry</dt>
+                <dd> A list of execution elements from controller to parent which caused this event</dd>
+                <dt>Message</dt>
+                <dd> The specific event that happened</dd>
+                <dt>Note</dt>
+                <dd> Field which can be modified to add notes</dd>
+            </dl>
+
+
+        </div>
+
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="">
+      <h1>Develop an app interface</h1>
+        <p>Under the hood WALKOFF runs on the Flask server, a web microframework built on the Werkzeug WSGI and Jinja
+            templating engine. In this example we will be constructing a small custom interface for the HelloWorld app
+            we developed in the last tutorial using the Jinja template engine to populate fields in an HTML</p>
+        <h4><b>1. Under the Python package with the name of your app, create three directories called interface, static, and templates.</b></h4>
+        <p>The <code>apps</code> directory should look like this:</p>
+        <pre><code class="console">
+WALKOFF
+|-- apps
+  |-- __init__.py
+  |-- HelloWorld
+    |-- interface
+      |-- static
+      |-- templates
+    |-- __init__.py
+  |-- [Other apps]
+        </code></pre>
+
+        <h4><b>2. Create a basic Display module</b></h4>
+        <p>Inside of your app Python package, we need to create a <code>display.py</code> module. The primary purpose of
+            this module is to define a function called <code>load</code> which will return a dictionary of key-value pairs
+            which will be used to populate the fields of our HTML. For right now, we just want to define an empty function
+            to stop the server from complainign when you attempt to display your app in the webapp. </p>
+
+        <pre><code class="python">
+def load(*args, **kwargs):
+    return {}
+        </code></pre>
+
+        <h4><b>3. Create a simple web page</b></h4>
+        <p>Inside of the templates directory, we create an <code>index.html</code> page. This will be primary landing
+            page of the app. Let's create a quick one that just says hello to the user.</p>
+        <pre><code class="html">
+&ltdiv id="main" class="container-fluid"&gt
+    &lth1&gtHello!&lt/h1&gt
+&lt/div&gt
+        </code></pre>
+
+        <h4><b>4. Use the Jinja templating to add more parameters</b></h4>
+        <p>Jinja templating is a powerful way to template text. We will only be doing very simple templating for this
+        example, but you can find much more involved examples online. We will modify our <code>load</code> function in
+        <code> display.py</code> to return a few values which we will then reference in <code>index.html</code>.</p>
+        <pre><code class="python">
+import random
+
+name = "John"
+
+def load(*args, **kwargs):
+    return {'name': name, 'rand_num': random.random()}
+        </code></pre>
+        <p>This will export the name field and a random decimal number between 0 and 1 to <code>index.html</code>. We
+        can access the values in <code>index.html</code>like this:</p>
+        <pre><code class="html">
+&ltdiv id="main" class="container-fluid"&gt
+    &lth1&gtHello {{ name }}!&lt/h1&gt
+    {% if rand_num > 0.5 %}
+        &lth4&gtIt's your lucky day!&lt/h4&gt
+    {% else %}
+        &lth4&gtMaybe not so lucky today&lt/h4&gt
+    {% endif %}
+&lt/div&gt
+        </code></pre>
+
+        <h4><b>5. Create a basic main application script</b></h4>
+        <p>We can also link Javascript to the interface using the static directory. Inside of the static directory, we
+            create a <code>main.js</code> script. Inside of this script, we can write
+        code that uses the jQuery and other helper plugins. We can include this script inside the HTML using some more
+        Jinja templating:</p>
+        <pre><code class="html">
+&ltscript src="{{ url_for('appPage.static', app=g.app, filename='main.js') }}"&gt&lt/script&gt
+
+&ltdiv id="main" class="container-fluid"&gt
+    &lth1&gtHello {{ name }}!&lt/h1&gt
+    {% if rand_num > 0.5 %}
+        &lth4&gtIt's your lucky day!&lt/h4&gt
+    {% else %}
+        &lth4&gtMaybe not so lucky today&lt/h4&gt
+    {% endif %}
+&lt/div&gt
+        </code></pre>
+        <p>The variables used in the script tag come from variables used to define the Flask blueprint used by the apps
+        (see the file <code>server.appblueprint</code> to see their declaration). What is important to note is that
+        your Javascript files go in the <code>static</code> folder and you can use them using the line similar to the
+            example above.</p>
+        <h4><b>Congratulations! You now have made an interface for your first WALKOFF app.</b></h4>
+        <p>Go have a look in the webapp and see the name of your app included in the "Installed Apps" portion of the
+            dashboard and see the interface you created for your app. Next, you'll learn how to test your app using a
+            top-level test script.</p>
+        <p>For more advanced interfaces you can see tutorials on creating Widgets (tutorial coming soon), Streaming Data
+        (tutorial coming soon).</p>
+        <div align="center" style="border:1px solid blue">
+            <h5><a href="Manage_app_dependencies.html"><< Prev</a>   ||   <a href="Test_an_app.html">Next >></a></h5>
+        </div>
+    </div>
+  </div>
+</div>

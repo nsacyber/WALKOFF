@@ -1,0 +1,40 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Managing app dependencies</h1>
+        <p>WALKOFF allows you to reduce the number of dependencies needed by allowing you to selectively install apps.</p>
+        <h3>Specifying app dependencies</h3>
+        <p>WALKOFF already requires several dependencies to run. There are listed in the `requirements.txt` file in the
+            root directory of the repository. However, you may develop an app which needs additional dependencies.
+            For example, if you were developing an app which incorporated machine learning, your app my depend on the popular
+        <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
+            didn't need your app, we can spare them needing to install them by including them in them in your app's
+        <code>setup.py</code> file. For our example, our setup.py would look like this:</p>
+        <pre><code class="python">
+from setuptools import setup
+
+setup(install_requires=['scikit-learn'])
+        </code></pre>
+        <p>You can customize the installation process using Python's setuptools package. However, if all you need are
+        extra dependencies, then you can simply include those dependencies to the install_requires argument.</p>
+        <h3>Installing app dependencies</h3>
+        <p>To install an app dependency, you can use the <code>installDependencies.py</code> script included at the top
+            level of the repository.</p>
+        <pre><code class="console">
+python installDependencies.py --apps App1
+        </code></pre>
+        <p>You can see more options using </p>
+        <pre><code class="console">
+python installDependencies.py --help
+        </code></pre>
+        <p>Next, you'll learn how to make a custom interface for your app (right now the server will quietly complain if you try to display your app)</p>
+        <div align="center" style="border:1px solid blue">
+            <h5><a href="Develop_an_app.html"><< Prev</a>   ||   <a href="Develop_an_app_interface.html">Next >></a></h5>
+        </div>
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>

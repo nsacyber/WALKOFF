@@ -1,0 +1,32 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Flags</h1>
+            <p>
+                Flags are conditions which much be met before a step progresses to another. The condition which must be
+                met is selected from a list functions defined in the core/flags directory. Each flag takes zero or more
+                arguments and an input. When executing a workflow, the input to a flag is the output from the previous
+                step. Additionally, data can be filtered through a <a href="Filter_Overview.html">Filter</a> before
+                being evaluated. Each flag can have its own list of filters, the output of the first being used as the
+                input to the second and so on. The flags currently implemented are the following:
+            </p>
+            <h5>Count</a></h5>
+            <p>Compares the number of elements in a collection or an integer to a value</p>
+            <h6>Arguments</h6>
+            <ul>
+                <li>Threshold - The value to compare the input to</li>
+                <li>Operator - The method of comparison (<, <=, =, >=, or >)</li>
+            </ul>
+            <h5></a>Regular Expression Match</h5>
+            <p>Attempts to compare the input to a regular expression</p>
+            <h6>Arguments</h6>
+            <ul>
+                <li>Regular expression - The regular expression used to match the input against</li>
+            </ul>
+        </div>
+
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
+    </div>
+</div>

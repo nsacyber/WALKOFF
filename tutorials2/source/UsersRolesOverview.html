@@ -1,0 +1,35 @@
+<!-- First Grid -->
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Users and Roles Overview</h1>
+          <ul style="list-style-type:circle">
+              <li>Each user has a few fields associated with it. These fields are: a user's email (or username), password, and role (e.g. "admin" or "default"), which will be discussed
+                in more detail below. Each user is stored in a SQLAlchemyUserDatastore, which includes various security measures, such as password encryption in the back-end database.</li>
+              <li>To add a user, you must make a "POST" request to "/users/add", including the user's username, password, and optional list of roles. There is also the ability to
+                edit the password or role(s), remove the user, and display the user.</li>
+              <li>Each user can have one or more roles, which is essentially a set of permissions. For example, a user with an "admin" role may have the ability to remove a user, 
+                whereas a regular or "default" user may only have the ability to display a user.</li>
+              <li>When creating a new role, you will have the ability to provide a name and description for the role, as well as a list of permissions for that role. You may also
+                leave the permissions blank to edit later, in which case only the default permissions will be loaded for that role. Once a role has been added, you can add that role
+                to an existing user.</li>
+              <li>Roles are useful for providing an extra layer of security. You do not want to give anyone the ability to create a user with admin privileges, who would then be able
+                to edit various configuration settings, workflow and trigger settings, and user settings.</li>
+          </ul>
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Second Grid  -->
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-third w3-center">
+      <i class="fa fa-flask w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
+    </div>
+  </div>
+</div>
+</div>

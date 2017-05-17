@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
+<style>
+
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-graduation-cap,.fa-flask{font-size:200px}
+
+#headerDiv{
+    background-image:url("/files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
+
+/*
+.topLevelList + ol{
+  display:none;
+}
+*/
+
+.topLevelList + h5{
+  display:none;
+}
+
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
+
+td{
+    padding-right:10px;
+    margin-bottom: 25px;
+    margin-top:25px;
+}
+
+.image{
+    text-align:center;
+}
+
+.image img{
+    max-width:100%;
+    max-height:100%;
+}
+
+.functionality_list li{
+    margin-bottom:20px;
+}
+
+.tag{
+    background-color:#edf0f4;
+    text-align:center;
+}
+
+img.media-object.image{
+    width:70%;
+    height:30%;
+}
+
+.tutorialTable td{
+    border-bottom:1px solid black;
+}
+
+</style>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+    
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    <a href="/index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+    <a href="/Sphinx_Docs/_build/html/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+    <a href="/swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+  </div>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+    <a class="w3-padding-large" href="/Sphinx_Docs/_build/html/index.html">Documentation</a>
+    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+    <a class="w3-padding-large" href="/swagger/index.html">API</a>
+    <a class="w3-padding-large" href="index.html">Tutorials</a>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
+  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+</header>
+
+<div class="w3-row-padding w3-padding-64 ">
+    <div class="w3-content">
+            <h1>Workflow Overview</h1>
+            <div class="w3-container w3-row">
+                <div class="w3-col l6">
+                    <pre class="code w3-small"><code>
+&lt;?xml version=&#34;1.0&#34; ?&gt;&#10;
+&lt;workflows&gt;&#10;
+    &lt;workflow name=&#34;helloWorldWorkflow&#34;&gt;&#10;
+        &lt;options&gt;&#10;
+            &lt;enabled&gt;true&lt;/enabled&gt;&#10;
+            &lt;scheduler autorun=&#34;false&#34; type=&#34;cron&#34;&gt;&#10;
+                &lt;hours&gt;*&lt;/hours&gt;&#10;
+                &lt;minutes&gt;*/0.1&lt;/minutes&gt;&#10;
+                &lt;day&gt;*&lt;/day&gt;&#10;
+                &lt;month&gt;11-12&lt;/month&gt;&#10;
+            &lt;/scheduler&gt;&#10;
+        &lt;/options&gt;&#10;
+        &lt;steps&gt;&#10;
+            &lt;step id=&#34;start&#34;&gt;&#10;
+                &lt;id&gt;start&lt;/id&gt;&#10;
+                &lt;app&gt;HelloWorld&lt;/app&gt;&#10;
+                &lt;action&gt;repeatBackToMe&lt;/action&gt;&#10;
+                &lt;device&gt;hwTest&lt;/device&gt;&#10;
+                &lt;input&gt;&#10;
+                    &lt;call format=&#34;str&#34;&gt;Hello World&lt;/call&gt;&#10;
+                &lt;/input&gt;&#10;
+                &lt;next step=&#34;1&#34;&gt;&#10;
+                    &lt;flag action=&#34;regMatch&#34;&gt;&#10;
+                        &lt;args&gt;&#10;
+                            &lt;regex format=&#34;str&#34;&gt;(.*)&lt;/regex&gt;&#10;
+                        &lt;/args&gt;&#10;
+                        &lt;filters&gt;&#10;
+                            &lt;filter action=&#34;length&#34;&gt;&#10;
+                                &lt;args/&gt;&#10;
+                            &lt;/filter&gt;&#10;
+                        &lt;/filters&gt;&#10;
+                    &lt;/flag&gt;&#10;
+                &lt;/next&gt;&#10;
+                &lt;error step=&#34;1&#34;/&gt;&#10;
+            &lt;/step&gt;&#10;
+        &lt;/steps&gt;&#10;
+    &lt;/workflow&gt;&#10;
+&lt;/workflows&gt;
+                    </code></pre>
+                </div>
+                <div class="w3-col l6">
+                    <table class="w3-table w3-bordered">
+                        <thead>
+                            <tr>
+                                <th class="w3-col l6"> Tag </th>
+                                <th class="w3-col l6"> Description </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+&lt;workflows&gt;&lt;/workflows&gt;
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    Container for Workflows
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+&lt;workflow&gt;&lt;/workflow&gt;
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    <p> Container for Workflow Object </p>
+                                    <p> Name = Name of the Workflow </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+&lt;options&gt;&lt;/options&gt;
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    Container for Workflow Options
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+&lt;enabled&gt;&lt;/enabled&gt;
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    Boolean value of whether the workflow should be run automatically when scheduled
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+&lt;scheduler&gt;&lt;/scheduler&gt;
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    <p> Container for scheduler object detailing when Workflow should be run automatically </p>
+                                    <p>Autorun=(true/false) - Enables/Disables scheduling options </p>
+                                    <p>type=(cron) - Determines scheduling type </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+&lt;hours&gt;&lt;/hours&gt;
+&lt;minutes&gt;&lt;/minutes&gt;
+&lt;day&gt;&lt;/day&gt;
+&lt;month&gt;&lt;/month&gt;
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    <p> Containers for cron job actions </p>
+                                    <p> Wildcard can be used with * </p>
+                                    <p> Ranges can be specified with - (e.g. 11-12) </p>
+                                </td>
+                            </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;steps&gt;&lt;/steps&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for step objects </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;step&gt;&lt;/step&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for Step object </p>
+                                <p>id=step ID</p>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;id&gt;&lt;/id&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Step ID </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;app&gt;&lt;/app&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> App Name </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;action&gt;&lt;/action&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Action name to be taken</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;device&gt;&lt;/device&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Device Name (configuration profile) to be used </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;input&gt;&lt;/input&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for arguments </p>
+                                <p> Tags contained within are specific to each app. </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;next&gt;&lt;/next&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for conditional </p>
+                                <p> step=Step to jump to next if conditional is true </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;flag&gt;&lt;/flag&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Conditional statement object </p>
+                                <p> action=function to verify output against </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;args&gt;&lt;/args&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for conditional arguments</p>
+                                <p> Elements contained within are specific to function called</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;filters&gt;&lt;/filters&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for filter objects</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;filter&gt;&lt;/filter&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for filter object.  Filters filter data before it is compared against a flag</p>
+                                <p> Action=action to be called</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+&lt;error&gt;&lt;/error&gt;
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Conditional statement object if error occurs </p>
+                                <p> step=next step to jump to if true </p>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+ <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
+
+<script src="/files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+</body>
+</html>
