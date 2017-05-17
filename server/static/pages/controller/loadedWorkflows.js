@@ -42,7 +42,7 @@ function customMenu(node){
         executeItem: {
             label: "Execute Workflow",
             action: function () {
-                var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents.shift()).text;
+                var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents[0]).text;
                 var workflow = node.text;
                 executeWorkflow(playbook, workflow);
             }
@@ -50,7 +50,7 @@ function customMenu(node){
         addCase: {
             label: "Add Case",
             action: function () {
-                var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents.shift()).text;
+                var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents[0]).text;
                 addCaseDialog.dialog("open");
 
             }
