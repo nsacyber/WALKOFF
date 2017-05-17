@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+
 import { LoginService } from '../../services/login';
 
 @Component({
-	selector: 'login-user',
+	selector: 'login-component',
 	templateUrl: './login.html',
 	//styleUrls: ['./style.css'],
 	providers: [LoginService]

@@ -61,7 +61,7 @@ def create_app():
         variable_start_string='<%',
         variable_end_string='%>',
     ))
-    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
+    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     connexion_app.add_api('composed_api.yaml')

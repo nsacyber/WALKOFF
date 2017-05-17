@@ -3,38 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title> WALKOFF - Automation for Everyone. Login </title>
-
-    <script src="<% url_for('static', filename='node_modules/core-js/client/shim.min.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/zone.js/dist/zone.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/rxjs/bundles/Rx.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/@angular/core/bundles/core.umd.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/@angular/common/bundles/common.umd.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/@angular/compiler/bundles/compiler.umd.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/@angular/platform-browser/bundles/platform-browser.umd.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/systemjs/dist/system.js') %>"></script>
-    <script src="<% url_for('static', filename='node_modules/typescript/lib/typescript.js') %>"></script>
+    
+    <!-- 1. Load libraries -->
+    <!-- Polyfill(s) for older browsers -->
+    <script src="client/node_modules/core-js/client/shim.min.js"></script>
+    <script src="client/node_modules/zone.js/dist/zone.js"></script>
+    <script src="client/node_modules/rxjs/bundles/Rx.js"></script>
+    <script src="client/node_modules/@angular/core/bundles/core.umd.js"></script>
+    <script src="client/node_modules/@angular/common/bundles/common.umd.js"></script>
+    <script src="client/node_modules/@angular/compiler/bundles/compiler.umd.js"></script>
+    <script src="client/node_modules/@angular/platform-browser/bundles/platform-browser.umd.js"></script>
+    <script src="client/node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js"></script>
+    <script src="client/node_modules/systemjs/dist/system.js"></script>
+    <script src="client/node_modules/typescript/lib/typescript.js"></script>
     <!-- jQuery 2.2.3 -->
-    <script src="<% url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') %>"></script>
+    <script src="client/plugins/jQuery/jquery-2.2.3.min.js"></script>
+
+     <!-- 2. Configure SystemJS -->
+    <script src="client/systemjs.config.js"></script>
+    <script src=""></script>
     <script>
-        SystemJS.config({
-            transpiler: 'typescript',
-            typescriptOptions: { emitDecoratorMetadata: true },
-            packages: { 
-                'modules': { defaultExtension: 'ts' },
-                'components': { defaultExtension: 'ts' },
-            },
-            map: { 
-                'modules': '/client/modules/',
-                'components': '/client/components/',
-            }
-        })
-        SystemJS.import('modules/login/login')
-            .then(null, console.error.bind(console));
+      SystemJS.import('login').catch(function(err){ console.error(err); });
     </script>
-    <!--<script type="application/javascript" src="<% url_for('static', filename='pages/login/login.component.js') %>"></script>
-    <script type="application/javascript" src="<% url_for('static', filename='pages/login/main.module.js') %>"></script>
-    <script type="application/javascript" src="<% url_for('static', filename='pages/login/main.js') %>"></script>-->
 </head>
 <body>
     <login-page></login-page>
