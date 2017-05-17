@@ -84,8 +84,12 @@
               type: object
       461:
         description: Object does not exist.
+        schema:
+          $ref: '#/definitions/Error'
       463:
         description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
   post:
     tags:
       - Playbooks
@@ -113,8 +117,18 @@
             workflows:
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
+      461:
+        description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Playbook with that name already exists.
+        schema:
+          $ref: '#/definitions/Error'
       463:
         description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
   delete:
     tags:
       - Playbooks
@@ -133,8 +147,14 @@
             workflows:
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
+      461:
+        description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
       515:
         description: I/O error.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/copy:
   post:
     tags:
@@ -160,9 +180,15 @@
       - application/json
     responses:
       201:
-        description: Object created.
-      463:
-        description: Invalid input error.
+        description: Playbook created.
+      461:
+        description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Invalid playbook name. Playbook already exists.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows:
   get:
     tags:
@@ -179,8 +205,8 @@
     produces:
       - application/json
     responses:
-      200:
-        description: Success
+      201:
+        description: Workflow created.
         schema:
           type: object
           required: [workflows]
@@ -192,9 +218,13 @@
                 type: string
               example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
       461:
-        description: Object does not exist.
+        description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
       463:
         description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}:
   parameters:
   - name: playbook_name
@@ -226,15 +256,29 @@
           $ref: '#/definitions/AddWorkflow'
     responses:
       201:
-        description: Object created.
+        description: Workflow created.
         schema:
           type: object
           required: [workflow]
           properties:
             workflow:
               $ref: '#/definitions/Workflow'
-      463:
-        description: Invalid input error.
+      211:
+        description: Workflow created using default template.
+        schema:
+          type: object
+          required: [workflow]
+          properties:
+            workflow:
+              $ref: '#/definitions/Workflow'
+      461:
+        description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Workflow already exists.
+        schema:
+          $ref: '#/definitions/Error'
   get:
     tags:
       - Workflows
@@ -249,9 +293,13 @@
         schema:
           $ref: '#/definitions/Workflow'
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
       463:
-        description: Invalid input error.
+        description: Element not found, or malformed JSON.
+        schema:
+          $ref: '#/definitions/Error'
   post:
     tags:
       - Workflows
@@ -279,9 +327,17 @@
             workflow:
               $ref: '#/definitions/Workflow'
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Workflow already exists.
+        schema:
+          $ref: '#/definitions/Error'
       463:
         description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
   delete:
     tags:
       - Workflows
@@ -301,7 +357,9 @@
               description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
               type: object
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}/risk:
   get:
     tags:
@@ -338,7 +396,9 @@
               type: number
               example: 153.5
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}/copy:
   post:
     tags:
@@ -369,9 +429,15 @@
       - application/json
     responses:
       201:
-        description: Object created.
+        description: Workflow copied.
+      461:
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
       462:
-        description: Object exists error.
+        description: Workflow already exists.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}/execute:
   post:
     tags:
@@ -396,7 +462,9 @@
       200:
         description: Success
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}/pause:
   post:
     tags:
@@ -427,7 +495,9 @@
             uuid:
               type: string
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}/resume:
   post:
     tags:
@@ -460,7 +530,13 @@
       200:
         description: Success
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      463:
+        description: Invalid UUID.
+        schema:
+          $ref: '#/definitions/Error'
 /playbooks/{playbook_name}/workflows/{workflow_name}/save:
   post:
     tags:
@@ -487,6 +563,10 @@
       200:
         description: Success
       461:
-        description: Object does not exist.
+        description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
       515:
         description: I/O error.
+        schema:
+          $ref: '#/definitions/Error'

@@ -74,9 +74,9 @@ def read_playbook(playbook_name):
                     return {"status": "success", "workflows": workflows[playbook_name]}, SUCCESS
                 else:
                     current_app.logger.error('Playbook {0} was not found'.format(playbook_name))
-                    return {"status": "error: name not found"}, OBJECT_DNE_ERROR
+                    return {"status": "Playbook does not exist."}, OBJECT_DNE_ERROR
             except Exception as e:
-                return {"status": "error: {0}".format(e)}, INVALID_INPUT_ERROR
+                return {"status": "{0}".format(e)}, INVALID_INPUT_ERROR
 
     return __func()
 
@@ -89,6 +89,12 @@ def update_playbook(playbook_name):
         if running_context.controller.is_playbook_registered(playbook_name):
             data = request.get_json()
             if 'new_name' in data and data['new_name']:
+
+                if running_context.controller.is_playbook_registered(data['new_name']):
+                    current_app.logger.warning(
+                        'Could not update playbook {0}. Playbook already exists.'.format(playbook_name))
+                    return {"status": "Playbook already exists."}, OBJECT_EXISTS_ERROR
+
                 new_name = data['new_name']
                 running_context.controller.update_playbook_name(playbook_name, new_name)
                 saved_playbooks = [os.path.splitext(playbook)[0]
@@ -102,8 +108,11 @@ def update_playbook(playbook_name):
                         "playbooks": running_context.controller.get_all_workflows()}, SUCCESS
             else:
                 current_app.logger.error('No new name provided to update playbook')
-                return {"status": 'error: no name provided',
+                return {"status": 'No new name provided to update playbook.',
                         "playbooks": running_context.controller.get_all_workflows()}, INVALID_INPUT_ERROR
+        else:
+            current_app.logger.error('Could not edit playbook {0}. Playbook does not exist.'.format(playbook_name))
+            return {"status": 'Playbook does not exist.'.format(playbook_name)}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -117,14 +126,18 @@ def delete_playbook(playbook_name):
         if running_context.controller.is_playbook_registered(playbook_name):
             running_context.controller.remove_playbook(playbook_name)
             current_app.logger.info('Deleted playbook {0} from controller'.format(playbook_name))
-        if playbook_name in [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]:
-            try:
-                os.remove(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)))
-                current_app.logger.info('Deleted playbook {0} from workflow directory'.format(playbook_name))
-            except (IOError, OSError) as e:
-                current_app.logger.error('Error deleting playbook {0}: {1}'.format(playbook_name, e))
-                status = 'error: error occurred while remove playbook file: {0}'.format(e)
-                return {'status': status, 'playbooks': running_context.controller.get_all_workflows()}, IO_ERROR
+            if playbook_name in [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]:
+                try:
+                    os.remove(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)))
+                    current_app.logger.info('Deleted playbook {0} from workflow directory'.format(playbook_name))
+                except (IOError, OSError) as e:
+                    current_app.logger.error('Error deleting playbook {0}: {1}'.format(playbook_name, e))
+                    status = 'Error occurred while remove playbook file: {0}.'.format(e)
+                    return {'status': status, 'playbooks': running_context.controller.get_all_workflows()}, IO_ERROR
+        else:
+            current_app.logger.error('Could not delete playbook {0}. Playbook does not exist.'.format(playbook_name))
+            return {'status': 'Playbook does not exist.', 'playbooks': running_context.controller.get_all_workflows()}, \
+                OBJECT_DNE_ERROR
 
         return {'status': status, 'playbooks': running_context.controller.get_all_workflows()}, SUCCESS
 
@@ -137,23 +150,28 @@ def copy_playbook(playbook_name):
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
-        form = forms.CopyPlaybookForm(request.form)
-        if form.playbook.data:
-            new_playbook_name = form.playbook.data
-        else:
-            new_playbook_name = playbook_name + "_Copy"
+        if running_context.controller.is_playbook_registered(playbook_name):
+            form = forms.CopyPlaybookForm(request.form)
+            if form.playbook.data:
+                new_playbook_name = form.playbook.data
+            else:
+                new_playbook_name = playbook_name + "_Copy"
 
-        if running_context.controller.is_playbook_registered(new_playbook_name):
-            current_app.logger.error('Cannot copy playbook {0} to {1}. Name already exists'.format(playbook_name,
-                                                                                                   new_playbook_name))
-            return {"status": 'error: invalid playbook name'}, INVALID_INPUT_ERROR
-        else:
-            running_context.controller.copy_playbook(playbook_name, new_playbook_name)
-            write_playbook_to_file(new_playbook_name)
-            current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
-            status = 'success'
+            if running_context.controller.is_playbook_registered(new_playbook_name):
+                current_app.logger.error('Cannot copy playbook {0} to {1}. Name already exists'.format(playbook_name,
+                                                                                                       new_playbook_name))
+                return {"status": 'Invalid playbook name. Playbook already exists.'}, OBJECT_EXISTS_ERROR
+            else:
+                running_context.controller.copy_playbook(playbook_name, new_playbook_name)
+                write_playbook_to_file(new_playbook_name)
+                current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
+                status = 'success'
 
-        return {"status": status}, OBJECT_CREATED
+            return {"status": status}, OBJECT_CREATED
+        else:
+            current_app.logger.error('Could not copy playbook {0}. Playbook does not exist.'.format(playbook_name))
+            return {'status': 'Playbook does not exist.', 'playbooks': running_context.controller.get_all_workflows()}, \
+                OBJECT_DNE_ERROR
 
     return __func()
 
@@ -169,9 +187,9 @@ def get_workflows(playbook_name):
                 return {"status": "success", "workflows": workflows[playbook_name]}, SUCCESS
             else:
                 current_app.logger.error('Playbook {0} not found. Cannot be displayed'.format(playbook_name))
-                return {"status": "error: name not found"}, OBJECT_DNE_ERROR
+                return {"status": "Playbook does not exist."}, OBJECT_DNE_ERROR
         except Exception as e:
-            return {"status": "error: {0}".format(e)}, INVALID_INPUT_ERROR
+            return {"status": "{0}".format(e)}, INVALID_INPUT_ERROR
 
     return __func()
 
@@ -185,6 +203,17 @@ def create_workflow(playbook_name, workflow_name):
         status = 'success'
         template_playbook = form.playbook.data
         template = form.template.data
+
+        #TODO: UNCOMMENT THIS
+        # if not running_context.controller.is_playbook_registered(playbook_name):
+        #     current_app.logger.error('Could not create workflow {0}. Playbook does not exist.'.format(playbook_name))
+        #     return {"status": 'Could not create workflow {0}. Playbook does not exist.'.format(workflow_name)}, \
+        #         OBJECT_DNE_ERROR
+
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            current_app.logger.warning('Could not create workflow {0}. Workflow already exists.'.format(workflow_name))
+            return {"status": "Workflow already exists."}, OBJECT_EXISTS_ERROR
+
         if template and template_playbook:
             if template_playbook in [os.path.splitext(workflow)[0]
                                      for workflow in
@@ -199,6 +228,12 @@ def create_workflow(playbook_name, workflow_name):
                                                'Using default template'.format(playbook_name, workflow_name,
                                                                                template_playbook, template))
                     status = 'warning: template not found in playbook. Using default template'
+                    workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                    return {'workflow': {'name': workflow_name,
+                                         'steps': workflow.get_cytoscape_data(),
+                                         'options': workflow.options.as_json(),
+                                         'start': workflow.start_step},
+                            'status': status}, SUCCESS_WITH_WARNING
                 else:
                     current_app.logger.info('Workflow {0}-{1} created from template {2}-{3}. '
                                             'Using default template'.format(playbook_name, workflow_name,
@@ -210,6 +245,12 @@ def create_workflow(playbook_name, workflow_name):
                                         'Using default template'.format(playbook_name,
                                                                         workflow_name))
                 status = 'warning: template playbook not found. Using default template'
+                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+                return {'workflow': {'name': workflow_name,
+                                     'steps': workflow.get_cytoscape_data(),
+                                     'options': workflow.options.as_json(),
+                                     'start': workflow.start_step},
+                        'status': status}, SUCCESS_WITH_WARNING
         else:
             add_default_template(playbook_name, workflow_name)
             current_app.logger.info('Workflow {0}-{1} created from default template'.format(playbook_name,
@@ -223,7 +264,7 @@ def create_workflow(playbook_name, workflow_name):
                     'status': status}, OBJECT_CREATED
         else:
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {'status': 'error: could not add workflow'}, INVALID_INPUT_ERROR
+            return {'status': 'Could not add workflow.'}, INVALID_INPUT_ERROR
 
     return __func()
 
@@ -255,7 +296,7 @@ def read_workflow(playbook_name, workflow_name):
         else:
             current_app.logger.error('Workflow {0}-{1} not found. Cannot be displayed.'.format(playbook_name,
                                                                                                workflow_name))
-            return {'status': 'error: name not found'}, OBJECT_DNE_ERROR
+            return {'status': 'Playbook or workflow does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -276,11 +317,16 @@ def update_workflow(playbook_name, workflow_name):
                 running_context.controller.get_workflow(playbook_name, wf_name).options = \
                     Options(scheduler=scheduler, enabled=enabled)
             if 'new_name' in data and data['new_name']:
-                running_context.controller.update_workflow_name(playbook_name,
-                                                                wf_name,
-                                                                playbook_name,
-                                                                data['new_name'])
-                wf_name = data['new_name']
+                if running_context.controller.is_workflow_registered(playbook_name, data['new_name']):
+                    current_app.logger.warning(
+                        'Could not update workflow {0}. Workflow already exists.'.format(workflow_name))
+                    return {"status": "Workflow already exists."}, OBJECT_EXISTS_ERROR
+                else:
+                    running_context.controller.update_workflow_name(playbook_name,
+                                                                    wf_name,
+                                                                    playbook_name,
+                                                                    data['new_name'])
+                    wf_name = data['new_name']
             workflow = running_context.controller.get_workflow(playbook_name, wf_name)
             if workflow:
                 returned_json = {'workflow': {'name': wf_name,
@@ -299,7 +345,7 @@ def update_workflow(playbook_name, workflow_name):
             current_app.logger.error(
                 'Workflow {0}-{1} not found in controller. Cannot be updated.'.format(playbook_name,
                                                                                       wf_name))
-            return {'status': 'error: workflow name is not valid'}, OBJECT_DNE_ERROR
+            return {'status': 'Playbook or workflow does not exist.'}, OBJECT_DNE_ERROR
 
     return __func(workflow_name)
 
@@ -318,7 +364,7 @@ def delete_workflow(playbook_name, workflow_name):
         else:
             current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot delete'.format(playbook_name,
                                                                                                      workflow_name))
-            status = 'error: invalid workflow name'
+            status = 'Playbook or workflow does not exist.'
             return {"status": status,
                     "playbooks": running_context.controller.get_all_workflows()}, OBJECT_DNE_ERROR
 
@@ -337,7 +383,10 @@ def read_workflow_risk(playbook_name, workflow_name):
             return {"risk_percent": risk_percent,
                     "risk_number": risk_number}, SUCCESS
         else:
-            return {"status": "error: workflow not found"}, OBJECT_DNE_ERROR
+            current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot retrieve risk.'.format(playbook_name,
+                                                                                                     workflow_name))
+            status = 'Playbook or workflow does not exist.'
+            return {"status": status}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -349,30 +398,37 @@ def copy_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         form = forms.CopyWorkflowForm(request.form)
-        if form.playbook.data:
-            new_playbook_name = form.playbook.data
-        else:
-            new_playbook_name = playbook_name
-        if form.workflow.data:
-            new_workflow_name = form.workflow.data
-        else:
-            new_workflow_name = workflow_name + "_Copy"
 
-        if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
-            current_app.logger.error('Cannot copy workflow {0}-{1} to {2}-{3}. '
-                                     'Workflow already exists.'.format(workflow_name, playbook_name,
-                                                                       new_workflow_name, new_playbook_name))
-            status = 'error: invalid playbook and/or workflow name'
-            return {"status": status}, OBJECT_EXISTS_ERROR
+        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            if form.playbook.data:
+                new_playbook_name = form.playbook.data
+            else:
+                new_playbook_name = playbook_name
+            if form.workflow.data:
+                new_workflow_name = form.workflow.data
+            else:
+                new_workflow_name = workflow_name + "_Copy"
+
+            if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
+                current_app.logger.error('Cannot copy workflow {0}-{1} to {2}-{3}. '
+                                         'Workflow already exists.'.format(workflow_name, playbook_name,
+                                                                           new_workflow_name, new_playbook_name))
+                status = 'Playbook or workflow already exists.'
+                return {"status": status}, OBJECT_EXISTS_ERROR
+            else:
+                running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name,
+                                                         new_workflow_name)
+                write_playbook_to_file(new_playbook_name)
+                current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
+                                                                                    new_playbook_name,
+                                                                                    new_workflow_name))
+                status = 'success'
+                return {"status": status}, OBJECT_CREATED
         else:
-            running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name,
-                                                     new_workflow_name)
-            write_playbook_to_file(new_playbook_name)
-            current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
-                                                                                new_playbook_name,
-                                                                                new_workflow_name))
-            status = 'success'
-            return {"status": status}, OBJECT_CREATED
+            current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot copy it.'.format(playbook_name,
+                                                                                                     workflow_name))
+            status = 'Playbook or workflow does not exist.'
+            return {"status": status}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -393,7 +449,7 @@ def execute_workflow(playbook_name, workflow_name):
             current_app.logger.error(
                 'Cannot execute workflow {0}-{1}. Does not exist in controller'.format(playbook_name,
                                                                                        workflow_name))
-            status = 'error: invalid workflow name'
+            status = 'Playbook or workflow does not exist.'
             return {"status": status}, OBJECT_DNE_ERROR
 
     return __func()
@@ -411,7 +467,7 @@ def pause_workflow(playbook_name, workflow_name):
         else:
             current_app.logger.error('Cannot pause workflow '
                                      '{0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
-            status = 'error: invalid playbook and/or workflow name'
+            status = 'Playbook or workflow does not exist.'
             return {"status": status}, OBJECT_DNE_ERROR
 
     return __func()
@@ -425,12 +481,14 @@ def resume_workflow(playbook_name, workflow_name):
         form = forms.ResumeWorkflowForm(request.form)
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             uuid = form.uuid.data
-            status = running_context.controller.resume_workflow(playbook_name, workflow_name, uuid)
-            return {"status": status}, SUCCESS
+            if running_context.controller.resume_workflow(playbook_name, workflow_name, uuid):
+                return {"status": "success"}, SUCCESS
+            else:
+                return {"status": "Invalid UUID."}, INVALID_INPUT_ERROR
         else:
             current_app.logger.error(
                 'Cannot resume workflow {0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
-            status = 'error: invalid playbook and/or workflow name'
+            status = 'Playbook or workflow does not exist.'
             return {"status": status}, OBJECT_DNE_ERROR
 
     return __func()
@@ -459,7 +517,7 @@ def save_workflow(playbook_name, workflow_name):
         else:
             current_app.logger.info('Cannot save workflow {0}-{1}. Workflow not in controller'.format(playbook_name,
                                                                                                       workflow_name))
-            return {'status': 'error: workflow name is not valid'}, OBJECT_DNE_ERROR
+            return {'status': 'Playbook or workflow does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
 

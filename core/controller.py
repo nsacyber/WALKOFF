@@ -490,12 +490,10 @@ class Controller(object):
             if validate_uuid == self.paused_workflows[wf_key].hex:
                 logger.info('Resuming workflow {0}'.format(workflow.name))
                 workflow.resume()
-                return "success"
+                return True
             else:
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
-                return "invalid UUID"
-        logger.error('Cannot resume workflow {0}. Workflow does not exist'.format(workflow.name))
-        return "error: invalid playbook and/or workflow name"
+                return False
 
     def resume_breakpoint_step(self, playbook_name, workflow_name):
         """Resumes a step that has been specified as a breakpoint.
