@@ -459,8 +459,8 @@
     produces:
       - application/json
     responses:
-      200:
-        description: Success
+      202:
+        description: Success asynchronous.
       461:
         description: Playbook or workflow does not exist.
         schema:

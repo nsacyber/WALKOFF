@@ -444,7 +444,7 @@ def execute_workflow(playbook_name, workflow_name):
             running_context.controller.execute_workflow(playbook_name, workflow_name)
             current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_name, workflow_name))
             status = 'success'
-            return {"status": status}, SUCCESS
+            return {"status": status}, SUCCESS_ASYNC
         else:
             current_app.logger.error(
                 'Cannot execute workflow {0}-{1}. Does not exist in controller'.format(playbook_name,
