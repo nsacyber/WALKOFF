@@ -17,4 +17,4 @@ build/*
 *.egg
 *.pem
 data/log/*.log
-server/swagger/composed_api.yaml
+server/api/composed_api.yaml
