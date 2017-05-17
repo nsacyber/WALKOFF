@@ -735,7 +735,8 @@ class TestWorkflowServer(ServerTestCase):
 
         self.post_with_status_check('/playbooks/test/workflows/helloWorldWorkflow/execute',
                                     'success',
-                                    headers=self.headers)
+                                    headers=self.headers,
+                                    status_code=SUCCESS_ASYNC)
         sync.wait(timeout=10)
         steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
@@ -764,7 +765,8 @@ class TestWorkflowServer(ServerTestCase):
         start = datetime.utcnow()
         self.post_with_status_check('/playbooks/basicWorkflow/workflows/test_name/execute',
                                     'success',
-                                    headers=self.headers)
+                                    headers=self.headers,
+                                    status_code=SUCCESS_ASYNC)
         sync.wait(timeout=10)
         steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
