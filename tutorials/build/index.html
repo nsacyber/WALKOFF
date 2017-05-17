@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
+<style>
+
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-graduation-cap,.fa-flask{font-size:200px}
+
+#headerDiv{
+    background-image:url("../../files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
+
+/*
+.topLevelList + ol{
+  display:none;
+}
+*/
+
+.topLevelList + h5{
+  display:none;
+}
+
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
+
+td{
+    padding-right:10px;
+    margin-bottom: 25px;
+    margin-top:25px;
+}
+
+.image{
+    text-align:center;
+}
+
+.image img{
+    max-width:100%;
+    max-height:100%;
+}
+
+.functionality_list li{
+    margin-bottom:20px;
+}
+
+.tag{
+    background-color:#edf0f4;
+    text-align:center;
+}
+
+img.media-object.image{
+    width:70%;
+    height:30%;
+}
+
+.tutorialTable td{
+    border-bottom:1px solid black;
+}
+
+</style>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+    
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    <a href="../../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+    <a href="../../Sphinx_Docs/_build/html/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+    <a href="../../swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+  </div>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+    <a class="w3-padding-large" href="../../Sphinx_Docs/_build/html/index.html">Documentation</a>
+    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+    <a class="w3-padding-large" href="../../swagger/index.html">API</a>
+    <a class="w3-padding-large" href="index.html">Tutorials</a>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
+  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+</header>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Version Two Tutorials</h1>
+      <h5><i>  More tutorials coming soon... </i></h5>
+      <h5><a href="../../swagger/index.html">API Documentation</a></h5>
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
+      <ol class="w3-medium">
+        <li><a href="Install_Tutorial.html"> Installation </a></li>
+        <li><a href="Interface_Overview.html"> Interface Overview </a></li>
+        <li>Run Your First Workflow</li>
+      </ol>
+      <hr>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
+      <ol class="w3-medium">
+        <li><a href="Workflow_Overview.html"> Workflow Overview </a></li>
+        <li>Basic Workflows</li>
+        <li>Advanced Workflows</li>
+        <li><a href="Workflow_Editor_Tutorial.html"> Workflow Editor </a></li>
+        <h5 class="w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> Workflow Components</h5>
+        <ol>
+          <li><a href="Step_Overview.html">Step</a></li>
+          <li><a href="Next_Step_Overview.html">Next Step</a></li>
+          <li><a href="Flags_Overview.html">Flags</a></li>
+          <li><a href="Filter_Overview.html">Filters</a></li>
+          <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> The Devices</h5>
+            <ol class="w3-medium">
+              <li><a href="Device_Overview.html">Device Overview</a></li>
+              <li><a href="Devices_Tutorial.html"> Device Tutorial </a></li>
+              <li><a href="Device_Management.html"> Device Management </a></li>
+            </ol>
+        </ol>
+      </ol>
+      <hr>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
+      <ol class="w3-medium">
+        <li><a href="App_Overview.html">App Overview</a></li>
+        <li><a href="Develop_an_app.html">Develop an App</a></li>
+        <li><a href="Manage_app_dependencies.html">Managing app dependencies</a></li>
+        <li><a href="Develop_an_app_interface.html">Develop an App Interface</a></li>
+        <li><a href="Test_an_app.html">Testing an App</a></li>
+      </ol>
+      <hr>
+
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Platform</h5>
+      <ol class="w3-medium">
+        <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> Execution</h5>
+        <ol>
+          <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Manual Execution</h5>
+          <ol class="w3-medium">
+            <li>Manually running a workflow</li>
+            <li><a href="Controller_Tutorial.html">Managing the controller</a></li>
+          </ol>
+
+          <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Active Execution</h5>
+          <ol class="w3-medium">
+            <li>Workflow schedules</li>
+          </ol>
+
+          <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Passive Execution</h5>
+          <ol class="w3-medium">
+            <li><a href="Triggers_Tutorial.html">Triggers Overview</a></li>
+            <li><a href="Trigger_Management.html">Manage Triggers</a></li>
+          </ol>
+        </ol>
+
+        <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> Cases</h5>
+        <ol class="w3-medium">
+          <li><a href="Case_Overview.html">Case Overview</a></li>
+          <li>View Cases</li>
+          <li>Manage Cases</li>
+        </ol>
+
+        <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
+        <ol class="w3-medium">
+          <li>Managing Users and Roles</li>
+          <li>System Configuration</li>
+          <li>HTTPS</li>
+        </ol>
+      </ol>
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+ <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
+
+<script src="../../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+</body>
+</html>
