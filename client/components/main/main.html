@@ -1,0 +1,143 @@
+<div class="wrapper">
+
+  <!-- Main Header -->
+  <header class="main-header">
+
+    <!-- Logo -->
+    <a href="/" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><b>WALK</b>OFF</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><b>WALK</b>OFF</span>
+    </a>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-static-top" role="navigation">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+      <!-- Navbar Right Menu -->
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <!-- User Account Menu -->
+          <li class="dropdown user user-menu">
+            <!-- Menu Toggle Button -->
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <!-- The user image in the navbar-->
+              <img src="client/components/main/img/genericUser.png" class="user-image" alt="User Image">
+              <!-- hidden-xs hides the username on small devices so only the image appears. -->
+              <span class="hidden-xs">{{currentUser}}</span>
+            </a>
+            <ul class="dropdown-menu">
+              <!-- The user image in the menu -->
+              <li class="user-header">
+                <img src="client/components/main/img/genericUser.png" class="img-circle" alt="User Image">
+
+                <p>
+                  {{currentUser}}
+                </p>
+              </li>
+              <!-- Menu Body -->
+              <li class="user-body">
+                <div class="row">
+
+                </div>
+                <!-- /.row -->
+              </li>
+              <!-- Menu Footer-->
+              <li class="user-footer">
+
+                <div class="pull-right">
+                  <a href="/logout" class="btn btn-default btn-flat">Sign out</a>
+                </div>
+                <div class="pull-left">
+                  <a href="/key" onclick="window.open(this.href, 'targetWindow', 'width=925, height=150'); return false;" class="btn btn-default btn-flat">API Key</a>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- Control Sidebar Toggle Button -->
+
+        </ul>
+      </div>
+    </nav>
+  </header>
+  
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+
+    <section class="sidebar">
+
+      <div class="user-panel">
+        <div class="pull-left image">
+          <img src="client/components/main/img/genericUser.png" class="img-circle" alt="User Image">
+        </div>
+        <div class="pull-left info">
+          <p>{{currentUser}}</p>
+          <!-- Status -->
+          <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="header">TOOLS</li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-link"></i> <span>Installed Apps</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li>You have no Shortstop apps installed.</li>
+              <!--{% for app in apps %}
+                    <li><a class="installedApp" href="#"><i class="fa fa-gear"></i> {{app}} </a></li>
+                {% else %}
+                    <li>You have no Shortstop apps installed.</li>
+              {% endfor %}-->
+          </ul>
+        </li>
+        <li>
+            <a id="ss_controller" href="#"><i class="fa fa-gear"></i> Controller </a>
+        </li>
+        <li>
+            <a id="ss_playbook" href="#"><i class="fa fa-sitemap"></i> Playbook </a>
+        </li>
+        <li>
+            <a id="ss_devices" href="#"><i class="fa fa-sitemap"></i> Devices </a>
+        </li>
+        <li>
+            <a id="ss_triggers" href="#"><i class="fa fa-sitemap"></i> Triggers </a>
+        </li>
+        <li>
+            <a id="ss_cases" href="#"><i class="fa fa-sitemap"></i> Cases </a>
+        </li>
+        <li>
+            <a id="ss_settings" href="#"><i class="fa fa-gear"></i> Settings </a>
+        </li>
+
+        <!-- <li>
+            <a id="ss_help" href="#"><i class="fa fa-gear"></i> Help </a>
+        </li> -->
+      </ul>
+    </section>
+  </aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+    </section>
+
+    <section class="content">
+      <div class="content-container">
+        <router-outlet></router-outlet>
+      </div>
+    </section>
+     <br clear="all" />
+  </div>
+
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+    </div>
+    <strong>WALKOFF</strong>
+  </footer>
+</div>

@@ -21,7 +21,6 @@ def read_and_indent(filename, indent):
     with open(filename, 'r') as file_open:
         return ['{0}{1}'.format(indent, line) for line in file_open]
 
-
 def compose_yamls():
     with open(os.path.join(paths.swagger_apis, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
@@ -40,7 +39,6 @@ def compose_yamls():
                 final_yaml.append(line)
     with open(os.path.join(paths.swagger_apis, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
-
 
 def create_app():
     connexion_app = connexion.App(__name__, specification_dir='swagger/', server='gevent')
@@ -63,7 +61,7 @@ def create_app():
         variable_start_string='<%',
         variable_end_string='%>',
     ))
-    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
+    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     connexion_app.add_api('composed_api.yaml')
