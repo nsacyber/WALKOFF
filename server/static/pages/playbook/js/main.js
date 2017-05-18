@@ -51,7 +51,6 @@ $(function(){
     // Reformat the JSON data returned from the /apps/actions endpoint
     // into a format that jsTree can understand.
     function formatAppsActionJsonDataForJsTree(data) {
-        data = JSON.parse(data);
         appData = {};
         var jstreeData = [];
         $.each(data, function( appName, actions ) {
