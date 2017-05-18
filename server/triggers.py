@@ -100,10 +100,10 @@ class Triggers(Base):
                     else:
                         workflow_to_be_executed.execute()
                         logger.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
-                    return {"status": "success"}
+                    return {}
                 else:
                     logger.error('Workflow associated with trigger is not in controller')
-                    return {"status": "error: workflow could not be found"}
+                    return {"error": "Workflow could not be found."}
         logging.debug('No trigger matches data input')
         return {"status": "warning: no trigger found valid for data in"}
 

@@ -19,6 +19,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from server.return_codes import *
 
+
 class TestCaseServer(ServerTestCase):
     def setUp(self):
         case_database.initialize()
@@ -57,9 +58,8 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_case_not_found(self):
         response = self.get_with_status_check('/cases/hiThere',
-                                              'Case does not exist.',
+                                              error='Case does not exist.',
                                               headers=self.headers,
-                                              error=True,
                                               status_code=OBJECT_DNE_ERROR)
         with self.assertRaises(KeyError):
             _ = response['cases']
@@ -165,10 +165,9 @@ class TestCaseServer(ServerTestCase):
         set_subscriptions({'case1': case1})
         expected_json = subscriptions_as_json()
         self.app.put('/cases/case1', headers=self.headers)
-        response = self.put_with_status_check('/cases/case1',
-                                              'Case already exists.',
+        response = self.put_with_status_check(url='/cases/case1',
+                                              error='Case already exists.',
                                               headers=self.headers,
-                                              error=True,
                                               status_code=OBJECT_EXISTS_ERROR)
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -222,9 +221,8 @@ class TestCaseServer(ServerTestCase):
         self.app.put('/cases/case1', headers=self.headers)
         self.app.put('/cases/case2', headers=self.headers)
         self.delete_with_status_check('/cases/case3',
-                                      'Case does not exist.',
+                                      error='Case does not exist.',
                                       headers=self.headers,
-                                      error=True,
                                       status_code=OBJECT_DNE_ERROR)
 
         db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -238,9 +236,8 @@ class TestCaseServer(ServerTestCase):
 
     def test_delete_case_no_cases(self):
         self.delete_with_status_check('/cases/case1',
-                                      'Case does not exist.',
+                                      error='Case does not exist.',
                                       headers=self.headers,
-                                      error=True,
                                       status_code=OBJECT_DNE_ERROR)
 
         db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -327,10 +324,9 @@ class TestCaseServer(ServerTestCase):
         original_cases_json = case_database.case_db.cases_as_json()
         data = {"name": "renamed"}
         self.post_with_status_check('/cases/case3',
-                                    'Case does not exist.',
+                                    error='Case does not exist.',
                                     data=data,
                                     headers=self.headers,
-                                    error=True,
                                     status_code=OBJECT_DNE_ERROR)
 
         result_cases = case_database.case_db.cases_as_json()
@@ -339,7 +335,7 @@ class TestCaseServer(ServerTestCase):
     def test_export_cases_no_filename(self):
         TestCaseServer.__basic_case_setup()
         expected_subs = subscriptions_as_json()
-        self.post_with_status_check('/cases/export', 'success', headers=self.headers)
+        self.post_with_status_check('/cases/export', headers=self.headers)
         self.assertIn('cases.json', os.listdir(tests.config.test_data_path))
         with open(core.config.paths.default_case_export_path, 'r') as appdevice_file:
             read_file = appdevice_file.read()
@@ -352,7 +348,7 @@ class TestCaseServer(ServerTestCase):
         expected_subs = subscriptions_as_json()
         filename = os.path.join(tests.config.test_data_path, 'case_other.json')
         data = {"filename": filename}
-        self.post_with_status_check('/cases/export', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/cases/export', headers=self.headers, data=data)
         self.assertIn('case_other.json', os.listdir(tests.config.test_data_path))
         with open(filename, 'r') as appdevice_file:
             read_file = appdevice_file.read()
@@ -369,7 +365,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_import_cases_no_filename(self):
         TestCaseServer.__basic_case_setup()
-        self.post_with_status_check('/cases/export', 'success', headers=self.headers)
+        self.post_with_status_check('/cases/export', headers=self.headers)
         # essentially add two more cases, swap contents of case 1 and 2 in case_subscriptions
         case1, _ = construct_case2()
         case2, _ = construct_case1()
@@ -379,7 +375,7 @@ class TestCaseServer(ServerTestCase):
         cases = {'case1': case1, 'case2': case2, 'case5': case5, 'case6': case6}
         add_cases(cases)
 
-        response = self.get_with_status_check('/cases/import', 'success', headers=self.headers)
+        response = self.get_with_status_check('/cases/import', headers=self.headers)
         expected_json = {'case1': construct_case1()[0],
                          'case2': construct_case2()[0],
                          'case3': construct_case1()[0],
@@ -397,7 +393,7 @@ class TestCaseServer(ServerTestCase):
         TestCaseServer.__basic_case_setup()
         filename = os.path.join(tests.config.test_data_path, 'case_other.json')
         data = {"filename": filename}
-        self.post_with_status_check('/cases/export', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/cases/export', headers=self.headers, data=data)
         # essentially add two more cases, swap contents of case 1 and 2 in case_subscriptions
         case1, _ = construct_case2()
         case2, _ = construct_case1()
@@ -406,7 +402,7 @@ class TestCaseServer(ServerTestCase):
         delete_cases(['case1' 'case2'])
         cases = {'case1': case1, 'case2': case2, 'case5': case5, 'case6': case6}
         add_cases(cases)
-        response = self.get_with_status_check('/cases/import', 'success', headers=self.headers, data=data)
+        response = self.get_with_status_check('/cases/import', headers=self.headers, data=data)
         expected_json = {'case1': construct_case1()[0],
                          'case2': construct_case2()[0],
                          'case3': construct_case1()[0],
@@ -627,11 +623,10 @@ class TestCaseServer(ServerTestCase):
                 "events": ["a", "b"]}
 
         self.put_with_status_check('/cases/junkcase/subscriptions',
-                                   'Case does not exist.',
+                                   error='Case does not exist.',
                                    data=json.dumps(add1),
                                    headers=self.headers,
                                    content_type='application/json',
-                                   error=True,
                                    status_code=OBJECT_DNE_ERROR)
 
     def test_add_subscription_no_json(self):
@@ -794,21 +789,19 @@ class TestCaseServer(ServerTestCase):
         edit1 = {"ancestry": ["sub8", "sub5", "junk"],
                  "events": ["a", "b"]}
         self.post_with_status_check('/cases/case2/subscriptions',
-                                    'Case or element does not exist.',
+                                    error='Case or element does not exist.',
                                     data=json.dumps(edit1),
                                     headers=self.headers,
                                     content_type='application/json',
-                                    error=True,
                                     status_code=OBJECT_DNE_ERROR)
 
     def test_edit_subscription_invalid_case(self):
         edit = {"ancestry": [], "events": []}
         self.post_with_status_check('/cases/case1/subscriptions',
-                                    'Case or element does not exist.',
+                                    error='Case or element does not exist.',
                                     data=json.dumps(edit),
                                     headers=self.headers,
                                     content_type='application/json',
-                                    error=True,
                                     status_code=OBJECT_DNE_ERROR)
 
     def test_edit_subscription_no_json(self):
@@ -981,11 +974,10 @@ class TestCaseServer(ServerTestCase):
         data = {"ancestry": ["sub1"]}
         set_subscriptions({'case1': CaseSubscriptions(), 'case2': CaseSubscriptions()})
         self.delete_with_status_check('/cases/junkcase/subscriptions',
-                                      'Case or element does not exist.',
+                                      error='Case or element does not exist.',
                                       data=json.dumps(data),
                                       headers=self.headers,
                                       content_type='application/json',
-                                      error=True,
                                       status_code=OBJECT_DNE_ERROR)
 
     def test_remove_subscription_invalid_ancestry(self):
@@ -1012,11 +1004,10 @@ class TestCaseServer(ServerTestCase):
         def test_junk_path(case, path):
             data = {"ancestry": path}
             self.delete_with_status_check('/cases/{0}/subscriptions'.format(case),
-                                          'Case or element does not exist.',
+                                          error='Case or element does not exist.',
                                           data=json.dumps(data),
                                           headers=self.headers,
                                           content_type='application/json',
-                                          error=True,
                                           status_code=OBJECT_DNE_ERROR)
 
         test_junk_path('case2', ["sub21", "sub18", "sub15", "sub20"])
@@ -1115,9 +1106,8 @@ class TestCaseServer(ServerTestCase):
 
         data = {"note": 'Note2'}
         self.post_with_status_check('/events/{0}'.format(invalid_id),
-                                    'Event does not exist.',
+                                    error='Event does not exist.',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json',
-                                    error=True,
                                     status_code=OBJECT_DNE_ERROR)

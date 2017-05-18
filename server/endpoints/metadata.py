@@ -26,7 +26,7 @@ def read_all_filters():
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
-        return {"status": "success", "filters": core.config.config.function_info['filters']}, SUCCESS
+        return {"filters": core.config.config.function_info['filters']}, SUCCESS
 
     return __func()
 
@@ -37,7 +37,7 @@ def read_all_flags():
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         core.config.config.load_function_info()
-        return {"status": "success", "flags": core.config.config.function_info['flags']}, SUCCESS
+        return {"flags": core.config.config.function_info['flags']}, SUCCESS
 
     return __func()
 

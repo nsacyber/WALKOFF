@@ -25,7 +25,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
         triggers = [trigger.as_json() for trigger in Triggers.query.all()]
         self.assertEqual(len(triggers), 1)
 
@@ -38,7 +38,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(triggers[0]['playbook'], expected_json['playbook'])
         self.assertDictEqual(triggers[0]['conditions'][0], expected_json['conditions'][0])
 
-        response = self.get_with_status_check('/execution/listener/triggers', "success", headers=self.headers)
+        response = self.get_with_status_check('/execution/listener/triggers', headers=self.headers)
         self.assertIn('triggers', response)
         self.assertEqual(len(response['triggers']), 1)
         self.assertEqual(response['triggers'][0]['name'], expected_json['name'])
@@ -48,7 +48,7 @@ class TestTriggers(ServerTestCase):
 
         response = self.get_with_status_check(
             '/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-            "success", headers=self.headers)
+            headers=self.headers)
         self.assertIn('trigger', response)
         self.assertEqual(response['trigger']['name'], expected_json['name'])
         self.assertEqual(response['trigger']['workflow'], expected_json['workflow'])
@@ -56,13 +56,13 @@ class TestTriggers(ServerTestCase):
         self.assertDictEqual(response['trigger']['conditions'][0], expected_json['conditions'][0])
 
         self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                      "success", headers=self.headers)
+                                      headers=self.headers)
 
         triggers = [trigger.as_json() for trigger in Triggers.query.all()]
         self.assertEqual(len(triggers), 0)
 
         self.get_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                   error="Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_add_trigger_invalid_form(self):
         data = {"playbrook": "test",
@@ -79,14 +79,14 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "Trigger already exists.", headers=self.headers, data=data,
+                                   error="Trigger already exists.", headers=self.headers, data=data,
                                    status_code=OBJECT_EXISTS_ERROR)
 
     def test_remove_trigger_does_not_exist(self):
         self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                      "Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                      error="Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_edit_trigger(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -94,13 +94,13 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
         edited_data = {"name": "{0}rename".format(self.test_trigger_name),
                        "playbook": "testrename",
                        "workflow": '{0}rename'.format(self.test_trigger_workflow),
                        "conditional": json.dumps(condition)}
         self.post_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=edited_data)
+                                    headers=self.headers, data=edited_data)
 
     def test_trigger_execute(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -108,10 +108,10 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data={"data": "hellohellohello"})
+                                    headers=self.headers, data={"data": "hellohellohello"})
 
     def test_trigger_execute_invalid_name(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -119,11 +119,11 @@ class TestTriggers(ServerTestCase):
                 "workflow": "invalid_workflow_name",
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
-                                    "error: workflow could not be found",
-                                    headers=self.headers, data={"data": "hellohellohello"})
+                                    error="Workflow could not be found.",
+                                    headers=self.headers, data={"data": "hellohellohello"}, status_code=INVALID_INPUT_ERROR)
 
     def test_trigger_execute_no_matching_trigger(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": 'aaa'}], "filters": []}
@@ -131,11 +131,10 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
-                                    "warning: no trigger found valid for data in", headers=self.headers,
-                                    data={"data": "bbb"})
+                                    headers=self.headers, data={"data": "bbb"}, status_code=INVALID_INPUT_ERROR)
 
     def test_trigger_execute_change_input(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -143,7 +142,7 @@ class TestTriggers(ServerTestCase):
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                   "success", headers=self.headers, data=data, status_code=OBJECT_CREATED)
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         result = {'value': None}
 
@@ -156,4 +155,4 @@ class TestTriggers(ServerTestCase):
                 "input": json.dumps([{"key": "call", "value": "CHANGE INPUT"}])}
 
         self.post_with_status_check('/execution/listener/execute'.format(self.test_trigger_name),
-                                    "success", headers=self.headers, data=data)
+                                    headers=self.headers, data=data)

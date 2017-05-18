@@ -41,11 +41,10 @@ def create_user(user_name):
             running_context.db.session.commit()
             current_app.logger.info('User added: {0}'.format(
                 {"name": user_name, "roles": [str(_role) for _role in u.roles]}))
-            return {"status": "user added " + str(u.id)}, OBJECT_CREATED
+            return {},OBJECT_CREATED
         else:
             current_app.logger.warning('Could not create user {0}. User already exists.'.format(user_name))
-            return {"status": "Could not create user {0}. User already exists.".format(user_name)},\
-                OBJECT_EXISTS_ERROR
+            return {"error": "User already exists.".format(user_name)}, OBJECT_EXISTS_ERROR
     return __func()
 
 
@@ -59,7 +58,7 @@ def read_user(user_name):
             return user.display(), SUCCESS
         else:
             current_app.logger.error('Could not display user {0}. User does not exist.'.format(user_name))
-            return {"status": 'Could not display user {0}. User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
+            return {"error": 'User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -80,7 +79,7 @@ def update_user(user_name):
             return user.display(), SUCCESS
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(user_name))
-            return {"status": 'Could not edit user {0}. User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
+            return {"error": 'User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -95,12 +94,11 @@ def delete_user(user_name):
                 running_context.user_datastore.delete_user(user)
                 running_context.db.session.commit()
                 current_app.logger.info('User {0} deleted'.format(user_name))
-                return {"status": "user removed"}, SUCCESS
+                return {},SUCCESS
             else:
                 current_app.logger.error('Could not delete user {0}. User is current user.'.format(user_name))
-                return {"status": 'Could not delete user {0}. User is current user.'.format(user_name)},\
-                    UNAUTHORIZED_ERROR
+                return {"error": 'User is current user.'.format(user_name)}, UNAUTHORIZED_ERROR
         else:
             current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_name))
-            return {"status": 'Could not delete user {0}. User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
+            return {"error": 'User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
     return __func()

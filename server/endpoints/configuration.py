@@ -53,8 +53,8 @@ def update_configuration():
                 else:
                     setattr(core.config.config, key, value)
             current_app.logger.info('Changed configuration')
-            return {"status": 'success'}, SUCCESS
+            return SUCCESS
         else:
             current_app.logger.warning('Configuration attempted to be set by non authenticated user')
-            return {"status": 'error: user is not authenticated'}, UNAUTHORIZED_ERROR
+            return {"error": 'User is not authenticated.'}, UNAUTHORIZED_ERROR
     return __func()

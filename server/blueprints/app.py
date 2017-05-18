@@ -1,13 +1,9 @@
 import os
 import sys
 import importlib
-import json
-from flask import Blueprint, render_template, request, g, current_app
-from flask_security import roles_required, auth_token_required, roles_accepted
+from flask import Blueprint, render_template, request, g
+from flask_security import roles_required, auth_token_required
 from server import forms
-from server.flaskserver import running_context
-import core.config.config
-import core.config.paths
 
 app_page = Blueprint('appPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
 
@@ -41,32 +37,6 @@ def display_app():
 
     template = render_template(path, **args)
     return template
-
-
-# @app_page.route('/devices/export', methods=['POST'])
-# @auth_token_required
-# @roles_required('admin')
-# def export_devices():
-#     form = forms.ExportImportAppDevices(request.form)
-#     filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
-#     returned_json = {}
-#     apps = running_context.App.query.all()
-#     for app in apps:
-#         devices = []
-#         for device in app.devices:
-#             device_json = device.as_json(with_apps=False)
-#             device_json.pop('app', None)
-#             device_json.pop('id', None)
-#             devices.append(device_json)
-#         returned_json[app.as_json()['name']] = devices
-#     try:
-#         with open(filename, 'w') as appdevice_file:
-#             appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
-#     except (OSError, IOError) as e:
-#         current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
-#         return json.dumps({"status": "error writing file"})
-#     current_app.logger.debug('Exported devices to {0}'.format(filename))
-#     return json.dumps({"status": "success"})
 
 
 def load_module(app_name):

@@ -79,9 +79,8 @@ class TestServer(ServerTestCase):
             self.assertEqual(response[key], str(value))
 
         self.get_with_status_check('/configuration/junkName',
-                                   'Configuration key does not exist.',
+                                   error='Configuration key does not exist.',
                                    headers=self.headers,
-                                   error=True,
                                    status_code=OBJECT_DNE_ERROR)
 
     def test_set_configuration(self):
@@ -105,7 +104,7 @@ class TestServer(ServerTestCase):
                 "host": 'host_reset',
                 "port": 'port_reset'}
 
-        self.post_with_status_check('/configuration/set', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
 
         config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and
                                                                 type(getattr(core.config.config, x)).__name__
@@ -136,7 +135,7 @@ class TestServer(ServerTestCase):
         modified_function_info = copy.deepcopy(core.config.config.function_info)
         modified_function_info['testApp'] = {}
         data = {"apps_path": core.config.paths.apps_path}
-        self.post_with_status_check('/configuration/set', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
         self.assertDictEqual(core.config.config.function_info, original_function_info)
 
     def test_set_workflows_path(self):
@@ -147,7 +146,7 @@ class TestServer(ServerTestCase):
         original_workflow_keys = list(server.running_context.controller.workflows.keys())
         data = {"apps_path": core.config.paths.apps_path,
                 "workflows_path": test_workflows_path}
-        self.post_with_status_check('/configuration/set', 'success', headers=self.headers, data=data)
+        self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
         self.assertNotEqual(len(server.running_context.controller.workflows.keys()), len(original_workflow_keys))
         new_files = [os.path.splitext(workflow)[0]
                      for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]

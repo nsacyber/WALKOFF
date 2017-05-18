@@ -123,7 +123,7 @@ def import_cases():
                     running_context.db.session.add(running_context.CaseSubscription(name=case))
                     running_context.CaseSubscription.update(case)
                     running_context.db.session.commit()
-                return {"status": "success", "cases": case_subscription.subscriptions_as_json()}, SUCCESS
+                return {"cases": case_subscription.subscriptions_as_json()}, SUCCESS
             except (OSError, IOError) as e:
                 current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, e))
                 return {"error": "Error reading file."}, IO_ERROR
@@ -148,7 +148,7 @@ def export_cases():
             with open(filename, 'w') as cases_file:
                 cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))
             current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
-            return {"status": "success"}, SUCCESS
+            return SUCCESS
         except (OSError, IOError) as e:
             current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, e))
             return {"error": "Could not write to file."}, IO_ERROR

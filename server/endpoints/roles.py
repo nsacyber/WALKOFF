@@ -13,10 +13,6 @@ def read_all_roles():
         if roles:
             result = [role.name for role in roles]
             return result, SUCCESS
-        #TODO: DELETE THIS --> if roles are empty, just return an empty list in the future
-        else:
-            current_app.logger.error('Cannot display roles. No roles exist.')
-            return {"status": "roles do not exist"}
 
     return __func()
 
@@ -45,10 +41,10 @@ def create_role(role_name):
             current_app.logger.info('Role added: {0}'.format({"name": role_name,
                                                               "description": description,
                                                               "urls": default_urls}))
-            return {"status": "role added " + role_name}, OBJECT_CREATED
+            return {},OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot add role {0}. Role already exists'.format(role_name))
-            return {"status": "role exists"}, OBJECT_EXISTS_ERROR
+            return {"error": "Role already exists."}, OBJECT_EXISTS_ERROR
 
     return __func()
 
@@ -63,7 +59,7 @@ def read_role(role_name):
             return role.display(), SUCCESS
         else:
             current_app.logger.error('Cannot display role {0}. Role does not exist.'.format(role_name))
-            return {"status": "role does not exist"}, OBJECT_DNE_ERROR
+            return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -88,6 +84,6 @@ def update_role(role_name):
             return role.display(), SUCCESS
         else:
             current_app.logger.error('Cannot edit role {0}. Role does not exist.'.format(role_name))
-            return {"status": "role does not exist"}, OBJECT_DNE_ERROR
+            return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
 
     return __func()

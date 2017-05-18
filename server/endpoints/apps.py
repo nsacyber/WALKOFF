@@ -37,7 +37,7 @@ def list_app_actions(app_name):
     def __func():
         core.config.config.load_function_info()
         if app_name in core.config.config.function_info['apps']:
-            return {'status': 'success', 'actions': core.config.config.function_info['apps'][app_name]}, SUCCESS
+            return {'actions': core.config.config.function_info['apps'][app_name]}, SUCCESS
         else:
             current_app.logger.error('Could not get action for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
@@ -78,7 +78,7 @@ def create_device(app_name, device_name):
                                                   password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
                                                   app_server=app_name,
                                                   extra_fields=form.extraFields.data)
-                return {"status": "Device successfully added."}, OBJECT_CREATED
+                return {}, OBJECT_CREATED
             else:
                 return {"error": "App does not exist."}, OBJECT_DNE_ERROR
         return {"error": "Device could not be added."}, INVALID_INPUT_ERROR
@@ -119,7 +119,7 @@ def update_device(app_name, device_name):
                                                                                    dev.name,
                                                                                    dev.as_json(with_apps=False)))
 
-                    return {"status": "device successfully edited"}, SUCCESS
+                    return {}, SUCCESS
                 else:
                     return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
             else:
@@ -141,7 +141,7 @@ def delete_device(app_name, device_name):
                 running_context.db.session.delete(dev)
                 current_app.logger.info('Device removed {0}:{1}'.format(app_name, device_name))
                 running_context.db.session.commit()
-                return {"status": "removed device"}, SUCCESS
+                return {}, SUCCESS
             else:
                 return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
         else:
@@ -176,7 +176,7 @@ def import_devices(app_name):
                                                   port=device['port'],
                                                   extra_fields=extra_fields_str, app_server=app, password='')
         current_app.logger.debug('Imported devices from {0}'.format(filename))
-        return {"status": "success"}, SUCCESS
+        return {}, SUCCESS
 
     return __func()
 
@@ -206,5 +206,5 @@ def export_devices(app_name):
             current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
             return {"error": "Error writing file"}, IO_ERROR
         current_app.logger.debug('Exported devices to {0}'.format(filename))
-        return {"status": "success"}, SUCCESS
+        return {}, SUCCESS
     return __func()

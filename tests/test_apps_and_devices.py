@@ -27,20 +27,25 @@ class TestAppsAndDevices(ServerTestCase):
     def test_add_device(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/'+self.name, 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
-        self.put_with_status_check('/apps/HelloWorld/devices/'+self.name, 'Device already exists.',
-                                    data=data, headers=self.headers, error=True, status_code=OBJECT_EXISTS_ERROR)
+        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
+                                   data=data,
+                                   headers=self.headers,
+                                   status_code=OBJECT_CREATED)
+        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
+                                   error='Device already exists.',
+                                   data=data,
+                                   headers=self.headers,
+                                   status_code=OBJECT_EXISTS_ERROR)
 
     def test_display_device(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
         json.loads(
-            self.app.put('/apps/HelloWorld/devices/'+self.name, data=data, headers=self.headers).get_data(
+            self.app.put('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers).get_data(
                 as_text=True))
 
         response = json.loads(
-            self.app.get('/apps/HelloWorld/devices/'+self.name, headers=self.headers).get_data(
+            self.app.get('/apps/HelloWorld/devices/' + self.name, headers=self.headers).get_data(
                 as_text=True))
         self.assertEqual(response["username"], self.username)
         self.assertEqual(response["name"], self.name)
@@ -53,37 +58,42 @@ class TestAppsAndDevices(ServerTestCase):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
         json.loads(
-            self.app.put('/apps/HelloWorld/devices/'+self.name, data=data, headers=self.headers).get_data(
+            self.app.put('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers).get_data(
                 as_text=True))
 
         data = {"ipaddr": "192.168.196.1"}
-        self.post_with_status_check('/apps/HelloWorld/devices/'+self.name, 'device successfully edited',
-                                   data=data, headers=self.headers)
+        self.post_with_status_check('/apps/HelloWorld/devices/' + self.name,
+                                    data=data, headers=self.headers)
 
         data = {"port": 6001}
-        self.post_with_status_check('/apps/HelloWorld/devices/'+self.name, 'device successfully edited',
-                                   data=data, headers=self.headers)
+        self.post_with_status_check('/apps/HelloWorld/devices/' + self.name,
+                                    data=data, headers=self.headers)
 
         data = {"extraFields": json.dumps({"extraFieldOne": "extraNameOneOne"})}
-        self.post_with_status_check('/apps/HelloWorld/devices/'+self.name, 'device successfully edited',
-                                   data=data, headers=self.headers)
+        self.post_with_status_check('/apps/HelloWorld/devices/' + self.name,
+                                    data=data, headers=self.headers)
 
         response = json.loads(
-            self.app.get('/apps/HelloWorld/devices/'+self.name, headers=self.headers).get_data(
+            self.app.get('/apps/HelloWorld/devices/' + self.name, headers=self.headers).get_data(
                 as_text=True))
         self.assertEqual(response["extraFieldOne"], "extraNameOne")
 
     def test_add_and_display_multiple_devices(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/'+self.name, 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
+                                   data=data,
+                                   headers=self.headers,
+                                   status_code=OBJECT_CREATED)
 
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+
+        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo',
+                                   data=data,
+                                   headers=self.headers,
+                                   status_code=OBJECT_CREATED)
 
         response = json.loads(
             self.app.get('/apps/HelloWorld/devices', headers=self.headers).get_data(
@@ -96,14 +106,15 @@ class TestAppsAndDevices(ServerTestCase):
     def test_export_apps_devices_no_filename(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDevice', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
-
+        self.put_with_status_check('/apps/HelloWorld/devices/testDevice',
+                                   data=data, headers=self.headers, status_code=OBJECT_CREATED)
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+
+        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo',
+                                   data=data, headers=self.headers, status_code=OBJECT_CREATED)
+
         test_device_one_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": "127.0.0.1",
@@ -117,7 +128,7 @@ class TestAppsAndDevices(ServerTestCase):
                                 "port": "6000",
                                 "username": "testUsername"}
 
-        self.post_with_status_check('/apps/HelloWorld/devices/export', 'success', headers=self.headers)
+        self.post_with_status_check('/apps/HelloWorld/devices/export', headers=self.headers)
         self.assertIn('appdevice.json', os.listdir(tests.config.test_data_path))
         with open(core.config.paths.default_appdevice_export_path, 'r') as appdevice_file:
             read_file = appdevice_file.read()
@@ -139,14 +150,16 @@ class TestAppsAndDevices(ServerTestCase):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDevice', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+
+        self.put_with_status_check('/apps/HelloWorld/devices/testDevice',
+                                   data=data, headers=self.headers, status_code=OBJECT_CREATED)
 
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+
+        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo',
+                                   data=data, headers=self.headers, status_code=OBJECT_CREATED)
         test_device_one_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": "127.0.0.1",
@@ -162,7 +175,7 @@ class TestAppsAndDevices(ServerTestCase):
         filename = 'testappdevices.json'
         filepath = os.path.join(tests.config.test_data_path, filename)
         data = {'filename': filepath}
-        self.post_with_status_check('/apps/HelloWorld/devices/export', 'success',
+        self.post_with_status_check('/apps/HelloWorld/devices/export',
                                     data=data, headers=self.headers)
         self.assertIn(filename, os.listdir(tests.config.test_data_path))
         with open(filepath, 'r') as appdevice_file:
@@ -185,14 +198,15 @@ class TestAppsAndDevices(ServerTestCase):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDevice', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/apps/HelloWorld/devices/testDevice',
+                                   data=data, headers=self.headers, status_code=OBJECT_CREATED)
 
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo', 'Device successfully added.',
-                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
+
+        self.put_with_status_check('/apps/HelloWorld/devices/testDeviceTwo',
+                                   data=data, headers=self.headers, status_code=OBJECT_CREATED)
 
         test_device_one_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
@@ -212,7 +226,7 @@ class TestAppsAndDevices(ServerTestCase):
         filename = 'testappdevices.json'
         filepath = os.path.join(tests.config.test_data_path, filename)
         data = {'filename': filepath}
-        self.post_with_status_check('/apps/HelloWorld/devices/export', 'success',
+        self.post_with_status_check('/apps/HelloWorld/devices/export',
                                     data=data, headers=self.headers)
 
         with server.running_context.flask_app.app_context():
@@ -220,8 +234,8 @@ class TestAppsAndDevices(ServerTestCase):
             server.running_context.Device.query.filter_by(name="testDeviceTwo").delete()
             server.database.db.session.commit()
 
-        self.get_with_status_check('/apps/HelloWorld/devices/import', 'success',
-                                    data=data, headers=self.headers)
+        self.get_with_status_check('/apps/HelloWorld/devices/import',
+                                   data=data, headers=self.headers)
 
         def convert_all_json_to_str(json_in):
             return {str(key): (str(value) if not isinstance(value, dict) else convert_all_json_to_str(value))
