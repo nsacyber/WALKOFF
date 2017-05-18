@@ -51,7 +51,7 @@ schemes:
   - https
 
 paths:
-  #$ref: ./apps.yaml
+  $ref: ./apps.yaml
   $ref: ./cases.yaml
   $ref: ./configuration.yaml
   $ref: ./events.yaml
@@ -74,6 +74,7 @@ security:
 
 definitions:
     $ref: ./objects/objects.yaml
+    $ref: ./objects/appdevice.yaml
     $ref: ./objects/cases.yaml
     $ref: ./objects/metrics.yaml
     $ref: ./objects/users.yaml

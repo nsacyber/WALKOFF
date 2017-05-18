@@ -35,7 +35,7 @@ class TestServer(ServerTestCase):
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld']
-        response = self.app.get('/apps/', headers=self.headers)
+        response = self.app.get('/apps', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response['apps'], expected_apps)

@@ -1,6 +1,6 @@
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-
+from server.return_codes import *
 
 class TestAppBlueprint(ServerTestCase):
 
@@ -11,7 +11,10 @@ class TestAppBlueprint(ServerTestCase):
         orderless_list_compare(self, response['actions'], expected_actions)
 
     def test_list_functions_invalid_name(self):
-        self.get_with_status_check('/apps/JunkAppName/actions', 'error: app name not found', headers=self.headers)
+        self.get_with_status_check('/apps/JunkAppName/actions', 'App name not found.',
+                                   headers=self.headers,
+                                   error=True,
+                                   status_code=OBJECT_DNE_ERROR)
 
     def test_basic_blueprint(self):
         response = self.app.get('/apps/HelloWorld/test_blueprint', headers=self.headers)

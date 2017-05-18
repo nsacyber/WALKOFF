@@ -21,27 +21,6 @@ def read_all_possible_subscriptions():
     return __func()
 
 
-def get_apps():
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
-        return {"apps": helpers.list_apps()}, SUCCESS
-
-    return __func()
-
-
-def get_app_actions():
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
-        core.config.config.load_function_info()
-        return core.config.config.function_info['apps'], SUCCESS
-
-    return __func()
-
-
 def read_all_filters():
     from server.context import running_context
 

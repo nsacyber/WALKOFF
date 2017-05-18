@@ -1,0 +1,21 @@
+OutputDevice:
+  type: object
+  required: [name, username, ip, port, app_name]
+  properties:
+    name:
+      type: string
+      example: [Server1]
+    username:
+      type: string
+      example: [alligator9]
+    ip:
+      type: string
+      example: 127.0.0.1
+    port:
+      type: integer
+      example: 25
+    app_name:
+      type: string
+      example: CiscoIntegration
+    extra_fields:
+      type: object

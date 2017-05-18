@@ -2,315 +2,343 @@
   get:
     tags:
       - System
-    summary: Renders all apps
+    summary: Gets all apps
     description: ''
-    operationId: server.controllers.system.list_all_apps
+    operationId: server.endpoints.apps.read_all_apps
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
+      200:
+        description: Success
+        schema:
+          type: object
+          required: [apps]
+          properties:
+            apps:
+              type: array
+              items:
+                type: string
+              example: [PhillipsHue, OpenDaylight, PaloAlto]
 /apps/actions:
   get:
     tags:
       - System
-    summary: Renders all apps and all actions
+    summary: Gets all apps and all actions
     description: ''
-    operationId: server.controllers.system.list_all_apps_and_actions
+    operationId: server.endpoints.apps.read_all_app_actions
     produces:
       - application/json
     responses:
-      '405':
-        description: Invalid input
-'/apps/{app_name}':
-  post:
-    tags:
-      - Apps
-    summary: Render an App
-    description: ''
-    operationId: server.controllers.apps.read_app
-    produces:
-      - application/json
-    parameters:
-      - name: app_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-      - in: body
-        name: app_args
-        description: Pass page and arguments to render widget.
-        required: false
+      200:
+        description: Success
         schema:
-          $ref: '#/definitions/render_args'
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: App not found
-      '405':
-        description: Validation exception
-'/apps/{app_name}/actions':
+          type: object
+          description: All actions for each app. Of form {app_name -> action}
+/apps/{app_name}/actions:
   get:
     tags:
       - Apps
     summary: Get app actions
     description: ''
-    operationId: server.controllers.apps.list_app_actions
+    operationId: server.endpoints.apps.list_app_actions
     produces:
       - application/json
     parameters:
       - name: app_name
         in: path
-        description: 'The name that needs to be fetched. '
+        description: The name that needs to be fetched.
         required: true
         type: string
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: App not found
-      '405':
-        description: Validation exception
-'/apps/{app_name}/devices':
+      200:
+        description: Success
+        schema:
+          type: object
+          required: [actions]
+          properties:
+            actions:
+              type: object
+              description: All the actions of an app in the form of {action_name -> Action}
+      461:
+        description: App does not exist
+        schema:
+          $ref: '#/definitions/Error'
+/apps/{app_name}/devices:
   get:
     tags:
       - Apps
     summary: Get app devices
     description: ''
-    operationId: server.controllers.apps.list_app_devices
+    operationId: server.endpoints.apps.read_all_devices
+    produces:
+      - application/json
+    parameters:
+      - name: app_name
+        in: path
+        description: The name of the app
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/OutputDevice'
+      461:
+        description: App does not exist
+        schema:
+          $ref: '#/definitions/Error'
+/apps/{app_name}/devices/import:
+  get:
+    tags:
+      - Apps
+    summary: Import apps devices
+    description: ''
+    operationId: server.endpoints.apps.import_devices
     consumes:
-      - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
       - name: app_name
         in: path
-        description: 'The name that needs to be fetched. '
+        description: The name of the app
         required: true
+        type: string
+      - in: formData
+        name: filename
+        description: The name of the JSON file to import. Defaults to ./data/appdevice.json
+        required: false
         type: string
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: App devices not found
+      200:
+        description: Success
+      515:
+        description: Error reading file
       '405':
         description: Validation exception
-'/apps/{app_name}/devices/import':
-  get:
-    tags:
-      - Apps
-    summary: import apps devices
-    description: ''
-    operationId: server.controllers.apps.import_devices
-    produces:
-      - application/json
-    parameters:
-      - name: app_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: App devices not found
-      '405':
-        description: Validation exception
-'/apps/{app_name}/devices/export':
-  get:
-    tags:
-      - Apps
-    summary: export apps devices
-    description: ''
-    operationId: server.controllers.apps.export_devices
-    produces:
-      - application/json
-    parameters:
-      - name: app_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: App devices not found
-      '405':
-        description: Validation exception
-'/apps/{app_name}/devices/{device_name}':
-  get:
-    tags:
-      - Devices
-    summary: Get a device
-    description: ''
-    operationId: server.controllers.devices.get_device
-    parameters:
-      - name: app_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-      - name: device_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-    produces:
-      - application/json
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Device not found
-      '405':
-        description: Validation exception
+/apps/{app_name}/devices/export:
   post:
     tags:
-      - Devices
-    summary: Update a device
+      - Apps
+    summary: Export apps devices
     description: ''
-    operationId: server.controllers.devices.edit_device
-    consumes:
-      - application/json
+    operationId: server.endpoints.apps.export_devices
     produces:
       - application/json
     parameters:
       - name: app_name
         in: path
-        description: 'The name that needs to be fetched. '
+        description: The name of the app
         required: true
         type: string
-      - name: device_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
+      - in: formData
+        name: filename
+        description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
+        required: false
         type: string
-      - in: body
-        name: body
-        description: Edited device object
-        required: true
-        schema:
-          $ref: '#/definitions/device'
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Device not found
-      '405':
-        description: Validation exception
+      200:
+        description: Success
+      515:
+        description: Error writing to file
+/apps/{app_name}/devices/{device_name}:
+  parameters:
+    - in: path
+      name: app_name
+      description: Name of the app
+      type: string
+      required: true
+    - in: path
+      name: device_name
+      description: Name of the device
+      type: string
+      required: true
   put:
     tags:
       - Devices
     summary: Add a device
     description: ''
-    operationId: server.controllers.devices.create_device
+    operationId: server.endpoints.apps.create_device
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: formData
+        name: name
+        description: Name of the device
+        type: string
+        required: false
+        minLength: 4
+        maxLength: 25
+      - in: formData
+        name: username
+        description: Username for the device
+        type: string
+        required: false
+        minLength: 4
+        maxLength: 25
+      - in: formData
+        name: pw
+        description: Password for the device
+        type: string
+        required: false
+      - in: formData
+        name: ipaddr
+        description: IP address of the device
+        type: string
+        required: false
+      - in: formData
+        name: port
+        description: Port of the device
+        type: integer
+        required: false
+        minimum: 0
+        maximum: 9999
+      - in: formData
+        name: extraFields
+        description: String representation of JSON to use as extra parameters
+        required: false
+        type: string
+    responses:
+      201:
+        description: Success
+      461:
+        description: App not found
+      462:
+        description: Device already exists
+      463:
+        description: Invalid form data
+  get:
+    tags:
+      - Devices
+    summary: Get a device
+    description: ''
+    operationId: server.endpoints.apps.read_device
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: App or device does not exist.
+  post:
+    tags:
+      - Devices
+    summary: Update a device
+    description: ''
+    operationId: server.endpoints.apps.update_device
     consumes:
       - application/json
     produces:
       - application/json
     parameters:
-      - name: app_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
+      - in: formData
+        name: name
+        description: Name of the device
         type: string
-      - name: device_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
+        required: false
+        minLength: 4
+        maxLength: 25
+      - in: formData
+        name: username
+        description: Username for the device
         type: string
-      - in: body
-        name: body
-        description: Created device object
-        required: true
-        schema:
-          $ref: '#/definitions/device'
+        required: false
+        minLength: 4
+        maxLength: 25
+      - in: formData
+        name: pw
+        description: Password for the device
+        type: string
+        required: false
+      - in: formData
+        name: ipaddr
+        description: IP address of the device
+        type: string
+        required: false
+      - in: formData
+        name: port
+        description: Port of the device
+        type: integer
+        required: false
+        minimum: 0
+        maximum: 9999
+      - in: formData
+        name: extraFields
+        description: String representation of JSON to use as extra parameters
+        required: false
+        type: string
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Device not found
-      '405':
-        description: Validation exception'
+      200:
+        description: Success
+      461:
+        description: App or device does not exiss
+      463:
+        description: Invalid form data
   delete:
     tags:
       - Devices
     summary: Remove a device
     description: ''
-    operationId: server.controllers.devices.delete_device
-    consumes:
-      - application/json
+    operationId: server.endpoints.apps.delete_device
     produces:
       - application/json
-    parameters:
-      - name: app_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-      - name: device_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
     responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Device not found
-      '405':
-        description: Validation exception
-/widget/display:
-  post:
-    tags:
-      - Widget
-    summary: Render a widget
-    description: ''
-    operationId: server.controllers.widget.render_widget
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: widget_args
-        description: Pass page and arguments to render widget.
-        required: true
-        schema:
-          $ref: '#/definitions/render_args'
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Configuration key not found
-      '405':
-        description: Validation exception
-'/widgets/{widget_name}':
-  post:
-    tags:
-      - Widgets
-    summary: Render widgets
-    description: ''
-    operationId: server.controllers.widgets.render_widgets
-    produces:
-      - application/json
-    parameters:
-      - name: widget_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: widget_args
-        description: Pass page and arguments to render widget.
-        required: true
-        schema:
-          $ref: '#/definitions/render_args'
-    responses:
-      '400':
-        description: Invalid ID supplied
-      '404':
-        description: Configuration key not found
-      '405':
-        description: Validation exception
+      200:
+        description: Success
+      461:
+        description: App or device does not exist
+#/widget/display:
+#  post:
+#    tags:
+#      - Widget
+#    summary: Render a widget
+#    description: ''
+#    operationId: server.controllers.widget.render_widget
+#    produces:
+#      - application/json
+#    parameters:
+#      - in: body
+#        name: widget_args
+#        description: Pass page and arguments to render widget.
+#        required: true
+#        schema:
+#          $ref: '#/definitions/render_args'
+#    responses:
+#      '400':
+#        description: Invalid ID supplied
+#      '404':
+#        description: Configuration key not found
+#      '405':
+#        description: Validation exception
+#'/widgets/{widget_name}':
+#  post:
+#    tags:
+#      - Widgets
+#    summary: Render widgets
+#    description: ''
+#    operationId: server.controllers.widgets.render_widgets
+#    produces:
+#      - application/json
+#    parameters:
+#      - name: widget_name
+#        in: path
+#        description: The name that needs to be fetched.
+#        required: true
+#        type: string
+#      - in: body
+#        name: widget_args
+#        description: Pass page and arguments to render widget.
+#        required: true
+#        schema:
+#          $ref: '#/definitions/render_args'
+#    responses:
+#      '400':
+#        description: Invalid ID supplied
+#      '404':
+#        description: Configuration key not found
+#      '405':
+#        description: Validation exception

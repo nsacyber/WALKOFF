@@ -78,36 +78,6 @@ def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
 
-@app.route('/apps/', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/apps'])
-def list_all_apps():
-    return json.dumps({"apps": helpers.list_apps()})
-
-
-@app.route('/apps/actions', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/apps'])
-def list_all_apps_and_actions():
-    core.config.config.load_function_info()
-    return json.dumps(core.config.config.function_info['apps'])
-
-
-@app.route('/filters', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/playbooks'])
-def display_filters():
-    return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
-
-
-@app.route('/flags', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/playbooks'])
-def display_flags():
-    core.config.config.load_function_info()
-    return json.dumps({"status": "success", "flags": core.config.config.function_info['flags']})
-
-
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>', methods=['GET'])
 @auth_token_required
