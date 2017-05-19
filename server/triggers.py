@@ -28,6 +28,7 @@ class Triggers(Base):
             playbook (str): Playbook of the workflow to be connected to the trigger
             workflow (str): The workflow to be connected to the trigger
             condition (str): String of the JSON representation of the conditional to be checked by the trigger
+            tag (str): An optional tag (grouping parameter) for the trigger
         """
         self.name = name
         self.playbook = playbook
@@ -85,6 +86,8 @@ class Triggers(Base):
         Args:
             data_in (str): Data to be used to match against the conditionals
             input_in (str): The input to the first step of the workflow
+            trigger_name (str): The name of the specific trigger to execute
+            tags (array): A list of tags to find the specific triggers to execute
             
         Returns:
             Dictionary of {"status": <status string>}
@@ -100,14 +103,8 @@ class Triggers(Base):
                 if len(Triggers.query.filter_by(tag=tag).all()) > 1:
                     for t in Triggers.query.filter_by(tag=tag):
                         triggers.add(t)
-                    # triggers.extend(Triggers.query.filter_by(tag=tag).all())
                 elif len(Triggers.query.filter_by(tag=tag).all()) == 1:
                     triggers.add(Triggers.query.filter_by(tag=tag).first())
-                    # triggers.append(Triggers.query.filter_by(tag=tag).first())
-            # if len(Triggers.query.filter_by(tag=tags).all()) > 1:
-            #     triggers.extend(Triggers.query.filter_by(tag=tags).all())
-            # elif len(Triggers.query.filter_by(tag=tags).all()) == 1:
-            #     triggers.append(Triggers.query.filter_by(tag=tags).first())
         if not (trigger_name or tags):
             triggers = Triggers.query.all()
 

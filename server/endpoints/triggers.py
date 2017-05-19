@@ -32,7 +32,6 @@ def listener():
                 name = request.args['name']
             if 'tags' in request.args:
                 tags = request.args.getlist('tags')
-                print(tags)
             returned_json = running_context.Triggers.execute(form.data.data, data_input, trigger_name=name, tags=tags)
         else:
             returned_json = running_context.Triggers.execute(form.data.data, data_input)
