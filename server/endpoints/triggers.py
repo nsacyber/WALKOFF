@@ -24,9 +24,19 @@ def listener():
         data_input = None
         if form.input.data:
             data_input = json.loads(form.input.data)
-        returned_json = running_context.Triggers.execute(form.data.data, data_input)
 
-        if returned_json:
+        if request.args:
+            if 'name' in request.args:
+                name = request.args['name']
+                returned_json = running_context.Triggers.execute(form.data.data, data_input, trigger_name=name)
+            elif 'tags' in request.args:
+                returned_json = running_context.Triggers.execute(form.data.data, data_input, tags=request.args['tags'])
+        else:
+            returned_json = running_context.Triggers.execute(form.data.data, data_input)
+
+        if not (returned_json["executed"] or returned_json["errors"]):
+            return returned_json, SUCCESS_WITH_WARNING
+        elif returned_json["errors"]:
             return returned_json, INVALID_INPUT_ERROR
         else:
             current_app.logger.info(

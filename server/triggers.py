@@ -17,6 +17,7 @@ class Triggers(Base):
     playbook = db.Column(db.String(255), nullable=False)
     workflow = db.Column(db.String(255), nullable=False)
     condition = db.Column(db.String(255, convert_unicode=False), nullable=False)
+    # tag = db.Column(db.String(255), nullable=False)
 
     def __init__(self, name, playbook, workflow, condition):
         """
@@ -72,7 +73,7 @@ class Triggers(Base):
                 'workflow': self.workflow}
 
     @staticmethod
-    def execute(data_in, input_in):
+    def execute(data_in, input_in, trigger_name=None, tags=None):
         """Tries to match the data_in against the conditionals of all the triggers registered in the database.
         
         Args:
@@ -82,7 +83,25 @@ class Triggers(Base):
         Returns:
             Dictionary of {"status": <status string>}
         """
-        triggers = Triggers.query.all()
+
+        triggers = []
+        if trigger_name:
+            t = Triggers.query.filter_by(name=trigger_name).first()
+            if t:
+                triggers.append(t)
+        # elif tags:
+        #     for tag in tags:
+        #         if len(Triggers.query.filter_by(tag=tag).all()) > 1:
+        #             triggers.extend(Triggers.query.filter_by(tag=tag).all())
+        #         elif len(Triggers.query.filter_by(tag=tag).all()) == 1:
+        #             triggers.append(Triggers.query.filter_by(tag=tag).first())
+        else:
+            triggers = Triggers.query.all()
+
+        returned_json = dict()
+        returned_json["executed"] = []
+        returned_json["errors"] = []
+
         from server.flaskserver import running_context
         for trigger in triggers:
             conditionals = json.loads(trigger.condition)
@@ -100,12 +119,14 @@ class Triggers(Base):
                     else:
                         workflow_to_be_executed.execute()
                         logger.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
-                    return {}
+                    returned_json["executed"].append(trigger.name)
                 else:
                     logger.error('Workflow associated with trigger is not in controller')
-                    return {"error": "Workflow could not be found."}
-        logging.debug('No trigger matches data input')
-        return {"status": "warning: no trigger found valid for data in"}
+                    returned_json["errors"].append({trigger.name: "Workflow could not be found."})
+
+        if not (returned_json["executed"] or returned_json["errors"]):
+            logging.debug('No trigger matches data input')
+        return returned_json
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
