@@ -9,6 +9,7 @@ from server import flaskserver
 
 logger = logging.getLogger('startserver')
 
+
 def get_ssl_context():
     if config.https.lower() == "true":
         # Sets up HTTPS
