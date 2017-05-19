@@ -196,7 +196,7 @@
         type: integer
         required: false
         minimum: 0
-        maximum: 9999
+        maximum: 65535
       - in: formData
         name: extraFields
         description: String representation of JSON to use as extra parameters
