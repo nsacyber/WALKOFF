@@ -59,6 +59,7 @@ def read_all_devices(app_name):
                         output.append(device.as_json())
             return output, SUCCESS
         else:
+            current_app.logger.error('Could not get devices for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
     return __func()
 
@@ -73,6 +74,8 @@ def create_device(app_name, device_name):
         if form.validate():
             if app_name in core.config.config.function_info['apps']:
                 if len(running_context.Device.query.filter_by(name=device_name).all()) > 0:
+                    current_app.logger.error('Could not create device {0} for app {1}. '
+                                             'Device already exists.'.format(device_name, app_name))
                     return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
                 running_context.Device.add_device(name=device_name, username=form.username.data,
                                                   password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
@@ -80,7 +83,11 @@ def create_device(app_name, device_name):
                                                   extra_fields=form.extraFields.data)
                 return {}, OBJECT_CREATED
             else:
+                current_app.logger.error('Could not create device {0} for app {1}. '
+                                         'App does not exist'.format(device_name, app_name))
                 return {"error": "App does not exist."}, OBJECT_DNE_ERROR
+        current_app.logger.error('Could not create device {0} for app {1}. '
+                                 'Invalid form'.format(device_name, app_name))
         return {"error": "Device could not be added."}, INVALID_INPUT_ERROR
     return __func()
 
@@ -95,8 +102,13 @@ def read_device(app_name, device_name):
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 return dev.as_json(), SUCCESS
-            return {"error": "Device does not exist."}, OBJECT_DNE_ERROR
+            else:
+                current_app.logger.error('Could not read device {0} for app {1}. '
+                                         'Device does not exist'.format(device_name, app_name))
+                return {"error": "Device does not exist."}, OBJECT_DNE_ERROR
         else:
+            current_app.logger.error('Could not read device {0} for app {1}. '
+                                     'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
@@ -121,8 +133,12 @@ def update_device(app_name, device_name):
 
                     return {}, SUCCESS
                 else:
+                    current_app.logger.error('Could not update device {0} for app {1}. '
+                                             'Device does not exist'.format(device_name, app_name))
                     return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
             else:
+                current_app.logger.error('Could not update device {0} for app {1}. '
+                                         'App does not exist'.format(device_name, app_name))
                 return {"error": "App does not exist"}, OBJECT_DNE_ERROR
         else:
             return {"error": "Invalid form"}, INVALID_INPUT_ERROR
@@ -143,8 +159,12 @@ def delete_device(app_name, device_name):
                 running_context.db.session.commit()
                 return {}, SUCCESS
             else:
+                current_app.logger.error('Could not delete device {0} for app {1}. '
+                                         'Device does not exist'.format(device_name, app_name))
                 return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
         else:
+            current_app.logger.error('Could not delete device {0} for app {1}. '
+                                     'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist"}, OBJECT_DNE_ERROR
     return __func()
 
@@ -205,6 +225,7 @@ def export_devices(app_name):
         except (OSError, IOError) as e:
             current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
             return {"error": "Error writing file"}, IO_ERROR
-        current_app.logger.debug('Exported devices to {0}'.format(filename))
-        return {}, SUCCESS
+        else:
+            current_app.logger.debug('Exported devices to {0}'.format(filename))
+            return {}, SUCCESS
     return __func()
