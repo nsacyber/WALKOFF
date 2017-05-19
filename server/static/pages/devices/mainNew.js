@@ -13,7 +13,7 @@ function addNewDevice(){
     if($("#name").val() == ""){
         $("#name").val(activeApp + "_newDevice");
     }
-    return $("#name").serialize();
+    return $("#deviceForm").serialize();
 }
 
 function displayDevices(data){
@@ -49,9 +49,7 @@ function getDeviceList() {
         'headers':{"Authentication-Token":authKey},
         'url': "/apps/" + activeApp + "/devices",
         'success': function (data) {
-            console.log(data);
-            var result = JSON.parse(data);
-            displayDevices(result);
+            displayDevices(data);
         },
         'error': function (data){
             console.log('applist failed');
@@ -76,9 +74,7 @@ $("#appList").on("change", function(data){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices",
             'success': function (data) {
-                console.log(data);
-                var result = JSON.parse(data);
-                displayDevices(result);
+                displayDevices(data);
             },
             'error': function (data){
                 console.log('applist failed');
@@ -98,8 +94,7 @@ $("#deviceList").on("change", function(data){
         'headers':{"Authentication-Token":authKey},
         'url': "/apps/" + activeApp + "/devices/" + activeDevice,
         'success': function (data) {
-            var result = JSON.parse(data);
-            displayDeviceForm(result);
+            displayDeviceForm(data);
         }
     });
 });
@@ -115,17 +110,15 @@ $("#addNewDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices/" + $("#deviceForm #name").val(),
             'success': function (data) {
-                var result = JSON.parse(data);
-                $("#deviceForm").trigger("reset");
+                $("#deviceForm")[0].reset();
                 getDeviceList();
-                alert(result['status'])
+                alert(data['status']);
             },
             'error': function(data){
                 console.log("error adding devices");
             }
         });
     }
-
 });
 
 $("#removeDevice").on("click", function(){
@@ -137,17 +130,17 @@ $("#removeDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
-                var result = JSON.parse(data);
+                $("#deviceForm")[0].reset();
                 getDeviceList();
-                alert(result['status'])
+                alert('Device ' + activeDevice + ' successfully removed.');
             },
             'error': function(e) {
                 console.log(e);
             }
         });
     }
-
 });
+
 $("#editDevice").on("click", function(){
     if(activeApp && activeDevice){
         $.ajax({
@@ -158,9 +151,8 @@ $("#editDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
-                var result = JSON.parse(data);
-                alert(result['status']);
-                $("#deviceForm").trigger("reset");
+                $("#deviceForm")[0].reset();
+                alert(data['status']);
             },
             'error': function(data){
                 console.log('edit device failed');
@@ -168,5 +160,4 @@ $("#editDevice").on("click", function(){
             }
         });
     }
-
 });
