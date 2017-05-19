@@ -15,6 +15,7 @@
 				<id>start</id>
 				<app>EthereumBlockchain</app>
 				<action>create_accounts</action>
+				<device/>
 				<position>
 					<x>173</x>
 					<y>133</y>
@@ -24,21 +25,11 @@
 				</input>
 				<next step="2"/>
 			</step>
-			<step id="2">
-				<id>2</id>
-				<app>EthereumBlockchain</app>
-				<action>set_up_network</action>
-				<position>
-					<x>236.6709793476604</x>
-					<y>232.47543955814143</y>
-				</position>
-				<input/>
-				<next step="3"/>
-			</step>
 			<step id="3">
 				<id>3</id>
 				<app>EthereumBlockchain</app>
 				<action>submit_greeting</action>
+				<device/>
 				<position>
 					<x>348.096805232115</x>
 					<y>338.1871205254445</y>
@@ -46,6 +37,18 @@
 				<input>
 					<greeting format="str">Hello human user!!</greeting>
 				</input>
+			</step>
+			<step id="2">
+				<id>2</id>
+				<app>EthereumBlockchain</app>
+				<action>set_up_network</action>
+				<device/>
+				<position>
+					<x>236.6709793476604</x>
+					<y>232.47543955814143</y>
+				</position>
+				<input/>
+				<next step="3"/>
 			</step>
 		</steps>
 	</workflow>

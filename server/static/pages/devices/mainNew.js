@@ -13,7 +13,7 @@ function addNewDevice(){
     if($("#name").val() == ""){
         $("#name").val(activeApp + "_newDevice");
     }
-    return $("#name").serialize();
+    return $("#deviceForm").serialize();
 }
 
 function displayDevices(data){
@@ -116,9 +116,9 @@ $("#addNewDevice").on("click", function(){
             'url': "/apps/" + activeApp + "/devices/" + $("#deviceForm #name").val(),
             'success': function (data) {
                 var result = JSON.parse(data);
-                $("#deviceForm").trigger("reset");
+                $("#deviceForm")[0].reset();
                 getDeviceList();
-                alert(result['status'])
+                alert(result['status']);
             },
             'error': function(data){
                 console.log("error adding devices");
@@ -138,8 +138,9 @@ $("#removeDevice").on("click", function(){
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
                 var result = JSON.parse(data);
+                $("#deviceForm")[0].reset();
                 getDeviceList();
-                alert(result['status'])
+                alert(result['status']);
             },
             'error': function(e) {
                 console.log(e);
@@ -159,8 +160,8 @@ $("#editDevice").on("click", function(){
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
                 var result = JSON.parse(data);
+                $("#deviceForm")[0].reset();
                 alert(result['status']);
-                $("#deviceForm").trigger("reset");
             },
             'error': function(data){
                 console.log('edit device failed');
