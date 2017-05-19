@@ -25,12 +25,15 @@ def listener():
         if form.input.data:
             data_input = json.loads(form.input.data)
 
+        name=''
+        tags=[]
         if request.args:
             if 'name' in request.args:
                 name = request.args['name']
-                returned_json = running_context.Triggers.execute(form.data.data, data_input, trigger_name=name)
-            elif 'tags' in request.args:
-                returned_json = running_context.Triggers.execute(form.data.data, data_input, tags=request.args['tags'])
+            if 'tags' in request.args:
+                tags = request.args.getlist('tags')
+                print(tags)
+            returned_json = running_context.Triggers.execute(form.data.data, data_input, trigger_name=name, tags=tags)
         else:
             returned_json = running_context.Triggers.execute(form.data.data, data_input)
 
@@ -61,14 +64,16 @@ def create_trigger(trigger_name):
                     running_context.Triggers(name=trigger_name,
                                              condition=form.conditional.data,
                                              playbook=form.playbook.data,
-                                             workflow=form.workflow.data))
+                                             workflow=form.workflow.data,
+                                             tag=form.tag.data))
 
                 running_context.db.session.commit()
                 current_app.logger.info('Added trigger: '
                                         '{0}'.format({"name": trigger_name,
                                                       "condition": form.conditional.data,
                                                       "workflow": "{0}-{1}".format(form.playbook.data,
-                                                                                   form.workflow.data)}))
+                                                                                   form.workflow.data),
+                                                      "tag": form.tag.data}))
                 return {},OBJECT_CREATED
             except ValueError:
                 current_app.logger.error(

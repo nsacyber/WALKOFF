@@ -17,9 +17,9 @@ class Triggers(Base):
     playbook = db.Column(db.String(255), nullable=False)
     workflow = db.Column(db.String(255), nullable=False)
     condition = db.Column(db.String(255, convert_unicode=False), nullable=False)
-    # tag = db.Column(db.String(255), nullable=False)
+    tag = db.Column(db.String(255), nullable=False)
 
-    def __init__(self, name, playbook, workflow, condition):
+    def __init__(self, name, playbook, workflow, condition, tag=''):
         """
         Constructs a Trigger object
         
@@ -33,6 +33,7 @@ class Triggers(Base):
         self.playbook = playbook
         self.workflow = workflow
         self.condition = condition
+        self.tag = tag
 
     def edit_trigger(self, form=None):
         """Edits a trigger
@@ -59,6 +60,10 @@ class Triggers(Base):
                     self.condition = form.conditional.data
                 except ValueError:
                     return False
+
+            if form.tag.data:
+                self.tag = form.tag.data
+
         return True
 
     def as_json(self):
@@ -70,7 +75,8 @@ class Triggers(Base):
         return {'name': self.name,
                 'conditions': json.loads(self.condition),
                 'playbook': self.playbook,
-                'workflow': self.workflow}
+                'workflow': self.workflow,
+                'tag': self.tag}
 
     @staticmethod
     def execute(data_in, input_in, trigger_name=None, tags=None):
@@ -84,18 +90,25 @@ class Triggers(Base):
             Dictionary of {"status": <status string>}
         """
 
-        triggers = []
+        triggers = set()
         if trigger_name:
             t = Triggers.query.filter_by(name=trigger_name).first()
             if t:
-                triggers.append(t)
-        # elif tags:
-        #     for tag in tags:
-        #         if len(Triggers.query.filter_by(tag=tag).all()) > 1:
-        #             triggers.extend(Triggers.query.filter_by(tag=tag).all())
-        #         elif len(Triggers.query.filter_by(tag=tag).all()) == 1:
-        #             triggers.append(Triggers.query.filter_by(tag=tag).first())
-        else:
+                triggers.add(t)
+        if tags:
+            for tag in tags:
+                if len(Triggers.query.filter_by(tag=tag).all()) > 1:
+                    for t in Triggers.query.filter_by(tag=tag):
+                        triggers.add(t)
+                    # triggers.extend(Triggers.query.filter_by(tag=tag).all())
+                elif len(Triggers.query.filter_by(tag=tag).all()) == 1:
+                    triggers.add(Triggers.query.filter_by(tag=tag).first())
+                    # triggers.append(Triggers.query.filter_by(tag=tag).first())
+            # if len(Triggers.query.filter_by(tag=tags).all()) > 1:
+            #     triggers.extend(Triggers.query.filter_by(tag=tags).all())
+            # elif len(Triggers.query.filter_by(tag=tags).all()) == 1:
+            #     triggers.append(Triggers.query.filter_by(tag=tags).first())
+        if not (trigger_name or tags):
             triggers = Triggers.query.all()
 
         returned_json = dict()
@@ -149,5 +162,6 @@ class Triggers(Base):
     def __str__(self):
         out = {'name': self.name,
                'conditions': json.loads(self.condition),
-               'play': self.playbook}
+               'play': self.playbook,
+               'tag': self.tag}
         return json.dumps(out)

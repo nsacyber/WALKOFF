@@ -17,6 +17,10 @@ class TestTriggers(ServerTestCase):
         with server.running_context.flask_app.app_context():
             Triggers.query.filter_by(name=self.test_trigger_name).delete()
             Triggers.query.filter_by(name="execute_me").delete()
+            Triggers.query.filter_by(name="execute_one").delete()
+            Triggers.query.filter_by(name="execute_two").delete()
+            Triggers.query.filter_by(name="execute_three").delete()
+            Triggers.query.filter_by(name="execute_four").delete()
             Triggers.query.filter_by(name="{0}rename".format(self.test_trigger_name)).delete()
             server.database.db.session.commit()
 
@@ -202,4 +206,106 @@ class TestTriggers(ServerTestCase):
         response = self.post_with_status_check('/execution/listener/execute?name=badname',
                                     headers=self.headers, data={"data": "hellohellohello"}, status_code=SUCCESS_WITH_WARNING)
         self.assertEqual(0, len(response["executed"]))
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_tag(self):
+        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditional": json.dumps([condition]),
+                "tag": "wrong_tag"}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data["tag"]="execute_tag"
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        result = {'value': 0}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] += 1
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data": "hellohellohello"}
+
+        response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag',
+                                               headers=self.headers, data=data)
+        self.assertEqual(2, result['value'])
+        self.assertIn("execute_one", response["executed"])
+        self.assertIn("execute_two", response["executed"])
+        self.assertEqual(2, len(response["executed"]))
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_multiple_tags(self):
+        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditional": json.dumps([condition]),
+                "tag": "wrong_tag"}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data["tag"]="execute_tag"
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data["tag"]="execute_tag_two"
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        result = {'value': 0}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] += 1
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data": "hellohellohello"}
+
+        response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag&tags=execute_tag_two',
+                                               headers=self.headers, data=data)
+        self.assertEqual(2, result['value'])
+        self.assertIn("execute_one", response["executed"])
+        self.assertIn("execute_two", response["executed"])
+        self.assertEqual(2, len(response["executed"]))
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_multiple_tags_with_name(self):
+        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditional": json.dumps([condition]),
+                "tag": "wrong_tag"}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data["tag"]="execute_tag"
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data["tag"]="execute_tag_two"
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_three"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_four"),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data = {"data": "hellohellohello"}
+
+        response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag&tags=execute_tag_two&name=testTrigger',
+                                               headers=self.headers, data=data)
+        self.assertIn("execute_one", response["executed"])
+        self.assertIn("execute_two", response["executed"])
+        self.assertIn("execute_three", response["executed"])
+        self.assertIn("execute_four", response["executed"])
+        self.assertIn("testTrigger", response["executed"])
+        self.assertEqual(5, len(response["executed"]))
         self.assertEqual(0, len(response["errors"]))
