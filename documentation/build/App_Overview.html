@@ -86,111 +86,47 @@ img.media-object.image{
   <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
     <a href="../../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
-    <a href="../../Sphinx_Docs/_build/html/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
     <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
     <a href="../../swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
-    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+    <a href="../../tutorials/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
   </div>
 
   <!-- Navbar on small screens -->
   <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-    <a class="w3-padding-large" href="../../Sphinx_Docs/_build/html/index.html">Documentation</a>
+    <a class="w3-padding-large" href="index.html">Documentation</a>
     <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
     <a class="w3-padding-large" href="../../swagger/index.html">API</a>
-    <a class="w3-padding-large" href="index.html">Tutorials</a>
+    <a class="w3-padding-large" href="../../tutorials/build/index.html">Tutorials</a>
   </div>
 </div>
 
 <!-- Header -->
 <header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
   <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
-  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+  <h5 class="headerText w3-margin w3-xxxlarge">Documentation</h5>
 </header>
 
 <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
         <div class="w3-twothird">
-            <h1>Case Overview</h1>
-            <p>WALKOFF contains a flexible, customizable logging system. It's better than your average,
-                fatal/error/warning/info/trace logging system -- it's a database-driven event subscription system which
-                allows you to visualize the workflow execution at any level of detail you feel is useful. You start by
-                creating and naming one or more "cases" which are collections of execution events you wish to log
-                together, we call these the case's event subscriptions. As a workflow or collection of workflows is
-                executed, the events to which the case is subscribed to are logged. Each level of execution contains
-                multiple events which can be subscribed to. Currently the available event subscriptions are as
-                follows:</p>
-
-            <h6>Controller</h6>
-            <ul style="list-style-type:circle">
-                <li>Scheduler Started</li>
-                <li>Scheduler Paused</li>
-                <li>Scheduler Resumed</li>
-                <li>Scheduler Shutdown</li>
-                <li>Job Added</li>
-                <li>Job Removed</li>
-                <li>Job Executed</li>
-                <li>Job Error</li>
+            <h1>App Overview</h1>
+            <p>
+                The app framework allows WALKOFF to easily integrate with other software. If it has an API, it can be
+                integrated into WALKOFF. The team at WALKOFF have strived to make writing apps as
+                quick and pain-free as possible. Developing is as simple as writing a Python module in the apps
+                directory. There are 4 requirements for the app:
+            </p>
+            <ul>
+                <li>A python module called main.py which contains a class called Main which extends a class in the core</li>
+                <li>Inside of this Main class, a function named "shutdown" which handles shutting down the app</li>
+                <li>A lightweight JSON metadata file named functions.json to describe the actions you create</li>
+                <li>A display.py file which can be as short as 3 lines</li>
             </ul>
-
-            <h6>Workflow</h6>
-            <ul style="list-style-type:circle">
-                <li>New Workflow Created</li>
-                <li>Step Execution Success</li>
-                <li>Next Step Found</li>
-                <li>Workflow shutdown</li>
-            </ul>
-
-            <h6>Step</h6>
-            <ul style="list-style-type:circle">
-                <li>Function Execution Success</li>
-                <li>Input Validated</li>
-                <li>Conditionals Executed</li>
-            </ul>
-
-            <h6>Next Step</h6>
-            <ul style="list-style-type:circle">
-                <li>Next Step Taken</li>
-                <li>Next Step Not Taken</li>
-            </ul>
-
-
-            <h6>Flag</h6>
-            <ul style="list-style-type:circle">
-                <li>Flag Arguments Valid</li>
-                <li>Flag Arguments InValid</li>
-            </ul>
-
-            <h6>Filter</h6>
-            <ul style="list-style-type:circle">
-                <li>Filter Success</li>
-                <li>Filter Error</li>
-            </ul>
-
-
-            <p>Each case can be subscribed to multiple controllers which in turn can have multiple workflows which
-                can have multiple steps, and so on.
-                Each execution element can have multiple execution elements it manages, and for each execution
-                element instance, a case which can have an
-                individualized set of events it is subscribed to. So if you want one step in one workflow to be log
-                the events Function Execution Success
-                and Conditionals Executed, but a different step in that same workflow to only log its Input
-                Validated event, you can specify these.</p>
-
-            <p>Each event is logged with the following fields</p>
-            <dl>
-                <dt>Unique ID</dt>
-                <dt>Timestamp</dt>
-                <dt>Type</dt>
-                <dd> System, Workflow, Step, Next Step, Flag, Filter</dd>
-                <dt>Ancestry</dt>
-                <dd> A list of execution elements from controller to parent which caused this event</dd>
-                <dt>Message</dt>
-                <dd> The specific event that happened</dd>
-                <dt>Note</dt>
-                <dd> Field which can be modified to add notes</dd>
-            </dl>
-
-
+            <p>
+                The rest of the module is up to you. From this basis, you can incorporate custom interfaces,
+                streaming data, and widget displays.
+            </p>
         </div>
 
         <div class="w3-third w3-center">

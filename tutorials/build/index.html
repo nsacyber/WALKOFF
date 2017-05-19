@@ -86,7 +86,7 @@ img.media-object.image{
   <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
     <a href="../../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
-    <a href="../../Sphinx_Docs/_build/html/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="../../documentation/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
     <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
     <a href="../../swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
     <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
@@ -94,7 +94,7 @@ img.media-object.image{
 
   <!-- Navbar on small screens -->
   <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-    <a class="w3-padding-large" href="../../Sphinx_Docs/_build/html/index.html">Documentation</a>
+    <a class="w3-padding-large" href="../../documentation/build/index.html">Documentation</a>
     <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
     <a class="w3-padding-large" href="../../swagger/index.html">API</a>
     <a class="w3-padding-large" href="index.html">Tutorials</a>
@@ -113,6 +113,7 @@ img.media-object.image{
       <h1>Version Two Tutorials</h1>
       <h5><i>  More tutorials coming soon... </i></h5>
       <h5><a href="../../swagger/index.html">API Documentation</a></h5>
+      <h5><a href="../../Sphinx_Docs/_build/html/index.html">WALKOFF Python Code Documentation</a></h5>
       <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
       <ol class="w3-medium">
         <li><a href="Install_Tutorial.html"> Installation </a></li>
@@ -123,29 +124,16 @@ img.media-object.image{
 
       <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
       <ol class="w3-medium">
-        <li><a href="Workflow_Overview.html"> Workflow Overview </a></li>
-        <li>Basic Workflows</li>
-        <li>Advanced Workflows</li>
         <li><a href="Workflow_Editor_Tutorial.html"> Workflow Editor </a></li>
-        <h5 class="w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> Workflow Components</h5>
-        <ol>
-          <li><a href="Step_Overview.html">Step</a></li>
-          <li><a href="Next_Step_Overview.html">Next Step</a></li>
-          <li><a href="Flags_Overview.html">Flags</a></li>
-          <li><a href="Filter_Overview.html">Filters</a></li>
-          <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> The Devices</h5>
-            <ol class="w3-medium">
-              <li><a href="Device_Overview.html">Device Overview</a></li>
-              <li><a href="Devices_Tutorial.html"> Device Tutorial </a></li>
-              <li><a href="Device_Management.html"> Device Management </a></li>
-            </ol>
-        </ol>
+      </ol>
+      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Devices</h5>
+      <ol class="w3-medium">
+        <li><a href="Devices_Tutorial.html"> Device Tutorial </a></li>
       </ol>
       <hr>
 
       <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
       <ol class="w3-medium">
-        <li><a href="App_Overview.html">App Overview</a></li>
         <li><a href="Develop_an_app.html">Develop an App</a></li>
         <li><a href="Manage_app_dependencies.html">Managing app dependencies</a></li>
         <li><a href="Develop_an_app_interface.html">Develop an App Interface</a></li>
@@ -155,39 +143,15 @@ img.media-object.image{
 
       <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Platform</h5>
       <ol class="w3-medium">
-        <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> Execution</h5>
-        <ol>
-          <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Manual Execution</h5>
-          <ol class="w3-medium">
-            <li>Manually running a workflow</li>
-            <li><a href="Controller_Tutorial.html">Managing the controller</a></li>
-          </ol>
+        <li><a href="Trigger_Management.html">Manage Triggers</a></li>
+      </ol>
+      </ol>
 
-          <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Active Execution</h5>
-          <ol class="w3-medium">
-            <li>Workflow schedules</li>
-          </ol>
-
-          <h5 class="topLevelList w3-large"><i class="fa fa-circle w3-text-black" > </i> Passive Execution</h5>
-          <ol class="w3-medium">
-            <li><a href="Triggers_Tutorial.html">Triggers Overview</a></li>
-            <li><a href="Trigger_Management.html">Manage Triggers</a></li>
-          </ol>
-        </ol>
-
-        <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> Cases</h5>
-        <ol class="w3-medium">
-          <li><a href="Case_Overview.html">Case Overview</a></li>
-          <li>View Cases</li>
-          <li>Manage Cases</li>
-        </ol>
-
-        <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
-        <ol class="w3-medium">
-          <li>Managing Users and Roles</li>
-          <li>System Configuration</li>
-          <li>HTTPS</li>
-        </ol>
+      <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
+      <ol class="w3-medium">
+        <li>Managing Users and Roles</li>
+        <li>System Configuration</li>
+        <li>HTTPS</li>
       </ol>
     </div>
 

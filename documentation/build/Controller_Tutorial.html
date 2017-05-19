@@ -86,61 +86,53 @@ img.media-object.image{
   <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
     <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
     <a href="../../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
-    <a href="../../Sphinx_Docs/_build/html/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
     <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
     <a href="../../swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
-    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+    <a href="../../tutorials/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
   </div>
 
   <!-- Navbar on small screens -->
   <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-    <a class="w3-padding-large" href="../../Sphinx_Docs/_build/html/index.html">Documentation</a>
+    <a class="w3-padding-large" href="index.html">Documentation</a>
     <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
     <a class="w3-padding-large" href="../../swagger/index.html">API</a>
-    <a class="w3-padding-large" href="index.html">Tutorials</a>
+    <a class="w3-padding-large" href="../../tutorials/build/index.html">Tutorials</a>
   </div>
 </div>
 
 <!-- Header -->
 <header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
   <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
-  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+  <h5 class="headerText w3-margin w3-xxxlarge">Documentation</h5>
 </header>
 
-<!-- First Grid -->
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Users and Roles Overview</h1>
-          <ul style="list-style-type:circle">
-              <li>Each user has a few fields associated with it. These fields are: a user's email (or username), password, and role (e.g. "admin" or "default"), which will be discussed
-                in more detail below. Each user is stored in a SQLAlchemyUserDatastore, which includes various security measures, such as password encryption in the back-end database.</li>
-              <li>To add a user, you must make a "POST" request to "/users/add", including the user's username, password, and optional list of roles. There is also the ability to
-                edit the password or role(s), remove the user, and display the user.</li>
-              <li>Each user can have one or more roles, which is essentially a set of permissions. For example, a user with an "admin" role may have the ability to remove a user, 
-                whereas a regular or "default" user may only have the ability to display a user.</li>
-              <li>When creating a new role, you will have the ability to provide a name and description for the role, as well as a list of permissions for that role. You may also
-                leave the permissions blank to edit later, in which case only the default permissions will be loaded for that role. Once a role has been added, you can add that role
-                to an existing user.</li>
-              <li>Roles are useful for providing an extra layer of security. You do not want to give anyone the ability to create a user with admin privileges, who would then be able
-                to edit various configuration settings, workflow and trigger settings, and user settings.</li>
-          </ul>
+      <h1>Controller Tutorial</h1>
+         <h5 class="w3-padding-32">On the left sidebar, you will find a number of different tabs. Towards the top is the "Controller" tab, which brings you to the Controller Management 
+          page. On this page you will find three panels: the "Playbook Management" panel, the "Cases" panel, and the "Scheduler" panel.</a></h5>
+          <h5 class="w3-padding-32">The "Playbook Management" page gives you the ability to load various workflows into a playbook. A "playbook" is a series of workflows that are grouped
+            together. You can expand the various workflows in the playbook using the arrows on the left side of the filename. In addition, you can load a playbook by clicking on the "Load
+            Playbook" towards the bottom of the "Playbook Management" panel, and selecting an XML file to load. At the bottom of the panel, you will see the status of the execution of
+            each workflow in the playbook. </a></h5>
+            <h5 class="w3-padding-32">The next panel is the "Cases" panel. A case is a collection of execution events you wish to log together, which we call the case's event 
+              subscriptions. As a workflow or collection of workflows is executed, the events to which the case is subscribed to are logged. Each level of execution contains multiple
+              events which can be subscribed to. For more detail on cases, please view the "Case Overview" tutorial. In this panel, you will see the cases that have been loaded 
+              (i.e. cases to which you are subscribed), and then below that you have the ability to add a case via the "Add Case" button.</a></h5>
+            <h5 class="w3-padding-32">The final panel is the "Scheduler" panel. The scheduler is what actually schedules and executes the various workflows that have been loaded in
+              the playbook. This panel gives you the ability to control the scheduler, i.e. the ability to control the execution of the workflows. There are 4 buttons to control this:
+              Start, Pause, Resume, and Stop. The current state of the scheduler is also listed so that you know what the scheduler is doing. The scheduler must be in the "Started" 
+              state to execute workflows, and you can also pause and resume the scheduler to pause/resume execution. Finally, you may completely stop execution by clicking the "Stop"
+              button. </a></h5>
+
     </div>
 
    <div class="w3-third w3-center">
       <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
     </div>
   </div>
-</div>
-
-<!-- Second Grid  -->
-<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-third w3-center">
-      <i class="fa fa-flask w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
-    </div>
-  </div>
-</div>
 </div>
 
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
