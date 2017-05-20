@@ -76,7 +76,7 @@ class TestAppsAndDevices(ServerTestCase):
         response = json.loads(
             self.app.get('/apps/HelloWorld/devices/' + self.name, headers=self.headers).get_data(
                 as_text=True))
-        self.assertEqual(response["extraFieldOne"], "extraNameOne")
+        self.assertEqual(response["extraFieldOne"], "extraNameOneOne")
 
     def test_add_and_display_multiple_devices(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,

@@ -71,24 +71,20 @@ def create_device(app_name, device_name):
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.AddNewDeviceForm(request.form)
-        if form.validate():
-            if app_name in core.config.config.function_info['apps']:
-                if len(running_context.Device.query.filter_by(name=device_name).all()) > 0:
-                    current_app.logger.error('Could not create device {0} for app {1}. '
-                                             'Device already exists.'.format(device_name, app_name))
-                    return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
-                running_context.Device.add_device(name=device_name, username=form.username.data,
-                                                  password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
-                                                  app_server=app_name,
-                                                  extra_fields=form.extraFields.data)
-                return {}, OBJECT_CREATED
-            else:
+        if app_name in core.config.config.function_info['apps']:
+            if len(running_context.Device.query.filter_by(name=device_name).all()) > 0:
                 current_app.logger.error('Could not create device {0} for app {1}. '
-                                         'App does not exist'.format(device_name, app_name))
-                return {"error": "App does not exist."}, OBJECT_DNE_ERROR
-        current_app.logger.error('Could not create device {0} for app {1}. '
-                                 'Invalid form'.format(device_name, app_name))
-        return {"error": "Device could not be added."}, INVALID_INPUT_ERROR
+                                         'Device already exists.'.format(device_name, app_name))
+                return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
+            running_context.Device.add_device(name=device_name, username=form.username.data,
+                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
+                                              app_server=app_name,
+                                              extra_fields=form.extraFields.data)
+            return {}, OBJECT_CREATED
+        else:
+            current_app.logger.error('Could not create device {0} for app {1}. '
+                                     'App does not exist'.format(device_name, app_name))
+            return {"error": "App does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
 
@@ -120,28 +116,25 @@ def update_device(app_name, device_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        form = forms.EditDeviceForm(request.args)
-        if form.validate():
-            if app_name in core.config.config.function_info['apps']:
-                dev = running_context.Device.query.filter_by(name=device_name).first()
-                if dev is not None:
-                    dev.edit_device(form)
-                    running_context.db.session.commit()
-                    current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
-                                                                                   dev.name,
-                                                                                   dev.as_json(with_apps=False)))
+        form = forms.EditDeviceForm(request.form)
+        if app_name in core.config.config.function_info['apps']:
+            dev = running_context.Device.query.filter_by(name=device_name).first()
+            if dev is not None:
+                dev.edit_device(form)
+                running_context.db.session.commit()
+                current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
+                                                                               dev.name,
+                                                                               dev.as_json(with_apps=False)))
 
-                    return {}, SUCCESS
-                else:
-                    current_app.logger.error('Could not update device {0} for app {1}. '
-                                             'Device does not exist'.format(device_name, app_name))
-                    return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
+                return {}, SUCCESS
             else:
                 current_app.logger.error('Could not update device {0} for app {1}. '
-                                         'App does not exist'.format(device_name, app_name))
-                return {"error": "App does not exist"}, OBJECT_DNE_ERROR
+                                         'Device does not exist'.format(device_name, app_name))
+                return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
         else:
-            return {"error": "Invalid form"}, INVALID_INPUT_ERROR
+            current_app.logger.error('Could not update device {0} for app {1}. '
+                                     'App does not exist'.format(device_name, app_name))
+            return {"error": "App does not exist"}, OBJECT_DNE_ERROR
     return __func()
 
 

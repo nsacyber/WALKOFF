@@ -195,7 +195,7 @@
         description: Port of the device
         type: integer
         required: false
-        minimum: 0
+        minimum: 1
         maximum: 65535
       - in: formData
         name: extraFields
@@ -209,8 +209,6 @@
         description: App not found
       462:
         description: Device already exists
-      463:
-        description: Invalid form data
   get:
     tags:
       - Devices
@@ -264,8 +262,8 @@
         description: Port of the device
         type: integer
         required: false
-        minimum: 0
-        maximum: 9999
+        minimum: 1
+        maximum: 65535
       - in: formData
         name: extraFields
         description: String representation of JSON to use as extra parameters
@@ -276,8 +274,6 @@
         description: Success
       461:
         description: App or device does not exiss
-      463:
-        description: Invalid form data
   delete:
     tags:
       - Devices
@@ -291,54 +287,3 @@
         description: Success
       461:
         description: App or device does not exist
-#/widget/display:
-#  post:
-#    tags:
-#      - Widget
-#    summary: Render a widget
-#    description: ''
-#    operationId: server.controllers.widget.render_widget
-#    produces:
-#      - application/json
-#    parameters:
-#      - in: body
-#        name: widget_args
-#        description: Pass page and arguments to render widget.
-#        required: true
-#        schema:
-#          $ref: '#/definitions/render_args'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Configuration key not found
-#      '405':
-#        description: Validation exception
-#'/widgets/{widget_name}':
-#  post:
-#    tags:
-#      - Widgets
-#    summary: Render widgets
-#    description: ''
-#    operationId: server.controllers.widgets.render_widgets
-#    produces:
-#      - application/json
-#    parameters:
-#      - name: widget_name
-#        in: path
-#        description: The name that needs to be fetched.
-#        required: true
-#        type: string
-#      - in: body
-#        name: widget_args
-#        description: Pass page and arguments to render widget.
-#        required: true
-#        schema:
-#          $ref: '#/definitions/render_args'
-#    responses:
-#      '400':
-#        description: Invalid ID supplied
-#      '404':
-#        description: Configuration key not found
-#      '405':
-#        description: Validation exception
