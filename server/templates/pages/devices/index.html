@@ -7,18 +7,21 @@
 
 
         <style>
+            #main {
+                padding: 10px 15px;
+            }
             .selectColumn{
                 border:solid;
                 height:800px;
             }
             #appList{
-                width:130px;
+                width: 90%;
                 background-color: #F0F8FF;
                 border: none;
                 margin-left:10px;
             }
             #deviceList{
-                width:130px;
+                width: 90%;
                 background-color: #F0F8FF;
                 border: none;
                 margin-left:10px;
@@ -43,7 +46,7 @@
               background-color: #45AA3B;
               color: #fff;
             }
-            button#addNewDevice {
+            /*button#addNewDevice {
               background-color: #367fa9;
               color: #fff;
               border: none;
@@ -52,7 +55,7 @@
               background-color: #102632;
               color: #fff;
               border: none;
-            }
+            }*/
             button {
               display: block;
               margin-top: 10px;
@@ -75,18 +78,18 @@
             <h1> Device Management </h1>
         </div>
         <div class="row content" id="main">
-            <div id="deviceSelect" class="col-xs-2">
+            <div id="appSelect" class="col-xs-3">
                 <h3> Apps </h3>
                 <select id="appList" size="10" multiple></select>
+            </div>
+            <div id="deviceSelect" class="col-xs-3">
                 <h3> Devices </h3>
                 <select id="deviceList" size="10" multiple></select>
                 <div>
-                    <button id="addNewDevice">Add New Device</button>
-                    <button id="removeDevice">Remove Device</button>
+                    <button id="removeDevice" class="btn btn-danger">Remove Device</button>
                 </div>
-
             </div>
-            <div id="parameterSelect" class="col-xs-2 ">
+            <div id="parameterSelect" class="col-xs-6 ">
                 <h3> Parameters </h3>
                 <form id="deviceForm">
                     {% from "pages/_formhelpers.html" import render_field %}
@@ -96,7 +99,8 @@
                     {{ render_field(form.ipaddr) }}
                     {{ render_field(form.port) }}
                 </form>
-                <button id="editDevice" name="editDevice">Edit Device</button>
+                <button id="addNewDevice" class="btn btn-primary">Add New Device</button>
+                <button id="editDevice" name="editDevice" class="btn btn-primary">Edit Device</button>
             </div>
 
             </div>

@@ -8,20 +8,32 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
 
         <style>
-            #setForm input[type=text] {
+            #main {
+                padding: 10px 15px;
+            }
+            input[type=text],
+            input[type=password] {
                 width: 300px;
                 background-color: #F0F8FF;
             }
 
-            #usForm input[type=text] {
+            /*#userForm input[type=text] {
               background-color: #F0F8FF;
+            }*/
+
+            #formSubmit {
+                margin-left: 20px;
             }
 
-            #settingsForm {
-                padding-left: 50px;
+            #settingsForm,
+            #userForm,
+            #addUserForm,
+            #updateUserForm {
+                /*padding-left: 50px;*/
+                margin-bottom: 20px;
             }
 
-            #pathConfig {
+            /*#pathConfig {
                 padding-left: 50px;
                 padding-top: 15px;
             }
@@ -65,19 +77,11 @@
                 font-weight: bold;
                 font-size: 30px;
                 color: #255876;
-                /*font-variant: small-caps;*/
             }
             h3 {
               font-family: 'Lato', sans-serif;
               font-weight: bold;
               font-size: 24px;
-              /*padding-top: 30px;*/
-            }
-            /*.usersettings-hr {
-              border: 0.1rem solid #367fa9;
-              width: 30%;
-              float:left;
-              margin:0;
             }*/
             input {
               border: none;
@@ -107,48 +111,45 @@
 
                     <div id="systemSettings">
                         <h1 class="settingsHeader"> Settings </h1>
-                        <div id="settingsForm">
-                            <form id="setForm">
+                        <form id="setForm">
+                            <div id="settingsForm" class="row">
                                 <!-- use jinja and formhelpers.html to populate form -->
                                 <!-- below is pulled from devices\index.html -->
-
-                                    <div id="pathConfig">
-                                        <h3> Path Configuration </h3>
-                                    {% from "pages/_formhelpers.html" import render_field %}
-                                        {{ render_field(systemForm.workflows_path) }}
-                                        {{ render_field(systemForm.templates_path) }}
-                                        {{ render_field(systemForm.profile_visualizations_path) }}
-                                        {{ render_field(systemForm.keywords_path) }}
-                                        {{ render_field(systemForm.db_path) }}
-                                    </div>
-                                    <div id="authConfig">
-                                      <h3> Authorization Configuration </h3>
-                                    {% from "pages/_formhelpers.html" import render_field %}
-                                        {{ render_field(systemForm.tls_version) }}
-                                        {{ render_field(systemForm.certificate_path) }}
-                                        {{ render_field(systemForm.https) }}
-                                        {{ render_field(systemForm.private_key_path) }}
-                                    </div>
-                                    <div id="interfaceConfig">
-                                      <h3> Interface Configuration </h3>
-                                    {% from "pages/_formhelpers.html" import render_field %}
-                                        {{ render_field(systemForm.debug) }}
-                                        {{ render_field(systemForm.default_server) }}
-                                        {{ render_field(systemForm.host) }}
-                                        {{ render_field(systemForm.port) }}
-                                    </div>
-                                <input id="formSubmit" type="submit" value="submit">
-                            </form>
-                        </div>
-
+                                {% from "pages/_formhelpers.html" import render_field %}
+                                <div id="pathConfig" class="col-md-4">
+                                    <h3> Path Configuration </h3>
+                                    {{ render_field(systemForm.workflows_path) }}
+                                    {{ render_field(systemForm.templates_path) }}
+                                    {{ render_field(systemForm.profile_visualizations_path) }}
+                                    {{ render_field(systemForm.keywords_path) }}
+                                    {{ render_field(systemForm.db_path) }}
+                                </div>
+                                <div id="authConfig" class="col-md-4">
+                                    <h3> Authorization Configuration </h3>
+                                    {{ render_field(systemForm.tls_version) }}
+                                    {{ render_field(systemForm.certificate_path) }}
+                                    {{ render_field(systemForm.https) }}
+                                    {{ render_field(systemForm.private_key_path) }}
+                                </div>
+                                <div id="interfaceConfig" class="col-md-4">
+                                    <h3> Interface Configuration </h3>
+                                    {{ render_field(systemForm.debug) }}
+                                    {{ render_field(systemForm.default_server) }}
+                                    {{ render_field(systemForm.host) }}
+                                    {{ render_field(systemForm.port) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <button id="formSubmit" type="submit" class="btn btn-primary">Submit Changes</button>
+                            </div>
+                        </form>
                     </div>
 
                     <div id="userSettings">
                         <div >
                             <h1 class="settingsHeader">User Settings</h1>
                         </div>
-                        <div class="row">
-
+                        <div id="userForms" class="row">
                             <div  id="currentUserInfo" class="col-md-4">
                                 <h3> User Configuration </h3>
 
@@ -188,7 +189,7 @@
                                     {{ render_field(addUserForm.password) }}
                                     {{ render_field(addUserForm.confirm) }}
                                 </form>
-                                <button id="submitUpdate" class="btn btn-primary">Submit</button>
+                                <button id="submitUpdate" class="btn btn-primary">Submit Changes</button>
                             </div>
                         </div>
                     </div>
