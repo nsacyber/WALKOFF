@@ -2,7 +2,7 @@ import json
 from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-
+from core.api import WalkoffAppDefinition
 from . import database
 
 db = database.db
@@ -38,6 +38,9 @@ class App(database.Base, object):
         if devices is not None:
             for device in devices:
                 self.get_config(device)
+
+    def initialize(self):
+        self.api = WalkoffAppDefinition(self.name, self)
 
     def get_config(self, device):
         """Gets the Device object from the given device name.

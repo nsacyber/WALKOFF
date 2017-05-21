@@ -110,8 +110,9 @@ class Step(ExecutionElement):
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
 
-        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
-                      for arg in step_xml.findall('input/*')}
+        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
+                       for arg in step_xml.findall('input/*')}
+        #self.input = {arg.tag: arg.text for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -135,8 +136,9 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
-        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
-                      for arg in step_xml.findall('input/*')}
+        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
+                       for arg in step_xml.findall('input/*')}
+        #self.input = {arg.tag: arg.text for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -157,22 +159,25 @@ class Step(ExecutionElement):
         xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
+    # def validate_input(self):
+    #     """Ensures that the inputs passed in are properly formed.
+    #
+    #     Returns:
+    #          True if inputs are valid, False otherwise.
+    #     """
+    #     if (self.app in core.config.config.function_info['apps']
+    #             and self.action in core.config.config.function_info['apps'][self.app]):
+    #         possible_args = core.config.config.function_info['apps'][self.app][self.action]['args']
+    #         if possible_args:
+    #             return (len(list(possible_args)) == len(list(self.input.keys()))
+    #                     and all(self.input[arg].validate(possible_args) for arg in self.input))
+    #         else:
+    #             return True
+    #     logger.warning('app {0} or app action {1} not found in app action metadata'.format(self.app, self.action))
+    #     return False
+
     def validate_input(self):
-        """Ensures that the inputs passed in are properly formed.
-        
-        Returns:
-             True if inputs are valid, False otherwise.
-        """
-        if (self.app in core.config.config.function_info['apps']
-                and self.action in core.config.config.function_info['apps'][self.app]):
-            possible_args = core.config.config.function_info['apps'][self.app][self.action]['args']
-            if possible_args:
-                return (len(list(possible_args)) == len(list(self.input.keys()))
-                        and all(self.input[arg].validate(possible_args) for arg in self.input))
-            else:
-                return True
-        logger.warning('app {0} or app action {1} not found in app action metadata'.format(self.app, self.action))
-        return False
+        return True
 
     def __lookup_function(self):
         for action, info in core.config.config.function_info['apps'][self.app].items():
@@ -192,18 +197,28 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
-        if self.validate_input():
-            callbacks.StepInputValidated.send(self)
-            result = load_app_function(instance, self.__lookup_function())(args=self.input)
-            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
-            for widget in self.widgets:
-                get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
-            self.output = result
-            logger.debug('Step {0} executed successfully'.format(self.ancestry))
-            return result
-        else:
-            callbacks.StepInputInvalid.send(self)
-            raise InvalidStepInputError(self.app, self.action)
+        fn = self.__lookup_function()
+        result = load_app_function(instance, fn)
+        args = {}
+        for input in self.input.values():
+            var = input.convert(value=input.value, conversion_type=input.format)
+            if str(type(var).__name__) == input.format:
+                args[input.key] = var
+            else:
+                callbacks.StepInputInvalid.send(self)
+                raise InvalidStepInputError(self.app, self.action)
+
+        result = result(api=instance.api, action=self.action, args=args)
+        callbacks.StepInputValidated.send(self)
+        callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+
+        for widget in self.widgets:
+            get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
+        self.output = result
+        logger.debug('Step {0} executed successfully'.format(self.ancestry))
+        print(result)
+        return result
+
 
     def get_next_step(self, error=False):
         """Gets the NextStep object to be executed after the current Step.

@@ -1,0 +1,24 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "HelloWorldApp"
+  description: "A sample walkoff app specification"
+  contact:
+    name: "Walkoff Team"
+  license:
+    name: "Creative Commons"
+schemes:
+  - "http"
+paths:
+  /helloWorld:
+    get:
+      operationId: Main.helloWorld
+      description: "Returns an introductory message"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "introductory message"
+          schema:
+            type: "string"
+

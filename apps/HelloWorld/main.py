@@ -12,23 +12,22 @@ class Main(appdevice.App):
 
     # Every function in Main is an action that can be taken
     # Every function needs to define an args argument which receives a dictionary of input parameters
-    def helloWorld(self, args={}):
+    def helloWorld(self):
         # LOOK AT YOUR CONSOLE WHEN EXECUTING
-        # print(self.introMessage)
         return self.introMessage
 
     # Example using arguments
     # Repeats back the contents of the call argument
-    def repeatBackToMe(self, args={}):
+    def repeatBackToMe(self, call):
         # print("REPEATING: " + args["call"]())
-        return "REPEATING: " + args["call"]()
+        return "REPEATING: " + call
 
     # Increments number by one
-    def returnPlusOne(self, args={}):
-        return str(int(args["number"]()) + 1)
+    def returnPlusOne(self, number):
+        return number + 1
 
-    def pause(self, args={}):
-        time.sleep(int(args['seconds']()))
+    def pause(self, seconds):
+        time.sleep(seconds)
 
     def shutdown(self):
         # print("SHUTTING DOWN")
