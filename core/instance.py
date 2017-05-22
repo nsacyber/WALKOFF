@@ -35,9 +35,7 @@ class Instance(object):
         """
         imported = import_app_main(app_name)
         if imported:
-            i = Instance(instance=getattr(imported, "Main")(name=app_name, device=device_name), state=OK)
-            i.instance.initialize()
-            return i
+            return Instance(instance=getattr(imported, "Main")(name=app_name, device=device_name), state=OK)
         else:
             logger.error('Cannot create app instance. app: {0}, device: {1}'.format(app_name, device_name))
 

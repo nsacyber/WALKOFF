@@ -4,9 +4,11 @@ import os
 from xml.etree import ElementTree
 import pkgutil
 import logging
+
 import core.config.paths
 
 logger = logging.getLogger(__name__)
+
 
 def import_py_file(module_name, path_to_file):
     """Dynamically imports a python module.
@@ -139,21 +141,6 @@ def list_class_functions(class_name):
     return [field for field in dir(class_name) if (not field.startswith('_')
                                                    and callable(getattr(class_name, field)))]
 
-from connexion.lifecycle import ConnexionResponse
-
-def responseDecorator(func):
-    def __wrapper(*args, **kwargs):
-        try:
-            body = func(*args, **kwargs)
-        except Exception as e:
-            print("EXCEPTION")
-            print(e)
-        finally:
-            print("FINALLY")
-            print(body)
-        r = ConnexionResponse()
-        return body
-    return __wrapper
 
 def load_app_function(app_instance, function_name):
     """Get a function for an App.
@@ -165,18 +152,12 @@ def load_app_function(app_instance, function_name):
     Returns:
         The specified function if the attribute exists, otherwise None.
     """
-
     try:
-        key = "Main." + function_name
-        if key in app_instance.api.operations:
-            obj = app_instance.api.operations[key]
-            fn = obj.function
-            return fn
-        return None
+        fn = getattr(app_instance, function_name)
+        return fn
     except AttributeError:
         logger.error('Could not load action {0} in app {1}.'.format(app_instance.name, function_name))
         return None
-
 
 
 def locate_workflows_in_directory(path=None):

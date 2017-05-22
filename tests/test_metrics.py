@@ -21,6 +21,7 @@ class MetricsTest(ServerTestCase):
             server.running_context.shutdown_threads()
         self.assertListEqual(list(metrics.app_metrics.keys()), ['HelloWorld'])
         orderless_list_compare(self, list(metrics.app_metrics['HelloWorld'].keys()), ['count', 'actions'])
+
         self.assertEqual(metrics.app_metrics['HelloWorld']['count'], 3)
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorld']['actions'].keys()),

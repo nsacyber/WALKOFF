@@ -202,7 +202,7 @@ class TestStep(unittest.TestCase):
         actions = [('helloWorld', {}, {"message": "HELLO WORLD"}),
                    ('repeatBackToMe', {'call': Argument(key='call', value='HelloWorld', format='str')},
                     "REPEATING: HelloWorld"),
-                   ('returnPlusOne', {'number': Argument(key='number', value='6', format='str')}, 7)]
+                   ('returnPlusOne', {'number': Argument(key='number', value='6', format='str')}, '7')]
 
         for action, inputs, output in actions:
             step = Step(app=app, action=action, inputs=inputs)

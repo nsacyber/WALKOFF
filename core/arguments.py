@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class Argument(object):
-    def __init__(self, key=None, value=None, format='str', convert=True):
+    def __init__(self, key=None, value=None, format='str'):
         """Initializes a new Argument object.
         
         Args:
@@ -17,10 +17,7 @@ class Argument(object):
         """
         self.key = key
         self.format = format
-        # if convert:
         self.value = Argument.convert(value=value, conversion_type=self.format)
-        # else:
-        #     self.value = value
         self.templated = None
 
     def __call__(self):
