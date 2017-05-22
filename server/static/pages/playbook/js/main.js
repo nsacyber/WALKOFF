@@ -685,7 +685,7 @@ $(function(){
         }();
 
         // Remove instructions
-        $("#cy-instructions").addClass('hidden');
+        hideInstructions();
 
         // Create the Cytoscape graph
         cy = cytoscape({
@@ -815,8 +815,24 @@ $(function(){
 
     function closeCurrentWorkflow() {
         $("#cy").empty();
+        $("#currentWorkflowText").text("");
+        hideParameters();
+        showInstruction();
     }
 
+    function showInstruction() {
+        var cyInstructions = $( "#cy-instructions-template" ).clone().removeClass('hidden');
+        cyInstructions.attr("id", "cy-instructions");
+        $("#cy").append(cyInstructions);
+    }
+
+    function hideInstructions() {
+        $("#cy-instructions").remove();
+    }
+
+    function hideParameters() {
+        $("#parameters").addClass('hidden');
+    }
 
     // Download list of workflows for display in the Workflows list
     function downloadWorkflowList() {
@@ -943,7 +959,7 @@ $(function(){
                         loadWorkflow(node.data.playbook, workflowName);
 
                         // hide parameters panel until first click on node
-                        $("#parameters").addClass('hidden');
+                        hideParameters();
                     }
                 });
             }
@@ -1288,4 +1304,10 @@ $(function(){
             filtersList = data.filters;
         }
     });
+
+    //---------------------------------
+    // Other setup
+    //---------------------------------
+    showInstruction();
+
 });
