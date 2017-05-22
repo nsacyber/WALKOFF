@@ -21,11 +21,9 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
     background-position:50% 50%;
 }
 
-/*
-.topLevelList + ol{
-  display:none;
+.imageList {
+  list-style-type: none;
 }
-*/
 
 .topLevelList + h5{
   display:none;
@@ -67,8 +65,7 @@ td{
 }
 
 img.media-object.image{
-    width:70%;
-    height:30%;
+    width:100%;
 }
 
 .tutorialTable td{
@@ -107,105 +104,49 @@ img.media-object.image{
   <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
 </header>
 
-<!-- First Grid -->
 <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
-        <div class="">
+        <div class="w3-twothird">
             <h1>How to Setup and Install WALKOFF</h1>
-            <table class="tutorialTable">
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32">0) Ensure Python 2.7+, or Python 3.3+, pip and git are installed.</p>
-                    </td>
-                </tr>
+            <h6>0. Ensure Python 2.7+, or Python 3.3+, pip and git are installed.</h6>
+            
+            <h6>1. Open a terminal on linux or a command prompt on Windows, and run the command</h6>
+            <pre><code class="console"> git clone https://github.com/iadgov/WALKOFF.git</code></pre>
 
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32">1) Open a terminal on linux or a command prompt on Windows, and run the command</p>
-                        <pre><code class="console"> git clone https://github.com/iadgov/WALKOFF.git</code></pre>
-                    </td>
-                </tr>
+            <h6>2. Change directories to the WALKOFF directory</h6>
+            <pre><code class="console">cd WALKOFF </code></pre>
 
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32">2)  Change directories to the WALKOFF directory</p>
-                            <pre><code class="console">cd WALKOFF </code></pre>
-                    </td>
-                </tr>
+            <h6>3. Run the command <code class="console"> python setup.py install </code>
+                    this command must be run as root (i.e. using sudo, or in an administrative command shell).</h6>
 
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32">3) Run the command <code class="console"> python setup.py install </code>
-                        this command must be run as root (i.e. using sudo, or in an administrative command shell).</p>
-                    </td>
-                </tr>
+            <h6>4. Run the command </h6>
+            <pre><code class="console"> pip install -r "requirements.txt" </code></pre>
+            <p>to install the required libraries. This command must be run as root (i.e. using sudo, or in an administrative command
+                shell).</p>
 
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32">4) Run the command </p><pre><code class="console"> pip install -r "requirements.txt" </code></pre>
-                            <p>to install the required libraries. This command must be run as root (i.e. using sudo, or in an administrative command
-                            shell).</p>
-                    </td>
-                </tr>
+            <h6>5. Run the command </h6>
+            <pre><code class="console"> python startServer.py </code></pre>
 
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32">6) Run the command </p><pre><code class="console"> python startServer.py <code></pre>
-                    </td>
-                </tr>
+            <h6>6. Open a browser of your choice, and navigate to the host IP and port specified in the output of the above command to start the server. </h6>
 
-                <tr>
-                    <td></td>
-                    <td>
-                         <p class="w3-padding-32">7) Open a browser of your choice, and navigate to the host IP and port specified
-                             in the output of the above command to start the server. </p>
+            <p>The default IP and port is </p>
+            <pre><code class="console">127.0.0.1:5000</code></pre>
+            <p> the default IP and the port can be changed in the <code>data/walkoff.config</code> file.</p>
+            <p>The default username is </p>
+            <pre><code class="console"> admin </code></pre>
+            <p>The default password is </p>
+            <pre><code class="console"> admin </code></pre>
+            <p>these can be changed upon initial login</p>
 
-                        <p>The default IP and port is </p>
-                        <pre><code class="console">127.0.0.1:5000</code></pre>
-                        <p> the default IP and the port can be changed in the <code>data/walkoff.config</code> file.</p> <br/>
-
-                        <p>The default username is </p>
-                        <pre><code class="console"> admin </code></pre>
-                        <p>The default password is </p>
-                        <pre><code class="console"> admin </code></pre>
-                        <p>these can be changed upon initial login</p>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td></td>
-                    <td>
-                        <p class="w3-padding-32"><i>Optional</i> - Each app must have a setup.py script inside of its main directory. In order to
-                            save the user the effort of manually running the setup.py script for each app, the user can run the
-                            command </p>
-                        <pre><code class="console"> python installDependencies.py -a|--apps AppOne AppTwo ...</code></pre>
-                        <p>this command must be run as root
-                            (i.e. using sudo, or in an administrative command shell). Simply provide the <code>installDependencies</code> script
-                            with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces.</p>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="w3-third w3-center">
+            <h6>7. <i>Optional</i> - Each app must have a setup.py script inside of its main directory. In order to
+                    save the user the effort of manually running the setup.py script for each app, the user can run the
+                    command</h6>
+            <pre><code class="console"> python installDependencies.py -a|--apps AppOne AppTwo ...</code></pre>
+            <p>this command must be run as root
+                (i.e. using sudo, or in an administrative command shell). Simply provide the <code>installDependencies</code> script
+                with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces.</p>
         </div>
     </div>
-</div>
-
-<!-- Second Grid  -->
-<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-    <div class="w3-content">
-        <div class="w3-third w3-center">
-
-        </div>
-    </div>
-</div>
 </div>
 
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">

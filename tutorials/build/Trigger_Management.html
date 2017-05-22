@@ -21,11 +21,9 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
     background-position:50% 50%;
 }
 
-/*
-.topLevelList + ol{
-  display:none;
+.imageList {
+  list-style-type: none;
 }
-*/
 
 .topLevelList + h5{
   display:none;
@@ -67,8 +65,7 @@ td{
 }
 
 img.media-object.image{
-    width:70%;
-    height:30%;
+    width:100%;
 }
 
 .tutorialTable td{
@@ -142,49 +139,54 @@ img.media-object.image{
 <!-- Second Grid -->
 <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
-        <div class="">
+        <div class="w3-twothird">
             <h1>Triggers Management</h1>
-            <table class="table table-responsive">
-                <tbody>
-                    <tr class="w3-padding-64">
-                        <td class="w3-twothird image"><img src="images/manageTriggers/addTrigger.png"></td>
-                        <td class="w3-third">
-                            <h2>Add Trigger</h2>
-                            <ol class="functionality_list">
-                                <li>Navigate to the trigger page using navigation on the left of the screen</li>
-                                <li>Fill out the trigger form</li>
-                                <li>Click the add Button</li>
-                            </ol>
-                        </td>
-                    </tr>
-                    <tr >
-                        <td class="w3-twothird image tutorialRow"><img src="images/manageTriggers/editTrigger.png"></td>
-                        <td class="w3-third tutorialRow">
-                            <h2>Edit Trigger</h2>
-                            <ol class="functionality_list">
-                                <li>Select the trigger to edit</li>
-                                <li>Click the edit button to prefill the trigger form below</li>
-                                <li>Edit the trigger details</li>
-                                <li>Click "Submit Edits"</li>
-                            </ol>
-                        </td>
-                    </tr>
-                    <tr >
-                        <td class="w3-twothird image tutorialRow"><img src="images/manageTriggers/deleteTrigger.png"></td>
-                        <td class="w3-third tutorialRow">
-                            <h2>Delete Trigger</h2>
-                            <ol class="functionality_list">
-                                <li>Select the trigger to Delete</li>
-                                <li>Click "Delete Trigger"</li>
-                            </ol>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        <div class="w3-third w3-center">
+            <ul type="1" class="media-list imageList">
+                <li class="media">
+                    <div class="media-body">
+                        <h4><b>Add Trigger</b></h4>
+                        <ol type="1">
+                            <li>Navigate to the trigger page using navigation on the left of the screen</li>
+                            <li>Fill out the trigger form</li>
+                            <li>Click the add Button</li>
+                        </ol>
+                    </div>
+                    <div class="media-left media-middle">
+                        <img class="media-object image" src="images/manageTriggers/addTrigger.png" alt="...">
+                    </div>
+                </li>
+                <br/>
+                <li class="media">
+                    <div class="media-body">
+                        <h4><b>Edit Trigger</b></h4>
+                        <ol type="1">
+                            <li>Select the trigger to edit</li>
+                            <li>Click the edit button to prefill the trigger form below</li>
+                            <li>Edit the trigger details</li>
+                            <li>Click "Submit Edits"</li>
+                        </ol>
+                    </div>
+                    <div class="media-left media-middle">
+                        <img class="media-object image" src="images/manageTriggers/editTrigger.png" alt="...">
+                    </div>
+                </li>
+                <br/>
+                <li class="media">
+                    <div class="media-body">
+                        <h4><b>Delete Trigger</b></h4>
+                        <ol type="1">
+                            <li>Select the trigger to Delete</li>
+                            <li>Click "Delete Trigger"</li>
+                        </ol>
+                    </div>
+                    <div class="media-left media-middle">
+                        <img class="media-object image" src="images/manageTriggers/deleteTrigger.png" alt="...">
+                    </div>
+                </li>
+                <br/>
+            </ul>
         </div>
     </div>
-</div>
 </div>
 
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
