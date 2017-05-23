@@ -35,6 +35,10 @@
     "core": {
       "level": "WARNING",
       "handlers": ["file_handler"]
+    },
+    "apps": {
+      "level": "WARNING",
+      "handlers": ["file_handler"]
     }
   },
   "root": {
