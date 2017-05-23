@@ -2,10 +2,12 @@ import json
 from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-
+import logging
 from . import database
 
 db = database.db
+
+logger = logging.getLogger(__name__)
 
 
 class App(database.Base, object):
@@ -35,37 +37,51 @@ class App(database.Base, object):
                 one to many mapping from Apps to Devices.
         """
         self.name = app
-        if devices is not None:
-            for device in devices:
-                self.get_config(device)
+        self.devices = [Device(name=device_name) for device_name in devices]
 
-    def get_config(self, device):
-        """Gets the Device object from the given device name.
-        
+    @staticmethod
+    def get_all_devices_for_app(app_name):
+        """ Gets all the devices associated with an app
+
         Args:
-            device (str): The name of the device.
-            
+            app_name (str): The name of the app
         Returns:
-            The Device if found by the name, else an empty dictionary.
+            (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
         """
-        if device:
-            query = dev_class.query.filter_by(name=device).first()
-            if query:
-                self.config = query
+        app = App.query.filter_by(name=app_name).first()
+        if app is not None:
+            return app.devices
         else:
-            self.config = {}
+            logger.warning('Cannot get devices for app {0}. App does not exist'.format(app_name))
+            return []
+
+    @staticmethod
+    def get_device(app_name, device_name):
+        """ Gets the device associated with an app
+
+        Args:
+            app_name (str): The name of the app
+            device_name (str): The name of the device
+        Returns:
+            (Device): The desired device. Returns None if app or device not found.
+        """
+        app = App.query.filter_by(name=app_name).first()
+        if app is not None:
+            # efficient generator to get first instance of device with matching name. returns None if not found
+            device = next((device for device in app.devices if device.name == device_name), None)
+            if device is not None:
+                return device
+            else:
+                logger.warning('Cannot get device {0} for app {1}. '
+                               'Device does not exist for app'.format(device_name, app_name))
+                return None
+        else:
+            logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
+            return None
 
     @abstractmethod
     def shutdown(self):
-        return
-
-    @abstractmethod
-    def on_pause(self):
-        return
-
-    @abstractmethod
-    def on_resume(self):
-        return
+        pass
 
 
 class Device(database.Base):
@@ -183,6 +199,3 @@ class Device(database.Base):
     def __repr__(self):
         return json.dumps({"name": self.name, "username": self.username, "password": self.password,
                            "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})
-
-
-dev_class = Device()

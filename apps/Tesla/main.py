@@ -1,17 +1,19 @@
-from server import appdevice
+import logging
+from apps import App
 import teslajson
 
+logger = logging.getLogger(__name__)
 
-# There is an associated Hello world test workflow which can be executed
-class Main(appdevice.App):
+
+class Main(App):
     def __init__(self, name=None, device=None):
-        # The parent app constructor looks for a device configuration and returns that as a dict called self.config
-        appdevice.App.__init__(self, name, device)
-        # Functions and Variables that are designed to exist across functions go here
-
-    def initialize_connection(self, args={}):
-        self.c = teslajson.Connection(args['email'], args['password'])
-        self.vehicle = self.c.vehicles[0]
+        App.__init__(self, name, device)
+        device = self.get_device()
+        self.connection = teslajson.Connection(device.username, device.password)
+        try:
+            self.vehicle = self.connection.vehicles[0]
+        except IndexError:
+            logger.error('This account has no tesla vehicles')
 
     def get_mobile_access(self):
         return self.vehicle.data_request('mobile_enabled')
@@ -240,10 +242,10 @@ class Main(appdevice.App):
         # Args: int temp for driver's side in celsius driver_degC, int temp for passenger's side in celsius pass_degC
         return self.vehicle.command('set_temps', data=args)
 
-    def start_HVAC_system(self):
+    def start_hvac_system(self):
         return self.vehicle.command('auto_conditioning_start')
 
-    def stop_HVAC_system(self):
+    def stop_hvac_system(self):
         return self.vehicle.command('auto_conditioning_stop')
 
     def move_pano_roof(self, args={}):
@@ -258,6 +260,3 @@ class Main(appdevice.App):
     def open_trunk(self):
         # Currently inoperable
         return self.vehicle.command('trunk_open', data={'which_trunk': 'rear'})
-
-    def shutdown(self):
-        return

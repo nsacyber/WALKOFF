@@ -1,21 +1,4 @@
 {
-  "initialize_connection":{
-    "description":"Initializes the connection",
-    "run":"Tesla.main.Main.initialize_connection",
-    "input_type":"str",
-    "output_type":"None",
-    "args":[
-      {
-        "name":"email",
-        "type":"str"
-      },
-      {
-        "name":"password",
-        "type":"str"
-      }
-    ]
-  },
-
   "wake_car":{
     "description":"Wakes the car from the sleep state. This command must be run to get data from the car.",
     "output_type":"str",
@@ -477,13 +460,13 @@
     ]
   },
 
-  "start_HVAC_system":{
+  "start_hvac_system":{
     "description":"Start the climate control system",
     "output_type":"str",
     "args":[]
   },
 
-  "stop_HVAC_system":{
+  "stop_hvac_system":{
     "description":"Stop the climate control system",
     "output_type":"str",
     "args":[]

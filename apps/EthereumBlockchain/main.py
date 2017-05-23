@@ -1,4 +1,4 @@
-from server.appdevice import App
+from apps import App
 import os, subprocess, signal
 
 
@@ -39,10 +39,10 @@ class Main(App):
         return process.wait()
 
     def terminate_geth_processes(self, args={}):
-        processName = "geth"
-        psCmd = subprocess.Popen("ps -A", shell=True, stdout=subprocess.PIPE)
-        grepCmd = subprocess.Popen("grep " + processName, shell=True, stdin=psCmd.stdout, stdout=subprocess.PIPE)
-        out, err = grepCmd.communicate()
+        process_name = "geth"
+        ps_cmd = subprocess.Popen("ps -A", shell=True, stdout=subprocess.PIPE)
+        grep_cmd = subprocess.Popen("grep " + process_name, shell=True, stdin=ps_cmd.stdout, stdout=subprocess.PIPE)
+        out, err = grep_cmd.communicate()
         for line in out.splitlines():
             pid = int(line.split(None, 1)[0])
             os.kill(pid, signal.SIGKILL)
