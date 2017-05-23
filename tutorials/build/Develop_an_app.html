@@ -131,19 +131,16 @@ WALKOFF
             <li>The <code>__init__</code> must take a name and a device parameters</li>
             <li>A method named shutdown must be implemented</li>
         </ol>
-        <p>The first requirement is needed to initialize the App's base class, and the shutdown method will handle
-           any cleanup is necessary to terminate a session with the app. In our example, we won't need any
-           shutdown procedures, so we'll just make that function empty</p>
+        <p>The first requirement is needed to initialize the App's base class. If we expect ant cleanup would be necessary
+            to terminate a session with the app, we need to create override a method called "shutdown". I
+            n our example, we won't need any so we'll just omit that function.</p>
 
         <pre><code class="python">
-from server.appdevice import App
+from apps import App
 
 class Main(App):
     def __init__(self, name, device):
         App.__init__(self, name, device)
-
-    def shutdown(self):
-        pass
         </code></pre>
 
         <h4><b>3. Write some methods</b></h4>
@@ -164,7 +161,7 @@ class Main(App):
                 which takes an argument named "number" and increments it by one and converts it to a string.
             </p>
             <pre><code class="python">
-from server.appdevice import App
+from apps import App
 
 class Main(App):
     def __init__(self, name, device):
@@ -176,8 +173,6 @@ class Main(App):
     def plus_one(self, args={}):
         return str(args["number"]() + 1)
 
-    def shutdown(self):
-        pass
             </code></pre>
 
 
