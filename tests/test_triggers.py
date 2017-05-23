@@ -23,6 +23,7 @@ class TestTriggers(ServerTestCase):
             Triggers.query.filter_by(name="execute_four").delete()
             Triggers.query.filter_by(name="{0}rename".format(self.test_trigger_name)).delete()
             server.database.db.session.commit()
+            server.running_context.controller.workflows = {}
 
     def test_add_and_display_and_remove_trigger(self):
         condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
@@ -309,3 +310,47 @@ class TestTriggers(ServerTestCase):
         self.assertIn("testTrigger", response["executed"])
         self.assertEqual(5, len(response["executed"]))
         self.assertEqual(0, len(response["errors"]))
+
+    def test_triggers_change_playbook_name(self):
+        self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
+                                              status_code=OBJECT_CREATED)
+        self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
+                                   headers=self.headers, status_code=OBJECT_CREATED)
+
+        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        data = {"playbook": "test_playbook",
+                "workflow": "test_workflow",
+                "conditional": json.dumps([condition])}
+        self.put_with_status_check('/execution/listener/triggers/'+self.test_trigger_name,
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data = {'new_name': 'test_playbook_new'}
+        self.post_with_status_check('/playbooks/test_playbook',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
+
+        trigger = Triggers.query.filter_by(name=self.test_trigger_name).first()
+        self.assertEqual('test_playbook_new', trigger.playbook)
+
+    def test_triggers_change_workflow_name(self):
+        self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
+                                              status_code=OBJECT_CREATED)
+        self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
+                                   headers=self.headers, status_code=OBJECT_CREATED)
+
+        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        data = {"playbook": "test_playbook",
+                "workflow": "test_workflow",
+                "conditional": json.dumps([condition])}
+        self.put_with_status_check('/execution/listener/triggers/'+self.test_trigger_name,
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data = {'new_name': 'test_workflow_new'}
+        self.post_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
+
+        trigger = Triggers.query.filter_by(name=self.test_trigger_name).first()
+        self.assertEqual('test_workflow_new', trigger.workflow)

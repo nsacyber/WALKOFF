@@ -68,20 +68,20 @@ class Triggers(Base):
         return True
 
     @staticmethod
-    def update_playbook_workflow(old_playbook, new_playbook='', old_workflow='', new_workflow=''):
-        if new_playbook and new_workflow:
-            triggers = Triggers.query.filter_by(playbook=old_playbook, workflow=old_workflow).all()
-            for trigger in triggers:
-                trigger.playbook = new_playbook
-                trigger.workflow = new_workflow
-        elif new_playbook:
+    def update_playbook(old_playbook, new_playbook):
+        if new_playbook:
             triggers = Triggers.query.filter_by(playbook=old_playbook).all()
             for trigger in triggers:
                 trigger.playbook = new_playbook
-        elif new_workflow:
+        db.session.commit()
+
+    @staticmethod
+    def update_workflow(old_workflow, new_workflow):
+        if new_workflow:
             triggers = Triggers.query.filter_by(workflow=old_workflow).all()
             for trigger in triggers:
                 trigger.workflow = new_workflow
+        db.session.commit()
 
     def as_json(self):
         """ Gets the JSON representation of all the Trigger object.
