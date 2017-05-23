@@ -142,7 +142,8 @@ class CaseDatabase(object):
         Args:
             case_names (list[str]): A list of case names to add
         """
-        additions = [Case(name=case_name) for case_name in set(case_names)]
+        existing_cases = [case.name for case in self.session.query(Case).all()]
+        additions = [Case(name=case_name) for case_name in set(case_names) if case_name not in existing_cases]
         self.session.add_all(additions)
         self.session.commit()
 
