@@ -3,14 +3,9 @@ import os.path
 from core.config.paths import apps_path
 from connexion.resolver import Resolver,Resolution
 from connexion.lifecycle import ConnexionRequest
-from connexion.utils import get_function_from_name
 from connexion.apis.flask_api import Jsonifier
-from connexion.apis.flask_api import FlaskRequestContextProxy
+from connexion.operation import Operation
 
-from werkzeug.datastructures import MultiDict
-import logging, sys
-logging.getLogger("connexion.decorators")
-logging.basicConfig(stream=sys.stdout)
 
 try:
     from urllib import urlencode
@@ -80,7 +75,6 @@ class WalkoffAppDefinition(AbstractAPI, object):
         return args
 
 
-
 class WalkoffResolver(object):
     def __init__(self, name, instance):
         self.name = name
@@ -95,6 +89,5 @@ class WalkoffResolver(object):
             print("EXCEPTION: Could not resolve function")
             return None
         return Resolution(fn, opid)
-
 
 

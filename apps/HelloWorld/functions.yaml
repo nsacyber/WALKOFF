@@ -8,17 +8,54 @@ info:
   license:
     name: "Creative Commons"
 schemes:
-  - "http"
+  - "walkoff"
 paths:
-  /helloWorld:
-    get:
+  helloWorld:
+    run:
       operationId: Main.helloWorld
       description: "Returns an introductory message"
       produces:
-        - "application/json"
+        - "text/plain"
       responses:
         "200":
           description: "introductory message"
           schema:
             type: "string"
+  repeatBackToMe:
+    run:
+      operationId: Main.repeatBackToMe
+      description: "Repeats the call argument"
+      produces:
+        - "text/plain"
+      parameters:
+          - name: "call"
+            in: "query"
+            description: "message to repeat"
+            required: true
+            type: "string"
+      responses:
+        "200":
+          description: "repeated method"
+          schema:
+            type: "string"
+  returnPlusOne:
+    run:
+      operationId: Main.returnPlusOne
+      description: "Increments a given number by 1"
+      produces:
+        - "text/plain"
+      parameters:
+          - name: "number"
+            in: "query"
+            description: "number to increment"
+            required: true
+            type: "integer"
+            format: "int32"
+      responses:
+        "200":
+          description: "number"
+          schema:
+            type: "string"
+
+
 
