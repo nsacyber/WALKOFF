@@ -8,10 +8,10 @@ info:
   license:
     name: "Creative Commons"
 schemes:
-  - "http"
+  - "walkoff"
 paths:
-  /helloWorld:
-    get:
+  helloWorld:
+    run:
       operationId: Main.helloWorld
       description: "Returns an introductory message"
       produces:
@@ -21,8 +21,8 @@ paths:
           description: "introductory message"
           schema:
             type: "string"
-  /repeatBackToMe:
-    get:
+  repeatBackToMe:
+    run:
       operationId: Main.repeatBackToMe
       description: "Repeats the call argument"
       produces:
@@ -38,8 +38,8 @@ paths:
           description: "repeated method"
           schema:
             type: "string"
-  /returnPlusOne:
-    get:
+  returnPlusOne:
+    run:
       operationId: Main.returnPlusOne
       description: "Increments a given number by 1"
       produces:
