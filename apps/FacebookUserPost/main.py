@@ -1,6 +1,7 @@
 from apps import App
 import requests
 
+
 class Main(App):
 
     def __init__(self, name=None, device=None):
