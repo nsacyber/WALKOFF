@@ -8,6 +8,7 @@ from core.options import Options
 import core.config.config
 import core.config.paths
 from server.return_codes import *
+import server.workflowresults
 
 
 def get_playbooks():
@@ -502,3 +503,7 @@ def add_default_template(playbook_name, workflow_name):
     from server.context import running_context
     running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
                                                              workflow_name=workflow_name)
+
+
+def read_all_results():
+    return {"results": list(server.workflowresults.results)}, SUCCESS

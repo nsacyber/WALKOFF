@@ -201,6 +201,7 @@ class Workflow(ExecutionElement):
         total_steps = []
         steps = self.__steps(start=start)
         first = True
+        output = None
         for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.ancestry))
             while self.is_paused:
@@ -224,7 +225,8 @@ class Workflow(ExecutionElement):
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
                 steps.send(error_flag)
-        self.__shutdown(instances)
+                output = step.output
+        self.__shutdown(instances, output)
         yield
 
     def __steps(self, start):
@@ -266,7 +268,7 @@ class Workflow(ExecutionElement):
                                                                               "action": step.action,
                                                                               "name": step.name}}))
             error_flag = True
-            step.output = str(e)
+            step.output = 'error: {0}'.format(str(e))
             self.accumulated_risk += float(step.risk) / self.total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry, e))
         finally:
@@ -285,7 +287,7 @@ class Workflow(ExecutionElement):
                 return child_step_generator, child_next, child_name
         return None, None
 
-    def __shutdown(self, instances):
+    def __shutdown(self, instances, result):
         # Upon finishing shuts down instances
         for instance in instances:
             try:
@@ -294,7 +296,18 @@ class Workflow(ExecutionElement):
             except Exception as e:
                 logger.error('Error caught while shutting down app instance. '
                              'Device: {0}. Error {1}'.format(instance, e))
-        callbacks.WorkflowShutdown.send(self)
+        if result is not None:
+            if not isinstance(result, str):
+                try:
+                    result = json.dumps(result)
+                except Exception as e:
+                    logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
+                    result = 'error: could not convert'
+            callbacks.WorkflowShutdown.send(self, data=result)
+            logger.info('Workflow {0} completed. Result: {1}'.format(self.name, result))
+        else:
+            callbacks.WorkflowShutdown.send(self)
+            logger.info('Workflow {0} completed. No result'.format(self.name))
 
     def get_cytoscape_data(self):
         """Gets the cytoscape data for the Workflow object.

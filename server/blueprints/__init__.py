@@ -13,11 +13,12 @@ WidgetBlueprint = _BlueprintInjection
 
 def register_blueprints():
     from server.blueprints import app as app
-    from server.blueprints import widget, events, widgets
+    from server.blueprints import widget, events, widgets, workflowresult
     __flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
     __flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
     __flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     __flaskapp.register_blueprint(events.events_page, url_prefix='/events')
+    __flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
     __register_all_app_blueprints()
 
 

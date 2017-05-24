@@ -12,6 +12,7 @@ import core.config.paths
 from gevent.event import Event
 from core.case.callbacks import WorkflowShutdown
 from server.return_codes import *
+import server.workflowresults
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -753,3 +754,18 @@ class TestWorkflowServer(ServerTestCase):
         ancestry = step['ancestry'].split(',')
         self.assertEqual(ancestry[-1], "start")
         self.assertEqual(step['data']['result'], "REPEATING: Hello World")
+
+    # TODO: FixMe
+    # def test_read_all_results(self):
+    #     print('TESTESTETSTESTSTSTSTSTSTSTST')
+    #     server.workflowresults.results.clear()
+    #     print(server.flaskserver.running_context.controller.workflows.keys())
+    #     self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+    #     print(server.workflowresults.results)
+    #     self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+    #     print(server.workflowresults.results)
+    #     self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+    #     print(server.workflowresults.results)
+    #     response = self.get_with_status_check('/workflowresults', headers=self.headers)
+    #     self.assertIn('results', response)
+    #     self.assertEqual(len(response['results']), 3)

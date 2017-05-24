@@ -62,6 +62,7 @@ paths:
   $ref: ./scheduler.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
+  $ref: ./workflowresult.yaml
 
 securityDefinitions:
   AuthenticationToken:
@@ -77,9 +78,10 @@ definitions:
     $ref: ./objects/appdevice.yaml
     $ref: ./objects/cases.yaml
     $ref: ./objects/metrics.yaml
-    $ref: ./objects/users.yaml
-    $ref: ./objects/triggers.yaml
-    $ref: ./objects/scheduler.yaml
-    $ref: ./objects/roles.yaml
     $ref: ./objects/playbooks.yaml
+    $ref: ./objects/roles.yaml
+    $ref: ./objects/scheduler.yaml
+    $ref: ./objects/triggers.yaml
+    $ref: ./objects/users.yaml
+    $ref: ./objects/workflowresult.yaml
 
