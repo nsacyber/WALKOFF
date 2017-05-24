@@ -1,4 +1,6 @@
-
+.content-header, .content {
+    padding: 0;
+}
 
 .contentContainer {
     position: relative;

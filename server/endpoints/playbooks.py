@@ -506,4 +506,4 @@ def add_default_template(playbook_name, workflow_name):
 
 
 def read_all_results():
-    return {"results": list(server.workflowresults.results)}, SUCCESS
+    return list(server.workflowresults.results), SUCCESS

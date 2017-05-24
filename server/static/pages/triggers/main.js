@@ -218,12 +218,12 @@
                 headers: {"Authentication-Token": authKey},
                 type: "PUT",
                 success: function (data) {
-                    console.log('trigger add success');
+                    $.notify('Trigger ' + values.name + ' added successfully.', 'success');
                     getTriggerList();
                     resetTriggerEditor();
                 },
                 error: function (e) {
-                    console.log('trigger add failed');
+                    $.notify('Trigger ' + values.name + ' could not be added.', 'error');
                     console.log(e);
                 }
             });
@@ -273,12 +273,14 @@
                     headers:{"Authentication-Token":authKey},
                     type:"POST",
                     success:function(e){
+                        $.notify('Trigger ' + name + ' edited successfully.', 'success');
                         //refresh the list of triggers
                         getTriggerList();
                         resetTriggerEditor();
                     },
                     error: function(e){
-                        console.log("ERROR");
+                        $.notify('Trigger ' + name + ' could not be edited.', 'error');
+                        console.log(e);
                     }
                 });
             };
@@ -296,12 +298,14 @@
                 headers:{"Authentication-Token":authKey},
                 type:"DELETE",
                 success:function(e){
+                    $.notify('Trigger ' + name + ' removed successfully.', 'success');
                     // refresh the list of triggers
                     $("#triggerList option:selected").remove()
                     getTriggerList();
                 },
                 error: function(e){
-                    console.log("ERROR");
+                    $.notify('Trigger ' + name + ' could not be removed.', 'error');
+                    console.log(e);
                 }
             });
             };

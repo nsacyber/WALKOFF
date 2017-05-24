@@ -1,35 +1,39 @@
-<?xml version="1.0"?>
-<workflow name="helloWorldWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>1-2</month>
-            <day>*</day>
-            <hour>*</hour>
-            <second>*/4</second>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <input>
-                <call format="str">Hello World</call>
-            </input>
-            <next step="1">
-                <flag action="regMatch">
-                    <args>
-                        <regex format="str">(.*)</regex>
-                    </args>
-                    <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
-                    </filters>
-                </flag>
-            </next>
-            <error step="1"></error>
-        </step>
-    </steps>
-</workflow>
+<?xml version="1.0" ?>
+<workflows>
+	<workflow name="helloWorldWorkflow">
+		<options>
+			<enabled>true</enabled>
+			<scheduler autorun="false" type="cron">
+				<second>*/4</second>
+				<day>*</day>
+				<hour>*</hour>
+				<month>1-2</month>
+			</scheduler>
+		</options>
+		<start>start</start>
+		<steps>
+			<step id="start">
+				<id>start</id>
+				<app>HelloWorld</app>
+				<action>repeatBackToMe</action>
+				<device>hwTest</device>
+				<input>
+					<call format="str">Hello World</call>
+				</input>
+				<next step="1">
+					<flag action="regMatch">
+						<args>
+							<regex format="str">(.*)</regex>
+						</args>
+						<filters>
+							<filter action="length">
+								<args/>
+							</filter>
+						</filters>
+					</flag>
+				</next>
+				<error step="1"/>
+			</step>
+		</steps>
+	</workflow>
+</workflows>
