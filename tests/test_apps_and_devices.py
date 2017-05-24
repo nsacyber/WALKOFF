@@ -5,6 +5,7 @@ from server import flaskserver as server
 import tests.config
 import core.config.paths
 from server.return_codes import *
+import pyaes
 
 
 class TestAppsAndDevices(ServerTestCase):
@@ -40,9 +41,8 @@ class TestAppsAndDevices(ServerTestCase):
     def test_display_device(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
-        json.loads(
-            self.app.put('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers).get_data(
-                as_text=True))
+        self.put_with_status_check('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers,
+                                   status_code=OBJECT_CREATED)
 
         response = json.loads(
             self.app.get('/apps/HelloWorld/devices/' + self.name, headers=self.headers).get_data(
@@ -57,9 +57,9 @@ class TestAppsAndDevices(ServerTestCase):
     def test_edit_device(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
-        json.loads(
-            self.app.put('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers).get_data(
-                as_text=True))
+
+        self.put_with_status_check('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers,
+                                   status_code=OBJECT_CREATED)
 
         data = {"ipaddr": "192.168.196.1"}
         self.post_with_status_check('/apps/HelloWorld/devices/' + self.name,
@@ -267,3 +267,27 @@ class TestAppsAndDevices(ServerTestCase):
                     self.assertDictEqual(device_json, test_device_two_json)
                     checked_apps += 1
             self.assertEqual(checked_apps, 2)
+
+    def test_device_password(self):
+        data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields)}
+        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
+                                   data=data,
+                                   headers=self.headers,
+                                   status_code=OBJECT_CREATED)
+
+        with server.running_context.flask_app.app_context():
+            device = server.running_context.Device.query.filter_by(name=self.name).first()
+
+            try:
+                with open(core.config.paths.AES_key_path, 'rb') as key_file:
+                    key = key_file.read()
+            except (OSError, IOError) as e:
+                print(e)
+
+            pw = ''
+            if key:
+                aes = pyaes.AESModeOfOperationCTR(key)
+                pw = aes.decrypt(device.password)
+
+            self.assertEqual(self.password, pw.decode("utf-8"))
