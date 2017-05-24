@@ -10,6 +10,7 @@
 				<month>11-12</month>
 			</scheduler>
 		</options>
+		<start>start</start>
 		<steps>
 			<step id="start">
 				<id>start</id>

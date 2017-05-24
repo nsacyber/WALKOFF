@@ -246,12 +246,12 @@ class CaseDatabase(object):
             The JSON representation of all Event objects without their cases.
         """
         event_id = self.session.query(Case).filter(Case.name == case_name).first().id
-        if event_id:
-            result = [event.as_json()
-                      for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
-            return result
-        return {}
+        if not event_id:
+            raise Exception
 
+        result = [event.as_json()
+                    for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
+        return result
 
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""
