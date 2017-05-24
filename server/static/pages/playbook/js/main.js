@@ -1322,7 +1322,7 @@ $(function(){
 
     // Enable tooltips on buttons. First delete any existing tooltips
     // that might already exist.
-    $('[data-toggle="tooltip"]').tooltip("destroy");
-    $('[data-toggle="tooltip"]').tooltip({trigger: "hover"});
+    $('show-tooltip').tooltip("destroy");
+    $('show-tooltip').tooltip({trigger: "hover"});
 
 });
