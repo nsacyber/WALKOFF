@@ -1320,9 +1320,4 @@ $(function(){
     //---------------------------------
     showInstruction();
 
-    // Enable tooltips on buttons. First delete any existing tooltips
-    // that might already exist.
-    $('show-tooltip').tooltip("destroy");
-    $('show-tooltip').tooltip({trigger: "hover"});
-
 });
