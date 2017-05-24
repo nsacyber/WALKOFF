@@ -1,6 +1,8 @@
 import logging
 from apps import App
 import teslajson
+import core.config.paths
+import pyaes
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +11,9 @@ class Main(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         device = self.get_device()
-        self.connection = teslajson.Connection(device.username, device.password)
+
+        self.connection = teslajson.Connection(device.username, device.get_password())
+
         try:
             self.vehicle = self.connection.vehicles[0]
         except IndexError:

@@ -6,6 +6,7 @@ import core.config.paths
 from core import helpers
 from server.return_codes import *
 from server import forms
+import pyaes
 
 
 def read_all_apps():
@@ -76,10 +77,25 @@ def create_device(app_name, device_name):
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Device already exists.'.format(device_name, app_name))
                 return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
+
+            try:
+                with open(core.config.paths.AES_key_path, 'rb') as key_file:
+                    key = key_file.read()
+            except (OSError, IOError) as e:
+                current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
+
+            if key:
+                aes = pyaes.AESModeOfOperationCTR(key)
+                pw = form.pw.data
+                enc_pw = aes.encrypt(pw)
+            else:
+                current_app.logger.error('Could not create device {0} for app {1}. '
+                                         'Could not get key from AES key file'.format(device_name, app_name))
+                return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
+
             running_context.Device.add_device(name=device_name, username=form.username.data,
-                                              password=form.pw.data, ip=form.ipaddr.data, port=form.port.data,
-                                              app_server=app_name,
-                                              extra_fields=form.extraFields.data)
+                                              password=enc_pw, ip=form.ipaddr.data, port=form.port.data,
+                                              app_server=app_name, extra_fields=form.extraFields.data)
             return {}, OBJECT_CREATED
         else:
             current_app.logger.error('Could not create device {0} for app {1}. '
@@ -187,7 +203,7 @@ def import_devices(app_name):
                 extra_fields_str = json.dumps(extra_fields)
                 running_context.Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
                                                   port=device['port'],
-                                                  extra_fields=extra_fields_str, app_server=app, password='')
+                                                  extra_fields=extra_fields_str, app_server=app, password=None)
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 

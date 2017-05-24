@@ -4,6 +4,8 @@ from flask import current_app
 from sqlalchemy import Integer, String
 import logging
 from . import database
+import core.config.paths
+import pyaes
 
 db = database.db
 
@@ -90,14 +92,14 @@ class Device(database.Base):
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
     username = db.Column(db.String(80))
-    password = db.Column(db.String(80))
+    password = db.Column(db.LargeBinary())
     ip = db.Column(db.String(15))
     port = db.Column(db.Integer())
     extra_fields = db.Column(db.String)
     app_id = db.Column(db.String, db.ForeignKey('app.name'))
     app = db.relationship(App, back_populates="devices")
 
-    def __init__(self, name="", username="", password="", ip="0.0.0.0", port=0, extra_fields="", app_id=""):
+    def __init__(self, name="", username="", password=None, ip="0.0.0.0", port=0, extra_fields="", app_id=""):
         """Initializes a new Device object, which will be associated with an App object.
         
         Args:
@@ -143,6 +145,19 @@ class Device(database.Base):
         db.session.commit()
         current_app.logger.info('Adding device to app {0}: {1}'.format(app_server, device.as_json(with_apps=False)))
 
+    def get_password(self):
+        try:
+            with open(core.config.paths.AES_key_path, 'rb') as key_file:
+                key = key_file.read()
+        except (OSError, IOError) as e:
+            print(e)
+
+        if key:
+            aes = pyaes.AESModeOfOperationCTR(key)
+            return aes.decrypt(self.password)
+        else:
+            return None
+
     def edit_device(self, form):
         """Edits various fields of the Device object. 
         
@@ -156,7 +171,16 @@ class Device(database.Base):
             self.username = form.username.data
 
         if form.pw.data:
-            self.password = form.pw.data
+            try:
+                with open(core.config.paths.AES_key_path, 'rb') as key_file:
+                    key = key_file.read()
+            except (OSError, IOError) as e:
+                current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
+
+            if key:
+                aes = pyaes.AESModeOfOperationCTR(key)
+                pw = form.pw.data
+                self.password = aes.encrypt(pw)
 
         if form.ipaddr.data:
             self.ip = form.ipaddr.data
