@@ -52,7 +52,7 @@ function getDeviceList() {
             displayDevices(data);
         },
         'error': function (data){
-            console.log('applist failed');
+            $.notify('Error retrieving devices for app ' + activeApp + '.', "error");
             console.log(data);
         }
     });
@@ -63,26 +63,8 @@ for(var app in apps){
 }
 
 $("#appList").on("change", function(data){
-    var result;
-    $("#deviceList").empty();
     activeApp = data.currentTarget[data.currentTarget.selectedIndex].innerHTML;
-    if(activeApp != undefined){
-         $.ajax({
-            'async': false,
-            'type': "GET",
-            'global': false,
-            'headers':{"Authentication-Token":authKey},
-            'url': "/apps/" + activeApp + "/devices",
-            'success': function (data) {
-                displayDevices(data);
-            },
-            'error': function (data){
-                console.log('applist failed');
-                console.log(data);
-            }
-        });
-    }
-
+    getDeviceList();
 });
 
 $("#deviceList").on("change", function(data){
@@ -112,10 +94,11 @@ $("#addNewDevice").on("click", function(){
             'success': function (data) {
                 $("#deviceForm")[0].reset();
                 getDeviceList();
-                alert(data['status']);
+                $.notify('Device successfully added.', "success");
             },
             'error': function(data){
-                console.log("error adding devices");
+                $.notify('Device could not be added.', "error");
+                console.log(data);
             }
         });
     }
@@ -132,9 +115,10 @@ $("#removeDevice").on("click", function(){
             'success': function (data) {
                 $("#deviceForm")[0].reset();
                 getDeviceList();
-                alert('Device ' + activeDevice + ' successfully removed.');
+                $.notify('Device ' + activeDevice + ' successfully removed.', "success");
             },
             'error': function(e) {
+                $.notify('Device ' + activeDevice + ' could not be removed.', "error");
                 console.log(e);
             }
         });
@@ -152,10 +136,11 @@ $("#editDevice").on("click", function(){
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
                 $("#deviceForm")[0].reset();
-                alert(data['status']);
+                getDeviceList();
+                $.notify('Device ' + activeDevice + ' successfully edited.', "success");
             },
             'error': function(data){
-                console.log('edit device failed');
+                $.notify('Device ' + activeDevice + ' could not be edited.', "error");
                 console.log(data);
             }
         });

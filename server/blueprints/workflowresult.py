@@ -37,7 +37,7 @@ WorkflowShutdown.connect(__workflow_ended_callback)
 
 
 @workflowresults_page.route('/stream', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/playbooks'])
+# @auth_token_required
+# @roles_accepted(*running_context.user_roles['/playbooks'])
 def stream_workflow_success_events():
     return Response(__workflow_shutdown_event_stream(), mimetype='text/event-stream')

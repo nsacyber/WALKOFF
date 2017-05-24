@@ -16,25 +16,22 @@ function formatPlaybooksForJSTree(playbook_data){
 }
 
 function executeWorkflow(currentPlaybook, currentWorkflow){
-    var result = function () {
-        var tmp = null;
-        $.ajax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authentication-Token":authKey},
-            'url': "playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
-            'success': function (data) {
-                tmp = data;
-                $("#eventList").append("<li>" + currentWorkflow + " is executing </li>");
-            }
-        });
-        return tmp;
-    }();
-    if(result.status == "success"){
-        $("#eventList").append("<li>" + currentWorkflow + " executed successfully </li>");
-    }
-    notifyMe();
+    $.ajax({
+        'async': false,
+        'type': "POST",
+        'global': false,
+        'headers':{"Authentication-Token":authKey},
+        'url': "playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
+        'success': function (data) {
+            $.notify(currentWorkflow + ' is scheduled to execute.', 'success');
+            //$("#eventList").append("<li>" + currentWorkflow + " is scheduled to execute.</li>");
+            //notifyMe();
+        },
+        'error': function (jqXHR, status, error) {
+            $.notify(currentWorkflow + ' has failed to be scheduled.', 'error');
+            //$("#eventList").append("<li>" + currentWorkflow + " has failed to be scheduled.</li>");
+        }
+    });
 }
 
 function customMenu(node){
@@ -47,19 +44,19 @@ function customMenu(node){
                 executeWorkflow(playbook, workflow);
             }
         },
-        addCase: {
-            label: "Add Case",
-            action: function () {
-                var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents[0]).text;
-                addCaseDialog.dialog("open");
+        // addCase: {
+        //     label: "Add Case",
+        //     action: function () {
+        //         var playbook = $("#loadedPlaybooksTree").jstree(true).get_node(node.parents[0]).text;
+        //         addCaseDialog.dialog("open");
 
-            }
-        },
+        //     }
+        // },
 
     };
     if (node.original.type != "workflow") {
         delete items.executeItem;
-        delete items.addCase;
+        //delete items.addCase;
     }
 
     return items;
