@@ -1,0 +1,26 @@
+{
+    "add_facebook_user":{
+      "description":"Add Facebook user access token and ID",
+      "args":
+      [
+        {
+          "name": "user_access_token",
+          "type": "str"
+        },
+        {
+          "name": "user_id",
+          "type": "str"
+        }
+      ]
+  },
+  "post_to_user_wall":{
+    "description":"Post message to Facebook user's wall",
+    "args":
+    [
+      {
+        "name": "message",
+        "type": "str"
+      }
+    ]
+  }
+}
