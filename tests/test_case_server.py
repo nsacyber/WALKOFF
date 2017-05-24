@@ -18,6 +18,7 @@ import server.flaskserver as server
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from server.return_codes import *
+from collections import OrderedDict
 
 
 class TestCaseServer(ServerTestCase):
@@ -418,12 +419,13 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_possible_subscriptions(self):
         with open(join('.', 'data', 'events.json')) as f:
-            expected_response = json.loads(f.read())
-
+            expected_response = json.loads(f.read(), object_pairs_hook=OrderedDict)
+        expected_response = [{'type': element_type, 'events': events}
+                             for element_type, events in expected_response.items()]
         response = self.app.get('/availablesubscriptions', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected_response)
+        self.assertListEqual(response, expected_response)
 
     def test_display_subscriptions(self):
         case1, accept1 = construct_case1()

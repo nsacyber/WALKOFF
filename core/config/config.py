@@ -106,11 +106,13 @@ def load_function_info():
 
 
 load_config()
+
 try:
     with open(core.config.paths.events_path) as f:
         possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-except (IOError, OSError):
-    logging.getLogger(__name__).error('Cannot load events metadata. Returning empty dict: Error {0}'.format(e))
-    possible_events = {}
+        possible_events = [{'type': element_type, 'events': events} for element_type, events in possible_events.items()]
+except (IOError, OSError) as e:
+    logging.getLogger(__name__).error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
+    possible_events = []
 
 load_function_info()
