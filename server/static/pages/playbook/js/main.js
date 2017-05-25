@@ -467,6 +467,25 @@ $(function(){
             id += 1;
         }
 
+        var inputs = {};
+        var actionInfo = appData[app].actions[action];
+        $.each(actionInfo.args, function(index, inputInfo) {
+
+            var defaultValue;
+            if (inputInfo.type === "str")
+                defaultValue = "";
+            else if (inputInfo.type === "bool")
+                defaultValue = false;
+            else
+                defaultValue = 0;
+
+            inputs[inputInfo.name] = {
+                format: inputInfo.type,
+                key: inputInfo.name,
+                value: defaultValue
+            };
+        });
+
         // Add the node with the id just found to the graph in the location dropped
         // into by the mouse.
         var newNode = ur.do('add', {
@@ -479,7 +498,7 @@ $(function(){
                     app: app,
                     device: "",
                     errors: [],
-                    input: {},
+                    input: inputs,
                     name: id.toString(),
                     next: [],
                 }
