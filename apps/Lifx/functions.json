@@ -75,7 +75,7 @@
         "type": "str"
       },
       {
-        "name": "color_from",
+        "name": "from_color",
         "type": "str"
       },
       {
@@ -109,7 +109,7 @@
         "type": "str"
       },
       {
-        "name": "color_from",
+        "name": "from_color",
         "type": "str"
       },
       {

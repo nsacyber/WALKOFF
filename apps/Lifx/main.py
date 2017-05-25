@@ -50,7 +50,7 @@ class Main(App):
         duration: seconds for the action to last
         """
         payload = {"duration": args['duration']()}
-        response = requests.post(self.__api_url('all/state'.format(self.name)), data=payload, headers=self.headers)
+        response = requests.post(self.__api_url('all/toggle'.format(self.name)), data=payload, headers=self.headers)
         return json.loads(response.text)
 
     def breathe_effect(self, args={}):
@@ -67,11 +67,12 @@ class Main(App):
         payload = {"color": args['color'](),
                    "from_color": args['from_color'](),
                    "period": args['period'](),
+
                    "cycles": args['cycles'](),
                    "persist": args['persist'](),
                    "power_on": args['power_on'](),
-                   "peak": args['peak']()/10.}
-        response = requests.put(self.__api_url('all/effects/breathe'.format(self.name)),
+                   "peak": int(args['peak']())/10.}
+        response = requests.post(self.__api_url('all/effects/breathe'),
                                 data=payload,
                                 headers=self.headers)
         return json.loads(response.text)
@@ -92,7 +93,7 @@ class Main(App):
                    "cycles": args['cycles'](),
                    "persist": args['persist'](),
                    "power_on": args['power_on']()}
-        response = requests.put(self.__api_url('all/effects/pulse'.format(self.name)),
+        response = requests.post(self.__api_url('all/effects/pulse'.format(self.name)),
                                 data=payload,
                                 headers=self.headers)
         return json.loads(response.text)
