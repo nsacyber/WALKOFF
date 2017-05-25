@@ -1,6 +1,7 @@
 from apps import App
 import requests
 
+
 class Main(App):
 
     def __init__(self, name=None, device=None):
@@ -19,5 +20,4 @@ class Main(App):
             msg = args["message"].replace(" ", "+")
             url = ('https://graph.facebook.com/v2.9/' + self.user_id + '/feed?'
                    'message=' + msg + '&access_token=' + self.user_access_token)
-            r = requests.post(url, verify=False)
-            return r.text
+            return (requests.post(url, verify=False)).text
