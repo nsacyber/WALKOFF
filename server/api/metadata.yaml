@@ -1,0 +1,125 @@
+/availablesubscriptions:
+  get:
+    tags:
+      - System
+    summary: Read all available subscription options
+    description: ''
+    operationId: server.endpoints.metadata.read_all_possible_subscriptions
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: List of available subscriptions in hierarchical order from controller to filter
+          type: array
+          items:
+            $ref: '#/definitions/AvailableSubscriptions'
+/filters:
+  get:
+    tags:
+      - System
+    summary: Read all filters
+    description: ''
+    operationId: server.endpoints.metadata.read_all_filters
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          required: [filters]
+          properties:
+            filters:
+              description: All the available filters. Form of '{filter_name -> Action}'
+              type: object
+
+/flags:
+  get:
+    tags:
+      - System
+    summary: Read all flags
+    description: ''
+    operationId: server.endpoints.metadata.read_all_flags
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          required: [flags]
+          properties:
+            filters:
+              description: All the available flags. Form of '{flag_name -> Action}'
+              type: object
+
+/interface/{interface_name}:
+  post:
+    tags:
+      - System
+    summary: Render interface
+    description: ''
+    operationId: server.endpoints.metadata.sys_pages
+    produces:
+      - application/json
+    parameters:
+      - name: interface_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+      - in: body
+        name: widget_args
+        description: Pass page and arguments to render widget.
+        required: false
+        schema:
+          $ref: '#/definitions/RenderArgs'
+    responses:
+      200:
+        description: Success
+      401:
+        description: User is unauthorized
+        schema:
+          $ref: '#/definitions/Error'
+
+/key:
+  get:
+    tags:
+      - System
+    summary: Read api key
+    description: ''
+    operationId: server.endpoints.metadata.login_info
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          required: [auth_token]
+          properties:
+            auth_token:
+              description: API Authentication Token
+              type: string
+      401:
+        description: User is unauthorized
+        schema:
+          $ref: '#/definitions/Error'
+
+/widgets:
+  get:
+    tags:
+      - System
+    summary: Read all widgets
+    description: ''
+    operationId: server.endpoints.metadata.read_all_widgets
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'

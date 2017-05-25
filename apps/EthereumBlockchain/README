@@ -1,0 +1,19 @@
+The Ethereum Blockchain App has only been tested on Ubuntu.
+
+To install the dependencies run:
+  ./installDependencies.sh
+  Note: Geth and NodeJS will be installed to the $HOME path
+
+After you installed the dependencies, run the function:
+  set_up_network (See tests/testMain.py)
+
+By default, if no argument is provided, then the set_up_network() creates an
+Ethereum network with 2 server nodes.
+
+Note that running the set_up_network() script will empty out the following
+directories:
+  1. dd # Temporary data directories and supplementary files for setting up nodes
+  2. keystore # Store nodes' keys
+
+See 'dd/logs' for logs, and run e.g. 'geth attach dd/dd1/geth.ipc' to use CLI for 1st node.
+Note that mining occurs, so the logs are continuously being updated in the background.

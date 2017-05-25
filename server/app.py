@@ -22,7 +22,7 @@ def read_and_indent(filename, indent):
 
 
 def compose_yamls():
-    with open(os.path.join(paths.swagger_apis, 'api.yaml'), 'r') as api_yaml:
+    with open(os.path.join(paths.api_path, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
         for line_num, line in enumerate(api_yaml):
             if line.lstrip().startswith('$ref:'):
@@ -30,19 +30,19 @@ def compose_yamls():
                 reference = split_line[1].strip()
                 indentation = split_line[0].count('  ')
                 try:
-                    final_yaml.extend(read_and_indent(os.path.join(paths.swagger_apis, reference), indentation))
+                    final_yaml.extend(read_and_indent(os.path.join(paths.api_path, reference), indentation))
                     final_yaml.append('\n')
                 except (IOError, OSError):
                     logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
                                                                                                       line_num))
             else:
                 final_yaml.append(line)
-    with open(os.path.join(paths.swagger_apis, 'composed_api.yaml'), 'w') as composed_yaml:
+    with open(os.path.join(paths.api_path, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
 
 
 def create_app():
-    connexion_app = connexion.App(__name__, specification_dir='swagger/', server='gevent')
+    connexion_app = connexion.App(__name__, specification_dir='api/', server='gevent')
     _app = connexion_app.app
     compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])

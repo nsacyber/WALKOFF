@@ -51,7 +51,6 @@ $(function(){
     // Reformat the JSON data returned from the /apps/actions endpoint
     // into a format that jsTree can understand.
     function formatAppsActionJsonDataForJsTree(data) {
-        data = JSON.parse(data);
         appData = {};
         var jstreeData = [];
         $.each(data, function( appName, actions ) {
@@ -225,6 +224,7 @@ $(function(){
             type: "object",
             title: "Node Parameters",
             definitions: definitions,
+            required: ['name', 'start', 'app'],
             properties: {
                 name: {
                     type: "string",
@@ -411,7 +411,7 @@ $(function(){
             no_additional_properties: true,
 
             // Require all properties by default
-            required_by_default: true
+            required_by_default: false
         });
 
         editor.getEditor('root.app').disable();
@@ -477,7 +477,7 @@ $(function(){
                 parameters: {
                     action: action,
                     app: app,
-                    device: "None",
+                    device: "",
                     errors: [],
                     input: {},
                     name: id.toString(),
@@ -536,6 +536,16 @@ $(function(){
     function paste() {
         var newNodes = ur.do("paste");
         newNodes.on('click', onClick);
+
+        // Change the names of these new nodes so that they are the
+        // same as the id. This is needed since only the name is
+        // stored on the server and serves as the unique id of the
+        // node. It therefore must be the same as the Cytoscape id.
+        for (var i=0; i<newNodes.length; ++i) {
+            var parameters = newNodes[i].data("parameters");
+            parameters.name = newNodes[i].data("id")
+            newNodes[i].data("parameters", parameters);
+        }
     }
 
     function renamePlaybook(oldPlaybookName, newPlaybookName) {
@@ -686,7 +696,7 @@ $(function(){
         }();
 
         // Remove instructions
-        $("#cy-instructions").addClass('hidden');
+        hideInstructions();
 
         // Create the Cytoscape graph
         cy = cytoscape({
@@ -816,8 +826,24 @@ $(function(){
 
     function closeCurrentWorkflow() {
         $("#cy").empty();
+        $("#currentWorkflowText").text("");
+        hideParameters();
+        showInstruction();
     }
 
+    function showInstruction() {
+        var cyInstructions = $( "#cy-instructions-template" ).clone().removeClass('hidden');
+        cyInstructions.attr("id", "cy-instructions");
+        $("#cy").append(cyInstructions);
+    }
+
+    function hideInstructions() {
+        $("#cy-instructions").remove();
+    }
+
+    function hideParameters() {
+        $("#parameters").addClass('hidden');
+    }
 
     // Download list of workflows for display in the Workflows list
     function downloadWorkflowList() {
@@ -944,7 +970,7 @@ $(function(){
                         loadWorkflow(node.data.playbook, workflowName);
 
                         // hide parameters panel until first click on node
-                        $("#parameters").addClass('hidden');
+                        hideParameters();
                     }
                 });
             }
@@ -1289,4 +1315,10 @@ $(function(){
             filtersList = data.filters;
         }
     });
+
+    //---------------------------------
+    // Other setup
+    //---------------------------------
+    showInstruction();
+
 });

@@ -1,19 +1,58 @@
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from tests.util.servertestcase import ServerTestCase
+import json
+from server.return_codes import *
 
 
 class TestSchedulerActions(ServerTestCase):
 
     def test_scheduler_actions(self):
-        self.post_with_status_check('/execution/scheduler/start', STATE_RUNNING, headers=self.headers)
-        self.post_with_status_check('/execution/scheduler/start', "Scheduler already running.", headers=self.headers)
+        response = self.app.post('/execution/scheduler/start', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual(STATE_RUNNING, response['status'])
 
-        self.post_with_status_check('/execution/scheduler/pause', STATE_PAUSED, headers=self.headers)
-        self.post_with_status_check('/execution/scheduler/pause', "Scheduler already paused.", headers=self.headers)
+        response = self.app.post('/execution/scheduler/start', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual("Scheduler already running.", response['status'])
 
-        self.post_with_status_check('/execution/scheduler/resume', STATE_RUNNING, headers=self.headers)
-        self.post_with_status_check('/execution/scheduler/resume',
-                                    "Scheduler is not in PAUSED state and cannot be resumed.", headers=self.headers)
 
-        self.post_with_status_check('/execution/scheduler/stop', STATE_STOPPED, headers=self.headers)
-        self.post_with_status_check('/execution/scheduler/stop', "Scheduler already stopped.", headers=self.headers)
+        response = self.app.post('/execution/scheduler/pause', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual(STATE_PAUSED, response['status'])
+
+        response = self.app.post('/execution/scheduler/pause', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual("Scheduler already paused.", response['status'])
+
+
+        response = self.app.post('/execution/scheduler/resume', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual(STATE_RUNNING, response['status'])
+
+        response = self.app.post('/execution/scheduler/resume', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual("Scheduler is not in PAUSED state and cannot be resumed.", response['status'])
+
+        response = self.app.post('/execution/scheduler/stop', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual(STATE_STOPPED, response['status'])
+
+        response = self.app.post('/execution/scheduler/stop', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn('status', response)
+        self.assertEqual("Scheduler already stopped.", response['status'])

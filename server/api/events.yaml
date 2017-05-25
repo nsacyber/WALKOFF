@@ -1,0 +1,68 @@
+/events/{event_id}:
+  parameters:
+    - name: event_id
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
+  post:
+    tags:
+      - Events
+    summary: Update an event note
+    description: ''
+    operationId: server.endpoints.events.update_event_note
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: note
+        description: Note to add to the case
+        required: true
+        schema:
+          type: object
+          required: [note]
+          properties:
+            note:
+              type: string
+              example: This event was import somehow. I should make a note about it
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Event'
+      461:
+        description: Object does not exist
+        schema:
+          $ref: '#/definitions/Error'
+  get:
+    tags:
+      - Events
+    summary: Read an event
+    description: ''
+    operationId: server.endpoints.events.read_event
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Event'
+      461:
+        description: Object does not exist
+        schema:
+          $ref: '#/definitions/Error'
+
+#/events:
+#    get:
+#      tags:
+#        - Cases
+#      summary: Stream of the case events
+#      description: ''
+#      operationId: server.endpoints.cases.stream_case_events
+#      produces:
+#        - text/event-stream
+#      responses:
+#        200:
+#          description: Success

@@ -1,4 +1,5 @@
 __all__ = ['test_app_blueprint',
+           'test_app_utilities',
            'test_argument',
            'test_case_database',
            'test_case_config_db',
@@ -27,4 +28,5 @@ __all__ = ['test_app_blueprint',
            'test_controller',
            'test_widget_signals',
            'test_metrics',
-           'test_metrics_server']
+           'test_metrics_server',
+           'test_workflow_results']
