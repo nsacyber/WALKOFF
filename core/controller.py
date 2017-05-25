@@ -241,9 +241,13 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
+
+
+
         name = _WorkflowKey(playbook_name, workflow_name)
         if name in self.workflows:
             del self.workflows[name]
+
             logger.debug('Removed workflow {0}'.format(name))
             return True
         logger.warning('Cannot remove workflow {0}. Does not exist in controller'.format(name))

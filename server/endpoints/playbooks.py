@@ -339,11 +339,24 @@ def update_workflow(playbook_name, workflow_name):
 
 def delete_workflow(playbook_name, workflow_name):
     from server.context import running_context
+    from server.flaskserver import write_playbook_to_file
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             running_context.controller.remove_workflow(playbook_name, workflow_name)
+
+            if len(running_context.controller.get_all_workflows_by_playbook(playbook_name)) == 0:
+                current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_name))
+                playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))
+                try:
+                    os.remove(playbook_filename)
+                except OSError:
+                    current_app.logger.warning('Cannot remove playbook {0}. The playbook does not exist.'.format(playbook_name))
+
+            else:
+                write_playbook_to_file(playbook_name)
+
             current_app.logger.info('Deleted workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {"playbooks": running_context.controller.get_all_workflows()}, SUCCESS
         else:
