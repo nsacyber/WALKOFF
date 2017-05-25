@@ -11,9 +11,3 @@ class TestMain(TestCase):
         app = Main()
         message = app.test_function_with_param(args={"test_param": "walkoff"})
         self.assertEqual(message, "walkoff")
-
-    def test_function_with_object_reference(self):
-        app = Main(name="SkeletonApp", device="test_device")
-        message = app.test_function_with_object_reference()
-        self.assertEqual(message, "test_device")
-
