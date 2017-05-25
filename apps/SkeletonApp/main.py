@@ -35,4 +35,4 @@ class Main(App):
         """
            Basic function that calls an instance variable.  In this case, a device name. 
         """
-        return self.get_device().name
+        return self.get_device().username
