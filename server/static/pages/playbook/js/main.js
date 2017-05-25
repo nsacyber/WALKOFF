@@ -110,6 +110,7 @@ $(function(){
             var subSchema = {
                 type: "object",
                 title: "Inputs",
+                required: ['$action'],
                 properties: {
                     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
                         type: "string",
