@@ -4,12 +4,13 @@ os:
 
 python:
     - "2.7"
-    - "3.3"
     - "3.4"
     - "3.5"
     - "3.6"
 install: pip install -r requirements.txt
 script: python runAllTests.py test && python testapps.py --all
 branches:
-    only: master
+    only: 
+    - master
+    - development
 

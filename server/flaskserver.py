@@ -78,36 +78,6 @@ def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
 
-@app.route('/apps/', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/apps'])
-def list_all_apps():
-    return json.dumps({"apps": helpers.list_apps()})
-
-
-@app.route('/apps/actions', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/apps'])
-def list_all_apps_and_actions():
-    core.config.config.load_function_info()
-    return json.dumps(core.config.config.function_info['apps'])
-
-
-@app.route('/filters', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/playbooks'])
-def display_filters():
-    return json.dumps({"status": "success", "filters": core.config.config.function_info['filters']})
-
-
-@app.route('/flags', methods=['GET'])
-@auth_token_required
-@roles_accepted(*running_context.user_roles['/playbooks'])
-def display_flags():
-    core.config.config.load_function_info()
-    return json.dumps({"status": "success", "flags": core.config.config.function_info['flags']})
-
-
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>', methods=['GET'])
 @auth_token_required
@@ -154,6 +124,11 @@ def list_all_widgets():
 
 
 def write_playbook_to_file(playbook_name):
+    try:
+        os.remove("{0}.workflow".format(playbook_name))
+    except OSError:
+        pass
+
     app.logger.debug('Writing playbook {0} to file'.format(playbook_name))
     write_format = 'w' if sys.version_info[0] == 2 else 'wb'
     playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))

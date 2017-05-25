@@ -382,18 +382,20 @@ def add_subscription(case, ancestry, events):
                 if not current_subscriptions:
                     ancestry.append(ancestry_level_name)
                     current_subscriptions = __construct_subscription_from_ancestry(ancestry, events)
-                    break
+                    return True
                 elif ancestry_level_name not in current_subscriptions:
                     ancestry.append(ancestry_level_name)
                     current_subscriptions[ancestry_level_name] = \
                         __construct_subscription_from_ancestry(ancestry, events)[ancestry_level_name]
-                    break
+                    return True
                 else:
                     current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
                     ancestry_level_name = ancestry.pop()
             else:
                 # You failed to add anything if you get here
-                pass
+                return False
+        else:
+            return False
 
 
 def remove_subscription_node(case, ancestry):
@@ -411,12 +413,15 @@ def remove_subscription_node(case, ancestry):
         while ancestry_level_name and ancestry_level_name in current_subscriptions:
             if not ancestry:
                 del current_subscriptions[ancestry_level_name]
-                break
+                return True
             elif not current_subscriptions:
-                break
+                return True
             else:
                 current_subscriptions = current_subscriptions[ancestry_level_name].subscriptions
                 ancestry_level_name = ancestry.pop()
+        else:
+            return False
+    return False
 
 
 __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,

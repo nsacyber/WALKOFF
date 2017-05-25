@@ -169,4 +169,8 @@ class TestHelperFunctions(unittest.TestCase):
         orderless_list_compare(self, Sub.registry.keys(), ['Sub', 'Sub1', 'Sub2', 'Sub3'])
         orderless_list_compare(self, Sub.registry.values(), [Sub, Sub1, Sub2, Sub3])
 
+    def test_format_db_path(self):
+        self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
+        self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
+
 

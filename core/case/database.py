@@ -6,6 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
 from core.config.paths import case_db_path
+import core.config.config
+from core.helpers import format_db_path
 
 _Base = declarative_base()
 
@@ -116,7 +118,7 @@ class CaseDatabase(object):
     def create(self):
         """ Creates the database
         """
-        self.engine = create_engine('sqlite:///' + case_db_path)
+        self.engine = create_engine(format_db_path(core.config.config.case_db_type, case_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -140,7 +142,8 @@ class CaseDatabase(object):
         Args:
             case_names (list[str]): A list of case names to add
         """
-        additions = [Case(name=case_name) for case_name in set(case_names)]
+        existing_cases = [case.name for case in self.session.query(Case).all()]
+        additions = [Case(name=case_name) for case_name in set(case_names) if case_name not in existing_cases]
         self.session.add_all(additions)
         self.session.commit()
 
@@ -243,12 +246,12 @@ class CaseDatabase(object):
             The JSON representation of all Event objects without their cases.
         """
         event_id = self.session.query(Case).filter(Case.name == case_name).first().id
-        if event_id:
-            result = [event.as_json()
-                      for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
-            return result
-        return {}
+        if not event_id:
+            raise Exception
 
+        result = [event.as_json()
+                    for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
+        return result
 
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""

@@ -6,7 +6,6 @@ import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
-import logging
 
 
 class ServerTestCase(unittest.TestCase):
@@ -82,7 +81,7 @@ class ServerTestCase(unittest.TestCase):
         """
         pass
 
-    def __assert_url_access(self, url, method, status, status_code=200, **kwargs):
+    def __assert_url_access(self, url, method, status_code, error, **kwargs):
         if method.lower() == 'get':
             response = self.app.get(url, **kwargs)
         elif method.lower() == 'post':
@@ -95,18 +94,19 @@ class ServerTestCase(unittest.TestCase):
             raise ValueError('method must be either get or post')
         self.assertEqual(response.status_code, status_code)
         response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
-        self.assertEqual(response['status'], status)
+        if error:
+            self.assertIn('error', response)
+            self.assertEqual(response['error'], error)
         return response
 
-    def get_with_status_check(self, url, status, status_code=200, **kwargs):
-        return self.__assert_url_access(url, 'get', status, status_code, **kwargs)
+    def get_with_status_check(self, url, status_code=200, error=False, **kwargs):
+        return self.__assert_url_access(url, 'get', status_code, error=error, **kwargs)
 
-    def post_with_status_check(self, url, status, status_code=200, **kwargs):
-        return self.__assert_url_access(url, 'post', status, status_code, **kwargs)
+    def post_with_status_check(self, url, status_code=200, error=False, **kwargs):
+        return self.__assert_url_access(url, 'post', status_code, error=error, **kwargs)
 
-    def put_with_status_check(self, url, status, status_code=200, **kwargs):
-        return self.__assert_url_access(url, 'put', status, status_code, **kwargs)
+    def put_with_status_check(self, url, status_code=200, error=False, **kwargs):
+        return self.__assert_url_access(url, 'put', status_code, error=error, **kwargs)
 
-    def delete_with_status_check(self, url, status, status_code=200, **kwargs):
-        return self.__assert_url_access(url, 'delete', status, status_code, **kwargs)
+    def delete_with_status_check(self, url, status_code=200, error=False, **kwargs):
+        return self.__assert_url_access(url, 'delete', status_code, error=error, **kwargs)

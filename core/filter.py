@@ -77,7 +77,6 @@ class Filter(ExecutionElement):
     def __call__(self, output=None):
         if self.validate_args():
             try:
-                #result = getattr(module, "main")(args=self.args, value=output)
                 result = execute_filter(self.action, args=self.args, value=output)
                 callbacks.FilterSuccess.send(self)
                 return result

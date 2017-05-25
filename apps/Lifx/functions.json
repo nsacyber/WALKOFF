@@ -1,0 +1,135 @@
+{
+  "list_lights": {
+    "description": "Lists all the lights connected",
+    "output_type": "str",
+    "args": []
+  },
+  "set_state_all_lights": {
+    "description": "Basic test function taking a parameter called 'test_param'",
+    "output_type": "str",
+    "args": [
+      {
+        "name": "power",
+        "type": "str"
+      },
+      {
+        "name": "color",
+        "type": "str"
+      },
+      {
+        "name": "brightness",
+        "type": "int"
+      },
+      {
+        "name": "duration",
+        "type": "int"
+      },
+      {
+        "name": "infrared",
+        "type": "int"
+      }
+    ]
+  },
+  "set_state": {
+    "description": "Basic test function taking a parameter called 'test_param'",
+    "output_type": "str",
+    "args": [
+      {
+        "name": "power",
+        "type": "str"
+      },
+      {
+        "name": "color",
+        "type": "str"
+      },
+      {
+        "name": "brightness",
+        "type": "int"
+      },
+      {
+        "name": "duration",
+        "type": "int"
+      },
+      {
+        "name": "infrared",
+        "type": "int"
+      }
+    ]
+  },
+  "toggle_power": {
+    "description": "Basic test function taking a parameter called 'test_param'",
+    "output_type": "str",
+    "args": [
+      {
+        "name": "duration",
+        "type": "int"
+      }
+    ]
+  },
+  "breathe_effect": {
+    "description": "Basic test function taking a parameter called 'test_param'",
+    "output_type": "str",
+    "args": [
+      {
+        "name": "color",
+        "type": "str"
+      },
+      {
+        "name": "color_from",
+        "type": "str"
+      },
+      {
+        "name": "period",
+        "type": "int"
+      },
+      {
+        "name": "cycles",
+        "type": "int"
+      },
+      {
+        "name": "persist",
+        "type": "int"
+      },
+      {
+        "name": "power_on",
+        "type": "str"
+      },
+      {
+        "name": "peak",
+        "type": "int"
+      }
+    ]
+  },
+  "pulse_effect": {
+    "description": "Basic test function taking a parameter called 'test_param'",
+    "output_type": "str",
+    "args": [
+      {
+        "name": "color",
+        "type": "str"
+      },
+      {
+        "name": "color_from",
+        "type": "str"
+      },
+      {
+        "name": "period",
+        "type": "int"
+      },
+      {
+        "name": "cycles",
+        "type": "int"
+      },
+      {
+        "name": "persist",
+        "type": "int"
+      },
+      {
+        "name": "power_on",
+        "type": "str"
+      }
+    ]
+  }
+}
+
+

@@ -69,7 +69,7 @@ def __workflow_started_callback(sender, **kwargs):
     __workflow_tmp[sender.name] = datetime.utcnow()
 
 
-def __workflow_ended_callback(sender, **kwwargs):
+def __workflow_ended_callback(sender, **kwargs):
     if sender.name in __workflow_tmp:
         execution_time = datetime.utcnow() - __workflow_tmp[sender.name]
         if sender.name not in workflow_metrics:
