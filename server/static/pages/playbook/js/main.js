@@ -224,6 +224,7 @@ $(function(){
             type: "object",
             title: "Node Parameters",
             definitions: definitions,
+            required: ['name', 'start', 'app'],
             properties: {
                 name: {
                     type: "string",
@@ -410,7 +411,7 @@ $(function(){
             no_additional_properties: true,
 
             // Require all properties by default
-            required_by_default: true
+            required_by_default: false
         });
 
         editor.getEditor('root.app').disable();
@@ -476,7 +477,7 @@ $(function(){
                 parameters: {
                     action: action,
                     app: app,
-                    device: "None",
+                    device: "",
                     errors: [],
                     input: {},
                     name: id.toString(),
