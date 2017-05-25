@@ -30,7 +30,7 @@ stream.
 
 import pygame
 
-import libardrone
+from . import libardrone
 
 
 def main():
@@ -116,9 +116,9 @@ def main():
         clock.tick(50)
         pygame.display.set_caption("FPS: %.2f" % clock.get_fps())
 
-    print "Shutting down...",
+    print("Shutting down...",)
     drone.halt()
-    print "Ok."
+    print("Ok.")
 
 if __name__ == '__main__':
     main()

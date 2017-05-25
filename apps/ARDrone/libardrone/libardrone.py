@@ -32,7 +32,7 @@ import sys
 import threading
 import multiprocessing
 
-import arnetwork
+from . import arnetwork
 
 
 __author__ = "Bastian Venthur"
@@ -417,7 +417,7 @@ if __name__ == "__main__":
             try:
                 c = sys.stdin.read(1)
                 c = c.lower()
-                print "Got character", c
+                print("Got character", c)
                 if c == 'a':
                     drone.move_left()
                 if c == 'd':
