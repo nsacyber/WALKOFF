@@ -3,7 +3,7 @@ from apps import App
 import requests
 import json
 logger = logging.getLogger(__name__)
-
+import time
 
 class Main(App):
     """
@@ -42,6 +42,7 @@ class Main(App):
                    "duration": args['duration'](),
                    "infrared": args['infrared']()/1000.}
         response = requests.put(self.__api_url('all/state'.format(self.name)), data=payload, headers=self.headers)
+        time.sleep(int(args['duration']()))
         return json.loads(response.text)
 
     def toggle_power(self, args={}):
@@ -51,6 +52,7 @@ class Main(App):
         """
         payload = {"duration": args['duration']()}
         response = requests.post(self.__api_url('all/toggle'.format(self.name)), data=payload, headers=self.headers)
+        time.sleep(int(args['duration']()))
         return json.loads(response.text)
 
     def breathe_effect(self, args={}):
@@ -75,6 +77,7 @@ class Main(App):
         response = requests.post(self.__api_url('all/effects/breathe'),
                                 data=payload,
                                 headers=self.headers)
+        time.sleep(int(args['period']())*int(args['cycles']()))
         return json.loads(response.text)
 
     def pulse_effect(self, args={}):
@@ -82,7 +85,7 @@ class Main(App):
         Quickly flashes between two colors
         color: color to use for the breathe effect
         from_color: color to start the breathe effect from
-        period: Time in seconds between cycles
+        period: Time in milliseconds between cycles
         cycles: Number of times to repeat the effect
         persist: If false set teh light back to its previous value when effect ends. Else leave at last effect
         power_on: If true, turn on the light if not already on
@@ -93,7 +96,8 @@ class Main(App):
                    "cycles": args['cycles'](),
                    "persist": args['persist'](),
                    "power_on": args['power_on']()}
-        response = requests.post(self.__api_url('all/effects/pulse'.format(self.name)),
+        response = requests.post(self.__api_url('all/effects/pulse'),
                                 data=payload,
                                 headers=self.headers)
+        time.sleep(int(args['period']()) * int(args['cycles']()))
         return json.loads(response.text)

@@ -25,11 +25,29 @@
 					<color format="str">red</color>
 					<period format="int">1</period>
 					<peak format="int">5</peak>
+					<persist format="str">false</persist>
+					<from_color format="str">blue</from_color>
+					<cycles format="int">5</cycles>
+				</input>
+				<next step="2"/>
+			</step>
+			<step id="3">
+				<id>3</id>
+				<app>Lifx</app>
+				<action>pulse_effect</action>
+				<device>LIFX 12cf1f</device>
+				<position>
+					<x>406.540089357</x>
+					<y>333.60458204</y>
+				</position>
+				<input>
+					<power_on format="str">true</power_on>
+					<color format="str">red</color>
+					<period format="int">1</period>
 					<persist format="str">true</persist>
 					<from_color format="str">blue</from_color>
 					<cycles format="int">10</cycles>
 				</input>
-				<next step="2"/>
 			</step>
 			<step id="2">
 				<id>2</id>
@@ -43,6 +61,7 @@
 				<input>
 					<duration format="int">2</duration>
 				</input>
+				<next step="3"/>
 			</step>
 		</steps>
 	</workflow>
