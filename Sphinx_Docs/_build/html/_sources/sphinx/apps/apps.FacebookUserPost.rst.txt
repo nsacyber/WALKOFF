@@ -1,0 +1,37 @@
+apps\.FacebookUserPost package
+==============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    apps.FacebookUserPost.tests
+
+Submodules
+----------
+
+apps\.FacebookUserPost\.display module
+--------------------------------------
+
+.. automodule:: apps.FacebookUserPost.display
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.FacebookUserPost\.main module
+-----------------------------------
+
+.. automodule:: apps.FacebookUserPost.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.FacebookUserPost
+    :members:
+    :undoc-members:
+    :show-inheritance:

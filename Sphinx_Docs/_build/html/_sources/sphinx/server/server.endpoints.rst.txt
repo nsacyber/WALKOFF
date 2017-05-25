@@ -1,0 +1,102 @@
+server\.endpoints package
+=========================
+
+Submodules
+----------
+
+server\.endpoints\.apps module
+------------------------------
+
+.. automodule:: server.endpoints.apps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.cases module
+-------------------------------
+
+.. automodule:: server.endpoints.cases
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.configuration module
+---------------------------------------
+
+.. automodule:: server.endpoints.configuration
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.events module
+--------------------------------
+
+.. automodule:: server.endpoints.events
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.metadata module
+----------------------------------
+
+.. automodule:: server.endpoints.metadata
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.metrics module
+---------------------------------
+
+.. automodule:: server.endpoints.metrics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.playbooks module
+-----------------------------------
+
+.. automodule:: server.endpoints.playbooks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.roles module
+-------------------------------
+
+.. automodule:: server.endpoints.roles
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.scheduler module
+-----------------------------------
+
+.. automodule:: server.endpoints.scheduler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.triggers module
+----------------------------------
+
+.. automodule:: server.endpoints.triggers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.users module
+-------------------------------
+
+.. automodule:: server.endpoints.users
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: server.endpoints
+    :members:
+    :undoc-members:
+    :show-inheritance:

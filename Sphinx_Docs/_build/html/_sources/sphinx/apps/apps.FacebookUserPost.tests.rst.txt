@@ -1,0 +1,22 @@
+apps\.FacebookUserPost\.tests package
+=====================================
+
+Submodules
+----------
+
+apps\.FacebookUserPost\.tests\.testMain module
+----------------------------------------------
+
+.. automodule:: apps.FacebookUserPost.tests.testMain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.FacebookUserPost.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

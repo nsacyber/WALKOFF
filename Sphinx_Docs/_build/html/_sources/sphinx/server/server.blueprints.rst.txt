@@ -1,0 +1,54 @@
+server\.blueprints package
+==========================
+
+Submodules
+----------
+
+server\.blueprints\.app module
+------------------------------
+
+.. automodule:: server.blueprints.app
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.blueprints\.events module
+---------------------------------
+
+.. automodule:: server.blueprints.events
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.blueprints\.widget module
+---------------------------------
+
+.. automodule:: server.blueprints.widget
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.blueprints\.widgets module
+----------------------------------
+
+.. automodule:: server.blueprints.widgets
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.blueprints\.workflowresult module
+-----------------------------------------
+
+.. automodule:: server.blueprints.workflowresult
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: server.blueprints
+    :members:
+    :undoc-members:
+    :show-inheritance:

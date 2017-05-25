@@ -1,0 +1,38 @@
+apps\.Webcam package
+====================
+
+Submodules
+----------
+
+apps\.Webcam\.display module
+----------------------------
+
+.. automodule:: apps.Webcam.display
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.Webcam\.main module
+-------------------------
+
+.. automodule:: apps.Webcam.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.Webcam\.setup module
+--------------------------
+
+.. automodule:: apps.Webcam.setup
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.Webcam
+    :members:
+    :undoc-members:
+    :show-inheritance:

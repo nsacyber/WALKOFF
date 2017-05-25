@@ -1,0 +1,45 @@
+apps\.ARDrone package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    apps.ARDrone.libardrone
+
+Submodules
+----------
+
+apps\.ARDrone\.display module
+-----------------------------
+
+.. automodule:: apps.ARDrone.display
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.ARDrone\.main module
+--------------------------
+
+.. automodule:: apps.ARDrone.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.ARDrone\.setup module
+---------------------------
+
+.. automodule:: apps.ARDrone.setup
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.ARDrone
+    :members:
+    :undoc-members:
+    :show-inheritance:

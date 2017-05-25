@@ -1,0 +1,26 @@
+apps package
+============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    apps.ARDrone
+    apps.CyberAnalytic
+    apps.DailyQuote
+    apps.EthereumBlockchain
+    apps.FacebookUserPost
+    apps.HelloWorld
+    apps.SkeletonApp
+    apps.Tesla
+    apps.WatsonVisualRecognition
+    apps.Webcam
+
+Module contents
+---------------
+
+.. automodule:: apps
+    :members:
+    :undoc-members:
+    :show-inheritance:

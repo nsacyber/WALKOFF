@@ -1,0 +1,38 @@
+apps\.Tesla package
+===================
+
+Submodules
+----------
+
+apps\.Tesla\.display module
+---------------------------
+
+.. automodule:: apps.Tesla.display
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.Tesla\.main module
+------------------------
+
+.. automodule:: apps.Tesla.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.Tesla\.setup module
+-------------------------
+
+.. automodule:: apps.Tesla.setup
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.Tesla
+    :members:
+    :undoc-members:
+    :show-inheritance:

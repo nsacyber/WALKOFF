@@ -50,15 +50,15 @@
 <li class="toctree-l1"><a class="reference internal" href="server.blueprints.html">server.blueprints package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.app">server.blueprints.app module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.cases">server.blueprints.cases module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.configuration">server.blueprints.configuration module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-cases-module">server.blueprints.cases module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-configuration-module">server.blueprints.configuration module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.events">server.blueprints.events module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.metrics">server.blueprints.metrics module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.playbook">server.blueprints.playbook module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.roles">server.blueprints.roles module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.scheduler">server.blueprints.scheduler module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.trigger">server.blueprints.trigger module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.users">server.blueprints.users module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-metrics-module">server.blueprints.metrics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-playbook-module">server.blueprints.playbook module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-roles-module">server.blueprints.roles module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-scheduler-module">server.blueprints.scheduler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-trigger-module">server.blueprints.trigger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#server-blueprints-users-module">server.blueprints.users module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.widget">server.blueprints.widget module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.widgets">server.blueprints.widgets module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints">Module contents</a></li>
@@ -72,13 +72,33 @@
 </div>
 <div class="section" id="module-server.app">
 <span id="server-app-module"></span><h2>server.app module<a class="headerlink" href="#module-server.app" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="server.app.compose_yamls">
+<code class="descclassname">server.app.</code><code class="descname">compose_yamls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.compose_yamls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.app.create_app">
+<code class="descclassname">server.app.</code><code class="descname">create_app</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.create_app" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.app.create_user">
+<code class="descclassname">server.app.</code><code class="descname">create_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.create_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.app.read_and_indent">
+<code class="descclassname">server.app.</code><code class="descname">read_and_indent</code><span class="sig-paren">(</span><em>filename</em>, <em>indent</em><span class="sig-paren">)</span><a class="headerlink" href="#server.app.read_and_indent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-server.appdevice">
 <span id="server-appdevice-module"></span><h2>server.appdevice module<a class="headerlink" href="#module-server.appdevice" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="server.appdevice.App">
 <em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">App</code><span class="sig-paren">(</span><em>app=None</em>, <em>devices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/server/server.html#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="server.appdevice.App.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>with_devices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.as_json" title="Permalink to this definition">¶</a></dt>
@@ -99,15 +119,28 @@
 <code class="descname">devices</code><a class="headerlink" href="#server.appdevice.App.devices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="server.appdevice.App.get_config">
-<code class="descname">get_config</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the Device object from the given device name.</p>
+<dl class="staticmethod">
+<dt id="server.appdevice.App.get_all_devices_for_app">
+<em class="property">static </em><code class="descname">get_all_devices_for_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_all_devices_for_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all the devices associated with an app</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>device (str): The name of the device.</dd>
+<dd>app_name (str): The name of the app</dd>
 <dt>Returns:</dt>
-<dd>The Device if found by the name, else an empty dictionary.</dd>
+<dd>(list[Device]): A list of devices associated with this app. Returns empty list if app is not in database</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="server.appdevice.App.get_device">
+<em class="property">static </em><code class="descname">get_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the device associated with an app</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): The name of the app
+device_name (str): The name of the device</dd>
+<dt>Returns:</dt>
+<dd>(Device): The desired device. Returns None if app or device not found.</dd>
 </dl>
 </dd></dl>
 
@@ -127,16 +160,6 @@
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="server.appdevice.App.on_pause">
-<code class="descname">on_pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.on_pause" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.appdevice.App.on_resume">
-<code class="descname">on_resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.on_resume" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="server.appdevice.App.shutdown">
 <code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -145,8 +168,8 @@
 
 <dl class="class">
 <dt id="server.appdevice.Device">
-<em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>name=''</em>, <em>username=''</em>, <em>password=''</em>, <em>ip='0.0.0.0'</em>, <em>port=0</em>, <em>extra_fields=''</em>, <em>app_id=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
+<em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>name=''</em>, <em>username=''</em>, <em>password=None</em>, <em>ip='0.0.0.0'</em>, <em>port=0</em>, <em>extra_fields=''</em>, <em>app_id=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/server/server.html#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
 <dl class="staticmethod">
 <dt id="server.appdevice.Device.add_device">
 <em class="property">static </em><code class="descname">add_device</code><span class="sig-paren">(</span><em>name</em>, <em>username</em>, <em>password</em>, <em>ip</em>, <em>port</em>, <em>extra_fields</em>, <em>app_server</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.add_device" title="Permalink to this definition">¶</a></dt>
@@ -158,7 +181,7 @@ username (str, optional): The username for the Device object. Defaults to an emp
 password (str, optional): The password for the Device object. Defaults to an empty string.
 ip (str, optional): The IP address for for the Device object. Defaults to &#8220;0.0.0.0&#8221;.
 port (int, optional): The port for the Device object. Defaults to 0.
-exra_fields (str, optional): The string representation of a dictionary that holds various custom
+extra_fields (str, optional): The string representation of a dictionary that holds various custom
 extra fields for the Device object. Defaults to an empty string.
 app_server (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
 empty string.</dd>
@@ -211,6 +234,11 @@ empty string.</dd>
 <code class="descname">extra_fields</code><a class="headerlink" href="#server.appdevice.Device.extra_fields" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="server.appdevice.Device.get_password">
+<code class="descname">get_password</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.get_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="attribute">
 <dt id="server.appdevice.Device.id">
 <code class="descname">id</code><a class="headerlink" href="#server.appdevice.Device.id" title="Permalink to this definition">¶</a></dt>
@@ -254,7 +282,7 @@ empty string.</dd>
 <dl class="class">
 <dt id="server.casesubscription.CaseSubscription">
 <em class="property">class </em><code class="descclassname">server.casesubscription.</code><code class="descname">CaseSubscription</code><span class="sig-paren">(</span><em>name</em>, <em>subscription='{}'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.casesubscription.CaseSubscription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/server/server.html#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
 <p>The ORM for the case subscriptions configuration</p>
 <dl class="method">
 <dt id="server.casesubscription.CaseSubscription.as_json">
@@ -387,7 +415,7 @@ value (any): The value of the attribute to set.</dd>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code></p>
 <dl class="attribute">
 <dt id="server.database.Base.created_at">
-<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f42b00; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.Base.created_at" title="Permalink to this definition">¶</a></dt>
+<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x79ad0f0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.Base.created_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -397,7 +425,7 @@ value (any): The value of the attribute to set.</dd>
 
 <dl class="attribute">
 <dt id="server.database.Base.modified_at">
-<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f42dd8; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f42cc0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.Base.modified_at" title="Permalink to this definition">¶</a></dt>
+<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x79ad438; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x79ad240; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.Base.modified_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -405,7 +433,7 @@ value (any): The value of the attribute to set.</dd>
 <dl class="class">
 <dt id="server.database.Role">
 <em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">Role</code><span class="sig-paren">(</span><em>name</em>, <em>description</em>, <em>pages</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">flask_security.core.RoleMixin</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/server/server.html#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">flask_security.core.RoleMixin</span></code></p>
 <dl class="attribute">
 <dt id="server.database.Role.created_at">
 <code class="descname">created_at</code><a class="headerlink" href="#server.database.Role.created_at" title="Permalink to this definition">¶</a></dt>
@@ -461,17 +489,12 @@ value (any): The value of the attribute to set.</dd>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="server.database.Role.users">
-<code class="descname">users</code><a class="headerlink" href="#server.database.Role.users" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="class">
 <dt id="server.database.User">
 <em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">User</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">flask_security.core.UserMixin</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/server/server.html#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">flask_security.core.UserMixin</span></code></p>
 <dl class="attribute">
 <dt id="server.database.User.active">
 <code class="descname">active</code><a class="headerlink" href="#server.database.User.active" title="Permalink to this definition">¶</a></dt>
@@ -599,28 +622,8 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.flaskserver.display_filters">
-<code class="descclassname">server.flaskserver.</code><code class="descname">display_filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.display_filters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.display_flags">
-<code class="descclassname">server.flaskserver.</code><code class="descname">display_flags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.display_flags" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.flaskserver.display_possible_subscriptions">
 <code class="descclassname">server.flaskserver.</code><code class="descname">display_possible_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.display_possible_subscriptions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.list_all_apps">
-<code class="descclassname">server.flaskserver.</code><code class="descname">list_all_apps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.list_all_apps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.list_all_apps_and_actions">
-<code class="descclassname">server.flaskserver.</code><code class="descname">list_all_apps_and_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.list_all_apps_and_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -766,6 +769,11 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <dl class="attribute">
 <dt id="server.forms.AddNewTriggerForm.playbook">
 <code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('Playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.playbook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.forms.AddNewTriggerForm.tag">
+<code class="descname">tag</code><em class="property"> = &lt;UnboundField(StringField, ('Tag', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.tag" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1109,6 +1117,11 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <dl class="attribute">
 <dt id="server.forms.EditTriggerForm.playbook">
 <code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('Playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Required object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.playbook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.forms.EditTriggerForm.tag">
+<code class="descname">tag</code><em class="property"> = &lt;UnboundField(StringField, ('Tag', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.tag" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1477,9 +1490,15 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <dt id="server.metrics.app_metrics">
 <code class="descclassname">server.metrics.</code><code class="descname">app_metrics</code><em class="property"> = {}</em><a class="headerlink" href="#server.metrics.app_metrics" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt>form of {&lt;app&gt;: {&#8216;actions&#8217;: {&lt;action&gt;: {&#8216;count&#8217;: &lt;count&gt;</dt>
+<dt>form of {&lt;app&gt;: {&#8216;actions&#8217;: {&lt;action&gt;: {&#8220;success&#8221; <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;count&#8217;: &lt;count&gt;</span></dt>
 <dd><blockquote class="first">
+<div><blockquote>
 <div>&#8216;avg_time&#8217;: &lt;average_execution_time&gt;}</div></blockquote>
+<dl class="docutils">
+<dt>&#8220;error&#8221;: {&#8216;count&#8217;: &lt;count&gt;</dt>
+<dd>&#8216;avg_time&#8217;: &lt;average_execution_time&gt;}</dd>
+</dl>
+</div></blockquote>
 <p class="last">&#8216;count&#8217;: &lt;count&gt;}}</p>
 </dd>
 </dl>
@@ -1488,7 +1507,7 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <dl class="data">
 <dt id="server.metrics.workflow_metrics">
 <code class="descclassname">server.metrics.</code><code class="descname">workflow_metrics</code><em class="property"> = {}</em><a class="headerlink" href="#server.metrics.workflow_metrics" title="Permalink to this definition">¶</a></dt>
-<dd><p>for  of {&lt;workflow-name&gt;: {&#8216;count&#8217;: &lt;count&gt;, &#8216;avg_time&#8217;: &lt;average_execution_time&gt;}}</p>
+<dd><p>form  of {&lt;workflow-name&gt;: {&#8216;count&#8217;: &lt;count&gt;, &#8216;avg_time&#8217;: &lt;average_execution_time&gt;}}</p>
 </dd></dl>
 
 </div>
@@ -1496,8 +1515,8 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <span id="server-triggers-module"></span><h2>server.triggers module<a class="headerlink" href="#module-server.triggers" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="server.triggers.Triggers">
-<em class="property">class </em><code class="descclassname">server.triggers.</code><code class="descname">Triggers</code><span class="sig-paren">(</span><em>name</em>, <em>playbook</em>, <em>workflow</em>, <em>condition</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
+<em class="property">class </em><code class="descclassname">server.triggers.</code><code class="descname">Triggers</code><span class="sig-paren">(</span><em>name</em>, <em>playbook</em>, <em>workflow</em>, <em>condition</em>, <em>tag=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/server/server.html#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
 <p>ORM for the triggers in the Walkoff database</p>
 <dl class="method">
 <dt id="server.triggers.Triggers.as_json">
@@ -1533,12 +1552,14 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 
 <dl class="staticmethod">
 <dt id="server.triggers.Triggers.execute">
-<em class="property">static </em><code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>input_in</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.execute" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>input_in</em>, <em>trigger_name=None</em>, <em>tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tries to match the data_in against the conditionals of all the triggers registered in the database.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>data_in (str): Data to be used to match against the conditionals
-intput_in (str): The input to teh first step of the workflow</dd>
+input_in (str): The input to the first step of the workflow
+trigger_name (str): The name of the specific trigger to execute
+tags (array): A list of tags to find the specific triggers to execute</dd>
 <dt>Returns:</dt>
 <dd>Dictionary of {&#8220;status&#8221;: &lt;status string&gt;}</dd>
 </dl>
@@ -1562,6 +1583,21 @@ intput_in (str): The input to teh first step of the workflow</dd>
 <dl class="attribute">
 <dt id="server.triggers.Triggers.playbook">
 <code class="descname">playbook</code><a class="headerlink" href="#server.triggers.Triggers.playbook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.triggers.Triggers.tag">
+<code class="descname">tag</code><a class="headerlink" href="#server.triggers.Triggers.tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="server.triggers.Triggers.update_playbook">
+<em class="property">static </em><code class="descname">update_playbook</code><span class="sig-paren">(</span><em>old_playbook</em>, <em>new_playbook</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.update_playbook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="server.triggers.Triggers.update_workflow">
+<em class="property">static </em><code class="descname">update_workflow</code><span class="sig-paren">(</span><em>old_workflow</em>, <em>new_workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.update_workflow" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">

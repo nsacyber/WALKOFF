@@ -1,0 +1,649 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.case package &#8212; WALKOFF  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="core-case-package">
+<h1>core.case package<a class="headerlink" href="#core-case-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-core.case.callbacks">
+<span id="core-case-callbacks-module"></span><h2>core.case.callbacks module<a class="headerlink" href="#module-core.case.callbacks" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-core.case.database">
+<span id="core-case-database-module"></span><h2>core.case.database module<a class="headerlink" href="#module-core.case.database" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.case.database.Case">
+<em class="property">class </em><code class="descclassname">core.case.database.</code><code class="descname">Case</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.Case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Case ORM for the events database</p>
+<dl class="method">
+<dt id="core.case.database.Case.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_events=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.Case.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of a Case object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>with_events (bool, optional): A boolean to determine whether or not the events of the Case object should be</dt>
+<dd>included in the output.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The JSON representation of a Case object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Case.events">
+<code class="descname">events</code><a class="headerlink" href="#core.case.database.Case.events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Case.id">
+<code class="descname">id</code><a class="headerlink" href="#core.case.database.Case.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Case.name">
+<code class="descname">name</code><a class="headerlink" href="#core.case.database.Case.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Case.note">
+<code class="descname">note</code><a class="headerlink" href="#core.case.database.Case.note" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.case.database.CaseDatabase">
+<em class="property">class </em><code class="descclassname">core.case.database.</code><code class="descname">CaseDatabase</code><a class="headerlink" href="#core.case.database.CaseDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Wrapper for the SQLAlchhemy Case database object</p>
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.add_cases">
+<code class="descname">add_cases</code><span class="sig-paren">(</span><em>case_names</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.add_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds empty cases to the database</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case_names (list[str]): A list of case names to add</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.add_event">
+<code class="descname">add_event</code><span class="sig-paren">(</span><em>event</em>, <em>cases</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.add_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an event to some cases</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>event (cls): A core.case.callbacks._EventEntry object to add to the cases
+cases (list[str]): The cases to add the event to</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.case_events_as_json">
+<code class="descname">case_events_as_json</code><span class="sig-paren">(</span><em>case_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.case_events_as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of all the events in the case database.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The JSON representation of all Event objects without their cases.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.cases_as_json">
+<code class="descname">cases_as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.cases_as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of all the cases in the case database.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The JSON representation of all Case objects without their events.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.create">
+<code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.delete_cases">
+<code class="descname">delete_cases</code><span class="sig-paren">(</span><em>case_names</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.delete_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes cases to the database</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case_names (list[str]): A list of case names to remove</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.edit_case_note">
+<code class="descname">edit_case_note</code><span class="sig-paren">(</span><em>case_name</em>, <em>note</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.edit_case_note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edits the note attached to a case</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case_name (str): The case to edit
+note (str): The case&#8217;s note</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.edit_event_note">
+<code class="descname">edit_event_note</code><span class="sig-paren">(</span><em>event_id</em>, <em>note</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.edit_event_note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edits the note attached to an event</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>event_id (int): The id of the event
+note (str): The event&#8217;s note</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.event_as_json">
+<code class="descname">event_as_json</code><span class="sig-paren">(</span><em>event_id</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.event_as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of an event in the case database.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The JSON representation of an Event object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.rename_case">
+<code class="descname">rename_case</code><span class="sig-paren">(</span><em>old_case_name</em>, <em>new_case_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.rename_case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renames a case</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_case_name (str): The case to rename
+new_case_name (str): The case&#8217;s new name</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.CaseDatabase.tear_down">
+<code class="descname">tear_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.CaseDatabase.tear_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tears down the database</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.case.database.Event">
+<em class="property">class </em><code class="descclassname">core.case.database.</code><code class="descname">Event</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>ORM for an Event in the events database</p>
+<dl class="attribute">
+<dt id="core.case.database.Event.ancestry">
+<code class="descname">ancestry</code><a class="headerlink" href="#core.case.database.Event.ancestry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.case.database.Event.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_cases=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.Event.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of an Event object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>with_cases (bool, optional): A boolean to determine whether or not the cases of the event object should be</dt>
+<dd>included in the output.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The JSON representation of an Event object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.cases">
+<code class="descname">cases</code><a class="headerlink" href="#core.case.database.Event.cases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.case.database.Event.create">
+<em class="property">static </em><code class="descname">create</code><span class="sig-paren">(</span><em>sender</em>, <em>timestamp</em>, <em>entry_message</em>, <em>entry_type</em>, <em>data=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.Event.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory method to construct an Event object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender (cls): A boolean to determine whether or not the events of the Case object should be
+included in the output.
+timestamp (str): A string representation of a timestamp
+entry_message (str): The message associated with the event
+entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
+data (str): Extra information to be logged with the event</dd>
+<dt>Returns:</dt>
+<dd>An Event object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.data">
+<code class="descname">data</code><a class="headerlink" href="#core.case.database.Event.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.id">
+<code class="descname">id</code><a class="headerlink" href="#core.case.database.Event.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.message">
+<code class="descname">message</code><a class="headerlink" href="#core.case.database.Event.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.note">
+<code class="descname">note</code><a class="headerlink" href="#core.case.database.Event.note" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#core.case.database.Event.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.database.Event.type">
+<code class="descname">type</code><a class="headerlink" href="#core.case.database.Event.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.database.get_case_db">
+<code class="descclassname">core.case.database.</code><code class="descname">get_case_db</code><span class="sig-paren">(</span><em>_singleton=&lt;core.case.database.CaseDatabase object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.get_case_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Singleton factory which returns the case database</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.database.initialize">
+<code class="descclassname">core.case.database.</code><code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the case database</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.database.tear_down">
+<code class="descclassname">core.case.database.</code><code class="descname">tear_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.tear_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tears down the case database</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.case.subscription">
+<span id="core-case-subscription-module"></span><h2>core.case.subscription module<a class="headerlink" href="#module-core.case.subscription" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.case.subscription.CaseSubscriptions">
+<em class="property">class </em><code class="descclassname">core.case.subscription.</code><code class="descname">CaseSubscriptions</code><span class="sig-paren">(</span><em>subscriptions=None</em>, <em>global_subscriptions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.CaseSubscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>An object encapsulating a case&#8217;s subscriptions and its GlobalSubscriptions</p>
+<dl class="method">
+<dt id="core.case.subscription.CaseSubscriptions.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>names=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.CaseSubscriptions.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of all the CaseSubscription object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>names (booloptional): Should the names of the controller events be converted to names? Defaults to False</dd>
+<dt>Returns:</dt>
+<dd>The JSON representation of the CaseSubscription object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.case.subscription.CaseSubscriptions.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.CaseSubscriptions.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forms a CaseSubscription object from the provided JSON object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>json_in (JSON object): The JSON object to convert from.</dd>
+<dt>Returns:</dt>
+<dd>The CaseSubscription object parsed from the JSON object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.subscription.CaseSubscriptions.is_subscribed">
+<code class="descname">is_subscribed</code><span class="sig-paren">(</span><em>ancestry</em>, <em>message_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.CaseSubscriptions.is_subscribed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the case is subscribed to an event with the a given message and ancestry</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>ancestry (list[str]): The ancestry of teh sender of the event
+message_name (str, int): The event type</dd>
+<dt>Returns:</dt>
+<dd>A boolean describing if the case is subscribed to the event or not</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.case.subscription.GlobalSubscriptions">
+<em class="property">class </em><code class="descclassname">core.case.subscription.</code><code class="descname">GlobalSubscriptions</code><span class="sig-paren">(</span><em>controller=None</em>, <em>workflow=None</em>, <em>step=None</em>, <em>next_step=None</em>, <em>flag=None</em>, <em>filter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.GlobalSubscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Specifies the events which are subscribed to by all types of a execution level</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>controller (list[str]): Events subscribed to by all controllers
+workflow (list[str]): Events subscribed to by all workflows
+step (list[str]): Events subscribed to by all steps
+next_step (list[str]): Events subscribed to by all next
+flag (list[str]): Events subscribed to by all flags
+filter (list[str]): Events subscribed to by all filters</dd>
+</dl>
+<dl class="method">
+<dt id="core.case.subscription.GlobalSubscriptions.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.GlobalSubscriptions.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of all the GlobalSubscription object.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The JSON representation of the GlobalSubscription object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.case.subscription.GlobalSubscriptions.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.GlobalSubscriptions.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forms a GlobalSubscription object from the provided JSON object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>json_in (JSON object): The JSON object to convert from.</dd>
+<dt>Returns:</dt>
+<dd>The GlobalSubscription object parsed from the JSON object.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.case.subscription.Subscription">
+<em class="property">class </em><code class="descclassname">core.case.subscription.</code><code class="descname">Subscription</code><span class="sig-paren">(</span><em>events=None</em>, <em>subscriptions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.Subscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulates the events which are subscribed to for one level of execution. Forms a tree.w</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>events (_SubscriptionEventList): A list of events this level is subscribed to
+subscriptions (dict{str: Subscription}): A list of subscriptions to execution events one level lower</dd>
+</dl>
+<dl class="method">
+<dt id="core.case.subscription.Subscription.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>names=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.Subscription.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of all the subscription object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>names (bool, optional): Should the names of the controller events be converted to names? Defaults to False</dd>
+<dt>Returns:</dt>
+<dd>The JSON representation of the subscription object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.case.subscription.Subscription.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.Subscription.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forms a Subscription object from the provided JSON object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>json_in (JSON object): The JSON object to convert from.</dd>
+<dt>Returns:</dt>
+<dd>The Subscription object parsed from the JSON object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.case.subscription.Subscription.is_subscribed">
+<code class="descname">is_subscribed</code><span class="sig-paren">(</span><em>message_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.Subscription.is_subscribed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the given message subscribed to in this level of execution?</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>message_name (str): The given message</dd>
+<dt>Returns:</dt>
+<dd>Is the message subscribed to?</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.add_cases">
+<code class="descclassname">core.case.subscription.</code><code class="descname">add_cases</code><span class="sig-paren">(</span><em>cases</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.add_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the cases to the subscriptions</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>cases dict({str: CaseSubscription}): the cases and their associated subscriptions to add.</dt>
+<dd>Takes the form of &#8220;{subscription_name: CaseSubscriptions}&#8221;</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.add_subscription">
+<code class="descclassname">core.case.subscription.</code><code class="descname">add_subscription</code><span class="sig-paren">(</span><em>case</em>, <em>ancestry</em>, <em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.add_subscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a subscription of a set events and ancestry to a case</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case (str): The case to add a subscription to
+ancestry (list[str]): The ancestry to add events to
+events (list[str,int]): The events to subscribe to</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.clear_subscriptions">
+<code class="descclassname">core.case.subscription.</code><code class="descname">clear_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.clear_subscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears and resets the subscriptions</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.convert_to_event_names">
+<code class="descclassname">core.case.subscription.</code><code class="descname">convert_to_event_names</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.convert_to_event_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts events to controller event names if event is a controller event</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>events (list[str, int]): Events to be converted</dd>
+<dt>Returns:</dt>
+<dd>List of event identifiers in which the controller events have been converted to their string representations</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.delete_cases">
+<code class="descclassname">core.case.subscription.</code><code class="descname">delete_cases</code><span class="sig-paren">(</span><em>cases</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.delete_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the cases from  the subscriptions</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>cases (list[str]): The names of teh cases to remove</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.edit_global_subscription">
+<code class="descclassname">core.case.subscription.</code><code class="descname">edit_global_subscription</code><span class="sig-paren">(</span><em>case_name</em>, <em>global_subscriptions</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.edit_global_subscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edits a case&#8217;s GlobalSubscription</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case_name (str): The name of the case to edit
+global_subscriptions (GlobalSubscriptions): The case&#8217;s new global subscriptions</dd>
+<dt>Returns:</dt>
+<dd>True if successfully edited. False otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.edit_subscription">
+<code class="descclassname">core.case.subscription.</code><code class="descname">edit_subscription</code><span class="sig-paren">(</span><em>case</em>, <em>ancestry</em>, <em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.edit_subscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edits a subscription by changing the events to which a particular ancestry is subscribed to</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case (str): The name of the case to edit
+ancestry (list[str]): The ancestry to edit
+events (list[str,int]): The ancestry&#8217;s new events to which it is subscribed to</dd>
+<dt>Returns:</dt>
+<dd>True if successfully edited. False otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.get_subscriptions">
+<code class="descclassname">core.case.subscription.</code><code class="descname">get_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.get_subscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the subscriptions</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.is_case_subscribed">
+<code class="descclassname">core.case.subscription.</code><code class="descname">is_case_subscribed</code><span class="sig-paren">(</span><em>case</em>, <em>ancestry</em>, <em>message_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.is_case_subscribed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a case is subscribed to a message given a message and its sender&#8217;s ancestry</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case (str): The name of the case
+ancestry (list[str]): The ancestry of the sender
+message_name (str): The name of the message to check</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.remove_subscription_node">
+<code class="descclassname">core.case.subscription.</code><code class="descname">remove_subscription_node</code><span class="sig-paren">(</span><em>case</em>, <em>ancestry</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.remove_subscription_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a case&#8217;s subscription to an ancestry</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>case (str): The case to remove a subscription from
+ancestry (list[str]): The ancestry to remove from the case&#8217;s subscriptions</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.rename_case">
+<code class="descclassname">core.case.subscription.</code><code class="descname">rename_case</code><span class="sig-paren">(</span><em>old_case_name</em>, <em>new_case_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.rename_case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renames a case</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_case_name (str): Case name to change
+new_case_name (str): Case&#8217;s new name</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.set_subscriptions">
+<code class="descclassname">core.case.subscription.</code><code class="descname">set_subscriptions</code><span class="sig-paren">(</span><em>new_subscriptions</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.set_subscriptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the subscriptions</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>new_subscriptions (dict({str: CaseSubscriptions}): The new subscriptions.</dt>
+<dd>Takes the form of &#8220;{subscription_name: CaseSubscriptions}&#8221;</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.case.subscription.subscriptions_as_json">
+<code class="descclassname">core.case.subscription.</code><code class="descname">subscriptions_as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.subscriptions_as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a JSON representation of all the cases and case subscriptions</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.case">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core.case" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.case package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-core.case.callbacks">core.case.callbacks module</a></li>
+<li><a class="reference internal" href="#module-core.case.database">core.case.database module</a></li>
+<li><a class="reference internal" href="#module-core.case.subscription">core.case.subscription module</a></li>
+<li><a class="reference internal" href="#module-core.case">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sphinx/core/core.case.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, IADGOV.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/sphinx/core/core.case.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

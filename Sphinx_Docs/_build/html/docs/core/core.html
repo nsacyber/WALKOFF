@@ -267,7 +267,7 @@ template_name (str): The name of the workflow template to load. Default is &#822
 
 <dl class="method">
 <dt id="core.controller.Controller.execute_workflow">
-<code class="descname">execute_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>start='start'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.execute_workflow" title="Permalink to this definition">¶</a></dt>
+<code class="descname">execute_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>start=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.execute_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes a workflow.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -571,7 +571,7 @@ new_workflow (str): The new name of the workflow.</dd>
 
 <dl class="function">
 <dt id="core.controller.execute_workflow_worker">
-<code class="descclassname">core.controller.</code><code class="descname">execute_workflow_worker</code><span class="sig-paren">(</span><em>workflow</em>, <em>start</em>, <em>subs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.execute_workflow_worker" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">core.controller.</code><code class="descname">execute_workflow_worker</code><span class="sig-paren">(</span><em>workflow</em>, <em>subs</em>, <em>start=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.execute_workflow_worker" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the workflow in a multi-threaded fashion.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -625,7 +625,7 @@ subs (Subscription): The current subscriptions. This is necessary for resetting 
 <dl class="class">
 <dt id="core.filter.Filter">
 <em class="property">class </em><code class="descclassname">core.filter.</code><code class="descname">Filter</code><span class="sig-paren">(</span><em>xml=None</em>, <em>parent_name=''</em>, <em>action=''</em>, <em>args=None</em>, <em>ancestry=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filter.Filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/core/core.html#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
 <dt id="core.filter.Filter.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.filter.Filter.as_json" title="Permalink to this definition">¶</a></dt>
@@ -702,7 +702,7 @@ ancestry (list[str], optional): The ancestry for the new Filter object. Defaults
 <dl class="class">
 <dt id="core.flag.Flag">
 <em class="property">class </em><code class="descclassname">core.flag.</code><code class="descname">Flag</code><span class="sig-paren">(</span><em>xml=None</em>, <em>parent_name=''</em>, <em>action=''</em>, <em>args=None</em>, <em>filters=None</em>, <em>ancestry=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.flag.Flag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/core/core.html#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
 <dt id="core.flag.Flag.add_filter">
 <code class="descname">add_filter</code><span class="sig-paren">(</span><em>action=''</em>, <em>args=None</em>, <em>index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.flag.Flag.add_filter" title="Permalink to this definition">¶</a></dt>
@@ -821,6 +821,13 @@ value (any): The attribute value.</dd>
 </div>
 <div class="section" id="module-core.helpers">
 <span id="core-helpers-module"></span><h2>core.helpers module<a class="headerlink" href="#module-core.helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.helpers.SubclassRegistry">
+<em class="property">class </em><code class="descclassname">core.helpers.</code><code class="descname">SubclassRegistry</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>nmspc</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.SubclassRegistry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">type</span></code></p>
+<p>Metaclass which registers its subclasses in a dict of {name: cls}</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="core.helpers.combine_dicts">
 <code class="descclassname">core.helpers.</code><code class="descname">combine_dicts</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.combine_dicts" title="Permalink to this definition">¶</a></dt>
@@ -871,6 +878,11 @@ playbook_name (str, optional): The playbook under which the workflow is located.
 <dd>The extracted workflow name.</dd>
 </dl>
 </dd></dl>
+
+<dl class="function">
+<dt id="core.helpers.format_db_path">
+<code class="descclassname">core.helpers.</code><code class="descname">format_db_path</code><span class="sig-paren">(</span><em>db_type</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.format_db_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="core.helpers.get_workflow_names_from_file">
@@ -928,9 +940,11 @@ path_to_file (str): The path to the module to be imported.</dd>
 <dd><p>Imports the submodules from a given package.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>package (str): The name of the package from which to import the submodules.
-recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules. Defaults to
-False.</dd>
+<dd><p class="first">package (str): The name of the package from which to import the submodules.
+recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.</p>
+<blockquote class="last">
+<div>Defaults to False.</div></blockquote>
+</dd>
 <dt>Returns:</dt>
 <dd>A dictionary containing the imported module objects.</dd>
 </dl>
@@ -967,7 +981,7 @@ False.</dd>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>app (str): The app under which the widgets are located.
-path (str, optional): The path to the widgets folder. Default is None.</dd>
+app_path (str, optional): The path to the widgets folder. Default is None.</dd>
 <dt>Returns:</dt>
 <dd>A list of the widgets given the apps path or the apps_path in the configuration.</dd>
 </dl>
@@ -1038,7 +1052,7 @@ device_name (str): A device pertaining to the App.</dd>
 <dl class="class">
 <dt id="core.nextstep.NextStep">
 <em class="property">class </em><code class="descclassname">core.nextstep.</code><code class="descname">NextStep</code><span class="sig-paren">(</span><em>xml=None</em>, <em>parent_name=''</em>, <em>name=''</em>, <em>flags=None</em>, <em>ancestry=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.nextstep.NextStep" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/core/core.html#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
 <dt id="core.nextstep.NextStep.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>with_children=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.nextstep.NextStep.as_json" title="Permalink to this definition">¶</a></dt>
@@ -1177,7 +1191,7 @@ ancestry (list[str], optional): The ancestry for the new NextStep object. Defaul
 <dl class="class">
 <dt id="core.step.Step">
 <em class="property">class </em><code class="descclassname">core.step.</code><code class="descname">Step</code><span class="sig-paren">(</span><em>xml=None</em>, <em>name=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>inputs=None</em>, <em>next_steps=None</em>, <em>errors=None</em>, <em>parent_name=''</em>, <em>position=None</em>, <em>ancestry=None</em>, <em>widgets=None</em>, <em>risk=0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/core/core.html#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
 <dt id="core.step.Step.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>with_children=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.as_json" title="Permalink to this definition">¶</a></dt>
@@ -1318,7 +1332,7 @@ widget_name (str): The widget name</dd>
 <dl class="class">
 <dt id="core.workflow.Workflow">
 <em class="property">class </em><code class="descclassname">core.workflow.</code><code class="descname">Workflow</code><span class="sig-paren">(</span><em>name=''</em>, <em>xml=None</em>, <em>children=None</em>, <em>parent_name=''</em>, <em>playbook_name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../../sphinx/core/core.html#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
 <dt id="core.workflow.Workflow.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.as_json" title="Permalink to this definition">¶</a></dt>
@@ -1355,12 +1369,12 @@ risk (int, optional): The risk associated with the Step. Defaults to 0.</dd>
 
 <dl class="method">
 <dt id="core.workflow.Workflow.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>start='start'</em>, <em>input=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.execute" title="Permalink to this definition">¶</a></dt>
+<code class="descname">execute</code><span class="sig-paren">(</span><em>start=None</em>, <em>start_input=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes a Workflow by executing all Steps in the Workflow list of Step objects.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>start (str, optional): The name of the first Step. Defaults to &#8220;start&#8221;.
-input (str, optional): Input into the first Step. Defaults to an empty string.</dd>
+start_input (str, optional): Input into the first Step. Defaults to an empty string.</dd>
 </dl>
 </dd></dl>
 

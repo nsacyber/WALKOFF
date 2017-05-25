@@ -1,0 +1,22 @@
+apps\.SkeletonApp\.tests package
+================================
+
+Submodules
+----------
+
+apps\.SkeletonApp\.tests\.testMain module
+-----------------------------------------
+
+.. automodule:: apps.SkeletonApp.tests.testMain
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.SkeletonApp.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
