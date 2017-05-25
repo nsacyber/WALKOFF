@@ -2,8 +2,8 @@ import subprocess
 import os.path
 import shutil
 
-branch = 'swagger-feature'
-swagger_path = os.path.join('.', 'server', 'swagger')
+branch = 'master'
+swagger_path = os.path.join('.', 'server', 'api')
 api_file = os.path.join('.', 'swagger', 'api.yaml')
 
 
@@ -34,7 +34,7 @@ def compose_yamls():
 
 
 def checkout_swagger_yamls():
-    api_path = 'server/swagger'
+    api_path = 'server/api'
     print('Checking out most recent api...')
     command = 'git checkout {0} {1}'.format(branch, api_path).split()
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
