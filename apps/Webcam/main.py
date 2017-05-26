@@ -23,7 +23,7 @@ class Main(App):
             self.camera.start()
             self.is_running = True
         image_surface = self.camera.get_image()
-        pygame.image.save(image_surface, args['path'])
+        pygame.image.save(image_surface, args['path']())
 
     def shutdown(self):
         self.stop()

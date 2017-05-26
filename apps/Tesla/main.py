@@ -206,9 +206,10 @@ class Main(App):
 
     def set_valet_mode(self, args={}):
         # Args: boolean to disable or enable valet mode 'on', and 4 digit PIN to unlock the car 'password'
-        return self.vehicle.command('set_valet_mode', args)
+        data = {"mode":args["on"](), "password":args["password"]()}
+        return self.vehicle.command('set_valet_mode', data=data)
 
-    def reset_valet_pin(self, args={}):
+    def reset_valet_pin(self):
         return self.vehicle.command('reset_valet_pin')
 
     def open_charge_port(self):
@@ -222,7 +223,8 @@ class Main(App):
 
     def set_charge_limit(self, args={}):
         # Args: int percentage value for charge limit 'limit_value'
-        return self.vehicle.command('set_charge_limit', data=args)
+        data = {"limit_value":args["limit_value"]()}
+        return self.vehicle.command('set_charge_limit', data=data)
 
     def start_charging(self):
         return self.vehicle.command('charge_start')
@@ -244,7 +246,8 @@ class Main(App):
 
     def set_temperature(self, args={}):
         # Args: int temp for driver's side in celsius driver_degC, int temp for passenger's side in celsius pass_degC
-        return self.vehicle.command('set_temps', data=args)
+        data={"driver_degC": args["driver_degC"](), "pass_degC": args["pass_degC"]()}
+        return self.vehicle.command('set_temps', data=data)
 
     def start_hvac_system(self):
         return self.vehicle.command('auto_conditioning_start')
@@ -255,11 +258,13 @@ class Main(App):
     def move_pano_roof(self, args={}):
         # Args: desired state of pano roof (open, close, comfort, vent) 'state', optional int percentage to move
         # the roof to 'percent'
-        return self.vehicle.command('sun_roof_control', data=args)
+        data = {"state": args["state"](), "percent": args["percent"]()}
+        return self.vehicle.command('sun_roof_control', data=data)
 
     def remote_start(self, args={}):
         # Args: password to the account
-        return self.vehicle.command('remote_start_drive', data=args)
+        data = {"password": args["password"]()}
+        return self.vehicle.command('remote_start_drive', data=data)
 
     def open_trunk(self):
         # Currently inoperable

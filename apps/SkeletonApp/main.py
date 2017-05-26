@@ -29,7 +29,7 @@ class Main(App):
            Args:
                test_param (str): String that will be returned
         """
-        return args["test_param"]
+        return args["test_param"]()
 
     def test_function_with_object_reference(self):
         """
