@@ -130,12 +130,12 @@ $("#submitForm").on("click", function(){
     var ancestryForm = $("#ancestryAjaxForm");
     var inputs = $(".container").find("input").toArray();
     inputs.shift();
+    
     $.each(inputs, function(i, e){
         var elem = $("<li></li>");
         elem.append($(e).clone());
         $("#ancestryAjaxForm").append(elem);
     });
-
 
     var selectedEvents = getCheckedEvents();
 //    $.each(selectedEvents, function(i, e){
@@ -152,15 +152,14 @@ $("#submitForm").on("click", function(){
     for(var x in elements){
         ancestry.push(elements[x]["value"]);
     }
-    console.log(ancestry, selectedEvents);
-    r = editSubscription(selectedSub, JSON.stringify(ancestry), JSON.stringify(selectedEvents));
+    r = editSubscription(selectedSub, ancestry, selectedEvents);
     window.editSubscriptionDialog.dialog("close");
 });
 
 
-objects = Object.keys(availableSubscriptions);
+//objects = Object.keys(availableSubscriptions);
 $('.objectSelectionDiv').each(function() {
-    jQuery(this).repeatable_fields({
+    $(this).repeatable_fields({
         wrapper: 'table',
         container: 'tbody',
         is_sortable: false,
@@ -168,15 +167,15 @@ $('.objectSelectionDiv').each(function() {
         after_add: function(e){
             var index = $(e).children().length-2;
             if(index < 7){
-                var key = objects[index];
-                if(typeof key !== "undefined"){
-                    Window.currentSelection = objects[index];
-                    $(e).children().eq(index+1).find("td.rowLabel").html(key);
+                var type = availableSubscriptions[index] ? availableSubscriptions[index].type : null;
+                if(type) {
+                    Window.currentSelection = availableSubscriptions[index];
+                    $(e).children().eq(index+1).find("td.rowLabel").html(type);
                     $(e).children().eq(index+1).find("input").attr("name", "ancestry-" + index)
-                    $(e).children().eq(index+1).find("input").attr("id", "ancestry-" + (index))
+                    $(e).children().eq(index+1).find("input").attr("id", "ancestry-" + index)
                 }
                 $(".subscriptionSelection").empty();
-                formatSubscriptionList(availableSubscriptions[Window.currentSelection]);
+                formatSubscriptionList(availableSubscriptions[index].events);
             }
             else{
                 $(e).children().eq(index+1).remove();
@@ -185,10 +184,59 @@ $('.objectSelectionDiv').each(function() {
         after_remove: function(e){
             var index = $(e).children().length-2;
             if(index <= 7){
-                Window.currentSelection = objects[index];
+                Window.currentSelection = availableSubscriptions[index];
                 $(".subscriptionSelection").empty();
-                formatSubscriptionList(availableSubscriptions[Window.currentSelection]);
+                formatSubscriptionList(availableSubscriptions[index].events);
             }
         }
     });
 });
+
+//Initialize workflow results datatable
+var workflowResultsTable = $("#workflowResultsTable").DataTable({
+    columns:[
+        { data: "name", title: "Workflow Name" },
+        { data: "timestamp", title: "Timestamp" },
+        { data: "result", title: "Result" }
+    ],
+    order: [1, 'desc']
+});
+
+//Grab the initial data from the server
+var dataSet = function getInitialWorkflowResults(){
+    var results = function () {
+        var tmp = null;
+        $.ajax({
+            'async': false,
+            'type': "GET",
+            'global': false,
+            'data':{},
+            'headers':{"Authentication-Token":authKey},
+            'url': "/workflowresults",
+            'success': function (data) {
+                tmp = data;
+            }
+        });
+        return tmp;
+    }();
+    return results;
+}();
+
+//Adds the new rows
+workflowResultsTable.rows.add(dataSet);
+workflowResultsTable.draw();
+
+//Set up event listener for workflow results if possible
+if (typeof(EventSource) !== "undefined") {
+    var workflowResultsSSE = new EventSource('workflowresults/stream');
+    workflowResultsSSE.onmessage = function(message) {
+        workflowResultsTable.row.add(JSON.parse(message.data));
+        workflowResultsTable.draw();
+    }
+    workflowResultsSSE.onerror = function(){
+        workflowResultsSSE.close();
+    }
+}
+else {
+    console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
+}

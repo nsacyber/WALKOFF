@@ -224,10 +224,12 @@ desired effect
 <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js') }}"></script>
 <!-- AdminLTE App -->
 <script src="{{ url_for('static', filename='dist/js/app.min.js') }}"></script>
+<!-- NotifyJS -->
+<script src="{{ url_for('static', filename='plugins/notifyjs/notify.min.js') }}"></script>
 
 <!-- Main JavaScript -->
 <script id="globalVariables" type="application/javascript">
-    var authKey = '{{ authKey|safe }}';
+    var authKey = '{{ authKey | safe }}';
     var default_page = '{{default_page | safe}}';
     var apps = {{apps | safe}};
     var currentUser = '{{currentUser}}';

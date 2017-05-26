@@ -5,6 +5,9 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
 
         <style>
+            #main {
+                padding: 10px 15px;
+            }
             h1 {
                 font-family: 'Lato', sans-serif;
                 font-weight: bold;
@@ -22,20 +25,11 @@
               font-family: 'Lato', sans-serif;
               font-weight: bold;
             }
-            .box {
+            /*.box {
               margin-top: 40px;
-            }
-            button, input, select, textarea {
-              background-color: #45AA3B;
-              color: #fff;
-              margin-top: 20px;
-              font-weight: bold;
-              font-size: 20px;
-              border: none;
-              border-radius:5px;
-            }
+            }*/
 
-            #sidebar{
+            /*#sidebar{
                 width:275px;
                 margin-left:30px;
                 border:solid;
@@ -46,18 +40,13 @@
 
             #sidebarTitle{
                 color:white;
+            }*/
+            #caseSelect li {
+                cursor: pointer;
             }
-            #logTable{
-            }
-            .box{
+            /*.box{
                 height:700px;
-            }
-            .box-header{
-
-            }
-            .box-title{
-
-            }
+            }*/
             th {
               color: #367fa9;
               background-color: #eaf2f6;
@@ -66,13 +55,16 @@
               font-size: 24px;
               font-family: 'Lato', sans-serif;
             }
+            input.form-control.input-sm {
+                margin-left: 10px;
+            }
 
-            .innerSidebar{
+            /*.innerSidebar{
                 background-color:white;
                 height:100%;
                 text-align:left;
                 padding:5px;
-            }
+            }*/
 
 
         </style>
@@ -92,7 +84,7 @@
             <h1> Case Log </h1>
         </div>
         <div class="row">
-            <div id="sidebar" class="col-xs-4 box" >
+            <div id="sidebar" class="col-xs-3 box" >
                 <div id="innerSidebar" class="innerSidebar">
                     <h3>Cases</h3>
                     <div id="casesDiv">
@@ -103,8 +95,8 @@
                 </div>
             </div>
 
-            <div class="col-xs-8">
-              <div class="box ">
+            <div class="col-xs-9">
+              <div class="box">
                 <div class="box-header">
                   <h3 class="box-title">Events</h3>
                 </div>

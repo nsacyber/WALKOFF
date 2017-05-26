@@ -110,6 +110,7 @@ $(function(){
             var subSchema = {
                 type: "object",
                 title: "Inputs",
+                required: ['$action'],
                 properties: {
                     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
                         type: "string",
@@ -224,6 +225,7 @@ $(function(){
             type: "object",
             title: "Node Parameters",
             definitions: definitions,
+            required: ['name', 'start', 'app'],
             properties: {
                 name: {
                     type: "string",
@@ -410,7 +412,7 @@ $(function(){
             no_additional_properties: true,
 
             // Require all properties by default
-            required_by_default: true
+            required_by_default: false
         });
 
         editor.getEditor('root.app').disable();
@@ -466,6 +468,25 @@ $(function(){
             id += 1;
         }
 
+        var inputs = {};
+        var actionInfo = appData[app].actions[action];
+        $.each(actionInfo.args, function(index, inputInfo) {
+
+            var defaultValue;
+            if (inputInfo.type === "str")
+                defaultValue = "";
+            else if (inputInfo.type === "bool")
+                defaultValue = false;
+            else
+                defaultValue = 0;
+
+            inputs[inputInfo.name] = {
+                format: inputInfo.type,
+                key: inputInfo.name,
+                value: defaultValue
+            };
+        });
+
         // Add the node with the id just found to the graph in the location dropped
         // into by the mouse.
         var newNode = ur.do('add', {
@@ -476,9 +497,9 @@ $(function(){
                 parameters: {
                     action: action,
                     app: app,
-                    device: "None",
+                    device: "",
                     errors: [],
-                    input: {},
+                    input: inputs,
                     name: id.toString(),
                     next: [],
                 }
@@ -535,6 +556,16 @@ $(function(){
     function paste() {
         var newNodes = ur.do("paste");
         newNodes.on('click', onClick);
+
+        // Change the names of these new nodes so that they are the
+        // same as the id. This is needed since only the name is
+        // stored on the server and serves as the unique id of the
+        // node. It therefore must be the same as the Cytoscape id.
+        for (var i=0; i<newNodes.length; ++i) {
+            var parameters = newNodes[i].data("parameters");
+            parameters.name = newNodes[i].data("id")
+            newNodes[i].data("parameters", parameters);
+        }
     }
 
     function renamePlaybook(oldPlaybookName, newPlaybookName) {
@@ -685,7 +716,7 @@ $(function(){
         }();
 
         // Remove instructions
-        $("#cy-instructions").addClass('hidden');
+        hideInstructions();
 
         // Create the Cytoscape graph
         cy = cytoscape({
@@ -815,8 +846,24 @@ $(function(){
 
     function closeCurrentWorkflow() {
         $("#cy").empty();
+        $("#currentWorkflowText").text("");
+        hideParameters();
+        showInstruction();
     }
 
+    function showInstruction() {
+        var cyInstructions = $( "#cy-instructions-template" ).clone().removeClass('hidden');
+        cyInstructions.attr("id", "cy-instructions");
+        $("#cy").append(cyInstructions);
+    }
+
+    function hideInstructions() {
+        $("#cy-instructions").remove();
+    }
+
+    function hideParameters() {
+        $("#parameters").addClass('hidden');
+    }
 
     // Download list of workflows for display in the Workflows list
     function downloadWorkflowList() {
@@ -943,7 +990,7 @@ $(function(){
                         loadWorkflow(node.data.playbook, workflowName);
 
                         // hide parameters panel until first click on node
-                        $("#parameters").addClass('hidden');
+                        hideParameters();
                     }
                 });
             }
@@ -1288,4 +1335,10 @@ $(function(){
             filtersList = data.filters;
         }
     });
+
+    //---------------------------------
+    // Other setup
+    //---------------------------------
+    showInstruction();
+
 });

@@ -241,9 +241,13 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
+
+
+
         name = _WorkflowKey(playbook_name, workflow_name)
         if name in self.workflows:
             del self.workflows[name]
+
             logger.debug('Removed workflow {0}'.format(name))
             return True
         logger.warning('Cannot remove workflow {0}. Does not exist in controller'.format(name))
@@ -373,6 +377,8 @@ class Controller(object):
                 logger.info('Executing workflow {0} with default starting step'.format(key, start))
                 workflows.append(pool.submit(execute_workflow_worker, workflow, subs))
             callbacks.SchedulerJobExecuted.send(self)
+        else:
+            logger.error('Attempted to execute playbook which does not exist in controller')
 
     def get_workflow(self, playbook_name, workflow_name):
         """Get a workflow object.

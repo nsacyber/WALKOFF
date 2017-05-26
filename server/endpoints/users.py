@@ -41,7 +41,7 @@ def create_user(user_name):
             running_context.db.session.commit()
             current_app.logger.info('User added: {0}'.format(
                 {"name": user_name, "roles": [str(_role) for _role in u.roles]}))
-            return {},OBJECT_CREATED
+            return {}, OBJECT_CREATED
         else:
             current_app.logger.warning('Could not create user {0}. User already exists.'.format(user_name))
             return {"error": "User already exists.".format(user_name)}, OBJECT_EXISTS_ERROR
@@ -94,7 +94,7 @@ def delete_user(user_name):
                 running_context.user_datastore.delete_user(user)
                 running_context.db.session.commit()
                 current_app.logger.info('User {0} deleted'.format(user_name))
-                return {},SUCCESS
+                return {}, SUCCESS
             else:
                 current_app.logger.error('Could not delete user {0}. User is current user.'.format(user_name))
                 return {"error": 'User is current user.'.format(user_name)}, UNAUTHORIZED_ERROR

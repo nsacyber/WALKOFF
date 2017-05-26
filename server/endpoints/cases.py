@@ -171,12 +171,13 @@ def read_all_events(case):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
-        result = case_database.case_db.case_events_as_json(case)
-        if result:
-            return result, SUCCESS
-        else:
+        try:
+            result = case_database.case_db.case_events_as_json(case)
+        except:
             current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+
+        return result, SUCCESS
     return __func()
 
 

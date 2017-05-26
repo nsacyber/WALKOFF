@@ -142,7 +142,8 @@ class CaseDatabase(object):
         Args:
             case_names (list[str]): A list of case names to add
         """
-        additions = [Case(name=case_name) for case_name in set(case_names)]
+        existing_cases = [case.name for case in self.session.query(Case).all()]
+        additions = [Case(name=case_name) for case_name in set(case_names) if case_name not in existing_cases]
         self.session.add_all(additions)
         self.session.commit()
 
@@ -245,12 +246,12 @@ class CaseDatabase(object):
             The JSON representation of all Event objects without their cases.
         """
         event_id = self.session.query(Case).filter(Case.name == case_name).first().id
-        if event_id:
-            result = [event.as_json()
-                      for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
-            return result
-        return {}
+        if not event_id:
+            raise Exception
 
+        result = [event.as_json()
+                    for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
+        return result
 
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""

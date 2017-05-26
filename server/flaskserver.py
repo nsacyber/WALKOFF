@@ -124,6 +124,11 @@ def list_all_widgets():
 
 
 def write_playbook_to_file(playbook_name):
+    try:
+        os.remove("{0}.workflow".format(playbook_name))
+    except OSError:
+        pass
+
     app.logger.debug('Writing playbook {0} to file'.format(playbook_name))
     write_format = 'w' if sys.version_info[0] == 2 else 'wb'
     playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))

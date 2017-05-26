@@ -9,6 +9,8 @@ from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
 
+__logger = logging.getLogger(__name__)
+
 def load_config():
     """ Loads Walkoff configuration from JSON file
     """
@@ -91,25 +93,27 @@ def load_function_info():
     """ Loads the app action metadata
     """
     global function_info
-    try:
-        with open(core.config.paths.function_info_path) as f:
-            function_info = json.loads(f.read())
-        app_funcs = {}
-        for app in list_apps():
+    with open(core.config.paths.function_info_path) as f:
+        function_info = json.loads(f.read())
+    app_funcs = {}
+    for app in list_apps():
+        try:
             with open(join(core.config.paths.apps_path, app, 'functions.json')) as function_file:
                 app_funcs[app] = json.loads(function_file.read())
-        function_info['apps'] = app_funcs
+        except Exception as e:
+            __logger.error('Cannot load function metadata: Error {0}'.format(e))
+    function_info['apps'] = app_funcs
 
-    except Exception as e:
-        logging.getLogger(__name__).error('Cannot load function metadata: Error {0}'.format(e))
 
 
 load_config()
+
 try:
     with open(core.config.paths.events_path) as f:
         possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-except (IOError, OSError):
-    logging.getLogger(__name__).error('Cannot load events metadata. Returning empty dict: Error {0}'.format(e))
-    possible_events = {}
+        possible_events = [{'type': element_type, 'events': events} for element_type, events in possible_events.items()]
+except (IOError, OSError) as e:
+    __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
+    possible_events = []
 
 load_function_info()

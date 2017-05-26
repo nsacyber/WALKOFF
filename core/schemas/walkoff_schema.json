@@ -169,7 +169,7 @@
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
         },
-        "^/": {
+        "": {
           "$ref": "#/definitions/pathItem"
         }
       },

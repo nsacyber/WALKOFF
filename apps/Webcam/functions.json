@@ -1,0 +1,20 @@
+{
+  "start": {
+    "description": "Starts processing images from the webcam",
+    "args": []
+  },
+  "stop": {
+    "description": "Stops processing images from the webcam",
+    "args": []
+  },
+  "get_screenshot": {
+    "description": "Saves a screenshot to a file",
+    "args": [
+      {
+        "name": "path",
+        "type": "str"
+      }
+    ]
+  }
+}
+

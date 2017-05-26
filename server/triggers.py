@@ -67,6 +67,22 @@ class Triggers(Base):
 
         return True
 
+    @staticmethod
+    def update_playbook(old_playbook, new_playbook):
+        if new_playbook:
+            triggers = Triggers.query.filter_by(playbook=old_playbook).all()
+            for trigger in triggers:
+                trigger.playbook = new_playbook
+        db.session.commit()
+
+    @staticmethod
+    def update_workflow(old_workflow, new_workflow):
+        if new_workflow:
+            triggers = Triggers.query.filter_by(workflow=old_workflow).all()
+            for trigger in triggers:
+                trigger.workflow = new_workflow
+        db.session.commit()
+
     def as_json(self):
         """ Gets the JSON representation of all the Trigger object.
         
@@ -121,7 +137,7 @@ class Triggers(Base):
                     if input_in:
                         input_args = {arg['key']: Argument(key=arg['key'],
                                                            value=arg['value'],
-                                                           format=arg.get('format', 'str'), convert=False)
+                                                           format=arg.get('format', 'str'))
                                       for arg in input_in}
                         workflow_to_be_executed.execute(start_input=input_args)
                         logger.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
