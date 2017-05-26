@@ -1,12 +1,14 @@
-from server import appdevice
 import time
+import logging
+from apps import App
 
+logger = logging.getLogger(__name__)
 
 # There is an associated Hello world test workflow which can be executed
-class Main(appdevice.App):
+class Main(App):
     def __init__(self, name=None, device=None):
         # The parent app constructor looks for a device configuration and returns that as a dict called self.config
-        appdevice.App.__init__(self, name, device)
+        App.__init__(self, name, device)
         # Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message": "HELLO WORLD"}
 

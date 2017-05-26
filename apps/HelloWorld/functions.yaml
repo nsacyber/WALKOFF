@@ -37,8 +37,8 @@ paths:
         "200":
           description: "repeated method"
           schema:
-            type: "integer"
-            format: "int32"
+            type: "string"
+            #format: "int32"
   returnPlusOne:
     run:
       operationId: Main.returnPlusOne

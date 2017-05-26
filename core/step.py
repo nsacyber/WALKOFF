@@ -14,7 +14,8 @@ from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
-
+from connexion.decorators import parameter
+from core.helpers import formatarg, arg_to_xml
 logger = logging.getLogger(__name__)
 
 
@@ -110,9 +111,11 @@ class Step(ExecutionElement):
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
 
-        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
-                       for arg in step_xml.findall('input/*')}
-        #self.input = {arg.tag: arg.text for arg in step_xml.findall('input/*')}
+        # self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
+        #                for arg in step_xml.findall('input/*')}
+
+        self.input = {
+        arg.tag: {"key": arg.tag, "value": arg.text, "format": arg.get("format") or "string", "items": arg.get("items") or ""} for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -136,9 +139,9 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
-        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
-                       for arg in step_xml.findall('input/*')}
-        #self.input = {arg.tag: arg.text for arg in step_xml.findall('input/*')}
+        # self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
+        #                for arg in step_xml.findall('input/*')}
+        self.input = {arg.tag: {"key": arg.tag, "value":arg.text, "format":arg.get("format") or "string", "items": arg.get("items") or ""} for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -198,25 +201,31 @@ class Step(ExecutionElement):
             The result of the executed function.
         """
         fn = self.__lookup_function()
-        result = load_app_function(instance, fn)
+        fn = load_app_function(instance, fn)
         args = {}
-        for input in self.input.values():
-            var = input.convert(value=input.value, conversion_type=input.format)
-            if str(type(var).__name__) == input.format:
-                args[input.key] = var
-            else:
+        try:
+            for input in self.input:
+                args[input] = formatarg(self.input[input])
+        except ValueError:
+            raise InvalidStepInputError(self.app, self.action)
+        try:
+            response = fn(api=instance.api, action=self.action, args=args)
+            result = response.body
+            if response.status_code == 400:
+                print(result)
                 callbacks.StepInputInvalid.send(self)
-                raise InvalidStepInputError(self.app, self.action)
-
-        result = result(api=instance.api, action=self.action, args=args)
-        callbacks.StepInputValidated.send(self)
-        callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+            if response.status_code == 200:
+                callbacks.StepInputValidated.send(self)
+                callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+        except Exception as e:
+            import traceback, sys
+            print(traceback.print_exc(sys.exc_info()))
 
         for widget in self.widgets:
             get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
         self.output = result
         logger.debug('Step {0} executed successfully'.format(self.ancestry))
-        print(result)
+        #print(result)
         return result
 
 
@@ -273,7 +282,7 @@ class Step(ExecutionElement):
 
         inputs = cElementTree.SubElement(step, 'input')
         for i in self.input:
-            inputs.append(self.input[i].to_xml())
+            inputs.append(arg_to_xml(self.input[i]))
 
         if self.widgets:
             widgets = cElementTree.SubElement(step, 'widgets')
@@ -325,7 +334,7 @@ class Step(ExecutionElement):
                   "app": str(self.app),
                   "device": str(self.device),
                   "risk": str(self.risk),
-                  "input": {str(key): self.input[key].as_json() for key in self.input},
+                  "input": self.input,
                   'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
                   "position": {pos: str(val) for pos, val in self.position.items()}}
         if self.output:
@@ -364,7 +373,7 @@ class Step(ExecutionElement):
                     app=json_in['app'],
                     device=device,
                     risk=risk,
-                    inputs={arg_name: arguments.Argument.from_json(arg_element)
+                    inputs={arg_name: {"key": arg_name, "value": arg_element}
                             for arg_name, arg_element in json_in['input'].items()},
                     parent_name=parent_name,
                     position=position,

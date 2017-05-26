@@ -22,14 +22,14 @@ class Main(App):
         """
         return {}
 
-    def test_function_with_param(self, args={}):
+    def test_function_with_param(self, test_param):
         """
            Basic function that takes in a parameter
 
            Args:
                test_param (str): String that will be returned
         """
-        return args["test_param"]()
+        return test_param
 
     def test_function_with_object_reference(self):
         """

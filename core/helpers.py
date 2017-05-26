@@ -143,16 +143,9 @@ from connexion.lifecycle import ConnexionResponse
 
 def responseDecorator(func):
     def __wrapper(*args, **kwargs):
-        try:
-            body = func(*args, **kwargs)
-        except Exception as e:
-            print("EXCEPTION")
-            print(e)
-        finally:
-            print("FINALLY")
-            print(body)
-        r = ConnexionResponse()
-        return body
+        body = func(*args, **kwargs)
+        r = ConnexionResponse(body=body)
+        return r
     return __wrapper
 
 def load_app_function(app_instance, function_name):
@@ -293,3 +286,50 @@ class SubclassRegistry(type):
 
 def format_db_path(db_type, path):
     return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
+
+from connexion.decorators import parameter
+def formatarg(arg):
+    format = arg["format"]
+    if format == "str":
+        format = "string"
+    elif format == "int":
+        format = "integer"
+    elif format == "bool":
+        format = "boolean"
+    elif format == "obj":
+        format = "object"
+    elif format == "num":
+        format = "number"
+    elif format == "arr":
+        format = "array"
+    else:
+        format = "string"
+
+    if format == "array":
+        itemFormat = formatarg(arg["items"])
+        f = {"type": format, "items": {"type": itemFormat}}
+    else:
+        f = {"type":format}
+    try:
+        result = parameter.get_val_from_param(arg["value"], f)
+        return result
+    except:
+        raise ValueError
+
+
+def arg_to_xml(arg):
+    """Converts Argument object to XML
+
+    Returns:
+        XML of Argument object, or None if key is None.
+    """
+    if arg["key"]:
+        elem = ElementTree.Element(arg["key"])
+        elem.text = str(arg["value"])
+        format = arg["format"]
+        if arg["items"]:
+            format += ":" + arg["items"]
+        elem.set("type", format)
+        return elem
+    else:
+        return None

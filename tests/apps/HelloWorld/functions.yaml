@@ -33,11 +33,13 @@ paths:
             description: "message to repeat"
             required: true
             type: "string"
+            #format: "int32"
       responses:
         "200":
           description: "repeated method"
           schema:
             type: "string"
+            #format: "int32"
   returnPlusOne:
     run:
       operationId: Main.returnPlusOne

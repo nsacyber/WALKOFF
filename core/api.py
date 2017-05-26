@@ -2,7 +2,7 @@
 import os.path
 from core.config.paths import apps_path
 from connexion.resolver import Resolver,Resolution
-from connexion.lifecycle import ConnexionRequest
+from connexion.lifecycle import ConnexionRequest, ConnexionResponse
 from connexion.apis.flask_api import Jsonifier
 from connexion.apis import abstract
 from core.config import paths
@@ -128,12 +128,24 @@ class WalkoffAppDefinition(abstract.AbstractAPI, object):
         request = ConnexionRequest(url, method, **result)
         return request
 
-    #@classmethod
-    def get_response(self, response, mimetype=None, request=None):
-        #print(cls, response, mimetype, request)
-        action = "Main." + request.url[1:]
-        content_type = self.operations[action].produces[-1]
-        return response
+    @classmethod
+    def get_response(cls, response, mimetype=None, request=None):
+        # try:
+            #print(cls, response, mimetype, request)
+            # if request:
+            #     action = "Main." + request.url[1:]
+            #content_type = self.operations[action].produces[-1]
+        # except:
+        #     import traceback, sys
+        #     print(traceback.print_exc(sys.exc_info()))
+        if isinstance(response, ConnexionResponse):
+            return response
+        else:
+            try:
+                return ConnexionResponse(body=response)
+            except:
+                return ConnexionResponse(status_code=400, body=None)
+
 
 
     @classmethod
@@ -148,7 +160,7 @@ class WalkoffAppDefinition(abstract.AbstractAPI, object):
                 args[type] = args[type]
         return args
 
-
+from core.helpers import responseDecorator
 class WalkoffResolver(object):
     def __init__(self, name, instance):
         self.name = name
@@ -158,7 +170,7 @@ class WalkoffResolver(object):
         try:
             opid = operation.operation.get("operationId")
             #fn = get_function_from_name("apps." + self.name + ".main." + operation.operation.get("operationId"))
-            fn = getattr(self.instance, opid.split(".")[1])
+            fn = responseDecorator(func=getattr(self.instance, opid.split(".")[1]))
         except Exception as e:
             print("EXCEPTION: Could not resolve function")
             return None
