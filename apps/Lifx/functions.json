@@ -75,7 +75,7 @@
         "type": "str"
       },
       {
-        "name": "color_from",
+        "name": "from_color",
         "type": "str"
       },
       {
@@ -88,7 +88,7 @@
       },
       {
         "name": "persist",
-        "type": "int"
+        "type": "str"
       },
       {
         "name": "power_on",
@@ -109,7 +109,7 @@
         "type": "str"
       },
       {
-        "name": "color_from",
+        "name": "from_color",
         "type": "str"
       },
       {
@@ -122,7 +122,7 @@
       },
       {
         "name": "persist",
-        "type": "int"
+        "type": "str"
       },
       {
         "name": "power_on",

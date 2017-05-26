@@ -35,7 +35,7 @@ class Main(App):
         return json.dumps(suspicious_pids)
 
     def get_exe_pids_by_name(self, args={}):
-        if args["name"]:
-            return [x for x in suspicious_pids if x.name == args["name"]]
+        if args["name"]():
+            return [x for x in suspicious_pids if x.name == args["name"]()]
         else:
             return []

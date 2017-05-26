@@ -43,6 +43,9 @@ Tested on Windows and Linux
 
 *Requirements for apps may differ* 
 
+## Apps
+WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
+
 ## Branches
 1. Master - Main branch for WALKOFF version 2 will be updated from development periodically
 2. Development - Development branch for WALKOFF version 2.  Updated frequently

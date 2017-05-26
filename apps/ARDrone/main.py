@@ -25,47 +25,47 @@ class Main(App):
     def hover(self, args={}):
         """Make the drone hover."""
         self.drone.att(libardrone.at_pcmd, False, 0, 0, 0, 0)
-        self.__timed_execute(args['millisec'])
+        self.__timed_execute(args['millisec']())
 
     def move_left(self, args={}):
         """Make the drone move left."""
-        self.drone.at(libardrone.at_pcmd, True, -args['speed']/10., 0, 0, 0)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, -args['speed']()/10., 0, 0, 0)
+        self.__timed_execute(args['millisec']())
 
     def move_right(self, args={}):
         """Make the drone move right."""
-        self.drone.at(libardrone.at_pcmd, True, args['speed']/10., 0, 0, 0)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, args['speed']()/10., 0, 0, 0)
+        self.__timed_execute(args['millisec']())
 
     def move_up(self, args={}):
         """Make the drone rise upwards."""
-        self.drone.at(libardrone.at_pcmd, True, 0, 0, args['speed']/10., 0)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, 0, 0, args['speed']()/10., 0)
+        self.__timed_execute(args['millisec']())
 
     def move_down(self, args={}):
         """Make the drone decent downwards."""
-        self.drone.at(libardrone.at_pcmd, True, 0, 0, -args['speed']/10., 0)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, 0, 0, -args['speed']()/10., 0)
+        self.__timed_execute(args['millisec']())
 
     def move_forward(self, args={}):
         """Make the drone move forward."""
-        self.drone.at(libardrone.at_pcmd, True, 0, -args['speed']/10., 0, 0)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, 0, -args['speed']()/10., 0, 0)
+        self.__timed_execute(args['millisec']())
 
     def move_backward(self, args={}):
         """Make the drone move backwards."""
-        self.drone.at(libardrone.at_pcmd, True, 0, args['speed']/10., 0, 0)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, 0, args['speed']()/10., 0, 0)
+        self.__timed_execute(args['millisec']())
 
     def turn_left(self, args={}):
         """Make the drone rotate left."""
-        self.drone.at(libardrone.at_pcmd, True, 0, 0, 0, -args['speed']/10.)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, 0, 0, 0, -args['speed']()/10.)
+        self.__timed_execute(args['millisec']())
 
     def turn_right(self, args={}):
         """Make the drone rotate right."""
-        self.drone.at(libardrone.at_pcmd, True, 0, 0, 0, args['speed']/10.)
-        self.__timed_execute(args['millisec'])
+        self.drone.at(libardrone.at_pcmd, True, 0, 0, 0, args['speed']()/10.)
+        self.__timed_execute(args['millisec']())
 
     def reset(self):
         """Toggle the drone's emergency state."""
@@ -94,11 +94,11 @@ class Main(App):
             right"""
         self.drone.at(libardrone.at_pcmd,
                       True,
-                      args['left_right_tilt'],
-                      args['front_back_tilt'],
-                      args['vertical_speed'],
-                      args['angular_speed'])
-        self.__timed_execute(args['millisec'])
+                      args['left_right_tilt'](),
+                      args['front_back_tilt'](),
+                      args['vertical_speed'](),
+                      args['angular_speed']())
+        self.__timed_execute(args['millisec']())
 
     def halt(self):
         self.drone.halt()
