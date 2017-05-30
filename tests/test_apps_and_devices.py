@@ -55,7 +55,7 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(response["extraFieldTwo"], "extraNameTwo")
 
     def test_edit_device(self):
-        data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
+        data = {"username": self.username, "old_password": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
 
         self.put_with_status_check('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers,

@@ -65,12 +65,12 @@ class TestUsersAndRoles(ServerTestCase):
         data = {"username": self.email, "password": self.password}
         self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
 
-        data = {"password": self.password}
+        data = {"old_password": self.password}
         response = json.loads(
             self.app.post('/users/' + self.email, data=data, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["username"], self.email)
 
-        data = {"password": "testPassword"}
+        data = {"old_password": self.password, "new_password": "testPassword", }
         self.app.post('/users/' + self.email, data=data, headers=self.headers)
         with server.app.app_context():
             user = server.database.user_datastore.get_user(self.email)

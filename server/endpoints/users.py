@@ -1,6 +1,6 @@
 from flask import request, current_app
 from flask_security import roles_accepted
-from flask_security.utils import encrypt_password
+from flask_security.utils import encrypt_password, verify_password
 from server import forms
 from server.return_codes import *
 
@@ -70,9 +70,10 @@ def update_user(user_name):
         user = running_context.user_datastore.get_user(user_name)
         if user:
             form = forms.EditUserForm(request.form)
-            if form.password:
-                user.password = encrypt_password(form.password.data)
-                running_context.db.session.commit()
+            if form.new_password and form.old_password:
+                if verify_password(form.old_password, user.password):
+                    user.password = encrypt_password(form.new_password.data)
+                    running_context.db.session.commit()
             if form.role.data:
                 user.set_roles(form.role.data)
             current_app.logger.info('Updated user {0}. Roles: {1}'.format(user_name, form.role.data))

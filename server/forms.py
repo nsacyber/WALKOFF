@@ -10,7 +10,8 @@ class NewUserForm(Form):
 
 
 class EditUserForm(Form):
-    password = PasswordField('password')
+    old_password = PasswordField('old password')
+    new_password = PasswordField('new password')
     role = FieldList(StringField('role'), [validators.Optional()])
 
 
@@ -94,7 +95,8 @@ class AddNewDeviceForm(Form):
 class EditDeviceForm(Form):
     name = StringField('Name', [validators.Length(min=4, max=25), validators.Optional()])
     username = StringField('Username', [validators.Optional()])
-    pw = PasswordField('Password', [validators.Optional()])
+    old_password = PasswordField('Old Password', [validators.Optional()])
+    new_password = PasswordField('New Password', [validators.Optional()])
     ipaddr = StringField('IP Address', [validators.Optional()])
     port = IntegerField('Port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
     apps = FieldList(StringField('Apps'), [validators.Optional()])

@@ -209,6 +209,8 @@
         description: App not found
       462:
         description: Device already exists
+      515:
+        description: Cannot read AES key
   get:
     tags:
       - Devices
@@ -248,8 +250,13 @@
         minLength: 4
         maxLength: 25
       - in: formData
-        name: pw
-        description: Password for the device
+        name: new_password
+        description: New password for the device
+        type: string
+        required: false
+      - in: formData
+        name: old_password
+        description: Old password for the device
         type: string
         required: false
       - in: formData

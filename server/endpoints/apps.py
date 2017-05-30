@@ -82,21 +82,19 @@ def create_device(app_name, device_name):
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
             except (OSError, IOError) as e:
-                current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
-
-            if key:
-                aes = pyaes.AESModeOfOperationCTR(key)
-                pw = form.pw.data
-                enc_pw = aes.encrypt(pw)
-            else:
+                current_app.logger.error('Error loading AES key from from '
+                                         '{0}: {1}'.format(core.config.paths.AES_key_path, e))
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Could not get key from AES key file'.format(device_name, app_name))
                 return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
-
-            running_context.Device.add_device(name=device_name, username=form.username.data,
-                                              password=enc_pw, ip=form.ipaddr.data, port=form.port.data,
-                                              app_server=app_name, extra_fields=form.extraFields.data)
-            return {}, OBJECT_CREATED
+            else:
+                aes = pyaes.AESModeOfOperationCTR(key)
+                pw = form.pw.data
+                encrypted_pw = aes.encrypt(pw)
+                running_context.Device.add_device(name=device_name, username=form.username.data,
+                                                  password=encrypted_pw, ip=form.ipaddr.data, port=form.port.data,
+                                                  app_server=app_name, extra_fields=form.extraFields.data)
+                return {}, OBJECT_CREATED
         else:
             current_app.logger.error('Could not create device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))

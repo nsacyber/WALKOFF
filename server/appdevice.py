@@ -151,12 +151,13 @@ class Device(database.Base):
                 key = key_file.read()
         except (OSError, IOError) as e:
             print(e)
-
-        if key:
-            aes = pyaes.AESModeOfOperationCTR(key)
-            return aes.decrypt(self.password)
-        else:
             return None
+        else:
+            if key:
+                aes = pyaes.AESModeOfOperationCTR(key)
+                return aes.decrypt(self.password)
+            else:
+                return None
 
     def edit_device(self, form):
         """Edits various fields of the Device object. 
@@ -170,17 +171,18 @@ class Device(database.Base):
         if form.username.data:
             self.username = form.username.data
 
-        if form.pw.data:
+        if form.old_password and form.new_password:
             try:
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
             except (OSError, IOError) as e:
-                current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
-
-            if key:
-                aes = pyaes.AESModeOfOperationCTR(key)
-                pw = form.pw.data
-                self.password = aes.encrypt(pw)
+                current_app.logger.error('Error loading AES key from '
+                                         '{0}: {1}'.format(core.config.paths.AES_key_path, e))
+            else:
+                if form.old_password.data == self.get_password():
+                    aes = pyaes.AESModeOfOperationCTR(key)
+                    pw = form.new_password.data
+                    self.password = aes.encrypt(pw)
 
         if form.ipaddr.data:
             self.ip = form.ipaddr.data

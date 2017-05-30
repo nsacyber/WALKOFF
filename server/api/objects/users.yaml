@@ -22,8 +22,12 @@ User:
 EditUser:
     type: object
     properties:
-      password:
+      new_password:
         description: New password for the user
+        type: string
+        example: password123
+      old_password:
+        description: Old password for the user
         type: string
         example: password123
       role:
