@@ -248,8 +248,8 @@
 
         //Edit item
         $("#editformSubmit").on('click',function(){
-            if($("#triggerList option:selected").attr('value') == 'none'){
-                alert("Select a trigger");
+            if($("#triggerList option:selected").attr('value') === undefined){
+                $.notify('Please select a trigger.', 'warning');
             }else{
                 var name = $("#triggerList option:selected").text();
 
@@ -288,8 +288,8 @@
 
         // Remove item
         $('.remove').on('click', function () {
-            if($("#triggerList option:selected").attr('value') == 'none'){
-                alert("Select a trigger");
+            if($("#triggerList option:selected").attr('value') === undefined){
+                $.notify('Please select a trigger.', 'warning');
             }else{
                 name = $("#triggerList option:selected").text();
                  $.ajax({

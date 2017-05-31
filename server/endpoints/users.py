@@ -71,12 +71,15 @@ def update_user(user_name):
         if user:
             form = forms.EditUserForm(request.form)
             if form.new_password and form.old_password:
-                if verify_password(form.old_password, user.password):
+                if verify_password(form.old_password.data, user.password):
                     user.password = encrypt_password(form.new_password.data)
-                    running_context.db.session.commit()
-            if form.role.data:
-                user.set_roles(form.role.data)
-            current_app.logger.info('Updated user {0}. Roles: {1}'.format(user_name, form.role.data))
+                else:
+                    current_app.logger.error('Could not edit user {0}. Passwords do not match.'.format(user_name))
+                    return {"error": 'Passwords do not match.'.format(user_name)}, INVALID_INPUT_ERROR
+            if form.roles.data:
+                user.set_roles(form.roles.data)
+            running_context.db.session.commit()
+            current_app.logger.info('Updated user {0}. Roles: {1}'.format(user_name, form.roles.data))
             return user.display(), SUCCESS
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(user_name))

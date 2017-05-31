@@ -34,7 +34,6 @@ $(function() {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                 }
                 $('#active').prop("checked",e.active);
-
             },
             error: function (e) {
                 console.log("failed")
@@ -44,17 +43,18 @@ $(function() {
 
      $("#editUser").click(function(){
 //        $("#currentUserInfo").hide();
-        $("#updateUserForm #username").val($currentUser['username']);
+        $("#editUserForm #username").val($currentUser['username']);
 
      });
      $("#submitUpdate").click(function(){
         $.ajax({
             url: 'users/'+$currentUser['username'],
-            data: $("#updateUserForm").serialize(),
+            data: $("#editUserForm").serialize(),
             headers: {"Authentication-Token": authKey},
             type: "POST",
             success: function (e) {
-                alert("user info" + data);
+                $.notify('User successfully updated.', 'success');
+                $("#editUserForm")[0].reset();
                 getUserList();
             },
             error: function (e) {
@@ -82,7 +82,7 @@ $(function() {
                 }
                 });
        }else{
-            alert('cannot delete admin user');
+            $.notify('Cannot delete admin user.', 'error');
        }
     });
 });
@@ -116,12 +116,12 @@ $("#saveNewUser").click(function(){
         type: "PUT",
         success: function (e) {
             data = e;
-            alert("new user added" + e);
+            $.notify('User "' + username + ' "successfully added.', 'success');
             if(e['status'] != 'invalid input'){
                 $('#username').append('<option class="userOption" value="' + username + '">' + username + '</option>');
             }
 
-            $('#AddUserForm').trigger("reset");
+            $("#addUserForm")[0].reset();
         },
         error: function (e) {
             $("#templatesPath").val("Error");

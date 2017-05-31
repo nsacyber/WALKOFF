@@ -14,10 +14,11 @@ def settings():
     choices = [(obj.email, str(obj.email)) for obj in running_context.User.query.all()]
     user_form.username.choices = choices
     add_user_form = forms.AddUserForm()
+    edit_user_form = forms.EditUserForm()
     roles = [(x.name, str(x.name)) for x in running_context.Role.query.all()]
     add_user_form.roles.choices = roles
-    return {"systemForm": forms.SettingsForm(), "userForm": user_form, "addUserForm": add_user_form }
-
+    edit_user_form.roles.choices = roles
+    return {"systemForm": forms.SettingsForm(), "userForm": user_form, "addUserForm": add_user_form, "editUserForm": edit_user_form }
 
 def playbook():
     return {"currentWorkflow": "multiactionWorkflow"}

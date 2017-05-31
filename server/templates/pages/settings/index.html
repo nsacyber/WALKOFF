@@ -34,7 +34,7 @@
             #settingsForm,
             #userForm,
             #addUserForm,
-            #updateUserForm {
+            #editUserForm {
                 /*padding-left: 50px;*/
                 margin-bottom: 20px;
             }
@@ -164,7 +164,6 @@
                                     <!-- below is pulled from devices\index.html -->
                                         {% from "pages/_formhelpers.html" import render_field %}
                                         {{ render_field(userForm.username) }}
-                                        {{ render_field(userForm.password) }}
                                         {{ render_field(userForm.active)  }}
                                 </form>
                                 <div id="crudButtons">
@@ -178,22 +177,21 @@
                                 <form id="addUserForm">
                                     {% from "pages/_formhelpers.html" import render_field %}
                                     {{ render_field(addUserForm.username) }}
-                                    {{ render_field(addUserForm.email) }}
                                     {{ render_field(addUserForm.roles) }}
                                     {{ render_field(addUserForm.password) }}
                                     {{ render_field(addUserForm.confirm) }}
                                 </form>
                                 <button id="saveNewUser" class="btn btn-primary">Submit</button>
                             </div>
-                            <div id="updateUser" class="col-md-4">
+                            <div id="editUser" class="col-md-4">
                                 <h3>Edit User</h3>
-                                <form id="updateUserForm">
+                                <form id="editUserForm">
                                     {% from "pages/_formhelpers.html" import render_field %}
-                                    {{ render_field(addUserForm.username) }}
-                                    {{ render_field(addUserForm.email) }}
-                                    {{ render_field(addUserForm.roles) }}
-                                    {{ render_field(addUserForm.password) }}
-                                    {{ render_field(addUserForm.confirm) }}
+                                    {{ render_field(editUserForm.username) }}
+                                    {{ render_field(editUserForm.roles) }}
+                                    {{ render_field(editUserForm.old_password) }}
+                                    {{ render_field(editUserForm.new_password) }}
+                                    {{ render_field(editUserForm.confirm) }}
                                 </form>
                                 <button id="submitUpdate" class="btn btn-primary">Submit Changes</button>
                             </div>
@@ -203,9 +201,9 @@
             </div>
         </div>
         <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
-            <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
-            <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
-
+        <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='plugins/notifyjs/notify.min.js') }}"></script>
 
         <script src="{{ url_for('static', filename='pages/settings/main.js' ) }}"> </script>
     </body>

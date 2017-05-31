@@ -8,13 +8,6 @@ class NewUserForm(Form):
     password = PasswordField('password', [validators.data_required()])
     role = FieldList(StringField('role'), [validators.Optional()])
 
-
-class EditUserForm(Form):
-    old_password = PasswordField('old password')
-    new_password = PasswordField('new password')
-    role = FieldList(StringField('role'), [validators.Optional()])
-
-
 class NewRoleForm(Form):
     name = StringField('name', [validators.Optional()])
     description = StringField('description')
@@ -95,8 +88,7 @@ class AddNewDeviceForm(Form):
 class EditDeviceForm(Form):
     name = StringField('Name', [validators.Length(min=4, max=25), validators.Optional()])
     username = StringField('Username', [validators.Optional()])
-    old_password = PasswordField('Old Password', [validators.Optional()])
-    new_password = PasswordField('New Password', [validators.Optional()])
+    pw = PasswordField('Password', [validators.Optional()])
     ipaddr = StringField('IP Address', [validators.Optional()])
     port = IntegerField('Port', [validators.Optional(), validators.NumberRange(min=0, max=9999)])
     apps = FieldList(StringField('Apps'), [validators.Optional()])
@@ -211,7 +203,7 @@ class SettingsForm(Form):
 class UserForm(Form):
     username = SelectField('Username', [validators.Optional()], choices=[])
     email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
-    password = PasswordField('Password')
+    # password = PasswordField('Password')
     active = BooleanField()
     confirmed_at = DateTimeField('Confirmed at', [validators.Optional()])
     roles = SelectField('Roles', choices=[])
@@ -227,4 +219,12 @@ class AddUserForm(Form):
     password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
     roles = SelectField('Roles', choices=[])
-    email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
+    # email = StringField('Email', [validators.DataRequired("Please enter an email address.")])
+
+class EditUserForm(Form):
+    username = StringField('Username', [validators.required(message='Enter a user name')])
+    old_password = PasswordField('Old Password', [validators.Optional()])
+    new_password = PasswordField('New Password', [validators.Optional(), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat New Password')
+    roles = SelectField('Roles', choices=[])
+    # email = StringField('Email', [validators.DataRequired("Please enter an email address.")])
