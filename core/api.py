@@ -11,6 +11,8 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
+from core.step import InvalidStepInputError
+
 import functools
 from swagger_spec_validator.validator20 import validate_apis, validate_definitions, deref
 def validate_spec(spec_dict, spec_url='', http_handlers=None):
@@ -87,9 +89,13 @@ def validate_json(spec_dict, schema_path, spec_url='', http_handlers=None):
 abstract.validate_spec = validate_spec
 
 class WalkoffAppDefinition(abstract.AbstractAPI, object):
-    def __init__(self, name, instance):
+    def __init__(self, name, instance, type="apps"):
         self.name = name
-        self.path = os.path.abspath(os.path.join(apps_path, name, "functions.yaml"))
+        self.type = type
+        if type == "apps":
+            self.path = os.path.abspath(os.path.join(apps_path, name, "functions.yaml"))
+        elif type == "flags":
+            self.path = os.path.abspath(os.path.join(".", "core", "flags", name + ".yaml"))
         self.operations = {}
         self.instance = instance
         self.resolver = WalkoffResolver(self.name, instance)
@@ -114,30 +120,31 @@ class WalkoffAppDefinition(abstract.AbstractAPI, object):
 
     @classmethod
     def get_request(cls, *args, **params):
-        method = params["api"].operations["Main." + params["action"]].method
-        type = params["api"].operations["Main." + params["action"]].operation
-        url = params["api"].operations["Main." + params["action"]].path
+        key = "Main." + params["action"]
+        if params["api"].type == "flags":
+            key = "execute"
+
+        method = params["api"].operations[key].method
+        type = params["api"].operations[key].operation
+        url = params["api"].operations[key].path
+
         result = {"headers": {}, "form": {}, "query": {}, "body": {}, "json": {}, "files": {}, "path_params": {},
                   "context": {}}
+
         if "parameters" in type.keys():
             for parameter in type["parameters"]:
                 if parameter["in"] not in result:
                     result[parameter["in"]] = {}
+                if parameter["name"] not in params["args"]:
+                    raise InvalidStepInputError(app=params["api"].instance, action=params["action"])
                 result[parameter["in"]][parameter["name"]] = params["args"][parameter["name"]]
-        result = cls.formatArgs(result)
+
+        #result = cls.formatArgs(result)
         request = ConnexionRequest(url, method, **result)
         return request
 
     @classmethod
     def get_response(cls, response, mimetype=None, request=None):
-        # try:
-            #print(cls, response, mimetype, request)
-            # if request:
-            #     action = "Main." + request.url[1:]
-            #content_type = self.operations[action].produces[-1]
-        # except:
-        #     import traceback, sys
-        #     print(traceback.print_exc(sys.exc_info()))
         if isinstance(response, ConnexionResponse):
             return response
         else:
@@ -170,7 +177,12 @@ class WalkoffResolver(object):
         try:
             opid = operation.operation.get("operationId")
             #fn = get_function_from_name("apps." + self.name + ".main." + operation.operation.get("operationId"))
-            fn = responseDecorator(func=getattr(self.instance, opid.split(".")[1]))
+            opid = opid.split(".")
+            if len(opid) > 1:
+                opid = opid[1]
+            else:
+                opid = opid[0]
+            fn = responseDecorator(func=getattr(self.instance, opid))
         except Exception as e:
             print("EXCEPTION: Could not resolve function")
             return None

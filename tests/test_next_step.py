@@ -3,7 +3,6 @@ import unittest
 from core.nextstep import NextStep
 from core.flag import Flag
 from core.filter import Filter
-from core.arguments import Argument
 
 
 class TestNextStep(unittest.TestCase):
@@ -78,7 +77,7 @@ class TestNextStep(unittest.TestCase):
         expected.append(Flag(action='2', filters=filters).as_json())
         test_help(next_step, expected)
         args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
+        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
                 for arg_name, arg_value in args.items()}
         next_step.create_flag('3', filters=filters, args=args)
         expected.append(Flag(action='3', filters=filters, args=args).as_json())
@@ -129,12 +128,12 @@ class TestNextStep(unittest.TestCase):
 
     def test_call(self):
 
-        flags1 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
-        flags2 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')}),
-                  Flag(action='regMatch', args={'regex': Argument(key='regex', value='a', format='str')})]
-        flags3 = [Flag(action='invalidName', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
-        flags4 = [Flag(action='regMatch', args={'regex': Argument(key='regex', value='(.*)', format='str')}),
-                  Flag(action='invalidName', args={'regex': Argument(key='regex', value='(.*)', format='str')})]
+        flags1 = [Flag(action='regMatch', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}})]
+        flags2 = [Flag(action='regMatch', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}}),
+                  Flag(action='regMatch', args={'regex': {'key': 'regex', 'value': 'a', 'format': 'str'}})]
+        flags3 = [Flag(action='invalidName', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}})]
+        flags4 = [Flag(action='regMatch', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}}),
+                  Flag(action='invalidName', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}})]
         inputs = [('name1', [], 'aaaa', True),
                   ('name2', flags1, 'anyString', True),
                   ('name3', flags2, 'anyString', True),

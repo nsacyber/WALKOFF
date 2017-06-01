@@ -4,14 +4,14 @@ from core.flags import FlagType
 
 class count(FlagType):
     @staticmethod
-    def execute(args, value):
+    def execute(type, threshold, operator, value):
         """
         Compares the value of of an input using ==, >, <, >=, or <=. See data/functions.json for argument information
 
         Returns:
             The result of the comparison
         """
-        if not args["type"] or args["type"] == "json":
+        if not type or type == "json":
             var = len(json.loads(value))
         else:
             try:
@@ -19,25 +19,23 @@ class count(FlagType):
             except ValueError:
                 var = len(value)
 
-        threshold = args["threshold"]
-
-        if args["operator"] == "g":
+        if operator == "g":
             if var > threshold:
                 return True
 
-        elif args["operator"] == "ge":
+        elif operator == "ge":
             if var >= threshold:
                 return True
 
-        elif args["operator"] == "l":
+        elif operator == "l":
             if var < threshold:
                 return True
 
-        elif args["operator"] == "le":
+        elif operator == "le":
             if var <= threshold:
                 return True
 
-        elif args["operator"] == "e":
+        elif operator == "e":
             if var == threshold:
                 return True
         else:

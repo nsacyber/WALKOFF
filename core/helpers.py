@@ -171,6 +171,27 @@ def load_app_function(app_instance, function_name):
         return None
 
 
+def load_flag_function(api, function_name):
+    """Get a function for an App.
+
+    Args:
+        app_instance (App): An instance of the App object from which to load the function.
+        function_name (str): The name of the function to be loaded from the App.
+
+    Returns:
+        The specified function if the attribute exists, otherwise None.
+    """
+
+    try:
+        key = function_name
+        if "execute" in api.operations:
+            obj = api.operations["execute"]
+            fn = obj.function
+            return fn
+        return None
+    except AttributeError:
+        logger.error('Could not load action {0} in app {1}.'.format(api.name, function_name))
+        return None
 
 def locate_workflows_in_directory(path=None):
     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
@@ -289,31 +310,42 @@ def format_db_path(db_type, path):
 
 from connexion.decorators import parameter
 def formatarg(arg):
-    format = arg["format"]
-    if format == "str":
-        format = "string"
-    elif format == "int":
-        format = "integer"
-    elif format == "bool":
-        format = "boolean"
-    elif format == "obj":
-        format = "object"
-    elif format == "num":
-        format = "number"
-    elif format == "arr":
-        format = "array"
+    if "format" in arg:
+        format = arg["format"]
+    elif "type" in arg:
+        format = arg["type"]
     else:
-        format = "string"
+        format = "str"
 
-    if format == "array":
+    if format == "str":
+        f = "string"
+    elif format == "int":
+        f = "integer"
+    elif format == "bool":
+        f = "boolean"
+    elif format == "obj":
+        f = "object"
+    elif format == "num":
+        f = "number"
+    elif format == "arr":
+        f = "array"
+    else:
+        f = "string"
+
+    arg["format"] = f
+
+    if f == "array":
         itemFormat = formatarg(arg["items"])
         f = {"type": format, "items": {"type": itemFormat}}
     else:
-        f = {"type":format}
+        f = {"type":f}
     try:
+        if "value" not in arg:
+            arg["value"] = ""
+
         result = parameter.get_val_from_param(arg["value"], f)
         return result
-    except:
+    except Exception:
         raise ValueError
 
 
@@ -325,11 +357,17 @@ def arg_to_xml(arg):
     """
     if arg["key"]:
         elem = ElementTree.Element(arg["key"])
-        elem.text = str(arg["value"])
-        format = arg["format"]
-        if arg["items"]:
+        if "value" in arg:
+            elem.text = str(arg["value"])
+        else:
+            elem.text = ""
+        if "format" in arg:
+            format = arg["format"]
+        else:
+            format = "str"
+        if 'items' in arg:
             format += ":" + arg["items"]
-        elem.set("type", format)
+        elem.set("format", format)
         return elem
     else:
         return None

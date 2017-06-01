@@ -7,10 +7,10 @@ from core.executionelement import ExecutionElement
 from core.filter import Filter
 import core.config.config
 import logging
-
+from core.helpers import arg_to_xml
 logger = logging.getLogger(__name__)
 
-
+import sys, traceback
 class Flag(ExecutionElement):
     def __init__(self, xml=None, parent_name='', action='', args=None, filters=None, ancestry=None):
         """Initializes a new Flag object. 
@@ -45,7 +45,7 @@ class Flag(ExecutionElement):
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
-        self.args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
+        self.args = {arg.tag: {'key':arg.tag, 'value':arg.text, 'type':arg.get('format')}
                      for arg in xml_element.findall('args/*')}
         self.filters = [Filter(xml=filter_element,
                                parent_name=self.name,
@@ -74,7 +74,7 @@ class Flag(ExecutionElement):
         elem.set('action', self.action)
         args_element = cElementTree.SubElement(elem, 'args')
         for arg in self.args:
-            args_element.append(self.args[arg].to_xml())
+            args_element.append(arg_to_xml(self.args[arg]))
 
         filters_element = cElementTree.SubElement(elem, 'filters')
         for filter_element in self.filters:
@@ -121,14 +121,14 @@ class Flag(ExecutionElement):
         Returns:
              True if arguments are valid, False otherwise.
         """
-        if self.action in core.config.config.function_info['flags']:
-            possible_args = core.config.config.function_info['flags'][self.action]['args']
-            if possible_args:
-                return (len(list(possible_args)) == len(list(self.args.keys()))
-                        and all(arg.validate(possible_args) for arg in self.args.values()))
-            else:
-                return True
-        return False
+        # if self.action in core.config.config.function_info['flags']:
+        #     possible_args = core.config.config.function_info['flags'][self.action]['args']
+        #     if possible_args:
+        #         return (len(list(possible_args)) == len(list(self.args.keys()))
+        #                 and all(arg.validate(possible_args) for arg in self.args.values()))
+        #     else:
+        #         return True
+        # return False
 
     def __call__(self, output=None):
         data = output
@@ -136,30 +136,31 @@ class Flag(ExecutionElement):
             data = filter_element(output=data)
 
         result = False
-        if self.validate_args():
-            try:
-                result = execute_flag(self.action, args=self.args, value=data)
-                callbacks.FlagArgsValid.send(self)
-                logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
-            except FlagNotImplementedError:
-                logger.error('Flag {0} is not implemented'.format(self.action))
-                return False
-            except FlagExecutionNotImplementedError:
-                logger.error('Flag {0} execution is not properly implemented'.format(self.action))
-                return False
-            except Exception as e:
-                logger.error('Error encountered executing '
-                             'flag {0} with arguments {1} and value {2}'.format(self.action, self.args, data))
-                return False
+        try:
+            result = execute_flag(self.action, args=self.args, value=data)
+            callbacks.FlagArgsValid.send(self)
+            logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
+        except FlagNotImplementedError:
+            logger.error('Flag {0} is not implemented'.format(self.action))
+            return False
+        except FlagExecutionNotImplementedError:
+            logger.error('Flag {0} execution is not properly implemented'.format(self.action))
+            return False
+        except Exception as e:
+            print(traceback.print_exception(*sys.exc_info()))
+            print(e)
+            logger.error('Error encountered executing '
+                         'flag {0} with arguments {1} and value {2}'.format(self.action, self.args, data))
+            return False
         else:
             logger.warning('Arguments passed to flag {0} are invalid. Arguments {1}'.format(self.ancestry,
                                                                                             self.args))
-            callbacks.FlagArgsInvalid.send(self)
+
         return result
 
     def __repr__(self):
         output = {'action': self.action,
-                  'args': {arg: self.args[arg].as_json() for arg in self.args},
+                  'args': self.args,
                   'filters': [filter_element.as_json() for filter_element in self.filters]}
         return str(output)
 
@@ -173,8 +174,19 @@ class Flag(ExecutionElement):
         Returns:
             The JSON representation of a Flag object.
         """
+        def __formatArgs(arg):
+            if "type" in arg:
+                format = str(arg["type"])
+            elif "format" in arg:
+                format = arg["format"]
+            else:
+                format = "str"
+
+            result = {"key": arg["key"], "value": str(arg["value"]), "format":format}
+            return result
+
         out = {"action": self.action,
-               "args": {arg: self.args[arg].as_json() for arg in self.args}}
+               "args": {arg: __formatArgs(self.args[arg]) for arg in self.args}}
         if with_children:
             out["filters"] = [filter_element.as_json() for filter_element in self.filters]
         else:
@@ -193,7 +205,7 @@ class Flag(ExecutionElement):
         Returns:
             The Flag object parsed from the JSON object.
         """
-        args = {arg_name: arguments.Argument.from_json(arg_json) for arg_name, arg_json in json['args'].items()}
+        args = {arg_name: arg_json for arg_name, arg_json in json['args'].items()}
         flag = Flag(action=json['action'], args=args, parent_name=parent_name, ancestry=ancestry)
         filters = [Filter.from_json(filter_element, parent_name=flag.name, ancestry=flag.ancestry)
                    for filter_element in json['filters']]

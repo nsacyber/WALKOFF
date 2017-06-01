@@ -367,9 +367,11 @@ class TestWorkflowManipulation(unittest.TestCase):
         workflow = controller.wf.Workflow(name='workflow')
 
         workflow.create_step(name="stepOne", app='HelloWorld', action='invalid_name', risk=1)
-        workflow.steps["stepOne"].inputs = {'call': Argument(key='call', value='HelloWorld', format='str')}
+        workflow.steps["stepOne"].inputs = {'call': {'key':'call', 'value':'HelloWorld', 'format':'str'}}
+
         workflow.create_step(name="stepTwo", app='HelloWorld', action='repeatBackToMe', risk=2)
-        workflow.steps["stepTwo"].inputs = {'number': Argument(key='number', value='6', format='str')}
+        workflow.steps["stepTwo"].inputs = {'number': {'key':'number', 'value':'6', 'format':'str'}}
+
         workflow.create_step(name="stepThree", app='HelloWorld', action='returnPlusOne', risk=3)
         workflow.steps["stepThree"].inputs = {}
 
@@ -440,9 +442,9 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         input = [{"key":"call", "value":"CHANGE INPUT"}]
 
-        input_arg = {arg['key']: Argument(key=arg['key'],
-                                      value=arg['value'],
-                                      format=arg.get('format', 'str'))
+        input_arg = {arg['key']: {'key':arg['key'],
+                                      'value':arg['value'],
+                                      'format':arg.get('format', 'str')}
                  for arg in input}
 
         result = {'value': None}

@@ -101,8 +101,9 @@ class Workflow(ExecutionElement):
         next_steps = next_steps if next_steps is not None else []
         errors = errors if errors is not None else []
         # Creates new step object
-        arg_input = {arg['tag']: arguments.Argument(key=arg['tag'], value=arg['value'],
-                                                    format=arg['format']) for key, arg in arg_input.items()}
+        # arg_input = {arg['tag']: arguments.Argument(key=arg['tag'], value=arg['value'],
+        #                                             format=arg['format']) for key, arg in arg_input.items()}
+        arg_input = {arg['tag']: {'key':arg['tag'], 'value':arg['value'], 'format':arg['format']} for key, arg in arg_input.items()}
         ancestry = list(self.ancestry)
         self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
                                 next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name,

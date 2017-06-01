@@ -4,13 +4,12 @@ from core.flags import FlagType
 
 class regMatch(FlagType):
     @staticmethod
-    def execute(args, value):
+    def execute(regex, value):
         """Matches the input using a regular expression matcher. See data/functions.json for argument information
 
         Returns:
             The result of the comparison
         """
-        regex = args["regex"]()
         # Accounts for python wildcard bug
         if regex == "*":
             regex = "(.*)"

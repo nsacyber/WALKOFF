@@ -5,7 +5,6 @@ from collections import namedtuple
 import logging
 from jinja2 import Template, Markup
 
-from core import arguments
 from core import contextdecorator
 from core import nextstep
 import core.config.config
@@ -14,8 +13,9 @@ from core.executionelement import ExecutionElement
 from core.helpers import load_app_function
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
-from connexion.decorators import parameter
 from core.helpers import formatarg, arg_to_xml
+
+import traceback
 logger = logging.getLogger(__name__)
 
 
@@ -114,8 +114,18 @@ class Step(ExecutionElement):
         # self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
         #                for arg in step_xml.findall('input/*')}
 
+        def __formatArgs(arg):
+            result = {}
+            result["key"] = arg.tag
+            result["value"] = arg.text
+            if arg.get("format"):
+                result["format"] = arg.get("format")
+            if arg.get("items"):
+                result["items"] = arg.get("items")
+            return result
+
         self.input = {
-        arg.tag: {"key": arg.tag, "value": arg.text, "format": arg.get("format") or "string", "items": arg.get("items") or ""} for arg in step_xml.findall('input/*')}
+        arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -141,7 +151,17 @@ class Step(ExecutionElement):
         self.risk = int(risk_field.text) if risk_field is not None else 0
         # self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
         #                for arg in step_xml.findall('input/*')}
-        self.input = {arg.tag: {"key": arg.tag, "value":arg.text, "format":arg.get("format") or "string", "items": arg.get("items") or ""} for arg in step_xml.findall('input/*')}
+        def __formatArgs(arg):
+            result = {}
+            result["key"] = arg.tag
+            result["value"] = arg.text
+            if arg.get("format"):
+                result["format"] = arg.get("format")
+            if arg.get("items"):
+                result["items"] = arg.get("items")
+            return result
+
+        self.input = {arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -179,8 +199,16 @@ class Step(ExecutionElement):
     #     logger.warning('app {0} or app action {1} not found in app action metadata'.format(self.app, self.action))
     #     return False
 
-    def validate_input(self):
-        return True
+
+    def validate_input(self, instance=None):
+        try:
+            args = {}
+            for input in self.input:
+                args[input] = formatarg(self.input[input])
+            return True
+        except (ValueError, InvalidStepActionError) as e:
+            print(traceback.print_exception(*sys.exc_info()))
+            return False
 
     def __lookup_function(self):
         for action, info in core.config.config.function_info['apps'][self.app].items():
@@ -200,23 +228,25 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
-        fn = self.__lookup_function()
-        fn = load_app_function(instance, fn)
-        args = {}
+
         try:
+            fn = self.__lookup_function()
+            args = {}
+            fn = load_app_function(instance, fn)
             for input in self.input:
                 args[input] = formatarg(self.input[input])
-        except ValueError:
+        except (ValueError, InvalidStepActionError):
             raise InvalidStepInputError(self.app, self.action)
         try:
             response = fn(api=instance.api, action=self.action, args=args)
             result = response.body
             if response.status_code == 400:
-                print(result)
                 callbacks.StepInputInvalid.send(self)
             if response.status_code == 200:
                 callbacks.StepInputValidated.send(self)
                 callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+        except InvalidStepInputError:
+            raise InvalidStepInputError(self.app, self.action)
         except Exception as e:
             import traceback, sys
             print(traceback.print_exc(sys.exc_info()))

@@ -135,9 +135,9 @@ class Triggers(Base):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
                     if input_in:
-                        input_args = {arg['key']: Argument(key=arg['key'],
-                                                           value=arg['value'],
-                                                           format=arg.get('format', 'str'))
+                        input_args = {arg['key']: {'key':arg['key'],
+                                                           'value':arg['value'],
+                                                           'format':arg.get('format', 'str')}
                                       for arg in input_in}
                         workflow_to_be_executed.execute(start_input=input_args)
                         logger.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
@@ -156,9 +156,9 @@ class Triggers(Base):
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        flag_args = {arg['key']: Argument(key=arg['key'],
-                                          value=arg['value'],
-                                          format=arg.get('format', 'str'))
+        flag_args = {arg['key']: {'key':arg['key'],
+                                          'value':arg['value'],
+                                          'format':arg.get('format', 'str')}
                      for arg in conditional['args']}
         filters = [Filter(action=filter_element['action'],
                           args={arg['key']: Argument(key=arg['key'],
