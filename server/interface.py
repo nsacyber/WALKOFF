@@ -12,6 +12,7 @@ def devices():
 def settings():
     user_form = forms.UserForm()
     choices = [(obj.email, str(obj.email)) for obj in running_context.User.query.all()]
+    choices.insert(0, ("", "Select a user"))
     user_form.username.choices = choices
     add_user_form = forms.AddUserForm()
     edit_user_form = forms.EditUserForm()

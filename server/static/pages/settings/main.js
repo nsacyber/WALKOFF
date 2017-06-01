@@ -3,7 +3,7 @@
 $(function() {
 //    $("#createUser").hide();
     getRole();
-    $currentUser = $("#username option:selected");
+    $currentUser = null;
     function getUserList(){
         $.ajax({
             url: "/users",
@@ -23,7 +23,6 @@ $(function() {
         });
     }
 
-    console.log($("#username option:selected").text())
     $.ajax({
             url: "users/" + ($("#username option:selected").text()),
             data: {},
@@ -42,13 +41,22 @@ $(function() {
         });
 
      $("#editUser").click(function(){
-//        $("#currentUserInfo").hide();
-        $("#editUserForm #username").val($currentUser['username']);
+        if (!$currentUser) {
+            $.notify('Please select a user.', 'warning');
+            return;
+        }
 
+        $("#editUserForm #username").val($currentUser['username']);
      });
+
      $("#submitUpdate").click(function(){
+        if (!$currentUser) {
+            $.notify('No user selected.', 'error');
+            return;
+        }
+
         $.ajax({
-            url: 'users/'+$currentUser['username'],
+            url: 'users/' + $currentUser['username'],
             data: $("#editUserForm").serialize(),
             headers: {"Authentication-Token": authKey},
             type: "POST",
@@ -58,19 +66,21 @@ $(function() {
                 getUserList();
             },
             error: function (e) {
-                console.log('no user info obtained')
+                $.notify(e.responseJSON.error, 'error');
             }
         });
      });
-    $("#addUser").click(function(){
-//        $("#currentUserInfo").hide();
-//        $("#createUser").show();
-    });
+
     $("#deleteUser").click(function(){
-       user = $("#username option:selected").val();
-       if(user != 'admin'){
+        if (!$currentUser) {
+            $.notify('Please select a user.', 'warning');
+        }
+        else if($currentUser['username'] === 'admin'){
+            $.notify('Cannot delete admin user.', 'error');
+        }
+        else {
             $.ajax({
-                url: 'users/' + user,
+                url: 'users/' + $currentUser['username'],
                 data: {},
                 headers: {"Authentication-Token": authKey},
                 type: "DELETE",
@@ -78,17 +88,19 @@ $(function() {
                     $("#username option:selected").remove();
                 },
                 error: function (e) {
-                    $("#templatesPath").val("Error");
+                    $.notify(e.responseJSON.error, 'error');
                 }
-                });
-       }else{
-            $.notify('Cannot delete admin user.', 'error');
-       }
+            });
+        }
     });
 });
+
 $("#username").change(function () {
+    $("#editUserForm")[0].reset();
+    var selectedUser = $("#username option:selected").val();
+    if (selectedUser !== "") {
         $.ajax({
-            url: "users/" + ($("#username option:selected").text()),
+            url: "users/" + selectedUser,
             data: {},
             headers: {"Authentication-Token": authKey},
             type: "GET",
@@ -98,14 +110,16 @@ $("#username").change(function () {
                     $('#roles').append('<option value="' + e['roles'][i].name + '">' + e['roles'][i].description + '</option>');
                 }
                 $('#active').prop("checked",e.active);
-
             },
             error: function (e) {
-                console.log("failed")
-                $("#templatesPath").val("Error");
+                $.notify(e.responseJSON.error, 'error');
             }
         });
-    });
+    }
+    else {
+        $currentUser = null;
+    }
+});
 
 $("#saveNewUser").click(function(){
     username = $("#addUserForm #username").val();
@@ -124,7 +138,7 @@ $("#saveNewUser").click(function(){
             $("#addUserForm")[0].reset();
         },
         error: function (e) {
-            $("#templatesPath").val("Error");
+            $.notify(e.responseJSON.error, 'error');
         }
     });
 });
@@ -141,7 +155,7 @@ function getRole(user){
 //            addRole($("#addUserForm #username").val())
         },
         error: function (e) {
-            $("#templatesPath").val("Error");
+            $.notify(e.responseJSON.error, 'error');
         }
     });
 };
