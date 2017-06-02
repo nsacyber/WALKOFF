@@ -1,0 +1,17 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: HelloWorldApp
+  description: A sample walkoff app specification
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  helloWorld:
+    run: Main.helloWorld
+    returns:
+      Success:
+        schema:
+          type: string
+

@@ -6,6 +6,8 @@ from gevent.wsgi import WSGIServer
 import core.case.database as case_database
 from core.config import config, paths
 from server import flaskserver
+from apps import *
+
 
 logger = logging.getLogger('startserver')
 

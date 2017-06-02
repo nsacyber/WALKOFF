@@ -6,13 +6,21 @@ import os
 import json
 from jsonschema import RefResolver
 from jsonschema.validators import Draft4Validator
+from apps import get_all_actions_for_app, get_app_action
+import sys
+import logging
+
+logger = logging.getLogger(__name__)
+
+__new_inspection = False
+if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
+    from inspect import signature as getsignature
+    __new_inspection = True
+else:
+    from inspect import getargspec as getsignature
 
 
 class InvalidAppApi(Exception):
-    pass
-
-
-class InvalidAppStructure(Exception):
     pass
 
 
@@ -54,13 +62,20 @@ def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
 
 
 def validate_actions(actions, dereferencer, app_name):
+    defined_actions = get_all_actions_for_app(app_name)
+    seen = set()
     for action_name, action in actions.items():
+        if action['run'] not in defined_actions:
+            raise InvalidAppApi('Action {0} has "run" property {1} '
+                                'which is not defined in App {2}'.format(action_name, action['run'], app_name))
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
         if action_params:
             validate_action_params(action_params, dereferencer, app_name, action_name)
-        # TODO: Validate that the actions in the 'run' are valid (should use registered actions)
-        # TODO: Validate that the parameter names are same as parameters in API (use inspect module)
+        seen.add(action['run'])
+    if seen != set(defined_actions.keys()):
+        logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
+                       '{1}'.format(app_name, (set(defined_actions.keys()) - seen)))
 
 
 def validate_action_params(parameters, dereferencer, app_name, action_name):
@@ -69,8 +84,25 @@ def validate_action_params(parameters, dereferencer, app_name, action_name):
         parameter = deref(parameter, dereferencer)
         name = parameter['name']
         if name in seen:
-            raise InvalidAppApi('Duplicate parameter {0} in app {1} for action {2}'.format(name, app_name, action_name))
+            raise InvalidAppApi('Duplicate parameter {0} in api for app {1} '
+                                'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
+
+    app_action = get_app_action(app_name, action_name)
+    if __new_inspection:
+        method_params = list(getsignature(app_action).parameters.keys())
+    else:
+        method_params = getsignature(app_action).args  # pre-inspect the function to get its arguments
+
+    if not seen == set(method_params):
+        only_in_api = seen - set(method_params)
+        only_in_definition = set(method_params) - seen
+        message = 'Discrepancy between defined parameters in API and in method definition.'
+        if only_in_api:
+            message += ' Only in API: {0}.'.format(only_in_api)
+        if only_in_definition:
+            message += ' Only in definition: {0}'.format(only_in_definition)
+        raise InvalidAppApi(message)
 
 
 def validate_definition(definition, dereferencer, definition_name=None):
@@ -100,7 +132,8 @@ Pre-validation steps:
         Need to hijack swagger-spec-validator
     3. Validate that all the methods pointed to exist
         Can use the resolver from connexion
-    4. Validate that the defaults are valid for the given type (Do not do. Could be useful to have non-conforming defaults)
+    4. Validate that the defaults are valid for the given type
+        (Do not do. Could be useful to have non-conforming defaults)
         Can use connexion.operation.Operation.validate_defaults()
     <Any action which does not conform to the standards is not loaded into the metadata and cannot be used>
 

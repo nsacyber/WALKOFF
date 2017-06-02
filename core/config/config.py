@@ -13,6 +13,7 @@ import jsonschema
 
 __logger = logging.getLogger(__name__)
 
+
 def load_config():
     """ Loads Walkoff configuration from JSON file
     """
@@ -108,13 +109,14 @@ def load_function_info():
 
 app_apis = {}
 
+
 def load_app_apis():
     global app_apis
     try:
         with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
             schema = json.loads(schema_file.read())
     except Exception as e:
-        print('Could not load JSON schema for apps. Shutting down...: ' + str(e) )
+        print('Could not load JSON schema for apps. Shutting down...: ' + str(e))
         sys.exit(1)
     else:
         for app in list_apps():

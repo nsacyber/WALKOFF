@@ -188,6 +188,7 @@
     "actionItem": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["run"],
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
@@ -219,8 +220,8 @@
         "parameters": {
           "$ref": "#/definitions/parametersList"
         },
-        "responses": {
-          "$ref": "#/definitions/responses"
+        "returns": {
+          "$ref": "#/definitions/returns"
         },
         "schemes": {
           "$ref": "#/definitions/schemesList"
@@ -231,14 +232,14 @@
         }
       }
     },
-    "responses": {
+    "returns": {
       "type": "object",
       "description": "Response objects names can either be any valid HTTP status code or 'default'.",
       "minProperties": 1,
       "additionalProperties": false,
       "patternProperties": {
         "": {
-          "$ref": "#/definitions/responseValue"
+          "$ref": "#/definitions/returnValue"
         },
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
@@ -254,21 +255,18 @@
         }
       }
     },
-    "responseValue": {
+    "returnValue": {
       "oneOf": [
         {
-          "$ref": "#/definitions/response"
+          "$ref": "#/definitions/return"
         },
         {
           "$ref": "#/definitions/jsonReference"
         }
       ]
     },
-    "response": {
+    "return": {
       "type": "object",
-      "required": [
-        "description"
-      ],
       "properties": {
         "description": {
           "type": "string"
@@ -296,7 +294,6 @@
       "type": "object",
       "required": [
         "name",
-        "in",
         "schema"
       ],
       "patternProperties": {
@@ -312,13 +309,6 @@
         "name": {
           "type": "string",
           "description": "The name of the parameter."
-        },
-        "in": {
-          "type": "string",
-          "description": "Determines the location of the parameter.",
-          "enum": [
-            "body"
-          ]
         },
         "required": {
           "type": "boolean",

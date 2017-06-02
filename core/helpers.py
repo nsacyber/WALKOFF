@@ -6,7 +6,15 @@ import pkgutil
 import logging
 import core.config.paths
 
+__new_inspection = False
+if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
+    from inspect import signature as getsignature
+    __new_inspection = True
+else:
+    from inspect import getargspec as getsignature
+
 logger = logging.getLogger(__name__)
+
 
 def import_py_file(module_name, path_to_file):
     """Dynamically imports a python module.
@@ -84,7 +92,7 @@ def import_app_main(app_name):
         sys.modules[module_name] = imported_module
         return imported_module
     except (ImportError, IOError, OSError) as e:
-        logger.error('Cannot app main for app {0}. Error: {1}'.format(app_name, e))
+        logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, e))
         pass
 
 
@@ -371,3 +379,21 @@ def arg_to_xml(arg):
         return elem
     else:
         return None
+
+
+def action(func):
+    """
+    Decorator used to tag a method or function as an action
+
+    Args:
+        func (func): Function to tag
+    Returns:
+        (func) Tagged function
+    """
+    func.action = True  # tag the function as an action
+    return func
+
+
+def import_all_apps():
+    for app_name in list_apps():
+        import_app_main(app_name)
