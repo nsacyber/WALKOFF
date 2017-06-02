@@ -6,14 +6,15 @@ import requests, json
 class Main(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
-        self.baseURL = "https://" + self.config.ip + ":" + str(self.config.port)
+        self.device = self.get_device()
+        self.baseURL = "https://" + self.device.ip + ":" + str(self.device.port)
         self.s = requests.Session()
         self.sessionKey = None
         self.connect()
 
     def connect(self, args={}):
         url = self.baseURL + "/services/auth/login"
-        payload = {'username': self.config.username, 'password': self.config.password}
+        payload = {'username': self.device.username, 'password': self.device.password}
         headers = {'content-type': 'application/json'}
         r = self.s.post(url, data=payload, verify=False, headers=headers)
 
