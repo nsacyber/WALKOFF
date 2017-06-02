@@ -8,6 +8,8 @@ import core.config.paths
 from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
+import yaml
+import jsonschema
 
 __logger = logging.getLogger(__name__)
 
@@ -104,9 +106,32 @@ def load_function_info():
             __logger.error('Cannot load function metadata: Error {0}'.format(e))
     function_info['apps'] = app_funcs
 
+app_apis = {}
 
-
+def load_app_apis():
+    global app_apis
+    try:
+        with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
+            schema = json.loads(schema_file.read())
+    except Exception as e:
+        print('Could not load JSON schema for apps. Shutting down...: ' + str(e) )
+        sys.exit(1)
+    else:
+        for app in list_apps():
+            try:
+                url = join(core.config.paths.apps_path, app, 'api.yaml')
+                with open(url) as function_file:
+                    api = yaml.load(function_file.read())
+                    jsonschema.validate(api, schema)
+                    from core.validator import validate_spec
+                    validate_spec(api)
+                    app_apis[app] = api
+            except Exception as e:
+                print('Cannot load apps api: Error {0}'.format(e))
+    print(app_apis)
 load_config()
+
+load_app_apis()
 
 try:
     with open(core.config.paths.events_path) as f:

@@ -338,9 +338,6 @@
           "$ref": "#/definitions/vendorExtension"
         }
       },
-      "required": [
-        "required"
-      ],
       "properties": {
         "required": {
           "type": "boolean",
@@ -348,13 +345,6 @@
             true
           ],
           "description": "Determines whether or not this parameter is required or optional."
-        },
-        "in": {
-          "type": "string",
-          "description": "Determines the location of the parameter.",
-          "enum": [
-            "path"
-          ]
         },
         "description": {
           "type": "string",
