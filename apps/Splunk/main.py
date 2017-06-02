@@ -53,5 +53,5 @@ class Main(App):
             return results
 
     def shutdown(self):
-        print "Splunk Shutting Down"
+        print("Splunk Shutting Down")
         return
