@@ -71,14 +71,14 @@ def validate_actions(actions, dereferencer, app_name):
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
         if action_params:
-            validate_action_params(action_params, dereferencer, app_name, action_name)
+            validate_action_params(action_params, dereferencer, app_name, action_name, action['run'])
         seen.add(action['run'])
     if seen != set(defined_actions.keys()):
         logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
                        '{1}'.format(app_name, (set(defined_actions.keys()) - seen)))
 
 
-def validate_action_params(parameters, dereferencer, app_name, action_name):
+def validate_action_params(parameters, dereferencer, app_name, action_name, run):
     seen = set()
     for parameter in parameters:
         parameter = deref(parameter, dereferencer)
@@ -88,12 +88,13 @@ def validate_action_params(parameters, dereferencer, app_name, action_name):
                                 'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
 
-    app_action = get_app_action(app_name, action_name)
+    app_action = get_app_action(app_name, run)
     if __new_inspection:
         method_params = list(getsignature(app_action).parameters.keys())
     else:
         method_params = getsignature(app_action).args  # pre-inspect the function to get its arguments
-
+    if method_params and method_params[0] == 'self':
+        method_params.pop(0)
     if not seen == set(method_params):
         only_in_api = seen - set(method_params)
         only_in_definition = set(method_params) - seen

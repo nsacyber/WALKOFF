@@ -29,4 +29,5 @@ __all__ = ['test_app_blueprint',
            'test_widget_signals',
            'test_metrics',
            'test_metrics_server',
-           'test_workflow_results']
+           'test_workflow_results',
+           'apps']

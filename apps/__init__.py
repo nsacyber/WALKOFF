@@ -33,20 +33,17 @@ class AppRegistry(type):
         super(AppRegistry, cls).__init__(name, bases, nmspc)
         if not hasattr(cls, 'registry'):
             cls.registry = dict()
-        app_name = cls.__get_app_name()
+        app_name = cls._get_app_name()
         if app_name is not None:
             cls.registry[app_name] = {'main': cls,
                                       'display': cls.__get_display_function(),
                                       'actions': cls.__get_actions(nmspc)}
-        print(cls.registry)
 
-    def __get_app_name(cls):
+    def _get_app_name(cls):
         try:
             return cls.__module__.split('.')[1]
         except IndexError:
             return None
-            # _logger.fatal('Unknown app directory structure. Structure should be <top-level>.<app_name>')
-            # raise InvalidAppStructure('Unknown app directory structure. Structure should be <top-level>.<app_name>')
 
     def __get_display_function(cls):
         try:
@@ -68,12 +65,11 @@ class AppRegistry(type):
                     _logger.warning('App {0}.display.load is not callable'.format(cls.__get_app_name()))
                     return None
 
-    @staticmethod
-    def __get_actions(nmspc):
+    def __get_actions(cls, nmspc):
         actions = {}
         for property_name, property_value in nmspc.items():
             if callable(property_value) and getattr(property_value, 'action', False):
-                actions[property_name] = property_value
+                actions[property_name] = getattr(cls, property_name)
         return actions
 
 
@@ -96,9 +92,23 @@ class App(object):
         pass
 
 
+def get_app(app_name):
+    try:
+        return App.registry[app_name]['main']
+    except KeyError:
+        raise UnknownApp(app_name)
+
+
+def get_all_actions_for_app(app_name):
+    try:
+        return App.registry[app_name]['actions']
+    except KeyError:
+        raise UnknownApp(app_name)
+
+
 def get_app_action(app_name, action_name):
     try:
-        app = App.registery[app_name]
+        app = App.registry[app_name]
     except KeyError:
         raise UnknownApp(app_name)
     else:
@@ -108,22 +118,8 @@ def get_app_action(app_name, action_name):
             raise UnknownAppAction(app_name, action_name)
 
 
-def get_all_actions_for_app(app_name):
-    try:
-        return App.registery[app_name]['actions']
-    except KeyError:
-        raise UnknownApp(app_name)
-
-
-def get_app(app_name):
-    try:
-        return App.registery[app_name]['main']
-    except KeyError:
-        raise UnknownApp(app_name)
-
-
 def get_app_display(app_name):
     try:
-        return App.registery[app_name]['main']
+        return App.registry[app_name]['display']
     except KeyError:
         raise UnknownApp(app_name)

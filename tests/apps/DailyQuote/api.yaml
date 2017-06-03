@@ -1,16 +1,16 @@
 walkoff: '0.1'
 info:
   version: 1.0.0
-  title: HelloWorldApp
+  title: DailyQuote
   description: A sample walkoff app specification
   contact:
     name: Walkoff Team
   license:
     name: Creative Commons
 actions:
-  helloWorld:
-    run: Main.helloWorld
-    description: Returns an introductory message
+  quoteIntro:
+    run: Main.quoteIntro
+    description: Prints an introductry string
     returns:
       Success:
         description: introductory message
@@ -29,17 +29,24 @@ actions:
         description: repeated method
         schema:
           type: string
-  returnPlusOne:
-    run: Main.returnPlusOne
-    description: Increments a given number by 1
+  forismaticQuote:
+    run: Main.forismaticQuote
+    description: Gets a quote
     parameters:
-        - name: number
-          description: number to increment
+        - name: url
+          description: url to get quote from
           required: true
-          type: integer
-          format: int32
+          type: string
     returns:
       Success:
-        description: incremented number
+        description: the quote
+        schema:
+          type: integer
+  getQuote:
+    run: Main.getQuote
+    description: gets a quote
+    returns:
+      Success:
+        description: a quote
         schema:
           type: integer

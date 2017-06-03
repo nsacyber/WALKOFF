@@ -9,7 +9,7 @@ info:
     name: Creative Commons
 actions:
   helloWorld:
-    run: Main.helloWorld
+    run: helloWorld
     returns:
       Success:
         schema:
