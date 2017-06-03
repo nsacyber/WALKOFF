@@ -1,5 +1,5 @@
 from apps import App
-from .libardrone import libardrone
+from apps.ARDrone.libardrone import libardrone
 from time import sleep
 
 

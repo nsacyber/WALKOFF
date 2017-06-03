@@ -1,8 +1,7 @@
-from server.appdevice import App as _App
 from six import add_metaclass
 import logging
 import importlib
-from core.helpers import action  # Change namespace of action
+from core.decorators import action  # Change namespace of action
 
 _logger = logging.getLogger(__name__)
 
@@ -50,19 +49,19 @@ class AppRegistry(type):
             module_name = cls.__module__.rsplit('.', 1)[0]
             display_module = importlib.import_module('{0}.display'.format(module_name))
         except ImportError:
-            _logger.warning('App {0} has no module "display"'.format(cls.__get_app_name()))
+            _logger.warning('App {0} has no module "display"'.format(cls._get_app_name()))
             return None
         else:
             try:
                 load_function = getattr(display_module, 'load')
             except AttributeError:
-                _logger.warning('App {0}.display has no property called "load"'.format(cls.__get_app_name()))
+                _logger.warning('App {0}.display has no property called "load"'.format(cls._get_app_name()))
                 return None
             else:
                 if callable(load_function):
                     return load_function
                 else:
-                    _logger.warning('App {0}.display.load is not callable'.format(cls.__get_app_name()))
+                    _logger.warning('App {0}.display.load is not callable'.format(cls._get_app_name()))
                     return None
 
     def __get_actions(cls, nmspc):
@@ -81,10 +80,12 @@ class App(object):
 
     def get_all_devices(self):
         """ Gets all the devices associated with this app """
+        from server.appdevice import App as _App
         return _App.get_all_devices_for_app(self.app)
 
     def get_device(self):
         """ Gets the device associated with this app """
+        from server.appdevice import App as _App
         return _App.get_device(self.app, self.device)
 
     def shutdown(self):

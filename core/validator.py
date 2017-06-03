@@ -6,10 +6,8 @@ import os
 import json
 from jsonschema import RefResolver
 from jsonschema.validators import Draft4Validator
-from apps import get_all_actions_for_app, get_app_action
 import sys
 import logging
-
 logger = logging.getLogger(__name__)
 
 __new_inspection = False
@@ -62,6 +60,8 @@ def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
 
 
 def validate_actions(actions, dereferencer, app_name):
+    from apps import get_all_actions_for_app
+    print('inner imprted')
     defined_actions = get_all_actions_for_app(app_name)
     seen = set()
     for action_name, action in actions.items():
@@ -79,6 +79,7 @@ def validate_actions(actions, dereferencer, app_name):
 
 
 def validate_action_params(parameters, dereferencer, app_name, action_name, run):
+    from apps import get_app_action
     seen = set()
     for parameter in parameters:
         parameter = deref(parameter, dereferencer)

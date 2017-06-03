@@ -111,6 +111,9 @@ app_apis = {}
 
 
 def load_app_apis():
+    from core.helpers import import_all_apps
+    import apps
+    import_all_apps()
     global app_apis
     try:
         with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
@@ -124,12 +127,15 @@ def load_app_apis():
                 url = join(core.config.paths.apps_path, app, 'api.yaml')
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
+                    print('validaintg')
                     jsonschema.validate(api, schema)
+                    print('import')
                     from core.validator import validate_spec
-                    validate_spec(api)
+                    print('validating')
+                    validate_spec(api, app)
                     app_apis[app] = api
             except Exception as e:
-                print('Cannot load apps api: Error {0}'.format(e))
+                print('Cannot load apps api for app {0}: Error {1}'.format(app, e))
     print(app_apis)
 load_config()
 

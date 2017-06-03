@@ -378,19 +378,6 @@ def arg_to_xml(arg):
         return None
 
 
-def action(func):
-    """
-    Decorator used to tag a method or function as an action
-
-    Args:
-        func (func): Function to tag
-    Returns:
-        (func) Tagged function
-    """
-    func.action = True  # tag the function as an action
-    return func
-
-
 def import_all_apps(path=None):
     for app_name in list_apps(path):
         import_app_main(app_name, path=path)
