@@ -566,6 +566,10 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
+      463:
+        description: Invalid action or app in workflow
+        schema:
+          $ref: '#/definitions/Error'
       515:
         description: I/O error.
         schema:

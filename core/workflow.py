@@ -1,15 +1,17 @@
-from xml.etree import cElementTree
-from os.path import join, isfile
 import json
 import logging
-from core import arguments
-from core.config import paths
-from core.instance import Instance
+from copy import deepcopy
+from os.path import join, isfile
+from xml.etree import cElementTree
+
+from apps import UnknownApp, UnknownAppAction
 from core import options
 from core.case import callbacks
+from core.config import paths
 from core.executionelement import ExecutionElement
-from core.step import Step
 from core.helpers import construct_workflow_name_key, extract_workflow_name
+from core.instance import Instance
+from core.step import Step
 
 logger = logging.getLogger(__name__)
 
@@ -339,15 +341,20 @@ class Workflow(ExecutionElement):
         Args:
             data (JSON dict): The cytoscape data to be parsed and reconstructed into a Workflow object.
         """
+        backup_steps = deepcopy(self.steps)
         self.steps = {}
-        for node in data:
-            if 'source' not in node['data'] and 'target' not in node['data']:
-                step_data = node['data']
-                step_name = step_data['parameters']['name']
-                self.steps[step_name] = Step.from_json(step_data['parameters'],
-                                                       node['position'],
-                                                       parent_name=self.name,
-                                                       ancestry=self.ancestry)
+        try:
+            for node in data:
+                if 'source' not in node['data'] and 'target' not in node['data']:
+                    step_data = node['data']
+                    step_name = step_data['parameters']['name']
+                    self.steps[step_name] = Step.from_json(step_data['parameters'],
+                                                           node['position'],
+                                                           parent_name=self.name,
+                                                           ancestry=self.ancestry)
+        except (UnknownApp, UnknownAppAction):
+            self.steps = backup_steps
+            raise
 
     def get_children(self, ancestry):
         """Gets the children Steps of the Workflow in JSON format.

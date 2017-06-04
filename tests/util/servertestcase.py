@@ -13,6 +13,7 @@ class ServerTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        #core.config.config.initialize()
         if cls != ServerTestCase and cls.setUp != ServerTestCase.setUp:
             original_setup = cls.setUp
 

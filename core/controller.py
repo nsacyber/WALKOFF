@@ -18,6 +18,7 @@ from core import workflow as wf
 from core.case import callbacks
 from core.case import subscription
 from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
+from apps import UnknownApp, UnknownAppAction
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -106,6 +107,13 @@ class Controller(object):
         for key in self.workflows:
             self.workflows[key].reconstruct_ancestry(self.ancestry)
 
+    def __add_workflow(self, key, name, xml, playbook):
+        try:
+            self.workflows[key] = wf.Workflow(name=name, xml=xml, parent_name=self.name, playbook_name=playbook)
+            logger.info('Adding workflow {0} to controller'.format(name))
+        except (UnknownApp, UnknownAppAction) as e:
+            logger.error('Cannot load workflow {0}: Error: {1}'.format(key, str(e)))
+
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.
         
@@ -127,11 +135,7 @@ class Controller(object):
                     workflow_name = name_override
                 name = construct_workflow_name_key(playbook_name, workflow_name)
                 key = _WorkflowKey(playbook_name, workflow_name)
-                self.workflows[key] = wf.Workflow(name=name,
-                                                  xml=workflow,
-                                                  parent_name=self.name,
-                                                  playbook_name=playbook_name)
-                logger.info('Adding workflow {0} to controller'.format(name))
+                self.__add_workflow(key, name, workflow, playbook_name)
                 break
         else:
             logger.warning('Workflow {0} not found in playbook {0}. Cannot load.'.format(workflow_name, playbook_name))
@@ -155,11 +159,8 @@ class Controller(object):
             workflow_name = name_override if name_override else workflow.get('name')
             name = construct_workflow_name_key(playbook_name, workflow_name)
             key = _WorkflowKey(playbook_name, workflow_name)
-            self.workflows[key] = wf.Workflow(name=name,
-                                              xml=workflow,
-                                              parent_name=self.name,
-                                              playbook_name=playbook_name)
-            logger.info('Adding workflow {0} to controller'.format(name))
+            self.__add_workflow(key, name, workflow, playbook_name)
+
         self.add_child_workflows()
         self.add_workflow_scheduled_jobs()
 
@@ -241,9 +242,6 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
-
-
-
         name = _WorkflowKey(playbook_name, workflow_name)
         if name in self.workflows:
             del self.workflows[name]

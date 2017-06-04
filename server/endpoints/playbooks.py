@@ -9,6 +9,7 @@ import core.config.config
 import core.config.paths
 from server.return_codes import *
 import server.workflowresults
+from apps import UnknownApp, UnknownAppAction
 
 
 def get_playbooks():
@@ -492,18 +493,24 @@ def save_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
-            if 'start' in request.get_json():
-                workflow.start_step = request.get_json()['start']
             try:
-                write_playbook_to_file(playbook_name)
-                current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
-                return {"steps": workflow.get_cytoscape_data()}, SUCCESS
-            except (OSError, IOError) as e:
-                current_app.logger.info(
-                    'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
-                return {"error": "Error saving: {0}".format(e.message),
-                        "steps": workflow.get_cytoscape_data()}, IO_ERROR
+                workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+            except UnknownApp as e:
+                return {'error': 'Unknown app {0}.'.format(e.app)}, INVALID_INPUT_ERROR
+            except UnknownAppAction as e:
+                return {'error': 'Unknown action {0} for action {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+            else:
+                if 'start' in request.get_json():
+                    workflow.start_step = request.get_json()['start']
+                try:
+                    write_playbook_to_file(playbook_name)
+                    current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
+                    return {"steps": workflow.get_cytoscape_data()}, SUCCESS
+                except (OSError, IOError) as e:
+                    current_app.logger.info(
+                        'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
+                    return {"error": "Error saving: {0}".format(e.message),
+                            "steps": workflow.get_cytoscape_data()}, IO_ERROR
         else:
             current_app.logger.info('Cannot save workflow {0}-{1}. Workflow not in controller'.format(playbook_name,
                                                                                                       workflow_name))

@@ -14,7 +14,7 @@ from core.case.callbacks import WorkflowShutdown
 from server.return_codes import *
 import server.workflowresults
 
-
+print('imported')
 class TestWorkflowServer(ServerTestCase):
     def setUp(self):
         # This looks awful, I know

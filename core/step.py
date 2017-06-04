@@ -14,6 +14,7 @@ from core.helpers import load_app_function
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from core.helpers import formatarg, arg_to_xml
+from apps import get_app_action
 
 import traceback
 logger = logging.getLogger(__name__)
@@ -77,6 +78,7 @@ class Step(ExecutionElement):
         else:
             self.action = action
             self.app = app
+            get_app_action(self.app, self.action)
             self.device = device
             self.risk = risk
             self.input = inputs if inputs is not None else {}
@@ -104,8 +106,10 @@ class Step(ExecutionElement):
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
         name = step_xml.get('id')
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
+        get_app_action(self.app, self.action)
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')

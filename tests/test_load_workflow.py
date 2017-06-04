@@ -1,11 +1,17 @@
 import unittest
 
 from core import arguments, controller
+from core.config.config import initialize
 from tests import config
 from core.controller import _WorkflowKey
 
 
 class TestLoadWorkflow(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        initialize()
+
     def setUp(self):
         self.c = controller.Controller()
         self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.workflow')
@@ -65,3 +71,13 @@ class TestLoadWorkflow(unittest.TestCase):
         errors = self.testWorkflow.steps['start'].errors
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0].name, '1')
+
+    def test_load_workflow_invalid_app(self):
+        original_workflows = self.c.get_all_workflows()
+        self.c.load_workflows_from_file(path='{}invalidAppWorkflow.workflow'.format(config.test_workflows_path))
+        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+
+    def test_load_workflow_invalid_aaction(self):
+        original_workflows = self.c.get_all_workflows()
+        self.c.load_workflows_from_file(path='{}invalidActionWorkflow.workflow'.format(config.test_workflows_path))
+        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)

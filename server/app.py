@@ -9,8 +9,10 @@ import connexion
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
 from gevent import monkey
-logger = logging.getLogger(__name__)
 
+
+
+logger = logging.getLogger(__name__)
 
 def read_and_indent(filename, indent):
     indent = '  ' * indent
@@ -39,7 +41,6 @@ def compose_yamls():
 
 
 def create_app():
-
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
     compose_yamls()
@@ -59,9 +60,12 @@ def create_app():
 
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+    from .blueprints import register_blueprints
     connexion_app.add_api('composed_api.yaml')
+    register_blueprints(_app)
+    from .blueprints.events import setup_case_stream
     core.config.config.initialize()
+    setup_case_stream()
     monkey.patch_all()
     return _app
 
