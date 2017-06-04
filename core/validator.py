@@ -60,8 +60,7 @@ def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
 
 
 def validate_actions(actions, dereferencer, app_name):
-    from apps import get_all_actions_for_app
-    print('inner imprted')
+    from apps import get_all_actions_for_app, App
     defined_actions = get_all_actions_for_app(app_name)
     seen = set()
     for action_name, action in actions.items():

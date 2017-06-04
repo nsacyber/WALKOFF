@@ -17,10 +17,10 @@ class UnknownApp(Exception):
 
 
 class UnknownAppAction(Exception):
-    def __init__(self, app, action):
-        super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action, app))
+    def __init__(self, app, action_name):
+        super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action_name, app))
         self.app = app
-        self.action = action
+        self.action = action_name
 
 
 class AppRegistry(type):

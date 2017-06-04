@@ -3,11 +3,8 @@ from gevent import ssl
 from os.path import isfile
 import json
 from gevent.wsgi import WSGIServer
-import core.case.database as case_database
 from core.config import config, paths
-from server import flaskserver
 from apps import *
-
 
 logger = logging.getLogger('startserver')
 
@@ -51,6 +48,9 @@ def setup_logger():
 
 
 if __name__ == "__main__":
+    # The order of these imports matter for initialization (should probably be fixed)
+    from server import flaskserver
+    import core.case.database as case_database
     case_database.initialize()
     ssl_context = get_ssl_context()
     flaskserver.running_context.init_threads()

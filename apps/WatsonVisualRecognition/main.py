@@ -1,8 +1,7 @@
 from apps import App
-from watson_developer_cloud import VisualRecongitionV3 as vr
+from watson_developer_cloud import VisualRecognitionV3 as vr
 import json
 
-# There is an associated Daily Quote test workflow which can be executed
 
 class Main(App):
     def __init__(self, name=None, device=None):

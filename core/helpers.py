@@ -5,7 +5,6 @@ from xml.etree import ElementTree
 import pkgutil
 import logging
 import core.config.paths
-from functools import wraps
 
 logger = logging.getLogger(__name__)
 
@@ -380,4 +379,8 @@ def arg_to_xml(arg):
 
 def import_all_apps(path=None):
     for app_name in list_apps(path):
-        import_app_main(app_name, path=path)
+        try:
+            importlib.import_module('apps.{0}'.format(app_name))
+            import_app_main(app_name, path=path)
+        except ImportError as e:
+            logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))

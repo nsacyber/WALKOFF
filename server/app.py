@@ -6,12 +6,9 @@ from core import helpers
 from core.config import paths
 import core.config.config
 import connexion
-from gevent import monkey
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
-
-monkey.patch_all()
-
+from gevent import monkey
 logger = logging.getLogger(__name__)
 
 
@@ -42,6 +39,7 @@ def compose_yamls():
 
 
 def create_app():
+
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
     compose_yamls()
@@ -63,6 +61,8 @@ def create_app():
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     connexion_app.add_api('composed_api.yaml')
+    core.config.config.initialize()
+    monkey.patch_all()
     return _app
 
 

@@ -111,15 +111,12 @@ app_apis = {}
 
 
 def load_app_apis():
-    from core.helpers import import_all_apps
-    import apps
-    import_all_apps()
     global app_apis
     try:
         with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
             schema = json.loads(schema_file.read())
     except Exception as e:
-        print('Could not load JSON schema for apps. Shutting down...: ' + str(e))
+        __logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))
         sys.exit(1)
     else:
         for app in list_apps():
@@ -127,19 +124,12 @@ def load_app_apis():
                 url = join(core.config.paths.apps_path, app, 'api.yaml')
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
-                    print('validaintg')
                     jsonschema.validate(api, schema)
-                    print('import')
                     from core.validator import validate_spec
-                    print('validating')
                     validate_spec(api, app)
                     app_apis[app] = api
             except Exception as e:
-                print('Cannot load apps api for app {0}: Error {1}'.format(app, e))
-    print(app_apis)
-load_config()
-
-load_app_apis()
+                __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(e)))
 
 try:
     with open(core.config.paths.events_path) as f:
@@ -149,4 +139,11 @@ except (IOError, OSError) as e:
     __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
     possible_events = []
 
-load_function_info()
+
+def initialize():
+    load_config()
+    load_function_info()
+    import apps
+    from core.helpers import import_all_apps
+    import_all_apps()
+    load_app_apis()

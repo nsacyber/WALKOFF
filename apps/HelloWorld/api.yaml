@@ -9,7 +9,7 @@ info:
     name: Creative Commons
 actions:
   helloWorld:
-    run: Main.helloWorld
+    run: helloWorld
     description: Returns an introductory message
     returns:
       Success:
@@ -17,7 +17,7 @@ actions:
         schema:
           type: string
   repeatBackToMe:
-    run: Main.repeatBackToMe
+    run: repeatBackToMe
     description: Repeats the call argument
     parameters:
         - name: call
@@ -30,7 +30,7 @@ actions:
         schema:
           type: string
   returnPlusOne:
-    run: Main.returnPlusOne
+    run: returnPlusOne
     description: Increments a given number by 1
     parameters:
         - name: number
@@ -43,3 +43,14 @@ actions:
         description: incremented number
         schema:
           type: integer
+  pause:
+    run: pause
+    description: pauses execution for an amount of time
+    parameters:
+      - name: seconds
+        description: The seconds to pause for
+        required: true
+        type: number
+    returns:
+      Success:
+        description: successfully paused
