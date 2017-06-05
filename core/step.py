@@ -4,7 +4,7 @@ from xml.etree import cElementTree
 from collections import namedtuple
 import logging
 from jinja2 import Template, Markup
-
+from core import arguments
 from core import contextdecorator
 from core import nextstep
 import core.config.config
@@ -78,7 +78,9 @@ class Step(ExecutionElement):
         else:
             self.action = action
             self.app = app
+            print('getting app action')
             get_app_action(self.app, self.action)
+            print('done')
             self.device = device
             self.risk = risk
             self.input = inputs if inputs is not None else {}
@@ -87,7 +89,9 @@ class Step(ExecutionElement):
             self.position = position if position is not None else {}
             self.widgets = [_Widget(widget_app, widget_name)
                             for (widget_app, widget_name) in widgets] if widgets is not None else []
+            print('to_xml')
             self.raw_xml = self.to_xml()
+            print('done')
         self.output = None
         self.next_up = None
 
@@ -115,21 +119,21 @@ class Step(ExecutionElement):
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
 
-        # self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
-        #                for arg in step_xml.findall('input/*')}
+        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
+                       for arg in step_xml.findall('input/*')}
 
-        def __formatArgs(arg):
-            result = {}
-            result["key"] = arg.tag
-            result["value"] = arg.text
-            if arg.get("format"):
-                result["format"] = arg.get("format")
-            if arg.get("items"):
-                result["items"] = arg.get("items")
-            return result
-
-        self.input = {
-        arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
+        # def __formatArgs(arg):
+        #     result = {}
+        #     result["key"] = arg.tag
+        #     result["value"] = arg.text
+        #     if arg.get("format"):
+        #         result["format"] = arg.get("format")
+        #     if arg.get("items"):
+        #         result["items"] = arg.get("items")
+        #     return result
+        #
+        # self.input = {
+        # arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -153,19 +157,19 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
-        # self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
-        #                for arg in step_xml.findall('input/*')}
-        def __formatArgs(arg):
-            result = {}
-            result["key"] = arg.tag
-            result["value"] = arg.text
-            if arg.get("format"):
-                result["format"] = arg.get("format")
-            if arg.get("items"):
-                result["items"] = arg.get("items")
-            return result
-
-        self.input = {arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
+        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
+                       for arg in step_xml.findall('input/*')}
+        # def __formatArgs(arg):
+        #     result = {}
+        #     result["key"] = arg.tag
+        #     result["value"] = arg.text
+        #     if arg.get("format"):
+        #         result["format"] = arg.get("format")
+        #     if arg.get("items"):
+        #         result["items"] = arg.get("items")
+        #     return result
+        #
+        # self.input = {arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -314,10 +318,21 @@ class Step(ExecutionElement):
             y_position = cElementTree.SubElement(position, 'y')
             y_position.text = str(self.position['y'])
 
+        #TODO: Need to get inputs to xml. only need <name>value</name>
+        print('inputs')
         inputs = cElementTree.SubElement(step, 'input')
         for i in self.input:
-            inputs.append(arg_to_xml(self.input[i]))
+            inputs.append(self.input[i].to_xml())
+            # if i.key:
+            #     elem = cElementTree.Element(i.key)
+            #     elem.text = str(self.value)
+            #     elem.set("format", self.format)
+            # else:
+            #     elem = None
+            # if elem is not None:
+            #     inputs.append(elem)
 
+        print('widgets')
         if self.widgets:
             widgets = cElementTree.SubElement(step, 'widgets')
             for widget in self.widgets:
@@ -401,7 +416,7 @@ class Step(ExecutionElement):
         if 'widgets' in json_in:
             widgets = [(widget['app'], widget['name'])
                        for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
-
+        print('Construrcuting step')
         step = Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
@@ -413,7 +428,7 @@ class Step(ExecutionElement):
                     position=position,
                     widgets=widgets,
                     ancestry=ancestry)
-
+        print('done')
         if json_in['next']:
             step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                                  for next_step in json_in['next'] if next_step]

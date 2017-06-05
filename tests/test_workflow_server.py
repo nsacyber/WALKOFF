@@ -434,6 +434,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_save_workflow(self):
+        print('SAVESAVESAVESAVE')
         workflow_name = list(flask_server.running_context.controller.workflows.keys())[0].workflow
         initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
         initial_steps = dict(initial_workflow.steps)
@@ -441,10 +442,10 @@ class TestWorkflowServer(ServerTestCase):
         added_step_cytoscape = {'data': {'id': 'new_id',
                                          'parameters': {'errors': [],
                                                         'name': 'new_id',
-                                                        'app': 'new_app',
+                                                        'app': 'HelloWorld',
                                                         'next': [],
                                                         'device': 'new_device',
-                                                        'action': 'new_action',
+                                                        'action': 'pause',
                                                         'input': {}},
                                          },
                                 'group': 'nodes',
@@ -769,3 +770,5 @@ class TestWorkflowServer(ServerTestCase):
     #     response = self.get_with_status_check('/workflowresults', headers=self.headers)
     #     self.assertIn('results', response)
     #     self.assertEqual(len(response['results']), 3)
+
+    #TODO: Ensure that saving a workflow with invalid app or action return 463
