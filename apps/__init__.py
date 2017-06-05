@@ -3,24 +3,9 @@ import logging
 import importlib
 from core.decorators import action  # Change namespace of action
 
+from core.helpers import UnknownApp, UnknownAppAction
+
 _logger = logging.getLogger(__name__)
-
-
-class InvalidAppStructure(Exception):
-    pass
-
-
-class UnknownApp(Exception):
-    def __init__(self, app):
-        super(UnknownApp, self).__init__('Unknown app {0}'.format(app))
-        self.app = app
-
-
-class UnknownAppAction(Exception):
-    def __init__(self, app, action_name):
-        super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action_name, app))
-        self.app = app
-        self.action = action_name
 
 
 class AppRegistry(type):
@@ -124,3 +109,13 @@ def get_app_display(app_name):
         return App.registry[app_name]['display']
     except KeyError:
         raise UnknownApp(app_name)
+
+
+class AppWidgetBlueprint(object):
+    def __init__(self, blueprint, rule=''):
+        self.blueprint = blueprint
+        self.rule = rule
+
+AppBlueprint = AppWidgetBlueprint
+WidgetBlueprint = AppWidgetBlueprint
+

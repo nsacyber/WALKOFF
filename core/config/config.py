@@ -143,7 +143,6 @@ except (IOError, OSError) as e:
 def initialize():
     load_config()
     load_function_info()
-    import apps
     from core.helpers import import_all_apps
     import_all_apps()
     load_app_apis()

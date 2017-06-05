@@ -1,7 +1,7 @@
 import gevent
 import random
 from flask import Blueprint, Response
-from server.blueprints import AppBlueprint
+from apps import AppBlueprint
 from gevent.event import AsyncResult, Event
 
 

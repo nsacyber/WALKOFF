@@ -4,12 +4,11 @@ from copy import deepcopy
 from os.path import join, isfile
 from xml.etree import cElementTree
 
-from apps import UnknownApp, UnknownAppAction
 from core import options
 from core.case import callbacks
 from core.config import paths
 from core.executionelement import ExecutionElement
-from core.helpers import construct_workflow_name_key, extract_workflow_name
+from core.helpers import construct_workflow_name_key, extract_workflow_name, UnknownAppAction, UnknownApp
 from core.instance import Instance
 from core.step import Step
 

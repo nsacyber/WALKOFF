@@ -17,8 +17,8 @@ import core.config.paths
 from core import workflow as wf
 from core.case import callbacks
 from core.case import subscription
-from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
-from apps import UnknownApp, UnknownAppAction
+from core.helpers import (locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name,
+                          UnknownAppAction, UnknownApp)
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -624,6 +624,3 @@ class Controller(object):
                 print('Error: Unknown event sent!')
 
         return event_selector
-
-
-controller = Controller()

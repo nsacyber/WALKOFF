@@ -4,12 +4,12 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
 from core import helpers
+from core.helpers import UnknownAppAction, UnknownApp
 from core.options import Options
 import core.config.config
 import core.config.paths
 from server.return_codes import *
 import server.workflowresults
-from apps import UnknownApp, UnknownAppAction
 
 
 def get_playbooks():
@@ -353,7 +353,8 @@ def delete_workflow(playbook_name, workflow_name):
                 try:
                     os.remove(playbook_filename)
                 except OSError:
-                    current_app.logger.warning('Cannot remove playbook {0}. The playbook does not exist.'.format(playbook_name))
+                    current_app.logger.warning('Cannot remove playbook {0}. '
+                                               'The playbook does not exist.'.format(playbook_name))
 
             else:
                 write_playbook_to_file(playbook_name)

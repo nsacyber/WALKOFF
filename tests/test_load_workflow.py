@@ -1,6 +1,6 @@
 import unittest
-
-from core import arguments, controller
+from core import arguments
+from core import controller
 from core.config.config import initialize
 from tests import config
 from core.controller import _WorkflowKey

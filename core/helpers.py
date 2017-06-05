@@ -88,7 +88,7 @@ def import_app_main(app_name, path=None):
         sys.modules[module_name] = imported_module
         return imported_module
     except (ImportError, IOError, OSError) as e:
-        logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, e))
+        logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, str(e)))
         pass
 
 
@@ -382,5 +382,22 @@ def import_all_apps(path=None):
         try:
             importlib.import_module('apps.{0}'.format(app_name))
             import_app_main(app_name, path=path)
-        except ImportError as e:
+        except ImportError:
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
+
+
+class InvalidAppStructure(Exception):
+    pass
+
+
+class UnknownApp(Exception):
+    def __init__(self, app):
+        super(UnknownApp, self).__init__('Unknown app {0}'.format(app))
+        self.app = app
+
+
+class UnknownAppAction(Exception):
+    def __init__(self, app, action_name):
+        super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action_name, app))
+        self.app = app
+        self.action = action_name
