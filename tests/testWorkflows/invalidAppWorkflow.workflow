@@ -34,9 +34,9 @@
             <action>repeatBackToMe</action>
             <app>Invalid</app>
             <device>hwTest</device>
-            <input>
-                <call format="str">Hello World</call>
-            </input>
+            <inputs>
+                <input name="call">Hello World</input>
+            </inputs>
             <next></next>
             <error></error>
         </step>

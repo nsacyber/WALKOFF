@@ -174,6 +174,7 @@ def validate_parameters(api, inputs, app, action):
     for param in api:
         api_dict[param['name']] = param
     converted = {}
+    seen = set()
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
             converted[param_name] = validate_parameter(inputs[param_name], param_api, app, action)
@@ -189,6 +190,11 @@ def validate_parameters(api, inputs, app, action):
             logger.error('Parameter {0} for app {1} action {2} '
                          'is not specified and has no default'.format(param_name, app, action))
             raise InvalidStepInput(app, action)
+        seen.add(param_name)
+    if seen != set(inputs.keys()):
+        logger.error('Too many inputs for app {0} action {1}. '
+                     'Extra inputs: {2}'.format(app, action, set(inputs.keys())-seen))
+        raise InvalidStepInput(app, action)
     return converted
 
 

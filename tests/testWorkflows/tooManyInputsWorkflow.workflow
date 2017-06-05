@@ -11,7 +11,7 @@
     </options>
     <steps>
         <step id="start">
-            <action>invalid</action>
+            <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
@@ -31,11 +31,12 @@
             <error></error>
         </step>
         <step id="1">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
+            <action>returnPlusOne</action>
+            <app>Invalid</app>
             <device>hwTest</device>
             <inputs>
-                <input name="call">Hello World</input>
+                <input name="number">3</input>
+                <input name="number2">4</input>
             </inputs>
             <next></next>
             <error></error>
