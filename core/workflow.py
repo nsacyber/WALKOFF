@@ -347,15 +347,12 @@ class Workflow(ExecutionElement):
                 if 'source' not in node['data'] and 'target' not in node['data']:
                     step_data = node['data']
                     step_name = step_data['parameters']['name']
-                    print('From cytoscape name: {0}'.format(step_name))
                     self.steps[step_name] = Step.from_json(step_data['parameters'],
                                                            node['position'],
                                                            parent_name=self.name,
                                                            ancestry=self.ancestry)
         except (UnknownApp, UnknownAppAction):
-            print('caught')
             self.steps = backup_steps
-            print('re-raising')
             raise
 
     def get_children(self, ancestry):

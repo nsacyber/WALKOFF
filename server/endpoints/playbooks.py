@@ -495,17 +495,11 @@ def save_workflow(playbook_name, workflow_name):
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
             try:
-                print('from cytoscape')
                 workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
             except UnknownApp as e:
-                print('Unknownapp')
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
             except UnknownAppAction as e:
                 return {'error': 'Unknown action {0} for action {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
-            except Exception as e:
-                print('unknwon!!!')
-                print(str(e))
-                print()
             else:
                 if 'start' in request.get_json():
                     workflow.start_step = request.get_json()['start']

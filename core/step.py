@@ -78,9 +78,7 @@ class Step(ExecutionElement):
         else:
             self.action = action
             self.app = app
-            print('getting app action')
             get_app_action(self.app, self.action)
-            print('done')
             self.device = device
             self.risk = risk
             self.input = inputs if inputs is not None else {}
@@ -89,9 +87,7 @@ class Step(ExecutionElement):
             self.position = position if position is not None else {}
             self.widgets = [_Widget(widget_app, widget_name)
                             for (widget_app, widget_name) in widgets] if widgets is not None else []
-            print('to_xml')
             self.raw_xml = self.to_xml()
-            print('done')
         self.output = None
         self.next_up = None
 
@@ -263,7 +259,6 @@ class Step(ExecutionElement):
             get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
         self.output = result
         logger.debug('Step {0} executed successfully'.format(self.ancestry))
-        #print(result)
         return result
 
 
@@ -319,7 +314,6 @@ class Step(ExecutionElement):
             y_position.text = str(self.position['y'])
 
         #TODO: Need to get inputs to xml. only need <name>value</name>
-        print('inputs')
         inputs = cElementTree.SubElement(step, 'input')
         for i in self.input:
             inputs.append(self.input[i].to_xml())
@@ -332,7 +326,6 @@ class Step(ExecutionElement):
             # if elem is not None:
             #     inputs.append(elem)
 
-        print('widgets')
         if self.widgets:
             widgets = cElementTree.SubElement(step, 'widgets')
             for widget in self.widgets:
@@ -416,7 +409,6 @@ class Step(ExecutionElement):
         if 'widgets' in json_in:
             widgets = [(widget['app'], widget['name'])
                        for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
-        print('Construrcuting step')
         step = Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
@@ -428,7 +420,6 @@ class Step(ExecutionElement):
                     position=position,
                     widgets=widgets,
                     ancestry=ancestry)
-        print('done')
         if json_in['next']:
             step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                                  for next_step in json_in['next'] if next_step]

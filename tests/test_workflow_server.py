@@ -434,7 +434,6 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_save_workflow(self):
-        print('SAVESAVESAVESAVE')
         workflow_name = list(flask_server.running_context.controller.workflows.keys())[0].workflow
         initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
         initial_steps = dict(initial_workflow.steps)
