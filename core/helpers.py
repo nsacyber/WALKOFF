@@ -418,7 +418,7 @@ class UnknownAppAction(Exception):
 
 class InvalidStepInput(Exception):
     def __init__(self, app, action, value='', format_type=''):
-        self.message = 'Error: Invalid inputs for action {0} for app {1}'.format(action, app)
+        self.message = 'Invalid inputs for action {0} for app {1}'.format(action, app)
         super(InvalidStepInput, self).__init__(self.message)
         self.app = app
         self.action = action

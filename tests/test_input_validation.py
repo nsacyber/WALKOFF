@@ -160,3 +160,10 @@ class TestInputValidation(unittest.TestCase):
         inputs = {'name1': 'test', 'name2': '5'}
         with self.assertRaises(InvalidStepInput):
             validate_parameters(parameter_apis, inputs, 'app1', 'action1')
+
+    def test_validate_parameters_too_many_inputs(self):
+        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25}]
+        inputs = {'name1': 'test', 'name2': '5', 'name3': '-11.2378'}
+        with self.assertRaises(InvalidStepInput):
+            validate_parameters(parameter_apis, inputs, 'app1', 'action1')

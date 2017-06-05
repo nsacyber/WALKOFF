@@ -174,7 +174,8 @@ def validate_parameters(api, inputs, app, action):
     for param in api:
         api_dict[param['name']] = param
     converted = {}
-    seen = set()
+    seen_params = set()
+    input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
             converted[param_name] = validate_parameter(inputs[param_name], param_api, app, action)
@@ -185,15 +186,17 @@ def validate_parameters(api, inputs, app, action):
                 default_param = param_api['default']
                 logger.warning('Default input {0} (value {1}) for app {2} action {3} does not conform to schema. '
                                'Using anyways'.format(param_name, param_api['default'], app, action))
+
             converted[param_name] = default_param
+            input_set.add(param_name)
         else:
             logger.error('Parameter {0} for app {1} action {2} '
                          'is not specified and has no default'.format(param_name, app, action))
             raise InvalidStepInput(app, action)
-        seen.add(param_name)
-    if seen != set(inputs.keys()):
+        seen_params.add(param_name)
+    if seen_params != input_set:
         logger.error('Too many inputs for app {0} action {1}. '
-                     'Extra inputs: {2}'.format(app, action, set(inputs.keys())-seen))
+                     'Extra inputs: {2}'.format(app, action, input_set-seen_params))
         raise InvalidStepInput(app, action)
     return converted
 
