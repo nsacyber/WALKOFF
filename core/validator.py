@@ -1,14 +1,16 @@
-from connexion.decorators.validation import make_type
 from swagger_spec_validator.validator20 import deref
 from swagger_spec_validator import ref_validators
 from functools import partial
 import os
 import json
-from jsonschema import RefResolver
+from copy import deepcopy
+from jsonschema import RefResolver, draft4_format_checker, ValidationError
 from jsonschema.validators import Draft4Validator
+from connexion.utils import boolean
 import sys
 import logging
 logger = logging.getLogger(__name__)
+from core.helpers import InvalidStepInput
 
 __new_inspection = False
 if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
@@ -21,9 +23,21 @@ else:
 class InvalidAppApi(Exception):
     pass
 
+TYPE_MAP = {
+    'integer': int,
+    'number': float,
+    'boolean': boolean,
+    'string': str
+}
+
+
+def make_type(value, type_literal):
+    type_func = TYPE_MAP.get(type_literal)
+    return type_func(value)
+
 
 def convert_primitive_type(value, parameter_type):
-    make_type(value, parameter_type)
+    return make_type(value, parameter_type)
 
 
 def convert_primitive_array(values, parameter_type):
@@ -124,6 +138,59 @@ def validate_definition(definition, dereferencer, definition_name=None):
 def validate_definitions(definitions, dereferencer):
     for definition_name, definition in definitions.items():
         validate_definition(definition, dereferencer, definition_name)
+
+
+def validate_parameter(value, param, app, action):
+    parameter_type = param['type']
+    converted_value = None
+    if value is not None:
+        try:
+            converted_value = convert_primitive_type(value, parameter_type)
+        except ValueError as e:
+            logger.error('Step with app {0} and action {1} has invalid input. '
+                         'Input {2} could not be converted to type {3}'.format(app, action, value, parameter_type))
+            raise InvalidStepInput(app, action, value=value, format_type=parameter_type)
+        else:
+            param = deepcopy(param)
+            if 'required' in param:
+                del param['required']
+            try:
+                Draft4Validator(
+                    param, format_checker=draft4_format_checker).validate(converted_value)
+            except ValidationError as exception:
+                logger.error('Step with app {0} and action {1} has invalid input. '
+                             'Input {2} with type {3} does not conform to '
+                             'validators'.format(app, action, value, parameter_type))
+                raise InvalidStepInput(app, action, value=converted_value, format_type=parameter_type)
+    elif param.get('required'):
+        logger.error("Missing {parameter_type} parameter '{param[name]}'".format(**locals()))
+        raise InvalidStepInput(app, action)
+
+    return converted_value
+
+
+def validate_parameters(api, inputs, app, action):
+    api_dict = {}
+    for param in api:
+        api_dict[param['name']] = param
+    converted = {}
+    for param_name, param_api in api_dict.items():
+        if param_name in inputs:
+            converted[param_name] = validate_parameter(inputs[param_name], param_api, app, action)
+        elif 'default' in param_api:
+            try:
+                default_param = validate_parameter(param_api['default'], param_api, app, action)
+            except InvalidStepInput:
+                default_param = param_api['default']
+                logger.warning('Default input {0} (value {1}) for app {2} action {3} does not conform to schema. '
+                               'Using anyways'.format(param_name, param_api['default'], app, action))
+            converted[param_name] = default_param
+        else:
+            logger.error('Parameter {0} for app {1} action {2} '
+                         'is not specified and has no default'.format(param_name, app, action))
+            raise InvalidStepInput(app, action)
+    return converted
+
 
 """
 Pre-validation steps:

@@ -7,7 +7,7 @@ from os import path
 from core import controller
 from core.step import Step
 from core.instance import Instance
-from core.arguments import Argument
+from core.config.config import initialize
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
@@ -23,6 +23,10 @@ import json
 
 
 class TestWorkflowManipulation(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        initialize()
+
     def setUp(self):
         case_database.initialize()
         self.app = flask_server.app.test_client(self)
@@ -366,11 +370,11 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_accumulated_risk_with_error(self):
         workflow = controller.wf.Workflow(name='workflow')
 
-        workflow.create_step(name="stepOne", app='HelloWorld', action='invalid_name', risk=1)
-        workflow.steps["stepOne"].inputs = {'call': {'key':'call', 'value':'HelloWorld', 'format':'str'}}
+        workflow.create_step(name="stepOne", app='HelloWorld', action='helloWorld', risk=1)
+        workflow.steps["stepOne"].inputs = {'call': {'key': 'call', 'value': 'HelloWorld', 'format':'str'}}
 
         workflow.create_step(name="stepTwo", app='HelloWorld', action='repeatBackToMe', risk=2)
-        workflow.steps["stepTwo"].inputs = {'number': {'key':'number', 'value':'6', 'format':'str'}}
+        workflow.steps["stepTwo"].inputs = {'number': {'key': 'number', 'value': '6', 'format': 'str'}}
 
         workflow.create_step(name="stepThree", app='HelloWorld', action='returnPlusOne', risk=3)
         workflow.steps["stepThree"].inputs = {}

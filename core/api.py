@@ -11,7 +11,7 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
-from core.step import InvalidStepInputError
+from core.step import InvalidStepInput
 
 import functools
 from swagger_spec_validator.validator20 import validate_apis, validate_definitions, deref
@@ -136,7 +136,7 @@ class WalkoffAppDefinition(abstract.AbstractAPI, object):
                 if parameter["in"] not in result:
                     result[parameter["in"]] = {}
                 if parameter["name"] not in params["args"]:
-                    raise InvalidStepInputError(app=params["api"].instance, action=params["action"])
+                    raise InvalidStepInput(app=params["api"].instance, action=params["action"])
                 result[parameter["in"]][parameter["name"]] = params["args"][parameter["name"]]
 
         #result = cls.formatArgs(result)

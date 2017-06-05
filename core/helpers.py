@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 import pkgutil
 import logging
 import core.config.paths
+import core.config.config
 
 logger = logging.getLogger(__name__)
 
@@ -386,6 +387,18 @@ def import_all_apps(path=None):
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
 
 
+def get_api_params(app, action):
+    try:
+        app_api = core.config.config.app_apis[app]
+    except KeyError:
+        raise UnknownApp(app)
+    else:
+        try:
+            return app_api['actions'][action].get('parameters', [])
+        except KeyError:
+            raise UnknownAppAction(app, action)
+
+
 class InvalidAppStructure(Exception):
     pass
 
@@ -401,3 +414,16 @@ class UnknownAppAction(Exception):
         super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action_name, app))
         self.app = app
         self.action = action_name
+
+
+class InvalidStepInput(Exception):
+    def __init__(self, app, action, value='', format_type=''):
+        self.message = 'Error: Invalid inputs for action {0} for app {1}'.format(action, app)
+        super(InvalidStepInput, self).__init__(self.message)
+        self.app = app
+        self.action = action
+        self.value = value
+        self.format_type = format_type
+
+
+

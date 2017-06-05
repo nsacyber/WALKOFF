@@ -139,7 +139,6 @@ except (IOError, OSError) as e:
     __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
     possible_events = []
 
-
 def initialize():
     load_config()
     load_function_info()

@@ -4,26 +4,18 @@ from xml.etree import cElementTree
 from collections import namedtuple
 import logging
 from jinja2 import Template, Markup
-from core import arguments
 from core import contextdecorator
 from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import load_app_function
+from core.helpers import load_app_function, get_api_params, InvalidStepInput
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
-from core.helpers import formatarg, arg_to_xml
 from apps import get_app_action
 
 import traceback
 logger = logging.getLogger(__name__)
-
-
-class InvalidStepInputError(Exception):
-    def __init__(self, app, action):
-        super(InvalidStepInputError, self).__init__()
-        self.message = 'Error: Invalid inputs for action {0} for app {1}'.format(action, app)
 
 
 class InvalidStepActionError(Exception):
@@ -79,6 +71,8 @@ class Step(ExecutionElement):
             self.action = action
             self.app = app
             get_app_action(self.app, self.action)
+            self.input = inputs if inputs is not None else {}
+
             self.device = device
             self.risk = risk
             self.input = inputs if inputs is not None else {}
@@ -115,21 +109,7 @@ class Step(ExecutionElement):
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
 
-        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
-                       for arg in step_xml.findall('input/*')}
-
-        # def __formatArgs(arg):
-        #     result = {}
-        #     result["key"] = arg.tag
-        #     result["value"] = arg.text
-        #     if arg.get("format"):
-        #         result["format"] = arg.get("format")
-        #     if arg.get("items"):
-        #         result["items"] = arg.get("items")
-        #     return result
-        #
-        # self.input = {
-        # arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
+        self.input = {arg.get("name"): arg.text for arg in step_xml.findall('inputs/input')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -153,19 +133,7 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
-        self.input = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'), convert=False)
-                       for arg in step_xml.findall('input/*')}
-        # def __formatArgs(arg):
-        #     result = {}
-        #     result["key"] = arg.tag
-        #     result["value"] = arg.text
-        #     if arg.get("format"):
-        #         result["format"] = arg.get("format")
-        #     if arg.get("items"):
-        #         result["items"] = arg.get("items")
-        #     return result
-        #
-        # self.input = {arg.tag: __formatArgs(arg) for arg in step_xml.findall('input/*')}
+        self.input = {arg.get("name"): arg.text for arg in step_xml.findall('inputs/input')}
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -206,6 +174,7 @@ class Step(ExecutionElement):
 
     def validate_input(self, instance=None):
         try:
+
             args = {}
             for input in self.input:
                 args[input] = formatarg(self.input[input])
@@ -240,7 +209,7 @@ class Step(ExecutionElement):
             for input in self.input:
                 args[input] = formatarg(self.input[input])
         except (ValueError, InvalidStepActionError):
-            raise InvalidStepInputError(self.app, self.action)
+            raise InvalidStepInput(self.app, self.action)
         try:
             response = fn(api=instance.api, action=self.action, args=args)
             result = response.body
@@ -249,8 +218,8 @@ class Step(ExecutionElement):
             if response.status_code == 200:
                 callbacks.StepInputValidated.send(self)
                 callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
-        except InvalidStepInputError:
-            raise InvalidStepInputError(self.app, self.action)
+        except InvalidStepInput:
+            raise InvalidStepInput(self.app, self.action)
         except Exception as e:
             import traceback, sys
             print(traceback.print_exc(sys.exc_info()))
@@ -314,17 +283,12 @@ class Step(ExecutionElement):
             y_position.text = str(self.position['y'])
 
         #TODO: Need to get inputs to xml. only need <name>value</name>
-        inputs = cElementTree.SubElement(step, 'input')
-        for i in self.input:
-            inputs.append(self.input[i].to_xml())
-            # if i.key:
-            #     elem = cElementTree.Element(i.key)
-            #     elem.text = str(self.value)
-            #     elem.set("format", self.format)
-            # else:
-            #     elem = None
-            # if elem is not None:
-            #     inputs.append(elem)
+        inputs = cElementTree.SubElement(step, 'inputs')
+        for input_name, input_value in self.input.items():
+            input_elem = cElementTree.Element('input')
+            input_elem.text = str(input_value)
+            input_elem.set('name', input_name)
+            inputs.append(input_elem)
 
         if self.widgets:
             widgets = cElementTree.SubElement(step, 'widgets')

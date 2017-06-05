@@ -3,7 +3,7 @@ import copy
 
 from core.arguments import Argument
 from core.flag import Flag
-from core.step import Step, InvalidStepActionError, InvalidStepInputError, _Widget
+from core.step import Step, InvalidStepActionError, InvalidStepInput, _Widget
 from core.nextstep import NextStep
 import core.config.config
 import core.config.paths
@@ -223,7 +223,7 @@ class TestStep(unittest.TestCase):
             step = Step(app=app, action=action, inputs=inputs)
             with server.running_context.flask_app.app_context():
                 instance = Instance.create(app_name=app, device_name='test_device_name')
-            with self.assertRaises(InvalidStepInputError):
+            with self.assertRaises(InvalidStepInput):
                 step.execute(instance=instance())
 
     def test_get_next_step(self):
