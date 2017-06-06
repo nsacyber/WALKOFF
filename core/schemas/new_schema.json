@@ -4,8 +4,7 @@
   "type": "object",
   "required": [
     "walkoff",
-    "info",
-    "actions"
+    "info"
   ],
   "additionalProperties": false,
   "patternProperties": {
@@ -29,6 +28,12 @@
     },
     "actions": {
       "$ref": "#/definitions/actions"
+    },
+    "flags": {
+      "$ref": "#/definitions/flags"
+    },
+    "filters": {
+      "$ref": "#/definitions/filters"
     },
     "definitions": {
       "$ref": "#/definitions/definitions"
@@ -145,6 +150,32 @@
       },
       "additionalProperties": false
     },
+    "flags": {
+      "type": "object",
+      "description": "Flags of this app",
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        },
+        "": {
+          "$ref": "#/definitions/flagItem"
+        }
+      },
+      "additionalProperties": false
+    },
+    "filters": {
+      "type": "object",
+      "description": "Filters of this app",
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        },
+        "": {
+          "$ref": "#/definitions/filterItem"
+        }
+      },
+      "additionalProperties": false
+    },
     "definitions": {
       "type": "object",
       "additionalProperties": {
@@ -219,6 +250,105 @@
         },
         "parameters": {
           "$ref": "#/definitions/parametersList"
+        },
+        "returns": {
+          "$ref": "#/definitions/returns"
+        },
+        "schemes": {
+          "$ref": "#/definitions/schemesList"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "flagItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run", "parameters", "dataIn"],
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        }
+      },
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "summary": {
+          "type": "string",
+          "description": "A brief summary of the operation."
+        },
+        "description": {
+          "type": "string",
+          "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
+        },
+        "externalDocs": {
+          "$ref": "#/definitions/externalDocs"
+        },
+        "run": {
+          "type": "string",
+          "description": "The method to execute"
+        },
+        "parameters": {
+          "$ref": "#/definitions/parametersList"
+        },
+        "dataIn": {
+          "type": "string",
+          "description": "name of the parameter which contains the data to evaluate"
+        },
+        "schemes": {
+          "$ref": "#/definitions/schemesList"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "filterItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run", "parameters", "dataIn"],
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        }
+      },
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "summary": {
+          "type": "string",
+          "description": "A brief summary of the operation."
+        },
+        "description": {
+          "type": "string",
+          "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
+        },
+        "externalDocs": {
+          "$ref": "#/definitions/externalDocs"
+        },
+        "run": {
+          "type": "string",
+          "description": "The method to execute"
+        },
+        "parameters": {
+          "$ref": "#/definitions/parametersList"
+        },
+        "dataIn": {
+          "type": "string",
+          "description": "name of the parameter which contains the data to transform"
         },
         "returns": {
           "$ref": "#/definitions/returns"

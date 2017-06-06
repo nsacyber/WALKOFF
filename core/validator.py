@@ -11,6 +11,7 @@ import sys
 import logging
 logger = logging.getLogger(__name__)
 from core.helpers import InvalidStepInput
+import core.config.paths
 
 __new_inspection = False
 if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
@@ -44,10 +45,10 @@ def convert_primitive_array(values, parameter_type):
     return [convert_primitive_type(value, parameter_type) for value in values]
 
 
-def validate_spec(spec, app_name, spec_url='', http_handlers=None):
+def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join('core', 'schemas', 'new_schema.json'),
+        os.path.join(core.config.paths.schema_path, 'new_schema.json'),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
@@ -56,6 +57,51 @@ def validate_spec(spec, app_name, spec_url='', http_handlers=None):
     definitions = dereference(dereferenced_spec.get('definitions', {}))
     validate_actions(actions, dereference, app_name)
     validate_definitions(definitions, dereference)
+
+
+def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
+    from core.config.config import flags, filters
+    walkoff_resolver = validate_spec_json(
+        spec,
+        os.path.join(core.config.paths.schema_path, 'new_schema.json'),
+        spec_url,
+        http_handlers)
+    dereference = partial(deref, resolver=walkoff_resolver)
+    dereferenced_spec = dereference(spec)
+    flag_spec = dereference(dereferenced_spec['flags'])
+    filter_spec = dereference(dereferenced_spec['filters'])
+    validate_flagfilter_params(flag_spec, 'Flag', flags, dereference)
+    validate_flagfilter_params(filter_spec, 'Filter', filters, dereference)
+
+
+def validate_flagfilter_params(spec, action_type, defined_actions, dereferencer):
+    seen = set()
+    for action_name, action in spec.items():
+        action = dereferencer(action)
+        action_params = dereferencer(action.get('parameters', []))
+        if action['run'] not in defined_actions:
+            raise InvalidAppApi('{0} action {1} has a "run" param {2} '
+                                'which is not defined'.format(action_type, action_name, action['run']))
+
+        data_in_param_name = action['dataIn']
+        first = next((param for param in action_params if param['name'] == data_in_param_name), None)
+        if first is None:
+            raise InvalidAppApi(
+                '{0} action {1} has a dataIn param {2} '
+                'for which it does not have a '
+                'corresponding parameter'.format(action_type, action_name, data_in_param_name))
+        elif not first.get('required', False):
+            raise InvalidAppApi(
+                '{0} action {1} has a dataIn param {2} which is not marked as required in the api. '
+                'Add "required: true" to parameter specification for {2}'.format(action_type, action_name,
+                                                                                 data_in_param_name))
+
+        validate_action_params(action_params, dereferencer, action_type, action_name, defined_actions[action['run']])
+        seen.add(action['run'])
+
+    if seen != set(defined_actions.keys()):
+        logger.warning('Global {0}s have defined the following actions which do not have a corresponding API: '
+                       '{1}'.format(action_type.lower(), (set(defined_actions.keys()) - seen)))
 
 
 def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
@@ -74,7 +120,7 @@ def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
 
 
 def validate_actions(actions, dereferencer, app_name):
-    from apps import get_all_actions_for_app, App
+    from apps import get_all_actions_for_app, get_app_action
     defined_actions = get_all_actions_for_app(app_name)
     seen = set()
     for action_name, action in actions.items():
@@ -84,29 +130,28 @@ def validate_actions(actions, dereferencer, app_name):
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
         if action_params:
-            validate_action_params(action_params, dereferencer, app_name, action_name, action['run'])
+            validate_action_params(action_params, dereferencer, app_name,
+                                   action_name, get_app_action(app_name, action['run']))
         seen.add(action['run'])
     if seen != set(defined_actions.keys()):
         logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
                        '{1}'.format(app_name, (set(defined_actions.keys()) - seen)))
 
 
-def validate_action_params(parameters, dereferencer, app_name, action_name, run):
-    from apps import get_app_action
+def validate_action_params(parameters, dereferencer, app_name, action_name, action_func):
     seen = set()
     for parameter in parameters:
         parameter = deref(parameter, dereferencer)
         name = parameter['name']
         if name in seen:
-            raise InvalidAppApi('Duplicate parameter {0} in api for app {1} '
+            raise InvalidAppApi('Duplicate parameter {0} in api for {1} '
                                 'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
 
-    app_action = get_app_action(app_name, run)
     if __new_inspection:
-        method_params = list(getsignature(app_action).parameters.keys())
+        method_params = list(getsignature(action_func).parameters.keys())
     else:
-        method_params = getsignature(app_action).args  # pre-inspect the function to get its arguments
+        method_params = getsignature(action_func).args  # pre-inspect the function to get its arguments
     if method_params and method_params[0] == 'self':
         method_params.pop(0)
     if not seen == set(method_params):

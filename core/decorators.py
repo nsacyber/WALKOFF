@@ -1,3 +1,6 @@
+def tag(func, tag_name):
+    setattr(func, tag_name, True)
+
 def action(func):
     """
     Decorator used to tag a method or function as an action
@@ -7,5 +10,16 @@ def action(func):
     Returns:
         (func) Tagged function
     """
-    func.action = True  # tag the function as an action
+    tag(func, 'action')
     return func
+
+
+def flag(func):
+    tag(func, 'flag')
+    return func
+
+
+def datafilter(func):
+    tag(func, 'filter')
+    return func
+

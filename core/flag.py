@@ -7,7 +7,6 @@ from core.executionelement import ExecutionElement
 from core.filter import Filter
 import core.config.config
 import logging
-from core.helpers import arg_to_xml
 logger = logging.getLogger(__name__)
 
 import sys, traceback
@@ -73,8 +72,8 @@ class Flag(ExecutionElement):
         elem = cElementTree.Element('flag')
         elem.set('action', self.action)
         args_element = cElementTree.SubElement(elem, 'args')
-        for arg in self.args:
-            args_element.append(arg_to_xml(self.args[arg]))
+        # for arg in self.args:
+        #     args_element.append(arg_to_xml(self.args[arg]))
 
         filters_element = cElementTree.SubElement(elem, 'filters')
         for filter_element in self.filters:

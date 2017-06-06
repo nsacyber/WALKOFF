@@ -20,8 +20,6 @@ class TestAppApiValidation(unittest.TestCase):
         with open(basic_app_api, 'r') as f:
             self.basicapi = yaml.load(f.read())
 
-        import_all_apps(path=test_apps_path)
-
     def __generate_resolver_dereferencer(self, spec, expected_success=True):
         try:
             walkoff_resolver = validate_spec_json(
@@ -167,18 +165,23 @@ class TestAppApiValidation(unittest.TestCase):
                                self.dereferencer,
                                'HelloWorld',
                                'Add Three',
-                               'addThree')
+                               get_app_action('HelloWorld', 'addThree'))
 
-    def test_validate_action_params_duplicate_params(self):
+    def test_validate_action_params_duplicate_param_name(self):
         self.basicapi['actions']['Add Three'] = {'run': 'addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
                                                                 {'name': 'num1',
-                                                                 'type': 'number'},
+                                                                 'type': 'string'},
                                                                 {'name': 'num2',
                                                                  'type': 'number'}]}
-        with self.assertRaises(ValidationError):
-            self.__generate_resolver_dereferencer(self.basicapi, expected_success=False)
+        self.__generate_resolver_dereferencer(self.basicapi, expected_success=False)
+        with self.assertRaises(InvalidAppApi):
+            validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
+                                   self.dereferencer,
+                                   'HelloWorld',
+                                   'Add Three',
+                                   get_app_action('HelloWorld', 'addThree'))
 
     def test_validate_action_params_too_many_params_in_api(self):
         self.basicapi['actions']['Add Three'] = {'run': 'addThree',
@@ -196,7 +199,7 @@ class TestAppApiValidation(unittest.TestCase):
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   'addThree')
+                                   get_app_action('HelloWorld', 'addThree'))
 
     def test_validate_action_params_too_few_params_in_api(self):
         self.basicapi['actions']['Add Three'] = {'run': 'addThree',
@@ -210,9 +213,10 @@ class TestAppApiValidation(unittest.TestCase):
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   'addThree')
+                                   get_app_action('HelloWorld', 'addThree'))
 
     def test_validate_action_params_different_params_in_api(self):
+        print('HERHERHER')
         self.basicapi['actions']['Add Three'] = {'run': 'addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
@@ -222,9 +226,10 @@ class TestAppApiValidation(unittest.TestCase):
                                                                  'type': 'number'}]}
         self.__generate_resolver_dereferencer(self.basicapi)
         with self.assertRaises(InvalidAppApi):
+            print(get_all_actions_for_app('HelloWorld'))
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   'addThree')
+                                   get_app_action('HelloWorld', 'addThree'))
 

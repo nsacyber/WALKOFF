@@ -2,7 +2,7 @@ import json
 from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-from core.api import WalkoffAppDefinition
+# from core.api import WalkoffAppDefinition
 from . import database
 import core.config.paths
 import pyaes
@@ -43,7 +43,8 @@ class App(database.Base, object):
         self.devices = [Device(name=device_name) for device_name in devices]
 
     def initialize(self):
-        self.api = WalkoffAppDefinition(self.name, self)
+        # self.api = WalkoffAppDefinition(self.name, self)
+        pass
 
     @staticmethod
     def get_all_devices_for_app(app_name):

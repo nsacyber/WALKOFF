@@ -144,59 +144,6 @@ def list_class_functions(class_name):
     return [field for field in dir(class_name) if (not field.startswith('_')
                                                    and callable(getattr(class_name, field)))]
 
-from connexion.lifecycle import ConnexionResponse
-
-def responseDecorator(func):
-    def __wrapper(*args, **kwargs):
-        body = func(*args, **kwargs)
-        r = ConnexionResponse(body=body)
-        return r
-    return __wrapper
-
-def load_app_function(app_instance, function_name):
-    """Get a function for an App.
-    
-    Args:
-        app_instance (App): An instance of the App object from which to load the function.
-        function_name (str): The name of the function to be loaded from the App.
-        
-    Returns:
-        The specified function if the attribute exists, otherwise None.
-    """
-
-    try:
-        key = "Main." + function_name
-        if key in app_instance.api.operations:
-            obj = app_instance.api.operations[key]
-            fn = obj.function
-            return fn
-        return None
-    except AttributeError:
-        logger.error('Could not load action {0} in app {1}.'.format(app_instance.name, function_name))
-        return None
-
-
-def load_flag_function(api, function_name):
-    """Get a function for an App.
-
-    Args:
-        app_instance (App): An instance of the App object from which to load the function.
-        function_name (str): The name of the function to be loaded from the App.
-
-    Returns:
-        The specified function if the attribute exists, otherwise None.
-    """
-
-    try:
-        key = function_name
-        if "execute" in api.operations:
-            obj = api.operations["execute"]
-            fn = obj.function
-            return fn
-        return None
-    except AttributeError:
-        logger.error('Could not load action {0} in app {1}.'.format(api.name, function_name))
-        return None
 
 def locate_workflows_in_directory(path=None):
     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
@@ -313,70 +260,6 @@ class SubclassRegistry(type):
 def format_db_path(db_type, path):
     return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
 
-from connexion.decorators import parameter
-def formatarg(arg):
-    if "format" in arg:
-        format = arg["format"]
-    elif "type" in arg:
-        format = arg["type"]
-    else:
-        format = "str"
-
-    if format == "str":
-        f = "string"
-    elif format == "int":
-        f = "integer"
-    elif format == "bool":
-        f = "boolean"
-    elif format == "obj":
-        f = "object"
-    elif format == "num":
-        f = "number"
-    elif format == "arr":
-        f = "array"
-    else:
-        f = "string"
-
-    arg["format"] = f
-
-    if f == "array":
-        itemFormat = formatarg(arg["items"])
-        f = {"type": format, "items": {"type": itemFormat}}
-    else:
-        f = {"type":f}
-    try:
-        if "value" not in arg:
-            arg["value"] = ""
-
-        result = parameter.get_val_from_param(arg["value"], f)
-        return result
-    except Exception:
-        raise ValueError
-
-
-def arg_to_xml(arg):
-    """Converts Argument object to XML
-
-    Returns:
-        XML of Argument object, or None if key is None.
-    """
-    if arg["key"]:
-        elem = ElementTree.Element(arg["key"])
-        if "value" in arg:
-            elem.text = str(arg["value"])
-        else:
-            elem.text = ""
-        if "format" in arg:
-            format = arg["format"]
-        else:
-            format = "str"
-        if 'items' in arg:
-            format += ":" + arg["items"]
-        elem.set("format", format)
-        return elem
-    else:
-        return None
-
 
 def import_all_apps(path=None):
     for app_name in list_apps(path):
@@ -426,4 +309,48 @@ class InvalidStepInput(Exception):
         self.format_type = format_type
 
 
+def __get_tagged_functions(module, tag, prefix):
+    tagged = {}
+    start_index = len(prefix)+1
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if not attr_name.startswith('_') and callable(attr) and getattr(attr, tag, False):
+            name = '{0}.{1}'.format(module.__name__, attr_name)[start_index:]
+            tagged[name] = attr
+    return tagged
+
+
+def import_and_find_tags(package, tag, prefix=None, recursive=True):
+    """Imports the submodules from a given package and finds functions tagged with given tag.
+
+    Args:
+        package (str): The name of the package from which to import the submodules.
+        tag (str): The tag to look for
+        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
+            Defaults to False.
+
+    Returns:
+        A dictionary of the form {<function_name>: <function>}.
+    """
+
+    tagged = {}
+    if isinstance(package, str):
+        prefix = package if prefix is None else prefix
+        package = importlib.import_module(package)
+        tagged.update(__get_tagged_functions(package, tag, prefix))
+    for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+        full_name = '{0}.{1}'.format(package.__name__, name)
+        module = importlib.import_module(full_name)
+        tagged.update(__get_tagged_functions(module, tag, prefix))
+        if recursive and is_package:
+            tagged.update(import_and_find_tags(full_name, tag, prefix=prefix))
+    return tagged
+
+
+def import_all_flags(package='core.flags'):
+    return import_and_find_tags(package, 'flag')
+
+
+def import_all_filters(package='core.filters'):
+    return import_and_find_tags(package, 'filter')
 

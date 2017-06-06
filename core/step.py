@@ -9,7 +9,7 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import load_app_function, get_api_params, InvalidStepInput
+from core.helpers import get_api_params, InvalidStepInput
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -177,15 +177,16 @@ class Step(ExecutionElement):
 
 
     def validate_input(self, instance=None):
-        try:
-
-            args = {}
-            for input in self.input:
-                args[input] = formatarg(self.input[input])
-            return True
-        except (ValueError, InvalidStepActionError) as e:
-            print(traceback.print_exception(*sys.exc_info()))
-            return False
+        # try:
+        #
+        #     args = {}
+        #     for input in self.input:
+        #         args[input] = formatarg(self.input[input])
+        #     return True
+        # except (ValueError, InvalidStepActionError) as e:
+        #     print(traceback.print_exception(*sys.exc_info()))
+        #     return False
+        pass
 
     def __lookup_function(self):
         for action, info in core.config.config.function_info['apps'][self.app].items():
@@ -206,34 +207,34 @@ class Step(ExecutionElement):
             The result of the executed function.
         """
 
-        try:
-            fn = self.__lookup_function()
-            args = {}
-            fn = load_app_function(instance, fn)
-            for input in self.input:
-                args[input] = formatarg(self.input[input])
-        except (ValueError, InvalidStepActionError):
-            raise InvalidStepInput(self.app, self.action)
-        try:
-            response = fn(api=instance.api, action=self.action, args=args)
-            result = response.body
-            if response.status_code == 400:
-                callbacks.StepInputInvalid.send(self)
-            if response.status_code == 200:
-                callbacks.StepInputValidated.send(self)
-                callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
-        except InvalidStepInput:
-            raise InvalidStepInput(self.app, self.action)
-        except Exception as e:
-            import traceback, sys
-            print(traceback.print_exc(sys.exc_info()))
-
-        for widget in self.widgets:
-            get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
-        self.output = result
-        logger.debug('Step {0} executed successfully'.format(self.ancestry))
-        return result
-
+        # try:
+        #     fn = self.__lookup_function()
+        #     args = {}
+        #     fn = load_app_function(instance, fn)
+        #     for input in self.input:
+        #         args[input] = formatarg(self.input[input])
+        # except (ValueError, InvalidStepActionError):
+        #     raise InvalidStepInput(self.app, self.action)
+        # try:
+        #     response = fn(api=instance.api, action=self.action, args=args)
+        #     result = response.body
+        #     if response.status_code == 400:
+        #         callbacks.StepInputInvalid.send(self)
+        #     if response.status_code == 200:
+        #         callbacks.StepInputValidated.send(self)
+        #         callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+        # except InvalidStepInput:
+        #     raise InvalidStepInput(self.app, self.action)
+        # except Exception as e:
+        #     import traceback, sys
+        #     print(traceback.print_exc(sys.exc_info()))
+        #
+        # for widget in self.widgets:
+        #     get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
+        # self.output = result
+        # logger.debug('Step {0} executed successfully'.format(self.ancestry))
+        # return result
+        return None
 
     def get_next_step(self, error=False):
         """Gets the NextStep object to be executed after the current Step.

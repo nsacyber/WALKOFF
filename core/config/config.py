@@ -5,7 +5,6 @@ import logging
 from os import listdir, environ, pathsep
 from os.path import isfile, join, splitext
 import core.config.paths
-from core.helpers import list_apps
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
 import yaml
@@ -95,6 +94,7 @@ function_info = None
 def load_function_info():
     """ Loads the app action metadata
     """
+    from core.helpers import list_apps
     global function_info
     with open(core.config.paths.function_info_path) as f:
         function_info = json.loads(f.read())
@@ -111,6 +111,7 @@ app_apis = {}
 
 
 def load_app_apis():
+    from core.helpers import list_apps
     global app_apis
     try:
         with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
@@ -125,8 +126,8 @@ def load_app_apis():
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
                     jsonschema.validate(api, schema)
-                    from core.validator import validate_spec
-                    validate_spec(api, app)
+                    from core.validator import validate_app_spec
+                    validate_app_spec(api, app)
                     app_apis[app] = api
             except Exception as e:
                 __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(e)))
@@ -139,9 +140,17 @@ except (IOError, OSError) as e:
     __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
     possible_events = []
 
+filters = {}
+flags = {}
+
 def initialize():
+    global filters
+    global flags
     load_config()
     load_function_info()
-    from core.helpers import import_all_apps
+    from core.helpers import import_all_apps, import_all_filters, import_all_flags
     import_all_apps()
     load_app_apis()
+    flags = import_all_flags()
+    filters = import_all_filters()
+

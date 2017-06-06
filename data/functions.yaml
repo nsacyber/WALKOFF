@@ -1,0 +1,52 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Global Flags and Filters
+  description: Flags and filters available to all apps
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+flags:
+  regMatch:
+    run: regMatch
+    description: Matches an input against a regular expression
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input value
+        required: true
+        type: number
+  count:
+    run: count
+    description: Compares two numbers
+    dataIn: value
+    parameters:
+        - name: value
+          description: The input value
+          required: true
+          type: number
+        - name: operator
+          description: The comparison operator ('g', 'ge', etc.)
+          required: true
+          type: string
+          enum: [g, ge, l, le, e]
+          default: e
+        - name: threshold
+          description: The value with which to compare the input
+          required: true
+          type: number
+filters:
+  length:
+    run: length
+    description: Returns the length of a collection
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input collection
+        required: true
+        type: number
+    returns:
+      description: The length of the collection
+      schema:
+        type: integer

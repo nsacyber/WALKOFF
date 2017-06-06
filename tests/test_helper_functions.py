@@ -8,7 +8,6 @@ from core.instance import Instance
 from tests.config import test_workflows_path, test_apps_path
 import core.config.paths
 from tests.util.assertwrappers import orderless_list_compare
-
 from server import flaskserver as server
 
 
@@ -32,14 +31,17 @@ class TestHelperFunctions(unittest.TestCase):
     #     for action, function in existing_actions.items():
     #         self.assertEqual(load_app_function(instance(), action), function)
 
-    def test_load_app_function_invalid_function(self):
-        with server.running_context.flask_app.app_context():
-            instance = Instance.create('HelloWorld', 'default_device_name')
-        self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
+    # def test_load_app_function_invalid_function(self):
+    #     with server.running_context.flask_app.app_context():
+    #         instance = Instance.create('HelloWorld', 'default_device_name')
+    #     self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
 
     def test_locate_workflows(self):
         expected_workflows = ['basicWorkflowTest.workflow',
                               'DailyQuote.workflow',
+                              'invalidActionWorkflow.workflow',
+                              'invalidAppWorkflow.workflow',
+                              'invalidInputWorkflow.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
                               'pauseWorkflowTest.workflow',
@@ -48,7 +50,8 @@ class TestHelperFunctions(unittest.TestCase):
                               'templatedWorkflowTest.workflow',
                               'testExecutionWorkflow.workflow',
                               'testScheduler.workflow',
-                              'tieredWorkflow.workflow']
+                              'tieredWorkflow.workflow',
+                              'tooManyStepInputsWorkflow.workflow']
         received_workflows = locate_workflows_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 
@@ -65,7 +68,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertIsNone(workflows)
 
     def test_list_apps(self):
-        expected_apps = ['HelloWorld']
+        expected_apps = ['HelloWorld', 'DailyQuote']
         orderless_list_compare(self, expected_apps, list_apps())
 
     def test_list_widgets(self):
@@ -73,7 +76,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(list_widgets('JunkApp'), [])
 
     def test_construct_workflow_name_key(self):
-        input_output = {('',''): '-',
+        input_output = {('', ''): '-',
                         ('', 'test_workflow'): '-test_workflow',
                         ('test_playbook', 'test_workflow'): 'test_playbook-test_workflow',
                         ('-test_playbook', 'test_workflow'): 'test_playbook-test_workflow'}
@@ -96,7 +99,8 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_import_py_file(self):
         module_name = 'tests.apps.HelloWorld'
-        imported_module = import_py_file(module_name, os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
+        imported_module = import_py_file(module_name,
+                                         os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
         self.assertIsInstance(imported_module, types.ModuleType)
         self.assertEqual(imported_module.__name__, module_name)
         self.assertIn(module_name, sys.modules)
@@ -174,4 +178,40 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
         self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
+    def test_import_and_find_tags(self):
+        import tests.util.flagsfilters
+        from tests.util.flagsfilters import sub1, mod1
+        from tests.util.flagsfilters.sub1 import mod2
+        filter_tags = import_and_find_tags('tests.util.flagsfilters', 'filter')
+        expected_filters = {'top_level_filter': tests.util.flagsfilters.top_level_filter,
+                            'filter1': tests.util.flagsfilters.filter1,
+                            'mod1.filter1': tests.util.flagsfilters.mod1.filter1,
+                            'mod1.filter2': tests.util.flagsfilters.mod1.filter2,
+                            'sub1.sub1_top_filter': tests.util.flagsfilters.sub1.sub1_top_filter,
+                            'sub1.mod2.filter1': tests.util.flagsfilters.sub1.mod2.filter1,
+                            'sub1.mod2.filter3': tests.util.flagsfilters.sub1.mod2.filter3}
+        flag_tags = import_and_find_tags('tests.util.flagsfilters', 'flag')
+        expected_flags = {'top_level_flag': tests.util.flagsfilters.top_level_flag,
+                          'mod1.flag1': tests.util.flagsfilters.mod1.flag1,
+                          'mod1.flag2': tests.util.flagsfilters.mod1.flag2,
+                          'sub1.sub1_top_flag': tests.util.flagsfilters.sub1.sub1_top_flag,
+                          'sub1.mod2.flag1': tests.util.flagsfilters.sub1.mod2.flag1,
+                          'sub1.mod2.flag2': tests.util.flagsfilters.sub1.mod2.flag2}
+        self.assertDictEqual(filter_tags, expected_filters)
+        self.assertDictEqual(flag_tags, expected_flags)
 
+    def test_import_all_flags(self):
+        self.assertDictEqual(import_all_flags('tests.util.flagsfilters'),
+                             import_and_find_tags('tests.util.flagsfilters', 'flag'))
+
+    def test_import_all_flags_invalid_flag_package(self):
+        with self.assertRaises(ImportError):
+            import_all_flags('invalid.package')
+
+    def test_import_all_filters(self):
+        self.assertDictEqual(import_all_filters('tests.util.flagsfilters'),
+                             import_and_find_tags('tests.util.flagsfilters', 'filter'))
+
+    def test_import_all_filters_invalid_filter_package(self):
+        with self.assertRaises(ImportError):
+            import_all_flags('invalid.package')

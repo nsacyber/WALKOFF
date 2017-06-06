@@ -89,5 +89,5 @@ class TestLoadWorkflow(unittest.TestCase):
 
     def test_load_workflow_too_many_inputs(self):
         original_workflows = self.c.get_all_workflows()
-        self.c.load_workflows_from_file(path='{}tooManyInputsWorkflow.workflow'.format(config.test_workflows_path))
+        self.c.load_workflows_from_file(path='{}tooManyStepInputsWorkflow.workflow'.format(config.test_workflows_path))
         self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
