@@ -4,14 +4,17 @@ import types
 import sys
 from os.path import join
 from os import sep
-from core.instance import Instance
 from tests.config import test_workflows_path, test_apps_path
 import core.config.paths
+from core.config.config import initialize
 from tests.util.assertwrappers import orderless_list_compare
-from server import flaskserver as server
 
 
 class TestHelperFunctions(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        initialize()
+
     def setUp(self):
         self.original_apps_path = core.config.paths.apps_path
         core.config.paths.apps_path = test_apps_path
@@ -215,3 +218,69 @@ class TestHelperFunctions(unittest.TestCase):
     def test_import_all_filters_invalid_filter_package(self):
         with self.assertRaises(ImportError):
             import_all_flags('invalid.package')
+
+    def test_get_api_params_valid(self):
+        api = get_api_params('HelloWorld', 'pause')
+        self.assertEqual(len(api), 1)
+        expected = {'required': True, 'type': 'number', 'name': 'seconds', 'description': 'The seconds to pause for'}
+        self.assertDictEqual(api[0], expected)
+
+    def test_get_api_params_invalid_app(self):
+        with self.assertRaises(UnknownApp):
+            get_api_params('InvalidApp', 'pause')
+
+    def test_get_api_params_invalid_action(self):
+        with self.assertRaises(UnknownAppAction):
+            get_api_params('HelloWorld', 'invalid')
+
+    def test_get_flag_api_valid(self):
+        api = get_flag_api('regMatch')
+        expected = {'dataIn': 'value',
+                    'run': 'regMatch.regMatch',
+                    'description': 'Matches an input against a regular expression',
+                    'parameters': [{'required': True,
+                                    'type': 'string',
+                                    'name': 'value',
+                                    'description': 'The input value'},
+                                   {'required': True,
+                                    'type': 'string',
+                                    'name': 'regex',
+                                    'description': 'The regular expression to match'}]}
+        self.assertDictEqual(api, expected)
+
+    def test_get_flag_api_invalid(self):
+        with self.assertRaises(UnknownFlag):
+            get_flag_api('invalid')
+
+    def test_get_filter_api_valid(self):
+        api = get_filter_api('length')
+        expected = {'returns': {'Success': {'description': 'The length of the collection',
+                                            'schema': {'type': 'object'}}},
+                    'dataIn': 'value',
+                    'run': 'length.length',
+                    'description': 'Returns the length of a collection',
+                    'parameters': [{'required': True,
+                                    'type': 'number',
+                                    'name': 'value',
+                                    'description': 'The input collection'}]}
+        self.assertDictEqual(api, expected)
+
+    def test_get_filter_api_invalid(self):
+        with self.assertRaises(UnknownFilter):
+            get_filter_api('invalid')
+
+    def test_get_flag_valid(self):
+        from core.flags.count import count
+        self.assertEqual(get_flag('count'), count)
+
+    def test_get_flag_invalid(self):
+        with self.assertRaises(UnknownFlag):
+            get_flag('invalid')
+
+    def test_get_filter_valid(self):
+        from core.filters.length import length
+        self.assertEqual(get_filter('length'), length)
+
+    def test_get_filter_invalid(self):
+        with self.assertRaises(UnknownFilter):
+            get_filter('invalid')

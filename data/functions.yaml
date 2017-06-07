@@ -9,16 +9,20 @@ info:
     name: Creative Commons
 flags:
   regMatch:
-    run: regMatch
+    run: regMatch.regMatch
     description: Matches an input against a regular expression
     dataIn: value
     parameters:
       - name: value
         description: The input value
         required: true
-        type: number
+        type: string
+      - name: regex
+        description: The regular expression to match
+        required: true
+        type: string
   count:
-    run: count
+    run: count.count
     description: Compares two numbers
     dataIn: value
     parameters:
@@ -38,7 +42,7 @@ flags:
           type: number
 filters:
   length:
-    run: length
+    run: length.length
     description: Returns the length of a collection
     dataIn: value
     parameters:
@@ -47,6 +51,10 @@ filters:
         required: true
         type: number
     returns:
-      description: The length of the collection
-      schema:
-        type: integer
+      Success:
+        description: The length of the collection
+        schema:
+          type: object
+#      type: string
+#      schema:
+#        type: string

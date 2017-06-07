@@ -282,6 +282,33 @@ def get_api_params(app, action):
             raise UnknownAppAction(app, action)
 
 
+def get_flag_api(flag):
+    try:
+        return core.config.config.function_apis['flags'][flag]
+    except KeyError:
+        raise UnknownFlag(flag)
+
+def get_flag(flag):
+    try:
+        runnable = core.config.config.function_apis['flags'][flag]['run']
+        return core.config.config.flags[runnable]
+    except KeyError:
+        raise UnknownFlag(flag)
+
+def get_filter_api(filter):
+    try:
+        return core.config.config.function_apis['filters'][filter]
+    except KeyError:
+        raise UnknownFilter(filter)
+
+def get_filter(filter):
+    try:
+        runnable = core.config.config.function_apis['filters'][filter]['run']
+        return core.config.config.filters[runnable]
+    except KeyError:
+        raise UnknownFilter(filter)
+
+
 class InvalidAppStructure(Exception):
     pass
 
@@ -307,6 +334,18 @@ class InvalidStepInput(Exception):
         self.action = action
         self.value = value
         self.format_type = format_type
+
+class UnknownFlag(Exception):
+    def __init__(self, flag):
+        self.message = 'Unknown flag {0}'.format(flag)
+        super(UnknownFlag, self).__init__(self.message)
+        self.flag = flag
+
+class UnknownFilter(Exception):
+    def __init__(self, filter_name):
+        self.message = 'Unknown filter {0}'.format(filter_name)
+        super(UnknownFilter, self).__init__(self.message)
+        self.filter = filter_name
 
 
 def __get_tagged_functions(module, tag, prefix):

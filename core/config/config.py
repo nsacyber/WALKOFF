@@ -115,7 +115,7 @@ def load_app_apis():
     global app_apis
     try:
         with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
-            schema = json.loads(schema_file.read())
+            json.loads(schema_file.read())
     except Exception as e:
         __logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))
         sys.exit(1)
@@ -125,7 +125,6 @@ def load_app_apis():
                 url = join(core.config.paths.apps_path, app, 'api.yaml')
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
-                    jsonschema.validate(api, schema)
                     from core.validator import validate_app_spec
                     validate_app_spec(api, app)
                     app_apis[app] = api
@@ -142,6 +141,24 @@ except (IOError, OSError) as e:
 
 filters = {}
 flags = {}
+function_apis = {}
+
+def load_flagfilter_apis():
+    global function_apis
+    try:
+        url = join(core.config.paths.function_api_path)
+        with open(url) as function_file:
+            api = yaml.load(function_file.read())
+            from core.validator import validate_flagfilter_spec
+            validate_flagfilter_spec(api)
+            function_apis = api
+    except (IOError, OSError) as e:
+        __logger.fatal('Cannot open flagfilter api: Error {1}'.format(app, str(e)))
+        sys.exit(1)
+    except yaml.YAMLError:
+        __logger.fatal('flagfiler api is invalid yaml')
+        sys.exit(1)
+
 
 def initialize():
     global filters
@@ -153,4 +170,7 @@ def initialize():
     load_app_apis()
     flags = import_all_flags()
     filters = import_all_filters()
+    print(flags)
+    print(filters)
+    load_flagfilter_apis()
 
