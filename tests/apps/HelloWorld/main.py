@@ -1,6 +1,6 @@
 import time
 from tests.apps import App, action
-
+from tests.apps.HelloWorld.exceptions import CustomException
 
 # There is an associated Hello world test workflow which can be executed
 class Main(App):
@@ -36,6 +36,10 @@ class Main(App):
     @action
     def addThree(self, num1, num2, num3):
         return num1 + num2 + num3
+
+    @action
+    def buggy_action(self):
+        raise CustomException
 
     def shutdown(self):
         # print("SHUTTING DOWN")

@@ -1,5 +1,6 @@
 import json
 import sys
+from copy import deepcopy
 from xml.etree import cElementTree
 from collections import namedtuple
 import logging
@@ -9,7 +10,7 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import get_api_params, InvalidInput
+from core.helpers import get_app_action_api, InvalidInput, InvalidElementConstructed
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -18,11 +19,6 @@ from core.validator import validate_app_action_parameters
 import traceback
 logger = logging.getLogger(__name__)
 
-
-class InvalidStepActionError(Exception):
-    def __init__(self, app, action):
-        super(InvalidStepActionError, self).__init__()
-        self.message = 'Error: Step action {0} not found for app {1}'.format(action, app)
 
 _Widget = namedtuple('Widget', ['app', 'widget'])
 
@@ -64,20 +60,22 @@ class Step(ExecutionElement):
             risk (int, optional): The risk associated with the Step. Defaults to 0.
         """
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
-        self.raw_xml = xml
-
         if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
+            if action == '' or app == '':
+                raise InvalidElementConstructed('Either both action and app or xml must be '
+                                                'specified in step constructor')
             self.action = action
             self.app = app
-            get_app_action(self.app, self.action)
-            self.input = inputs if inputs is not None else {}
-            self.input_api = get_api_params(self.app, self.action)
-            validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
+            input_api = get_app_action_api(self.app, self.action)
+            self.run = input_api['run']
+            self.input_api = input_api.get('parameters', [])
+            get_app_action(self.app, self.run)
+            inputs = inputs if inputs is not None else {}
+            self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
             self.device = device
             self.risk = risk
-            self.input = inputs if inputs is not None else {}
             self.conditionals = next_steps if next_steps is not None else []
             self.errors = errors if errors is not None else []
             self.position = position if position is not None else {}
@@ -100,19 +98,23 @@ class Step(ExecutionElement):
             next_step.reconstruct_ancestry(self.ancestry)
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
+        self.raw_xml = step_xml
         name = step_xml.get('id')
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
 
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
-        get_app_action(self.app, self.action)
-        self.input_api = get_api_params(self.app, self.action)
-        self.input = {arg.get("name"): arg.text for arg in step_xml.findall('inputs/input')}
-        validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
+        input_api = get_app_action_api(self.app, self.action)
+        self.run = input_api['run']
+        self.input_api = input_api.get('parameters', [])
+        get_app_action(self.app, self.run)
+        inputs = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
+        self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
+
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
-        self.risk = int(risk_field.text) if risk_field is not None else 0
+        self.risk = risk_field.text if risk_field is not None else 0
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -135,7 +137,7 @@ class Step(ExecutionElement):
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
-        self.risk = int(risk_field.text) if risk_field is not None else 0
+        self.risk = risk_field.text if risk_field is not None else 0
         self.input = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
         validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -148,7 +150,7 @@ class Step(ExecutionElement):
         """Uses JINJA templating to render a Step object. 
         
         Args:
-            kwargs (list[str]): Arguments to use in the JINJA templating.
+            kwargs (dict[str]): Arguments to use in the JINJA templating.
         """
         if sys.version_info[0] > 2:
             content = cElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
@@ -158,46 +160,7 @@ class Step(ExecutionElement):
         xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
-    # def validate_input(self):
-    #     """Ensures that the inputs passed in are properly formed.
-    #
-    #     Returns:
-    #          True if inputs are valid, False otherwise.
-    #     """
-    #     if (self.app in core.config.config.function_info['apps']
-    #             and self.action in core.config.config.function_info['apps'][self.app]):
-    #         possible_args = core.config.config.function_info['apps'][self.app][self.action]['args']
-    #         if possible_args:
-    #             return (len(list(possible_args)) == len(list(self.input.keys()))
-    #                     and all(self.input[arg].validate(possible_args) for arg in self.input))
-    #         else:
-    #             return True
-    #     logger.warning('app {0} or app action {1} not found in app action metadata'.format(self.app, self.action))
-    #     return False
-
-
-    def validate_input(self, instance=None):
-        # try:
-        #
-        #     args = {}
-        #     for input in self.input:
-        #         args[input] = formatarg(self.input[input])
-        #     return True
-        # except (ValueError, InvalidStepActionError) as e:
-        #     print(traceback.print_exception(*sys.exc_info()))
-        #     return False
-        pass
-
-    def __lookup_function(self):
-        for action, info in core.config.config.function_info['apps'][self.app].items():
-            if action == self.action:
-                return self.action
-            else:
-                if 'aliases' in info and self.action in info['aliases']:
-                    return action
-        raise InvalidStepActionError(self.app, self.action)
-
-    def execute(self, instance=None):
+    def execute(self, instance):
         """Executes a Step by calling the associated app function.
         
         Args:
@@ -206,35 +169,20 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
-        #
-        # try:
-        #     fn = self.__lookup_function()
-        #     args = {}
-        #     fn = load_app_function(instance, fn)
-        #     for input in self.input:
-        #         args[input] = formatarg(self.input[input])
-        # except (ValueError, InvalidStepActionError):
-        #     raise InvalidStepInput(self.app, self.action)
-        # try:
-        #     response = fn(api=instance.api, action=self.action, args=args)
-        #     result = response.body
-        #     if response.status_code == 400:
-        #         callbacks.StepInputInvalid.send(self)
-        #     if response.status_code == 200:
-        #         callbacks.StepInputValidated.send(self)
-        #         callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
-        # except InvalidStepInput:
-        #     raise InvalidStepInput(self.app, self.action)
-        # except Exception as e:
-        #     import traceback, sys
-        #     print(traceback.print_exc(sys.exc_info()))
-        #
-        # for widget in self.widgets:
-        #     get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
-        # self.output = result
-        # logger.debug('Step {0} executed successfully'.format(self.ancestry))
-        # return result
-        return None
+        try:
+            args = deepcopy(self.input)
+            action = get_app_action(self.app, self.run)
+            result = action(instance, **args)
+            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+        except Exception as e:
+            logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
+            raise
+        else:
+            self.output = result
+            for widget in self.widgets:
+                get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
+            logger.debug('Step {0} executed successfully'.format(self.ancestry))
+            return result
 
     def get_next_step(self, error=False):
         """Gets the NextStep object to be executed after the current Step.
@@ -247,8 +195,8 @@ class Step(ExecutionElement):
             The NextStep object to be executed.
         """
         next_steps = self.errors if error else self.conditionals
-        for n in next_steps:
-            next_step = n(output=self.output)
+        for next_step in next_steps:
+            next_step = next_step(data_in=self.output)
             if next_step:
                 self.next_up = next_step
                 callbacks.ConditionalsExecuted.send(self)
@@ -263,7 +211,7 @@ class Step(ExecutionElement):
         step = cElementTree.Element('step')
         step.set("id", self.name)
 
-        element_id = cElementTree.SubElement(step, 'id')
+        element_id = cElementTree.SubElement(step, 'name')
         element_id.text = self.name
 
         app = cElementTree.SubElement(step, 'app')
@@ -274,26 +222,25 @@ class Step(ExecutionElement):
 
         if self.risk:
             risk = cElementTree.SubElement(step, 'risk')
-            risk.text = str(self.risk)
+            risk.text = self.risk
 
-        if self.device is not None:
+        if self.device:
             device = cElementTree.SubElement(step, 'device')
             device.text = self.device
 
         if self.position and 'x' in self.position and 'y' in self.position:
             position = cElementTree.SubElement(step, 'position')
             x_position = cElementTree.SubElement(position, 'x')
-            x_position.text = str(self.position['x'])
+            x_position.text = self.position['x']
             y_position = cElementTree.SubElement(position, 'y')
-            y_position.text = str(self.position['y'])
+            y_position.text = self.position['y']
 
-        #TODO: Need to get inputs to xml. only need <name>value</name>
-        inputs = cElementTree.SubElement(step, 'inputs')
-        for input_name, input_value in self.input.items():
-            input_elem = cElementTree.Element('input')
-            input_elem.text = str(input_value)
-            input_elem.set('name', input_name)
-            inputs.append(input_elem)
+        if self.input:
+            inputs = cElementTree.SubElement(step, 'inputs')
+            for input_name, input_value in self.input.items():
+                input_elem = cElementTree.Element(input_name)
+                input_elem.text = str(input_value)
+                inputs.append(input_elem)
 
         if self.widgets:
             widgets = cElementTree.SubElement(step, 'widgets')
@@ -344,10 +291,10 @@ class Step(ExecutionElement):
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
-                  "risk": str(self.risk),
+                  "risk": self.risk,
                   "input": self.input,
                   'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
-                  "position": {pos: str(val) for pos, val in self.position.items()}}
+                  "position": self.position}
         if self.output:
             output["output"] = str(self.output)
         if with_children:
@@ -383,8 +330,7 @@ class Step(ExecutionElement):
                     app=json_in['app'],
                     device=device,
                     risk=risk,
-                    inputs={arg_name: {"key": arg_name, "value": arg_element}
-                            for arg_name, arg_element in json_in['input'].items()},
+                    inputs=json_in['input'],
                     parent_name=parent_name,
                     position=position,
                     widgets=widgets,

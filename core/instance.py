@@ -1,6 +1,5 @@
 import logging
-from core.helpers import import_app_main
-
+from apps import get_app
 logger = logging.getLogger(__name__)
 
 """
@@ -33,13 +32,12 @@ class Instance(object):
         Returns:
             A new Instance object.
         """
-        imported = import_app_main(app_name)
-        if imported:
-            i = Instance(instance=getattr(imported, "Main")(name=app_name, device=device_name), state=OK)
-            i.instance.initialize()
-            return i
-        else:
-            logger.error('Cannot create app instance. app: {0}, device: {1}'.format(app_name, device_name))
+        try:
+            return Instance(instance=get_app(app_name)(name=app_name, device=device_name), state=OK)
+        except Exception as e:
+            logger.error('Cannot create app instance. app: {0}, device: {1}. '
+                         'Error: {2}'.format(app_name, device_name, str(e)))
+            return None
 
     def __call__(self):
         return self.instance

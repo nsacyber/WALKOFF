@@ -9,7 +9,15 @@ info:
     name: Creative Commons
 actions:
   helloWorld:
-    run: Main.helloWorld
+    run: helloWorld
+    description: Returns an introductory message
+    returns:
+      Success:
+        description: introductory message
+        schema:
+          type: string
+  'Hello World':
+    run: helloWorld
     description: Returns an introductory message
     returns:
       Success:
@@ -17,7 +25,7 @@ actions:
         schema:
           type: string
   repeatBackToMe:
-    run: Main.repeatBackToMe
+    run: repeatBackToMe
     description: Repeats the call argument
     parameters:
         - name: call
@@ -30,16 +38,54 @@ actions:
         schema:
           type: string
   returnPlusOne:
-    run: Main.returnPlusOne
+    run: returnPlusOne
     description: Increments a given number by 1
     parameters:
         - name: number
           description: number to increment
           required: true
-          type: integer
-          format: int32
+          type: number
+    returns:
+      Success:
+        description: incremented number
+        schema:
+          type: number
+  pause:
+    run: pause
+    description: Pauses execution
+    parameters:
+        - name: seconds
+          description: Seconds to pause
+          required: true
+          type: number
     returns:
       Success:
         description: incremented number
         schema:
           type: integer
+  Buggy:
+    run: buggy_action
+    description: raises an exception
+    returns:
+      Success:
+        description: the exception
+        schema:
+          type: integer
+  'Add Three':
+    run: addThree
+    description: Adds three numbers
+    parameters:
+        - name: num1
+          required: true
+          type: number
+        - name: num2
+          required: true
+          type: number
+        - name: num3
+          required: true
+          type: number
+    returns:
+      Success:
+        description: summation
+        schema:
+          type: number

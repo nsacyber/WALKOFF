@@ -59,12 +59,13 @@ class Flag(ExecutionElement):
             return get_flag(self.action)(**args)
         except InvalidInput as e:
             logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
-                         'Returning false'.format(self.action, data_in, data, str(e)))
+                         'Returning False'.format(self.action, data_in, data, str(e)))
             callbacks.FlagArgsInvalid.send(self)
             return False
         except Exception as e:
             logger.error('Error encountered executing '
-                         'flag {0} with arguments {1} and value {2}'.format(self.action, self.args, data))
+                         'flag {0} with arguments {1} and value {2}: '
+                         'Error {3}. Returning False'.format(self.action, self.args, data, str(e)))
             return False
 
     def as_json(self, with_children=True):

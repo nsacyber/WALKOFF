@@ -128,14 +128,6 @@ class TestFlag(unittest.TestCase):
         filter_xml = xml.findall('filters/*')
         self.assertEqual(len(filter_xml), 2)
         self.assertTrue(all(filter_elem_xml.tag == 'filter' for filter_elem_xml in filter_xml))
-        self.assertListEqual([filter_elem_xml.get('action') for filter_elem_xml in filter_xml],
-                             ['mod1_filter2', 'Top Filter'])
-        filter1_args = filter_xml[0].findall('args/*')
-        self.assertEqual(len(filter1_args), 1)
-        self.assertEqual(filter1_args[0].tag, 'arg1')
-        self.assertEqual(filter1_args[0].text, 5.4)
-        filter2_args = filter_xml[1].findall('args/*')
-        self.assertEqual(len(filter2_args), 0)
 
     def __assert_xml_is_convertible(self, flag):
         original_json = flag.as_json()

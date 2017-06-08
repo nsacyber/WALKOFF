@@ -44,6 +44,12 @@ class TestAppsRegistration(unittest.TestCase):
         instance = hello_world_main_class()
         self.assertDictEqual(getattr(hello_world_main_class, 'helloWorld')(instance), {'message': 'HELLO WORLD'})
 
+    # def test_action_can_be_called_with_app_instance_with_args(self):
+    #     hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
+    #     hello_world_main_class = getattr(hello_world_main, 'Main')
+    #     instance = hello_world_main_class()
+    #     self.assertDictEqual(getattr(hello_world_main_class, 'helloWorld')(instance), {'message': 'HELLO WORLD'})
+
     def test_get_app_action_valid(self):
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')

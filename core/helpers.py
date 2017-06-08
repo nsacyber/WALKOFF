@@ -270,14 +270,14 @@ def import_all_apps(path=None):
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
 
 
-def get_api_params(app, action):
+def get_app_action_api(app, action):
     try:
         app_api = core.config.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
         try:
-            return app_api['actions'][action].get('parameters', [])
+            return app_api['actions'][action]
         except KeyError:
             raise UnknownAppAction(app, action)
 

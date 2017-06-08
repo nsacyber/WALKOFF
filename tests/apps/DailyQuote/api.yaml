@@ -9,7 +9,7 @@ info:
     name: Creative Commons
 actions:
   quoteIntro:
-    run: Main.quoteIntro
+    run: quoteIntro
     description: Prints an introductry string
     returns:
       Success:
@@ -17,7 +17,7 @@ actions:
         schema:
           type: string
   repeatBackToMe:
-    run: Main.repeatBackToMe
+    run: repeatBackToMe
     description: Repeats the call argument
     parameters:
         - name: call
@@ -30,7 +30,7 @@ actions:
         schema:
           type: string
   forismaticQuote:
-    run: Main.forismaticQuote
+    run: forismaticQuote
     description: Gets a quote
     parameters:
         - name: url
@@ -43,7 +43,7 @@ actions:
         schema:
           type: integer
   getQuote:
-    run: Main.getQuote
+    run: getQuote
     description: gets a quote
     returns:
       Success:

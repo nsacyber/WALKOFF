@@ -110,9 +110,11 @@ def load_function_info():
 app_apis = {}
 
 
-def load_app_apis():
+def load_app_apis(apps_path=None):
     from core.helpers import list_apps
     global app_apis
+    if apps_path is None:
+        apps_path = core.config.paths.apps_path
     try:
         with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
             json.loads(schema_file.read())
@@ -120,9 +122,9 @@ def load_app_apis():
         __logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))
         sys.exit(1)
     else:
-        for app in list_apps():
+        for app in list_apps(apps_path):
             try:
-                url = join(core.config.paths.apps_path, app, 'api.yaml')
+                url = join(apps_path, app, 'api.yaml')
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
                     from core.validator import validate_app_spec

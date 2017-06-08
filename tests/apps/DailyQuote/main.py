@@ -14,18 +14,17 @@ class Main(App):
 
     # Returns the message defined in init above
     @action
-    def quoteIntro(self, args={}):
+    def quoteIntro(self):
         return self.introMessage
 
     @action
-    def repeatBackToMe(self, args={}):
-        return "REPEATING: " + args["call"]()
+    def repeatBackToMe(self, call):
+        return "REPEATING: " + call
 
     # Uses argument passed to function to make an api request
     @action
-    def forismaticQuote(self, args={}):
+    def forismaticQuote(self, url):
         headers = {'content-type': 'application/json'}
-        url = args["url"]()
         payload = {'method': 'getQuote', 'format': 'json', 'lang': 'en'}
         result = self.s.get(url, params=payload, verify=False)
         try:
@@ -37,7 +36,7 @@ class Main(App):
 
     # Uses the url defined in _init to make a getQuote api call and returns the quote
     @action
-    def getQuote(self, args={}):
+    def getQuote(self):
         headers = {'content-type': 'application/json'}
         url = self.baseUrl
         result = self.s.get(url, headers=headers, verify=False)

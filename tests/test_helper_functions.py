@@ -219,19 +219,25 @@ class TestHelperFunctions(unittest.TestCase):
         with self.assertRaises(ImportError):
             import_all_flags('invalid.package')
 
-    def test_get_api_params_valid(self):
-        api = get_api_params('HelloWorld', 'pause')
-        self.assertEqual(len(api), 1)
-        expected = {'required': True, 'type': 'number', 'name': 'seconds', 'description': 'The seconds to pause for'}
-        self.assertDictEqual(api[0], expected)
+    def test_get_app_action_api_valid(self):
+        api = get_app_action_api('HelloWorld', 'pause')
+        self.assertEqual(len(api['parameters']), 1)
+        expected = {'returns': {'Success': {'description': 'successfully paused'}},
+                    'run': 'pause',
+                    'description': 'pauses execution for an amount of time',
+                    'parameters': [{'required': True,
+                                    'type': 'number',
+                                    'name': 'seconds',
+                                    'description': 'The seconds to pause for'}]}
+        self.assertDictEqual(api, expected)
 
-    def test_get_api_params_invalid_app(self):
+    def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):
-            get_api_params('InvalidApp', 'pause')
+            get_app_action_api('InvalidApp', 'pause')
 
-    def test_get_api_params_invalid_action(self):
+    def test_get_app_action_api_invalid_action(self):
         with self.assertRaises(UnknownAppAction):
-            get_api_params('HelloWorld', 'invalid')
+            get_app_action_api('HelloWorld', 'invalid')
 
     def assert_params_tuple_equal(self, actual, expected):
         self.assertEqual(len(actual), len(expected))
