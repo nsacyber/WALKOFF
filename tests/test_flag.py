@@ -1,321 +1,282 @@
 import unittest
-import sys
-import copy
-
-from core.config import config
+from core.helpers import (import_all_filters, import_all_flags, InvalidInput,
+                          InvalidElementConstructed, UnknownFlag, UnknownFilter)
+import core.config.config
 from core.flag import Flag
 from core.filter import Filter
-from core.arguments import Argument
+from tests.config import function_api_path
 
 
 class TestFlag(unittest.TestCase):
-    def setUp(self):
-        self.original_functions = copy.deepcopy(config.function_info)
-        self.test_funcs = {'flags': {'func_name1': {'args': []},
-                                     'func_name2': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'}]},
-                                     'func_name3': {'args': [{'name': 'arg_name1', 'type': 'arg_type1'},
-                                                             {'name': 'arg_name2', 'type': 'arg_type2'}]}}}
-        for func_name, arg_dict in self.test_funcs['flags'].items():
-            config.function_info['flags'][func_name] = arg_dict
-
-    def tearDown(self):
-        config.function_info = self.original_functions
+    @classmethod
+    def setUpClass(cls):
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def __compare_init(self, flag, action, parent_name, ancestry, filters, args):
         self.assertEqual(flag.action, action)
         self.assertEqual(flag.parent_name, parent_name)
         self.assertListEqual(flag.ancestry, ancestry)
-        self.assertListEqual(flag.filters, filters)
-        self.assertDictEqual({arg_name: arg_value for arg_name, arg_value in flag.args.items()}, args)
+        self.assertEqual(len(flag.filters), len(filters))
+        for actual_filter, expected_filter in zip(flag.filters, filters):
+            self.assertDictEqual(actual_filter.as_json(), expected_filter.as_json())
+        self.assertDictEqual(flag.args, args)
 
-    def test_init(self):
-        flag = Flag()
-        self.__compare_init(flag, '', '', ['', ''], [], {})
+    def test_init_no_args_action_only(self):
+        flag = Flag(action='Top Flag')
+        self.__compare_init(flag, 'Top Flag', '', ['', 'Top Flag'], [], {})
 
-        flag = Flag(parent_name='test_parent')
-        self.__compare_init(flag, '', 'test_parent', ['test_parent', ''], [], {})
+    def test_init_no_args_with_parent(self):
+        flag = Flag(action='Top Flag', parent_name='test_parent')
+        self.__compare_init(flag, 'Top Flag', 'test_parent', ['test_parent', 'Top Flag'], [], {})
 
-        flag = Flag(action='test_action')
-        self.__compare_init(flag, 'test_action', '', ['', 'test_action'], [], {})
+    def test_init_no_args_with_ancestry(self):
+        flag = Flag(action='Top Flag', ancestry=['a', 'b'])
+        self.__compare_init(flag, 'Top Flag', '', ['a', 'b', 'Top Flag'], [], {})
 
-        flag = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'])
-        self.__compare_init(flag, 'test_action', 'test_parent', ['a', 'b', 'test_action'], [], {})
+    def test_init_no_args_with_parent_and_ancestry(self):
+        flag = Flag(parent_name='test_parent', action='Top Flag', ancestry=['a', 'b'])
+        self.__compare_init(flag, 'Top Flag', 'test_parent', ['a', 'b', 'Top Flag'], [], {})
 
-        filters = [Filter(action='test_filter_action'), Filter()]
-        flag = Flag(action='test_action', filters=filters)
-        self.__compare_init(flag, 'test_action', '', ['', 'test_action'], filters, {})
+    def test_init_with_args_with_conversion(self):
+        flag = Flag(action='mod1_flag2', args={'arg1': '3'})
+        self.__compare_init(flag, 'mod1_flag2', '', ['', 'mod1_flag2'], [], {'arg1': 3})
 
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
-        expected_arg_json = {arg_name: arg_value for arg_name, arg_value in args.items()}
-        flag = Flag(action='test_action', args=args)
-        self.__compare_init(flag, 'test_action', '', ['', 'test_action'], [], expected_arg_json)
+    def test_init_with_args_no_conversion(self):
+        flag = Flag(action='mod1_flag2', args={'arg1': 3})
+        self.__compare_init(flag, 'mod1_flag2', '', ['', 'mod1_flag2'], [], {'arg1': 3})
 
-        flag = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters, args=args)
-        self.__compare_init(flag, 'test_action', 'test_parent', ['a', 'b', 'test_action'], filters, expected_arg_json)
+    def test_init_with_args_invalid_arg_name(self):
+        with self.assertRaises(InvalidInput):
+            Flag(action='mod1_flag2', args={'invalid': '3'})
 
-    def test_set(self):
-        filters = [Filter(action='test_filter_action'), Filter()]
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
-        flag = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters, args=args)
-        flag.set('action', 'renamed_action')
-        self.assertEqual(flag.action, 'renamed_action')
-        flag.set('filters', [])
-        self.assertListEqual(flag.filters, [])
-        flag.set('args', {})
-        self.assertDictEqual(flag.args, {})
+    def test_init_with_args_invalid_arg_type(self):
+        with self.assertRaises(InvalidInput):
+            Flag(action='mod1_flag2', args={'arg1': 'aaa'})
 
-    def test_set_non_existent(self):
-        filters = [Filter(action='test_filter_action'), Filter()]
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
-        flag = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters, args=args)
+    def test_init_with_filters(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='Top Flag', filters=filters)
+        self.__compare_init(flag, 'Top Flag', '', ['', 'Top Flag'], filters, {})
 
-        flag.set('junkfield', 'junk')
-        self.assertEqual(flag.junkfield, 'junk')
+    def test_init_with_no_action_no_xml(self):
+        with self.assertRaises(InvalidElementConstructed):
+            Flag()
 
-    def test_to_from_xml(self):
-        filters = [Filter(action='test_filter_action'), Filter()]
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
+    def test_as_json_action_only_with_children(self):
+        flag = Flag(action='Top Flag')
+        expected = {'action': 'Top Flag', 'args': {}, 'filters': []}
+        self.assertDictEqual(flag.as_json(), expected)
 
-        flags = [Flag(),
-                 Flag(parent_name='test_parent'),
-                 Flag(action='test_action'),
-                 Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b']),
-                 Flag(action='test_action', filters=filters),
-                 Flag(action='test_action', args=args),
-                 Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters, args=args)]
+    def test_as_json_action_only_without_children(self):
+        flag = Flag(action='Top Flag')
+        expected = {'action': 'Top Flag', 'args': {}, 'filters': []}
+        self.assertDictEqual(flag.as_json(with_children=False), expected)
 
-        for flag in flags:
-            original_flag = flag.as_json()
-            derived_flag = Flag(xml=flag.to_xml()).as_json()
-            if not derived_flag  == original_flag:
-                print(derived_flag, original_flag)
-            self.assertDictEqual(derived_flag, original_flag)
+    def test_as_json_with_args_with_children(self):
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'})
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': []}
+        self.assertDictEqual(flag.as_json(), expected)
 
-    def test_add_filter(self):
-        filters = [Filter(action='test_filter_action'), Filter()]
-        filters_cpy = list(filters)
-        flag = Flag(action='test_action', filters=filters)
-        flag.add_filter()
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 1)
-        self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='', args={}).as_json())
+    def test_as_json_with_args_without_children(self):
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'})
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': []}
+        self.assertDictEqual(flag.as_json(with_children=False), expected)
 
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        flag.add_filter(action='test_add', args=args)
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 2)
-        self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add', args=args).as_json())
+    def test_as_json_with_args_and_filters_with_children(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters)
+        filters_json = [filter_element.as_json() for filter_element in flag.filters]
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': filters_json}
+        self.assertDictEqual(flag.as_json(), expected)
 
-        flag.add_filter(action='test_add2', index=0)
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 3)
-        self.assertDictEqual(flag.filters[0].as_json(), Filter(action='test_add2', args={}).as_json())
+    def test_as_json_with_args_and_filters_without_children(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters)
+        filters_json = [filter_element.name for filter_element in flag.filters]
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': filters_json}
+        self.assertDictEqual(flag.as_json(with_children=False), expected)
 
-        flag.add_filter(action='test_add3', index=len(filters_cpy) + 3)
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 4)
-        self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add3', args={}).as_json())
+    def test_to_xml_action_only(self):
+        xml = Flag(action='Top Flag').to_xml()
+        self.assertEqual(xml.tag, 'flag')
+        self.assertEqual(xml.get('action'), 'Top Flag')
+        self.assertListEqual(xml.findall('args/*'), [])
+        self.assertListEqual(xml.findall('filters/*'), [])
 
-        flag.add_filter(action='test_add4', index=1000)
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 5)
-        self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='test_add4', args={}).as_json())
+    def test_to_xml_with_args_no_filters(self):
+        xml = Flag(action='mod1_flag2', args={'arg1': '5'}).to_xml()
+        self.assertEqual(xml.tag, 'flag')
+        self.assertEqual(xml.get('action'), 'mod1_flag2')
+        arg_xml = xml.findall('args/*')
+        self.assertEqual(len(arg_xml), 1)
+        self.assertEqual(arg_xml[0].tag, 'arg1')
+        self.assertEqual(arg_xml[0].text, 5)
+        self.assertListEqual(xml.findall('filters/*'), [])
 
-        flag.add_filter(action='test_add5', index=-1)
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 6)
-        self.assertDictEqual(flag.filters[-2].as_json(), Filter(action='test_add5', args={}).as_json())
+    def test_to_xml_with_args_and_filters(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='mod1_flag2', args={'arg1': '5'}, filters=filters)
+        xml = flag.to_xml()
+        self.assertEqual(xml.tag, 'flag')
+        self.assertEqual(xml.get('action'), 'mod1_flag2')
+        arg_xml = xml.findall('args/*')
+        self.assertEqual(len(arg_xml), 1)
+        self.assertEqual(arg_xml[0].tag, 'arg1')
+        self.assertEqual(arg_xml[0].text, 5)
+        filter_xml = xml.findall('filters/*')
+        self.assertEqual(len(filter_xml), 2)
+        self.assertTrue(all(filter_elem_xml.tag == 'filter' for filter_elem_xml in filter_xml))
+        self.assertListEqual([filter_elem_xml.get('action') for filter_elem_xml in filter_xml],
+                             ['mod1_filter2', 'Top Filter'])
+        filter1_args = filter_xml[0].findall('args/*')
+        self.assertEqual(len(filter1_args), 1)
+        self.assertEqual(filter1_args[0].tag, 'arg1')
+        self.assertEqual(filter1_args[0].text, 5.4)
+        filter2_args = filter_xml[1].findall('args/*')
+        self.assertEqual(len(filter2_args), 0)
 
-        flag.add_filter(action='test_add6', index=-100)
-        self.assertEqual(len(flag.filters), len(filters_cpy) + 7)
-        self.assertDictEqual(flag.filters[0].as_json(), Filter(action='test_add6', args={}).as_json())
+    def __assert_xml_is_convertible(self, flag):
+        original_json = flag.as_json()
+        original_xml = flag.to_xml()
+        new_flag = Flag(xml=original_xml)
+        self.assertDictEqual(new_flag.as_json(), original_json)
 
-    def test_delete_filter(self):
-        filters = [Filter(action='test_filter_action'),
-                   Filter(),
-                   Filter(action='a'),
-                   Filter(action='b'),
-                   Filter(action='c')]
-        flag = Flag(action='test_action', filters=filters)
-        self.assertTrue(flag.remove_filter())
-        self.assertEqual(len(flag.filters), 4)
-        self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='b').as_json())
+    def test_to_from_xml_is_same_action_only(self):
+        self.__assert_xml_is_convertible(Flag(action='Top Flag'))
 
-        self.assertTrue(flag.remove_filter(1))
-        self.assertEqual(len(flag.filters), 3)
-        self.assertDictEqual(flag.filters[1].as_json(), Filter(action='a').as_json())
+    def test_to_from_xml_is_same_with_args(self):
+        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}))
 
-        self.assertTrue(flag.remove_filter(-2))
-        self.assertEqual(len(flag.filters), 2)
-        self.assertDictEqual(flag.filters[-2].as_json(), Filter(action='test_filter_action').as_json())
+    def test_to_from_xml_is_same_with_args_and_filters(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}, filters=filters))
 
-        self.assertFalse(flag.remove_filter(1000))
-        self.assertEqual(len(flag.filters), 2)
-        self.assertFalse(flag.remove_filter(-1000))
-        self.assertEqual(len(flag.filters), 2)
+    def test_call_action_only_no_args_valid_data_no_conversion(self):
+        self.assertTrue(Flag(action='Top Flag')(3.4))
 
-        self.assertTrue(flag.remove_filter(0))
-        self.assertEqual(len(flag.filters), 1)
-        self.assertDictEqual(flag.filters[-1].as_json(), Filter(action='b').as_json())
+    def test_call_action_only_no_args_valid_data_with_conversion(self):
+        self.assertTrue(Flag(action='Top Flag')('3.4'))
 
-        self.assertTrue(flag.remove_filter(-1))
-        self.assertEqual(len(flag.filters), 0)
-        self.assertListEqual(flag.filters, [])
+    def test_call_action_only_no_args_invalid_data(self):
+        self.assertFalse(Flag(action='Top Flag')('invalid'))
 
-        self.assertFalse(flag.remove_filter())
-        self.assertListEqual(flag.filters, [])
+    def test_call_action_with_valid_args_valid_data(self):
+        self.assertTrue(Flag(action='mod1_flag2', args={'arg1': 3})('5'))
 
-    def test_validate_default_flag(self):
-        filter_elem = Flag()
-        self.assertFalse(filter_elem.validate_args())
+    def test_call_action_with_valid_args_invalid_data(self):
+        self.assertFalse(Flag(action='mod1_flag2', args={'arg1': 3})('invalid'))
 
-    def test_validate_invalid_flag(self):
-        flag = Flag(action='junkName')
-        self.assertFalse(flag.validate_args())
+    def test_call_action_with_valid_args_and_filters_valid_data(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5'}), Filter(action='Top Filter')]
+        # should go <input = 1> -> <mod1_filter2 = 5+1 = 6> -> <Top Filter 6=6> -> <mod1_flag2 4+6%2==0> -> True
+        self.assertTrue(Flag(action='mod1_flag2', args={'arg1': 4}, filters=filters)('1'))
 
-    # def test_validate_args(self):
-    #
-    #     actions = ['func_name1', 'func_name2', 'func_name3', 'invalid_name']
-    #
-    #     for action in actions:
-    #         for arg_action, args in self.test_funcs['flags'].items():
-    #             flag = Flag(action=action, args={arg['name']: {'key':arg['name'], 'format':arg['type']}
-    #                                              for arg in self.test_funcs['flags'][arg_action]['args']})
-    #             if action == 'invalid_name':
-    #                 self.assertFalse(flag.validate_args())
-    #             elif action == arg_action or not self.test_funcs['flags'][action]['args']:
-    #                 self.assertTrue(flag.validate_args())
-    #             else:
-    #                 self.assertFalse(flag.validate_args())
+    def test_call_action_with_valid_args_and_filters_invalid_data(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5'}), Filter(action='Top Filter')]
+        # should go <input = invalid> -> <mod1_filter2 with error = invalid> -> <Top Filter with error = invalid>
+        # -> <mod1_flag2 4+invalid throws error> -> False
+        self.assertFalse(Flag(action='mod1_flag2', args={'arg1': 4}, filters=filters)('invalid'))
 
-    def test_call_invalid_flag(self):
-        flag = Flag(action='junkName', args={arg['name']: {'key':arg['name'], 'format':arg['type']}
-                                             for arg in self.test_funcs['flags']['func_name2']['args']})
-        self.assertFalse(flag())
-        self.assertFalse(flag(output=6))
+    def test_from_json_action_only(self):
+        json_in = {'action': 'Top Flag', 'args': {}, 'filters': []}
+        flag = Flag.from_json(json_in)
+        self.__compare_init(flag, 'Top Flag', '', ['', 'Top Flag'], [], {})
 
-    def test_as_json(self):
-        filters = [Filter(action='test_filter_action'), Filter()]
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
-        args_json = {'arg2': {'format': 'int', 'key': 'arg2', 'value': '3'},
-                     'arg1': {'format': 'str', 'key': 'arg1', 'value': 'a'}}
+    def test_from_json_invalid_action(self):
+        json_in = {'action': 'invalid', 'args': {}, 'filters': []}
+        with self.assertRaises(UnknownFlag):
+            Flag.from_json(json_in)
 
-        if sys.version_info < (3, 0):
-            args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'unicode'}
-        else:
-            args_json['arg3'] = {'key': 'arg3', 'value': 'abc', 'format': 'str'}
+    def test_from_json_action_only_with_parent(self):
+        json_in = {'action': 'Top Flag', 'args': {}, 'filters': []}
+        flag = Flag.from_json(json_in, parent_name='parent')
+        self.__compare_init(flag, 'Top Flag', 'parent', ['parent', 'Top Flag'], [], {})
 
-        input_output = {Flag(): {'args': {}, 'action': '', 'filters': []},
-                        Flag(parent_name='test_parent'): {'args': {}, 'action': '', 'filters': []},
-                        Flag(action='test_action'): {'args': {}, 'action': 'test_action', 'filters': []},
-                        Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b']):
-                            {'args': {}, 'action': 'test_action', 'filters': []},
-                        Flag(action='test_action', filters=filters):
-                            {'args': {},
-                             'action': 'test_action',
-                             'filters': [{'args': {}, 'action': 'test_filter_action'}, {'args': {}, 'action': ''}]},
-                        Flag(action='test_action', args=args): {'args': args_json,
-                                                                'action': 'test_action', 'filters': []},
-                        Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters,
-                             args=args): {'args': args_json,
-                                          'action': 'test_action',
-                                          'filters': [{'args': {}, 'action': 'test_filter_action'},
-                                                      {'args': {}, 'action': ''}]}
-                        }
-        for input_flag, expected in input_output.items():
-            self.assertDictEqual(input_flag.as_json(), expected)
-            json_without_children = expected
-            json_without_children['filters'] = [filter_element['action']
-                                                for filter_element in json_without_children['filters']]
-            self.assertDictEqual(input_flag.as_json(with_children=False), json_without_children)
+    def test_from_json_action_only_with_parent_and_ancestry(self):
+        json_in = {'action': 'Top Flag', 'args': {}, 'filters': []}
+        flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
+        self.__compare_init(flag, 'Top Flag', 'parent', ['a', 'b', 'Top Flag'], [], {})
 
-    def test_from_json(self):
-        filters = [Filter(action='test_filter_action'), Filter()]
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
-        input_output = {Flag(): ('', ['']),
-                        Flag(parent_name='test_parent'): ('test_parent', ['test_parent']),
-                        Flag(action='test_action'): ('', ['']),
-                        Flag(parent_name='test_parent',
-                             action='test_action',
-                             ancestry=['a', 'b']): ('test_parent', ['a', 'b']),
-                        Flag(action='test_action', args=args): ('', [''])}
+    def test_from_json_with_args(self):
+        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': []}
+        flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
+        self.__compare_init(flag, 'mod1_flag2', 'parent', ['a', 'b', 'mod1_flag2'], [], {'arg1': 3})
 
-        flag1, expected1 = Flag(action='test_action'), ('', [''])
-        filters1 = [Filter(parent_name=flag1.name, ancestry=flag1.ancestry),
-                    Filter(action='test_filter_action', parent_name=flag1.name, ancestry=flag1.ancestry)]
-        flag1.filters = filters1
+    def test_from_json_with_invalid_args(self):
+        json_in = {'action': 'mod1_flag2', 'args': {'invalid': 3}, 'filters': []}
+        with self.assertRaises(InvalidInput):
+            Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
 
-        flag2, expected2 = Flag(parent_name='test_parent', action='test_action', ancestry=['a', 'b'], filters=filters,
-                                args=args), ('test_parent', ['a', 'b'])
-        filters2 = [Filter(parent_name=flag2.name, ancestry=flag2.ancestry),
-                    Filter(action='test_filter_action', parent_name=flag2.name, ancestry=flag2.ancestry)]
-        flag2.filters = filters2
+    def test_from_json_with_filters(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        filters_json = [filter_elem.as_json() for filter_elem in filters]
+        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': filters_json}
+        flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
+        self.__compare_init(flag, 'mod1_flag2', 'parent', ['a', 'b', 'mod1_flag2'], filters, {'arg1': 3})
+        for filter_element in flag.filters:
+            self.assertEqual(filter_element.parent_name, 'mod1_flag2')
+            self.assertListEqual(filter_element.ancestry, ['a', 'b', 'mod1_flag2', filter_element.action])
 
-        input_output[flag1] = expected1
-        input_output[flag2] = expected2
+    def test_from_json_with_filters_with_invalid_action(self):
+        filters_json = [{'action': 'Top Filter', 'args': {}}, {'action': 'invalid', 'args': {'arg1': '5.4'}}]
+        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': filters_json}
+        with self.assertRaises(UnknownFilter):
+            Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
 
-        for flag, (parent_name, ancestry) in input_output.items():
-            flag_json = flag.as_json()
-            original_filter_ancestries = [list(filter_element.ancestry) for filter_element in flag.filters]
-            derived_flag = Flag.from_json(flag_json, parent_name=parent_name, ancestry=ancestry)
-            derived_filters_ancestries = [list(filter_element.ancestry) for filter_element in derived_flag.filters]
-            self.assertEqual(len(derived_filters_ancestries), len(original_filter_ancestries))
-            for derived_filter_ancestry, original_filter_ancestry in zip(derived_filters_ancestries,
-                                                                         original_filter_ancestries):
-                self.assertListEqual(derived_filter_ancestry, original_filter_ancestry)
-            self.assertDictEqual(derived_flag.as_json(), flag_json)
-            self.assertEqual(flag.parent_name, derived_flag.parent_name)
-            self.assertListEqual(flag.ancestry, derived_flag.ancestry)
+    def test_from_json_with_filters_with_invalid_args(self):
+        filters_json = [{'action': 'Top Filter', 'args': {}}, {'action': 'mod1_filter2', 'args': {'arg1': 'invalid'}}]
+        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': filters_json}
+        with self.assertRaises(InvalidInput):
+            Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
 
-    def test_get_children(self):
-        names = ['action1', '', 'action2']
-        flag1 = Flag()
-        for name in names:
-            self.assertIsNone(flag1.get_children([name]))
-            self.assertDictEqual(flag1.get_children([]), flag1.as_json(with_children=False))
+    def test_get_children_no_filters_no_ancestry(self):
+        flag = Flag(action='Top Flag')
+        self.assertDictEqual(flag.get_children([]), flag.as_json(with_children=False))
 
-        filters = [Filter(action='action1'), Filter(), Filter(action='action2')]
-        flag2 = Flag(filters=filters)
-        for i, name in enumerate(names):
-            self.assertDictEqual(flag2.get_children([name]), filters[i].as_json())
-            self.assertDictEqual(flag2.get_children([]), flag2.as_json(with_children=False))
+    def test_get_children_no_filters_with_ancestry(self):
+        for ancestry in [['a'], ['a', 'b']]:
+            self.assertIsNone(Flag(action='Top Flag').get_children(ancestry))
 
-    def test_name_parent_rename(self):
-        flag = Flag(ancestry=['parent'], action='test')
+    def test_get_children_with_filters_no_ancestry(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='Top Flag', filters=filters)
+        self.assertDictEqual(flag.get_children([]), flag.as_json(with_children=False))
+
+    def test_get_children_with_filters_invalid_ancestry(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='Top Flag', filters=filters)
+        for ancestry in [['a'], ['a', 'b']]:
+            self.assertIsNone(flag.get_children(ancestry))
+
+    def test_get_children_with_filters_valid_ancestry(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='Top Flag', filters=filters)
+        self.assertDictEqual(flag.get_children(['mod1_filter2']), filters[0].as_json())
+        self.assertDictEqual(flag.get_children(['Top Filter']), filters[1].as_json())
+
+    def test_get_children_with_filters_ancestry_too_deep(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='Top Flag', filters=filters)
+        for name in ['mod1_filter2', 'Top Filter']:
+            self.assertIsNone(flag.get_children([name, 'too deep']))
+
+    def test_reconstruct_ancestry_no_filters(self):
+        flag = Flag(ancestry=['parent'], action='Top Flag')
         new_ancestry = ['parent_update']
         flag.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append('test')
-        self.assertListEqual(new_ancestry, flag.ancestry)
+        new_ancestry.append('Top Flag')
+        self.assertListEqual(flag.ancestry, new_ancestry)
 
-    def test_name_parent_filter_rename(self):
-        flag = Flag(ancestry=['flag_parent'], action='test_flag')
-        filter_element = Filter(action="test_filter", ancestry=flag.ancestry)
-        flag.filters = [filter_element]
-
-        new_ancestry = ["flag_parent_update"]
+    def test_reconstruct_ancestry_with_filters(self):
+        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
+        flag = Flag(action='Top Flag', filters=filters, ancestry=['flag_parent'])
+        new_ancestry = ['new_parent']
         flag.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("test_flag")
-        new_ancestry.append("test_filter")
-        self.assertListEqual(new_ancestry, flag.filters[0].ancestry)
-
-    def test_name_parent_multiple_filter_rename(self):
-        flag = Flag(ancestry=['flag_parent'], action='test_flag')
-        filter_one = Filter(action="test_filter_one", ancestry=flag.ancestry)
-        filter_two = Filter(action="test_filter_two", ancestry=flag.ancestry)
-        flag.filters = [filter_one, filter_two]
-
-        new_ancestry = ["flag_parent_update"]
-        flag.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("test_flag")
-        new_ancestry.append("test_filter_one")
-        self.assertListEqual(new_ancestry, flag.filters[0].ancestry)
-
-        new_ancestry.remove("test_filter_one")
-        new_ancestry.append("test_filter_two")
-        self.assertListEqual(new_ancestry, flag.filters[1].ancestry)
+        new_ancestry.append('Top Flag')
+        self.assertListEqual(flag.ancestry, new_ancestry)
+        for filter_element in filters:
+            ancestry = list(new_ancestry)
+            ancestry.append(filter_element.action)
+            self.assertEqual(filter_element.ancestry, ancestry)

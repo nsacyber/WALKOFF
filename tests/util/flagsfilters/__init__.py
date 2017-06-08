@@ -2,11 +2,11 @@ from core.decorators import *
 
 @datafilter
 def top_level_filter(value):
-    pass
+    return value
 
 @flag
 def top_level_flag(value):
-    pass
+    return True
 
 @datafilter
 def filter1(value):

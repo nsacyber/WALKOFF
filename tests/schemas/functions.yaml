@@ -14,7 +14,7 @@ flags:
     parameters:
       - name: value
         required: true
-        type: string
+        type: number
   mod1_flag1:
     run: mod1.flag1
     dataIn: value
@@ -28,10 +28,10 @@ flags:
     parameters:
       - name: value
         required: true
-        type: string
+        type: integer
       - name: arg1
         required: true
-        type: string
+        type: integer
   sub1_top_flag:
     run: sub1.sub1_top_flag
     dataIn: value

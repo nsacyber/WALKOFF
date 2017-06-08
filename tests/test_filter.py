@@ -2,7 +2,7 @@ import unittest
 from core.filter import Filter
 import core.config.config
 from tests.config import function_api_path
-from core.helpers import import_all_filters, import_all_flags, UnknownFilter, InvalidInput
+from core.helpers import import_all_filters, import_all_flags, UnknownFilter, InvalidInput, InvalidElementConstructed
 
 
 class TestFilter(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestFilter(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
-    def compare_init(self, elem, action, parent_name, ancestry, args=None):
+    def __compare_init(self, elem, action, parent_name, ancestry, args=None):
         args = args if args is not None else {}
         self.assertEqual(elem.action, action)
         self.assertDictEqual(elem.args, args)
@@ -23,7 +23,7 @@ class TestFilter(unittest.TestCase):
 
     def test_init_action_only(self):
         filter_elem = Filter(action='Top Filter')
-        self.compare_init(filter_elem, 'Top Filter', '', ['', 'Top Filter'])
+        self.__compare_init(filter_elem, 'Top Filter', '', ['', 'Top Filter'])
 
     def test_init_invalid_action(self):
         with self.assertRaises(UnknownFilter):
@@ -31,19 +31,19 @@ class TestFilter(unittest.TestCase):
 
     def test_init_action_with_parent(self):
         filter_elem = Filter(parent_name='test_parent', action='mod1_filter1')
-        self.compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['test_parent', 'mod1_filter1'])
+        self.__compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['test_parent', 'mod1_filter1'])
 
     def test_init_with_ancestry(self):
         filter_elem = Filter(ancestry=['a', 'b'], action="mod1_filter1")
-        self.compare_init(filter_elem, 'mod1_filter1', '', ['a', 'b', 'mod1_filter1'])
+        self.__compare_init(filter_elem, 'mod1_filter1', '', ['a', 'b', 'mod1_filter1'])
 
     def test_init_with_empty_ancestry(self):
         filter_elem = Filter(ancestry=[], action="mod1_filter1")
-        self.compare_init(filter_elem, 'mod1_filter1', '', ['mod1_filter1'])
+        self.__compare_init(filter_elem, 'mod1_filter1', '', ['mod1_filter1'])
 
     def test_init_with_args(self):
         filter_elem = Filter(action='mod1_filter2', args={'arg1': '5.4'})
-        self.compare_init(filter_elem, 'mod1_filter2', '', ['', 'mod1_filter2'], args={'arg1': 5.4})
+        self.__compare_init(filter_elem, 'mod1_filter2', '', ['', 'mod1_filter2'], args={'arg1': 5.4})
 
     def test_init_with_invalid_arg_name(self):
         with self.assertRaises(InvalidInput):
@@ -54,7 +54,7 @@ class TestFilter(unittest.TestCase):
             Filter(action='mod1_filter2', args={'arg1': 'invalid'})
 
     def test_init_with_no_action_or_xml(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidElementConstructed):
             Filter()
 
     def test_as_json_no_args(self):
@@ -68,15 +68,13 @@ class TestFilter(unittest.TestCase):
         self.assertDictEqual(filter_elem.as_json(), expected)
 
     def test_to_xml_no_args(self):
-        filter_elem = Filter(action='Top Filter')
-        xml = filter_elem.to_xml()
+        xml = Filter(action='Top Filter').to_xml()
         self.assertEqual(xml.tag, 'filter')
         self.assertEqual(xml.get('action'), 'Top Filter')
         self.assertListEqual(xml.findall('args/*'), [])
 
     def test_to_xml_with_args(self):
-        filter_elem = Filter(action='mod1_filter2', args={'arg1': '5.4'})
-        xml = filter_elem.to_xml()
+        xml = Filter(action='mod1_filter2', args={'arg1': '5.4'}).to_xml()
         self.assertEqual(xml.tag, 'filter')
         self.assertEqual(xml.get('action'), 'mod1_filter2')
         arg_xml = xml.findall('args/*')
@@ -101,30 +99,33 @@ class TestFilter(unittest.TestCase):
     def test_from_json_no_args_default_parent_and_ancestry(self):
         json_in = {'action': 'Top Filter', 'args': {}}
         filter_elem = Filter.from_json(json_in)
-        self.compare_init(filter_elem, 'Top Filter', '', ['', 'Top Filter'])
+        self.__compare_init(filter_elem, 'Top Filter', '', ['', 'Top Filter'])
 
     def test_from_json_no_args_default_parent_with_ancestry(self):
         json_in = {'action': 'mod1_filter1', 'args': {}}
         filter_elem = Filter.from_json(json_in, ancestry=['a', 'b'])
-        self.compare_init(filter_elem, 'mod1_filter1', '', ['a', 'b', 'mod1_filter1'])
+        self.__compare_init(filter_elem, 'mod1_filter1', '', ['a', 'b', 'mod1_filter1'])
 
     def test_from_json_no_args_with_parent_no_ancestry(self):
         json_in = {'action': 'mod1_filter1', 'args': {}}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent')
-        self.compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['test_parent', 'mod1_filter1'])
+        self.__compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['test_parent', 'mod1_filter1'])
 
     def test_from_json_no_args_with_parent_and_ancestry(self):
         json_in = {'action': 'mod1_filter1', 'args': {}}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
-        self.compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['a', 'b', 'mod1_filter1'])
+        self.__compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['a', 'b', 'mod1_filter1'])
 
     def test_from_json_with_args(self):
         json_in = {'action': 'mod1_filter2', 'args': {'arg1': '5.4'}}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
-        self.compare_init(filter_elem, 'mod1_filter2', 'test_parent', ['a', 'b', 'mod1_filter2'], args={'arg1': 5.4})
+        self.__compare_init(filter_elem, 'mod1_filter2', 'test_parent', ['a', 'b', 'mod1_filter2'], args={'arg1': 5.4})
 
-    def test_call_with_no_args(self):
-        self.assertIsNone(Filter(action='Top Filter')(5.4))
+    def test_call_with_no_args_no_conversion(self):
+        self.assertAlmostEqual(Filter(action='Top Filter')(5.4), 5.4)
+
+    def test_call_with_no_args_with_conversion(self):
+        self.assertAlmostEqual(Filter(action='Top Filter')('-10.437'), -10.437)
 
     def test_call_with_invalid_input(self):
         self.assertEqual(Filter(action='Top Filter')('invalid'), 'invalid')
@@ -132,9 +133,21 @@ class TestFilter(unittest.TestCase):
     def test_call_with_filter_which_raises_exception(self):
         self.assertEqual(Filter(action='sub1_filter3')('anything'), 'anything')
 
+    def test_call_with_args_no_conversion(self):
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('5.4'), 15.7)
+
+    def test_call_with_args_with_conversion(self):
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})(5.4), 15.7)
+
+    def test_call_with_args_invalid_input(self):
+        self.assertEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('invalid'), 'invalid')
+
     def test_name_parent_rename(self):
-        filter = Filter(ancestry=['filter_parent'], action='Top Filter')
+        filter_elem = Filter(ancestry=['filter_parent'], action='Top Filter')
         new_ancestry = ['filter_parent_update']
-        filter.reconstruct_ancestry(new_ancestry)
+        filter_elem.reconstruct_ancestry(new_ancestry)
         new_ancestry.append('Top Filter')
-        self.assertListEqual(filter.ancestry, new_ancestry)
+        self.assertListEqual(filter_elem.ancestry, new_ancestry)
+
+    def test_get_children(self):
+        self.assertDictEqual(Filter(ancestry=['filter_parent'], action='Top Filter').get_children(['anything']), {})

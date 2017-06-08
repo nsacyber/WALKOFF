@@ -25,7 +25,7 @@ def action1(value):
 
 @flag
 def flag2(value, arg1):
-    pass
+    return (value + arg1) % 2 == 0
 
 def filter3_untagged(value):
     pass

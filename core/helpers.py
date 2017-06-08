@@ -357,11 +357,19 @@ class UnknownFlag(Exception):
         super(UnknownFlag, self).__init__(self.message)
         self.flag = flag
 
+
 class UnknownFilter(Exception):
     def __init__(self, filter_name):
         self.message = 'Unknown filter {0}'.format(filter_name)
         super(UnknownFilter, self).__init__(self.message)
         self.filter = filter_name
+
+
+class InvalidElementConstructed(Exception):
+    def __init__(self, message):
+        self.message = message
+        super(InvalidElementConstructed, self).__init__(self.message)
+
 
 def __get_tagged_functions(module, tag, prefix):
     tagged = {}
