@@ -1,12 +1,13 @@
 from core.decorators import *
 
+
 def untagged(value):
     pass
 
 
 @datafilter
 def filter3(value):
-    pass
+    raise ValueError
 
 
 @flag
@@ -25,6 +26,7 @@ def action1(value):
 @flag
 def flag2(value):
     pass
+
 
 def filter3_untagged(value):
     pass

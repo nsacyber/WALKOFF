@@ -9,11 +9,11 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import get_api_params, InvalidStepInput
+from core.helpers import get_api_params, InvalidInput
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
-from core.validator import validate_parameters
+from core.validator import validate_app_action_parameters
 
 import traceback
 logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ class Step(ExecutionElement):
             get_app_action(self.app, self.action)
             self.input = inputs if inputs is not None else {}
             self.input_api = get_api_params(self.app, self.action)
-            validate_parameters(self.input_api, self.input, self.app, self.action)
+            validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
             self.device = device
             self.risk = risk
             self.input = inputs if inputs is not None else {}
@@ -108,7 +108,7 @@ class Step(ExecutionElement):
         get_app_action(self.app, self.action)
         self.input_api = get_api_params(self.app, self.action)
         self.input = {arg.get("name"): arg.text for arg in step_xml.findall('inputs/input')}
-        validate_parameters(self.input_api, self.input, self.app, self.action)
+        validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
@@ -136,8 +136,8 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = int(risk_field.text) if risk_field is not None else 0
-        self.input = {arg.get("name"): arg.text for arg in step_xml.findall('inputs/input')}
-        validate_parameters(self.input_api, self.input, self.app, self.action)
+        self.input = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
+        validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -206,7 +206,7 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
-
+        #
         # try:
         #     fn = self.__lookup_function()
         #     args = {}

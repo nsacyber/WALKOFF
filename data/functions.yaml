@@ -55,6 +55,3 @@ filters:
         description: The length of the collection
         schema:
           type: object
-#      type: string
-#      schema:
-#        type: string

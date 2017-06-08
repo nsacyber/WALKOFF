@@ -19,7 +19,7 @@
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">(.*)</regex>
+                        <regex>(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">
@@ -35,8 +35,8 @@
             <app>Invalid</app>
             <device>hwTest</device>
             <inputs>
-                <input name="number">3</input>
-                <input name="number2">4</input>
+                <number>3</number>
+                <number2>4</number2>
             </inputs>
             <next></next>
             <error></error>

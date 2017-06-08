@@ -282,11 +282,27 @@ def get_api_params(app, action):
             raise UnknownAppAction(app, action)
 
 
+def __split_api_params(api):
+    data_param_name = api['dataIn']
+    args = []
+    data_param = None
+    for api_param in api['parameters']:
+        if api_param['name'] == data_param_name:
+            data_param = api_param
+        else:
+            args.append(api_param)
+    if data_param is None:  # This should be validated by the schema, but just in case
+        raise ValueError
+    return args, data_param
+
+
 def get_flag_api(flag):
     try:
-        return core.config.config.function_apis['flags'][flag]
-    except KeyError:
+        api = core.config.config.function_apis['flags'][flag]
+        return __split_api_params(api)
+    except (KeyError, ValueError):
         raise UnknownFlag(flag)
+
 
 def get_flag(flag):
     try:
@@ -295,18 +311,21 @@ def get_flag(flag):
     except KeyError:
         raise UnknownFlag(flag)
 
-def get_filter_api(filter):
-    try:
-        return core.config.config.function_apis['filters'][filter]
-    except KeyError:
-        raise UnknownFilter(filter)
 
-def get_filter(filter):
+def get_filter_api(filter_name):
     try:
-        runnable = core.config.config.function_apis['filters'][filter]['run']
+        api = core.config.config.function_apis['filters'][filter_name]
+        return __split_api_params(api)
+    except (KeyError, ValueError):
+        raise UnknownFilter(filter_name)
+
+
+def get_filter(filter_name):
+    try:
+        runnable = core.config.config.function_apis['filters'][filter_name]['run']
         return core.config.config.filters[runnable]
     except KeyError:
-        raise UnknownFilter(filter)
+        raise UnknownFilter(filter_name)
 
 
 class InvalidAppStructure(Exception):
@@ -326,14 +345,11 @@ class UnknownAppAction(Exception):
         self.action = action_name
 
 
-class InvalidStepInput(Exception):
-    def __init__(self, app, action, value='', format_type=''):
-        self.message = 'Invalid inputs for action {0} for app {1}'.format(action, app)
-        super(InvalidStepInput, self).__init__(self.message)
-        self.app = app
-        self.action = action
-        self.value = value
-        self.format_type = format_type
+class InvalidInput(Exception):
+    def __init__(self, message):
+        self.message = message
+        super(InvalidInput, self).__init__(self.message)
+
 
 class UnknownFlag(Exception):
     def __init__(self, flag):
@@ -346,7 +362,6 @@ class UnknownFilter(Exception):
         self.message = 'Unknown filter {0}'.format(filter_name)
         super(UnknownFilter, self).__init__(self.message)
         self.filter = filter_name
-
 
 def __get_tagged_functions(module, tag, prefix):
     tagged = {}

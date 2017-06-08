@@ -1,0 +1,136 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: HelloWorldApp
+  description: A sample walkoff app specification
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+flags:
+  'Top Flag':
+    run: top_level_flag
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  mod1_flag1:
+    run: mod1.flag1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  mod1_flag2:
+    run: mod1.flag2
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+      - name: arg1
+        required: true
+        type: string
+  sub1_top_flag:
+    run: sub1.sub1_top_flag
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  mod2_flag1:
+    run: sub1.mod2.flag1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  mod2_flag2:
+    run: sub1.mod2.flag2
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+filters:
+  'Top Filter':
+    run: top_level_filter
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  filter1:
+    run: filter1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  mod1_filter1:
+    run: mod1.filter1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  mod1_filter2:
+    run: mod1.filter2
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+      - name: arg1
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub_top_filter:
+    run: sub1.sub1_top_filter
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub1_filter3:
+    run: sub1.mod2.filter3
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub1_filter1:
+    run: sub1.mod2.filter1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object

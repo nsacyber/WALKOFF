@@ -1,11 +1,9 @@
 from xml.etree import cElementTree
-from core.flags import execute_flag, FlagExecutionNotImplementedError, FlagNotImplementedError
-from core.flags import *  # needed to put all flags in sys.modules for them to be registered
-from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
-import core.config.config
+from core.helpers import get_flag, get_flag_api
+from core.validator import validate_flag_parameters
 import logging
 logger = logging.getLogger(__name__)
 
@@ -29,6 +27,8 @@ class Flag(ExecutionElement):
             ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
             self.action = action
             self.args = args if args is not None else {}
+            self.args_api, self.data_in_api = get_flag_api(self.action)
+            validate_flag_parameters(self.args_api, self.args, self.action)
             self.filters = filters if filters is not None else []
 
     def reconstruct_ancestry(self, parent_ancestry):
@@ -44,8 +44,10 @@ class Flag(ExecutionElement):
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
-        self.args = {arg.tag: {'key':arg.tag, 'value':arg.text, 'type':arg.get('format')}
-                     for arg in xml_element.findall('args/*')}
+        # self.args = {arg.tag: {'key':arg.tag, 'value':arg.text, 'type':arg.get('format')}
+        #              for arg in xml_element.findall('args/*')}
+        self.input = {arg.tag: arg.text for arg in xml_element.findall('args/*')}
+        validate_flag_parameters(self.input_api, self.input, self.action)
         self.filters = [Filter(xml=filter_element,
                                parent_name=self.name,
                                ancestry=self.ancestry)

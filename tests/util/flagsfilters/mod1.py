@@ -17,7 +17,7 @@ def flag1(value):
 
 @datafilter
 def filter2(value, arg1):
-    pass
+    return value + arg1
 
 @action
 def action1(value):

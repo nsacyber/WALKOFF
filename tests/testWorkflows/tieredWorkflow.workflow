@@ -19,12 +19,12 @@
                 <app>HelloWorld</app>
                 <device>hwTest</device>
                 <input>
-                    <call format="str">Parent Step One</call>
+                    <call>Parent Step One</call>
                 </input>
                 <next step="@childWorkflow:start:1">
                     <flag action="regMatch">
                         <args>
-                            <regex format="str">(.*)</regex>
+                            <regex>(.*)</regex>
                         </args>
                         <filters>
                             <filter action="length">
@@ -40,7 +40,7 @@
                 <app>HelloWorld</app>
                 <device>hwTest</device>
                 <input>
-                    <call format="str">Parent Step Two</call>
+                    <call>Parent Step Two</call>
                 </input>
                 <next></next>
                 <error></error>
@@ -63,7 +63,7 @@
                 <app>HelloWorld</app>
                 <device>hwTest</device>
                 <input>
-                    <call format="str">Child Step One</call>
+                    <call>Child Step One</call>
                 </input>
                 <next></next>
                 <error></error>

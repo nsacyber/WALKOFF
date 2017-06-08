@@ -1,15 +1,19 @@
 from xml.etree import cElementTree
-from core.filters import *
-from core.filters import execute_filter
 from core import arguments
 from core.case import callbacks
 from core.executionelement import ExecutionElement
+from core.helpers import get_filter, get_filter_api
+from core.validator import validate_filter_parameters, validate_parameter
+from copy import deepcopy
 import core.config.config
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Filter(ExecutionElement):
 
-    def __init__(self, xml=None, parent_name='', action='', args=None, ancestry=None):
+    def __init__(self, action=None, xml=None, parent_name='', args=None, ancestry=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
         
         Args:
@@ -20,14 +24,16 @@ class Filter(ExecutionElement):
                 converted to a dictionary of str:Argument. Defaults to None.
             ancestry (list[str], optional): The ancestry for the Filter object. Defaults to None.
         """
-        if xml:
+        if xml is not None:
             self._from_xml(xml, parent_name, ancestry)
         else:
+            if action is None:
+                raise ValueError('Action or xml must be specified in filter constructor')
             ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
             self.action = action
+            self.args_api, self.data_in_api = get_filter_api(self.action)
             args = args if args is not None else {}
-            self.args = {arg_name: arguments.Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
-                         for arg_name, arg_value in args.items()}
+            self.args = validate_filter_parameters(self.args_api, args, self.action)
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Filter object. This is needed in case a workflow and/or playbook is renamed.
@@ -40,8 +46,9 @@ class Filter(ExecutionElement):
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
-        self.args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
-                     for arg in xml_element.findall('args/*')}
+        self.args_api, self.data_in_api = get_filter_api(self.action)
+        args = {arg.tag: arg.text for arg in xml_element.findall('args/*')}
+        self.args = validate_filter_parameters(self.args_api, args, self.action)
 
     def to_xml(self, *args):
         """Converts the Filter object to XML format.
@@ -54,40 +61,30 @@ class Filter(ExecutionElement):
         """
         elem = cElementTree.Element('filter')
         elem.set('action', self.action)
-        args_element = cElementTree.SubElement(elem, 'args')
-        for arg in self.args:
-            args_element.append(self.args[arg].to_xml())
+        if self.args:
+            args_element = cElementTree.SubElement(elem, 'args')
+            for arg_name, arg_value in self.args.items():
+                element = cElementTree.Element(arg_name)
+                element.text = arg_value
+                args_element.append(element)
         return elem
 
-    def validate_args(self):
-        """Ensures that the arguments passed in are properly formed.
-        
-        Returns:
-             True if arguments are valid, False otherwise.
-        """
-        if self.action in core.config.config.function_info['filters']:
-            possible_args = core.config.config.function_info['filters'][self.action]['args']
-            if possible_args:
-                return (len(list(possible_args)) == len(list(self.args.keys()))
-                        and all(arg.validate(possible_args) for arg in self.args.values()))
-            else:
-                return True
-        return False
-
     def __call__(self, output=None):
-        if self.validate_args():
-            try:
-                result = execute_filter(self.action, args=self.args, value=output)
-                callbacks.FilterSuccess.send(self)
-                return result
-            except:
-                callbacks.FilterError.send(self)
-                print("FILTER ERROR")
-        return output
+        try:
+            args = deepcopy(self.args)
+            output = validate_parameter(output, self.data_in_api, 'Flag {0}'.format(self.action))
+            args.update({self.data_in_api['name']: output})
+            result = get_filter(self.action)(**args)
+            callbacks.FilterSuccess.send(self)
+            return result
+        except Exception as e:
+            callbacks.FilterError.send(self)
+            logger.error('Filter {0} encountered an error: {1}'.format(self.action, str(e)))
+            return output
 
     def __repr__(self):
         output = {'action': self.action,
-                  'args': {arg: self.args[arg].__dict__ for arg in self.args}}
+                  'args': self.args}
         return str(output)
 
     def as_json(self):
@@ -97,7 +94,7 @@ class Filter(ExecutionElement):
             The JSON representation of a Filter object.
         """
         return {"action": self.action,
-                "args": {arg: self.args[arg].as_json() for arg in self.args}}
+                "args": self.args}
 
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
@@ -111,12 +108,10 @@ class Filter(ExecutionElement):
         Returns:
             The Filter object parsed from the JSON object.
         """
-        args = {arg_name: arguments.Argument.from_json(arg_json) for arg_name, arg_json in json['args'].items()}
         out_filter = Filter(action=json['action'],
-                            args=args,
+                            args=json['args'],
                             parent_name=parent_name,
                             ancestry=ancestry)
-        out_filter.args = args
         return out_filter
 
     def get_children(self, ancestry):

@@ -233,20 +233,21 @@ class TestHelperFunctions(unittest.TestCase):
         with self.assertRaises(UnknownAppAction):
             get_api_params('HelloWorld', 'invalid')
 
+    def assert_params_tuple_equal(self, actual, expected):
+        self.assertEqual(len(actual), len(expected))
+        self.assertEqual(len(actual), 2)
+        self.assertDictEqual(actual[1], expected[1])
+        self.assertEqual(len(actual[0]), len(expected[0]))
+        for actual_param in actual[0]:
+            self.assertIn(actual_param, expected[0])
+
     def test_get_flag_api_valid(self):
         api = get_flag_api('regMatch')
-        expected = {'dataIn': 'value',
-                    'run': 'regMatch.regMatch',
-                    'description': 'Matches an input against a regular expression',
-                    'parameters': [{'required': True,
-                                    'type': 'string',
-                                    'name': 'value',
-                                    'description': 'The input value'},
-                                   {'required': True,
-                                    'type': 'string',
-                                    'name': 'regex',
-                                    'description': 'The regular expression to match'}]}
-        self.assertDictEqual(api, expected)
+        expected = (
+            [{'required': True, 'type': 'string', 'name': 'regex', 'description': 'The regular expression to match'}],
+            {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input value'}
+        )
+        self.assert_params_tuple_equal(api, expected)
 
     def test_get_flag_api_invalid(self):
         with self.assertRaises(UnknownFlag):
@@ -254,16 +255,11 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_get_filter_api_valid(self):
         api = get_filter_api('length')
-        expected = {'returns': {'Success': {'description': 'The length of the collection',
-                                            'schema': {'type': 'object'}}},
-                    'dataIn': 'value',
-                    'run': 'length.length',
-                    'description': 'Returns the length of a collection',
-                    'parameters': [{'required': True,
-                                    'type': 'number',
-                                    'name': 'value',
-                                    'description': 'The input collection'}]}
-        self.assertDictEqual(api, expected)
+        expected = (
+            [],
+            {'required': True, 'type': 'number', 'name': 'value', 'description': 'The input collection'}
+        )
+        self.assert_params_tuple_equal(api, expected)
 
     def test_get_filter_api_invalid(self):
         with self.assertRaises(UnknownFilter):

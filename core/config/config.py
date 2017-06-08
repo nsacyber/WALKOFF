@@ -143,17 +143,17 @@ filters = {}
 flags = {}
 function_apis = {}
 
-def load_flagfilter_apis():
+def load_flagfilter_apis(path=None):
+    path = path if path is not None else core.config.paths.function_api_path
     global function_apis
     try:
-        url = join(core.config.paths.function_api_path)
-        with open(url) as function_file:
+        with open(path) as function_file:
             api = yaml.load(function_file.read())
             from core.validator import validate_flagfilter_spec
             validate_flagfilter_spec(api)
             function_apis = api
     except (IOError, OSError) as e:
-        __logger.fatal('Cannot open flagfilter api: Error {1}'.format(app, str(e)))
+        __logger.fatal('Cannot open flagfilter api: Error {0}'.format(str(e)))
         sys.exit(1)
     except yaml.YAMLError:
         __logger.fatal('flagfiler api is invalid yaml')
@@ -170,7 +170,4 @@ def initialize():
     load_app_apis()
     flags = import_all_flags()
     filters = import_all_filters()
-    print(flags)
-    print(filters)
     load_flagfilter_apis()
-

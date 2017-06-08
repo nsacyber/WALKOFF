@@ -20,7 +20,7 @@
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">(.*)</regex>
+                        <regex>(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">

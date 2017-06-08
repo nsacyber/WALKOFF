@@ -24,7 +24,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <seconds format="int">1</seconds>
+                <seconds>1</seconds>
             </input>
             <next step="2"></next>
             <error></error>
@@ -34,7 +34,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <input>
-                <seconds format="int">1</seconds>
+                <seconds>1</seconds>
             </input>
             <next></next>
             <error></error>
