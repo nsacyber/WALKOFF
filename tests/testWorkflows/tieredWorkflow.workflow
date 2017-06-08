@@ -18,9 +18,9 @@
                 <action>repeatBackToMe</action>
                 <app>HelloWorld</app>
                 <device>hwTest</device>
-                <input>
+                <inputs>
                     <call>Parent Step One</call>
-                </input>
+                </inputs>
                 <next step="@childWorkflow:start:1">
                     <flag action="regMatch">
                         <args>
@@ -39,9 +39,9 @@
                 <action>repeatBackToMe</action>
                 <app>HelloWorld</app>
                 <device>hwTest</device>
-                <input>
+                <inputs>
                     <call>Parent Step Two</call>
-                </input>
+                </inputs>
                 <next></next>
                 <error></error>
             </step>
@@ -62,9 +62,9 @@
                 <action>repeatBackToMe</action>
                 <app>HelloWorld</app>
                 <device>hwTest</device>
-                <input>
+                <inputs>
                     <call>Child Step One</call>
-                </input>
+                </inputs>
                 <next></next>
                 <error></error>
             </step>

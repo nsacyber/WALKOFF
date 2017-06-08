@@ -14,8 +14,6 @@
             <action>invalid</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-            </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>

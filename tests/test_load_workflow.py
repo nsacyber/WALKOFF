@@ -1,16 +1,22 @@
 import unittest
-from core import arguments
 from core import controller
 from core.config.config import initialize
 from tests import config
 from core.controller import _WorkflowKey
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from tests.config import test_apps_path, function_api_path
+import core.config.config
 
 
 class TestLoadWorkflow(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        initialize()
+        import_all_apps(path=test_apps_path)
+        core.config.config.load_app_apis(apps_path=test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def setUp(self):
         self.c = controller.Controller()
@@ -23,6 +29,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertIn(self.workflow_name, self.c.workflows)
 
     def test_baseWorkflowAttributes(self):
+
         # Correct number of steps
         self.assertEqual(len(self.testWorkflow.steps), 1)
 
@@ -35,10 +42,6 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.app, 'HelloWorld')
         self.assertEqual(step.action, 'repeatBackToMe')
         self.assertEqual(step.device, 'hwTest')
-
-    def test_workflowInput(self):
-        arg = arguments.Argument(key='call', value='Hello World', format='string')
-        #self.assertDictTrue(step.input == {"call":arg})
 
     def test_workflowNextSteps(self):
         next_step = self.testWorkflow.steps['start'].conditionals

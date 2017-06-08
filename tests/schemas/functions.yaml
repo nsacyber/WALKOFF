@@ -53,6 +53,38 @@ flags:
       - name: value
         required: true
         type: string
+  regMatch:
+    run: regMatch
+    description: Matches an input against a regular expression
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input value
+        required: true
+        type: string
+      - name: regex
+        description: The regular expression to match
+        required: true
+        type: string
+  count:
+    run: count
+    description: Compares two numbers
+    dataIn: value
+    parameters:
+        - name: value
+          description: The input value
+          required: true
+          type: number
+        - name: operator
+          description: The comparison operator ('g', 'ge', etc.)
+          required: true
+          type: string
+          enum: [g, ge, l, le, e]
+          default: e
+        - name: threshold
+          description: The value with which to compare the input
+          required: true
+          type: number
 filters:
   'Top Filter':
     run: top_level_filter
@@ -132,5 +164,19 @@ filters:
         type: number
     returns:
       Success:
+        schema:
+          type: object
+  length:
+    run: length
+    description: Returns the length of a collection
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input collection
+        required: true
+        type: number
+    returns:
+      Success:
+        description: The length of the collection
         schema:
           type: object

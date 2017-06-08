@@ -14,8 +14,6 @@
             <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-            </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>
@@ -34,9 +32,9 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
+            <inputs>
                 <call>{{outputFrom(steps, -1)}}</call>
-            </input>
+            </inputs>
             <next>
             </next>
             <error step="1"></error>

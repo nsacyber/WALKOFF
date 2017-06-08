@@ -591,7 +591,6 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, errors=error_steps)
         self.assertDictEqual(step.get_children(['name1']), next_steps[0].as_json(with_children=False))
 
-
     def test_name_parent_rename(self):
         step = Step(app='HelloWorld', action='helloWorld', ancestry=['step_parent'], name='step')
         new_ancestry = ['step_parent_update']
@@ -612,8 +611,8 @@ class TestStep(unittest.TestCase):
 
     def test_name_parent_nextstep_rename_error(self):
         step = Step(app='HelloWorld', action='helloWorld', ancestry=['step_parent'], name='step')
-        nextstep = NextStep(name="test_nextstep", ancestry=step.ancestry)
-        step.errors = [nextstep]
+        next_step = NextStep(name="test_nextstep", ancestry=step.ancestry)
+        step.errors = [next_step]
 
         new_ancestry = ["step_parent_update"]
         step.reconstruct_ancestry(new_ancestry)
@@ -623,10 +622,10 @@ class TestStep(unittest.TestCase):
 
     def test_name_parent_multiple_nextstep_rename(self):
         step = Step(app='HelloWorld', action='helloWorld', ancestry=['step_parent'], name='step')
-        nextstepOne = NextStep(name="test_nextstep_one", ancestry=step.ancestry)
-        nextstepTwo = NextStep(name="test_nextstep_two", ancestry=step.ancestry)
-        step.conditionals = [nextstepOne]
-        step.errors = [nextstepTwo]
+        next_step_one = NextStep(name="test_nextstep_one", ancestry=step.ancestry)
+        next_step_two = NextStep(name="test_nextstep_two", ancestry=step.ancestry)
+        step.conditionals = [next_step_one]
+        step.errors = [next_step_two]
 
         new_ancestry = ["step_parent_update"]
         step.reconstruct_ancestry(new_ancestry)

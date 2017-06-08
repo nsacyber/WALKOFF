@@ -14,8 +14,6 @@
             <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-            </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>
@@ -34,9 +32,9 @@
             <action>returnPlusOne</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <number>Hello World</number>
-            </input>
+            <inputs>
+                <number>3</number>
+            </inputs>
             <next>
             </next>
             <error step="error">
@@ -52,9 +50,9 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
+            <inputs>
                 <call>Hello World</call>
-            </input>
+            </inputs>
             <next>
             </next>
         </step>

@@ -14,8 +14,6 @@
             <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-            </input>
             <next step="1"></next>
             <error></error>
         </step>
@@ -23,9 +21,9 @@
             <action>pause</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
+            <inputs>
                 <seconds>1</seconds>
-            </input>
+            </inputs>
             <next step="2"></next>
             <error></error>
         </step>
@@ -33,9 +31,9 @@
             <action>pause</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
+            <inputs>
                 <seconds>1</seconds>
-            </input>
+            </inputs>
             <next></next>
             <error></error>
         </step>

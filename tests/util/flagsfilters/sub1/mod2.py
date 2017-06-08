@@ -12,7 +12,7 @@ def filter3(value):
 
 @flag
 def flag1(value):
-    pass
+    raise ValueError
 
 
 @datafilter

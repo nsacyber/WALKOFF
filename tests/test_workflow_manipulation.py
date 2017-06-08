@@ -107,82 +107,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(workflow["options"])
 
     """
-        CRUD - Step
-    """
-
-    def test_create_step(self):
-        self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                      arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
-
-        steps = self.testWorkflow.steps
-
-        # Check that the step was added
-        self.assertEqual(len(steps), 2)
-        self.assertTrue(steps["1"])
-
-        # Check attributes
-        step = self.testWorkflow.steps["1"]
-        self.assertEqual(step.name, "1")
-        self.assertEqual(step.action, "repeatBackToMe")
-        self.assertEqual(step.app, "HelloWorld")
-        self.assertEqual(step.device, "hwTest")
-        # self.assertTrue(step.input == {'call': {'value': 'This is a test.', 'type': 'string', 'key': 'call'}}))
-        self.assertEqual(step.conditionals, [])
-        self.assertEqual(step.errors, [])
-
-        self.__execution_test()
-
-    def test_add_step_to_xml(self):
-        self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                      arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
-        xml = self.testWorkflow.to_xml()
-
-        # Verify Structure
-        steps = xml.findall(".//steps/step")
-        self.assertEqual(len(steps), 2)
-        step = xml.find(".//steps/step/[@id='1']")
-        self.assertEqual(step.get("id"), "1")
-        self.assertEqual(step.find(".//action").text, "repeatBackToMe")
-        self.assertEqual(step.find(".//app").text, "HelloWorld")
-        self.assertEqual(step.find(".//device").text, "hwTest")
-        self.assertIsNone(step.find(".//next"))
-        self.assertIsNone(step.find(".//error"))
-
-        self.__execution_test()
-
-    def test_remove_step(self):
-        self.testWorkflow.create_step(name="1", action="repeatBackToMe", app="HelloWorld", device="hwTest",
-                                      arg_input={"call": {"tag": "call", "value": "This is a test.", "format": "str"}})
-        # Makes sure a new step was created...
-        self.assertEqual(len(self.testWorkflow.steps), 2)
-
-        # ...So that we may destroy it!
-        removed = self.testWorkflow.remove_step(name="1")
-        self.assertTrue(removed)
-        self.assertEqual(len(self.testWorkflow.steps), 1)
-
-        # Tests the XML representation after changes
-        xml = self.testWorkflow.to_xml()
-        steps = xml.findall(".//steps/*")
-        self.assertEqual(len(steps), 1)
-        self.assertEqual(steps[0].get("id"), "start")
-
-    def test_update_step(self):
-        self.assertEqual(self.testWorkflow.steps["start"].action, "repeatBackToMe")
-        self.testWorkflow.steps["start"].action = "helloWorld"
-        self.assertEqual(self.testWorkflow.steps["start"].action, "helloWorld")
-
-        xml = self.testWorkflow.to_xml()
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/action").text, "helloWorld")
-
-    def test_display_steps(self):
-        output = ast.literal_eval(self.testWorkflow.__repr__())
-        self.assertTrue(output["options"])
-        self.assertTrue(output["steps"])
-        self.assertEqual(len(output["steps"]), 1)
-        self.assertEqual(output["steps"]["start"]["action"], "repeatBackToMe")
-
-    """
         CRUD - Next
     """
 
@@ -201,47 +125,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].__repr__())
         self.assertTrue(conditional["flags"])
         self.assertEqual(conditional["name"], "1")
-
-    """
-        CRUD - Flag
-    """
-
-    def test_create_flag(self):
-        next_step = self.testWorkflow.steps["start"].conditionals[0]
-        self.assertEqual(len(next_step.flags), 1)
-        next_step.create_flag(action="count", args={"operator": "ge", "threshold": "1"}, filters=[])
-        self.assertEqual(len(next_step.flags), 2)
-        self.assertEqual(next_step.flags[1].action, "count")
-        self.assertDictEqual(next_step.flags[1].args, {"operator": "ge", "threshold": "1"})
-        self.assertEqual(next_step.flags[1].filters, [])
-
-    def test_remove_flag(self):
-        next_step = self.testWorkflow.steps["start"].conditionals[0]
-        self.assertEqual(len(next_step.flags), 1)
-        success = next_step.remove_flag(index=0)
-        self.assertTrue(success)
-        self.assertEqual(len(next_step.flags), 0)
-
-        # Tests the XML representation after changes
-        xml = self.testWorkflow.to_xml()
-        step = xml.findall(".//steps/step/[@id='start']/next")
-
-        next_step_flags_xml = xml.findall(".//steps/step/[@id='start']/next")
-        self.assertEqual(len(next_step_flags_xml), 1)
-
-    def test_update_flag(self):
-        self.assertEqual(self.testWorkflow.steps["start"].conditionals[0].flags[0].action, "regMatch")
-        self.testWorkflow.steps["start"].conditionals[0].flags[0].set(attribute="action", value="count")
-        self.assertEqual(self.testWorkflow.steps["start"].conditionals[0].flags[0].action, "count")
-
-        # Check the XML output
-        xml = self.testWorkflow.to_xml()
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next/[@step='1']/flag[1]").get("action"), "count")
-
-    def test_display_flag(self):
-        output = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].flags[0].__repr__())
-        self.assertTrue(output["action"])
-        self.assertTrue(output["args"])
 
     def test_to_from_cytoscape_data(self):
         self.c.load_workflows_from_file(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))

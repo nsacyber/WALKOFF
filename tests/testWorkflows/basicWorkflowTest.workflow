@@ -15,7 +15,7 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <inputs>
-                <input name="call">Hello World</input>
+                <call>Hello World</call>
             </inputs>
             <next step="1">
                 <flag action="regMatch">

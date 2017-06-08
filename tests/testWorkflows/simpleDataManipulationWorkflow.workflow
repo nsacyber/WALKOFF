@@ -14,9 +14,9 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
+            <inputs>
                 <call>Hello World</call>
-            </input>
+            </inputs>
             <next step="1">
                 <flag action="regMatch">
                     <args>

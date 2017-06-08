@@ -1,6 +1,5 @@
 import json
 import logging
-from core.arguments import Argument
 from core.filter import Filter
 from core.flag import Flag
 from .database import db, Base
