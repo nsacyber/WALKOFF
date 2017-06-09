@@ -537,6 +537,26 @@ $(function(){
         if (parameters && node.isNode() && getStartNode() == parameters.name) {
             setStartNode();
         }
+        // If an edge was deleted, delete the corresponding next
+        // element in the node from which the edge originated.
+        else if (node.isEdge()) {
+            var source = node.source();
+            var target = node.target();
+            if (source.data("parameters") && target.data("parameters")) {
+                var parameters = source.data("parameters");
+                var next = parameters.next;
+                var indexToDelete = -1;
+                $.each(next, function( nextIndex, nextStep ) {
+                    if (nextStep.name == target.data("parameters").name) {
+                        indexToDelete = nextIndex;
+                    }
+                });
+                if (indexToDelete >= 0) {
+                    next.splice(indexToDelete, 1);
+                    source.data("parameters", parameters);
+                }
+            }
+        }
     }
 
     function cut() {
@@ -786,6 +806,8 @@ $(function(){
                 // So in order that adding edges is contained in the undo stack,
                 // remove the edge just added and add back in again using the undo/redo
                 // extension. Also add info to edge which is displayed when user clicks on it.
+
+                cy.remove(addedEntities); // Remove NOT using undo/redo extension
                 for (var i=0; i<targetNodes.length; ++i) {
                     addedEntities[i].data('parameters', {
                         flags: [],
@@ -812,7 +834,6 @@ $(function(){
                     });
                     sourceNode.data('parameters', parameters);
                 }
-                cy.remove(addedEntities); // Remove NOT using undo/redo extension
                 var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension
                 newEdges.on('click', onClick);
             },
