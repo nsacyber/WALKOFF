@@ -4,23 +4,32 @@ from os import mkdir
 from os.path import isdir
 
 from core.config.paths import profile_visualizations_path
-from core.helpers import construct_workflow_name_key
+from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from core.case import database
 from core.case import subscription
+import core.config.config
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.assertwrappers import orderless_list_compare
-
-from server.flaskserver import running_context
+from core.controller import initialize_threading, shutdown_pool, Controller
 
 
 class TestExecutionRuntime(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import_all_apps(path=config.test_apps_path)
+        core.config.config.load_app_apis(apps_path=config.test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=config.function_api_path)
+
     def setUp(self):
         database.initialize()
         if not isdir(profile_visualizations_path):
             mkdir(profile_visualizations_path)
         self.start = datetime.utcnow()
-        running_context.init_threads()
+        initialize_threading()
+        self.controller = Controller(workflows_path=config.test_workflows_path)
 
     def tearDown(self):
         database.case_db.tear_down()
@@ -32,14 +41,12 @@ class TestExecutionRuntime(unittest.TestCase):
     """
 
     def test_TemplatedWorkflow(self):
-        running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                 'templatedWorkflowTest.workflow')
         workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        running_context.controller.execute_workflow('templatedWorkflowTest', 'templatedWorkflow')
+        self.controller.execute_workflow('templatedWorkflowTest', 'templatedWorkflow')
 
-        running_context.shutdown_threads()
+        shutdown_pool()
 
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2, 'Unexpected number of steps executed. '
@@ -62,14 +69,13 @@ class TestExecutionRuntime(unittest.TestCase):
     """
 
     def test_SimpleTieredWorkflow(self):
-        running_context.controller.load_workflows_from_file(path=config.test_workflows_path + 'tieredWorkflow.workflow')
         workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
         workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step([workflow_name1, workflow_name2], step_names)
-        running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
+        self.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
 
-        running_context.shutdown_threads()
+        shutdown_pool()
 
         steps = executed_steps('defaultController', workflow_name1, self.start, datetime.utcnow())
         steps.extend(executed_steps('defaultController', workflow_name2, self.start, datetime.utcnow()))
@@ -96,15 +102,25 @@ class TestExecutionRuntime(unittest.TestCase):
     """
 
     def test_Loop(self):
-        running_context.controller.load_workflows_from_file(path=config.test_workflows_path + 'loopWorkflow.workflow')
+        from gevent import monkey, spawn
+        from gevent.event import Event
+        from core.case.callbacks import WorkflowShutdown
+        monkey.patch_all()
+
         workflow_name = construct_workflow_name_key('loopWorkflow', 'loopWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
-        running_context.controller.execute_workflow('loopWorkflow', 'loopWorkflow')
 
-        running_context.shutdown_threads()
+        waiter = Event()
 
+        def wait_for_shutdown(sender, **kwargs):
+            waiter.set()
+
+        WorkflowShutdown.connect(wait_for_shutdown)
+        spawn(self.controller.execute_workflow('loopWorkflow', 'loopWorkflow'))
+        shutdown_pool()
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+
         names = [step['ancestry'].split(',')[-1] for step in steps]
         expected_steps = ['start', 'start', 'start', 'start', '1']
         self.assertListEqual(names, expected_steps)

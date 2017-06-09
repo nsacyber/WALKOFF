@@ -57,6 +57,7 @@ class TestStep(unittest.TestCase):
         position = position if position is not None else {}
         self.assertDictEqual(elem.position, position)
         self.assertIsNone(elem.output)
+        self.assertFalse(elem.templated)
 
     def test_init_app_and_action_only(self):
         step = Step(app='HelloWorld', action='helloWorld')

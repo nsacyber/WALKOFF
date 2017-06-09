@@ -16,9 +16,7 @@ from core.widgetsignals import get_widget_signal
 from apps import get_app_action
 from core.validator import validate_app_action_parameters
 
-import traceback
 logger = logging.getLogger(__name__)
-
 
 _Widget = namedtuple('Widget', ['app', 'widget'])
 
@@ -82,6 +80,7 @@ class Step(ExecutionElement):
             self.widgets = [_Widget(widget_app, widget_name)
                             for (widget_app, widget_name) in widgets] if widgets is not None else []
             self.raw_xml = self.to_xml()
+            self.templated = False
         self.output = None
         self.next_up = None
 
@@ -107,10 +106,14 @@ class Step(ExecutionElement):
         input_api = get_app_action_api(self.app, self.action)
         self.run = input_api['run']
         self.input_api = input_api.get('parameters', [])
+        is_templated_xml = step_xml.find('templated')
+        self.templated = is_templated_xml is not None and bool(is_templated_xml.text)
         get_app_action(self.app, self.run)
         inputs = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
-        self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
-
+        if not self.templated:
+            self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
+        else:
+            self.input = inputs
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
@@ -138,8 +141,8 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = risk_field.text if risk_field is not None else 0
-        input = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
-        self.input = validate_app_action_parameters(self.input_api, input, self.app, self.action)
+        inputs = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
+        self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -268,7 +271,7 @@ class Step(ExecutionElement):
                   'app': self.app,
                   'device': self.device,
                   'risk': str(self.risk),
-                  'input': {key: self.input[key] for key in self.input},
+                  'input': self.input,
                   'next': [next_step for next_step in self.conditionals],
                   'errors': [error for error in self.errors],
                   'nextUp': self.next_up,
@@ -311,7 +314,8 @@ class Step(ExecutionElement):
         """Forms a Step object from the provided JSON object.
         
         Args:
-            json (JSON object): The JSON object to convert from.
+            json_in (JSON object): The JSON object to convert from.
+            position (JSON): position of the step node of the form {'x': <x position>, 'y': <y position>}
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             ancestry (list[str], optional): The ancestry for the new Step object. Defaults to None.
             

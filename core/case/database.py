@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 from core.config.paths import case_db_path
 import core.config.config
@@ -124,7 +124,7 @@ class CaseDatabase(object):
 
         Session = sessionmaker()
         Session.configure(bind=self.engine)
-        self.session = Session()
+        self.session = scoped_session(Session)
 
         _Base.metadata.bind = self.engine
         _Base.metadata.create_all(self.engine)
@@ -264,6 +264,7 @@ case_db = get_case_db()
 def initialize():
     """ Initializes the case database
     """
+
     _Base.metadata.drop_all()
     _Base.metadata.create_all()
 

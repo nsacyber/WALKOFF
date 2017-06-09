@@ -220,7 +220,7 @@ class Workflow(ExecutionElement):
                         step.input = start_input
                     first = False
 
-                error_flag = self.__execute_step(step, instances[step.device])
+                error_flag = self.__execute_step(step, instances[step.device], total_steps)
                 total_steps.append(step)
                 steps.send(error_flag)
                 output = step.output
@@ -234,7 +234,6 @@ class Workflow(ExecutionElement):
         while current:
             error_flag = yield current
             next_step = current.get_next_step(error=error_flag)
-
             # Check for call to child workflow
             if next_step and next_step[0] == '@':
                 child_step_generator, child_next_step, child_name = self.__get_child_step_generator(next_step)
@@ -246,13 +245,12 @@ class Workflow(ExecutionElement):
                             child_step_generator.send(error_flag)
                         callbacks.WorkflowShutdown.send(self.options.children[child_name])
                     next_step = child_next_step
-
             current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
             current = self.steps[current_name] if current_name is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def __execute_step(self, step, instance):
+    def __execute_step(self, step, instance, total_steps):
         error_flag = False
         data = {"step": {"app": step.app,
                          "action": step.action,
@@ -262,9 +260,8 @@ class Workflow(ExecutionElement):
             step.execute(instance=instance())
             callbacks.StepExecutionSuccess.send(self)
         except Exception as e:
-            callbacks.StepExecutionError.send(self, data=json.dumps({"step": {"app": step.app,
-                                                                              "action": step.action,
-                                                                              "name": step.name}}))
+            callbacks.StepExecutionError.send(
+                self, data=json.dumps({"step": {"app": step.app, "action": step.action, "name": step.name}}))
             error_flag = True
             step.output = 'error: {0}'.format(str(e))
             self.accumulated_risk += float(step.risk) / self.total_risk

@@ -14,9 +14,6 @@
             <action>getQuote</action>
             <app>DailyQuote</app>
             <device>hwTest</device>
-            <inputs>
-                <call>Hello World</call>
-            </inputs>
             <next step="1">
                 <flag action="regMatch">
                     <args>

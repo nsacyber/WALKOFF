@@ -14,6 +14,7 @@
             <action>returnPlusOne</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
+            <templated>true</templated>
             <inputs>
                 <number>
                     {%- if steps | length > 0 -%}
@@ -51,9 +52,10 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
+            <templated>true</templated>
+            <inputs>
                 <call>{{outputFrom(steps, -1)}}</call>
-            </input>
+            </inputs>
             <error step="1"></error>
         </step>
     </steps>
