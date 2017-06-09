@@ -163,6 +163,9 @@ class Step(ExecutionElement):
         xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
         self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
 
+    def set_input(self, new_input):
+        self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
+
     def execute(self, instance):
         """Executes a Step by calling the associated app function.
         

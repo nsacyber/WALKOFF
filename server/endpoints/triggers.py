@@ -3,6 +3,7 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
 from server.return_codes import *
+from core.helpers import InvalidInput
 
 
 def read_all_triggers():
@@ -20,31 +21,30 @@ def listener():
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
-        form = forms.IncomingDataForm(request.form)
-        data_input = None
-        if form.input.data:
-            data_input = json.loads(form.input.data)
 
-        name=''
-        tags=[]
+        form = forms.IncomingDataForm(request.form)
+        trigger_args = {'data_in': form.input.data,
+                        'input_in': json.loads(form.input.data) if form.input.data else '',
+                        'trigger_name': '',
+                        'tags': []}
+
         if request.args:
             if 'name' in request.args:
-                name = request.args['name']
+                trigger_args['trigger_name'] = request.args['name']
+
             if 'tags' in request.args:
-                tags = request.args.getlist('tags')
-            returned_json = running_context.Triggers.execute(form.data.data, data_input, trigger_name=name, tags=tags)
-        else:
-            returned_json = running_context.Triggers.execute(form.data.data, data_input)
+                trigger_args['tags'] = request.args.getlist('tags')
+
+        returned_json = running_context.Triggers.execute(**trigger_args)
 
         if not (returned_json["executed"] or returned_json["errors"]):
-            print(returned_json)
             return returned_json, SUCCESS_WITH_WARNING
         elif returned_json["errors"]:
             return returned_json, INVALID_INPUT_ERROR
         else:
             current_app.logger.info(
                 'Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
-                                                                                         data_input))
+                                                                                         trigger_args['data_in']))
             return returned_json, SUCCESS
 
     return __func()
@@ -74,7 +74,7 @@ def create_trigger(trigger_name):
                                                       "workflow": "{0}-{1}".format(form.playbook.data,
                                                                                    form.workflow.data),
                                                       "tag": form.tag.data}))
-                return {},OBJECT_CREATED
+                return {}, OBJECT_CREATED
             except ValueError:
                 current_app.logger.error(
                     'Cannot create trigger {0}. Invalid JSON in conditional field'.format(trigger_name))

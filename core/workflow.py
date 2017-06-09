@@ -8,7 +8,7 @@ from core import options
 from core.case import callbacks
 from core.config import paths
 from core.executionelement import ExecutionElement
-from core.helpers import construct_workflow_name_key, extract_workflow_name, UnknownAppAction, UnknownApp
+from core.helpers import construct_workflow_name_key, extract_workflow_name, UnknownAppAction, UnknownApp, InvalidInput
 from core.instance import Instance
 from core.step import Step
 
@@ -215,10 +215,15 @@ class Workflow(ExecutionElement):
                 step.render_step(steps=total_steps)
 
                 if first:
+                    first = False
                     if start_input:
                         logger.debug('Swapping input to first step of workflow {0}'.format(self.ancestry))
-                        step.input = start_input
-                    first = False
+                        try:
+                            step.set_input(start_input)
+                        except InvalidInput as e:
+                            logger.error('Cannot change input to workflow {0}. '
+                                         'Invalid input. Error: {1}'.format(self.name, str(e)))
+                            raise
 
                 error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)

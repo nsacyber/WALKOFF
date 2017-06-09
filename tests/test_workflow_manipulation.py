@@ -134,7 +134,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(conditional["name"], "1")
 
     def test_to_from_cytoscape_data(self):
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'multiactionWorkflowTest.workflow'))
+        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path,
+                                                                'multiactionWorkflowTest.workflow'))
         workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         original_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
         cytoscape_data = workflow.get_cytoscape_data()
@@ -260,3 +261,20 @@ class TestWorkflowManipulation(unittest.TestCase):
         waiter.wait(timeout=5)
         duration = default_timer() - start
         self.assertTrue(2.5 < duration < 5)
+
+    def test_change_step_input(self):
+        import json
+
+        input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]
+
+        input_arg = {arg['key']: arg['value'] for arg in input_list}
+
+        result = {'value': None}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] = kwargs['data']
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        self.testWorkflow.execute(start_input=input_arg)
+        self.assertDictEqual(json.loads(result['value']), {"result": "REPEATING: CHANGE INPUT"})

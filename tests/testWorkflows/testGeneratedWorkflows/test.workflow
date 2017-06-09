@@ -25,11 +25,7 @@
 				
         
 			</scheduler>
-			
-    
 		</options>
-		
-    
 		<steps>
 			<step id="start">
 				<id>start</id>
@@ -45,9 +41,7 @@
 							<regex>(.*)</regex>
 						</args>
 						<filters>
-							<filter action="length">
-								<args/>
-							</filter>
+							<filter action="length"/>
 						</filters>
 					</flag>
 				</next>
