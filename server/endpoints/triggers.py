@@ -37,6 +37,7 @@ def listener():
             returned_json = running_context.Triggers.execute(form.data.data, data_input)
 
         if not (returned_json["executed"] or returned_json["errors"]):
+            print(returned_json)
             return returned_json, SUCCESS_WITH_WARNING
         elif returned_json["errors"]:
             return returned_json, INVALID_INPUT_ERROR

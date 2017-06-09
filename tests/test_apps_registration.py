@@ -12,7 +12,8 @@ except ImportError:
 class TestAppsRegistration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        App.registry = {}
+        import_all_apps(path=test_apps_path, reload=True)
 
     def test_app_names_registered(self):
         self.assertSetEqual(set(App.registry.keys()), {'HelloWorld', 'DailyQuote'})

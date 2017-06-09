@@ -15,6 +15,7 @@ import core.case.subscription as case_subscription
 from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
 from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
 from tests import config
+from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
@@ -28,7 +29,8 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=config.test_apps_path)
+        App.registry = {}
+        import_all_apps(path=config.test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')

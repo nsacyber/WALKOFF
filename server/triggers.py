@@ -102,7 +102,7 @@ class Triggers(Base):
             data_in (str): Data to be used to match against the conditionals
             input_in (str): The input to the first step of the workflow
             trigger_name (str): The name of the specific trigger to execute
-            tags (array): A list of tags to find the specific triggers to execute
+            tags (list): A list of tags to find the specific triggers to execute
             
         Returns:
             Dictionary of {"status": <status string>}

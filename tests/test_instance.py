@@ -1,19 +1,22 @@
 import unittest
 
-from tests.apps.HelloWorld.main import Main
-import core.config.paths
+import tests.apps.HelloWorld.main
 from core import instance
 from tests.config import test_apps_path
+from tests.apps import App
+from core.helpers import import_all_apps
 
 
 class TestInstance(unittest.TestCase):
-    def setUp(self):
-        core.config.paths.apps_path = test_apps_path
+    @classmethod
+    def setUpClass(cls):
+        App.registry = {}
+        import_all_apps(path=test_apps_path, reload=True)
 
     def test_create_instance(self):
         inst = instance.Instance.create("HelloWorld", "testDevice")
         self.assertIsInstance(inst, instance.Instance)
-        self.assertIsInstance(inst.instance, Main)
+        self.assertIsInstance(inst.instance, getattr(tests.apps.HelloWorld.main, 'Main'))
         self.assertEqual(inst.state, instance.OK)
 
     def test_create_invalid_app_name(self):
@@ -22,7 +25,7 @@ class TestInstance(unittest.TestCase):
     def test_call(self):
         inst = instance.Instance.create("HelloWorld", "testDevice")
         created_app = inst()
-        self.assertIsInstance(created_app, Main)
+        self.assertIsInstance(created_app, getattr(tests.apps.HelloWorld.main, 'Main'))
 
     def test_shutdown(self):
         inst = instance.Instance.create("HelloWorld", "testDevice")

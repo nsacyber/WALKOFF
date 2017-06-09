@@ -6,6 +6,7 @@ from core.case.subscription import Subscription
 from core.helpers import construct_workflow_name_key, import_all_flags, import_all_filters, import_all_apps
 from tests import config
 import core.config.config
+from tests.apps import App
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -14,7 +15,8 @@ class TestExecutionEvents(unittest.TestCase):
     """
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=config.test_apps_path)
+        App.registry = {}
+        import_all_apps(path=config.test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')

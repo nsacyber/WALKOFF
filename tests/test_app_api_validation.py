@@ -14,7 +14,8 @@ class TestAppApiValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        App.registry = {}
+        import_all_apps(path=test_apps_path, reload=True)
 
     def setUp(self):
         with open(basic_app_api, 'r') as f:
@@ -216,7 +217,6 @@ class TestAppApiValidation(unittest.TestCase):
                                    get_app_action('HelloWorld', 'addThree'))
 
     def test_validate_action_params_different_params_in_api(self):
-        print('HERHERHER')
         self.basicapi['actions']['Add Three'] = {'run': 'addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
@@ -226,7 +226,6 @@ class TestAppApiValidation(unittest.TestCase):
                                                                  'type': 'number'}]}
         self.__generate_resolver_dereferencer(self.basicapi)
         with self.assertRaises(InvalidAppApi):
-            print(get_all_actions_for_app('HelloWorld'))
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
                                    'HelloWorld',

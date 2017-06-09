@@ -7,12 +7,13 @@ from core.helpers import construct_workflow_name_key, import_all_flags, import_a
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
-
+from tests.apps import App
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=config.test_apps_path)
+        App.registry = {}
+        import_all_apps(path=config.test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')

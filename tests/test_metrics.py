@@ -25,11 +25,11 @@ class MetricsTest(ServerTestCase):
         self.assertEqual(metrics.app_metrics['HelloWorld']['count'], 3)
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorld']['actions'].keys()),
-                               ['repeatBackToMe', 'helloWorld'])
+                               ['repeatBackToMe', 'helloWorld', 'Buggy'])
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorld']['actions']['repeatBackToMe'].keys()),
-                               ['success', 'error'])
-        for form in ['success', 'error']:
+                               ['success'])
+        for form in ['success']:
             orderless_list_compare(self,
                                    list(metrics.app_metrics['HelloWorld']['actions']['repeatBackToMe'][form].keys()),
                                    ['count', 'avg_time'])

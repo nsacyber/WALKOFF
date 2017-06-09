@@ -1,16 +1,16 @@
 import unittest
 from core.nextstep import NextStep
 from core.flag import Flag
-from core.filter import Filter
 from core.helpers import import_all_filters, import_all_flags, import_all_apps
 from tests.config import test_apps_path, function_api_path
 import core.config.config
-
+from tests.apps import App
 
 class TestNextStep(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        App.registry = {}
+        import_all_apps(path=test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')

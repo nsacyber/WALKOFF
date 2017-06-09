@@ -6,7 +6,10 @@ import pkgutil
 import logging
 import core.config.paths
 import core.config.config
-
+try:
+    from importlib import reload as reload_module
+except ImportError:
+    from imp import reload as reload_module
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +69,7 @@ def construct_module_name_from_path(path):
     return '.'.join([x for x in path.split(os.sep) if x])
 
 
-def import_app_main(app_name, path=None):
+def import_app_main(app_name, path=None, reload=False):
     """Dynamically imports the main function of an App.
     
     Args:
@@ -81,7 +84,10 @@ def import_app_main(app_name, path=None):
     app_path = os.path.join(path, app_name, 'main.py')
     module_name = construct_module_name_from_path(app_path[:-3])
     try:
-        return sys.modules[module_name]
+        module = sys.modules[module_name]
+        if reload:
+            reload_module(module)
+        return module
     except KeyError:
         pass
     try:
@@ -261,11 +267,11 @@ def format_db_path(db_type, path):
     return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
 
 
-def import_all_apps(path=None):
+def import_all_apps(path=None, reload=False):
     for app_name in list_apps(path):
         try:
-            importlib.import_module('apps.{0}'.format(app_name))
-            import_app_main(app_name, path=path)
+            #importlib.import_module('apps.{0}'.format(app_name))
+            import_app_main(app_name, path=path, reload=reload)
         except ImportError:
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
 

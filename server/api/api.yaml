@@ -51,18 +51,18 @@ schemes:
   - https
 
 paths:
-#  $ref: ./apps.yaml
-#  $ref: ./cases.yaml
-#  $ref: ./configuration.yaml
-#  $ref: ./events.yaml
+  $ref: ./apps.yaml
+  $ref: ./cases.yaml
+  $ref: ./configuration.yaml
+  $ref: ./events.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
   $ref: ./playbooks.yaml
-#  $ref: ./roles.yaml
-#  $ref: ./scheduler.yaml
-#  $ref: ./triggers.yaml
-#  $ref: ./users.yaml
-#  $ref: ./workflowresult.yaml
+  $ref: ./roles.yaml
+  $ref: ./scheduler.yaml
+  $ref: ./triggers.yaml
+  $ref: ./users.yaml
+  $ref: ./workflowresult.yaml
 
 securityDefinitions:
   AuthenticationToken:
