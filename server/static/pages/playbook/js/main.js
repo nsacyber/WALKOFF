@@ -564,6 +564,7 @@ $(function(){
         for (var i=0; i<newNodes.length; ++i) {
             var parameters = newNodes[i].data("parameters");
             parameters.name = newNodes[i].data("id")
+            parameters.next = [];
             newNodes[i].data("parameters", parameters);
         }
     }
