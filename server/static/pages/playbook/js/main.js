@@ -561,6 +561,8 @@ $(function(){
         // same as the id. This is needed since only the name is
         // stored on the server and serves as the unique id of the
         // node. It therefore must be the same as the Cytoscape id.
+        // Also delete the next field since user needs to explicitely
+        // create new edges for the new node.
         for (var i=0; i<newNodes.length; ++i) {
             var parameters = newNodes[i].data("parameters");
             parameters.name = newNodes[i].data("id")
