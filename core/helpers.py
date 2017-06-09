@@ -270,7 +270,7 @@ def format_db_path(db_type, path):
 def import_all_apps(path=None, reload=False):
     for app_name in list_apps(path):
         try:
-            #importlib.import_module('apps.{0}'.format(app_name))
+            importlib.import_module('apps.{0}'.format(app_name))
             import_app_main(app_name, path=path, reload=reload)
         except ImportError:
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))

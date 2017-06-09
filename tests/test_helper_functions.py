@@ -225,13 +225,14 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_app_action_api_valid(self):
         api = get_app_action_api('HelloWorld', 'pause')
         self.assertEqual(len(api['parameters']), 1)
-        expected = {'returns': {'Success': {'description': 'successfully paused'}},
+        expected = {'returns': {'Success': {'description': 'successfully paused', 'schema': {'type': 'number'}}},
                     'run': 'pause',
-                    'description': 'pauses execution for an amount of time',
+                    'description': 'Pauses execution',
                     'parameters': [{'required': True,
                                     'type': 'number',
                                     'name': 'seconds',
-                                    'description': 'The seconds to pause for'}]}
+                                    'description': 'Seconds to pause'}]}
+
         self.assertDictEqual(api, expected)
 
     def test_get_app_action_api_invalid_app(self):
@@ -264,10 +265,8 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_get_filter_api_valid(self):
         api = get_filter_api('length')
-        expected = (
-            [],
-            {'required': True, 'type': 'number', 'name': 'value', 'description': 'The input collection'}
-        )
+        expected = ([], {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input collection'})
+
         self.assert_params_tuple_equal(api, expected)
 
     def test_get_filter_api_invalid(self):

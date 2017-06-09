@@ -60,9 +60,9 @@ actions:
           type: number
     returns:
       Success:
-        description: incremented number
+        description: successfully paused
         schema:
-          type: integer
+          type: number
   Buggy:
     run: buggy_action
     description: raises an exception

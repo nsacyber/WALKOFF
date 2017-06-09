@@ -49,7 +49,7 @@ filters:
       - name: value
         description: The input collection
         required: true
-        type: number
+        type: string
     returns:
       Success:
         description: The length of the collection

@@ -37,7 +37,7 @@ class TestController(unittest.TestCase):
         self.assertEqual(self.controller.ancestry, ["testController"])
 
     def test_load_workflow_from_file(self):
-        path = '{0}{1}{2}.workflow'.format(paths.workflows_path, sep, "test")
+        path = '{0}{1}.workflow'.format(config.test_workflows_path_with_generated, "test")
         playbook_name = "testPlaybook"
         workflow_name = "helloWorldWorkflow"
         key = _WorkflowKey(playbook_name, workflow_name)
