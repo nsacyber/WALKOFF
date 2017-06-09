@@ -1,30 +1,40 @@
 import unittest
-
+from os import path
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core import controller
+from core.controller import Controller, initialize_threading, shutdown_pool
 from core.case.subscription import Subscription
-from core.helpers import construct_workflow_name_key
+from core.helpers import construct_workflow_name_key, import_all_flags, import_all_filters, import_all_apps
 from tests import config
-from server.flaskserver import running_context
+import core.config.config
 
 
 class TestExecutionEvents(unittest.TestCase):
     """
             Tests execution Events at the Workflow Level
     """
+    @classmethod
+    def setUpClass(cls):
+        import_all_apps(path=config.test_apps_path)
+        core.config.config.load_app_apis(apps_path=config.test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=config.function_api_path)
 
     def setUp(self):
         case_database.initialize()
-        running_context.init_threads()
+        self.controller = Controller(workflows_path=config.test_workflows_path, name='testExecutionEventsController')
 
     def tearDown(self):
         case_database.tear_down()
 
+    @classmethod
+    def tearDownClass(cls):
+        shutdown_pool()
+
     def test_workflowExecutionEvents(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
-        c = controller.Controller(name="testExecutionEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        self.controller.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
 
         subs = {'testExecutionEventsController':
                     Subscription(subscriptions=
@@ -35,9 +45,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-
-        running_context.shutdown_threads()
+        self.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         execution_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testExecutionEvents').first()
@@ -52,10 +60,9 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_stepExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        c = controller.Controller(name="testStepExecutionEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        self.controller.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
 
-        subs = {'testStepExecutionEventsController':
+        subs = {'testExecutionEventsController':
             Subscription(subscriptions=
             {workflow_name:
                 Subscription(subscriptions=
@@ -67,9 +74,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-
-        running_context.shutdown_threads()
+        self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         step_execution_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepExecutionEvents').first()
@@ -84,15 +89,14 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_ffkExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        c = controller.Controller(name="testStepFFKEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        self.controller.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
 
         filter_sub = Subscription(events=['Filter Success', 'Filter Error'])
         flag_sub = Subscription(events=['Flag Arguments Valid', 'Flag Arguments Invalid'], subscriptions={'length': filter_sub})
         next_sub = Subscription(events=['Next Step Taken', 'Next Step Not Taken'], subscriptions={'regMatch': flag_sub})
         step_sub = Subscription(events=["Function Execution Success", "Input Validated", "Conditionals Executed"],
                                 subscriptions={'1': next_sub})
-        subs = {'testStepFFKEventsController':
+        subs = {'testExecutionEventsController':
                     Subscription(subscriptions=
                                  {workflow_name:
                                       Subscription(subscriptions=
@@ -101,9 +105,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
 
-        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-
-        running_context.shutdown_threads()
+        self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
@@ -113,8 +115,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(6, len(step_ffk_event_history)))
 
     def test_ffkExecutionEventsCase(self):
-        c = controller.Controller(name="testStepFFKEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        self.controller.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         filter_sub = Subscription(events=['Filter Error'])
         flag_sub = Subscription(events=['Flag Arguments Valid',
@@ -142,9 +143,7 @@ class TestExecutionEvents(unittest.TestCase):
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
                                                                             global_subscriptions=global_subs)})
 
-        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-
-        running_context.shutdown_threads()
+        self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()

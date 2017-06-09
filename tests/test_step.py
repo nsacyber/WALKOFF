@@ -636,3 +636,4 @@ class TestStep(unittest.TestCase):
         new_ancestry.remove("test_nextstep_one")
         new_ancestry.append("test_nextstep_two")
         self.assertListEqual(new_ancestry, step.errors[0].ancestry)
+

@@ -138,8 +138,8 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = risk_field.text if risk_field is not None else 0
-        self.input = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
-        validate_app_action_parameters(self.input_api, self.input, self.app, self.action)
+        input = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
+        self.input = validate_app_action_parameters(self.input_api, input, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
@@ -169,6 +169,7 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
+        callbacks.StepInputValidated.send(self)
         try:
             args = deepcopy(self.input)
             action = get_app_action(self.app, self.run)
