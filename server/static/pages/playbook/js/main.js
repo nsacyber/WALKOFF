@@ -18,6 +18,7 @@ $(function(){
     var flagsList = [];
     var filtersList = [];
     var startNode = null;
+    var currentNodeInParametersEditor = null; // node being displayed in json editor
 
     //--------------------
     // Top level functions
@@ -389,6 +390,8 @@ $(function(){
             return;
         }
 
+        currentNodeInParametersEditor = ele;
+
         var parameters = ele.data('parameters');
         $("#parameters").removeClass('hidden');
         $("#parameters").empty();
@@ -557,6 +560,9 @@ $(function(){
                 }
             }
         }
+
+        if (currentNodeInParametersEditor == node)
+            hideParameters();
     }
 
     function cut() {
