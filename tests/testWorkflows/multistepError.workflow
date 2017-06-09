@@ -20,29 +20,21 @@
                         <regex>(.*)</regex>
                     </args>
                     <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
+                        <filter action="length"/>
                     </filters>
                 </flag>
             </next>
             <error step="1"></error>
         </step>
         <step id="1">
-            <action>returnPlusOne</action>
+            <action>Buggy</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <inputs>
-                <number>3</number>
-            </inputs>
-            <next>
-            </next>
             <error step="error">
                 <flag action="regMatch">
                     <args>
                         <regex format="str">(.*)</regex>
                     </args>
-                    <filters></filters>
                 </flag>
             </error>
         </step>
@@ -53,8 +45,6 @@
             <inputs>
                 <call>Hello World</call>
             </inputs>
-            <next>
-            </next>
         </step>
     </steps>
 </workflow>

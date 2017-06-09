@@ -220,7 +220,7 @@ class Workflow(ExecutionElement):
                         step.input = start_input
                     first = False
 
-                error_flag = self.__execute_step(step, instances[step.device], total_steps)
+                error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
                 steps.send(error_flag)
                 output = step.output
@@ -250,7 +250,7 @@ class Workflow(ExecutionElement):
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def __execute_step(self, step, instance, total_steps):
+    def __execute_step(self, step, instance):
         error_flag = False
         data = {"step": {"app": step.app,
                          "action": step.action,

@@ -1,11 +1,20 @@
 import unittest
-
 from core.nextstep import NextStep
 from core.flag import Flag
 from core.filter import Filter
+from core.helpers import import_all_filters, import_all_flags, import_all_apps
+from tests.config import test_apps_path, function_api_path
+import core.config.config
 
 
 class TestNextStep(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import_all_apps(path=test_apps_path)
+        core.config.config.load_app_apis(apps_path=test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def __compare_init(self, elem, name, parent_name, flags, ancestry):
         self.assertEqual(elem.name, name)
@@ -19,26 +28,112 @@ class TestNextStep(unittest.TestCase):
         next_step = NextStep()
         self.__compare_init(next_step, '', '', [], ['', ''])
 
+    def test_init_with_name(self):
         next_step = NextStep(name='name')
         self.__compare_init(next_step, 'name', '', [], ['', 'name'])
 
+    def test_init_with_name_and_parent(self):
         next_step = NextStep(name='name', parent_name='parent')
         self.__compare_init(next_step, 'name', 'parent', [], ['parent', 'name'])
 
+    def test_init_with_name_and_parent_and_ancestry(self):
         next_step = NextStep(name='name', parent_name='parent', ancestry=['a', 'b'])
         self.__compare_init(next_step, 'name', 'parent', [], ['a', 'b', 'name'])
 
+    def test_init_with_empty_flags(self):
         next_step = NextStep(name='name', parent_name='parent', flags=[], ancestry=['a', 'b'])
         self.__compare_init(next_step, 'name', 'parent', [], ['a', 'b', 'name'])
 
-        flags = [Flag(), Flag(action='action')]
-        expected_flag_json = [{'action': '', 'args': {}, 'filters': []},
-                              {'action': 'action', 'args': {}, 'filters': []}]
+    def test_init_with_flags(self):
+        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
+        expected_flag_json = [{'action': 'Top Flag', 'args': {}, 'filters': []},
+                              {'action': 'mod1_flag1', 'args': {}, 'filters': []}]
         next_step = NextStep(name='name', parent_name='parent', flags=flags, ancestry=['a', 'b'])
         self.__compare_init(next_step, 'name', 'parent', expected_flag_json, ['a', 'b', 'name'])
 
-    def test_to_from_xml(self):
-        flags = [Flag(), Flag(action='action')]
+    def test_as_json_with_children(self):
+        self.assertDictEqual(NextStep().as_json(), {'name': '', 'flags': []})
+
+    def test_as_json_without_children(self):
+        self.assertDictEqual(NextStep().as_json(with_children=False), {'name': '', 'flags': []})
+
+    def test_as_json_with_children_with_name(self):
+        self.assertDictEqual(NextStep(name='name1').as_json(), {'name': 'name1', 'flags': []})
+
+    def test_as_json_without_children_with_name(self):
+        self.assertDictEqual(NextStep(name='name1').as_json(with_children=False), {'name': 'name1', 'flags': []})
+
+    def test_as_json_with_children_full(self):
+        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
+        expected_flag_json = [{'action': 'Top Flag', 'args': {}, 'filters': []},
+                              {'action': 'mod1_flag1', 'args': {}, 'filters': []}]
+        self.assertDictEqual(NextStep(name='name1', flags=flags).as_json(),
+                             {'name': 'name1', 'flags': expected_flag_json})
+
+    def test_as_json_without_children_full(self):
+        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
+        expected_flag_json = ['Top Flag', 'mod1_flag1']
+        self.assertDictEqual(NextStep(name='name1', flags=flags).as_json(with_children=False),
+                             {'name': 'name1', 'flags': expected_flag_json})
+
+    def test_from_json_name_only(self):
+        json_in = {'name': 'name1', 'flags': []}
+        next_step = NextStep.from_json(json_in)
+        self.__compare_init(next_step, 'name1', '', [], ['', 'name1'])
+
+    def test_from_json_with_parent(self):
+        json_in = {'name': 'name1', 'flags': []}
+        next_step = NextStep.from_json(json_in, parent_name='parent')
+        self.__compare_init(next_step, 'name1', 'parent', [], ['parent', 'name1'])
+
+    def test_from_json_with_ancestry(self):
+        json_in = {'name': 'name1', 'flags': []}
+        next_step = NextStep.from_json(json_in, ancestry=['a', 'b'])
+        self.__compare_init(next_step, 'name1', '', [], ['a', 'b', 'name1'])
+
+    def test_from_json_with_parent_and_ancestry(self):
+        json_in = {'name': 'name1', 'flags': []}
+        next_step = NextStep.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
+        self.__compare_init(next_step, 'name1', 'parent', [], ['a', 'b', 'name1'])
+
+    def test_from_json_with_flags(self):
+        flag_json = [{'action': 'Top Flag', 'args': {}, 'filters': []},
+                     {'action': 'mod1_flag1', 'args': {}, 'filters': []}]
+        next_step = NextStep.from_json({'name': 'name1', 'flags': flag_json})
+        self.__compare_init(next_step, 'name1', '', flag_json, ['', 'name1'])
+
+    def test_to_xml_no_flags(self):
+        next_step = NextStep(name='name')
+        xml = next_step.to_xml()
+        self.assertEqual(xml.tag, 'next')
+        self.assertEqual(xml.get('step'), 'name')
+        self.assertEqual(len(xml.findall('flag')), 0)
+
+    def test_to_xml_error_no_flags(self):
+        next_step = NextStep(name='name')
+        xml = next_step.to_xml(tag='error')
+        self.assertEqual(xml.tag, 'error')
+        self.assertEqual(xml.get('step'), 'name')
+        self.assertEqual(len(xml.findall('flag')), 0)
+
+    def test_to_xml(self):
+        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
+        next_step = NextStep(name='name', flags=flags)
+        xml = next_step.to_xml()
+        self.assertEqual(xml.tag, 'next')
+        self.assertEqual(xml.get('step'), 'name')
+        self.assertEqual(len(xml.findall('flag')), 2)
+
+    def test_to_xml_error(self):
+        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
+        next_step = NextStep(name='name', flags=flags)
+        xml = next_step.to_xml(tag='error')
+        self.assertEqual(xml.tag, 'error')
+        self.assertEqual(xml.get('step'), 'name')
+        self.assertEqual(len(xml.findall('flag')), 2)
+
+    def test_to_from_xml_is_convertible(self):
+        flags = [Flag(action='mod1_flag1'), Flag(action='Top Flag')]
         inputs = [NextStep(),
                   NextStep(name='name'),
                   NextStep(name='name', parent_name='parent'),
@@ -56,66 +151,8 @@ class TestNextStep(unittest.TestCase):
         next_step.name = None
         self.assertIsNone(next_step.to_xml())
 
-    def test_create_flag(self):
-        def test_help(_next_step, _expected):
-            self.assertEqual(len(_next_step.flags), len(_expected))
-            self.assertListEqual([flag.action for flag in _next_step.flags], [flag['action'] for flag in _expected])
-            for flag, expected_flag in zip(_next_step.flags, _expected):
-                self.assertDictEqual(flag.as_json(), expected_flag)
-                self.assertEqual(flag.parent_name, 'name')
-                expected_ancestry = list(_next_step.ancestry)
-                expected_ancestry.append(flag.name)
-                self.assertListEqual(flag.ancestry, expected_ancestry)
-
-        next_step = NextStep(name='name')
-        next_step.create_flag('1')
-        expected = [Flag(action='1').as_json()]
-        test_help(next_step, expected)
-
-        filters = [Filter(action='test_filter_action'), Filter()]
-        next_step.create_flag('2', filters=filters)
-        expected.append(Flag(action='2', filters=filters).as_json())
-        test_help(next_step, expected)
-        args = {'arg1': 'a', 'arg2': 3, 'arg3': u'abc'}
-        args = {arg_name: {'key':arg_name, 'value':arg_value, 'format':type(arg_value).__name__}
-                for arg_name, arg_value in args.items()}
-        next_step.create_flag('3', filters=filters, args=args)
-        expected.append(Flag(action='3', filters=filters, args=args).as_json())
-        test_help(next_step, expected)
-
-    def test_remove_flag(self):
-        flags = [Flag(action=str(name)) for name in range(5)]
-        next_step = NextStep(name='name', flags=flags)
-        expected_flags = [flag.name for flag in flags]
-
-        self.assertTrue(next_step.remove_flag())
-        expected_flags = expected_flags[:-1]
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
-        self.assertTrue(next_step.remove_flag(index=0))
-        expected_flags = expected_flags[1:]
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
-        self.assertFalse(next_step.remove_flag(index=5))
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
-        self.assertFalse(next_step.remove_flag(index=-5))
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
-        self.assertTrue(next_step.remove_flag(index=1))
-        expected_flags = [expected_flags[0]] + expected_flags[2:]
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
-        self.assertTrue(next_step.remove_flag(-1))
-        expected_flags = expected_flags[:-1]
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
-        self.assertTrue(next_step.remove_flag(0))
-        expected_flags = []
-        self.assertListEqual([flag.name for flag in next_step.flags], expected_flags)
-
     def test_eq(self):
-        flags = [Flag(), Flag(action='action')]
+        flags = [Flag(action='mod1_flag1'), Flag(action='Top Flag')]
         next_steps = [NextStep(),
                       NextStep(name='name'),
                       NextStep(name='name', parent_name='parent', flags=flags, ancestry=['a', 'b'])]
@@ -127,19 +164,13 @@ class TestNextStep(unittest.TestCase):
                     self.assertNotEqual(next_steps[i], next_steps[j])
 
     def test_call(self):
-
-        flags1 = [Flag(action='regMatch', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}})]
-        flags2 = [Flag(action='regMatch', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}}),
-                  Flag(action='regMatch', args={'regex': {'key': 'regex', 'value': 'a', 'format': 'str'}})]
-        flags3 = [Flag(action='invalidName', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}})]
-        flags4 = [Flag(action='regMatch', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}}),
-                  Flag(action='invalidName', args={'regex': {'key':'regex', 'value':'(.*)', 'format':'str'}})]
+        flags1 = [Flag(action='regMatch', args={'regex': '(.*)'})]
+        flags2 = [Flag(action='regMatch', args={'regex': '(.*)'}),
+                  Flag(action='regMatch', args={'regex': 'a'})]
         inputs = [('name1', [], 'aaaa', True),
                   ('name2', flags1, 'anyString', True),
                   ('name3', flags2, 'anyString', True),
-                  ('name4', flags2, 'bbbb', False),
-                  ('name5', flags3, 'anyString', False),
-                  ('name6', flags4, 'anyString', False)]
+                  ('name4', flags2, 'bbbb', False)]
 
         for name, flags, input_str, expect_name in inputs:
             next_step = NextStep(name=name, flags=flags)
@@ -149,93 +180,49 @@ class TestNextStep(unittest.TestCase):
             else:
                 self.assertIsNone(next_step(input_str))
 
-    def test_to_from_json(self):
-        filter_params = ['test_filter_action', '']
-        flags_params = [('', []), ('test_action', []), ('test_action', filter_params)]
-        input_params = [('', '', None, []), ('test_name', '', None, []), ('test_name', 'test_parent', None, []),
-                        ('test_name', 'test_parent', ['a', 'b'], []),
-                        ('test_name', 'test_parent', ['a', 'b'], flags_params)]
-
-        for (name, parent_name, ancestry, flag_params) in input_params:
-            next_step = NextStep(name=name, parent_name=parent_name, ancestry=ancestry)
-            if flag_params:
-                flags = []
-                for flag_action, flag_filter_params in flag_params:
-                    flag = Flag(action=flag_action, parent_name=next_step.name, ancestry=next_step.ancestry)
-                    if filter_params:
-                        flag.filters = [Filter(action=flag_action, parent_name=flag.name, ancestry=flag.ancestry)
-                                        for flag_action in flag_filter_params]
-                    flags.append(flag)
-                next_step.flags = flags
-            next_step_json = next_step.as_json()
-            derived_next_step = NextStep.from_json(next_step_json, parent_name=parent_name, ancestry=ancestry)
-            self.assertDictEqual(derived_next_step.as_json(), next_step_json)
-            self.assertEqual(next_step.parent_name, derived_next_step.parent_name)
-            self.assertListEqual(next_step.ancestry, derived_next_step.ancestry)
-
-            derived_json_without_children = next_step_json
-            derived_json_without_children['flags'] = [flag['action'] for flag in derived_json_without_children['flags']]
-            self.assertDictEqual(derived_next_step.as_json(with_children=False), derived_json_without_children)
-
-            # check the ancestry of the flags
-            original_flag_ancestries = [list(flag.ancestry) for flag in next_step.flags]
-            derived_flag_ancestries = [list(flag.ancestry) for flag in derived_next_step.flags]
-            self.assertEqual(len(original_flag_ancestries), len(derived_flag_ancestries))
-            for original_flag_ancestry, derived_flag_ancestry in zip(original_flag_ancestries, derived_flag_ancestries):
-                self.assertListEqual(derived_flag_ancestry, original_flag_ancestry)
-
     def test_get_children(self):
         next_step1 = NextStep()
-        names = ['', 'action1', 'action2']
+        names = ['sub1_top_flag', 'mod1_flag1', 'Top Flag']
         for name in names:
             self.assertIsNone(next_step1.get_children([name]))
             self.assertDictEqual(next_step1.get_children([]), next_step1.as_json(with_children=False))
 
-        flags = [Flag(), Flag(action='action1'), Flag(action='action2')]
+        flags = [Flag('sub1_top_flag'), Flag(action='mod1_flag1'), Flag(action='Top Flag')]
         next_step2 = NextStep(flags=flags)
         for i, name in enumerate(names):
             self.assertDictEqual(next_step2.get_children([name]), flags[i].as_json())
             self.assertDictEqual(next_step2.get_children([]), next_step2.as_json(with_children=False))
 
-        filters = [Filter(action='filter1'), Filter(), Filter(action='filter2')]
-        flags = [Flag(action='action1', filters=filters)]
-        names = ['filter1', '', 'filter2']
-        next_step3 = NextStep(flags=flags)
-        ancestries = [[name, 'action1'] for name in names]
-        for i, ancestry in enumerate(ancestries):
-            self.assertDictEqual(next_step3.get_children(ancestry), filters[i].as_json())
-            self.assertDictEqual(next_step3.get_children([]), next_step3.as_json(with_children=False))
-
     def test_name_parent_rename(self):
-        nextstep = NextStep(ancestry=['nextstep_parent'], name='nextstep')
+        next_step = NextStep(ancestry=['nextstep_parent'], name='nextstep')
         new_ancestry = ['nextstep_parent_update']
-        nextstep.reconstruct_ancestry(new_ancestry)
+        next_step.reconstruct_ancestry(new_ancestry)
         new_ancestry.append('nextstep')
-        self.assertListEqual(new_ancestry, nextstep.ancestry)
+        self.assertListEqual(new_ancestry, next_step.ancestry)
 
     def test_name_parent_flag_rename(self):
-        nextstep = NextStep(ancestry=['nextstep_parent'], name='nextstep')
-        flag = Flag(action="test_flag", ancestry=nextstep.ancestry)
-        nextstep.flags = [flag]
+        next_step = NextStep(ancestry=['nextstep_parent'], name='nextstep')
+        flag = Flag(action="Top Flag", ancestry=next_step.ancestry)
+        next_step.flags = [flag]
 
         new_ancestry = ["nextstep_parent_update"]
-        nextstep.reconstruct_ancestry(new_ancestry)
+        next_step.reconstruct_ancestry(new_ancestry)
         new_ancestry.append("nextstep")
-        new_ancestry.append("test_flag")
-        self.assertListEqual(new_ancestry, nextstep.flags[0].ancestry)
+        new_ancestry.append("Top Flag")
+        self.assertListEqual(new_ancestry, next_step.flags[0].ancestry)
 
     def test_name_parent_multiple_flag_rename(self):
-        nextstep = NextStep(ancestry=['nextstep_parent'], name='nextstep')
-        flagOne = Flag(action="test_flag_one", ancestry=nextstep.ancestry)
-        flagTwo = Flag(action="test_flag_two", ancestry=nextstep.ancestry)
-        nextstep.flags = [flagOne, flagTwo]
+        next_step = NextStep(ancestry=['nextstep_parent'], name='mod1_flag1')
+        flag_one = Flag(action="Top Flag", ancestry=next_step.ancestry)
+        flag_two = Flag(action="mod1_flag1", ancestry=next_step.ancestry)
+        next_step.flags = [flag_one, flag_two]
 
         new_ancestry = ["nextstep_parent_update"]
-        nextstep.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("nextstep")
-        new_ancestry.append("test_flag_one")
-        self.assertListEqual(new_ancestry, nextstep.flags[0].ancestry)
+        next_step.reconstruct_ancestry(new_ancestry)
+        new_ancestry.append("mod1_flag1")
+        new_ancestry.append("Top Flag")
+        self.assertListEqual(new_ancestry, next_step.flags[0].ancestry)
 
-        new_ancestry.remove("test_flag_one")
-        new_ancestry.append("test_flag_two")
-        self.assertListEqual(new_ancestry, nextstep.flags[1].ancestry)
+        new_ancestry.remove("Top Flag")
+        new_ancestry.append("mod1_flag1")
+        self.assertListEqual(new_ancestry, next_step.flags[1].ancestry)

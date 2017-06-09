@@ -188,6 +188,7 @@ class TestHelperFunctions(unittest.TestCase):
         filter_tags = import_and_find_tags('tests.util.flagsfilters', 'filter')
         expected_filters = {'top_level_filter': tests.util.flagsfilters.top_level_filter,
                             'filter1': tests.util.flagsfilters.filter1,
+                            'length': tests.util.flagsfilters.length,
                             'mod1.filter1': tests.util.flagsfilters.mod1.filter1,
                             'mod1.filter2': tests.util.flagsfilters.mod1.filter2,
                             'sub1.sub1_top_filter': tests.util.flagsfilters.sub1.sub1_top_filter,
@@ -195,6 +196,8 @@ class TestHelperFunctions(unittest.TestCase):
                             'sub1.mod2.filter3': tests.util.flagsfilters.sub1.mod2.filter3}
         flag_tags = import_and_find_tags('tests.util.flagsfilters', 'flag')
         expected_flags = {'top_level_flag': tests.util.flagsfilters.top_level_flag,
+                          'regMatch': tests.util.flagsfilters.regMatch,
+                          'count': tests.util.flagsfilters.count,
                           'mod1.flag1': tests.util.flagsfilters.mod1.flag1,
                           'mod1.flag2': tests.util.flagsfilters.mod1.flag2,
                           'sub1.sub1_top_flag': tests.util.flagsfilters.sub1.sub1_top_flag,

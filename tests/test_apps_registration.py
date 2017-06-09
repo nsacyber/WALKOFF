@@ -3,6 +3,10 @@ from core.helpers import import_all_apps
 from tests.config import test_apps_path
 from tests.apps import *
 import importlib
+try:
+    from importlib import reload
+except ImportError:
+    from imp import reload
 
 
 class TestAppsRegistration(unittest.TestCase):
@@ -27,7 +31,7 @@ class TestAppsRegistration(unittest.TestCase):
 
     def test_get_all_app_actions_valid_app(self):
         actions = get_all_actions_for_app('HelloWorld')
-        expected_actions = {'pause', 'helloWorld', 'returnPlusOne', 'repeatBackToMe', 'addThree', 'test_static_method'}
+        expected_actions = {'pause', 'helloWorld', 'returnPlusOne', 'repeatBackToMe', 'addThree', 'buggy_action'}
         self.assertSetEqual(set(actions.keys()), expected_actions)
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
@@ -43,12 +47,6 @@ class TestAppsRegistration(unittest.TestCase):
         hello_world_main_class = getattr(hello_world_main, 'Main')
         instance = hello_world_main_class()
         self.assertDictEqual(getattr(hello_world_main_class, 'helloWorld')(instance), {'message': 'HELLO WORLD'})
-
-    # def test_action_can_be_called_with_app_instance_with_args(self):
-    #     hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
-    #     hello_world_main_class = getattr(hello_world_main, 'Main')
-    #     instance = hello_world_main_class()
-    #     self.assertDictEqual(getattr(hello_world_main_class, 'helloWorld')(instance), {'message': 'HELLO WORLD'})
 
     def test_get_app_action_valid(self):
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
