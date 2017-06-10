@@ -92,8 +92,9 @@ class TestServer(ServerTestCase):
             'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
                            'returnPlusOne', 'helloWorld', 'Hello World']}
         response = self.get_with_status_check('/apps/actions', headers=self.headers)
-        orderless_list_compare(self, response.keys(), expected_json.keys())
-        self.assertDictEqual(response, expected_json)
+        orderless_list_compare(self, list(response.keys()), list(expected_json.keys()))
+        for app, actions in expected_json.items():
+            orderless_list_compare(self, response[app], actions)
 
     def test_get_configuration(self):
         config_fields = [x for x in dir(core.config.config) if

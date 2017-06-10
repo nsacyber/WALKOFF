@@ -42,9 +42,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_locate_workflows(self):
         expected_workflows = ['basicWorkflowTest.workflow',
                               'DailyQuote.workflow',
-                              'invalidActionWorkflow.workflow',
-                              'invalidAppWorkflow.workflow',
-                              'invalidInputWorkflow.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
                               'pauseWorkflowTest.workflow',
@@ -53,8 +50,7 @@ class TestHelperFunctions(unittest.TestCase):
                               'templatedWorkflowTest.workflow',
                               'testExecutionWorkflow.workflow',
                               'testScheduler.workflow',
-                              'tieredWorkflow.workflow',
-                              'tooManyStepInputsWorkflow.workflow']
+                              'tieredWorkflow.workflow']
         received_workflows = locate_workflows_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 

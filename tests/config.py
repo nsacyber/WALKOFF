@@ -3,6 +3,7 @@ from os.path import join
 
 test_path = join('.', 'tests')
 test_workflows_path = join('.', 'tests', 'testWorkflows') + sep
+test_invalid_workflows_path = join('.', 'tests', 'testWorkflows', 'invalid_workflows') + sep
 test_workflows_path_with_generated = join('.', 'tests', 'testWorkflows', 'testGeneratedWorkflows') + sep
 test_workflows_backup_path = join('.', 'tests', 'testWorkflows', 'testGeneratedWorkflows_bkup') + sep
 test_apps_path = join('.', 'tests', 'apps')

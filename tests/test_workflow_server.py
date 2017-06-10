@@ -178,7 +178,6 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
 
     def test_add_playbook_already_exists(self):
-        expected_playbooks = flask_server.running_context.controller.get_all_workflows()
         data = {'playbook_template': 'junkPlaybookTemplate'}
         self.put_with_status_check('/playbooks/test_playbook',
                                    data=data, headers=self.headers, status_code=SUCCESS_WITH_WARNING)
