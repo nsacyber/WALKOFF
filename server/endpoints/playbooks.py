@@ -4,7 +4,7 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
 from core import helpers
-from core.helpers import UnknownAppAction, UnknownApp
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from core.options import Options
 import core.config.config
 import core.config.paths
@@ -499,7 +499,9 @@ def save_workflow(playbook_name, workflow_name):
             except UnknownApp as e:
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
             except UnknownAppAction as e:
-                return {'error': 'Unknown action {0} for action {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+                return {'error': 'Unknown action {0} for app {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+            except InvalidInput as e:
+                return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
             else:
                 if 'start' in request.get_json():
                     workflow.start_step = request.get_json()['start']

@@ -36,12 +36,14 @@ def list_app_actions(app_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        core.config.config.load_function_info()
-        if app_name in core.config.config.function_info['apps']:
-            return {'actions': core.config.config.function_info['apps'][app_name]}, SUCCESS
-        else:
+        try:
+            app_api = core.config.config.app_apis[app]
+        except KeyError:
             current_app.logger.error('Could not get action for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
+        else:
+            return {'actions': app_api['actions'].keys()}, SUCCESS
+
     return __func()
 
 
@@ -51,7 +53,7 @@ def read_all_devices(app_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             query = running_context.Device.query.all()
             output = []
             if query:
@@ -72,7 +74,7 @@ def create_device(app_name, device_name):
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.AddNewDeviceForm(request.form)
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             if len(running_context.Device.query.filter_by(name=device_name).all()) > 0:
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Device already exists.'.format(device_name, app_name))
@@ -110,7 +112,7 @@ def read_device(app_name, device_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 return dev.as_json(), SUCCESS
@@ -133,7 +135,7 @@ def update_device(app_name, device_name):
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.EditDeviceForm(request.form)
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 dev.edit_device(form)
@@ -160,7 +162,7 @@ def delete_device(app_name, device_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 running_context.db.session.delete(dev)
