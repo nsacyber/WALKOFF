@@ -6,7 +6,8 @@ import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
-
+from core.helpers import import_all_apps, import_all_flags, import_all_filters
+from tests.apps import App
 
 class ServerTestCase(unittest.TestCase):
     test_workflows_path = tests.config.test_workflows_path_with_generated
@@ -37,6 +38,13 @@ class ServerTestCase(unittest.TestCase):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
+
+        App.registry = {}
+        import_all_apps(path=tests.config.test_apps_path, reload=True)
+        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=tests.config.function_api_path)
 
     @classmethod
     def tearDownClass(cls):

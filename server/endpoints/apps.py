@@ -24,8 +24,8 @@ def read_all_app_actions():
 
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        core.config.config.load_function_info()
-        return core.config.config.function_info['apps'], SUCCESS
+        app_apis = {app_name: app_api['actions'].keys() for app_name, app_api in core.config.config.app_apis.items()}
+        return app_apis, SUCCESS
 
     return __func()
 

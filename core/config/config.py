@@ -8,7 +8,6 @@ import core.config.paths
 from core.config.paths import keywords_path, graphviz_path
 from collections import OrderedDict
 import yaml
-import jsonschema
 
 __logger = logging.getLogger(__name__)
 
@@ -88,25 +87,6 @@ threadpool_shutdown_timeout_sec = 3
 
 # Function Dict Paths/Initialization
 
-function_info = None
-
-
-def load_function_info():
-    """ Loads the app action metadata
-    """
-    from core.helpers import list_apps
-    global function_info
-    with open(core.config.paths.function_info_path) as f:
-        function_info = json.loads(f.read())
-    app_funcs = {}
-    for app in list_apps():
-        try:
-            with open(join(core.config.paths.apps_path, app, 'functions.json')) as function_file:
-                app_funcs[app] = json.loads(function_file.read())
-        except Exception as e:
-            __logger.error('Cannot load function metadata: Error {0}'.format(e))
-    function_info['apps'] = app_funcs
-
 app_apis = {}
 
 
@@ -145,6 +125,7 @@ filters = {}
 flags = {}
 function_apis = {}
 
+
 def load_flagfilter_apis(path=None):
     path = path if path is not None else core.config.paths.function_api_path
     global function_apis
@@ -166,7 +147,6 @@ def initialize():
     global filters
     global flags
     load_config()
-    load_function_info()
     from core.helpers import import_all_apps, import_all_filters, import_all_flags
     import_all_apps()
     load_app_apis()
