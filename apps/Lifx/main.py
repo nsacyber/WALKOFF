@@ -1,5 +1,5 @@
 import logging
-from apps import App
+from apps import App, action
 import requests
 import json
 logger = logging.getLogger(__name__)
@@ -23,39 +23,43 @@ class Main(App):
     def __api_url(self, endpoint):
         return '{0}{1}'.format(self.base_url, endpoint)
 
-    def list_lights(self, args):
+    @action
+    def list_lights(self):
         response = requests.get(self.__api_url('all'), headers=self.headers)
         return json.loads(response.text)
 
-    def set_state(self, args={}):
+    @action
+    def set_state(self, power, color, brightness, duration, infrared):
         """
         Sets the state of the light
         power: on or off
         color: color to set the lights to
-        brightness: int from 0 to 1000
+        brightness: int from 0 to 1
         duration: seconds for the action to last
-        infrared: 0 to 1000. maximum brightness of infrared channel
+        infrared: 0 to 1. maximum brightness of infrared channel
         """
-        payload = {"power": args['power'](),
-                   "color": args['color'](),
-                   "brightness": args['brightness']()/1000.,
-                   "duration": args['duration'](),
-                   "infrared": args['infrared']()/1000.}
+        payload = {"power": power,
+                   "color": color,
+                   "brightness": brightness,
+                   "duration": duration,
+                   "infrared": infrared}
         response = requests.put(self.__api_url('all/state'.format(self.name)), data=payload, headers=self.headers)
-        time.sleep(int(args['duration']()))
+        time.sleep(duration)
         return json.loads(response.text)
 
-    def toggle_power(self, args={}):
+    @action
+    def toggle_power(self, duration):
         """
         Sets the state of the light
         duration: seconds for the action to last
         """
-        payload = {"duration": args['duration']()}
+        payload = {"duration": duration}
         response = requests.post(self.__api_url('all/toggle'.format(self.name)), data=payload, headers=self.headers)
-        time.sleep(int(args['duration']()))
+        time.sleep(duration)
         return json.loads(response.text)
 
-    def breathe_effect(self, args={}):
+    @action
+    def breathe_effect(self, color, from_color, period, cycles, persist, power_on, peak):
         """
         Slowly fades between two colors
         color: color to use for the breathe effect
@@ -66,21 +70,21 @@ class Main(App):
         power_on: If true, turn on the light if not already on
         peak: where in the period the target color is at its maximum. Between 0 and 10
         """
-        payload = {"color": args['color'](),
-                   "from_color": args['from_color'](),
-                   "period": args['period'](),
-
-                   "cycles": args['cycles'](),
-                   "persist": args['persist'](),
-                   "power_on": args['power_on'](),
-                   "peak": int(args['peak']())/10.}
+        payload = {"color": color,
+                   "from_color": from_color,
+                   "period": period,
+                   "cycles": cycles,
+                   "persist": persist,
+                   "power_on": power_on,
+                   "peak": peak}
         response = requests.post(self.__api_url('all/effects/breathe'),
                                 data=payload,
                                 headers=self.headers)
-        time.sleep(int(args['period']())*int(args['cycles']()))
+        time.sleep(period*cycles)
         return json.loads(response.text)
 
-    def pulse_effect(self, args={}):
+    @action
+    def pulse_effect(self, color, from_color, period, cycles, persist, power_on):
         """
         Quickly flashes between two colors
         color: color to use for the breathe effect
@@ -90,14 +94,14 @@ class Main(App):
         persist: If false set teh light back to its previous value when effect ends. Else leave at last effect
         power_on: If true, turn on the light if not already on
         """
-        payload = {"color": args['color'](),
-                   "from_color": args['from_color'](),
-                   "period": args['period'](),
-                   "cycles": args['cycles'](),
-                   "persist": args['persist'](),
-                   "power_on": args['power_on']()}
+        payload = {"color": color,
+                   "from_color": from_color,
+                   "period": period,
+                   "cycles": cycles,
+                   "persist": persist,
+                   "power_on": power_on}
         response = requests.post(self.__api_url('all/effects/pulse'),
                                 data=payload,
                                 headers=self.headers)
-        time.sleep(int(args['period']()) * int(args['cycles']()))
+        time.sleep(period * cycles)
         return json.loads(response.text)

@@ -13,7 +13,7 @@
 		<steps>
 			<step id="1">
 				<id>1</id>
-				<app>Lifx</app>
+				<app>Lifxx</app>
 				<action>breathe_effect</action>
 				<device>LIFX 12cf1f</device>
 				<position>

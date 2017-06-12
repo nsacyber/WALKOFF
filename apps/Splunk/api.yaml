@@ -1,0 +1,29 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Splunk
+  description: A simple app to interact with Splunk
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  search:
+    run: search
+    description: Conducts the search
+    parameters:
+        - name: query
+          required: true
+          type: string
+        - name: max_count
+          type: integer
+        - name: spawn_process
+          type: boolean
+        - name: output_mode
+          type: string
+        - name: exec_type
+          type: string
+    returns:
+      Success:
+        schema:
+          type: object

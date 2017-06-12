@@ -1,4 +1,4 @@
-from apps import App
+from apps import App, action
 from watson_developer_cloud import VisualRecognitionV3 as vr
 import json
 
@@ -8,26 +8,32 @@ class Main(App):
         App.__init__(self, name, device)
         self.engine = vr('2016-05-20', api_key=self.get_device().get_password())
 
-    def recognize_text_from_remote_url(self, args={}):
-        result = self.engine.recognize_text(images_url=args['url']())
+    @action
+    def recognize_text_from_remote_url(self, url):
+        result = self.engine.recognize_text(images_url=url)
         return json.dumps(result['images'][0]['text'])
 
-    def recognize_text_from_local_file(self, args={}):
-        result = self.engine.recognize_text(images_file=args['path']())
+    @action
+    def recognize_text_from_local_file(self, path):
+        result = self.engine.recognize_text(images_file=path)
         return json.dumps(result['images'][0]['text'])
 
-    def detect_faces_from_remote_url(self, args={}):
-        result = self.engine.detect_faces(images_url=args['url']())
+    @action
+    def detect_faces_from_remote_url(self, url):
+        result = self.engine.detect_faces(images_url=url)
         return json.dumps(result['images'][0]['faces'])
 
-    def detect_faces_from_local_file(self, args={}):
-        result = self.engine.detect_faces(images_file=args['path']())
+    @action
+    def detect_faces_from_local_file(self, path):
+        result = self.engine.detect_faces(images_file=path)
         return json.dumps(result['images'][0]['faces'])
 
-    def classify_from_remote_url(self, args={}):
-        result = self.engine.classify(images_url=args['url']())
+    @action
+    def classify_from_remote_url(self, url):
+        result = self.engine.classify(images_url=url)
         return json.dumps(result['images'][0]['classifiers'])
 
-    def classify_from_local_file(self, args={}):
-        result = self.engine.classify(images_file=args['path']())
+    @action
+    def classify_from_local_file(self, path):
+        result = self.engine.classify(images_file=path)
         return json.dumps(result['images'][0]['classifiers'])
