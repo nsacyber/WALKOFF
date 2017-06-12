@@ -42,7 +42,7 @@ def compose_yamls():
 
 
 def create_app():
-    connexion_app = connexion.App(__name__, specification_dir='api/', server='gevent')
+    connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
     compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
