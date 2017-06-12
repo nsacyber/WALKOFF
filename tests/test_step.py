@@ -496,13 +496,13 @@ class TestStep(unittest.TestCase):
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertDictEqual(step.execute(instance.instance), {'message': 'HELLO WORLD'})
+        self.assertDictEqual(step.execute(instance.instance, None), {'message': 'HELLO WORLD'})
         self.assertDictEqual(step.output, {'message': 'HELLO WORLD'})
 
     def test_execute_with_args(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertAlmostEqual(step.execute(instance.instance), 8.9)
+        self.assertAlmostEqual(step.execute(instance.instance, None), 8.9)
         self.assertAlmostEqual(step.output, 8.9)
 
     def test_execute_action_which_raises_exception(self):
@@ -510,7 +510,19 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='Buggy')
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(CustomException):
-            step.execute(instance.instance)
+            step.execute(instance.instance, None)
+
+    def test_execute_with_data_in_valid(self):
+        step = Step(app='HelloWorld', action='Add To Previous', inputs={'num': '-5.6'})
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        self.assertAlmostEqual(step.execute(instance.instance, 3), -2.6)
+        self.assertAlmostEqual(step.output, -2.6)
+
+    def test_execute_with_data_in_invalid(self):
+        step = Step(app='HelloWorld', action='Add To Previous', inputs={'num': '-5.6'})
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        with self.assertRaises(InvalidInput):
+            step.execute(instance.instance, 'invalid')
 
     def test_get_next_step_no_next_steps_no_errors(self):
         step = Step(app='HelloWorld', action='helloWorld')

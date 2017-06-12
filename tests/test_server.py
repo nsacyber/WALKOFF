@@ -90,7 +90,7 @@ class TestServer(ServerTestCase):
         expected_json = {
             'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
             'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
-                           'returnPlusOne', 'helloWorld', 'Hello World']}
+                           'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
         response = self.get_with_status_check('/apps/actions', headers=self.headers)
         orderless_list_compare(self, list(response.keys()), list(expected_json.keys()))
         for app, actions in expected_json.items():

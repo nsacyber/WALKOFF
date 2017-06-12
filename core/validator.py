@@ -75,6 +75,20 @@ def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
     validate_flagfilter_params(filter_spec, 'Filter', core.config.config.filters, dereference)
 
 
+def validate_data_in_param(params, data_in_param_name, message_prefix):
+    data_in_param = next((param for param in params if param['name'] == data_in_param_name), None)
+    if data_in_param is None:
+        raise InvalidAppApi(
+            '{0} has a dataIn param {1} '
+            'for which it does not have a '
+            'corresponding parameter'.format(message_prefix, data_in_param_name))
+    elif not data_in_param.get('required', False):
+        raise InvalidAppApi(
+            '{0} has a dataIn param {1} which is not marked as required in the api. '
+            'Add "required: true" to parameter specification for {1}'.format(message_prefix,
+                                                                             data_in_param_name))
+
+
 def validate_flagfilter_params(spec, action_type, defined_actions, dereferencer):
     seen = set()
     for action_name, action in spec.items():
@@ -85,18 +99,7 @@ def validate_flagfilter_params(spec, action_type, defined_actions, dereferencer)
                                 'which is not defined'.format(action_type, action_name, action['run']))
 
         data_in_param_name = action['dataIn']
-        first = next((param for param in action_params if param['name'] == data_in_param_name), None)
-        if first is None:
-            raise InvalidAppApi(
-                '{0} action {1} has a dataIn param {2} '
-                'for which it does not have a '
-                'corresponding parameter'.format(action_type, action_name, data_in_param_name))
-        elif not first.get('required', False):
-            raise InvalidAppApi(
-                '{0} action {1} has a dataIn param {2} which is not marked as required in the api. '
-                'Add "required: true" to parameter specification for {2}'.format(action_type, action_name,
-                                                                                 data_in_param_name))
-
+        validate_data_in_param(action_params, data_in_param_name, '{0} action {1}'.format(action_type, action_name))
         validate_action_params(action_params, dereferencer, action_type, action_name, defined_actions[action['run']])
         seen.add(action['run'])
 
@@ -130,6 +133,8 @@ def validate_actions(actions, dereferencer, app_name):
                                 'which is not defined in App {2}'.format(action_name, action['run'], app_name))
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
+        if 'dataIn' in action:
+            validate_data_in_param(action_params, action['dataIn'], 'App {0} action {1}'.format(app_name, action_name))
         if action_params:
             validate_action_params(action_params, dereferencer, app_name,
                                    action_name, get_app_action(app_name, action['run']))
@@ -148,11 +153,10 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
             raise InvalidAppApi('Duplicate parameter {0} in api for {1} '
                                 'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
-
     if __new_inspection:
         method_params = list(getsignature(action_func).parameters.keys())
     else:
-        method_params = getsignature(action_func).args  # pre-inspect the function to get its arguments
+        method_params = getsignature(action_func).args
     if method_params and method_params[0] == 'self':
         method_params.pop(0)
     if not seen == set(method_params):

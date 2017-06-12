@@ -4,7 +4,7 @@ import types
 import sys
 from os.path import join
 from os import sep
-from tests.config import test_workflows_path, test_apps_path
+from tests.config import test_workflows_path, test_apps_path, function_api_path
 import core.config.paths
 from core.config.config import initialize
 from tests.util.assertwrappers import orderless_list_compare
@@ -13,7 +13,11 @@ from tests.util.assertwrappers import orderless_list_compare
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        initialize()
+        import_all_apps(path=test_apps_path)
+        core.config.config.load_app_apis(apps_path=test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def setUp(self):
         self.original_apps_path = core.config.paths.apps_path
@@ -42,6 +46,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_locate_workflows(self):
         expected_workflows = ['basicWorkflowTest.workflow',
                               'DailyQuote.workflow',
+                              'dataflowTest.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
                               'pauseWorkflowTest.workflow',
@@ -218,18 +223,31 @@ class TestHelperFunctions(unittest.TestCase):
         with self.assertRaises(ImportError):
             import_all_flags('invalid.package')
 
-    def test_get_app_action_api_valid(self):
+    def test_get_app_action_api_valid_no_data_in(self):
         api = get_app_action_api('HelloWorld', 'pause')
-        self.assertEqual(len(api['parameters']), 1)
-        expected = {'returns': {'Success': {'description': 'successfully paused', 'schema': {'type': 'number'}}},
-                    'run': 'pause',
-                    'description': 'Pauses execution',
-                    'parameters': [{'required': True,
-                                    'type': 'number',
-                                    'name': 'seconds',
-                                    'description': 'Seconds to pause'}]}
+        expected = ('pause',
+                    [{'required': True,
+                      'type': 'number',
+                      'name': 'seconds',
+                      'description': 'Seconds to pause'}],
+                    None)
+        self.assertEqual(len(api), 3)
+        self.assertEqual(api[0], expected[0])
+        self.assertEqual(len(api[1]), 1)
+        self.assertDictEqual(api[1][0], expected[1][0])
+        self.assertIsNone(api[2])
 
-        self.assertDictEqual(api, expected)
+    def test_get_app_action_api_valid_with_data_in(self):
+        api = get_app_action_api('HelloWorld', 'Add To Previous')
+        expected = ('add_to_previous_step',
+                    [{'required': True, 'type': 'number', 'name': 'num'}],
+                    {'required': True, 'type': 'number', 'name': 'data'})
+        self.assertEqual(len(api), 3)
+        self.assertEqual(api[0], expected[0])
+        self.assertEqual(len(api[1]), 1)
+        self.assertDictEqual(api[1][0], expected[1][0])
+        self.assertDictEqual(api[2], expected[2])
+
 
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -270,7 +288,7 @@ class TestHelperFunctions(unittest.TestCase):
             get_filter_api('invalid')
 
     def test_get_flag_valid(self):
-        from core.flags.count import count
+        from tests.util.flagsfilters import count
         self.assertEqual(get_flag('count'), count)
 
     def test_get_flag_invalid(self):
@@ -278,7 +296,7 @@ class TestHelperFunctions(unittest.TestCase):
             get_flag('invalid')
 
     def test_get_filter_valid(self):
-        from core.filters.length import length
+        from tests.util.flagsfilters import length
         self.assertEqual(get_filter('length'), length)
 
     def test_get_filter_invalid(self):

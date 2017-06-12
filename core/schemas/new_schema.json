@@ -244,6 +244,10 @@
         "externalDocs": {
           "$ref": "#/definitions/externalDocs"
         },
+        "dataIn": {
+          "type": "string",
+          "description": "name of the parameter which contains the data from teh previous step"
+        },
         "run": {
           "type": "string",
           "description": "The method to execute"

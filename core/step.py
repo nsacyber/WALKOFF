@@ -14,7 +14,7 @@ from core.helpers import get_app_action_api, InvalidInput, InvalidElementConstru
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
-from core.validator import validate_app_action_parameters
+from core.validator import validate_app_action_parameters, validate_parameter
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +66,7 @@ class Step(ExecutionElement):
                                                 'specified in step constructor')
             self.action = action
             self.app = app
-            input_api = get_app_action_api(self.app, self.action)
-            self.run = input_api['run']
-            self.input_api = input_api.get('parameters', [])
+            self.run, self.input_api, self.data_in_api = get_app_action_api(self.app, self.action)
             get_app_action(self.app, self.run)
             inputs = inputs if inputs is not None else {}
             self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
@@ -103,9 +101,7 @@ class Step(ExecutionElement):
 
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
-        input_api = get_app_action_api(self.app, self.action)
-        self.run = input_api['run']
-        self.input_api = input_api.get('parameters', [])
+        self.run, self.input_api, self.data_in_api = get_app_action_api(self.app, self.action)
         is_templated_xml = step_xml.find('templated')
         self.templated = is_templated_xml is not None and bool(is_templated_xml.text)
         get_app_action(self.app, self.run)
@@ -166,11 +162,12 @@ class Step(ExecutionElement):
     def set_input(self, new_input):
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
 
-    def execute(self, instance):
+    def execute(self, instance, data_in):
         """Executes a Step by calling the associated app function.
         
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
+            data_in: The output of the previous step
             
         Returns:
             The result of the executed function.
@@ -178,6 +175,9 @@ class Step(ExecutionElement):
         callbacks.StepInputValidated.send(self)
         try:
             args = deepcopy(self.input)
+            if self.data_in_api is not None:
+                data_in = validate_parameter(data_in, self.data_in_api, 'Filter {0}'.format(self.action))
+                args.update({self.data_in_api['name']: data_in})
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
             callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))

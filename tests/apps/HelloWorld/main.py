@@ -41,6 +41,10 @@ class Main(App):
     def buggy_action(self):
         raise CustomException
 
+    @action
+    def add_to_previous_step(self, data, num):
+        return data + num
+
     def shutdown(self):
         # print("SHUTTING DOWN")
         return

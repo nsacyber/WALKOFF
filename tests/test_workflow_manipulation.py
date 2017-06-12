@@ -197,11 +197,11 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         instance = Instance.create(app_name='HelloWorld', device_name='test_device_name')
 
-        workflow._Workflow__execute_step(workflow.steps["step_one"], instance=instance())
+        workflow._Workflow__execute_step(workflow.steps["step_one"], instance(), None)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0 / 6.5)
-        workflow._Workflow__execute_step(workflow.steps["step_two"], instance=instance())
+        workflow._Workflow__execute_step(workflow.steps["step_two"], instance(), None)
         self.assertAlmostEqual(workflow.accumulated_risk, (1.0 / 6.5) + (2.0 / 6.5))
-        workflow._Workflow__execute_step(workflow.steps["step_three"], instance=instance())
+        workflow._Workflow__execute_step(workflow.steps["step_three"], instance(), None)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):

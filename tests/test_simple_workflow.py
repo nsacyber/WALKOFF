@@ -87,3 +87,25 @@ class TestSimpleWorkflow(unittest.TestCase):
                 self.assertDictEqual(step['data']['result'], name_result[name])
             else:
                 self.assertEqual(step['data']['result'], name_result[name])
+
+    def test_workflow_with_dataflow(self):
+        workflow_name = construct_workflow_name_key('dataflowTest', 'dataflowWorkflow')
+        step_names = ['start', '1']
+        setup_subscriptions_for_step(workflow_name, step_names)
+        self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
+
+        shutdown_pool()
+
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        self.assertEqual(len(steps), 2)
+        names = [step['ancestry'].split(',')[-1] for step in steps]
+        orderless_list_compare(self, names, ['start', '1'])
+        name_result = {'start': 6,
+                       '1': 10}
+        for step in steps:
+            name = step['ancestry'].split(',')[-1]
+            self.assertIn(name, name_result)
+            if type(name_result[name]) == dict:
+                self.assertDictEqual(step['data']['result'], name_result[name])
+            else:
+                self.assertEqual(step['data']['result'], name_result[name])

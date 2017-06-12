@@ -32,7 +32,8 @@ class TestAppsRegistration(unittest.TestCase):
 
     def test_get_all_app_actions_valid_app(self):
         actions = get_all_actions_for_app('HelloWorld')
-        expected_actions = {'pause', 'helloWorld', 'returnPlusOne', 'repeatBackToMe', 'addThree', 'buggy_action'}
+        expected_actions = {'pause', 'helloWorld', 'returnPlusOne', 'repeatBackToMe', 'addThree', 'buggy_action',
+                            'add_to_previous_step'}
         self.assertSetEqual(set(actions.keys()), expected_actions)
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')

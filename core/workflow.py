@@ -200,6 +200,7 @@ class Workflow(ExecutionElement):
         steps = self.__steps(start=start)
         first = True
         output = None
+        previous_step_output = None
         for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.ancestry))
             while self.is_paused:
@@ -225,10 +226,11 @@ class Workflow(ExecutionElement):
                                          'Invalid input. Error: {1}'.format(self.name, str(e)))
                             raise
 
-                error_flag = self.__execute_step(step, instances[step.device])
+                error_flag = self.__execute_step(step, instances[step.device], previous_step_output)
                 total_steps.append(step)
                 steps.send(error_flag)
                 output = step.output
+                previous_step_output = output
         self.__shutdown(instances, output)
         yield
 
@@ -255,14 +257,14 @@ class Workflow(ExecutionElement):
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def __execute_step(self, step, instance):
+    def __execute_step(self, step, instance, previous_step_output):
         error_flag = False
         data = {"step": {"app": step.app,
                          "action": step.action,
                          "name": step.name}}
         json.dumps(data)
         try:
-            step.execute(instance=instance())
+            step.execute(instance=instance(), data_in=previous_step_output)
             callbacks.StepExecutionSuccess.send(self)
         except Exception as e:
             callbacks.StepExecutionError.send(

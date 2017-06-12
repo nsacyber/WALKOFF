@@ -232,3 +232,39 @@ class TestAppApiValidation(unittest.TestCase):
                                    'Add Three',
                                    get_app_action('HelloWorld', 'addThree'))
 
+    def test_validate_action_params_with_data_in_valid(self):
+        self.basicapi['actions']['Add To Previous'] = {'run': 'add_to_previous_step',
+                                                       'dataIn': 'data',
+                                                       'parameters': [{'name': 'data',
+                                                                       'required': True,
+                                                                       'type': 'number'},
+                                                                      {'name': 'num',
+                                                                       'type': 'number',
+                                                                       'required': True}]}
+        self.__generate_resolver_dereferencer(self.basicapi)
+        validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
+
+    def test_validate_action_params_with_data_in_not_required(self):
+        self.basicapi['actions']['Add To Previous'] = {'run': 'add_to_previous_step',
+                                                       'dataIn': 'data',
+                                                       'parameters': [{'name': 'data',
+                                                                       'type': 'number'},
+                                                                      {'name': 'num',
+                                                                       'type': 'number',
+                                                                       'required': True}]}
+        self.__generate_resolver_dereferencer(self.basicapi)
+        with self.assertRaises(InvalidAppApi):
+            validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
+
+    def test_validate_action_params_with_data_in_no_param_matching(self):
+        self.basicapi['actions']['Add To Previous'] = {'run': 'add_to_previous_step',
+                                                       'dataIn': 'data',
+                                                       'parameters': [{'name': 'num1',
+                                                                       'required': True,
+                                                                       'type': 'number'},
+                                                                      {'name': 'num',
+                                                                       'type': 'number',
+                                                                       'required': True}]}
+        self.__generate_resolver_dereferencer(self.basicapi)
+        with self.assertRaises(InvalidAppApi):
+            validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
