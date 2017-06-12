@@ -730,6 +730,22 @@ $(function(){
         });
     }
 
+    function saveWorkflowJson(playbookName, workflowName, workflowData) {
+        var data = JSON.stringify(workflowData);
+        data = data.replace(/ {2,}/g, "").replace(/\\n/g, "");
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'dataType': 'json',
+            'contentType': 'application/json; charset=utf-8',
+            'headers':{"Authentication-Token":authKey},
+            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
+            'data': data,
+            'success': function (data) {
+            }
+        });
+    }
 
     function loadWorkflow(playbookName, workflowName) {
 
@@ -920,6 +936,8 @@ $(function(){
         cy.on('add', 'node', onNodeAdded);
         cy.on('remove', 'node', onNodeRemoved);
         cy.on('remove', 'edge', onEdgeRemove);
+
+        $("#cy-json-data").text(JSON.stringify(workflowData, null, 2));
     }
 
 
@@ -1284,7 +1302,13 @@ $(function(){
         if (cy === null)
             return;
 
-        saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
+        if ($("#playbookEditorTabs ul li.ui-state-active").index() == 0) {
+            // If the graphical editor tab is active
+            saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
+        } else {
+            // If the JSON tab is active
+            saveWorkflowJson(currentPlaybook, currentWorkflow, document.getElementById('cy-json-data').value);
+        }
     });
 
     // Handle delete button press
@@ -1438,5 +1462,10 @@ $(function(){
     // Other setup
     //---------------------------------
     showInstruction();
+
+    $("#playbookEditorTabs UL LI A").each(function() {
+        $(this).attr("href", location.href.toString()+$(this).attr("href"));
+    });
+    $("#playbookEditorTabs").tabs();
 
 });

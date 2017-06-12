@@ -83,6 +83,11 @@
                 overflow-y:scroll;
                 width:100%;
             }
+            #playbookEditorTabs{
+                display: inline-block;
+                vertical-align: top;
+                height: 700px;
+            }
             #cy {
                 display: inline-block;
                 vertical-align: top;
@@ -98,6 +103,14 @@
             #cy-instructions {
                 padding: 20px;
                 font-size: 25px;
+            }
+            #cy-json-data {
+                background-color: white;
+                color: black;
+                font-weight: normal;
+                height: 630px;
+                width: 500px;
+                resize: none;
             }
             #parameters{
                 display: inline-block;
@@ -197,8 +210,16 @@
                         </div>
                     </div>
                 </div>
-                <div id="cy" tabindex="0">
-                </div>
+                <div id="playbookEditorTabs">
+                    <ul class="nav nav-tabs">
+                        <li id="cyTab" class="active"><a href="#cy">Graphical Editor</a></li>
+                        <li id="cyJsonTab"><a href="#cyJson">JSON</a></li>
+                    </ul>
+                    <div id="cy" tabindex="0">
+                    </div>
+                    <div id="cyJson">
+                        <textarea id="cy-json-data"></textarea>
+                    </div>
                 <div id="parameters">
                 </div>
             </div>
