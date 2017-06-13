@@ -17,14 +17,12 @@ class Main(App):
     # Every function needs to define an args argument which receives a dictionary of input parameters
     @action
     def helloWorld(self):
-        # LOOK AT YOUR CONSOLE WHEN EXECUTING
         return self.introMessage
 
     # Example using arguments
     # Repeats back the contents of the call argument
     @action
     def repeatBackToMe(self, call):
-        # print("REPEATING: " + args["call"]())
         return "REPEATING: " + call
 
     # Increments number by one

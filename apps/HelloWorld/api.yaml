@@ -15,7 +15,10 @@ actions:
       Success:
         description: introductory message
         schema:
-          type: string
+          type: object
+          properties:
+            message:
+              type: string
   repeatBackToMe:
     run: repeatBackToMe
     description: Repeats the call argument

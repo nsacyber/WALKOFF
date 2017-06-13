@@ -12,19 +12,16 @@ class TestMain(TestCase):
         self.assertDictEqual(message, {"message": "HELLO WORLD"})
 
     def test_repeat_to_me(self):
-        args = {'call': (lambda: 'test_message')}
-        self.assertEqual(self.app.repeatBackToMe(args), 'REPEATING: {0}'.format('test_message'))
+        self.assertEqual(self.app.repeatBackToMe('test_message'), 'REPEATING: {0}'.format('test_message'))
 
     def test_plus_one(self):
-        args = {'number': (lambda: '4')}
-        self.assertEqual(self.app.returnPlusOne(args), '5')
+        self.assertEqual(self.app.returnPlusOne(4), 5)
         with self.assertRaises(ValueError):
-            self.app.returnPlusOne({'number': (lambda: 'aa')})
+            self.app.returnPlusOne('aa')
 
     def test_pause(self):
         start = time.time()
-        args = {'seconds': (lambda: 1)}
-        self.app.pause(args)
+        self.app.pause(1)
         end = time.time()
         self.assertAlmostEqual(end-start, 1.0, 2)
 

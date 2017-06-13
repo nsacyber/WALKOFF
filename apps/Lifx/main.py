@@ -38,11 +38,15 @@ class Main(App):
         duration: seconds for the action to last
         infrared: 0 to 1. maximum brightness of infrared channel
         """
-        payload = {"power": power,
-                   "color": color,
-                   "brightness": brightness,
-                   "duration": duration,
-                   "infrared": infrared}
+        payload = {"duration": duration}
+        if power is not None:
+            payload['power'] = power
+        if color is not None:
+            payload['color'] = color
+        if brightness is not None:
+            payload['brightness'] = brightness
+        if infrared is not None:
+            payload['duration'] = duration
         response = requests.put(self.__api_url('all/state'.format(self.name)), data=payload, headers=self.headers)
         time.sleep(duration)
         return json.loads(response.text)
@@ -71,12 +75,13 @@ class Main(App):
         peak: where in the period the target color is at its maximum. Between 0 and 10
         """
         payload = {"color": color,
-                   "from_color": from_color,
                    "period": period,
                    "cycles": cycles,
                    "persist": persist,
                    "power_on": power_on,
                    "peak": peak}
+        if from_color is not None:
+            payload['from_color'] = from_color
         response = requests.post(self.__api_url('all/effects/breathe'),
                                 data=payload,
                                 headers=self.headers)
@@ -95,11 +100,12 @@ class Main(App):
         power_on: If true, turn on the light if not already on
         """
         payload = {"color": color,
-                   "from_color": from_color,
                    "period": period,
                    "cycles": cycles,
                    "persist": persist,
                    "power_on": power_on}
+        if from_color is not None:
+            payload['from_color'] = from_color
         response = requests.post(self.__api_url('all/effects/pulse'),
                                 data=payload,
                                 headers=self.headers)
