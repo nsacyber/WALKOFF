@@ -22,7 +22,6 @@
             }
             #main {
                 padding: 10px 15px;
-                overflow-x:auto;
             }
             .content {
               padding-right: 0;
@@ -59,9 +58,7 @@
             h3#currentWorkflowText {
               font-size: 18px;
             }
-            #body{
-                margin-bottom: 20px;
-            }
+
             #top {
                 width: 2300px;
                 height: 700px;
@@ -70,7 +67,7 @@
             #palette{
                 display: inline-block;
                 vertical-align: top;
-                height: 700px;
+                height: 100%;
                 width: 400px;
             }
             #workflows{
@@ -86,19 +83,17 @@
             #playbookEditorTabs{
                 display: inline-block;
                 vertical-align: top;
-                height: 700px;
+                height: 100%;
             }
             #cy {
                 display: inline-block;
                 vertical-align: top;
-                height: 700px;
+                height: 651px; /* == 700 minus 49 (where 49 is the height of the tab) */
                 width: 1000px;
                 position: relative;
                 left: 0;
-                border: solid;
                 /*background-color: white;
                 background-image: url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");*/
-                margin-right: 20px;
             }
             #cy-instructions {
                 padding: 20px;
@@ -112,12 +107,17 @@
                 width: 500px;
                 resize: none;
             }
-            #parameters{
+            #parametersBar{
+                height: 651px; /* == 700 minus 49 (where 49 is the height of the tab) */
+                width: 450px;
                 display: inline-block;
                 vertical-align: top;
-                height: 700px;
-                width: 450px;
                 overflow-y:auto;
+                background-color:#f5f5f5;
+            }
+            #parameters{
+
+
             }
             button, input, select, textarea {
               background-color: #45AA3B;
@@ -215,15 +215,22 @@
                         <li id="cyTab" class="active"><a href="#cy">Graphical Editor</a></li>
                         <li id="cyJsonTab"><a href="#cyJson">JSON</a></li>
                     </ul>
+
                     <div id="cy" tabindex="0">
                     </div>
+                    <div id="parametersBar" tabindex="0">
+                        <div id="parameters">
+                        </div>
+                    </div>
+
+
                     <div id="cyJson">
                         <textarea id="cy-json-data"></textarea>
                     </div>
-                <div id="parameters">
+
+
                 </div>
             </div>
-
             <div id="cy-instructions-template" class="hidden">
                 <p> Instructions:</p>
                 <p> <b>Double click</b> item in Workflows tab to load workflow into graph.</p>
