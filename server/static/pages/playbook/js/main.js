@@ -379,8 +379,8 @@ $(function(){
 
         currentNodeInParametersEditor = ele;
 
+        $("#parametersBar").removeClass('hidden');
         var parameters = ele.data('parameters');
-        $("#parameters").removeClass('hidden');
         $("#parameters").empty();
 
         parameters = transformParametersToSchema(parameters);
@@ -716,6 +716,8 @@ $(function(){
 
     function saveWorkflow(playbookName, workflowName, workflowData) {
         var data = JSON.stringify({start: startNode, cytoscape: JSON.stringify(workflowData)});
+        console.log("In default version")
+        console.log(data)
         $.ajax({
             'async': false,
             'type': "POST",
@@ -732,7 +734,11 @@ $(function(){
 
     function saveWorkflowJson(playbookName, workflowName, workflowData) {
         var data = JSON.stringify(workflowData);
+        console.log("In JSON version")
+        console.log(data)
         data = data.replace(/ {2,}/g, "").replace(/\\n/g, "");
+        console.log("In JSON version: After formatting")
+        console.log(data)
         $.ajax({
             'async': false,
             'type': "POST",
@@ -959,7 +965,7 @@ $(function(){
     }
 
     function hideParameters() {
-        $("#parameters").addClass('hidden');
+        $("#parametersBar").addClass('hidden');
     }
 
     // Download list of workflows for display in the Workflows list
