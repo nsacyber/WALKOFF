@@ -730,21 +730,53 @@ $(function(){
         });
     }
 
-    function saveWorkflowJson(playbookName, workflowName, workflowData) {
-        var data = JSON.stringify(workflowData);
-        data = data.replace(/ {2,}/g, "").replace(/\\n/g, "");
-        $.ajax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'dataType': 'json',
-            'contentType': 'application/json; charset=utf-8',
-            'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
-            'data': data,
-            'success': function (data) {
+    function saveWorkflowJson(playbookName, workflowName, workflowDataEditor) {
+        // Convert data in string format under JSON tab to a dictionary
+        var dataJson = JSON.parse(workflowDataEditor);
+
+        // Get current list of steps from cytoscape data in JSON format
+        var workflowData = cy.elements().jsons();
+
+        // Track existing steps using a dictionary where the keys are the
+        // step ID and the values are the index of the step in workflowData
+        var ids = {}
+        for (var step = 0; step < workflowData.length; step++) {
+            ids[workflowData[step].data.id] = step.toString();
+        }
+
+        // Compare current list of steps with updated list and modify current list
+        var stepsJson = dataJson.steps; // Get updated list of steps
+        stepsJson.forEach(function(stepJson) {
+            var idJson = stepJson.data.id;
+            if (idJson in ids) {
+                // If step already exists, then just update its fields
+                var step = Number(ids[idJson])
+                workflowData[step].data = stepJson.data;
+                workflowData[step].group = stepJson.group;
+                workflowData[step].position = stepJson.position;
+                // Delete step id
+                delete ids[idJson]
+            } else {
+                // If step is absent, then create a new step
+                var newStep = getStepTemplate();
+                newStep.data = stepJson.data;
+                newStep.group = stepJson.group;
+                newStep.position = stepJson.position;
+                // Add new step
+                workflowData.push(newStep)
             }
-        });
+        })
+
+        if (Object.keys(ids).length > 0) {
+            // If steps have been removed, then delete steps
+            for (id in Object.keys(ids)) {
+                var step = Number(ids[idJson])
+                workflowData.splice(step, 1)
+            }
+        }
+
+        // Save updated cytoscape data in JSON format
+        saveWorkflow(playbookName, workflowName, workflowData)
     }
 
     function loadWorkflow(playbookName, workflowName) {
@@ -937,7 +969,8 @@ $(function(){
         cy.on('remove', 'node', onNodeRemoved);
         cy.on('remove', 'edge', onEdgeRemove);
 
-        $("#cy-json-data").text(JSON.stringify(workflowData, null, 2));
+        $("#cy-json-data").val(JSON.stringify(workflowData, null, 2));
+
     }
 
 
@@ -1468,4 +1501,17 @@ $(function(){
     });
     $("#playbookEditorTabs").tabs();
 
+    function getStepTemplate() {
+        return {
+            "classes": "",
+            "data": {},
+            "grabbable": true,
+            "group": "",
+            "locked": false,
+            "position": {},
+            "removed": false,
+            "selectable": true,
+            "selected": false
+        };
+    }
 });
