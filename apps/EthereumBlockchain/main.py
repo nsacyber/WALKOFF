@@ -33,7 +33,6 @@ class Main(App):
         self.greeting = greeting
         return self.run_script(["step6-submit-greeting.sh", self.greeting])
 
-    @action
     def run_script(self, args=[]):
         args[0] = self.curDirPath + "/" + args[0] # Full path to the script file
         args.insert(1, self.curDirPath) # Full path to the Ethereum Blockchain directory
@@ -49,3 +48,4 @@ class Main(App):
         for line in out.splitlines():
             pid = int(line.split(None, 1)[0])
             os.kill(pid, signal.SIGKILL)
+        return "Success"
