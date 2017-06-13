@@ -73,7 +73,7 @@
 				<eDT>2016-3-15 12:00:00</eDT>
 			</scheduler>
 		</options>
-		<start>1</start>
+		<start>90e56daa-9c52-aefe-90e5-3a88f6c301d7</start>
 		<steps>
 			<step id="1">
 				<id>1</id>
@@ -86,12 +86,12 @@
 					<y>350</y>
 				</position>
 				<input>
-					<power_on format="str"/>
-					<color format="str"/>
+					<power_on format="str">None</power_on>
+					<color format="str">None</color>
 					<period format="int">0</period>
 					<peak format="int">0</peak>
-					<persist format="str"/>
-					<from_color format="str"/>
+					<persist format="str">None</persist>
+					<from_color format="str">None</from_color>
 					<cycles format="int">0</cycles>
 				</input>
 				<next step="2"/>
@@ -107,11 +107,11 @@
 					<y>190</y>
 				</position>
 				<input>
-					<power_on format="str"/>
-					<color format="str"/>
+					<power_on format="str">None</power_on>
+					<color format="str">None</color>
 					<period format="int">0</period>
-					<persist format="str"/>
-					<from_color format="str"/>
+					<persist format="str">None</persist>
+					<from_color format="str">None</from_color>
 					<cycles format="int">0</cycles>
 				</input>
 			</step>
@@ -126,10 +126,10 @@
 					<y>190</y>
 				</position>
 				<input>
-					<color format="str"/>
+					<color format="str">None</color>
 					<duration format="int">0</duration>
 					<brightness format="int">0</brightness>
-					<power format="str"/>
+					<power format="str">None</power>
 					<infrared format="int">0</infrared>
 				</input>
 			</step>
@@ -144,11 +144,11 @@
 					<y>270</y>
 				</position>
 				<input>
-					<power_on format="str"/>
-					<color format="str"/>
+					<power_on format="str">None</power_on>
+					<color format="str">None</color>
 					<period format="int">0</period>
-					<persist format="str"/>
-					<from_color format="str"/>
+					<persist format="str">None</persist>
+					<from_color format="str">None</from_color>
 					<cycles format="int">0</cycles>
 				</input>
 				<next step="3"/>
@@ -164,12 +164,12 @@
 					<y>350</y>
 				</position>
 				<input>
-					<power_on format="str"/>
-					<color format="str"/>
+					<power_on format="str">None</power_on>
+					<color format="str">None</color>
 					<period format="int">0</period>
 					<peak format="int">0</peak>
-					<persist format="str"/>
-					<from_color format="str"/>
+					<persist format="str">None</persist>
+					<from_color format="str">None</from_color>
 					<cycles format="int">0</cycles>
 				</input>
 				<next step="08d80757-7ed0-ddcf-0cfb-e2859dfa63d5"/>
