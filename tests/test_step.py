@@ -379,6 +379,11 @@ class TestStep(unittest.TestCase):
                                               action='Add Three',
                                               inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '-10.265'}))
 
+    def test_to_from_xml_with_complex_inputs(self):
+        self.__assert_xml_is_convertible(Step(app='HelloWorld',
+                                              action='Json Sample',
+                                              inputs={'json_in': {'a': '-5.6', 'b': '4.3'}}))
+
     def test_to_from_xml_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', next_steps=next_steps))
@@ -504,6 +509,12 @@ class TestStep(unittest.TestCase):
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
         self.assertAlmostEqual(step.execute(instance.instance, None), 8.9)
         self.assertAlmostEqual(step.output, 8.9)
+
+    def test_execute_with_complex_inputs(self):
+        step = Step(app='HelloWorld', action='Json Sample', inputs={'json_in': {'a': '-5.6', 'b': '4.3'}})
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        self.assertAlmostEqual(step.execute(instance.instance, None), -1.3)
+        self.assertAlmostEqual(step.output, -1.3)
 
     def test_execute_action_which_raises_exception(self):
         from tests.apps.HelloWorld.exceptions import CustomException

@@ -19,7 +19,7 @@ class TestFlagFilterValidation(unittest.TestCase):
         try:
             walkoff_resolver = validate_spec_json(
                 spec,
-                os.path.join('core', 'schemas', 'new_schema.json'),
+                os.path.join('core', 'schemas', 'walkoff_schema.json'),
                 '',
                 None)
         except Exception as e:
@@ -38,7 +38,7 @@ class TestFlagFilterValidation(unittest.TestCase):
 
     def __invalidate(self, action_type):
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_flagfilter_params(self.basicapi[action_type],
                                        action_type,
                                        getattr(self, action_type),

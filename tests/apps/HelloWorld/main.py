@@ -45,6 +45,10 @@ class Main(App):
     def add_to_previous_step(self, data, num):
         return data + num
 
+    @action
+    def json_sample(self, json_in):
+        return json_in['a'] + json_in['b']
+
     def shutdown(self):
         # print("SHUTTING DOWN")
         return

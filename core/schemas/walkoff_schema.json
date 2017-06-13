@@ -23,9 +23,6 @@
     "info": {
       "$ref": "#/definitions/info"
     },
-    "schemes": {
-      "$ref": "#/definitions/schemesList"
-    },
     "actions": {
       "$ref": "#/definitions/actions"
     },
@@ -258,9 +255,6 @@
         "returns": {
           "$ref": "#/definitions/returns"
         },
-        "schemes": {
-          "$ref": "#/definitions/schemesList"
-        },
         "deprecated": {
           "type": "boolean",
           "default": false
@@ -305,9 +299,6 @@
         "dataIn": {
           "type": "string",
           "description": "name of the parameter which contains the data to evaluate"
-        },
-        "schemes": {
-          "$ref": "#/definitions/schemesList"
         },
         "deprecated": {
           "type": "boolean",
@@ -356,9 +347,6 @@
         },
         "returns": {
           "$ref": "#/definitions/returns"
-        },
-        "schemes": {
-          "$ref": "#/definitions/schemesList"
         },
         "deprecated": {
           "type": "boolean",
@@ -542,6 +530,9 @@
         },
         {
           "$ref": "#/definitions/primitiveParameter"
+        },
+        {
+          "$ref": "#/definitions/jsonReference"
         }
       ]
     },
@@ -772,20 +763,6 @@
           {
             "$ref": "#/definitions/jsonReference"
           }
-        ]
-      },
-      "uniqueItems": true
-    },
-    "schemesList": {
-      "type": "array",
-      "description": "The transfer protocol of the API.",
-      "items": {
-        "type": "string",
-        "enum": [
-          "http",
-          "https",
-          "ws",
-          "wss"
         ]
       },
       "uniqueItems": true

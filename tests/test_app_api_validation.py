@@ -25,7 +25,7 @@ class TestAppApiValidation(unittest.TestCase):
         try:
             walkoff_resolver = validate_spec_json(
                 spec,
-                os.path.join('core', 'schemas', 'new_schema.json'),
+                os.path.join('core', 'schemas', 'walkoff_schema.json'),
                 '',
                 None)
         except Exception as e:
@@ -90,7 +90,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                'prop2': {'type': 'object'},
                                                                'prop3': {'type': 'string'}}}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_definition(self.basicapi['definitions']['def1'], self.dereferencer)
 
     def test_validate_definition_required_matches_properties(self):
@@ -135,7 +135,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                'prop2': {'type': 'object'},
                                                                'prop3': {'type': 'string'}}}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_definitions(self.basicapi['definitions'], self.dereferencer)
 
     def test_validate_actions_valid_run_no_params(self):
@@ -145,7 +145,7 @@ class TestAppApiValidation(unittest.TestCase):
     def test_validate_actions_invalid_run_no_params(self):
         self.basicapi['actions']['helloWorld']['run'] = 'invalid.invalid'
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
 
     def test_validate_actions_invalid_app_name(self):
@@ -177,7 +177,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                 {'name': 'num2',
                                                                  'type': 'number'}]}
         self.__generate_resolver_dereferencer(self.basicapi, expected_success=False)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
                                    'HelloWorld',
@@ -195,7 +195,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                 {'name': 'num4',
                                                                  'type': 'string'}]}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
                                    'HelloWorld',
@@ -209,7 +209,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                 {'name': 'num2',
                                                                  'type': 'number'}]}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
                                    'HelloWorld',
@@ -225,7 +225,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                 {'name': 'num4',
                                                                  'type': 'number'}]}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
                                    'HelloWorld',
@@ -253,7 +253,7 @@ class TestAppApiValidation(unittest.TestCase):
                                                                        'type': 'number',
                                                                        'required': True}]}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
 
     def test_validate_action_params_with_data_in_no_param_matching(self):
@@ -266,5 +266,5 @@ class TestAppApiValidation(unittest.TestCase):
                                                                        'type': 'number',
                                                                        'required': True}]}
         self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidAppApi):
+        with self.assertRaises(InvalidApi):
             validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')

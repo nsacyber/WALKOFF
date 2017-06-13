@@ -52,10 +52,18 @@ class TestServer(ServerTestCase):
         expected = {'sub_top_filter': {'args': []},
                     'mod1_filter2': {'args': [{'required': True, 'type': 'number', 'name': 'arg1'}]},
                     'mod1_filter1': {'args': []},
-                    'sub1_filter1': {'args': []},
+                    'sub1_filter1': {'args': [{'required': True, 'name': 'arg1',
+                                               'schema': {
+                                                   'properties': {'a': {'type': 'number'}, 'b': {'type': 'string'}}}}]},
                     'length': {'args': [], 'description': 'Returns the length of a collection'},
                     'sub1_filter3': {'args': []},
-                    'filter1': {'args': []}, 'Top Filter': {'args': []}}
+                    'filter1': {'args': []},
+                    'Top Filter': {'args': []},
+                    'complex': {'args': [{'required': True, 'name': 'arg',
+                                          'schema': {
+                                                'properties': {'a': {'type': 'number'},
+                                                               'c': {'items': {'type': 'integer'}, 'type': 'array'},
+                                                               'b': {'type': 'number'}}}}]}}
         self.assertDictEqual(response, {'filters': expected})
 
     def test_read_flags(self):
@@ -81,7 +89,8 @@ class TestServer(ServerTestCase):
                                    'description': 'The regular expression to match'}]},
             'mod1_flag1': {'args': []},
             'mod1_flag2': {'args': [{'required': True, 'type': 'integer', 'name': 'arg1'}]},
-            'mod2_flag2': {'args': []},
+            'mod2_flag2': {'args': [{'required': True, 'name': 'arg1',
+                                     'schema': {'properties': {'a': {'type': 'integer'}, 'b': {'type': 'integer'}}}}]},
             'mod2_flag1': {'args': []},
             'sub1_top_flag': {'args': []}}
         self.assertDictEqual(response, {'flags': expected})

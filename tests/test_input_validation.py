@@ -1,11 +1,10 @@
 import unittest
 from core.config.config import initialize
-from core.validator import validate_parameter, validate_parameters
+from core.validator import validate_parameter, validate_parameters, convert_json
 from core.helpers import InvalidInput
 
 
 class TestInputValidation(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         initialize()
@@ -122,49 +121,214 @@ class TestInputValidation(unittest.TestCase):
         with self.assertRaises(InvalidInput):
             validate_parameter(value, parameter_api, self.message)
 
+    def test_validate_parameter_object(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'type': 'boolean'}}}}
+        value = {'a': 435.6, 'b': 'aaaa', 'c': True}
+        validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_object_invalid(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'type': 'boolean'}}}}
+        value = {'a': 435.6, 'invalid': 'aaaa', 'c': True}
+        with self.assertRaises(InvalidInput):
+            validate_parameter(value, parameter_api, self.message)
+
+    # def test_validate_parameter_object_array(self):
+    #     parameter_api = {
+    #         'name': 'name1',
+    #         'schema': {'type': 'array',
+    #                    'items': {'type': 'object',
+    #                              'schema': {
+    #                              'properties': {'A': {'type': 'string'},
+    #                                             'B': {'type': 'integer'}}}
+    #                              }}}
+    #     value = [{'A': 'string in', 'B': '33'}, {'A': 'string2', 'B': '7'}]
+    #     validate_parameter(value, parameter_api, self.message)
+    #
+    # def test_validate_parameter_object_array_invalid(self):
+    #     parameter_api = {
+    #         'name': 'name1',
+    #         'schema': {'type': 'array',
+    #                    'items': {'type': 'object',
+    #                              'schema': {
+    #                              'properties': {'A': {'type': 'string'},
+    #                                             'B': {'type': 'integer'}}}
+    #                              }}}
+    #     value = [{'A': 'string in', 'B': '33'}, {'A': 'string2', 'B': 'invalid'}]
+    #     with self.assertRaises(InvalidInput):
+    #         validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_invalid_data_type(self):
+        parameter_api = {'name': 'name1', 'type': 'invalid', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']}
+        value = 'test2'
+        with self.assertRaises(InvalidInput):
+            validate_parameter(value, parameter_api, self.message)
+
     def test_validate_parameters_all_valid_no_defaults(self):
-        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
-                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
-                          {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
         inputs = {'name1': 'test', 'name2': '5', 'name3': '10.2378'}
         expected = {'name1': 'test', 'name2': 5, 'name3': 10.2378}
         self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
 
     def test_validate_parameters_invalid_no_defaults(self):
-        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
-                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
-                          {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
         inputs = {'name1': 'test', 'name2': '5', 'name3': '-11.2378'}
         with self.assertRaises(InvalidInput):
             validate_parameters(parameter_apis, inputs, self.message)
 
     def test_validate_parameters_missing_with_valid_default(self):
-        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
-                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
-                          {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 10.25}]
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 10.25}]
         inputs = {'name1': 'test', 'name2': '5'}
         expected = {'name1': 'test', 'name2': 5, 'name3': 10.25}
         self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
 
     def test_validate_parameters_missing_with_invalid_default(self):
-        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
-                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
-                          {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 'abc'}]
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 'abc'}]
         inputs = {'name1': 'test', 'name2': '5'}
         expected = {'name1': 'test', 'name2': 5, 'name3': 'abc'}
         self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
 
     def test_validate_parameters_missing_without_default(self):
-        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
-                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
-                          {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
         inputs = {'name1': 'test', 'name2': '5'}
         with self.assertRaises(InvalidInput):
             validate_parameters(parameter_apis, inputs, self.message)
 
     def test_validate_parameters_too_many_inputs(self):
-        parameter_apis = [{'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
-                          {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25}]
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25}]
         inputs = {'name1': 'test', 'name2': '5', 'name3': '-11.2378'}
         with self.assertRaises(InvalidInput):
             validate_parameters(parameter_apis, inputs, self.message)
+
+    def test_convert_json(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'type': 'boolean'}}}}
+        value = {'a': '435.6', 'b': 'aaaa', 'c': 'true'}
+        converted = convert_json(parameter_api, value, self.message)
+        self.assertDictEqual(converted, {'a': 435.6, 'b': 'aaaa', 'c': True})
+
+    def test_convert_json_invalid(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'type': 'boolean'}}}}
+        value = {'a': '435.6', 'b': 'aaaa', 'c': 'invalid'}
+        with self.assertRaises(InvalidInput):
+            convert_json(parameter_api, value, self.message)
+
+    def test_convert_json_nested(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'schema': {
+                                'properties': {'A': {'type': 'string'},
+                                               'B': {'type': 'integer'}}}}}}}
+        value = {'a': '435.6', 'b': 'aaaa', 'c': {'A': 'string in', 'B': '3'}}
+        converted = convert_json(parameter_api, value, self.message)
+        self.assertDictEqual(converted, {'a': 435.6, 'b': 'aaaa', 'c': {'A': 'string in', 'B': 3}})
+
+    def test_convert_json_nested_invalid(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'schema': {
+                                'properties': {'A': {'type': 'string'},
+                                               'B': {'type': 'integer'}}}}}}}
+        value = {'a': '435.6', 'b': 'aaaa', 'c': {'A': 'string in', 'B': 'invalid'}}
+        with self.assertRaises(InvalidInput):
+            convert_json(parameter_api, value, self.message)
+
+    def test_convert_primitive_array(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'array',
+                       'items': {'type': 'number'}}}
+        value = ['1.3', '3.4', '555.1', '-132.2']
+        converted = convert_json(parameter_api, value, self.message)
+        self.assertListEqual(converted, [1.3, 3.4, 555.1, -132.2])
+
+    def test_convert_primitive_array_invalid(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'array',
+                       'items': {'type': 'number'}}}
+        value = ['1.3', '3.4', '555.1', 'invalid']
+        with self.assertRaises(InvalidInput):
+            convert_json(parameter_api, value, self.message)
+
+    # def test_convert_object_array(self):
+    #     parameter_api = {
+    #         'name': 'name1',
+    #         'schema': {'type': 'array',
+    #                    'items': {'type': 'object',
+    #                              'schema': {
+    #                                  'properties': {'A': {'type': 'string'},
+    #                                                 'B': {'type': 'integer'}}}
+    #                              }}}
+    #     value = [{'A': 'string in', 'B': '33'}, {'A': 'string2', 'B': '7'}]
+    #     expected = [{'A': 'string in', 'B': 33}, {'A': 'string2', 'B': 7}]
+    #     converted = convert_json(parameter_api, value, self.message)
+    #     self.assertEqual(len(converted), len(expected))
+    #     for i in range(len(converted)):
+    #         self.assertDictEqual(converted[i], expected[i])
+    #
+    # def test_convert_object_array_invalid(self):
+    #     parameter_api = {
+    #         'name': 'name1',
+    #         'schema': {'type': 'array',
+    #                    'items': {'type': 'object',
+    #                              'schema': {
+    #                                  'properties': {'A': {'type': 'string'},
+    #                                                 'B': {'type': 'integer'}}}
+    #                              }}}
+    #     value = [{'A': 'string in', 'B': '33'}, {'A': 'string2', 'B': 'invalid'}]
+    #     with self.assertRaises(InvalidInput):
+    #         convert_json(parameter_api, value, self.message)

@@ -53,6 +53,14 @@ flags:
       - name: value
         required: true
         type: string
+      - name: arg1
+        required: true
+        schema:
+          properties:
+            a:
+              type: integer
+            b:
+              type: integer
   regMatch:
     run: regMatch
     description: Matches an input against a regular expression
@@ -162,10 +170,41 @@ filters:
       - name: value
         required: true
         type: number
+      - name: arg1
+        required: true
+        schema:
+          properties:
+            a:
+              type: number
+            b:
+              type: string
     returns:
       Success:
         schema:
           type: object
+  complex:
+    run: sub1.mod2.complex_filter
+    dataIn: data_in
+    parameters:
+      - name: data_in
+        required: true
+        type: number
+      - name: arg
+        required: true
+        schema:
+          properties:
+            a:
+              type: number
+            b:
+              type: number
+            c:
+              type: array
+              items:
+                type: integer
+    returns:
+      Success:
+        schema:
+          type: number
   length:
     run: length
     description: Returns the length of a collection

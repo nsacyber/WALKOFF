@@ -105,3 +105,20 @@ actions:
         description: summation
         schema:
           type: number
+  'Json Sample':
+    run: json_sample
+    description: Exampel of using a json input
+    parameters:
+        - name: json_in
+          required: true
+          schema:
+            properties:
+              a:
+                type: number
+              b:
+                type: number
+    returns:
+      Success:
+        description: summation
+        schema:
+          type: number

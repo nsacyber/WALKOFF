@@ -96,7 +96,7 @@ def load_app_apis(apps_path=None):
     if apps_path is None:
         apps_path = core.config.paths.apps_path
     try:
-        with open(join(core.config.paths.schema_path, 'new_schema.json'), 'r') as schema_file:
+        with open(join(core.config.paths.schema_path, 'walkoff_schema.json'), 'r') as schema_file:
             json.loads(schema_file.read())
     except Exception as e:
         __logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))

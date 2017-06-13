@@ -9,6 +9,7 @@ from jsonschema.validators import Draft4Validator
 from connexion.utils import boolean
 import sys
 import logging
+
 logger = logging.getLogger(__name__)
 from core.helpers import InvalidInput
 import core.config.paths
@@ -17,13 +18,15 @@ import core.config.config
 __new_inspection = False
 if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
     from inspect import signature as getsignature
+
     __new_inspection = True
 else:
     from inspect import getargspec as getsignature
 
 
-class InvalidAppApi(Exception):
+class InvalidApi(Exception):
     pass
+
 
 TYPE_MAP = {
     'integer': int,
@@ -46,10 +49,59 @@ def convert_primitive_array(values, parameter_type):
     return [convert_primitive_type(value, parameter_type) for value in values]
 
 
+def convert_array(schema, param_in, message_prefix):
+    item_type = schema['items']['type']
+    if item_type in TYPE_MAP:
+        try:
+            return convert_primitive_array(param_in, item_type)
+        except ValueError:
+            items = str(param_in)
+            items = items if len(items) < 30 else '{0}...]'.format(items[:30])
+            message = '{0} has invalid input. Input {1} could not be converted to array ' \
+                      'with type "object"'.format(message_prefix, items)
+            logger.error(message)
+            raise InvalidInput(message)
+    else:
+        ret = []
+        for param in param_in:
+            ret.append(convert_json(schema['items'], param, message_prefix))
+        return ret
+
+
+def convert_json(spec, param_in, message_prefix):
+    if 'type' in spec:
+        parameter_type = spec['type']
+        if parameter_type in TYPE_MAP:
+            try:
+                return convert_primitive_type(param_in, parameter_type)
+            except ValueError:
+                message = '{0} has invalid input. ' \
+                          'Input {1} could not be converted to type {2}'.format(message_prefix, param_in, parameter_type)
+                logger.error(message)
+                raise InvalidInput(message)
+        elif parameter_type == 'array':
+            return convert_array(spec, param_in, message_prefix)
+        else:
+            raise InvalidApi('{0} has invalid api'.format(message_prefix))
+    elif 'schema' in spec:
+        schema = spec['schema']
+        if 'type' in schema and schema['type'] == 'array':
+            return convert_array(schema, param_in, message_prefix)
+        else:
+            ret = {}
+            for param_name, param_value in param_in.items():
+                if param_name in schema['properties']:
+                    ret[param_name] = convert_json(schema['properties'][param_name], param_value, message_prefix)
+                else:
+                    raise InvalidInput('{0} Input has unknown parameter {1}'.format(message_prefix, param_name))
+            return ret
+    else:
+        raise InvalidApi('{0} has invalid api'.format(message_prefix))
+
 def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join(core.config.paths.schema_path, 'new_schema.json'),
+        os.path.join(core.config.paths.schema_path, 'walkoff_schema.json'),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
@@ -61,10 +113,9 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
 
 
 def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
-
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join(core.config.paths.schema_path, 'new_schema.json'),
+        os.path.join(core.config.paths.schema_path, 'walkoff_schema.json'),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
@@ -78,12 +129,12 @@ def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
 def validate_data_in_param(params, data_in_param_name, message_prefix):
     data_in_param = next((param for param in params if param['name'] == data_in_param_name), None)
     if data_in_param is None:
-        raise InvalidAppApi(
+        raise InvalidApi(
             '{0} has a dataIn param {1} '
             'for which it does not have a '
             'corresponding parameter'.format(message_prefix, data_in_param_name))
     elif not data_in_param.get('required', False):
-        raise InvalidAppApi(
+        raise InvalidApi(
             '{0} has a dataIn param {1} which is not marked as required in the api. '
             'Add "required: true" to parameter specification for {1}'.format(message_prefix,
                                                                              data_in_param_name))
@@ -95,8 +146,8 @@ def validate_flagfilter_params(spec, action_type, defined_actions, dereferencer)
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
         if action['run'] not in defined_actions:
-            raise InvalidAppApi('{0} action {1} has a "run" param {2} '
-                                'which is not defined'.format(action_type, action_name, action['run']))
+            raise InvalidApi('{0} action {1} has a "run" param {2} '
+                             'which is not defined'.format(action_type, action_name, action['run']))
 
         data_in_param_name = action['dataIn']
         validate_data_in_param(action_params, data_in_param_name, '{0} action {1}'.format(action_type, action_name))
@@ -129,8 +180,8 @@ def validate_actions(actions, dereferencer, app_name):
     seen = set()
     for action_name, action in actions.items():
         if action['run'] not in defined_actions:
-            raise InvalidAppApi('Action {0} has "run" property {1} '
-                                'which is not defined in App {2}'.format(action_name, action['run'], app_name))
+            raise InvalidApi('Action {0} has "run" property {1} '
+                             'which is not defined in App {2}'.format(action_name, action['run'], app_name))
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
         if 'dataIn' in action:
@@ -150,8 +201,8 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
         parameter = deref(parameter, dereferencer)
         name = parameter['name']
         if name in seen:
-            raise InvalidAppApi('Duplicate parameter {0} in api for {1} '
-                                'for action {2}'.format(name, app_name, action_name))
+            raise InvalidApi('Duplicate parameter {0} in api for {1} '
+                             'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
     if __new_inspection:
         method_params = list(getsignature(action_func).parameters.keys())
@@ -167,7 +218,7 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
             message += ' Only in API: {0}.'.format(only_in_api)
         if only_in_definition:
             message += ' Only in definition: {0}'.format(only_in_definition)
-        raise InvalidAppApi(message)
+        raise InvalidApi(message)
 
 
 def validate_definition(definition, dereferencer, definition_name=None):
@@ -181,8 +232,8 @@ def validate_definition(definition, dereferencer, definition_name=None):
         properties = definition.get('properties', {}).keys()
         extra_properties = list(set(required) - set(properties))
         if extra_properties:
-            raise InvalidAppApi("Required list of properties for definition "
-                                "{0} not defined: {1}".format(definition_name, extra_properties))
+            raise InvalidApi("Required list of properties for definition "
+                             "{0} not defined: {1}".format(definition_name, extra_properties))
 
 
 def validate_definitions(definitions, dereferencer):
@@ -190,32 +241,53 @@ def validate_definitions(definitions, dereferencer):
         validate_definition(definition, dereferencer, definition_name)
 
 
-def validate_parameter(value, param, message_prefix):
-    parameter_type = param['type']
-    converted_value = None
-    if value is not None:
+def validate_primitive_parameter(value, param, parameter_type, message_prefix):
+    try:
+        converted_value = convert_primitive_type(value, parameter_type)
+    except ValueError:
+        message = '{0} has invalid input. ' \
+                  'Input {1} could not be converted to type {2}'.format(message_prefix, value, parameter_type)
+        logger.error(message)
+        raise InvalidInput(message)
+    else:
+        param = deepcopy(param)
+        if 'required' in param:
+            del param['required']
         try:
-            converted_value = convert_primitive_type(value, parameter_type)
-        except ValueError:
+            Draft4Validator(
+                param, format_checker=draft4_format_checker).validate(converted_value)
+        except ValidationError as exception:
             message = '{0} has invalid input. ' \
-                      'Input {1} could not be converted to type {2}'.format(message_prefix, value, parameter_type)
+                      'Input {1} with type {2} does not conform to ' \
+                      'validators: {3}'.format(message_prefix, value, parameter_type, str(exception))
             logger.error(message)
             raise InvalidInput(message)
+        return converted_value
+
+
+def validate_parameter(value, param, message_prefix):
+    primitive_type = 'primitive' if 'type' in param else 'object'
+    converted_value = None
+    if value is not None:
+        if primitive_type == 'primitive':
+            primitive_type = param['type']
+            if primitive_type in TYPE_MAP:
+                converted_value = validate_primitive_parameter(value, param, primitive_type, message_prefix)
+            else:
+                raise InvalidInput('In {0}: Unknown parameter type {1}'.format(message_prefix, primitive_type))
         else:
-            param = deepcopy(param)
-            if 'required' in param:
-                del param['required']
+            # schema = param['schema']
             try:
+                converted_value = convert_json(param, value, message_prefix)
                 Draft4Validator(
-                    param, format_checker=draft4_format_checker).validate(converted_value)
+                    param['schema'], format_checker=draft4_format_checker).validate(converted_value)
             except ValidationError as exception:
-                message = '{0} has invalid input. ' \
-                          'Input {1} with type {2} does not conform to ' \
-                          'validators: {3}'.format(message_prefix, value, parameter_type, str(exception))
+                message = '{0} has invalid input. Input {1} does not conform to ' \
+                          'validators: {2}'.format(message_prefix, value, str(exception))
                 logger.error(message)
                 raise InvalidInput(message)
     elif param.get('required'):
-        message = "In {0}: Missing {1} parameter '{2}'".format(message_prefix, parameter_type, param['name'])
+        message = "In {0}: Missing {1} parameter '{2}'".format(message_prefix, primitive_type, param['name'])
         logger.error(message)
         raise InvalidInput(message)
 
@@ -231,15 +303,16 @@ def validate_parameters(api, inputs, message_prefix):
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
+
             converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
         elif 'default' in param_api:
             try:
                 default_param = validate_parameter(param_api['default'], param_api, message_prefix)
             except InvalidInput as e:
                 default_param = param_api['default']
-                message = 'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})' \
-                               'Using anyways'.format(message_prefix, param_name, param_api['default'], e.message)
-                logger.warning(message)
+                logger.warning(
+                    'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
+                    'Using anyways'.format(message_prefix, param_name, param_api['default'], e.message))
 
             converted[param_name] = default_param
             input_set.add(param_name)
@@ -249,7 +322,7 @@ def validate_parameters(api, inputs, message_prefix):
             raise InvalidInput(message)
         seen_params.add(param_name)
     if seen_params != input_set:
-        message = 'For {0}: Too many inputs. Extra inputs: {1}'.format(message_prefix, input_set-seen_params)
+        message = 'For {0}: Too many inputs. Extra inputs: {1}'.format(message_prefix, input_set - seen_params)
         logger.error(message)
         raise InvalidInput(message)
     return converted
@@ -266,6 +339,7 @@ def validate_flag_parameters(api, inputs, flag):
 
 def validate_filter_parameters(api, inputs, filter_name):
     return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
+
 
 """
 Pre-validation steps:

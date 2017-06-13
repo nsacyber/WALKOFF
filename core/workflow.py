@@ -2,7 +2,7 @@ import json
 import logging
 from copy import deepcopy
 from os.path import join, isfile
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 
 from core import options
 from core.case import callbacks
@@ -31,7 +31,7 @@ class Workflow(ExecutionElement):
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=[parent_name])
         self.playbook_name = playbook_name
         self.steps = {}
-        if xml:
+        if xml is not None:
             self._from_xml(xml)
         else:
             self.start_step = 'start'
@@ -64,7 +64,7 @@ class Workflow(ExecutionElement):
             The Workflow object from the provided workflow name.
         """
         if isfile(join(paths.templates_path, workflow_name)):
-            tree = cElementTree.ElementTree(file=join(paths.templates_path, workflow_name))
+            tree = ElementTree.ElementTree(file=join(paths.templates_path, workflow_name))
             for workflow in tree.iter(tag='workflow'):
                 name = workflow.get('name')
                 return Workflow(name=name, xml=workflow)
@@ -132,15 +132,15 @@ class Workflow(ExecutionElement):
         Returns:
             The XML representation of the Workflow object.
         """
-        workflow_element = cElementTree.Element('workflow')
+        workflow_element = ElementTree.Element('workflow')
         workflow_element.set('name', extract_workflow_name(self.name))
 
         workflow_element.append(self.options.to_xml())
 
-        start = cElementTree.SubElement(workflow_element, 'start')
+        start = ElementTree.SubElement(workflow_element, 'start')
         start.text = self.start_step
 
-        steps = cElementTree.SubElement(workflow_element, 'steps')
+        steps = ElementTree.SubElement(workflow_element, 'steps')
         for step_name, step in self.steps.items():
             steps.append(step.to_xml())
         return workflow_element

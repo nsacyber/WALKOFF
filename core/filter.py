@@ -1,7 +1,8 @@
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import get_filter, get_filter_api, InvalidInput, InvalidElementConstructed
+from core.helpers import (get_filter, get_filter_api, InvalidInput, InvalidElementConstructed,
+                          inputs_xml_to_dict, inputs_to_xml)
 from core.validator import validate_filter_parameters, validate_parameter
 from copy import deepcopy
 import logging
@@ -37,7 +38,7 @@ class Filter(ExecutionElement):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
         self.args_api, self.data_in_api = get_filter_api(self.action)
-        args = {arg.tag: arg.text for arg in xml_element.findall('args/*')}
+        args = {arg.tag: inputs_xml_to_dict(arg) for arg in xml_element.findall('args/*')}
         self.args = validate_filter_parameters(self.args_api, args, self.action)
 
     def __call__(self, data_in=None):
@@ -94,14 +95,11 @@ class Filter(ExecutionElement):
         Returns:
             The XML representation of the Filter object.
         """
-        elem = cElementTree.Element('filter')
+        elem = ElementTree.Element('filter')
         elem.set('action', self.action)
         if self.args:
-            args_element = cElementTree.SubElement(elem, 'args')
-            for arg_name, arg_value in self.args.items():
-                element = cElementTree.Element(arg_name)
-                element.text = arg_value
-                args_element.append(element)
+            args = inputs_to_xml(self.args, root='args')
+            elem.append(args)
         return elem
 
     def reconstruct_ancestry(self, parent_ancestry):

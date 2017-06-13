@@ -1,4 +1,4 @@
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 import logging
 from core.case import callbacks
 from core.executionelement import ExecutionElement
@@ -50,7 +50,7 @@ class NextStep(ExecutionElement):
             The XML representation of the NextStep object.
         """
         if self.name is not None:
-            elem = cElementTree.Element(tag)
+            elem = ElementTree.Element(tag)
             name = self.name if self.name else ''
             elem.set('step', name)
             if self.flags:

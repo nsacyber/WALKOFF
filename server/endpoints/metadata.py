@@ -35,7 +35,7 @@ def read_all_filters():
             data_in_param = filter_body['dataIn']
             args = []
             for arg in (x for x in filter_body['parameters'] if x['name'] != data_in_param):
-                arg_ret = {'name': arg['name'], 'type': arg['type']}
+                arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
                 if 'description' in arg:
                     arg_ret['description'] = arg['description']
                 if 'required' in arg:
@@ -62,7 +62,7 @@ def read_all_flags():
             data_in_param = flag['dataIn']
             args = []
             for arg in (x for x in flag['parameters'] if x['name'] != data_in_param):
-                arg_ret = {'name': arg['name'], 'type': arg['type']}
+                arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
                 if 'description' in arg:
                     arg_ret['description'] = arg['description']
                 if 'required' in arg:

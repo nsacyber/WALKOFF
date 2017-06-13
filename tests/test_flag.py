@@ -112,7 +112,7 @@ class TestFlag(unittest.TestCase):
         arg_xml = xml.findall('args/*')
         self.assertEqual(len(arg_xml), 1)
         self.assertEqual(arg_xml[0].tag, 'arg1')
-        self.assertEqual(arg_xml[0].text, 5)
+        self.assertEqual(arg_xml[0].text, '5')
         self.assertListEqual(xml.findall('filters/*'), [])
 
     def test_to_xml_with_args_and_filters(self):
@@ -124,7 +124,7 @@ class TestFlag(unittest.TestCase):
         arg_xml = xml.findall('args/*')
         self.assertEqual(len(arg_xml), 1)
         self.assertEqual(arg_xml[0].tag, 'arg1')
-        self.assertEqual(arg_xml[0].text, 5)
+        self.assertEqual(arg_xml[0].text, '5')
         filter_xml = xml.findall('filters/*')
         self.assertEqual(len(filter_xml), 2)
         self.assertTrue(all(filter_elem_xml.tag == 'filter' for filter_elem_xml in filter_xml))
@@ -141,6 +141,9 @@ class TestFlag(unittest.TestCase):
     def test_to_from_xml_is_same_with_args(self):
         self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}))
 
+    def test_to_from_xml_is_same_with_complex_args(self):
+        self.__assert_xml_is_convertible(Flag(action='mod2_flag2', args={'arg1': {'a': '1', 'b': '5'}}))
+
     def test_to_from_xml_is_same_with_args_and_filters(self):
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
         self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}, filters=filters))
@@ -156,6 +159,9 @@ class TestFlag(unittest.TestCase):
 
     def test_call_action_with_valid_args_valid_data(self):
         self.assertTrue(Flag(action='mod1_flag2', args={'arg1': 3})('5'))
+
+    def test_call_action_with_valid_complex_args_valid_data(self):
+        self.assertTrue(Flag(action='mod2_flag2', args={'arg1': {'a': '1', 'b': '5'}})('some_long_string'))
 
     def test_call_action_with_valid_args_invalid_data(self):
         self.assertFalse(Flag(action='mod1_flag2', args={'arg1': 3})('invalid'))

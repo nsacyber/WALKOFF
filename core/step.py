@@ -1,7 +1,7 @@
 import json
 import sys
 from copy import deepcopy
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 from collections import namedtuple
 import logging
 from jinja2 import Template, Markup
@@ -10,7 +10,7 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import get_app_action_api, InvalidInput, InvalidElementConstructed
+from core.helpers import get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -39,7 +39,7 @@ class Step(ExecutionElement):
         """Initializes a new Step object. A Workflow has many steps that it executes.
         
         Args:
-            xml (cElementTree, optional): The XML element tree object. Defaults to None.
+            xml (ElementTree, optional): The XML element tree object. Defaults to None.
             name (str, optional): The name of the Step object. Defaults to an empty string.
             action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
             app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
@@ -105,7 +105,7 @@ class Step(ExecutionElement):
         is_templated_xml = step_xml.find('templated')
         self.templated = is_templated_xml is not None and bool(is_templated_xml.text)
         get_app_action(self.app, self.run)
-        inputs = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
+        inputs = {arg.tag: inputs_xml_to_dict(arg) for arg in step_xml.findall('inputs/*')}
         if not self.templated:
             self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
         else:
@@ -137,7 +137,7 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = risk_field.text if risk_field is not None else 0
-        inputs = {arg.tag: arg.text for arg in step_xml.findall('inputs/*')}
+        inputs = {arg.tag: inputs_xml_to_dict(arg) for arg in step_xml.findall('inputs/*')}
         self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
@@ -152,12 +152,12 @@ class Step(ExecutionElement):
             kwargs (dict[str]): Arguments to use in the JINJA templating.
         """
         if sys.version_info[0] > 2:
-            content = cElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
+            content = ElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
         else:
-            content = cElementTree.tostring(self.raw_xml, method='xml')
+            content = ElementTree.tostring(self.raw_xml, method='xml')
         t = Template(Markup(content).unescape(), autoescape=True)
         xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
-        self._update_xml(step_xml=cElementTree.fromstring(str(xml)))
+        self._update_xml(step_xml=ElementTree.fromstring(str(xml)))
 
     def set_input(self, new_input):
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
@@ -215,44 +215,41 @@ class Step(ExecutionElement):
         Returns:
             The XML representation of the Step object.
         """
-        step = cElementTree.Element('step')
+        step = ElementTree.Element('step')
         step.set("id", self.name)
 
-        element_id = cElementTree.SubElement(step, 'name')
+        element_id = ElementTree.SubElement(step, 'name')
         element_id.text = self.name
 
-        app = cElementTree.SubElement(step, 'app')
+        app = ElementTree.SubElement(step, 'app')
         app.text = self.app
 
-        action = cElementTree.SubElement(step, 'action')
+        action = ElementTree.SubElement(step, 'action')
         action.text = self.action
 
         if self.risk:
-            risk = cElementTree.SubElement(step, 'risk')
+            risk = ElementTree.SubElement(step, 'risk')
             risk.text = self.risk
 
         if self.device:
-            device = cElementTree.SubElement(step, 'device')
+            device = ElementTree.SubElement(step, 'device')
             device.text = self.device
 
         if self.position and 'x' in self.position and 'y' in self.position:
-            position = cElementTree.SubElement(step, 'position')
-            x_position = cElementTree.SubElement(position, 'x')
+            position = ElementTree.SubElement(step, 'position')
+            x_position = ElementTree.SubElement(position, 'x')
             x_position.text = self.position['x']
-            y_position = cElementTree.SubElement(position, 'y')
+            y_position = ElementTree.SubElement(position, 'y')
             y_position.text = self.position['y']
 
         if self.input:
-            inputs = cElementTree.SubElement(step, 'inputs')
-            for input_name, input_value in self.input.items():
-                input_elem = cElementTree.Element(input_name)
-                input_elem.text = str(input_value)
-                inputs.append(input_elem)
+            args = inputs_to_xml(self.input)
+            step.append(args)
 
         if self.widgets:
-            widgets = cElementTree.SubElement(step, 'widgets')
+            widgets = ElementTree.SubElement(step, 'widgets')
             for widget in self.widgets:
-                widget_xml = cElementTree.SubElement(widgets, 'widget')
+                widget_xml = ElementTree.SubElement(widgets, 'widget')
                 widget_xml.text = widget.widget
                 widget_xml.set('app', widget.app)
 

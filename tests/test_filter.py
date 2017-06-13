@@ -80,7 +80,7 @@ class TestFilter(unittest.TestCase):
         arg_xml = xml.findall('args/*')
         self.assertEqual(len(arg_xml), 1)
         self.assertEqual(arg_xml[0].tag, 'arg1')
-        self.assertEqual(arg_xml[0].text, 5.4)
+        self.assertEqual(arg_xml[0].text, '5.4')
 
     def __assert_xml_is_convertible(self, filter_elem):
         original_json = filter_elem.as_json()
@@ -94,6 +94,10 @@ class TestFilter(unittest.TestCase):
 
     def test_to_from_xml_are_same_with_args(self):
         original_filter = Filter(action='mod1_filter2', args={'arg1': '5.4'})
+        self.__assert_xml_is_convertible(original_filter)
+
+    def test_to_from_xml_are_same_with_complex_args(self):
+        original_filter = Filter(action='sub1_filter1', args={'arg1': {'a': '5.4', 'b': 'string_in'}})
         self.__assert_xml_is_convertible(original_filter)
 
     def test_from_json_no_args_default_parent_and_ancestry(self):
@@ -138,6 +142,15 @@ class TestFilter(unittest.TestCase):
 
     def test_call_with_args_with_conversion(self):
         self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})(5.4), 15.7)
+
+    def test_call_with_complex_args(self):
+        original_filter = Filter(action='sub1_filter1', args={'arg1': {'a': '5.4', 'b': 'string_in'}})
+        self.assertEqual(original_filter(3), '3.0 5.4 string_in')
+
+    def test_call_with_nested_complex_args(self):
+        args = {'arg': {'a': '4', 'b': 6, 'c': [1, 2, 3]}}
+        original_filter = Filter(action='complex', args=args)
+        self.assertAlmostEqual(original_filter(3), 19.0)
 
     def test_call_with_args_invalid_input(self):
         self.assertEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('invalid'), 'invalid')

@@ -6,6 +6,8 @@ import pkgutil
 import logging
 import core.config.paths
 import core.config.config
+from dicttoxml import dicttoxml
+
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -428,3 +430,22 @@ def import_all_flags(package='core.flags'):
 def import_all_filters(package='core.filters'):
     return import_and_find_tags(package, 'filter')
 
+
+def inputs_xml_to_dict(xml):
+    accumulator = {}
+    children = xml.findall('*')
+    if children:
+        for child in children:
+            grandchildren = child.findall('*')
+            if child.findall('*') and all(grandchild.tag == 'item' for grandchild in grandchildren):
+                accumulator[child.tag] = [inputs_xml_to_dict(grandchild) for grandchild in grandchildren]
+            else:
+                accumulator[child.tag] = inputs_xml_to_dict(child)
+        return accumulator
+    else:
+        return xml.text
+
+
+def inputs_to_xml(inputs, root='inputs'):
+    xml_str = dicttoxml(inputs, custom_root=root, attr_type=False)
+    return ElementTree.fromstring(xml_str)

@@ -1,9 +1,10 @@
 from copy import deepcopy
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
-from core.helpers import get_flag, get_flag_api, InvalidElementConstructed, InvalidInput
+from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
+                          inputs_to_xml, inputs_xml_to_dict)
 from core.validator import validate_flag_parameters, validate_parameter
 import logging
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class Flag(ExecutionElement):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
         self.args_api, self.data_in_api = get_flag_api(self.action)
-        args = {arg.tag: arg.text for arg in xml_element.findall('args/*')}
+        args = {arg.tag: inputs_xml_to_dict(arg) for arg in xml_element.findall('args/*')}
         self.args = validate_flag_parameters(self.args_api, args, self.action)
         self.filters = [Filter(xml=filter_element,
                                parent_name=self.name,
@@ -115,16 +116,13 @@ class Flag(ExecutionElement):
         Returns:
             The XML representation of the Flag object.
         """
-        elem = cElementTree.Element('flag')
+        elem = ElementTree.Element('flag')
         elem.set('action', self.action)
         if self.args:
-            args_element = cElementTree.SubElement(elem, 'args')
-            for arg_name, arg_value in self.args.items():
-                element = cElementTree.Element(arg_name)
-                element.text = arg_value
-                args_element.append(element)
+            args = inputs_to_xml(self.args, root='args')
+            elem.append(args)
         if self.filters:
-            filters_element = cElementTree.SubElement(elem, 'filters')
+            filters_element = ElementTree.SubElement(elem, 'filters')
             for filter_element in self.filters:
                 filters_element.append(filter_element.to_xml())
         return elem

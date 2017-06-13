@@ -3,7 +3,7 @@ from collections import namedtuple
 from concurrent import futures
 from copy import deepcopy
 from os import sep
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 import uuid
 import logging
 
@@ -126,7 +126,7 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
-        self.tree = cElementTree.ElementTree(file=path)
+        self.tree = ElementTree.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
         for workflow in self.tree.iter(tag='workflow'):
             current_workflow_name = workflow.get('name')
@@ -153,7 +153,7 @@ class Controller(object):
             name_override (str, optional): Name that the workflow should be changed to. 
             playbook_override (str, optional): Name that the playbook should be changed to.
         """
-        self.tree = cElementTree.ElementTree(file=path)
+        self.tree = ElementTree.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
         for workflow in self.tree.iter(tag='workflow'):
             workflow_name = name_override if name_override else workflow.get('name')
@@ -419,7 +419,7 @@ class Controller(object):
         """
         all_workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
         if all_workflows:
-            xml = cElementTree.Element('workflows')
+            xml = ElementTree.Element('workflows')
             for workflow in all_workflows:
                 xml.append(workflow.to_xml())
             return xml

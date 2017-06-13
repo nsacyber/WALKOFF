@@ -194,6 +194,7 @@ class TestHelperFunctions(unittest.TestCase):
                             'mod1.filter2': tests.util.flagsfilters.mod1.filter2,
                             'sub1.sub1_top_filter': tests.util.flagsfilters.sub1.sub1_top_filter,
                             'sub1.mod2.filter1': tests.util.flagsfilters.sub1.mod2.filter1,
+                            'sub1.mod2.complex_filter': tests.util.flagsfilters.sub1.mod2.complex_filter,
                             'sub1.mod2.filter3': tests.util.flagsfilters.sub1.mod2.filter3}
         flag_tags = import_and_find_tags('tests.util.flagsfilters', 'flag')
         expected_flags = {'top_level_flag': tests.util.flagsfilters.top_level_flag,
@@ -248,7 +249,6 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertDictEqual(api[1][0], expected[1][0])
         self.assertDictEqual(api[2], expected[2])
 
-
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):
             get_app_action_api('InvalidApp', 'pause')
@@ -302,3 +302,68 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_filter_invalid(self):
         with self.assertRaises(UnknownFilter):
             get_filter('invalid')
+
+    def test_input_xml_to_dict(self):
+        from xml.etree.cElementTree import fromstring
+        xml = """<inputs>
+                <a1>val1</a1>
+                <a3>val3</a3>
+                <a2>val2</a2>
+                <a5>val5</a5>
+                <a4>
+                    <a44>
+                        <a442>
+                            <item>val442-0</item>
+                            <item>val442-1</item>
+                        </a442>
+                        <a441>val441</a441>
+                    </a44>
+                    <a42>val42</a42>
+                    <a43>
+                        <item>
+                            <a432>val432</a432>
+                            <a431>
+                                <item>1</item>
+                                <item>1</item>
+                                <item>2</item>
+                                <item>3</item>
+                            </a431>
+                        </item>
+                        <item>
+                            <a431>
+                                <item>2</item>
+                                <item>2</item>
+                                <item>3</item>
+                                <item>4</item>
+                            </a431>
+                        </item>
+                    </a43>
+                    <a41>val41</a41>
+                </a4>
+            </inputs>"""
+        expected = {'a1': 'val1', 'a2': 'val2', 'a3': 'val3',
+                    'a4': {'a41': 'val41', 'a42': 'val42',
+                           'a43': [{'a431': ['1', '1', '2', '3'], 'a432': 'val432'},
+                                   {'a431': ['2', '2', '3', '4']}],
+                           'a44': {'a441': 'val441', 'a442': ['val442-0', 'val442-1']}},
+                    'a5': 'val5'}
+        xml = fromstring(xml)
+        converted = inputs_xml_to_dict(xml)
+        self.assertDictEqual(converted, expected)
+
+    def test_input_dict_to_from_xml(self):
+        inputs = {
+            'a1': 'val1',
+                  'a2': 'val2',
+                  'a3': 'val3',
+                  'a5': 'val5',
+                  'a4': {'a41': 'val41',
+                         'a42': 'val42',
+                         'a43': [{'a431': ['1', '1', '2', '3'],
+                                  'a432': 'val432'},
+                                 {'a431': ['2', '2', '3', '4']}],
+                         'a44': {'a441': 'val441',
+                                 'a442': ['val442-0', 'val442-1']}}}
+        xml = inputs_to_xml(inputs)
+        converted = inputs_xml_to_dict(xml)
+        self.assertDictEqual(converted, inputs)
