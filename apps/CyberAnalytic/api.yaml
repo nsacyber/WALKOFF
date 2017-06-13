@@ -1,0 +1,43 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: ARDroneApp
+  description: An app to control an AR Drone.
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  begin_monitoring:
+    run: begin_monitoring
+    description: Begins monitoring
+    returns:
+      Success:
+        description: Success
+        schema:
+          type: string
+  get_exe_pids:
+    run: get_exe_pids
+    description: Gets the PIDs of the executables running on the machine
+    returns:
+      Success:
+        description: Array of all of the PIDs
+        schema:
+          type: array
+          items:
+            type: string
+  get_exe_pids_by_name:
+    run: get_exe_pids_by_name
+    description: Get a list of executable PIDs by process name
+    parameters:
+        - name: name
+          description: The name of the process
+          required: true
+          type: string
+    returns:
+      Success:
+        description: Array of executable PIDs with the same process name
+        schema:
+          type: array
+          items:
+            type: string
