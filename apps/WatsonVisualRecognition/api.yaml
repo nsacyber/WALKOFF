@@ -24,7 +24,7 @@ actions:
     run: recognize_text_from_local_file
     description: Gets the text from a local file
     parameters:
-        - name: url
+        - name: path
           description: The path to the image
           required: true
           type: string
@@ -48,7 +48,7 @@ actions:
     run: detect_faces_from_local_file
     description: Detects faces from a local file
     parameters:
-        - name: url
+        - name: path
           description: The path to the image
           required: true
           type: string
@@ -72,7 +72,7 @@ actions:
     run: classify_from_local_file
     description: Classify an image from a local file
     parameters:
-        - name: url
+        - name: path
           description: The path to the image
           required: true
           type: string

@@ -429,7 +429,7 @@ actions:
     run: set_valet_mode
     description: sets the car in valet mode
     parameters:
-      - name: on
+      - name: 'on'
         required: true
         type: boolean
       - name: pin
@@ -473,7 +473,7 @@ actions:
     run: set_charge_limit
     description: sets the charge limit (as a percentage of full charge)
     parameters:
-      - name: on
+      - name: 'on'
         required: true
         type: integer
         minimum: 0
