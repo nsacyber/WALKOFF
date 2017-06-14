@@ -49,6 +49,13 @@ actions:
             status:
               type: string
               description: The status of the operation
+  list lights:
+    run: list_lights
+    description: Lists the various lights
+    returns:
+      Success:
+        schema:
+          type: object
   toggle power:
     run: toggle_power
     description: Turns the light on and off

@@ -13,54 +13,54 @@
 		<steps>
 			<step id="1">
 				<id>1</id>
-				<app>Lifxx</app>
-				<action>breathe_effect</action>
+				<app>Lifx</app>
+				<action>breathe</action>
 				<device>LIFX 12cf1f</device>
 				<position>
 					<x>494.055032258</x>
 					<y>437.567112283</y>
 				</position>
-				<input>
+				<inputs>
 					<power_on format="str">true</power_on>
 					<color format="str">red</color>
 					<period format="int">1</period>
-					<peak format="int">5</peak>
+					<peak format="int">0.5</peak>
 					<persist format="str">false</persist>
 					<from_color format="str">blue</from_color>
 					<cycles format="int">5</cycles>
-				</input>
+				</inputs>
 				<next step="2"/>
 			</step>
 			<step id="3">
 				<id>3</id>
 				<app>Lifx</app>
-				<action>pulse_effect</action>
+				<action>pulse</action>
 				<device>LIFX 12cf1f</device>
 				<position>
 					<x>406.540089357</x>
 					<y>333.60458204</y>
 				</position>
-				<input>
+				<inputs>
 					<power_on format="str">true</power_on>
 					<color format="str">red</color>
 					<period format="int">1</period>
 					<persist format="str">true</persist>
 					<from_color format="str">blue</from_color>
 					<cycles format="int">10</cycles>
-				</input>
+				</inputs>
 			</step>
 			<step id="2">
 				<id>2</id>
 				<app>Lifx</app>
-				<action>toggle_power</action>
+				<action>toggle power</action>
 				<device>LIFX 12cf1f</device>
 				<position>
 					<x>452.952347395</x>
 					<y>381.806710298</y>
 				</position>
-				<input>
+				<inputs>
 					<duration format="int">2</duration>
-				</input>
+				</inputs>
 				<next step="3"/>
 			</step>
 		</steps>
