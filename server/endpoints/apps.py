@@ -19,13 +19,35 @@ def read_all_apps():
     return __func()
 
 
+def __format_app_action_api(api):
+    ret = {}
+    data_in = api.get('dataIn', False)
+    if 'description' in api:
+        ret['description'] = api['description']
+    args = []
+    if 'parameters' in api:
+        for arg in api['parameters']:
+            if data_in and arg['name'] == data_in:
+                continue
+            arg = dict(arg)
+            arg.pop('name')
+            args.append(arg)
+    ret['args'] = args
+    return ret
+
+
+def __format_all_app_actions(app_api):
+    return [{action_name: __format_app_action_api(action_api)}
+            for action_name, action_api in app_api['actions'].items()]
+
+
 def read_all_app_actions():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        app_apis = {app_name: list(app_api['actions'].keys()) for app_name, app_api in core.config.config.app_apis.items()}
-        return app_apis, SUCCESS
+        return {app_name: __format_all_app_actions(app_api)
+                for app_name, app_api in core.config.config.app_apis.items()},  SUCCESS
 
     return __func()
 
@@ -64,6 +86,7 @@ def read_all_devices(app_name):
         else:
             current_app.logger.error('Could not get devices for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -84,7 +107,8 @@ def create_device(app_name, device_name):
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
             except (OSError, IOError) as e:
-                current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
+                current_app.logger.error(
+                    'Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
 
             if key:
                 aes = pyaes.AESModeOfOperationCTR(key)
@@ -103,6 +127,7 @@ def create_device(app_name, device_name):
             current_app.logger.error('Could not create device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist."}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -153,6 +178,7 @@ def update_device(app_name, device_name):
             current_app.logger.error('Could not update device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist"}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -177,6 +203,7 @@ def delete_device(app_name, device_name):
             current_app.logger.error('Could not delete device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist"}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -239,4 +266,5 @@ def export_devices(app_name):
         else:
             current_app.logger.debug('Exported devices to {0}'.format(filename))
             return {}, SUCCESS
+
     return __func()

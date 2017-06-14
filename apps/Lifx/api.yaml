@@ -124,7 +124,7 @@ actions:
               type: string
               description: The status of the operation
   pulse:
-    run: breathe_effect
+    run: pulse_effect
     description: Swicthes between two colors
     parameters:
       - name: color
