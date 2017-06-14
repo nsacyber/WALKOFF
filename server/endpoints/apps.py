@@ -64,7 +64,7 @@ def list_app_actions(app_name):
             current_app.logger.error('Could not get action for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
         else:
-            return {'actions': list(app_api['actions'].keys())}, SUCCESS
+            return {'actions': __format_all_app_actions(app_api)}, SUCCESS
 
     return __func()
 
