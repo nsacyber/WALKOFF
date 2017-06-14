@@ -14,7 +14,7 @@
 			<step id="2">
 				<id>2</id>
 				<app>FacebookUserPost</app>
-				<action>post_to_user_wall</action>
+				<action>post to wall</action>
 				<position>
 					<x>425</x>
 					<y>282</y>
@@ -22,20 +22,6 @@
 				<inputs>
 					<message>Explore WALKOFF at https://github.com/iadgov/WALKOFF :D :D :D</message>
 				</inputs>
-			</step>
-			<step id="1">
-				<id>1</id>
-				<app>FacebookUserPost</app>
-				<action>add_facebook_user</action>
-				<position>
-					<x>253</x>
-					<y>159</y>
-				</position>
-				<inputs>
-					<user_access_token format="str">Get from Facebook Developer Account</user_access_token>
-					<user_id format="str">Get from Facebook Developer Account</user_id>
-				</inputs>
-				<next step="2"/>
 			</step>
 		</steps>
 	</workflow>
