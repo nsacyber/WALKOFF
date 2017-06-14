@@ -1,5 +1,69 @@
 <?xml version="1.0" ?>
 <workflows>
+	<workflow name="helloWorldWorkflow2">
+		<options>
+			<enabled>true</enabled>
+			<scheduler autorun="false" type="cron">
+				<hours>*</hours>
+				<minutes>*/0.1</minutes>
+				<day>*</day>
+				<month>11-12</month>
+			</scheduler>
+		</options>
+		<start>start</start>
+		<steps>
+			<step id="1">
+				<id>1</id>
+				<app>DailyQuote</app>
+				<action>quoteIntro</action>
+				<device/>
+				<position>
+					<x>-90</x>
+					<y>-90</y>
+				</position>
+				<input/>
+				<next step="2"/>
+			</step>
+			<step id="start">
+				<id>start</id>
+				<app>HelloWorld</app>
+				<action>repeatBackToMe</action>
+				<device>hwTest</device>
+				<position>
+					<x>-90</x>
+					<y>-10</y>
+				</position>
+				<input>
+					<call format="str">Hello World</call>
+				</input>
+				<error step="1"/>
+			</step>
+			<step id="3">
+				<id>3</id>
+				<app>DailyQuote</app>
+				<action>forismaticQuote</action>
+				<device/>
+				<position>
+					<x>30</x>
+					<y>-90</y>
+				</position>
+				<input>
+					<url format="str">None</url>
+				</input>
+			</step>
+			<step id="2">
+				<id>2</id>
+				<app>DailyQuote</app>
+				<action>getQuote</action>
+				<device/>
+				<position>
+					<x>-90</x>
+					<y>-170</y>
+				</position>
+				<input/>
+			</step>
+		</steps>
+	</workflow>
 	<workflow name="helloWorldWorkflow">
 		<options>
 			<enabled>true</enabled>
@@ -64,7 +128,7 @@
 			</step>
 		</steps>
 	</workflow>
-	<workflow name="test2">
+	<workflow name="test3">
 		<options>
 			<enabled>true</enabled>
 			<scheduler autorun="false" type="cron">
@@ -79,7 +143,6 @@
 				<id>1</id>
 				<app>Lifx</app>
 				<action>breathe_effect</action>
-				<risk>0</risk>
 				<device/>
 				<position>
 					<x>490</x>
@@ -100,7 +163,6 @@
 				<id>08d80757-7ed0-ddcf-0cfb-e2859dfa63d5</id>
 				<app>Lifx</app>
 				<action>pulse_effect</action>
-				<risk>0</risk>
 				<device/>
 				<position>
 					<x>590</x>
@@ -119,7 +181,6 @@
 				<id>3</id>
 				<app>Lifx</app>
 				<action>set_state</action>
-				<risk>0</risk>
 				<device/>
 				<position>
 					<x>490</x>
@@ -137,7 +198,6 @@
 				<id>2</id>
 				<app>Lifx</app>
 				<action>pulse_effect</action>
-				<risk>0</risk>
 				<device/>
 				<position>
 					<x>490</x>
@@ -157,7 +217,6 @@
 				<id>90e56daa-9c52-aefe-90e5-3a88f6c301d7</id>
 				<app>Lifx</app>
 				<action>breathe_effect</action>
-				<risk>0</risk>
 				<device/>
 				<position>
 					<x>590</x>

@@ -1138,8 +1138,10 @@ $(function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/playbooks",
             'success': function (data) {
+                //Destroy the existing tree if necessary
                 if ($("#workflows").jstree(true))
                     $("#workflows").jstree(true).destroy();
+
                 $('#workflows').jstree({
                     'core' : {
                         "check_callback" : true,
@@ -1165,27 +1167,10 @@ $(function(){
 
                         // hide parameters panel until first click on node
                         hideParameters();
+
+                        //hide our bootstrap modal
+                        $('#workflowsModal').modal('hide');
                     }
-                });
-                // handle double click on workflow, add action node to center of canvas
-                $('#actions').bind("dblclick.jstree", function (event, data) {
-                    if (cy === null)
-                        return;
-
-                    var node = $(event.target).closest("li");
-                    var node_id = node[0].id; //id of the selected node
-                    node = $('#actions').jstree(true).get_node(node_id);
-
-                    if (!node.data)
-                        return;
-                        
-                    var app = node.data.app;
-                    var action = node.text;
-                    var extent = cy.extent();
-
-                    function avg(a, b) { return (a + b) / 2; }
-
-                    insertNode(app, action, avg(extent.x1, extent.x2), avg(extent.y1, extent.y2), false);
                 });
             },
             'error': function (e) {
@@ -1481,6 +1466,26 @@ $(function(){
             })
             .bind("ready.jstree", function (event, data) {
                 $(this).jstree("open_all"); // Expand all
+            })
+            // handle double click on workflow, add action node to center of canvas
+            .bind("dblclick.jstree", function (event, data) {
+                if (cy === null)
+                    return;
+
+                var node = $(event.target).closest("li");
+                var node_id = node[0].id; //id of the selected node
+                node = $('#actions').jstree(true).get_node(node_id);
+
+                if (!node.data)
+                    return;
+                    
+                var app = node.data.app;
+                var action = node.text;
+                var extent = cy.extent();
+
+                function avg(a, b) { return (a + b) / 2; }
+
+                insertNode(app, action, avg(extent.x1, extent.x2), avg(extent.y1, extent.y2), false);
             })
             .on('after_open.jstree', function (e, data) {
                 for(var i = 0; i < data.node.children.length; i++) {

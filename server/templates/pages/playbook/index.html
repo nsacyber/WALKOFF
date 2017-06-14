@@ -76,12 +76,13 @@
                 width: 300px;
             }
             #workflows{
-                height: 658px; /* == 700 minus 42 (where 42 is the height of the tab) */
+                min-height: 200px;
+                max-height: 500px; /* == 700 minus 42 (where 42 is the height of the tab) */
                 overflow-y:scroll;
                 width:100%;
             }
             #actions{
-                height: 658px; /* == 700 minus 42 (where 42 is the height of the tab) */
+                height: 700; /* == 700 minus 42 (where 42 is the height of the tab) */
                 overflow-y:scroll;
                 width:100%;
             }
@@ -90,6 +91,7 @@
                 vertical-align: top;
                 height: 100%;
                 position: inherit;
+                background: transparent;
             }
             #cy {
                 display: inline-block;
@@ -145,6 +147,11 @@
             .no-close .ui-dialog-titlebar-close {
               display: none;
             }
+            /*Ensures context menus and jquery ui dialogs appear above the bootstrap modal*/
+            ul.vakata-context,
+            .ui-dialog {
+                z-index: 1051;
+            }
         </style>
 
 
@@ -162,6 +169,11 @@
                 <div class=btn-group role=group>
                     <button id="new-button" type=button class="btn btn-default" data-toggle="tooltip" title="New Workflow">
                         <i class="fa fa-file-o"></i>
+                    </button>
+                </div>
+                <div class=btn-group role=group>
+                    <button id="load-button" type=button class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow">
+                        <i class="fa fa-folder-open-o"></i>
                     </button>
                 </div>
                 <div class=btn-group role=group>
@@ -205,16 +217,17 @@
 
             <div id="top">
                 <div id="palette">
-                    <ul class="nav nav-tabs">
+                    <!--<ul class="nav nav-tabs">
                         <li class="active"><a id="workflows-tab" href="#workflows">Workflows</a></li>
                         <li><a href="#actions">Actions</a></li>
-                    </ul>
-                    <div class="tab-content">
-                        <div id="workflows" class="tab-pane fade in active">
-                        </div>
-                        <div id="actions" class="tab-pane fade">
-                        </div>
-                    </div>
+                    </ul>-->
+                    <!--<div class="tab-content">-->
+                        <!--<div id="workflows" class="tab-pane fade in active">
+                        </div>-->
+                    <!--<div id="actions" class="tab-pane fade">
+                    </div>-->
+                    <!--</div>-->
+                    <div id="actions"></div>
                 </div>
                 <div id="playbookEditorTabs">
                     <ul class="nav nav-tabs">
@@ -241,7 +254,8 @@
             </div>
             <div id="cy-instructions-template" class="hidden">
                 <p> Instructions:</p>
-                <p> <b>Double click</b> an item in the Workflows tab to load the workflow into the graph.</p>
+                <p> <button class="btn btn-default" id="loadInitialWorkflow" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button> </p>
+                <p> Use this button to load the workflow into the graph. After loading an initial workflow you may use the Load Workflow button on the toolbar.</p>
                 <p> <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow step. <b>Double click</b> also works. </p>
             </div>
 
@@ -268,6 +282,26 @@
                                       input2">
                     </fieldset>
                 </form>
+            </div>
+
+            <div class="modal fade" id="workflowsModal" tabindex="-1" role="dialog" aria-labelledby="workflowModalTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="workflowModalTitle">Select a Workflow</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="workflows"></div>
+                        </div>
+                        <!--<div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>-->
+                    </div>
+                </div>
             </div>
 
             <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
