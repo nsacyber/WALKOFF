@@ -31,6 +31,7 @@ class Main(App):
     def begin_monitoring(self):
         if not self.is_running:
             gevent.spawn(self.__monitor_processes)
+        return "Success"
 
     @action
     def get_exe_pids(self):

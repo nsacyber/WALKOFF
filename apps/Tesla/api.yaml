@@ -253,7 +253,7 @@ actions:
           minimum: 0
           maximum: 359
   'get gui settings':
-    run: get_gui_settings
+    run: get_gui_settings_all
     description: Gets the gui settings
     returns:
       Success:
@@ -284,7 +284,7 @@ actions:
           type: string
           enum: ['mi/hr', 'km/hr']
   'is gui in 24 hour time format':
-    run: get_gui_temperature_units
+    run: get_gui_24_hour_time
     description: Is the GUI dispalying time in 24-hour format
     returns:
       Success:
@@ -412,7 +412,7 @@ actions:
         schema:
           type: string
   'get performance config':
-    run: get_roof_color
+    run: get_perf_config
     description: gets the performance configuration
     returns:
       Success:
@@ -429,7 +429,7 @@ actions:
     run: set_valet_mode
     description: sets the car in valet mode
     parameters:
-      - name: on
+      - name: 'on'
         required: true
         type: boolean
       - name: pin
@@ -463,7 +463,7 @@ actions:
         schema:
           type: boolean
   'set charge limit to max range':
-    run: set_charge_limit_max
+    run: set_charge_limit_max_range
     description: Set the charge mode to max range (100% under the new percentage system introduced in 4.5). Use sparingly!
     returns:
       Success:
@@ -473,7 +473,7 @@ actions:
     run: set_charge_limit
     description: sets the charge limit (as a percentage of full charge)
     parameters:
-      - name: on
+      - name: limit
         required: true
         type: integer
         minimum: 0
@@ -490,7 +490,7 @@ actions:
         schema:
           type: boolean
   'stop charging':
-    run: stops_charging
+    run: stop_charging
     description: stops charging (must be plugged in)
     returns:
       Success:
@@ -525,7 +525,7 @@ actions:
         schema:
           type: boolean
   'set temperature':
-    run: unlock_doors
+    run: set_temperature
     description: unlocks the doors
     parameters:
       - name: driver_deg_c

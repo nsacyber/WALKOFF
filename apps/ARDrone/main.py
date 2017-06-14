@@ -12,11 +12,13 @@ class Main(App):
     def takeoff(self):
         """Make the drone takeoff."""
         self.drone.takeoff()
+        return "Success"
 
     @action
     def land(self):
         """Make the drone land."""
         self.drone.land()
+        return "Success"
 
     @staticmethod
     def __timed_execute(time):
@@ -29,30 +31,35 @@ class Main(App):
         """Make the drone hover."""
         self.drone.at(libardrone.at_pcmd, False, 0, 0, 0, 0)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def move_left(self, speed, millisec):
         """Make the drone move left."""
         self.drone.at(libardrone.at_pcmd, True, -speed/10., 0, 0, 0)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def move_right(self, speed, millisec):
         """Make the drone move right."""
         self.drone.at(libardrone.at_pcmd, True, speed/10., 0, 0, 0)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def move_up(self, speed, millisec):
         """Make the drone rise upwards."""
         self.drone.at(libardrone.at_pcmd, True, 0, 0, speed/10., 0)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def move_down(self, speed, millisec):
         """Make the drone decent downwards."""
         self.drone.at(libardrone.at_pcmd, True, 0, 0, -speed/10., 0)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def move_forward(self, speed, millisec):
@@ -65,28 +72,33 @@ class Main(App):
         """Make the drone move backwards."""
         self.drone.at(libardrone.at_pcmd, True, 0, speed/10., 0, 0)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def turn_left(self, speed, millisec):
         """Make the drone rotate left."""
         self.drone.at(libardrone.at_pcmd, True, 0, 0, 0, -speed/10.)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def turn_right(self, speed, millisec):
         """Make the drone rotate right."""
         self.drone.at(libardrone.at_pcmd, True, 0, 0, 0, speed/10.)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def reset(self):
         """Toggle the drone's emergency state."""
         self.drone.reset()
+        return "Success"
 
     @action
     def trim(self):
         """Flat trim the drone."""
         self.drone.at(libardrone.at_ftrim)
+        return "Success"
 
     @action
     def set_speed(self, speed):
@@ -95,6 +107,7 @@ class Main(App):
         Valid values are ints from [0.1]
         """
         self.drone.speed = speed/10.
+        return "Success"
 
     @action
     def move(self, left_right_tilt, front_back_tilt, vertical_speed, angular_speed, millisec):
@@ -114,10 +127,12 @@ class Main(App):
                       vertical_speed,
                       angular_speed)
         self.__timed_execute(millisec)
+        return "Success"
 
     @action
     def halt(self):
         self.drone.halt()
+        return "Success"
 
     @action
     def get_image(self):
@@ -158,5 +173,4 @@ class Main(App):
     def shutdown(self):
         self.drone.land()
         self.drone.halt()
-
-
+        return "Success"
