@@ -43,6 +43,10 @@
     "connexion": {
       "level": "ERROR",
       "handlers": ["file_handler"]
+    },
+    "dicttoxml": {
+      "level": "ERROR",
+      "handlers": ["file_handler"]
     }
   },
   "root": {

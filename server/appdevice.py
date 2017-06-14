@@ -150,6 +150,17 @@ class Device(database.Base):
         db.session.commit()
         current_app.logger.info('Adding device to app {0}: {1}'.format(app_server, device.as_json(with_apps=False)))
 
+    def get_password(self):
+        try:
+            with open(core.config.paths.AES_key_path, 'rb') as key_file:
+                key = key_file.read()
+        except (OSError, IOError) as e:
+            current_app.logger.error('No AES key found')
+            return None
+        else:
+            aes = pyaes.AESModeOfOperationCTR(key)
+            return aes.decrypt(self.password)
+
     def edit_device(self, form):
         """Edits various fields of the Device object. 
         
@@ -168,8 +179,7 @@ class Device(database.Base):
                     key = key_file.read()
             except (OSError, IOError) as e:
                 current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
-
-            if key:
+            else:
                 aes = pyaes.AESModeOfOperationCTR(key)
                 pw = form.pw.data
                 self.password = aes.encrypt(pw)
