@@ -374,7 +374,7 @@ $(function(){
     }
 
     // This function displays a form next to the graph for editing a node when clicked upon
-    function onNodeClick(e) {
+    function onNodeSelect(e) {
         var ele = e.cyTarget;
 
         currentNodeInParametersEditor = ele;
@@ -431,8 +431,12 @@ $(function(){
     }
 
     //TODO: bring up a separate JSON editor for "next" step information (filters/flags)
-    function onEdgeClick(event) {
+    function onEdgeSelect(event) {
         return;
+    }
+
+    function onUnselect(event) {
+        if (!cy.$('node:selected').length) hideParameters();
     }
     
     // when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
@@ -617,6 +621,11 @@ $(function(){
             'data': JSON.stringify({'new_name': newPlaybookName}),
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Playbook ' + newPlaybookName + ' renamed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Playbook ' + newPlaybookName + ' could not be renamed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -632,6 +641,11 @@ $(function(){
             'data': {playbook: newPlaybookName},
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Playbook ' + newPlaybookName + ' duplicated successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Playbook ' + newPlaybookName + ' could not be duplicated.', 'error');
+                console.log(e);
             }
         });
     }
@@ -648,6 +662,12 @@ $(function(){
 
                 if (currentPlaybook === playbookName)
                     closeCurrentWorkflow();
+
+                $.notify('Playbook ' + playbookName + ' removed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Playbook ' + playbookName + ' could not be removed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -664,6 +684,11 @@ $(function(){
             'data': JSON.stringify({'new_name': newWorkflowName}),
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Workflow ' + newWorkflowName + ' renamed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + newWorkflowName + ' could not be renamed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -679,6 +704,11 @@ $(function(){
             'data': {playbook: playbookName, workflow: newWorkflowName},
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Workflow ' + newWorkflowName + ' duplicated successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + newWorkflowName + ' could not be duplicated.', 'error');
+                console.log(e);
             }
         });
     }
@@ -695,6 +725,12 @@ $(function(){
 
                 if (currentPlaybook === playbookName && currentWorkflow === workflowName)
                     closeCurrentWorkflow();
+
+                $.notify('Workflow ' + workflowName + ' removed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + workflowName + ' could not be removed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -709,6 +745,11 @@ $(function(){
             'success': function (data) {
                 saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
+                $.notify('Workflow ' + workflowName + ' added successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + workflowName + ' could not be added.', 'error');
+                console.log(e);
             }
         });
     }
@@ -726,6 +767,11 @@ $(function(){
             'url': "/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
             'data': data,
             'success': function (data) {
+                $.notify('Workflow ' + workflowName + ' saved successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + workflowName + ' could not be saved.', 'error');
+                console.log(e);
             }
         });
     }
@@ -795,6 +841,10 @@ $(function(){
                 'url': "/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
                     tmp = data;
+                },
+                'error': function (e) {
+                    $.notify('Workflow ' + currentWorkflow + ' could not be loaded properly.', 'error');
+                    console.log(e);
                 }
             });
             return tmp;
@@ -868,7 +918,6 @@ $(function(){
                 if (!sourceParameters.hasOwnProperty("next"))
                     sourceParameters.next = [];
 
-                console.log(targetNodes, addedEntities);
                 // The edge handles extension is not integrated into the undo/redo extension.
                 // So in order that adding edges is contained in the undo stack,
                 // remove the edge just added and add back in again using the undo/redo
@@ -900,12 +949,6 @@ $(function(){
                 _.each(addedEntities, function (ae) {
                     var data = ae.data();
                     delete data.parameters.temp;
-                    // data = _.map(data, function (d) {
-                    //     d.parameters = _.omit(d.parameters, ['temp']);
-                    //     return d;
-                    // });
-
-                    console.log(data);
                     ae.data(data);
                 });
 
@@ -956,13 +999,14 @@ $(function(){
 
         cy.add(steps);
 
-        cy.fit();
+        cy.fit(50);
 
         setStartNode(workflowData.start);
 
         // Configure handler when user clicks on node or edge
-        cy.on('click', 'node', onNodeClick);
-        cy.on('click', 'edge', onEdgeClick);
+        cy.on('select', 'node', onNodeSelect);
+        cy.on('select', 'edge', onEdgeSelect);
+        cy.on('unselect', onUnselect);
 
         // Configure handlers when nodes/edges are added or removed
         cy.on('add', 'node', onNodeAdded);
@@ -1094,8 +1138,10 @@ $(function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/playbooks",
             'success': function (data) {
+                //Destroy the existing tree if necessary
                 if ($("#workflows").jstree(true))
                     $("#workflows").jstree(true).destroy();
+
                 $('#workflows').jstree({
                     'core' : {
                         "check_callback" : true,
@@ -1121,27 +1167,15 @@ $(function(){
 
                         // hide parameters panel until first click on node
                         hideParameters();
+
+                        //hide our bootstrap modal
+                        $('#workflowsModal').modal('hide');
                     }
                 });
-                // handle double click on workflow, add action node to center of canvas
-                $('#actions').bind("dblclick.jstree", function (event, data) {
-                    if (cy === null)
-                        return;
-
-                    var node = $(event.target).closest("li");
-                    var node_id = node[0].id; //id of the selected node
-                    node = $('#actions').jstree(true).get_node(node_id);
-
-                    if (!node.data)
-                        return;
-                    var app = node.data.app;
-                    var action = node.text;
-                    var extent = cy.extent();
-
-                    function avg(a, b) { return (a + b) / 2; }
-
-                    insertNode(app, action, avg(extent.x1, extent.x2), avg(extent.y1, extent.y2), false);
-                });
+            },
+            'error': function (e) {
+                $.notify('Error retrieving playbooks.', 'error');
+                console.log(e);
             }
         });
     }
@@ -1391,6 +1425,7 @@ $(function(){
             removeSelectedNodes();
         }
         else if (e.ctrlKey) {
+            //TODO: re-enable undo/redo once we restructure how next steps / edges are stored
             // if (e.which === 90) // 'Ctrl+Z', Undo
             //     ur.undo();
             // else if (e.which === 89) // 'Ctrl+Y', Redo
@@ -1431,6 +1466,26 @@ $(function(){
             })
             .bind("ready.jstree", function (event, data) {
                 $(this).jstree("open_all"); // Expand all
+            })
+            // handle double click on workflow, add action node to center of canvas
+            .bind("dblclick.jstree", function (event, data) {
+                if (cy === null)
+                    return;
+
+                var node = $(event.target).closest("li");
+                var node_id = node[0].id; //id of the selected node
+                node = $('#actions').jstree(true).get_node(node_id);
+
+                if (!node.data)
+                    return;
+                    
+                var app = node.data.app;
+                var action = node.text;
+                var extent = cy.extent();
+
+                function avg(a, b) { return (a + b) / 2; }
+
+                insertNode(app, action, avg(extent.x1, extent.x2), avg(extent.y1, extent.y2), false);
             })
             .on('after_open.jstree', function (e, data) {
                 for(var i = 0; i < data.node.children.length; i++) {
