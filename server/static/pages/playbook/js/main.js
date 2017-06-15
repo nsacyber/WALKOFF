@@ -1,3 +1,12 @@
+if (typeof(EventSource) !== "undefined") {
+    stepResultsSSE = new EventSource('workflowresults/stream-steps');
+
+}
+else {
+    console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
+}
+
+
 $(function(){
     "use strict";
 
@@ -19,7 +28,6 @@ $(function(){
     var filtersList = [];
     var startNode = null;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
-
     //--------------------
     // Top level functions
     //--------------------
@@ -879,6 +887,22 @@ $(function(){
                     }
                 },
                 {
+                    selector: '.good-highlighted',
+                    css: {
+                        'background-color': '#399645',
+                        'transition-property': 'background-color',
+                        'transition-duration': '0.5s'
+                    }
+                },
+                {
+                    selector: '.bad-highlighted',
+                    css: {
+                        'background-color': '#8e3530',
+                        'transition-property': 'background-color',
+                        'transition-duration': '0.5s'
+                    }
+                },
+                {
                     selector: '$node > node',
                     css: {
                         'padding-top': '10px',
@@ -1364,6 +1388,40 @@ $(function(){
                    checkIfWorkflowExists);
     });
 
+    $( "#execute-button" ).click(function() {
+        window.executionDialog = $("#executionModal").clone().removeClass('hidden');
+        executionDialog.dialog({
+            autoOpen: false,
+            modal: false,
+            title: "Execution Results",
+            width: 600
+        });
+
+        executionDialog.dialog( "open" );
+
+        $(executionDialog).find("button").on("click", function(){
+            cy.elements().removeClass("good-highlighted bad-highlighted");
+            executionDialog.dialog("close");
+        });
+        $.ajax({
+            'async': true,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
+            'success': function (data) {
+                console.log(currentWorkflow + ' is scheduled to execute.', 'success');
+                //Set up event listener for workflow results if possible
+            },
+            'error': function (jqXHR, status, error) {
+                console.log(currentWorkflow + ' has failed to be scheduled.', 'error');
+                //$("#eventList").append("<li>" + currentWorkflow + " has failed to be scheduled.</li>");
+            }
+        });
+    });
+
+
+
     // Handle save button press
     $( "#save-button" ).click(function() {
         if (cy === null)
@@ -1569,4 +1627,47 @@ $(function(){
             "selected": false
         };
     }
+
+    function handleStreamStepsEvent(data){
+        var id = data.name;
+        var type = data.type;
+        var elem = cy.elements('node[id="' + id + '"]');
+
+        var row = executionDialog.find("table").get(0).insertRow(-1);
+        var id_cell = row.insertCell(0);
+        id_cell.innerHTML = data.name;
+
+        var type_cell = row.insertCell(1);
+        type_cell.innerHTML = data.type;
+
+        var input_cell = row.insertCell(2);
+        input_cell.innerHTML = data.input;
+
+        var result_cell = row.insertCell(3);
+        result_cell.innerHTML = data.result;
+
+        if(type === "SUCCESS"){
+            elem.addClass('good-highlighted');
+        }
+        else if(type === "ERROR"){
+            elem.addClass('bad-highlighted');
+        }
+
+    }
+
+
+
+
+    window.stepResultsSSE.onmessage = function(message) {
+        var data = JSON.parse(message.data);
+        handleStreamStepsEvent(data);
+    }
+    window.stepResultsSSE.onerror = function(e){
+        console.log("ERROR");
+        console.log(e);
+        stepResultsSSE.close();
+    }
 });
+
+
+
