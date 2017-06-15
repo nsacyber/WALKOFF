@@ -244,7 +244,7 @@ def validate_definitions(definitions, dereferencer):
 def validate_primitive_parameter(value, param, parameter_type, message_prefix):
     try:
         converted_value = convert_primitive_type(value, parameter_type)
-    except ValueError:
+    except (ValueError, TypeError):
         message = '{0} has invalid input. ' \
                   'Input {1} could not be converted to type {2}'.format(message_prefix, value, parameter_type)
         logger.error(message)
