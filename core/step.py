@@ -238,9 +238,9 @@ class Step(ExecutionElement):
         if self.position and 'x' in self.position and 'y' in self.position:
             position = ElementTree.SubElement(step, 'position')
             x_position = ElementTree.SubElement(position, 'x')
-            x_position.text = self.position['x']
+            x_position.text = str(self.position['x'])
             y_position = ElementTree.SubElement(position, 'y')
-            y_position.text = self.position['y']
+            y_position.text = str(self.position['y'])
 
         if self.input:
             args = inputs_to_xml(self.input)

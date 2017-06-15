@@ -223,5 +223,5 @@ class Device(database.Base):
         return output
 
     def __repr__(self):
-        return json.dumps({"name": self.name, "username": self.username, "password": self.password,
+        return str({"name": self.name, "username": self.username, "password": self.password,
                            "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})

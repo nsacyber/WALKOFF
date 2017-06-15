@@ -101,7 +101,6 @@ class TestServer(ServerTestCase):
             'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
                            'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
         response = self.get_with_status_check('/apps/actions', headers=self.headers)
-        print(response)
         orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
         # for app, actions in expected_json.items():
         #     orderless_list_compare(self, response[app], [actions)

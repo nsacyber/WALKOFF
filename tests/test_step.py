@@ -345,7 +345,7 @@ class TestStep(unittest.TestCase):
 
     def test_to_xml_with_position(self):
         step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485})
-        self.__check_xml(step, position={'x': -12.3, 'y': 485})
+        self.__check_xml(step, position={'x': '-12.3', 'y': '485'})
 
     def test_to_xml_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
@@ -393,7 +393,8 @@ class TestStep(unittest.TestCase):
         self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', errors=errors))
 
     def test_to_from_xml_with_position(self):
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485}))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld',
+                                              position={'x': '-12.3', 'y': '485'}))
 
     def test_to_from_xml_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
@@ -480,9 +481,9 @@ class TestStep(unittest.TestCase):
             Step.from_json(self.basic_input_json, {})
 
     def test_from_json_with_position(self):
-        step = Step.from_json(self.basic_input_json, {'x': 125.3, 'y': 198.7})
+        step = Step.from_json(self.basic_input_json, {'x': '125.3', 'y': '198.7'})
         self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '',
-                            {}, [], [], ['', ''], [], position={'x': 125.3, 'y': 198.7})
+                            {}, [], [], ['', ''], [], position={'x': '125.3', 'y': '198.7'})
 
     def test_from_json_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]

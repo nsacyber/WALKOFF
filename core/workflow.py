@@ -205,7 +205,7 @@ class Workflow(ExecutionElement):
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.ancestry))
             while self.is_paused:
                 _ = yield
-            if step:
+            if step is not None:
                 if step.name in self.breakpoint_steps:
                     _ = yield
                 callbacks.NextStepFound.send(self)
