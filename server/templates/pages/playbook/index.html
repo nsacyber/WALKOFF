@@ -75,19 +75,19 @@
                 height: 100%;
                 width: 300px;
             }
-            .tab-content div{
+            #graphEditor > div{
                 max-height:700px;
             }
             #workflows{
                 min-height: 200px;
-                max-height: 500px; /* == 700 minus 42 (where 42 is the height of the tab) */
+                max-height: 500px;
                 overflow-y:scroll;
                 width:100%;
             }
             #actions{
-                height: 100%; /* == 700 minus 42 (where 42 is the height of the tab) */
                 overflow-y:scroll;
                 width:100%;
+                max-height: 700px;
             }
             #playbookEditorTabs{
                 display: inline-block;
@@ -99,8 +99,8 @@
             #cy {
                 display: inline-block;
                 vertical-align: top;
-                height: 651px; /* == 700 minus 49 (where 49 is the height of the tab) */
-                width: 900px;
+                height: 700px; /* == 700 minus 49 (where 49 is the height of the tab) */
+                width: 850px;
                 position: relative;
                 left: 0;
                 /*background-color: white;
@@ -165,8 +165,18 @@
                 margin-left:10px;
 
             }
-            #resetGraphButton{
-
+            /*Bootstrap / Jquery UI overrides for the JSON editor*/
+            h3 {
+                margin-top: 5px;
+            }
+            h3 span {
+                font-size: 16px;
+            }
+            .json-editor-btn-collapse {
+                font-size: 14px !important;
+            }
+            .well.well-sm {
+                margin-bottom: 0px;
             }
 
         </style>
