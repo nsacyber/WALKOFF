@@ -130,53 +130,56 @@ $(function(){
             };
 
             _.each(args, function(arg, index) {
-                var pythonType = arg.type;
-                var valueSchema = null;
-                if (pythonType === "str") {
-                    valueSchema = {
-                        type: "string",
-                        title: "Type: string"
-                    };
-                }
-                else if (pythonType === "int") {
-                    valueSchema = {
-                        type: "integer",
-                        title: "Type: integer"
-                    };
-                }
-                else if (pythonType === "float") {
-                    valueSchema = {
-                        type: "number",
-                        title: "Type: float"
-                    };
-                }
-                else if (pythonType === "bool") {
-                    valueSchema = {
-                        type: "boolean",
-                        format: "checkbox",
-                        title: "Type: boolean"
-                    };
-                }
+                var inputName = arg.name;
+                delete arg.name;
+                arg.title = "Type: " + arg.type;
+                
+                // var valueSchema = null;
+                // if (pythonType === "string") {
+                //     valueSchema = {
+                //         type: "string",
+                //         title: "Type: string"
+                //     };
+                // }
+                // else if (pythonType === "integer") {
+                //     valueSchema = {
+                //         type: "integer",
+                //         title: "Type: integer"
+                //     };
+                // }
+                // else if (pythonType === "number") {
+                //     valueSchema = {
+                //         type: "number",
+                //         title: "Type: float"
+                //     };
+                // }
+                // else if (pythonType === "boolean") {
+                //     valueSchema = {
+                //         type: "boolean",
+                //         format: "checkbox",
+                //         title: "Type: boolean"
+                //     };
+                // }
 
-                subSchema.properties[arg.name] = {
+                subSchema.properties[inputName] = {
                     type: "object",
-                    title: "Input " + (index+1) + ": " + arg.name,
+                    title: "Input " + (index+1) + ": " + inputName,
                     propertyOrder: index,
                     options: {
                         disable_collapse: true
                     },
                     properties: {
-                        value: valueSchema,
+                        value: _.cloneDeep(arg),
                         key: { // This is hidden since it should not be modified by user
                             type: "string",
-                            default: arg.name,
+                            default: inputName,
                             options: {
                                 hidden: true
                             }
                         },
                         format: { // This is hidden since it should not be modified by user
                             type: "string",
-                            default: pythonType,
+                            default: arg.type,
                             options: {
                                 hidden: true
                             }

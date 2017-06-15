@@ -29,8 +29,6 @@ def __format_app_action_api(api):
         for arg in api['parameters']:
             if data_in and arg['name'] == data_in:
                 continue
-            arg = dict(arg)
-            arg.pop('name')
             args.append(arg)
     ret['args'] = args
     return ret
