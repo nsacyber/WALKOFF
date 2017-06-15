@@ -14,7 +14,7 @@ class Main(App):
 
     def connect(self):
         url = self.base_url + "/services/auth/login"
-        payload = {'username': self.get_device().username, 'password': self.get_device().get_password()}
+        payload = {'username': self.device.username, 'password': self.device.get_password()}
         headers = {'content-type': 'application/json'}
         r = self.s.post(url, data=payload, verify=False, headers=headers)
 

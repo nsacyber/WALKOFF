@@ -74,7 +74,7 @@ class App(object):
         return _App.get_device(self.app, self.device)
 
     def shutdown(self):
-        """ When implemented, this menthod performs shutdown procedures for the app """
+        """ When implemented, this method performs shutdown procedures for the app """
         pass
 
 
