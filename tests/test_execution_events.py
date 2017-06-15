@@ -93,7 +93,7 @@ class TestExecutionEvents(unittest.TestCase):
         c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
 
         filter_sub = Subscription(events=['Filter Success', 'Filter Error'])
-        flag_sub = Subscription(events=['Flag Arguments Valid', 'Flag Arguments Invalid'], subscriptions={'length': filter_sub})
+        flag_sub = Subscription(events=['Flag Success', 'Flag Error'], subscriptions={'length': filter_sub})
         next_sub = Subscription(events=['Next Step Taken', 'Next Step Not Taken'], subscriptions={'regMatch': flag_sub})
         step_sub = Subscription(events=["Function Execution Success", "Input Validated", "Conditionals Executed"],
                                 subscriptions={'1': next_sub})
@@ -122,8 +122,7 @@ class TestExecutionEvents(unittest.TestCase):
         c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         filter_sub = Subscription(events=['Filter Error'])
-        flag_sub = Subscription(events=['Flag Arguments Valid',
-                                        'Flag Arguments Invalid'], subscriptions={'length': filter_sub})
+        flag_sub = Subscription(events=['Flag Success', 'Flag Error'], subscriptions={'length': filter_sub})
         next_sub = Subscription(events=['Next Step Taken',
                                         'Next Step Not Taken'],
                                 subscriptions={'regMatch': flag_sub})
@@ -140,8 +139,8 @@ class TestExecutionEvents(unittest.TestCase):
                                                                   'Conditionals Executed'],
                                                             next_step=['Next Step Taken',
                                                                        'Next Step Not Taken'],
-                                                            flag=['Flag Arguments Valid',
-                                                                  'Flag Arguments Invalid'],
+                                                            flag=['Flag Success',
+                                                                  'Flag Error'],
                                                             filter=['Filter Error'])
         case_subscription.set_subscriptions(
             {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,

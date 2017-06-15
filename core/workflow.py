@@ -268,7 +268,7 @@ class Workflow(ExecutionElement):
             callbacks.StepExecutionSuccess.send(self)
         except Exception as e:
             callbacks.StepExecutionError.send(
-                self, data=json.dumps({"step": {"app": step.app, "action": step.action, "name": step.name}}))
+                step, data=json.dumps({"step": {"app": step.app, "action": step.action, "name": step.name}}))
             error_flag = True
             step.output = 'error: {0}'.format(str(e))
             self.accumulated_risk += float(step.risk) / self.total_risk

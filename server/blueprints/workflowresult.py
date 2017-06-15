@@ -74,7 +74,6 @@ WorkflowShutdown.connect(__workflow_ended_callback)
 
 FunctionExecutionSuccess.connect(__step_ended_callback)
 StepExecutionError.connect(__step_error_callback)
-StepInputInvalid.connect(__step_error_callback)
 
 @workflowresults_page.route('/stream', methods=['GET'])
 # @auth_token_required

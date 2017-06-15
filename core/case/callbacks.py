@@ -112,12 +112,6 @@ WorkflowExecutionStart, __workflow_execution_start_callback = __construct_loggin
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
                                                                                  'App Instance Created',
                                                                                  'New app instance created')
-StepExecutionSuccess, __step_execution_success_callback = __construct_logging_signal('Workflow',
-                                                                                     'Step Execution Success',
-                                                                                     'Step executed successfully')
-StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Workflow',
-                                                                                 'Step Execution Error',
-                                                                                 'Step executed with error')
 NextStepFound, __next_step_found_callback = __construct_logging_signal('Workflow', 'Next Step Found', 'Next step found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
@@ -129,7 +123,12 @@ WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Wor
 FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Step',
                                                                                     'Function Execution Success',
                                                                                     'Function executed successfully')
-
+StepExecutionSuccess, __step_execution_success_callback = __construct_logging_signal('Step',
+                                                                                     'Step Execution Success',
+                                                                                     'Step executed successfully')
+StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Step',
+                                                                                 'Step Execution Error',
+                                                                                 'Step executed with error')
 StepInputValidated, __step_input_validated_callback = __construct_logging_signal('Step',
                                                                                  'Input Validated',
                                                                                  'Input successfully validated')
@@ -149,12 +148,10 @@ NextStepNotTaken, __next_step_not_taken_callback = __construct_logging_signal('N
                                                                               'Next step not taken')
 
 # Flag callbacks
-FlagArgsValid, __flag_args_valid_callback = __construct_logging_signal('Flag',
-                                                                       'Flag Arguments Valid',
-                                                                       'Flag arguments valid')
-FlagArgsInvalid, __flag_args_invalid_callback = __construct_logging_signal('Flag',
-                                                                           'Flag Arguments Invalid',
-                                                                           'Flag arguments invalid')
+FlagSuccess, __flag_success_callback = __construct_logging_signal('Flag',
+                                                                  'Flag Success',
+                                                                  'Flag executed without error')
+FlagError, __flag_error_callback = __construct_logging_signal('Flag', 'Flag Error', 'Flag executed with error')
 
 # Filter callbacks
 FilterSuccess, __filter_success_callback = __construct_logging_signal('Filter', 'Filter Success', 'Filter success')

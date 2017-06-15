@@ -54,19 +54,20 @@ class Flag(ExecutionElement):
         try:
             args = deepcopy(self.args)
             data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
-            callbacks.FlagArgsValid.send(self)
+            callbacks.FlagSuccess.send(self)
             logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
             args.update({self.data_in_api['name']: data})
             return get_flag(self.action)(**args)
         except InvalidInput as e:
             logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
                          'Returning False'.format(self.action, data_in, data, str(e)))
-            callbacks.FlagArgsInvalid.send(self)
+            callbacks.FlagError.send(self)
             return False
         except Exception as e:
             logger.error('Error encountered executing '
                          'flag {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action, self.args, data, str(e)))
+            callbacks.FlagError.send(self)
             return False
 
     def as_json(self, with_children=True):

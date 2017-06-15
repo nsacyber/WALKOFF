@@ -13,8 +13,6 @@
   "workflow": [
     "Workflow Execution Start",
     "App Instance Created",
-    "Step Execution Success",
-    "Step Execution Error",
     "Next Step Found",
     "Workflow Shutdown"
   ],
@@ -22,15 +20,17 @@
     "Function Execution Success",
     "Input Validated",
     "Input Invalid",
-    "Conditionals Executed"
+    "Conditionals Executed",
+    "Step Execution Success",
+    "Step Execution Error"
   ],
   "nextstep": [
     "Next Step Taken",
     "Next Step Not Taken"
   ],
   "flag": [
-    "Flag Arguments Valid",
-    "Flag Arguments Invalid"
+    "Flag Success",
+    "Flag Error"
   ],
   "filter": [
     "Filter Success",

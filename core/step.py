@@ -10,7 +10,7 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml
+from core.helpers import get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml, InvalidInput
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -181,6 +181,10 @@ class Step(ExecutionElement):
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
             callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+        except InvalidInput as e:
+            logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
+            callbacks.StepInputInvalid.send(self)
+            raise
         except Exception as e:
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
             raise
