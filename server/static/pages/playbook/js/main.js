@@ -130,9 +130,10 @@ $(function(){
             };
 
             _.each(args, function(arg, index) {
-                var inputName = arg.name;
-                delete arg.name;
-                arg.title = "Type: " + arg.type;
+                var input = _.cloneDeep(arg);
+                var inputName = input.name;
+                delete input.name;
+                input.title = "Type: " + input.type;
                 
                 // var valueSchema = null;
                 // if (pythonType === "string") {
@@ -169,7 +170,7 @@ $(function(){
                         disable_collapse: true
                     },
                     properties: {
-                        value: _.cloneDeep(arg),
+                        value: input,
                         key: { // This is hidden since it should not be modified by user
                             type: "string",
                             default: inputName,
@@ -179,7 +180,7 @@ $(function(){
                         },
                         format: { // This is hidden since it should not be modified by user
                             type: "string",
-                            default: arg.type,
+                            default: input.type,
                             options: {
                                 hidden: true
                             }
