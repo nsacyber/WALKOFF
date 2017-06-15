@@ -42,6 +42,7 @@ class Workflow(ExecutionElement):
         self.is_paused = False
         self.executor = None
         self.breakpoint_steps = []
+        self.accumulator = {}
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Workflow object. This is needed in case a workflow and/or playbook is renamed.
@@ -199,7 +200,6 @@ class Workflow(ExecutionElement):
         total_steps = []
         steps = self.__steps(start=start)
         first = True
-        output = None
         previous_step_output = None
         for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.ancestry))
@@ -229,9 +229,9 @@ class Workflow(ExecutionElement):
                 error_flag = self.__execute_step(step, instances[step.device], previous_step_output)
                 total_steps.append(step)
                 steps.send(error_flag)
-                output = step.output
-                previous_step_output = output
-        self.__shutdown(instances, output)
+                self.accumulator[step.name] = step.output
+                previous_step_output = step.output
+        self.__shutdown(instances)
         yield
 
     def __steps(self, start):
@@ -289,7 +289,7 @@ class Workflow(ExecutionElement):
                 return child_step_generator, child_next, child_name
         return None, None
 
-    def __shutdown(self, instances, result):
+    def __shutdown(self, instances):
         # Upon finishing shuts down instances
         for instance in instances:
             try:
@@ -298,18 +298,15 @@ class Workflow(ExecutionElement):
             except Exception as e:
                 logger.error('Error caught while shutting down app instance. '
                              'Device: {0}. Error {1}'.format(instance, e))
-        if result is not None:
-            if not isinstance(result, str):
-                try:
-                    result = json.dumps(result)
-                except Exception as e:
-                    logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
-                    result = 'error: could not convert'
-            callbacks.WorkflowShutdown.send(self, data=result)
-            logger.info('Workflow {0} completed. Result: {1}'.format(self.name, result))
-        else:
-            callbacks.WorkflowShutdown.send(self)
-            logger.info('Workflow {0} completed. No result'.format(self.name))
+        result_str = {}
+        for step, step_result in self.accumulator.items():
+            try:
+                result_str[step] = json.dumps(step_result)
+            except Exception as e:
+                logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
+                result_str[step] = 'error: could not convert to JSON'
+        callbacks.WorkflowShutdown.send(self, data=self.accumulator)
+        logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self.accumulator))
 
     def get_cytoscape_data(self):
         """Gets the cytoscape data for the Workflow object.

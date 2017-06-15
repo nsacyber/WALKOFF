@@ -1,6 +1,7 @@
 from core.case.callbacks import WorkflowShutdown
 from collections import deque
 from datetime import datetime
+import json
 
 max_results = 50
 
@@ -19,8 +20,6 @@ def __workflow_ended_callback(sender, **kwargs):
     data = 'None'
     if 'data' in kwargs:
         data = kwargs['data']
-        if not isinstance(data, str):
-            data = str(data)
     results.append({'name': sender.name,
                     'timestamp': str(datetime.utcnow()),
                     'result': data})

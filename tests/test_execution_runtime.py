@@ -2,7 +2,7 @@ from datetime import datetime
 import unittest
 from os import mkdir
 from os.path import isdir
-
+import json
 from core.config.paths import profile_visualizations_path
 from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
 from tests import config
@@ -61,10 +61,11 @@ class TestExecutionRuntime(unittest.TestCase):
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
+            result = json.loads(step['data'])
             if type(name_result[name]) == dict:
-                self.assertDictEqual(step['data']['result'], name_result[name])
+                self.assertDictEqual(result['result'], name_result[name])
             else:
-                self.assertEqual(step['data']['result'], name_result[name])
+                self.assertEqual(result['result'], name_result[name])
 
     """
         Tests the calling of nested workflows
@@ -94,10 +95,11 @@ class TestExecutionRuntime(unittest.TestCase):
             ancestry = step['ancestry'].split(',')
             name_id = (ancestry[-2], ancestry[-1])
             self.assertIn(name_id, name_result)
+            result = json.loads(step['data'])
             if type(name_result[name_id]) == dict:
-                self.assertDictEqual(step['data']['result'], name_result[name_id])
+                self.assertDictEqual(result['result'], name_result[name_id])
             else:
-                self.assertEqual(step['data']['result'], name_result[name_id])
+                self.assertEqual(result['result'], name_result[name_id])
 
     """
         Tests a workflow that loops a few times
@@ -133,4 +135,5 @@ class TestExecutionRuntime(unittest.TestCase):
             for step in steps:
                 name = step['ancestry'].split(',')
                 if name == step_name:
-                    self.assertEqual(step['data']['result'], output)
+                    result = json.loads(step['data'])
+                    self.assertEqual(result['result'], output)

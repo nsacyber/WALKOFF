@@ -242,10 +242,10 @@ class TestCaseDatabase(unittest.TestCase):
         events = case_database.case_db.session.query(case_database.Event).all()
         event_json_list = [event.as_json() for event in events]
 
-        input_output = {'message1': '',
+        input_output = {'message1': None,
                         'message2': 'some_string',
                         'message3': 6,
-                        'message4': event4_data}
+                        'message4': json.dumps(event4_data)}
 
         self.assertEqual(len(event_json_list), len(list(input_output.keys())))
         for event in event_json_list:

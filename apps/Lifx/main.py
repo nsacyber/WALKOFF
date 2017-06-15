@@ -18,13 +18,11 @@ class Main(App):
     """
 
     def __init__(self, name=None, device=None):
-        print('initializing')
         App.__init__(self, name, device)  # Required to call superconstructor
         self.headers = {"Authorization": "Bearer {0}".format(self.get_device().get_password())}
         self.name = self.get_device().username
 
         self.base_url = 'https://api.lifx.com/v1/lights'
-        print('initialized')
 
     def __api_url(self, endpoint, act_on_all=False):
         if act_on_all:

@@ -205,11 +205,15 @@ class CaseDatabase(object):
             event (cls): A core.case.callbacks._EventEntry object to add to the cases
             cases (list[str]): The cases to add the event to
         """
+        try:
+            data = json.dumps(event.data)
+        except:
+            data = 'Error: not a JSON-able object'
         event_log = Event(type=event.type,
                           timestamp=event.timestamp,
                           ancestry=','.join(map(str, event.ancestry)),
                           message=event.message,
-                          data=event.data)
+                          data=data)
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
