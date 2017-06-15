@@ -49,13 +49,6 @@ actions:
             status:
               type: string
               description: The status of the operation
-  list lights:
-    run: list_lights
-    description: Lists the various lights
-    returns:
-      Success:
-        schema:
-          type: object
   toggle power:
     run: toggle_power
     description: Turns the light on and off
@@ -66,6 +59,10 @@ actions:
         minimum: 0.0
         maximum: 3155760000.0
         default: 1.0
+      - name: wait
+        description: Should the workflow wait for the effect to complete?
+        type: boolean
+        default: false
     returns:
       Success:
         schema:
@@ -80,6 +77,7 @@ actions:
             status:
               type: string
               description: The status of the operation
+              enum: [ok, offline, timed_out]
   breathe:
     run: breathe_effect
     description: Slowly transitions between two colors
@@ -116,6 +114,10 @@ actions:
         minimum: 0.0
         maximum: 1.0
         default: 0.5
+      - name: wait
+        description: Should the workflow wait for the effect to complete?
+        type: boolean
+        default: false
     returns:
       Success:
         schema:
@@ -130,6 +132,7 @@ actions:
             status:
               type: string
               description: The status of the operation
+              enum: [ok, offline, timed_out]
   pulse:
     run: pulse_effect
     description: Swicthes between two colors
@@ -160,6 +163,10 @@ actions:
         description: If true, turn the bulb on if it is not already on.
         type: boolean
         default: true
+      - name: wait
+        description: Should the workflow wait for the effect to complete?
+        type: boolean
+        default: false
     returns:
       Success:
         schema:
@@ -174,3 +181,4 @@ actions:
             status:
               type: string
               description: The status of the operation
+              enum: [ok, offline, timed_out]

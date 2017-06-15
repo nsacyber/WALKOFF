@@ -219,6 +219,15 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
         inputs = {'name1': 'test', 'name2': '5'}
+        expected = {'name1': 'test', 'name2': 5, 'name3': None}
+        self.assertAlmostEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+
+    def test_validate_parameters_missing_required_without_default(self):
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
+        inputs = {'name1': 'test', 'name2': '5'}
         with self.assertRaises(InvalidInput):
             validate_parameters(parameter_apis, inputs, self.message)
 

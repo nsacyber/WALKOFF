@@ -303,7 +303,6 @@ def validate_parameters(api, inputs, message_prefix):
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
-
             converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
         elif 'default' in param_api:
             try:
@@ -316,10 +315,13 @@ def validate_parameters(api, inputs, message_prefix):
 
             converted[param_name] = default_param
             input_set.add(param_name)
-        else:
+        elif 'required' in param_api:
             message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
             logger.error(message)
             raise InvalidInput(message)
+        else:
+            converted[param_name] = None
+            input_set.add(param_name)
         seen_params.add(param_name)
     if seen_params != input_set:
         message = 'For {0}: Too many inputs. Extra inputs: {1}'.format(message_prefix, input_set - seen_params)
