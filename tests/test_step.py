@@ -481,7 +481,7 @@ class TestStep(unittest.TestCase):
             Step.from_json(self.basic_input_json, {})
 
     def test_from_json_with_position(self):
-        step = Step.from_json(self.basic_input_json, {'x': '125.3', 'y': '198.7'})
+        step = Step.from_json(self.basic_input_json, {'x': 125.3, 'y': 198.7})
         self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '',
                             {}, [], [], ['', ''], [], position={'x': '125.3', 'y': '198.7'})
 

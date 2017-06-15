@@ -337,7 +337,7 @@ class Step(ExecutionElement):
                     risk=risk,
                     inputs=json_in['input'],
                     parent_name=parent_name,
-                    position=position,
+                    position={key: str(value) for key, value in position.items()},
                     widgets=widgets,
                     ancestry=ancestry)
         if json_in['next']:
