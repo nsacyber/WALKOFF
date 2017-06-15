@@ -28,6 +28,10 @@ threading_is_initialized = False
 
 logger = logging.getLogger(__name__)
 
+WORKFLOW_RUNNING = 1
+WORKFLOW_PAUSED = 2
+WORKFLOW_COMPLETED = 4
+
 
 def initialize_threading():
     """Initializes the threadpool.
@@ -59,18 +63,19 @@ def shutdown_pool():
     logger.debug('Controller thread pool shutdown')
 
 
-def execute_workflow_worker(workflow, subs, start=None):
+def execute_workflow_worker(workflow, subs, uid, start=None):
     """Executes the workflow in a multi-threaded fashion.
     
     Args:
         workflow (Workflow): The workflow to be executed.
-        start (str, otpional): Name of the first step to be executed in the workflow.
+        start (str, optional): Name of the first step to be executed in the workflow.
         subs (Subscription): The current subscriptions. This is necessary for resetting the subscriptions.
         
     Returns:
         "Done" when the workflow has finished execution.
     """
     subscription.set_subscriptions(subs)
+    workflow.uid = uid
     if start is not None:
         workflow.execute(start=start)
     else:
@@ -88,6 +93,7 @@ class Controller(object):
         """
         self.name = name
         self.workflows = {}
+        self.workflow_status = {}
         self.load_all_workflows_from_directory(path=workflows_path)
         self.instances = {}
         self.tree = None
@@ -99,7 +105,14 @@ class Controller(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
-        self.paused_workflows = {}
+
+        def workflow_completed_callback(sender, **kwargs):
+            self.__workflow_completed_callback(sender, **kwargs)
+        callbacks.WorkflowShutdown.connect(workflow_completed_callback)
+
+    def __workflow_completed_callback(self, sender, **kwargs):
+        if sender.uuid in self.workflow_status:
+            self.workflow_status[sender.uuid] = WORKFLOW_COMPLETED
 
     def reconstruct_ancestry(self):
         """Reconstructs the ancestry list field of a workflow in case it changes.
@@ -364,19 +377,22 @@ class Controller(object):
         if key in self.workflows:
             workflow = self.workflows[key]
             subs = deepcopy(subscription.subscriptions)
-
+            uid = uuid.uuid4().hex
             # If threading has not been initialized, initialize it.
             if not threading_is_initialized:
                 initialize_threading()
             if start is not None:
                 logger.info('Executing workflow {0} for step {1}'.format(key, start))
-                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, start))
+                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid, start=start))
             else:
                 logger.info('Executing workflow {0} with default starting step'.format(key, start))
-                workflows.append(pool.submit(execute_workflow_worker, workflow, subs))
+                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid))
             callbacks.SchedulerJobExecuted.send(self)
+            self.workflow_status[uid] = WORKFLOW_RUNNING
+            return uid
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
+            return None
 
     def get_workflow(self, playbook_name, workflow_name):
         """Get a workflow object.
@@ -457,24 +473,19 @@ class Controller(object):
         for workflow in [workflow.workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
             self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
 
-    def pause_workflow(self, playbook_name, workflow_name):
+    def pause_workflow(self, playbook_name, workflow_name, uid):
         """Pauses a workflow that is currently executing.
         
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
-            
-        Returns:
-            A randomly-generated key that needs to be used in order to resume the workflow. This feature is added for
-            security purposes.
+            uid (str): The uid of the workflow
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        wf_key = _WorkflowKey(playbook_name, workflow_name)
-        self.paused_workflows[wf_key] = uuid.uuid4()
-        if workflow:
+        if workflow and uid in self.workflow_status and self.workflow_status[uid] == WORKFLOW_RUNNING:
             logger.info('Pausing workflow {0}'.format(workflow.name))
             workflow.pause()
-        return self.paused_workflows[wf_key].hex
+            self.workflow_status[uid] = WORKFLOW_PAUSED
 
     def resume_workflow(self, playbook_name, workflow_name, validate_uuid):
         """Resumes a workflow that has been paused.
@@ -489,11 +500,11 @@ class Controller(object):
             "Success" if it is successful, or other error messages.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        wf_key = _WorkflowKey(playbook_name, workflow_name)
         if workflow:
-            if validate_uuid == self.paused_workflows[wf_key].hex:
+            if validate_uuid in self.workflow_status and self.workflow_status[validate_uuid] == WORKFLOW_PAUSED:
                 logger.info('Resuming workflow {0}'.format(workflow.name))
                 workflow.resume()
+                self.workflow_status[validate_uuid] = WORKFLOW_RUNNING
                 return True
             else:
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))

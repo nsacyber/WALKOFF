@@ -72,8 +72,6 @@ WorkflowUpdate:
         type: string
       options:
         type: object
-ResumeWorkflow:
-    type: string
 
 Error:
   type: object

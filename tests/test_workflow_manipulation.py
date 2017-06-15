@@ -210,15 +210,15 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.workflow'))
 
         waiter = Event()
-
+        uid = None
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
                 waiter.set()
 
         def pause_resume_thread():
-            uuid = self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow')
+            self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
             gevent.sleep(1.5)
-            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uuid)
+            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
 
         def step_1_about_to_begin_listener(sender, **kwargs):
             if sender.name == '1':
@@ -228,7 +228,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         StepInputValidated.connect(step_1_about_to_begin_listener)
 
         start = default_timer()
-        self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
         waiter.wait(timeout=5)
         duration = default_timer() - start
         self.assertTrue(2.5 < duration < 5)
@@ -239,7 +239,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.workflow'))
 
         waiter = Event()
-
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
                 waiter.set()

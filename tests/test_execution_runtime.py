@@ -121,7 +121,7 @@ class TestExecutionRuntime(unittest.TestCase):
             waiter.set()
 
         WorkflowShutdown.connect(wait_for_shutdown)
-        spawn(self.controller.execute_workflow('loopWorkflow', 'loopWorkflow'))
+        self.controller.execute_workflow('loopWorkflow', 'loopWorkflow')
         shutdown_pool()
         steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
 

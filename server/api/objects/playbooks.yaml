@@ -200,3 +200,11 @@ WorkflowFromCytoscape:
       example: step1
     cytoscape:
       type: object
+
+WorkflowId:
+  type: object
+  required: [id]
+  properties:
+    id:
+      type: string
+      description: 32-byte hexidecimal string representing the ID of the workflow

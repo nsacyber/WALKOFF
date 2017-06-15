@@ -437,9 +437,9 @@ def execute_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             write_playbook_to_file(playbook_name)
-            running_context.controller.execute_workflow(playbook_name, workflow_name)
+            uid = running_context.controller.execute_workflow(playbook_name, workflow_name)
             current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {}, SUCCESS_ASYNC
+            return {'id': uid}, SUCCESS_ASYNC
         else:
             current_app.logger.error(
                 'Cannot execute workflow {0}-{1}. Does not exist in controller'.format(playbook_name,
@@ -455,9 +455,9 @@ def pause_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            uuid = running_context.controller.pause_workflow(playbook_name, workflow_name)
+            running_context.controller.pause_workflow(playbook_name, workflow_name)
             current_app.logger.info('Paused workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {"uuid": uuid}, SUCCESS
+            return SUCCESS
         else:
             current_app.logger.error('Cannot pause workflow '
                                      '{0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))

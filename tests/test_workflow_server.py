@@ -789,9 +789,10 @@ class TestWorkflowServer(ServerTestCase):
 
         WorkflowShutdown.connect(wait_for_completion)
 
-        self.post_with_status_check('/playbooks/test/workflows/helloWorldWorkflow/execute',
+        response = self.post_with_status_check('/playbooks/test/workflows/helloWorldWorkflow/execute',
                                     headers=self.headers,
                                     status_code=SUCCESS_ASYNC)
+        self.assertIn('id', response)
         sync.wait(timeout=10)
         steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
@@ -819,9 +820,10 @@ class TestWorkflowServer(ServerTestCase):
         workflow_name = helpers.construct_workflow_name_key('basicWorkflow', 'test_name')
         setup_subscriptions_for_step(workflow_name, ['start'])
         start = datetime.utcnow()
-        self.post_with_status_check('/playbooks/basicWorkflow/workflows/test_name/execute',
+        response = self.post_with_status_check('/playbooks/basicWorkflow/workflows/test_name/execute',
                                     headers=self.headers,
                                     status_code=SUCCESS_ASYNC)
+        self.assertIn('id', response)
         sync.wait(timeout=10)
         steps = executed_steps('defaultController', workflow_name, start, datetime.utcnow())
         self.assertEqual(len(steps), 1)
