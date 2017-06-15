@@ -195,10 +195,11 @@ class Step(ExecutionElement):
         if self.validate_input():
             callbacks.StepInputValidated.send(self)
             result = load_app_function(instance, self.__lookup_function())(args=self.input)
-            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+
             for widget in self.widgets:
                 get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
             self.output = result
+            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
             logger.debug('Step {0} executed successfully'.format(self.ancestry))
             return result
         else:

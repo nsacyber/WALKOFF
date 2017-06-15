@@ -75,6 +75,9 @@
                 height: 100%;
                 width: 300px;
             }
+            .tab-content div{
+                max-height:700px;
+            }
             #workflows{
                 min-height: 200px;
                 max-height: 500px; /* == 700 minus 42 (where 42 is the height of the tab) */
@@ -82,7 +85,7 @@
                 width:100%;
             }
             #actions{
-                height: 700; /* == 700 minus 42 (where 42 is the height of the tab) */
+                height: 100%; /* == 700 minus 42 (where 42 is the height of the tab) */
                 overflow-y:scroll;
                 width:100%;
             }
@@ -126,7 +129,6 @@
                 background-color:#f5f5f5;
             }
             button, input, select, textarea {
-              background-color: #45AA3B;
               color: #fff;
               /*margin-top: 20px;*/
               font-weight: bold;
@@ -152,6 +154,21 @@
             .ui-dialog {
                 z-index: 1051;
             }
+            #executionModal{
+                text-align:center;
+                overflow:hidden;
+            }
+            #executionTextArea{
+                width:100%;
+                height:70%;
+                margin-right:10px;
+                margin-left:10px;
+
+            }
+            #resetGraphButton{
+
+            }
+
         </style>
 
 
@@ -212,30 +229,36 @@
                         <i class="fa fa-paste"></i>
                     </button>
                 </div>
+                <div class=btn-group role=group>
+                    <button id="execute-button" type=button class="btn btn-default" data-toggle="tooltip" title="Execute Workflow">
+                        <i class="fa fa-play-circle"></i>
+                    </button>
+                </div>
                 <label id="currentWorkflowText"></label>
             </div>
 
             <div id="top">
-                <div id="palette">
-                    <!--<ul class="nav nav-tabs">
-                        <li class="active"><a id="workflows-tab" href="#workflows">Workflows</a></li>
-                        <li><a href="#actions">Actions</a></li>
-                    </ul>-->
-                    <!--<div class="tab-content">-->
-                        <!--<div id="workflows" class="tab-pane fade in active">
-                        </div>-->
-                    <!--<div id="actions" class="tab-pane fade">
-                    </div>-->
-                    <!--</div>-->
-                    <div id="actions"></div>
-                </div>
+
                 <div id="playbookEditorTabs">
                     <ul class="nav nav-tabs">
                         <li id="cyTab" class="active"><a href="#graphEditor">Graphical Editor</a></li>
                         <li id="cyJsonTab"><a href="#cyJson">JSON</a></li>
                     </ul>
 
-                    <div id="graphEditor">
+                    <div id="graphEditor" class="tab-content">
+                        <div id="palette">
+                            <!--<ul class="nav nav-tabs">
+                                <li class="active"><a id="workflows-tab" href="#workflows">Workflows</a></li>
+                                <li><a href="#actions">Actions</a></li>
+                            </ul>-->
+                            <!--<div class="tab-content">-->
+                                <!--<div id="workflows" class="tab-pane fade in active">
+                                </div>-->
+                            <!--<div id="actions" class="tab-pane fade">
+                            </div>-->
+                            <!--</div>-->
+                            <div id="actions"></div>
+                        </div>
                         <div id="cy" tabindex="0">
                         </div>
                         <div id="parametersBar" tabindex="0">
@@ -245,7 +268,7 @@
                     </div>
 
 
-                    <div id="cyJson">
+                    <div id="cyJson" class="tab-content">
                         <textarea id="cy-json-data"></textarea>
                     </div>
 
@@ -302,6 +325,20 @@
                         </div>-->
                     </div>
                 </div>
+            </div>
+
+            <div id="executionModal" class="hidden">
+                <table class="table table-bordered table-hover executionTable">
+                    <thead>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Input</th>
+                        <th>Result</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <button id="resetGraphBtn"> Reset Graph </button>
             </div>
 
             <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
