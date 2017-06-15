@@ -26,13 +26,16 @@ class Main(App):
         self.base_url = 'https://api.lifx.com/v1/lights'
         print('initialized')
 
-    def __api_url(self, endpoint):
-        return '{0}/label:{1}/{2}'.format(self.base_url, self.name, endpoint)
+    def __api_url(self, endpoint, act_on_all=False):
+        if act_on_all:
+            return '{0}/all/{2}'
+        else:
+            return '{0}/label:{1}/{2}'.format(self.base_url, self.name, endpoint)
 
     @action
     def list_lights(self):
-        response = requests.get(self.__api_url('all'), headers=self.headers)
-        return json.loads(response.text)
+        response = requests.get(self.__api_url('', act_on_all=True), headers=self.headers)
+        return response.text
 
     @action
     def set_state(self, power, color, brightness, duration, infrared):

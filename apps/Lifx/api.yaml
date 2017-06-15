@@ -8,6 +8,13 @@ info:
   license:
     name: Creative Commons
 actions:
+  list lights:
+    run: list_lights
+    description: gets the status of all lights
+    returns:
+      Success:
+        schema:
+          type: object
   set state:
     run: set_state
     description: Sets the state of the light
