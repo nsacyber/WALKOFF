@@ -837,7 +837,7 @@ $(function(){
 
         currentPlaybook = playbookName;
         currentWorkflow = workflowName;
-        $("#currentWorkflowText").text(currentWorkflow);
+        $("#currentWorkflowText").text(currentPlaybook + " - " + currentWorkflow);
 
         var workflowData = function () {
             var tmp = null;
