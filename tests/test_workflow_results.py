@@ -1,23 +1,22 @@
-import unittest
 from core.helpers import construct_workflow_name_key
 from server import flaskserver
 import server.workflowresults
 from tests import config
-from tests.util.assertwrappers import orderless_list_compare
+from tests.util.servertestcase import ServerTestCase
 
-
-class TestWorkflowResults(unittest.TestCase):
+class TestWorkflowResults(ServerTestCase):
     def setUp(self):
         server.workflowresults.results.clear()
 
     def test_workflow_result_recording(self):
+        print(server.workflowresults.results)
         flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.workflow')
         multiaction_key = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-
         with flaskserver.running_context.flask_app.app_context():
             flaskserver.running_context.shutdown_threads()
+        print(server.workflowresults.results)
         self.assertEqual(len(server.workflowresults.results), 1)
         key = server.workflowresults.results.keys()[0]
         self.assertIn('status', server.workflowresults.results[key])

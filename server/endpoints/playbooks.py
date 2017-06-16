@@ -528,12 +528,15 @@ def add_default_template(playbook_name, workflow_name):
                                                              workflow_name=workflow_name)
 
 
-def read_all_results():
+def read_results():
     ret = []
     for workflow_uuid, result in server.workflowresults.results.items():
         if result['status'] == 'completed':
-            print({'name': result['name'], 'timestamp': result['completed_at'], 'result': result['results']})
             ret.append({'name': result['name'],
                         'timestamp': result['completed_at'],
                         'result': json.dumps(result['results'])})
     return ret, SUCCESS
+
+
+def read_all_results():
+    return server.workflowresults.results, SUCCESS

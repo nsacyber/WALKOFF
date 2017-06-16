@@ -9,12 +9,12 @@ import server.flaskserver
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
 
+
 class ServerTestCase(unittest.TestCase):
     test_workflows_path = tests.config.test_workflows_path_with_generated
 
     @classmethod
     def setUpClass(cls):
-        #core.config.config.initialize()
         if cls != ServerTestCase and cls.setUp != ServerTestCase.setUp:
             original_setup = cls.setUp
 

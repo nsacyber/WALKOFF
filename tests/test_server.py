@@ -11,23 +11,6 @@ from server.return_codes import *
 
 
 class TestServer(ServerTestCase):
-    def setUp(self):
-        config_fields = [x for x in dir(core.config.config) if
-                         not x.startswith('__') and type(getattr(core.config.config, x)).__name__
-                         in ['str', 'unicode']]
-        path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__')
-                                                             and type(getattr(core.config.paths, x)).__name__
-                                                             in ['str', 'unicode'])]
-        self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
-        self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
-
-    def preTearDown(self):
-        for key, value in self.original_paths.items():
-            setattr(core.config.paths, key, value)
-
-    def tearDown(self):
-        for key, value in self.original_configs.items():
-            setattr(core.config.config, key, value)
 
     def test_login(self):
         response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
@@ -102,8 +85,26 @@ class TestServer(ServerTestCase):
                            'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
         response = self.get_with_status_check('/apps/actions', headers=self.headers)
         orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
-        # for app, actions in expected_json.items():
-        #     orderless_list_compare(self, response[app], [actions)
+
+
+class TestConfiguration(ServerTestCase):
+    def setUp(self):
+        config_fields = [x for x in dir(core.config.config) if
+                         not x.startswith('__') and type(getattr(core.config.config, x)).__name__
+                         in ['str', 'unicode']]
+        path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__')
+                                                             and type(getattr(core.config.paths, x)).__name__
+                                                             in ['str', 'unicode'])]
+        self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
+        self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
+
+    def preTearDown(self):
+        for key, value in self.original_paths.items():
+            setattr(core.config.paths, key, value)
+
+    def tearDown(self):
+        for key, value in self.original_configs.items():
+            setattr(core.config.config, key, value)
 
     def test_get_configuration(self):
         config_fields = [x for x in dir(core.config.config) if

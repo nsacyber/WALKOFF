@@ -833,20 +833,35 @@ class TestWorkflowServer(ServerTestCase):
         result = json.loads(step['data'])
         self.assertEqual(result['result'], "REPEATING: Hello World")
 
-    # TODO: FixMe
-    # def test_read_all_results(self):
-    #     print('TESTESTETSTESTSTSTSTSTSTSTST')
-    #     server.workflowresults.results.clear()
-    #     print(server.flaskserver.running_context.controller.workflows.keys())
-    #     self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-    #     print(server.workflowresults.results)
-    #     self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-    #     print(server.workflowresults.results)
-    #     self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-    #     print(server.workflowresults.results)
-    #     response = self.get_with_status_check('/workflowresults', headers=self.headers)
-    #     self.assertIn('results', response)
-    #     self.assertEqual(len(response['results']), 3)
+    def test_read_results(self):
+        server.workflowresults.results.clear()
+        self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
 
-    #TODO: Ensure that saving a workflow with invalid app or action return 463
-    # TODO: Ensure that saving a workflow with invalid input return 463
+        with flask_server.running_context.flask_app.app_context():
+            flask_server.running_context.shutdown_threads()
+
+        response = self.get_with_status_check('/workflowresults', headers=self.headers)
+        self.assertEqual(len(response), 3)
+        for result in response:
+            self.assertIn('timestamp', result)
+            self.assertIn('result', result)
+            self.assertIn('name', result)
+
+    def test_read_all_results(self):
+        server.workflowresults.results.clear()
+        self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+
+        with flask_server.running_context.flask_app.app_context():
+            flask_server.running_context.shutdown_threads()
+
+        response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
+        self.assertEqual(len(response), 3)
+
+        for result in response.values():
+            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results'})
+            for step_result in result['results']:
+                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result'})
