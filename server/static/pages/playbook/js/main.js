@@ -1394,7 +1394,10 @@ $(function(){
             autoOpen: false,
             modal: false,
             title: "Execution Results",
-            width: 600
+            width: 600,
+            close: function(event, ui){
+                cy.elements().removeClass("good-highlighted bad-highlighted");
+            }
         });
 
         executionDialog.dialog( "open" );
