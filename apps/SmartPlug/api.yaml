@@ -1,0 +1,30 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: SmartPlug
+  description: A simple app to interact with a SmartPlug
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  get_state:
+    run: get_state
+    description: Gets the state of the SmartPlug ("ON", "OFF", "UNKNOWN")
+    returns:
+      Success:
+        schema:
+          type: string
+  turn_on:
+    run: turn_on
+    description: Turns on the SmartPlug
+  turn_off:
+    run: turn_off
+    description: Turns off the SmartPlug
+  on_since:
+    run: on_since
+    description: Get the time that the SmartPlug last turned on
+    returns:
+      Success:
+        schema:
+          type: string
