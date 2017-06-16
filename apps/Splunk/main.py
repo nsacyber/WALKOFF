@@ -1,56 +1,53 @@
 from apps import App, action
-from xml.dom import minidom
-import requests, json
+import splunklib.client as client
 
 
 class Main(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         self.device = self.get_device()
-        self.base_url = "https://" + self.device.ip + ":" + str(self.device.port)
-        self.s = requests.Session()
-        self.session_key = None
-        self.connect()
-
-    def connect(self):
-        url = self.base_url + "/services/auth/login"
-        payload = {'username': self.device.username, 'password': self.device.get_password()}
-        headers = {'content-type': 'application/json'}
-        r = self.s.post(url, data=payload, verify=False, headers=headers)
-
-        if 200 <= r.status_code <= 400:
-            self.session_key = minidom.parseString(r.text).getElementsByTagName('sessionKey')[0].childNodes[0].nodeValue
-
-        return json.dumps({"status": "connected"})
+        self.service = client.connect(host=self.device.ip, port=self.device.port, username=self.device.username,
+                                      password=self.device.get_password())
+        self.kwargs_create = {}
+        self.kwargs_results = {"output_mode":"json"}
 
     @action
-    def search(self, query, max_count, spawn_process, output_mode, exec_type):
+    def set_create_args(self, key, value):
+        self.kwargs_create[key] = value
 
-        if self.session_key:
-            if not query.startswith('search'):
-                query = ("search " + query)
+    @action
+    def set_results_args(self, key, value):
+        self.kwargs_results[key] = value
 
-            body = {"search": query}
-            if max_count:
-                body["max_count"] = max_count
+    @action
+    def clear_create_args(self):
+        self.kwargs_create.clear()
 
-            if spawn_process is not None:
-                body["spawn_process"] = spawn_process
+    @action
+    def clear_results_args(self):
+        self.kwargs_results.clear()
 
-            if output_mode:
-                body["output_mode"] = output_mode
+    @action
+    def search(self, query):
 
-            url = self.base_url + "/services/search/jobs"
-            if exec_type:
-                url = '{0}/{1}'.format(url, exec_type)
+        if not query.startswith('search'):
+            query = "search " + query
 
-            headers = {"Authorization": "Splunk " + self.session_key, 'content-type': 'application/json'}
+        job = self.service.jobs.create(query, **self.kwargs_create)
 
-            r = self.s.post(url, headers=headers, data=body, verify=False)
+        while True:
+            while not job.is_ready():
+                pass
+            if job['isDone'] == '1':
+                break
 
-            results = r.json()["results"]
+        res = job.results(**self.kwargs_results)
 
-            return results
+        results = res.read()
+
+        job.cancel()
+
+        return results
 
     def shutdown(self):
         print("Splunk Shutting Down")

@@ -96,7 +96,7 @@ def import_app_main(app_name, path=None, reload=False):
         imported_module = import_py_file(module_name, app_path)
         sys.modules[module_name] = imported_module
         return imported_module
-    except (ImportError, IOError, OSError) as e:
+    except (ImportError, IOError, OSError, SyntaxError) as e:
         logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, str(e)))
         pass
 
