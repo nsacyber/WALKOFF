@@ -78,13 +78,13 @@ class TestServer(ServerTestCase):
             'sub1_top_flag': {'args': []}}
         self.assertDictEqual(response, {'flags': expected})
 
-    def test_get_all_list_actions(self):
-        expected_reduced_json = {
-            'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
-            'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
-                           'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
-        response = self.get_with_status_check('/apps/actions', headers=self.headers)
-        orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
+    # def test_get_all_list_actions(self):
+    #     expected_reduced_json = {
+    #         'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
+    #         'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
+    #                        'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
+    #     response = self.get_with_status_check('/apps/actions', headers=self.headers)
+    #     orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
 
 
 class TestConfiguration(ServerTestCase):
