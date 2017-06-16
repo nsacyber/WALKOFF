@@ -364,8 +364,8 @@ $(function(){
     }
 
     // Revert changes to the parameters JSON object of previous function
-    function transformParametersFromSchema(parameters) {
-        parameters = _.cloneDeep(parameters);
+    function transformParametersFromSchema(_parameters) {
+        var parameters =  _.cloneDeep(_parameters);
 
         parameters.action = parameters.input.$action;
         delete parameters.input.$action;
@@ -396,7 +396,7 @@ $(function(){
         $("#parameters").empty();
 
         parameters = transformParametersToSchema(parameters);
-
+        
         //Omit the 'next' parameter, should only be edited when selecting an edge
         // var next = _.cloneDeep(parameters.next);
         // parameters = _.omit(parameters, ['next']);
@@ -766,8 +766,34 @@ $(function(){
         });
     }
 
+    function transformInputsToLoad(workflowData) {
+        _.each(workflowData.steps, function (step) {
+            step.data.parameters.input = _.reduce(step.data.parameters.input, function (result, inputValue, inputName) {
+                result[inputName] = {
+                    key: inputName,
+                    value: inputValue,
+                    format: _.find(appData[step.data.parameters.app].actions[step.data.parameters.action].args, function (arg) {
+                        return arg.name === inputName;
+                    }).type
+                }
+                return result;
+            }, {});
+        });
+    }
+
+    function transformInputsToSave(workflowData) {
+        _.each(workflowData, function (data) {
+            if (data.group === "edges") return;
+
+            data.data.parameters.input = _.reduce(data.data.parameters.input, function (result, inputData, inputName) {
+                result[inputName] = inputData.value;
+                return result;
+            }, {});
+        });
+    }
 
     function saveWorkflow(playbookName, workflowName, workflowData) {
+        transformInputsToSave(workflowData);
         var data = JSON.stringify({start: startNode, cytoscape: JSON.stringify(workflowData)});
         $.ajax({
             'async': false,
@@ -1024,6 +1050,8 @@ $(function(){
             }
             return value;
         });
+
+        transformInputsToLoad(workflowData);
 
         cy.add(steps);
 
