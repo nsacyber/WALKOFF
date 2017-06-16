@@ -172,6 +172,7 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
+
         callbacks.StepInputValidated.send(self)
         try:
             args = deepcopy(self.input)

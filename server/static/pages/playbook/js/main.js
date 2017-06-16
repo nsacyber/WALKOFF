@@ -867,7 +867,7 @@ $(function(){
 
         currentPlaybook = playbookName;
         currentWorkflow = workflowName;
-        $("#currentWorkflowText").text(currentWorkflow);
+        $("#currentWorkflowText").text(currentPlaybook + " - " + currentWorkflow);
 
         var workflowData = function () {
             var tmp = null;
@@ -1426,7 +1426,10 @@ $(function(){
             autoOpen: false,
             modal: false,
             title: "Execution Results",
-            width: 600
+            width: 600,
+            close: function(event, ui){
+                cy.elements().removeClass("good-highlighted bad-highlighted");
+            }
         });
 
         executionDialog.dialog( "open" );

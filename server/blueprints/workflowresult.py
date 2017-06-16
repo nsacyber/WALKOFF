@@ -42,6 +42,40 @@ def __workflow_ended_callback(sender, **kwargs):
     __sync_signal.clear()
 
 
+def __step_ended_callback(sender, **kwargs):
+    data = 'None'
+    step_input = str(sender.input)
+    if 'data' in kwargs:
+        data = kwargs['data']
+        if not isinstance(data, str):
+            data = str(data)
+    result = {'name': sender.name,
+              'type': "SUCCESS",
+              'input': step_input,
+              'result': data}
+    __workflow_step_event_json.set(json.dumps(result))
+    __step_signal.set()
+    __step_signal.clear()
+    sleep(1)
+
+
+def __step_error_callback(sender, **kwargs):
+    data = 'None'
+    step_input = str(sender.input)
+    if 'data' in kwargs:
+        data = kwargs['data']
+        if not isinstance(data, str):
+            data = str(data)
+    result = {'name': sender.name,
+              'type': "ERROR",
+              'input': step_input,
+              'result': data}
+    __workflow_step_event_json.set(json.dumps(result))
+    __step_signal.set()
+    __step_signal.clear()
+    sleep(1)
+
+
 @FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
@@ -79,5 +113,7 @@ def stream_workflow_success_events():
 
 
 @workflowresults_page.route('/stream-steps', methods=['GET'])
+# @auth_token_required
+# @roles_accepted(*running_context.user_roles['/playbooks'])
 def stream_workflow_step_events():
     return Response(__workflow_steps_event_stream(), mimetype='text/event-stream')
