@@ -118,6 +118,9 @@ $(function(){
                 type: "object",
                 title: "Inputs",
                 required: ['$action'],
+                options: {
+                    hidden: args.length === 0
+                },
                 properties: {
                     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
                         type: "string",
@@ -195,17 +198,9 @@ $(function(){
 
         var definitions = {};
 
-        // Create the sub-schema for the actions
+        // Create the sub-schema for the action inputs
         var actions = appData[parameters.app].actions;
-        var oneOfActions = [];
-        _.each(actions, function(actionProperties, actionName) {
-            var args = actionProperties.args;
-            definitions["action_" + actionName] = convertInputToSchema(args, actionName);
-            oneOfActions.push({
-                $ref: "#/definitions/" + "action_" + actionName,
-                title: actionName
-            });
-        });
+        var actionInputSchema = convertInputToSchema(actions[parameters.action].args, parameters.action);
 
         // Create the sub-schema for the flags
         var flags = flagsList;
@@ -257,14 +252,12 @@ $(function(){
                     title: "Device",
                     enum: appData[parameters.app].devices
                 },
-                // Note instead of having a separate action
-                // property, we use a oneOf to include an
-                // action plus its inputs in a subschema.
-                // Similarly for flags and filters below.
-                input: {
+                action: {
+                    type: "string",
                     title: "Action",
-                    oneOf: _.cloneDeep(oneOfActions)
+                    enum: [parameters.action]
                 },
+                input: _.cloneDeep(actionInputSchema),
                 next: {
                     options: {
                         hidden: true
@@ -309,7 +302,9 @@ $(function(){
                                 properties: {
                                     args: {
                                         title: "Select Flag",
-                                        oneOf: _.cloneDeep(oneOfFlags) // See comment above regarding action inputs
+                                        // Use a oneOf to include a flag plus its
+                                        // inputs in a subschema.
+                                        oneOf: _.cloneDeep(oneOfFlags)
                                     },
                                     filters: {
                                         type: "array",
@@ -320,7 +315,9 @@ $(function(){
                                             properties: {
                                                 args: {
                                                     title: "Select Filter",
-                                                    oneOf: _.cloneDeep(oneOfFilters) // See comment above regarding action inputs
+                                                    // Use a oneOf to include a filter plus its
+                                                    // inputs in a subschema.
+                                                    oneOf: _.cloneDeep(oneOfFilters)
                                                 },
                                             }
                                         }
@@ -422,6 +419,7 @@ $(function(){
         });
 
         editor.getEditor('root.app').disable();
+        editor.getEditor('root.action').disable();
         editor.getEditor('root.name').disable();
 
         // Hack: It appears this function is called as soon as you click on the node.
