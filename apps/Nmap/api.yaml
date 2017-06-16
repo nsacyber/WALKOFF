@@ -44,8 +44,8 @@ actions:
           type: string
   run_scan_check_whitelist:
     run: run_scan_check_whitelist
-    description: Runs a scan and then parses the output for the hosts on the network. If a host is found that is up
-                 and not in the whitelist, then it will return False. Otherwise, it will return True.
+    description: Runs a scan and then parses the output for the hosts on the network. It returns the number of hosts
+                 found that were not in the whitelist, or 0 if none.
     parameters:
       - name: target
         required: true
@@ -56,11 +56,11 @@ actions:
     returns:
       Success:
         schema:
-          type: string
+          type: integer
   run_scan_check_blacklist:
     run: run_scan_check_blacklist
-    description: Runs a scan and then parses the output for the hosts on the network. If a host is found that is up
-                 and in the blacklist, then it will return False. Otherwise, it will return True.
+    description: Runs a scan and then parses the output for the hosts on the network. It returns the number of hosts
+                 found that were in the blacklist, or 0 if none.
     parameters:
       - name: target
         required: true
@@ -71,4 +71,4 @@ actions:
     returns:
       Success:
         schema:
-          type: string
+          type: integer

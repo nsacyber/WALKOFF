@@ -39,11 +39,13 @@ class Main(App):
 
         nmap_report_obj = NmapParser.parse(nmap_proc.stdout)
 
+        count = 0
+
         for host in nmap_report_obj.hosts:
             if host.status == "up" and host.address not in self.whitelist:
-                return False
+                count = count+1
 
-        return True
+        return count
 
     @action
     def run_scan_check_blacklist(self, target, options):
@@ -52,11 +54,13 @@ class Main(App):
 
         nmap_report_obj = NmapParser.parse(nmap_proc.stdout)
 
+        count = 0
+
         for host in nmap_report_obj.hosts:
             if host.status == "up" and host.address in self.blacklist:
-                return False
+                count = count+1
 
-        return True
+        return count
 
     def shutdown(self):
         print("Nmap Shutting Down")
