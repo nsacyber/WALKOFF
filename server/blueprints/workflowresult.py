@@ -2,7 +2,7 @@ import json
 from flask import Blueprint, Response
 from gevent.event import Event, AsyncResult
 from gevent import sleep
-from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError, StepInputInvalid
+from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError
 from datetime import datetime
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
@@ -27,6 +27,7 @@ def __workflow_steps_event_stream():
         __step_signal.wait()
 
 
+@WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
     data = 'None'
     if 'data' in kwargs:
@@ -41,16 +42,17 @@ def __workflow_ended_callback(sender, **kwargs):
     __sync_signal.clear()
 
 
+@FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    input = str(sender.input)
+    step_input = str(sender.input)
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
               'type': "SUCCESS",
-              'input': input,
+              'input': step_input,
               'result': data}
     __workflow_step_event_json.set(json.dumps(result))
     __step_signal.set()
@@ -58,26 +60,17 @@ def __step_ended_callback(sender, **kwargs):
     sleep(0)
 
 
+@StepExecutionError.connect
 def __step_error_callback(sender, **kwargs):
-    data = 'None'
-    input = str(sender.input)
+    result = {'name': sender.name, 'type': 'ERROR'}
     if 'data' in kwargs:
-        data = kwargs['data']
-        if not isinstance(data, str):
-            data = str(data)
-    result = {'name': sender.name,
-              'type': "ERROR",
-              'input': input,
-              'result': data}
+        data = json.loads(kwargs['data'])
+        result['input'] = data['step']['input']
+        result['result'] = data['step']['result']
     __workflow_step_event_json.set(json.dumps(result))
     __step_signal.set()
     __step_signal.clear()
     sleep(0)
-
-WorkflowShutdown.connect(__workflow_ended_callback)
-
-FunctionExecutionSuccess.connect(__step_ended_callback)
-StepExecutionError.connect(__step_error_callback)
 
 
 @workflowresults_page.route('/stream', methods=['GET'])

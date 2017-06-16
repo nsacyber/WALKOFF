@@ -609,6 +609,9 @@ class Controller(object):
         logger.info('Resuming job {0}'.format(job_id))
         self.scheduler.resume_job(job_id=job_id)
 
+    def get_workflow_status(self, uid):
+        return self.workflow_status.get(uid, None)
+
     # Returns jobs scheduled for active execution
     def get_scheduled_jobs(self):
         """Get all actively scheduled jobs.

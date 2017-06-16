@@ -208,7 +208,7 @@ class CaseDatabase(object):
         try:
             data = json.dumps(event.data)
         except:
-            data = 'Error: not a JSON-able object'
+            data = str(event.data)
         event_log = Event(type=event.type,
                           timestamp=event.timestamp,
                           ancestry=','.join(map(str, event.ancestry)),

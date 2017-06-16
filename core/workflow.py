@@ -43,6 +43,7 @@ class Workflow(ExecutionElement):
         self.executor = None
         self.breakpoint_steps = []
         self.accumulator = {}
+        self.uid = None
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Workflow object. This is needed in case a workflow and/or playbook is renamed.
@@ -261,14 +262,15 @@ class Workflow(ExecutionElement):
         error_flag = False
         data = {"step": {"app": step.app,
                          "action": step.action,
-                         "name": step.name}}
-        json.dumps(data)
+                         "name": step.name,
+                         "input": step.input,
+                         "result": step.output}}
+        data = json.dumps(data)
         try:
             step.execute(instance=instance(), data_in=previous_step_output)
-            callbacks.StepExecutionSuccess.send(self)
+            callbacks.StepExecutionSuccess.send(self, data=data)
         except Exception as e:
-            callbacks.StepExecutionError.send(
-                step, data=json.dumps({"step": {"app": step.app, "action": step.action, "name": step.name}}))
+            callbacks.StepExecutionError.send(self, data=data)
             error_flag = True
             step.output = 'error: {0}'.format(str(e))
             self.accumulated_risk += float(step.risk) / self.total_risk
