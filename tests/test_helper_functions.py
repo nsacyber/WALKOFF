@@ -355,3 +355,27 @@ class TestHelperFunctions(unittest.TestCase):
         xml = inputs_to_xml(inputs)
         converted = inputs_xml_to_dict(xml)
         self.assertDictEqual(converted, inputs)
+
+    def test_dereference_step_routing(self):
+        inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}
+        accumulator = {'step1': '2', 'step2': 3}
+        output = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_dereference_step_routing_extra_steps(self):
+        inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}
+        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
+        output = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_dereference_step_routing_no_referenced(self):
+        inputs = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
+        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
+        output = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_dereference_step_routing_step_not_found(self):
+        inputs = {'a': 1, 'b': '@step2', 'c': '@invalid', 'd': 'test'}
+        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
+        with self.assertRaises(InvalidInput):
+            dereference_step_routing(inputs, accumulator, 'message')

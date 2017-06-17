@@ -10,7 +10,8 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml, InvalidInput
+from core.helpers import (get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml, InvalidInput,
+                          dereference_step_routing)
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -174,16 +175,7 @@ class Step(ExecutionElement):
         """
         callbacks.StepInputValidated.send(self)
         try:
-            args = deepcopy(self.input)
-            for input_name, input_value in self.input.items():
-                if isinstance(input_value, str) and input_value.startswith('@'):
-                    input_step_name = input_value[1:]
-                    if input_step_name in accumulator:
-                        args[input_name] = accumulator[input_step_name]
-                    else:
-                        message = ('In step {0}: Referenced step {1} '
-                                   'has not been executed'.format(self.name, input_step_name))
-                        raise InvalidInput(message)
+            args = dereference_step_routing(self.input, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self.input_api, args, self.app, self.action)
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)

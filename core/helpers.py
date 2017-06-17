@@ -4,6 +4,7 @@ import os
 from xml.etree import ElementTree
 import pkgutil
 import logging
+from copy import deepcopy
 import core.config.paths
 import core.config.config
 from dicttoxml import dicttoxml
@@ -445,3 +446,17 @@ def inputs_xml_to_dict(xml):
 def inputs_to_xml(inputs, root='inputs'):
     xml_str = dicttoxml(inputs, custom_root=root, attr_type=False)
     return ElementTree.fromstring(xml_str)
+
+
+def dereference_step_routing(inputs, accumulator, message_prefix):
+    args = deepcopy(inputs)
+    for input_name, input_value in inputs.items():
+        if isinstance(input_value, str) and input_value.startswith('@'):
+            input_step_name = input_value[1:]
+            if input_step_name in accumulator:
+                args[input_name] = accumulator[input_step_name]
+            else:
+                message = ('{0}: Referenced step {1} '
+                           'has not been executed'.format(message_prefix, input_step_name))
+                raise InvalidInput(message)
+    return args
