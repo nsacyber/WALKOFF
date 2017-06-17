@@ -98,6 +98,7 @@ def convert_json(spec, param_in, message_prefix):
     else:
         raise InvalidApi('{0} has invalid api'.format(message_prefix))
 
+
 def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,

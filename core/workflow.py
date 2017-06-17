@@ -267,16 +267,15 @@ class Workflow(ExecutionElement):
         data = {"step": {"app": step.app,
                          "action": step.action,
                          "name": step.name,
-                         "input": step.input,
-                         "result": step.output}}
-        data = json.dumps(data)
+                         "input": step.input}}
         try:
             step.execute(instance=instance(), data_in=previous_step_output)
-            callbacks.StepExecutionSuccess.send(self, data=data)
+            data['step']['result'] = step.output
+            callbacks.StepExecutionSuccess.send(self, data=json.dumps(data))
         except Exception as e:
-            callbacks.StepExecutionError.send(self, data=data)
+            data['step']['result'] = step.output
+            callbacks.StepExecutionError.send(self, data=json.dumps(data))
             error_flag = True
-            step.output = 'error: {0}'.format(str(e))
             self.accumulated_risk += float(step.risk) / self.total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry, e))
         finally:

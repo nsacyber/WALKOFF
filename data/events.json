@@ -14,7 +14,9 @@
     "Workflow Execution Start",
     "App Instance Created",
     "Next Step Found",
-    "Workflow Shutdown"
+    "Workflow Shutdown",
+    "Workflow Input Validated",
+    "Workflow Input Invalid"
   ],
   "step": [
     "Function Execution Success",

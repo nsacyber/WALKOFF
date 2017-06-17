@@ -185,9 +185,11 @@ class Step(ExecutionElement):
         except InvalidInput as e:
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
             callbacks.StepInputInvalid.send(self)
+            self.output = 'error: {0}'.format(str(e))
             raise
         except Exception as e:
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
+            self.output = 'error: {0}'.format(str(e))
             raise
         else:
             self.output = result
