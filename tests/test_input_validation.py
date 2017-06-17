@@ -239,6 +239,33 @@ class TestInputValidation(unittest.TestCase):
         with self.assertRaises(InvalidInput):
             validate_parameters(parameter_apis, inputs, self.message)
 
+    def test_validate_parameters_skip_step_references(self):
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
+        inputs = {'name1': 'test', 'name2': '5', 'name3': '@step1'}
+        expected = {'name1': 'test', 'name2': 5, 'name3': '@step1'}
+        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+
+    def test_validate_parameters_skip_step_references_inputs_non_string(self):
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
+        inputs = {'name1': 'test', 'name2': 5, 'name3': '@step1'}
+        expected = {'name1': 'test', 'name2': 5, 'name3': '@step1'}
+        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+
+    def test_validate_parameters_escaped_string(self):
+        parameter_apis = [
+            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3', '@test']},
+            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
+            {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
+        inputs = {'name1': '\@test', 'name2': '5', 'name3': '3'}
+        expected = {'name1': '@test', 'name2': 5, 'name3': 3}
+        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+
     def test_convert_json(self):
         parameter_api = {
             'name': 'name1',

@@ -47,6 +47,7 @@ class TestHelperFunctions(unittest.TestCase):
         expected_workflows = ['basicWorkflowTest.workflow',
                               'DailyQuote.workflow',
                               'dataflowTest.workflow',
+                              'dataflowTestStepNotExecuted.workflow',
                               'loopWorkflow.workflow',
                               'multiactionWorkflowTest.workflow',
                               'pauseWorkflowTest.workflow',
@@ -224,30 +225,17 @@ class TestHelperFunctions(unittest.TestCase):
         with self.assertRaises(ImportError):
             import_all_flags('invalid.package')
 
-    def test_get_app_action_api_valid_no_data_in(self):
+    def test_get_app_action_api_valid(self):
         api = get_app_action_api('HelloWorld', 'pause')
         expected = ('pause',
                     [{'required': True,
                       'type': 'number',
                       'name': 'seconds',
-                      'description': 'Seconds to pause'}],
-                    None)
-        self.assertEqual(len(api), 3)
+                      'description': 'Seconds to pause'}])
+        self.assertEqual(len(api), 2)
         self.assertEqual(api[0], expected[0])
         self.assertEqual(len(api[1]), 1)
         self.assertDictEqual(api[1][0], expected[1][0])
-        self.assertIsNone(api[2])
-
-    def test_get_app_action_api_valid_with_data_in(self):
-        api = get_app_action_api('HelloWorld', 'Add To Previous')
-        expected = ('add_to_previous_step',
-                    [{'required': True, 'type': 'number', 'name': 'num'}],
-                    {'required': True, 'type': 'number', 'name': 'data'})
-        self.assertEqual(len(api), 3)
-        self.assertEqual(api[0], expected[0])
-        self.assertEqual(len(api[1]), 1)
-        self.assertDictEqual(api[1][0], expected[1][0])
-        self.assertDictEqual(api[2], expected[2])
 
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):

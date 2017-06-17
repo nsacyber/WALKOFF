@@ -21,7 +21,7 @@
             </inputs>
             <next step="1"/>
         </step>
-        <step id="1">
+        <step id="2">
             <action>Add Three</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
@@ -32,13 +32,13 @@
             </inputs>
             <next step="2"/>
         </step>
-        <step id="2">
+        <step id="1">
             <action>Add Three</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
             <inputs>
                 <num1>@start</num1>
-                <num2>@1</num2>
+                <num2>@2</num2>
                 <num3>3</num3>
             </inputs>
         </step>

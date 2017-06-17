@@ -201,7 +201,6 @@ class Workflow(ExecutionElement):
         total_steps = []
         steps = self.__steps(start=start)
         first = True
-        previous_step_output = None
         for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.ancestry))
             while self.is_paused:
@@ -221,11 +220,10 @@ class Workflow(ExecutionElement):
                     if start_input:
                         self.__swap_step_input(step, start_input)
 
-                error_flag = self.__execute_step(step, instances[step.device], previous_step_output)
+                error_flag = self.__execute_step(step, instances[step.device])
                 total_steps.append(step)
                 steps.send(error_flag)
                 self.accumulator[step.name] = step.output
-                previous_step_output = step.output
         self.__shutdown(instances)
         yield
 
@@ -262,14 +260,14 @@ class Workflow(ExecutionElement):
                          'Invalid input. Error: {1}'.format(self.name, str(e)))
             callbacks.WorkflowInputInvalid.send(self)
 
-    def __execute_step(self, step, instance, previous_step_output):
+    def __execute_step(self, step, instance):
         error_flag = False
         data = {"step": {"app": step.app,
                          "action": step.action,
                          "name": step.name,
                          "input": step.input}}
         try:
-            step.execute(instance=instance(), data_in=previous_step_output)
+            step.execute(instance=instance(), accumulator=self.accumulator)
             data['step']['result'] = step.output
             callbacks.StepExecutionSuccess.send(self, data=json.dumps(data))
         except Exception as e:

@@ -66,7 +66,7 @@ class Step(ExecutionElement):
                                                 'specified in step constructor')
             self.action = action
             self.app = app
-            self.run, self.input_api, self.data_in_api = get_app_action_api(self.app, self.action)
+            self.run, self.input_api = get_app_action_api(self.app, self.action)
             get_app_action(self.app, self.run)
             inputs = inputs if inputs is not None else {}
             self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
@@ -101,7 +101,7 @@ class Step(ExecutionElement):
 
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
-        self.run, self.input_api, self.data_in_api = get_app_action_api(self.app, self.action)
+        self.run, self.input_api = get_app_action_api(self.app, self.action)
         is_templated_xml = step_xml.find('templated')
         self.templated = is_templated_xml is not None and bool(is_templated_xml.text)
         get_app_action(self.app, self.run)
@@ -162,23 +162,29 @@ class Step(ExecutionElement):
     def set_input(self, new_input):
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
 
-    def execute(self, instance, data_in):
+    def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
         
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
-            data_in: The output of the previous step
+            accumulator (dict): Dict containing the results of the previous steps
             
         Returns:
             The result of the executed function.
         """
-
         callbacks.StepInputValidated.send(self)
         try:
             args = deepcopy(self.input)
-            if self.data_in_api is not None:
-                data_in = validate_parameter(data_in, self.data_in_api, 'Filter {0}'.format(self.action))
-                args.update({self.data_in_api['name']: data_in})
+            for input_name, input_value in self.input.items():
+                if isinstance(input_value, str) and input_value.startswith('@'):
+                    input_step_name = input_value[1:]
+                    if input_step_name in accumulator:
+                        args[input_name] = accumulator[input_step_name]
+                    else:
+                        message = ('In step {0}: Referenced step {1} '
+                                   'has not been executed'.format(self.name, input_step_name))
+                        raise InvalidInput(message)
+            args = validate_app_action_parameters(self.input_api, args, self.app, self.action)
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
             callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))

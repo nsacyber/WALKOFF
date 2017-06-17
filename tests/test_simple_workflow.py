@@ -45,7 +45,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertEqual(ancestry[-1], "start")
         result = json.loads(step['data'])
         self.assertEqual(result['result'], "REPEATING: Hello World")
-
+    #
     def test_multi_action_workflow(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']
@@ -94,6 +94,30 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     def test_workflow_with_dataflow(self):
         workflow_name = construct_workflow_name_key('dataflowTest', 'dataflowWorkflow')
+        step_names = ['start', '1', '2']
+        setup_subscriptions_for_step(workflow_name, step_names)
+        self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
+
+        shutdown_pool()
+
+        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        self.assertEqual(len(steps), 3)
+        names = [step['ancestry'].split(',')[-1] for step in steps]
+        orderless_list_compare(self, names, ['start', '1', '2'])
+        name_result = {'start': 6,
+                       '1': 6,
+                       '2': 15}
+        for step in steps:
+            name = step['ancestry'].split(',')[-1]
+            self.assertIn(name, name_result)
+            result = json.loads(step['data'])
+            if type(name_result[name]) == dict:
+                self.assertDictEqual(result['result'], name_result[name])
+            else:
+                self.assertEqual(result['result'], name_result[name])
+
+    def test_workflow_with_dataflow_step_not_executed(self):
+        workflow_name = construct_workflow_name_key('dataflowTest', 'dataflowWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
@@ -104,13 +128,3 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertEqual(len(steps), 2)
         names = [step['ancestry'].split(',')[-1] for step in steps]
         orderless_list_compare(self, names, ['start', '1'])
-        name_result = {'start': 6,
-                       '1': 10}
-        for step in steps:
-            name = step['ancestry'].split(',')[-1]
-            self.assertIn(name, name_result)
-            result = json.loads(step['data'])
-            if type(name_result[name]) == dict:
-                self.assertDictEqual(result['result'], name_result[name])
-            else:
-                self.assertEqual(result['result'], name_result[name])

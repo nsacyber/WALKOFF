@@ -183,6 +183,12 @@ class TestStep(unittest.TestCase):
         self.basic_json['input'] = {'number': -5.6}
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
+    def test_as_json_without_children_with_input_routing(self):
+        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '@step1'})
+        self.basic_json['action'] = 'returnPlusOne'
+        self.basic_json['input'] = {'number': '@step1'}
+        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
+
     def test_as_json_with_children_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
@@ -333,6 +339,10 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '-10.265'})
         self.__check_xml(step, action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '-10.265'})
 
+    def test_to_xml_with_inputs_with_routing(self):
+        step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '@step1', 'num3': '@step2'})
+        self.__check_xml(step, action='Add Three', inputs={'num1': '-5.6', 'num2': '@step1', 'num3': '@step2'})
+
     def test_to_xml_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
@@ -480,6 +490,13 @@ class TestStep(unittest.TestCase):
         with self.assertRaises(InvalidInput):
             Step.from_json(self.basic_input_json, {})
 
+    def test_from_json_with_step_routing(self):
+        self.basic_input_json['action'] = 'Add Three'
+        self.basic_input_json['input'] = {'num1': '-5.6', 'num2': '@step1', 'num3': '@step2'}
+        step = Step.from_json(self.basic_input_json, {})
+        self.__compare_init(step, '', '', 'Add Three', 'HelloWorld', '',
+                            {'num1': -5.6, 'num2': '@step1', 'num3': '@step2'}, [], [], ['', ''], [])
+
     def test_from_json_with_position(self):
         step = Step.from_json(self.basic_input_json, {'x': 125.3, 'y': 198.7})
         self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '',
@@ -502,19 +519,40 @@ class TestStep(unittest.TestCase):
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertDictEqual(step.execute(instance.instance, None), {'message': 'HELLO WORLD'})
+        self.assertDictEqual(step.execute(instance.instance, {}), {'message': 'HELLO WORLD'})
         self.assertDictEqual(step.output, {'message': 'HELLO WORLD'})
 
     def test_execute_with_args(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertAlmostEqual(step.execute(instance.instance, None), 8.9)
+        self.assertAlmostEqual(step.execute(instance.instance, {}), 8.9)
         self.assertAlmostEqual(step.output, 8.9)
+
+    def test_execute_with_accumulator_with_conversion(self):
+        step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
+        accumulator = {'1': '-5.6', 'step2': '4.3'}
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        self.assertAlmostEqual(step.execute(instance.instance, accumulator), 8.9)
+        self.assertAlmostEqual(step.output, 8.9)
+
+    def test_execute_with_accumulator_with_extra_steps(self):
+        step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
+        accumulator = {'1': '-5.6', 'step2': '4.3', '3': '45'}
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        self.assertAlmostEqual(step.execute(instance.instance, accumulator), 8.9)
+        self.assertAlmostEqual(step.output, 8.9)
+
+    def test_execute_with_accumulator_missing_step(self):
+        step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
+        accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        with self.assertRaises(InvalidInput):
+            step.execute(instance.instance, accumulator)
 
     def test_execute_with_complex_inputs(self):
         step = Step(app='HelloWorld', action='Json Sample', inputs={'json_in': {'a': '-5.6', 'b': '4.3'}})
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertAlmostEqual(step.execute(instance.instance, None), -1.3)
+        self.assertAlmostEqual(step.execute(instance.instance, {}), -1.3)
         self.assertAlmostEqual(step.output, -1.3)
 
     def test_execute_action_which_raises_exception(self):
@@ -522,19 +560,7 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='Buggy')
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(CustomException):
-            step.execute(instance.instance, None)
-
-    def test_execute_with_data_in_valid(self):
-        step = Step(app='HelloWorld', action='Add To Previous', inputs={'num': '-5.6'})
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertAlmostEqual(step.execute(instance.instance, 3), -2.6)
-        self.assertAlmostEqual(step.output, -2.6)
-
-    def test_execute_with_data_in_invalid(self):
-        step = Step(app='HelloWorld', action='Add To Previous', inputs={'num': '-5.6'})
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        with self.assertRaises(InvalidInput):
-            step.execute(instance.instance, 'invalid')
+            step.execute(instance.instance, {})
 
     def test_get_next_step_no_next_steps_no_errors(self):
         step = Step(app='HelloWorld', action='helloWorld')

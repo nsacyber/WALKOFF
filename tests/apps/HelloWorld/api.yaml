@@ -89,22 +89,6 @@ actions:
         description: summation
         schema:
           type: number
-  'Add To Previous':
-    run: add_to_previous_step
-    description: Adds a number to a the previous step
-    dataIn: data
-    parameters:
-        - name: data
-          required: true
-          type: number
-        - name: num
-          required: true
-          type: number
-    returns:
-      Success:
-        description: summation
-        schema:
-          type: number
   'Json Sample':
     run: json_sample
     description: Exampel of using a json input

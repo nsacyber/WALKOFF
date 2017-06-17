@@ -304,7 +304,16 @@ def validate_parameters(api, inputs, message_prefix):
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
-            converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
+            if not isinstance(inputs[param_name], str):
+                converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
+            else:
+                if inputs[param_name].startswith('@'):
+                    converted[param_name] = inputs[param_name]
+                elif inputs[param_name].startswith('\@'):
+                    inputs[param_name] = inputs[param_name][1:]
+                    converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
+                else:
+                    converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
         elif 'default' in param_api:
             try:
                 default_param = validate_parameter(param_api['default'], param_api, message_prefix)

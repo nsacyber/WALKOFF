@@ -286,14 +286,10 @@ def get_app_action_api(app, action):
     else:
         try:
             action_api = app_api['actions'][action]
+            run = action_api['run']
+            return run, action_api.get('parameters', [])
         except KeyError:
             raise UnknownAppAction(app, action)
-        else:
-            run = action_api['run']
-            if 'dataIn' in action_api:
-                return tuple([run]) + __split_api_params(action_api)
-            else:
-                return run, action_api.get('parameters', []), None
 
 
 def __split_api_params(api):
