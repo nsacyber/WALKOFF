@@ -107,7 +107,6 @@ class Triggers(Base):
         Returns:
             Dictionary of {"status": <status string>}
         """
-
         triggers = set()
         if trigger_name:
             t = Triggers.query.filter_by(name=trigger_name).first()
@@ -128,16 +127,19 @@ class Triggers(Base):
             conditionals = json.loads(trigger.condition)
             if all(Triggers.__execute_trigger(conditional, data_in) for conditional in conditionals):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
+
                 if workflow_to_be_executed:
-                    input_in = {arg['key']: arg['value'] for arg in input_in} if input_in else None
                     if input_in:
                         logger.info(
                             'Workflow {0} executing with input {1}'.format(workflow_to_be_executed.name, input_in))
                     else:
                         logger.info('Workflow {0} executing with no input'.format(workflow_to_be_executed.name))
                     try:
-                        workflow_to_be_executed.execute(start_input=input_in)
-                        returned_json["executed"].append(trigger.name)
+                        uid = running_context.controller.execute_workflow(playbook_name=trigger.playbook,
+                                                                          workflow_name=trigger.workflow,
+                                                                          start_input=input_in)
+                        returned_json["executed"].append({'name': trigger.name, 'id': uid})
+
                     except Exception as e:
                         returned_json["errors"].append({trigger.name: "Error executing workflow: {0}".format(str(e))})
                 else:
@@ -151,11 +153,10 @@ class Triggers(Base):
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        flag_args = {arg['key']: arg['value'] for arg in conditional['args']}
         filters = [Filter(action=filter_element['action'],
-                          args={arg['key']: arg['value'] for arg in filter_element['args']})
+                          args=filter_element['args'])
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['flag'], args=flag_args, filters=filters)(data_in)
+        return Flag(action=conditional['flag'], args=conditional['args'], filters=filters)(data_in=data_in)
 
     def __repr__(self):
         return json.dumps(self.as_json())

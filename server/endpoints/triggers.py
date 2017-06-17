@@ -23,7 +23,7 @@ def listener():
     def __func():
 
         form = forms.IncomingDataForm(request.form)
-        trigger_args = {'data_in': form.input.data,
+        trigger_args = {'data_in': form.data.data,
                         'input_in': json.loads(form.input.data) if form.input.data else '',
                         'trigger_name': '',
                         'tags': []}
@@ -45,7 +45,7 @@ def listener():
             current_app.logger.info(
                 'Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
                                                                                          trigger_args['data_in']))
-            return returned_json, SUCCESS
+            return returned_json, SUCCESS_ASYNC
 
     return __func()
 

@@ -219,13 +219,7 @@ class Workflow(ExecutionElement):
                 if first:
                     first = False
                     if start_input:
-                        logger.debug('Swapping input to first step of workflow {0}'.format(self.ancestry))
-                        try:
-                            step.set_input(start_input)
-                        except InvalidInput as e:
-                            logger.error('Cannot change input to workflow {0}. '
-                                         'Invalid input. Error: {1}'.format(self.name, str(e)))
-                            raise
+                        self.__swap_step_input(step, start_input)
 
                 error_flag = self.__execute_step(step, instances[step.device], previous_step_output)
                 total_steps.append(step)
@@ -257,6 +251,16 @@ class Workflow(ExecutionElement):
             current = self.steps[current_name] if current_name is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
+
+    def __swap_step_input(self, step, start_input):
+        logger.debug('Swapping input to first step of workflow {0}'.format(self.ancestry))
+        try:
+            step.set_input(start_input)
+            callbacks.WorkflowInputValidated.send(self)
+        except InvalidInput as e:
+            logger.error('Cannot change input to workflow {0}. '
+                         'Invalid input. Error: {1}'.format(self.name, str(e)))
+            callbacks.WorkflowInputInvalid.send(self)
 
     def __execute_step(self, step, instance, previous_step_output):
         error_flag = False

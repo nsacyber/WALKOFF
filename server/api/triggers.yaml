@@ -30,8 +30,11 @@
     produces:
       - application/json
     responses:
-      200:
-        description: Success
+      202:
+        description: Success asynchronous.
+        schema:
+            $ref: '#/definitions/TriggerExecutionResponse'
+
 /execution/listener/triggers/{trigger_name}:
   parameters:
     - name: trigger_name

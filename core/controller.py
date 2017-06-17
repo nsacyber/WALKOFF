@@ -6,12 +6,10 @@ from os import sep
 from xml.etree import ElementTree
 import uuid
 import logging
-
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from apscheduler.schedulers.gevent import GeventScheduler
-
 import core.config.config
 import core.config.paths
 from core import workflow as wf
@@ -63,23 +61,23 @@ def shutdown_pool():
     logger.debug('Controller thread pool shutdown')
 
 
-def execute_workflow_worker(workflow, subs, uid, start=None):
+def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
     """Executes the workflow in a multi-threaded fashion.
     
     Args:
         workflow (Workflow): The workflow to be executed.
+        uid (str): The unique identifier of the workflow
         start (str, optional): Name of the first step to be executed in the workflow.
         subs (Subscription): The current subscriptions. This is necessary for resetting the subscriptions.
+        start_input (dict, optional): The input to the starting step of the workflow
         
     Returns:
         "Done" when the workflow has finished execution.
     """
+    args = {'start': start, 'start_input': start_input}
     subscription.set_subscriptions(subs)
     workflow.uid = uid
-    if start is not None:
-        workflow.execute(start=start)
-    else:
-        workflow.execute()
+    workflow.execute(**args)
     return "done"
 
 
@@ -108,11 +106,14 @@ class Controller(object):
 
         def workflow_completed_callback(sender, **kwargs):
             self.__workflow_completed_callback(sender, **kwargs)
+
         callbacks.WorkflowShutdown.connect(workflow_completed_callback)
 
-    def __workflow_completed_callback(self, sender, **kwargs):
-        if sender.uuid in self.workflow_status:
-            self.workflow_status[sender.uuid] = WORKFLOW_COMPLETED
+    # TODO: Turns out this doesn't work at all
+    def __workflow_completed_callback(self, workflow, **kwargs):
+        print('COMPLETEDE')
+        if workflow.uuid in self.workflow_status:
+            self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
     def reconstruct_ancestry(self):
         """Reconstructs the ancestry list field of a workflow in case it changes.
@@ -361,38 +362,39 @@ class Controller(object):
         if workflow:
             workflow.breakpoint_steps.extend(steps)
 
-    def execute_workflow(self, playbook_name, workflow_name, start=None):
+    def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
         """Executes a workflow.
         
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first step. Defaults to "start".
+            start_input (dict, optional): The input to the starting step of the workflow
         """
         global pool
         global workflows
         global threading_is_initialized
-
         key = _WorkflowKey(playbook_name, workflow_name)
         if key in self.workflows:
+
             workflow = self.workflows[key]
             subs = deepcopy(subscription.subscriptions)
             uid = uuid.uuid4().hex
+
             # If threading has not been initialized, initialize it.
             if not threading_is_initialized:
                 initialize_threading()
-            if start is not None:
-                logger.info('Executing workflow {0} for step {1}'.format(key, start))
-                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid, start=start))
-            else:
-                logger.info('Executing workflow {0} with default starting step'.format(key, start))
-                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid))
+
+            args = {'start': start, 'start_input': start_input}
+            logger.info('Executing workflow {0} for step {1} with args{2}'.format(key, start, args))
+            workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid, **args))
             callbacks.SchedulerJobExecuted.send(self)
+            # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
             self.workflow_status[uid] = WORKFLOW_RUNNING
             return uid
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
-            return None
+            return None, 'Attempted to execute playbook which does not exist in controller'
 
     def get_workflow(self, playbook_name, workflow_name):
         """Get a workflow object.

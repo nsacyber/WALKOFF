@@ -118,6 +118,16 @@ WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Wor
                                                                             'Workflow Shutdown',
                                                                             'Workflow shutdown')
 
+# WorkflowInputValidated, __workflow_input_validated = __construct_logging_signal('Workflow',
+#                                                                                 'Workflow Input Validated',
+#                                                                                 'Workflow input validated')
+#
+# WorkflowInputInvalid, __workflow_input_invalidated = __construct_logging_signal('Workflow',
+#                                                                                 'Workflow Input Invalid',
+#                                                                                 'Workflow input invalid')
+WorkflowInputValidated = Signal()
+WorkflowInputInvalid = Signal()
+
 # Step callbacks
 
 FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Step',
