@@ -2,7 +2,7 @@ from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.helpers import (get_filter, get_filter_api, InvalidInput, InvalidElementConstructed,
-                          inputs_xml_to_dict, inputs_to_xml)
+                          inputs_xml_to_dict, inputs_to_xml, dereference_step_routing)
 from core.validator import validate_filter_parameters, validate_parameter
 from copy import deepcopy
 import logging
@@ -41,11 +41,11 @@ class Filter(ExecutionElement):
         args = {arg.tag: inputs_xml_to_dict(arg) for arg in xml_element.findall('args/*')}
         self.args = validate_filter_parameters(self.args_api, args, self.action)
 
-    def __call__(self, data_in=None):
+    def __call__(self, data_in, accumulator):
         original_data_in = deepcopy(data_in)
         try:
-            args = deepcopy(self.args)
             data_in = validate_parameter(data_in, self.data_in_api, 'Filter {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.name))
             args.update({self.data_in_api['name']: data_in})
             result = get_filter(self.action)(**args)
             callbacks.FilterSuccess.send(self)

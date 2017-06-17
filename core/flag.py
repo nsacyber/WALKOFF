@@ -50,7 +50,7 @@ class Flag(ExecutionElement):
         data = data_in
 
         for filter_element in self.filters:
-            data = filter_element(data_in=data)
+            data = filter_element(data, accumulator)
         try:
             data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
             args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.name))

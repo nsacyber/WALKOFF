@@ -45,6 +45,10 @@ class TestFilter(unittest.TestCase):
         filter_elem = Filter(action='mod1_filter2', args={'arg1': '5.4'})
         self.__compare_init(filter_elem, 'mod1_filter2', '', ['', 'mod1_filter2'], args={'arg1': 5.4})
 
+    def test_init_with_args_with_routing(self):
+        filter_elem = Filter(action='mod1_filter2', args={'arg1': '@step1'})
+        self.__compare_init(filter_elem, 'mod1_filter2', '', ['', 'mod1_filter2'], args={'arg1': '@step1'})
+
     def test_init_with_invalid_arg_name(self):
         with self.assertRaises(InvalidInput):
             Filter(action='mod1_filter2', args={'invalid': '5.4'})
@@ -67,6 +71,11 @@ class TestFilter(unittest.TestCase):
         expected = {'action': 'mod1_filter2', 'args': {'arg1': -5.4}}
         self.assertDictEqual(filter_elem.as_json(), expected)
 
+    def test_as_json_with_args_with_routing(self):
+        filter_elem = Filter(action='mod1_filter2', args={'arg1': '@step1'})
+        expected = {'action': 'mod1_filter2', 'args': {'arg1': '@step1'}}
+        self.assertDictEqual(filter_elem.as_json(), expected)
+
     def test_to_xml_no_args(self):
         xml = Filter(action='Top Filter').to_xml()
         self.assertEqual(xml.tag, 'filter')
@@ -82,6 +91,15 @@ class TestFilter(unittest.TestCase):
         self.assertEqual(arg_xml[0].tag, 'arg1')
         self.assertEqual(arg_xml[0].text, '5.4')
 
+    def test_to_xml_with_args_with_routing(self):
+        xml = Filter(action='mod1_filter2', args={'arg1': '@step1'}).to_xml()
+        self.assertEqual(xml.tag, 'filter')
+        self.assertEqual(xml.get('action'), 'mod1_filter2')
+        arg_xml = xml.findall('args/*')
+        self.assertEqual(len(arg_xml), 1)
+        self.assertEqual(arg_xml[0].tag, 'arg1')
+        self.assertEqual(arg_xml[0].text, '@step1')
+
     def __assert_xml_is_convertible(self, filter_elem):
         original_json = filter_elem.as_json()
         original_xml = filter_elem.to_xml()
@@ -94,6 +112,10 @@ class TestFilter(unittest.TestCase):
 
     def test_to_from_xml_are_same_with_args(self):
         original_filter = Filter(action='mod1_filter2', args={'arg1': '5.4'})
+        self.__assert_xml_is_convertible(original_filter)
+
+    def test_to_from_xml_are_same_with_args_with_routing(self):
+        original_filter = Filter(action='mod1_filter2', args={'arg1': '@step1'})
         self.__assert_xml_is_convertible(original_filter)
 
     def test_to_from_xml_are_same_with_complex_args(self):
@@ -125,35 +147,44 @@ class TestFilter(unittest.TestCase):
         filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
         self.__compare_init(filter_elem, 'mod1_filter2', 'test_parent', ['a', 'b', 'mod1_filter2'], args={'arg1': 5.4})
 
+    def test_from_json_with_args_with_routing(self):
+        json_in = {'action': 'mod1_filter2', 'args': {'arg1': '@step1'}}
+        filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
+        self.__compare_init(filter_elem, 'mod1_filter2', 'test_parent', ['a', 'b', 'mod1_filter2'],
+                            args={'arg1': '@step1'})
+
     def test_call_with_no_args_no_conversion(self):
-        self.assertAlmostEqual(Filter(action='Top Filter')(5.4), 5.4)
+        self.assertAlmostEqual(Filter(action='Top Filter')(5.4, {}), 5.4)
 
     def test_call_with_no_args_with_conversion(self):
-        self.assertAlmostEqual(Filter(action='Top Filter')('-10.437'), -10.437)
+        self.assertAlmostEqual(Filter(action='Top Filter')('-10.437', {}), -10.437)
 
     def test_call_with_invalid_input(self):
-        self.assertEqual(Filter(action='Top Filter')('invalid'), 'invalid')
+        self.assertEqual(Filter(action='Top Filter')('invalid', {}), 'invalid')
 
     def test_call_with_filter_which_raises_exception(self):
-        self.assertEqual(Filter(action='sub1_filter3')('anything'), 'anything')
+        self.assertEqual(Filter(action='sub1_filter3')('anything', {}), 'anything')
 
     def test_call_with_args_no_conversion(self):
-        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('5.4'), 15.7)
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('5.4', {}), 15.7)
 
     def test_call_with_args_with_conversion(self):
-        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})(5.4), 15.7)
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})(5.4, {}), 15.7)
+
+    def test_call_with_args_with_routing(self):
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '@step1'})(5.4, {'step1': 10.3}), 15.7)
 
     def test_call_with_complex_args(self):
         original_filter = Filter(action='sub1_filter1', args={'arg1': {'a': '5.4', 'b': 'string_in'}})
-        self.assertEqual(original_filter(3), '3.0 5.4 string_in')
+        self.assertEqual(original_filter(3, {}), '3.0 5.4 string_in')
 
     def test_call_with_nested_complex_args(self):
         args = {'arg': {'a': '4', 'b': 6, 'c': [1, 2, 3]}}
         original_filter = Filter(action='complex', args=args)
-        self.assertAlmostEqual(original_filter(3), 19.0)
+        self.assertAlmostEqual(original_filter(3, {}), 19.0)
 
     def test_call_with_args_invalid_input(self):
-        self.assertEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('invalid'), 'invalid')
+        self.assertEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('invalid', {}), 'invalid')
 
     def test_name_parent_rename(self):
         filter_elem = Filter(ancestry=['filter_parent'], action='Top Filter')
