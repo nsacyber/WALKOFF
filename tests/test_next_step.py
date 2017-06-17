@@ -176,9 +176,9 @@ class TestNextStep(unittest.TestCase):
             next_step = NextStep(name=name, flags=flags)
             if expect_name:
                 expected_name = next_step.name
-                self.assertEqual(next_step(input_str), expected_name)
+                self.assertEqual(next_step(input_str, {}), expected_name)
             else:
-                self.assertIsNone(next_step(input_str))
+                self.assertIsNone(next_step(input_str, {}))
 
     def test_get_children(self):
         next_step1 = NextStep()

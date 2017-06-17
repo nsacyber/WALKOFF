@@ -196,7 +196,7 @@ class Step(ExecutionElement):
             logger.debug('Step {0} executed successfully'.format(self.ancestry))
             return result
 
-    def get_next_step(self, error=False):
+    def get_next_step(self, accumulator, error=False):
         """Gets the NextStep object to be executed after the current Step.
         
         Args:
@@ -208,7 +208,7 @@ class Step(ExecutionElement):
         """
         next_steps = self.errors if error else self.conditionals
         for next_step in next_steps:
-            next_step = next_step(data_in=self.output)
+            next_step = next_step(self.output, accumulator)
             if next_step:
                 self.next_up = next_step
                 callbacks.ConditionalsExecuted.send(self)

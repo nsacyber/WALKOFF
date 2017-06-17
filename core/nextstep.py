@@ -61,8 +61,8 @@ class NextStep(ExecutionElement):
     def __eq__(self, other):
         return self.name == other.name and set(self.flags) == set(other.flags)
 
-    def __call__(self, data_in=None):
-        if all(flag(data_in=data_in) for flag in self.flags):
+    def __call__(self, data_in, accumulator):
+        if all(flag(data_in=data_in, accumulator=accumulator) for flag in self.flags):
             callbacks.NextStepTaken.send(self)
             logger.debug('NextStep is valid for input {0}'.format(data_in))
             return self.name

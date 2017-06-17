@@ -156,7 +156,7 @@ class Triggers(Base):
         filters = [Filter(action=filter_element['action'],
                           args=filter_element['args'])
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['flag'], args=conditional['args'], filters=filters)(data_in=data_in)
+        return Flag(action=conditional['flag'], args=conditional['args'], filters=filters)(data_in, {})
 
     def __repr__(self):
         return json.dumps(self.as_json())

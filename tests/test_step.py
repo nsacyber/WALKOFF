@@ -565,21 +565,21 @@ class TestStep(unittest.TestCase):
     def test_get_next_step_no_next_steps_no_errors(self):
         step = Step(app='HelloWorld', action='helloWorld')
         step.output = 'something'
-        self.assertIsNone(step.get_next_step())
+        self.assertIsNone(step.get_next_step({}))
 
     def test_get_next_step_error_no_next_steps_no_errors(self):
         step = Step(app='HelloWorld', action='helloWorld')
         step.output = 'something'
-        self.assertIsNone(step.get_next_step(error=True))
+        self.assertIsNone(step.get_next_step({}, error=True))
 
     def test_get_next_step_no_errors(self):
         flag1 = [Flag(action='mod1_flag2', args={'arg1': '3'}), Flag(action='mod1_flag2', args={'arg1': '-1'})]
         next_steps = [NextStep(flags=flag1, name='name1'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
         step.output = 2
-        self.assertEqual(step.get_next_step(), 'name2')
+        self.assertEqual(step.get_next_step({}), 'name2')
         step.output = 1
-        self.assertEqual(step.get_next_step(), 'name1')
+        self.assertEqual(step.get_next_step({}), 'name1')
 
     def test_get_next_step_with_errors(self):
         flag1 = [Flag(action='mod1_flag2', args={'arg1': '3'}), Flag(action='mod1_flag2', args={'arg1': '-1'})]
@@ -588,18 +588,18 @@ class TestStep(unittest.TestCase):
         error_steps = [NextStep(flags=flag2, name='error1'), NextStep(name='error2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, errors=error_steps)
         step.output = 2
-        self.assertEqual(step.get_next_step(), 'name2')
+        self.assertEqual(step.get_next_step({}), 'name2')
         step.output = 1
-        self.assertEqual(step.get_next_step(), 'name1')
+        self.assertEqual(step.get_next_step({}), 'name1')
 
     def test_get_next_step_error_no_next_steps(self):
         flag1 = [Flag(action='mod1_flag2', args={'arg1': '3'}), Flag(action='mod1_flag2', args={'arg1': '-1'})]
         error_steps = [NextStep(flags=flag1, name='error1'), NextStep(name='error2')]
         step = Step(app='HelloWorld', action='helloWorld', errors=error_steps)
         step.output = 2
-        self.assertEqual(step.get_next_step(error=True), 'error2')
+        self.assertEqual(step.get_next_step({}, error=True), 'error2')
         step.output = 1
-        self.assertEqual(step.get_next_step(error=True), 'error1')
+        self.assertEqual(step.get_next_step({}, error=True), 'error1')
 
     def test_get_next_step_error_with_next_steps(self):
         flag1 = [Flag(action='mod1_flag2', args={'arg1': '3'}), Flag(action='mod1_flag2', args={'arg1': '-1'})]
@@ -608,9 +608,9 @@ class TestStep(unittest.TestCase):
         error_steps = [NextStep(flags=flag2, name='error1'), NextStep(name='error2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, errors=error_steps)
         step.output = 2
-        self.assertEqual(step.get_next_step(error=True), 'error2')
+        self.assertEqual(step.get_next_step({}, error=True), 'error2')
         step.output = 1
-        self.assertEqual(step.get_next_step(error=True), 'error1')
+        self.assertEqual(step.get_next_step({}, error=True), 'error1')
 
     def test_get_children_no_ancestry(self):
         step = Step(app='HelloWorld', action='helloWorld')

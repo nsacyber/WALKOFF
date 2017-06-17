@@ -233,7 +233,7 @@ class Workflow(ExecutionElement):
         current = self.steps[current_name]
         while current:
             error_flag = yield current
-            next_step = current.get_next_step(error=error_flag)
+            next_step = current.get_next_step(self.accumulator, error=error_flag)
             # Check for call to child workflow
             if next_step and next_step[0] == '@':
                 child_step_generator, child_next_step, child_name = self.__get_child_step_generator(next_step)

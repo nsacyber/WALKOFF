@@ -4,7 +4,7 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
 from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
-                          inputs_to_xml, inputs_xml_to_dict)
+                          inputs_to_xml, inputs_xml_to_dict, dereference_step_routing)
 from core.validator import validate_flag_parameters, validate_parameter
 import logging
 logger = logging.getLogger(__name__)
@@ -46,14 +46,14 @@ class Flag(ExecutionElement):
                                ancestry=self.ancestry)
                         for filter_element in xml_element.findall('filters/*')]
 
-    def __call__(self, data_in=None):
+    def __call__(self, data_in, accumulator):
         data = data_in
 
         for filter_element in self.filters:
             data = filter_element(data_in=data)
         try:
-            args = deepcopy(self.args)
             data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.name))
             callbacks.FlagSuccess.send(self)
             logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
             args.update({self.data_in_api['name']: data})
