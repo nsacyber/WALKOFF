@@ -5,6 +5,7 @@ from tests.config import basic_app_api, test_apps_path
 from jsonschema.exceptions import RefResolutionError, ValidationError
 from core.helpers import import_all_apps
 from tests.apps import *
+from core.config.paths import walkoff_schema_path
 
 
 class TestAppApiValidation(unittest.TestCase):
@@ -23,14 +24,10 @@ class TestAppApiValidation(unittest.TestCase):
 
     def __generate_resolver_dereferencer(self, spec, expected_success=True):
         try:
-            walkoff_resolver = validate_spec_json(
-                spec,
-                os.path.join('core', 'schemas', 'walkoff_schema.json'),
-                '',
-                None)
+            walkoff_resolver = validate_spec_json(spec, walkoff_schema_path, '', None)
         except Exception as e:
             if expected_success:
-                self.fail('Unexpectedly invalid app api. Error: {}'.format(e))
+                self.fail('Unexpected invalid app api. Error: {}'.format(e))
             else:
                 raise
         self.dereferencer = partial(deref, resolver=walkoff_resolver)

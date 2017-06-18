@@ -2,6 +2,7 @@ import unittest
 import yaml
 from core.validator import *
 from core.helpers import import_all_flags, import_all_filters
+from core.config.paths import walkoff_schema_path
 from tests.config import basic_app_api
 
 
@@ -17,11 +18,7 @@ class TestFlagFilterValidation(unittest.TestCase):
 
     def __generate_resolver_dereferencer(self, spec, expected_success=True):
         try:
-            walkoff_resolver = validate_spec_json(
-                spec,
-                os.path.join('core', 'schemas', 'walkoff_schema.json'),
-                '',
-                None)
+            walkoff_resolver = validate_spec_json(spec, walkoff_schema_path, '', None)
         except Exception as e:
             if expected_success:
                 self.fail('Unexpectedly invalid app api. Error: {}'.format(e))

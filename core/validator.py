@@ -105,7 +105,7 @@ def convert_json(spec, param_in, message_prefix):
 def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join(core.config.paths.schema_path, 'walkoff_schema.json'),
+        os.path.join(core.config.paths.walkoff_schema_path),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
@@ -119,7 +119,7 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
 def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join(core.config.paths.schema_path, 'walkoff_schema.json'),
+        os.path.join(core.config.paths.walkoff_schema_path),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
