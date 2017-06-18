@@ -572,7 +572,6 @@ $(function(){
             inputElements.push({
                 group: 'nodes',
                 data:{
-                    id: inputInfo.name,
                     label: inputInfo.name,
                     parameters: inputs[inputInfo.name],
                     parent: id,
@@ -860,7 +859,6 @@ $(function(){
                 inputElements.push({
                     group: 'nodes',
                     data:{
-                        id: step.data.parameters.input.name,
                         label: Object.keys(step.data.parameters.input)[0],
                         parameters: step.data.parameters.input,
                         parent: step.data.id,
