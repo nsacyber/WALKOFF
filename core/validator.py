@@ -62,10 +62,21 @@ def convert_array(schema, param_in, message_prefix):
             logger.error(message)
             raise InvalidInput(message)
     else:
-        ret = []
-        for param in param_in:
-            ret.append(convert_json(schema['items'], param, message_prefix))
-        return ret
+        return [convert_json(schema['items'], param, message_prefix) for param in param_in]
+
+
+def __convert_json(schema, param_in, message_prefix):
+    ret = {}
+    if not isinstance(param_in, dict):
+        raise InvalidInput(
+            '{0} A JSON object was expected. '
+            'Instead got "{1}" of type {2}.'.format(message_prefix, param_in, type(param_in).__name__))
+    for param_name, param_value in param_in.items():
+        if param_name in schema['properties']:
+            ret[param_name] = convert_json(schema['properties'][param_name], param_value, message_prefix)
+        else:
+            raise InvalidInput('{0} Input has unknown parameter {1}'.format(message_prefix, param_name))
+    return ret
 
 
 def convert_json(spec, param_in, message_prefix):
@@ -81,20 +92,12 @@ def convert_json(spec, param_in, message_prefix):
                 raise InvalidInput(message)
         elif parameter_type == 'array':
             return convert_array(spec, param_in, message_prefix)
+        elif parameter_type == 'object':
+            return __convert_json(spec, param_in, message_prefix)
         else:
             raise InvalidApi('{0} has invalid api'.format(message_prefix))
     elif 'schema' in spec:
-        schema = spec['schema']
-        if 'type' in schema and schema['type'] == 'array':
-            return convert_array(schema, param_in, message_prefix)
-        else:
-            ret = {}
-            for param_name, param_value in param_in.items():
-                if param_name in schema['properties']:
-                    ret[param_name] = convert_json(schema['properties'][param_name], param_value, message_prefix)
-                else:
-                    raise InvalidInput('{0} Input has unknown parameter {1}'.format(message_prefix, param_name))
-            return ret
+        return convert_json(spec['schema'], param_in, message_prefix)
     else:
         raise InvalidApi('{0} has invalid api'.format(message_prefix))
 

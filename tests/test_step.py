@@ -392,7 +392,8 @@ class TestStep(unittest.TestCase):
     def test_to_from_xml_with_complex_inputs(self):
         self.__assert_xml_is_convertible(Step(app='HelloWorld',
                                               action='Json Sample',
-                                              inputs={'json_in': {'a': '-5.6', 'b': '4.3'}}))
+                                              inputs={'json_in': {'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3},
+                                                                  'c': ['1', '2', '3']}}))
 
     def test_to_from_xml_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
@@ -550,10 +551,12 @@ class TestStep(unittest.TestCase):
             step.execute(instance.instance, accumulator)
 
     def test_execute_with_complex_inputs(self):
-        step = Step(app='HelloWorld', action='Json Sample', inputs={'json_in': {'a': '-5.6', 'b': '4.3'}})
+        step = Step(app='HelloWorld', action='Json Sample',
+                    inputs={'json_in': {'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
+                                        'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5}, {'a': '', 'b': -0.5}]}})
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        self.assertAlmostEqual(step.execute(instance.instance, {}), -1.3)
-        self.assertAlmostEqual(step.output, -1.3)
+        self.assertAlmostEqual(step.execute(instance.instance, {}), 11.0)
+        self.assertAlmostEqual(step.output, 11.0)
 
     def test_execute_action_which_raises_exception(self):
         from tests.apps.HelloWorld.exceptions import CustomException

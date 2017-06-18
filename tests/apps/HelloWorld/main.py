@@ -47,7 +47,8 @@ class Main(App):
 
     @action
     def json_sample(self, json_in):
-        return json_in['a'] + json_in['b']
+        return (json_in['a'] + json_in['b']['a'] + json_in['b']['b'] + sum(json_in['c']) +
+                sum([x['b'] for x in json_in['d']]))
 
     def shutdown(self):
         # print("SHUTTING DOWN")

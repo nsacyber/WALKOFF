@@ -37,6 +37,7 @@ class TestServer(ServerTestCase):
                     'mod1_filter1': {'args': []},
                     'sub1_filter1': {'args': [{'required': True, 'name': 'arg1',
                                                'schema': {
+                                                   'type': 'object',
                                                    'properties': {'a': {'type': 'number'}, 'b': {'type': 'string'}}}}]},
                     'length': {'args': [], 'description': 'Returns the length of a collection'},
                     'sub1_filter3': {'args': []},
@@ -44,7 +45,8 @@ class TestServer(ServerTestCase):
                     'Top Filter': {'args': []},
                     'complex': {'args': [{'required': True, 'name': 'arg',
                                           'schema': {
-                                                'properties': {'a': {'type': 'number'},
+                                              'type': 'object',
+                                               'properties': {'a': {'type': 'number'},
                                                                'c': {'items': {'type': 'integer'}, 'type': 'array'},
                                                                'b': {'type': 'number'}}}}]}}
         self.assertDictEqual(response, {'filters': expected})
@@ -73,7 +75,8 @@ class TestServer(ServerTestCase):
             'mod1_flag1': {'args': []},
             'mod1_flag2': {'args': [{'required': True, 'type': 'integer', 'name': 'arg1'}]},
             'mod2_flag2': {'args': [{'required': True, 'name': 'arg1',
-                                     'schema': {'properties': {'a': {'type': 'integer'}, 'b': {'type': 'integer'}}}}]},
+                                     'schema': {'type': 'object',
+                                                'properties': {'a': {'type': 'integer'}, 'b': {'type': 'integer'}}}}]},
             'mod2_flag1': {'args': []},
             'sub1_top_flag': {'args': []}}
         self.assertDictEqual(response, {'flags': expected})
