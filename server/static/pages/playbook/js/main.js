@@ -137,7 +137,7 @@ $(function(){
                 var inputName = input.name;
                 delete input.name;
                 input.title = "Type: " + input.type;
-
+                
                 // var valueSchema = null;
                 // if (pythonType === "string") {
                 //     valueSchema = {
@@ -440,59 +440,8 @@ $(function(){
         });
     }
 
-    //TODO: bring up a separate JSON editor for step inputs
-    function onInputSelect(e) {
-        var ele = e.cyTarget;
-
-        currentNodeInParametersEditor = ele;
-
-        $("#parametersBar").removeClass('hidden');
-        var parameters = ele.parent().data('parameters');
-        $("#parameters").empty();
-
-        var schema = createNodeSchema(parameters);
-        JSONEditor.defaults.options.theme = 'bootstrap3';
-        JSONEditor.defaults.options.iconlib = "bootstrap3";
-        var editor = new JSONEditor(document.getElementById('parameters'),{
-            schema: schema,
-
-            startval: parameters,
-
-            disable_edit_json: true,
-
-            disable_properties: true,
-
-            // Disable additional properties
-            no_additional_properties: true,
-
-            // Require all properties by default
-            required_by_default: false
-        });
-
-        editor.getEditor('root.app').disable();
-        editor.getEditor('root.action').disable();
-        editor.getEditor('root.name').disable();
-
-        var firstCall = true;
-        editor.on('change',function() {
-            if (firstCall) {
-                firstCall = false;
-                return;
-            }
-            var updatedParameters = editor.getValue();
-            updatedParameters = transformParametersFromSchema(updatedParameters);
-            //updatedParameters.next = next;
-
-            ele.data('parameters', updatedParameters);
-            ele.data('label', updatedParameters.action);
-            setStartNode(updatedParameters.name);
-        });
-    }
-
     //TODO: bring up a separate JSON editor for "next" step information (filters/flags)
     function onEdgeSelect(event) {
-        $("#parametersBar").removeClass('hidden');
-        $("#parameters").empty();
         return;
     }
 
@@ -551,7 +500,6 @@ $(function(){
         }
 
         var inputs = {};
-        var inputElements = [];
         var actionInfo = appData[app].actions[action];
         _.each(actionInfo.args, function(inputInfo) {
 
@@ -566,21 +514,8 @@ $(function(){
             inputs[inputInfo.name] = {
                 format: inputInfo.type,
                 key: inputInfo.name,
-                value: defaultValue,
+                value: defaultValue
             };
-
-            inputElements.push({
-                group: 'nodes',
-                data:{
-                    id: inputInfo.name,
-                    label: inputInfo.name,
-                    parameters: inputs[inputInfo.name],
-                    parent: id,
-                    type: "inputNode"
-
-                }
-            });
-
         });
 
         // Add the node with the id just found to the graph in the location dropped
@@ -598,8 +533,7 @@ $(function(){
                     input: inputs,
                     name: id.toString(),
                     next: [],
-                },
-                type:"actionNode"
+                }
             },
         };
 
@@ -607,7 +541,6 @@ $(function(){
         else nodeToBeAdded.position = { x: x, y: y };
         
         var newNode = ur.do('add', nodeToBeAdded);
-        ur.do('add', inputElements);
     }
 
     // This function removes selected nodes and edges
@@ -843,29 +776,7 @@ $(function(){
                 }
                 return result;
             }, {});
-
         });
-    }
-
-    function addInputElements(workflowData){
-        var inputElements = [];
-        _.each(workflowData.steps, function(step){
-            if(!$.isEmptyObject(step.data.parameters.input)){
-                inputElements.push({
-                    group: 'nodes',
-                    data:{
-                        id: step.data.parameters.input.name,
-                        label: Object.keys(step.data.parameters.input)[0],
-                        parameters: step.data.parameters.input,
-                        parent: step.data.id,
-                        type: "inputNode"
-
-                    }
-                });
-            }
-
-        });
-        ur.do('add', inputElements);
     }
 
     function transformInputsToSave(workflowData) {
@@ -994,27 +905,13 @@ $(function(){
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'shape': 'roundrectangle',
-                        'background-color': '#5e6d77',
-                        'border-style':'solid',
-                        'border-color': '#3d464c',
+                        //'background-color': '#aecbdc',
                         'selection-box-color': 'red',
                         'font-family': 'Oswald',
                         'font-weight': 'lighter',
                         'font-size': '15px',
-                        'text-outline-width': 1,
-                        'text-outline-color': '#5e6d77',
-                        'color': '#fff',
                         'width':'40',
                         'height':'40'
-                    }
-                },
-                {
-                    selector: 'node[type = "inputNode"]',
-                    css: {
-                        'background-color': '#4e9e4b',
-                        'shape': 'ellipse',
-                        'text-outline-width': 1,
-                        'text-outline-color': '#2a4f29',
                     }
                 },
                 {
@@ -1042,7 +939,7 @@ $(function(){
                         'padding-right': '10px',
                         'text-valign': 'top',
                         'text-halign': 'center',
-                        'background-color': '#5e6d77'
+                        'background-color': '#bbb'
                     }
                 },
                 {
@@ -1050,16 +947,6 @@ $(function(){
                     css: {
                         'target-arrow-shape': 'triangle',
                         'curve-style': 'bezier',
-                    }
-                },
-                {
-                    selector: 'edge[type = "dataEdge"]',
-                    css: {
-                        'target-arrow-shape': 'triangle',
-                        'line-color': '#4e9e4b',
-                        'source-arrow-color': '#4e9e4b',
-                        'target-arrow-color': '#4e9e4b',
-                        'line-style': 'dashed'
                     }
                 }
             ]
@@ -1078,9 +965,7 @@ $(function(){
         cy.edgehandles({
             preview: false,
             toggleOffOnLeave: true,
-            handleNodes: 'node[type = "actionNode"]',
             complete: function( sourceNode, targetNodes, addedEntities ) {
-
                 var sourceParameters = sourceNode.data().parameters;
                 if (!sourceParameters.hasOwnProperty("next"))
                     sourceParameters.next = [];
@@ -1090,41 +975,24 @@ $(function(){
                 // remove the edge just added and add back in again using the undo/redo
                 // extension. Also add info to edge which is displayed when user clicks on it.
                 for (var i=0; i<targetNodes.length; i++) {
-                    var isChildNode = !targetNodes.isParent();
-                    var parentNode = null;
-                    if(isChildNode && targetNodes.data("type") === "inputNode"){
-                        console.log(addedEntities[i]);
-                        addedEntities[i].data('type', 'dataEdge');
-                        addedEntities[i].data('parameters', {
-                            temp:true
-                        });
-                        var sourceId = sourceNode.data().id;
-                        var targetAttribute = targetNodes.data().label;
-                        var targetParams = targetNodes.parent().data().parameters;
-                        targetParams.input[targetAttribute].value = "@<" + sourceId + ">";
-                        console.log(targetParams);
-                        //console.log(sourceParameters);
+                    addedEntities[i].data('parameters', {
+                        flags: [],
+                        name: targetNodes[i].data().parameters.name,
+                        nextStep: targetNodes[i].data().parameters.name,
+                        temp: true
+                    });
+
+                    //If we attempt to draw an edge that already exists, please remove it and take no further action
+                    if (_.find(sourceParameters.next, (next) => { return next.name === targetNodes[i].data().id })) {
+                        cy.remove(addedEntities);
+                        return;
                     }
-                    else{
-                        addedEntities[i].data('parameters', {
-                            flags: [],
-                            name: targetNodes[i].data().parameters.name,
-                            nextStep: targetNodes[i].data().parameters.name,
-                            temp: true
-                        });
 
-                        //If we attempt to draw an edge that already exists, please remove it and take no further action
-                        if (_.find(sourceParameters.next, (next) => { return next.name === targetNodes[i].data().id })) {
-                            cy.remove(addedEntities);
-                            return;
-                        }
+                    sourceParameters.next.push({
+                        flags: [],
+                        name: targetNodes[i].data().id // Note use id, not name since name can be changed
+                    });
 
-                        sourceParameters.next.push({
-                            flags: [],
-                            name: targetNodes[i].data().id // Note use id, not name since name can be changed
-                        });
-
-                    }
                     sourceNode.data('parameters', sourceParameters);
                 }
 
@@ -1139,11 +1007,6 @@ $(function(){
                 var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension
             },
         });
-
-        //extension for expand/collapse
-       var api = cy.expandCollapse({
-            undoable: true
-       });
 
         // Extension for copy and paste
         cy.clipboard();
@@ -1179,26 +1042,23 @@ $(function(){
         // Load the data into the graph
         // If a node does not have a label field, set it to
         // the action. The label is what is displayed in the graph.
-        // Adds the node type "actionNode" to each step as well
         var steps = workflowData.steps.map(function(value) {
             if (!value.data.hasOwnProperty("label")) {
                 value.data.label = value.data.parameters.action;
             }
-            value.data.type = "actionNode";
             return value;
         });
 
         transformInputsToLoad(workflowData);
 
         cy.add(steps);
-        addInputElements(workflowData);
+
         cy.fit(50);
 
         setStartNode(workflowData.start);
 
         // Configure handler when user clicks on node or edge
-        cy.on('select', 'node[type = "actionNode"]', onNodeSelect);
-        cy.on('select', 'node[type = "inputNode"]', onInputSelect);
+        cy.on('select', 'node', onNodeSelect);
         cy.on('select', 'edge', onEdgeSelect);
         cy.on('unselect', onUnselect);
 
@@ -1836,6 +1696,7 @@ $(function(){
         handleStreamStepsEvent(data);
     }
     window.stepResultsSSE.onerror = function(e){
+        console.log("ERROR");
         console.log(e);
         stepResultsSSE.close();
     }
