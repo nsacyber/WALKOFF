@@ -572,6 +572,7 @@ $(function(){
             inputElements.push({
                 group: 'nodes',
                 data:{
+                    name: inputInfo.name,
                     label: inputInfo.name,
                     parameters: inputs[inputInfo.name],
                     parent: id,
@@ -856,20 +857,28 @@ $(function(){
         var inputElements = [];
         _.each(workflowData.steps, function(step){
             if(!$.isEmptyObject(step.data.parameters.input)){
-                inputElements.push({
-                    group: 'nodes',
-                    data:{
-                        label: Object.keys(step.data.parameters.input)[0],
-                        parameters: step.data.parameters.input,
-                        parent: step.data.id,
-                        type: "inputNode"
-
-                    }
+                var x = 0;
+                _.each(step.data.parameters.input, function(input){
+                    inputElements.push({
+                        group: 'nodes',
+                        data:{
+                            name: input.name,
+                            label: Object.keys(step.data.parameters.input)[x],
+                            parameters: input,
+                            parent: step.data.id,
+                            type: "inputNode"
+                        }
+                    });
+                    x++;
                 });
-            }
-
+               }
+            });
+        var nodes = ur.do('add', inputElements);
+        var layout = nodes.layout({
+            name: 'grid',
+            condense: true,
+            cols: 1
         });
-        ur.do('add', inputElements);
     }
 
     function transformInputsToSave(workflowData) {
@@ -1102,7 +1111,7 @@ $(function(){
                         addedEntities[i].data('parameters', {
                             temp:true
                         });
-                        var sourceId = sourceNode.data().id;
+                        var sourceId = sourceNode.data().name;
                         var targetAttribute = targetNodes.data().label;
                         var targetParams = targetNodes.parent().data().parameters;
                         targetParams.input[targetAttribute].value = "@<" + sourceId + ">";
