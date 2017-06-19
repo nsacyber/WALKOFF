@@ -71,6 +71,9 @@ class Flag(ExecutionElement):
             callbacks.FlagError.send(self)
             return False
 
+    def __get_arg_type(self, arg_name):
+        return next((arg_api['type'] for arg_api in self.args_api if arg_api['name'] == arg_name), 'string')
+
     def as_json(self, with_children=True):
         """Gets the JSON representation of a Flag object.
         
@@ -81,9 +84,10 @@ class Flag(ExecutionElement):
         Returns:
             The JSON representation of a Flag object.
         """
-
+        args = {arg_name: {'key': arg_name, 'value': arg_value, 'format': self.__get_arg_type(arg_name)}
+                for arg_name, arg_value in self.args.items()}
         out = {"action": self.action,
-               "args": self.args}
+               "args": args}
         if with_children:
             out["filters"] = [filter_element.as_json() for filter_element in self.filters]
         else:
@@ -102,7 +106,7 @@ class Flag(ExecutionElement):
         Returns:
             The Flag object parsed from the JSON object.
         """
-        args = {arg_name: arg_json for arg_name, arg_json in json['args'].items()}
+        args = {arg_name: arg_value['value'] for arg_name, arg_value in json['args'].items()}
         flag = Flag(action=json['action'], args=args, parent_name=parent_name, ancestry=ancestry)
         filters = [Filter.from_json(filter_element, parent_name=flag.name, ancestry=flag.ancestry)
                    for filter_element in json['filters']]
