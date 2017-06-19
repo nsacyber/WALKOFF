@@ -379,3 +379,28 @@ class TestHelperFunctions(unittest.TestCase):
         accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
         with self.assertRaises(InvalidInput):
             dereference_step_routing(inputs, accumulator, 'message')
+
+    def test_dereference_step_routing_with_nested_inputs(self):
+        inputs = {'a': 1, 'b': '2', 'c': '@step1', 'd': {'e': 3, 'f': '@step2'}}
+        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
+        output = {'a': 1, 'b': '2', 'c': '2', 'd': {'e': 3, 'f': 3}}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_dereference_step_routing_with_ref_to_array(self):
+        inputs = {'a': 1, 'b': '2', 'c': '@step1', 'd': {'e': 3, 'f': '@step2'}}
+        accumulator = {'step1': [1, 2, 3], 'step2': 3, 'step3': 5}
+        output = {'a': 1, 'b': '2', 'c': [1, 2, 3], 'd': {'e': 3, 'f': 3}}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_dereference_step_routing_with_arrays_of_refs(self):
+        inputs = {'a': 1, 'b': '2', 'c': ['@step1', '@step2', '@step3'], 'd': {'e': 3, 'f': '@step2'}}
+        accumulator = {'step1': 1, 'step2': 3, 'step3': 5}
+        output = {'a': 1, 'b': '2', 'c': [1, 3, 5], 'd': {'e': 3, 'f': 3}}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_dereference_step_routing_with_arrays_of_objects(self):
+        inputs = {'a': 1, 'b': '2', 'c': [{'a': '@step1', 'b': '@step2'}, {'a': 10, 'b': '@step3'}],
+                  'd': {'e': 3, 'f': '@step2'}}
+        accumulator = {'step1': 1, 'step2': 3, 'step3': 5}
+        output = {'a': 1, 'b': '2', 'c': [{'a': 1, 'b': 3}, {'a': 10, 'b': 5}], 'd': {'e': 3, 'f': 3}}
+        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)

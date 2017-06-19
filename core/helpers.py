@@ -448,15 +448,26 @@ def inputs_to_xml(inputs, root='inputs'):
     return ElementTree.fromstring(xml_str)
 
 
-def dereference_step_routing(inputs, accumulator, message_prefix):
-    args = deepcopy(inputs)
-    for input_name, input_value in inputs.items():
-        if isinstance(input_value, str) and input_value.startswith('@'):
-            input_step_name = input_value[1:]
-            if input_step_name in accumulator:
-                args[input_name] = accumulator[input_step_name]
-            else:
-                message = ('{0}: Referenced step {1} '
-                           'has not been executed'.format(message_prefix, input_step_name))
-                raise InvalidInput(message)
-    return args
+def __get_step_from_reference(reference, accumulator, message_prefix):
+    input_step_name = reference[1:]
+    if input_step_name in accumulator:
+        return accumulator[input_step_name]
+    else:
+        message = ('{0}: Referenced step {1} '
+                   'has not been executed'.format(message_prefix, input_step_name))
+        raise InvalidInput(message)
+
+
+# TODO: Rewrite this using generators. Python doesn't play nice with recursion
+def dereference_step_routing(input_, accumulator, message_prefix):
+    if isinstance(input_, dict):
+        return {input_name: dereference_step_routing(input_value, accumulator, message_prefix)
+                for input_name, input_value in input_.items()}
+    elif isinstance(input_, list):
+        return [dereference_step_routing(element, accumulator, message_prefix) for element in input_]
+    else:
+        if isinstance(input_, str) and input_.startswith('@'):
+            return __get_step_from_reference(input_, accumulator, message_prefix)
+        else:
+            return input_
+
