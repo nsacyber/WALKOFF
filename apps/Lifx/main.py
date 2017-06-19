@@ -1,7 +1,6 @@
 import logging
 from apps import App, action
 import requests
-import json
 
 logger = logging.getLogger(__name__)
 import time
@@ -56,7 +55,7 @@ class Main(App):
             payload['duration'] = duration
         response = requests.put(self.__api_url('state'.format(self.name)), data=payload, headers=self.headers)
         time.sleep(duration)
-        return json.loads(response.text)
+        return response.text
 
     @action
     def toggle_power(self, duration, wait):
@@ -68,7 +67,7 @@ class Main(App):
         response = requests.post(self.__api_url('toggle'.format(self.name)), data=payload, headers=self.headers)
         if wait:
             time.sleep(duration)
-        return json.loads(response.text)
+        return response.text
 
     @action
     def breathe_effect(self, color, from_color, period, cycles, persist, power_on, peak, wait):
@@ -95,7 +94,7 @@ class Main(App):
                                  headers=self.headers)
         if wait:
             time.sleep(period * cycles)
-        return json.loads(response.text)
+        return response.text
 
     @action
     def pulse_effect(self, color, from_color, period, cycles, persist, power_on, wait):
@@ -120,4 +119,4 @@ class Main(App):
                                  headers=self.headers)
         if wait:
             time.sleep(period * cycles)
-        return json.loads(response.text)
+        return response.text

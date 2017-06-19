@@ -20,8 +20,8 @@ class Main(App):
 
     @action
     def linear_scale(self, value, min_value, max_value, low_scale, high_scale):
-        percentage_of_value_range = (max((min((value - min_value), min_value) / (max_value - min_value)), max_value))
-        return low_scale + percentage_of_value_range*(high_scale-low_scale)
+        fraction_of_value_range = (min((min((value - min_value), min_value) / (max_value - min_value)), 1.0))
+        return low_scale + fraction_of_value_range*(high_scale-low_scale)
 
     @action
     def divide(self, value, divisor):
