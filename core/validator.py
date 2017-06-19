@@ -7,6 +7,7 @@ from copy import deepcopy
 from jsonschema import RefResolver, draft4_format_checker, ValidationError
 from jsonschema.validators import Draft4Validator
 from connexion.utils import boolean
+from six import string_types
 import sys
 import logging
 
@@ -311,9 +312,6 @@ def validate_parameter(value, param, message_prefix):
     return converted_value
 
 
-def is_string_like(string_in):
-    return isinstance(string_in, str) or isinstance(string_in, unicode)
-
 def validate_parameters(api, inputs, message_prefix):
     api_dict = {}
     for param in api:
@@ -323,7 +321,7 @@ def validate_parameters(api, inputs, message_prefix):
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
-            if not is_string_like(inputs[param_name]):
+            if not isinstance(inputs[param_name], string_types):
                 converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
             else:
                 if inputs[param_name].startswith('@'):

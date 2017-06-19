@@ -1,6 +1,7 @@
 import importlib
 import sys
 import os
+from six import string_types
 from xml.etree import ElementTree
 import pkgutil
 import logging
@@ -466,7 +467,7 @@ def dereference_step_routing(input_, accumulator, message_prefix):
     elif isinstance(input_, list):
         return [dereference_step_routing(element, accumulator, message_prefix) for element in input_]
     else:
-        if isinstance(input_, str) and input_.startswith('@'):
+        if isinstance(input_, string_types) and input_.startswith('@'):
             return __get_step_from_reference(input_, accumulator, message_prefix)
         else:
             return input_
