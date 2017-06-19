@@ -38,7 +38,8 @@ class Filter(ExecutionElement):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
         self.args_api, self.data_in_api = get_filter_api(self.action)
-        args = {arg.tag: inputs_xml_to_dict(arg) for arg in xml_element.findall('args/*')}
+        args_xml = xml_element.find('args')
+        args = (inputs_xml_to_dict(args_xml) or {}) if args_xml is not None else {}
         self.args = validate_filter_parameters(self.args_api, args, self.action)
 
     def __call__(self, data_in, accumulator):

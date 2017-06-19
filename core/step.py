@@ -106,11 +106,15 @@ class Step(ExecutionElement):
         is_templated_xml = step_xml.find('templated')
         self.templated = is_templated_xml is not None and bool(is_templated_xml.text)
         get_app_action(self.app, self.run)
-        inputs = {arg.tag: inputs_xml_to_dict(arg) for arg in step_xml.findall('inputs/*')}
-        if not self.templated:
-            self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
+        input_xml = step_xml.find('inputs')
+        if input_xml is not None:
+            inputs = inputs_xml_to_dict(input_xml) or {}
+            if not self.templated:
+                self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
+            else:
+                self.input = inputs
         else:
-            self.input = inputs
+            self.input = validate_app_action_parameters(self.input_api, {}, self.app, self.action)
         device_field = step_xml.find('device')
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
@@ -138,8 +142,15 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = risk_field.text if risk_field is not None else 0
-        inputs = {arg.tag: inputs_xml_to_dict(arg) for arg in step_xml.findall('inputs/*')}
-        self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
+        input_xml = step_xml.find('inputs')
+        if input_xml is not None:
+            inputs = inputs_xml_to_dict(input_xml) or {}
+            if not self.templated:
+                self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
+            else:
+                self.input = inputs
+        else:
+            self.input = validate_app_action_parameters(self.input_api, {}, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
         self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)

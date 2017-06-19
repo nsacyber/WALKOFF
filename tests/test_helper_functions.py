@@ -191,6 +191,7 @@ class TestHelperFunctions(unittest.TestCase):
         expected_filters = {'top_level_filter': tests.util.flagsfilters.top_level_filter,
                             'filter1': tests.util.flagsfilters.filter1,
                             'length': tests.util.flagsfilters.length,
+                            'json_select': tests.util.flagsfilters.json_select,
                             'mod1.filter1': tests.util.flagsfilters.mod1.filter1,
                             'mod1.filter2': tests.util.flagsfilters.mod1.filter2,
                             'sub1.sub1_top_filter': tests.util.flagsfilters.sub1.sub1_top_filter,

@@ -367,3 +367,12 @@ class TestInputValidation(unittest.TestCase):
         value = [{'A': 'string in', 'B': '33'}, {'A': 'string2', 'B': 'invalid'}]
         with self.assertRaises(InvalidInput):
             convert_json(parameter_api, value, self.message)
+
+    def test_convert_object_array_unspecified_type(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'array'}}
+        value = ['@step1', 2, {'a': 'v', 'b': 6}]
+        expected = ['@step1', 2, {'a': 'v', 'b': 6}]
+        converted = convert_json(parameter_api, value, self.message)
+        self.assertListEqual(converted, expected)

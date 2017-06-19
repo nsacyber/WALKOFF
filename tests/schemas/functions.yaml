@@ -222,3 +222,18 @@ filters:
         description: The length of the collection
         schema:
           type: object
+  'select json':
+    run: json_select
+    dataIn: json
+    parameters:
+        - name: json
+          required: true
+          schema:
+              type: object
+        - name: path
+          required: true
+          type: array
+    returns:
+      Success:
+        schema:
+          type: object

@@ -61,3 +61,11 @@ def length(value):
             return result
     except TypeError:
         return None
+
+@datafilter
+def json_select(json, path):
+    working = json
+    for path_element in path:
+        working = working[path_element]
+    print('Selected: {0}'.format(working))
+    return working

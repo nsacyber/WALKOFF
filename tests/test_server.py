@@ -11,7 +11,6 @@ from server.return_codes import *
 
 
 class TestServer(ServerTestCase):
-
     def test_login(self):
         response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.assertEqual(response.status_code, SUCCESS)
@@ -46,9 +45,10 @@ class TestServer(ServerTestCase):
                     'complex': {'args': [{'required': True, 'name': 'arg',
                                           'schema': {
                                               'type': 'object',
-                                               'properties': {'a': {'type': 'number'},
-                                                               'c': {'items': {'type': 'integer'}, 'type': 'array'},
-                                                               'b': {'type': 'number'}}}}]}}
+                                              'properties': {'a': {'type': 'number'},
+                                                             'c': {'items': {'type': 'integer'}, 'type': 'array'},
+                                                             'b': {'type': 'number'}}}}]},
+                    'select json': {'args': [{'required': True, 'type': 'array', 'name': 'path'}]}}
         self.assertDictEqual(response, {'filters': expected})
 
     def test_read_flags(self):
@@ -81,13 +81,13 @@ class TestServer(ServerTestCase):
             'sub1_top_flag': {'args': []}}
         self.assertDictEqual(response, {'flags': expected})
 
-    # def test_get_all_list_actions(self):
-    #     expected_reduced_json = {
-    #         'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
-    #         'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
-    #                        'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
-    #     response = self.get_with_status_check('/apps/actions', headers=self.headers)
-    #     orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
+        # def test_get_all_list_actions(self):
+        #     expected_reduced_json = {
+        #         'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
+        #         'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
+        #                        'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
+        #     response = self.get_with_status_check('/apps/actions', headers=self.headers)
+        #     orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
 
 
 class TestConfiguration(ServerTestCase):

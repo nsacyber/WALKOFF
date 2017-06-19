@@ -15,10 +15,10 @@
 				<name>1</name>
 				<app>Lifx</app>
 				<action>breathe</action>
-				<device>LIFX 12cf1f</device>
+				<device>Light2</device>
 				<position>
-					<x>494.055032258</x>
-					<y>437.567112283</y>
+					<x>490</x>
+					<y>430</y>
 				</position>
 				<inputs>
 					<power_on>True</power_on>
@@ -28,17 +28,18 @@
 					<persist>False</persist>
 					<from_color>blue</from_color>
 					<cycles>5.0</cycles>
+					<wait>False</wait>
 				</inputs>
-				<next step="2"/>
+				<next step="3"/>
 			</step>
 			<step id="3">
 				<name>3</name>
 				<app>Lifx</app>
 				<action>pulse</action>
-				<device>LIFX 12cf1f</device>
+				<device>Light1</device>
 				<position>
-					<x>406.540089357</x>
-					<y>333.60458204</y>
+					<x>410</x>
+					<y>330</y>
 				</position>
 				<inputs>
 					<power_on>True</power_on>
@@ -47,21 +48,24 @@
 					<persist>True</persist>
 					<from_color>blue</from_color>
 					<cycles>10.0</cycles>
+					<wait>False</wait>
 				</inputs>
+				<next step="2"/>
 			</step>
 			<step id="2">
-				<name>2</name>
-				<app>Lifx</app>
-				<action>toggle power</action>
-				<device>LIFX 12cf1f</device>
+				<name>3</name>
+				<app>Utilities</app>
+				<action>select json</action>
 				<position>
-					<x>452.952347395</x>
-					<y>381.806710298</y>
+					<x>410</x>
+					<y>330</y>
 				</position>
 				<inputs>
-					<duration>2.0</duration>
+					<json>@3</json>
+					<path>
+					    <item>results</item>
+					</path>
 				</inputs>
-				<next step="3"/>
 			</step>
 		</steps>
 	</workflow>

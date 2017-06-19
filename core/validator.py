@@ -50,6 +50,10 @@ def convert_primitive_array(values, parameter_type):
 
 
 def convert_array(schema, param_in, message_prefix):
+    # print('converting array')
+    # print(locals())
+    if 'items' not in schema:
+        return param_in
     item_type = schema['items']['type']
     if item_type in TYPE_MAP:
         try:
@@ -66,11 +70,15 @@ def convert_array(schema, param_in, message_prefix):
 
 
 def __convert_json(schema, param_in, message_prefix):
-    ret = {}
+    # print('inside __convert_json')
+    # print(locals())
     if not isinstance(param_in, dict):
         raise InvalidInput(
             '{0} A JSON object was expected. '
             'Instead got "{1}" of type {2}.'.format(message_prefix, param_in, type(param_in).__name__))
+    if 'properties' not in schema:
+        return param_in
+    ret = {}
     for param_name, param_value in param_in.items():
         if param_name in schema['properties']:
             ret[param_name] = convert_json(schema['properties'][param_name], param_value, message_prefix)
@@ -270,6 +278,8 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix):
 
 
 def validate_parameter(value, param, message_prefix):
+    # print('validating param')
+    # print(locals())
     primitive_type = 'primitive' if 'type' in param else 'object'
     converted_value = None
     if value is not None:
@@ -277,10 +287,19 @@ def validate_parameter(value, param, message_prefix):
             primitive_type = param['type']
             if primitive_type in TYPE_MAP:
                 converted_value = validate_primitive_parameter(value, param, primitive_type, message_prefix)
+            elif primitive_type == 'array':
+                try:
+                    converted_value = convert_array(param, value, message_prefix)
+                    Draft4Validator(
+                        param, format_checker=draft4_format_checker).validate(converted_value)
+                except ValidationError as exception:
+                    message = '{0} has invalid input. Input {1} does not conform to ' \
+                              'validators: {2}'.format(message_prefix, value, str(exception))
+                    logger.error(message)
+                    raise InvalidInput(message)
             else:
                 raise InvalidInput('In {0}: Unknown parameter type {1}'.format(message_prefix, primitive_type))
         else:
-            # schema = param['schema']
             try:
                 converted_value = convert_json(param, value, message_prefix)
                 Draft4Validator(
@@ -306,8 +325,11 @@ def validate_parameters(api, inputs, message_prefix):
     seen_params = set()
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
+        # print('validating {0}'.format(param_name))
         if param_name in inputs:
+            # print('param in inputs')
             if not isinstance(inputs[param_name], str):
+                # print('not instance of string')
                 converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
             else:
                 if inputs[param_name].startswith('@'):
@@ -355,28 +377,3 @@ def validate_flag_parameters(api, inputs, flag):
 def validate_filter_parameters(api, inputs, filter_name):
     return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
 
-
-"""
-Pre-validation steps:
-    1. Validate that the Walkoff conforms to the proper schema
-        Done with simple JSON schema validation
-    2. Replace references in the schema with actual reference. Validate if reference is malformed or not found
-        Need to hijack swagger-spec-validator
-    3. Validate that all the methods pointed to exist
-        Can use the resolver from connexion
-    4. Validate that the defaults are valid for the given type
-        (Do not do. Could be useful to have non-conforming defaults)
-        Can use connexion.operation.Operation.validate_defaults()
-    <Any action which does not conform to the standards is not loaded into the metadata and cannot be used>
-
-    5. Upon loading workflow, validate that all the apps and actions used exist
-    6. Validate that the inputs to all the steps are valid (use Validator.validate_parameters)
-    <Any workflow which is invalid is not loaded into the controller and cannot be used>
-
-    7. When executing, validate that the previous step's output is valid for he given step
-"""
-
-"""
-To do actual verification, should be done action by action:
-
-"""
