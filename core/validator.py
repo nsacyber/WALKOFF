@@ -50,8 +50,6 @@ def convert_primitive_array(values, parameter_type):
 
 
 def convert_array(schema, param_in, message_prefix):
-    # print('converting array')
-    # print(locals())
     if 'items' not in schema:
         return param_in
     item_type = schema['items']['type']
@@ -70,8 +68,6 @@ def convert_array(schema, param_in, message_prefix):
 
 
 def __convert_json(schema, param_in, message_prefix):
-    # print('inside __convert_json')
-    # print(locals())
     if not isinstance(param_in, dict):
         raise InvalidInput(
             '{0} A JSON object was expected. '
@@ -278,8 +274,6 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix):
 
 
 def validate_parameter(value, param, message_prefix):
-    # print('validating param')
-    # print(locals())
     primitive_type = 'primitive' if 'type' in param else 'object'
     converted_value = None
     if value is not None:
@@ -317,6 +311,9 @@ def validate_parameter(value, param, message_prefix):
     return converted_value
 
 
+def is_string_like(string_in):
+    return isinstance(string_in, str) or isinstance(string_in, unicode)
+
 def validate_parameters(api, inputs, message_prefix):
     api_dict = {}
     for param in api:
@@ -325,11 +322,8 @@ def validate_parameters(api, inputs, message_prefix):
     seen_params = set()
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
-        # print('validating {0}'.format(param_name))
         if param_name in inputs:
-            # print('param in inputs')
-            if not isinstance(inputs[param_name], str):
-                # print('not instance of string')
+            if not is_string_like(inputs[param_name]):
                 converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
             else:
                 if inputs[param_name].startswith('@'):
