@@ -608,11 +608,6 @@ $(function(){
         
         var newNode = ur.do('add', nodeToBeAdded);
         ur.do('add', inputElements);
-        var layout = newNode.children().layout({
-            name: 'grid',
-            condense: true,
-            cols: 1
-        });
     }
 
     // This function removes selected nodes and edges
@@ -624,7 +619,6 @@ $(function(){
 
     function onNodeAdded(event) {
         var node = event.cyTarget;
-        console.log(node);
         // If the number of nodes in the graph is one, set the start node to it.
         if (node.isNode() && cy.nodes().size() === 1) {
             setStartNode(node.data("parameters").name);
@@ -1147,9 +1141,9 @@ $(function(){
         });
 
         //extension for expand/collapse
-        var api = cy.expandCollapse({
+       var api = cy.expandCollapse({
             undoable: true
-        });
+       });
 
         // Extension for copy and paste
         cy.clipboard();
