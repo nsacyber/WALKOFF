@@ -137,6 +137,7 @@ $(function(){
                 var inputName = input.name;
                 delete input.name;
                 input.title = "Type: " + input.type;
+                if (!input.enum) input.type = "string";
                 
                 // var valueSchema = null;
                 // if (pythonType === "string") {
@@ -167,7 +168,7 @@ $(function(){
 
                 subSchema.properties[inputName] = {
                     type: "object",
-                    title: "Input " + (index+1) + ": " + inputName,
+                    title: "Input " + (index+1) + ": " + inputName + (input.required ? ' *' : ''),
                     propertyOrder: index,
                     options: {
                         disable_collapse: true
@@ -199,8 +200,7 @@ $(function(){
         var definitions = {};
 
         // Create the sub-schema for the action inputs
-        var actions = appData[parameters.app].actions;
-        var actionInputSchema = convertInputToSchema(actions[parameters.action].args, parameters.action);
+        var actionInputSchema = convertInputToSchema(appData[parameters.app].actions[parameters.action].args, parameters.action);
 
         // Create the sub-schema for the flags
         var flags = flagsList;
@@ -755,6 +755,10 @@ $(function(){
             'success': function (data) {
                 saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
+
+                //If nothing is currently loaded, load our new workflow.
+                if (!cy) loadWorkflow(playbookName, workflowName);
+
                 $.notify('Workflow ' + workflowName + ' added successfully.', 'success');
             },
             'error': function (e) {
@@ -790,7 +794,8 @@ $(function(){
         });
     }
 
-    function saveWorkflow(playbookName, workflowName, workflowData) {
+    function saveWorkflow(playbookName, workflowName, _workflowData) {
+        var workflowData = _.cloneDeep(_workflowData);
         transformInputsToSave(workflowData);
         var data = JSON.stringify({start: startNode, cytoscape: JSON.stringify(workflowData)});
         $.ajax({
