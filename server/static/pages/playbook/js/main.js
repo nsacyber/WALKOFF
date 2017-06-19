@@ -608,6 +608,7 @@ $(function(){
         
         var newNode = ur.do('add', nodeToBeAdded);
         ur.do('add', inputElements);
+
         var layout = newNode.children().layout({
             name: 'grid',
             condense: true,
@@ -1028,6 +1029,7 @@ $(function(){
                         'shape': 'ellipse',
                         'text-outline-width': 1,
                         'text-outline-color': '#2a4f29',
+                        'events': 'no'
                     }
                 },
                 {
@@ -1111,12 +1113,12 @@ $(function(){
                         addedEntities[i].data('parameters', {
                             temp:true
                         });
-                        var sourceId = sourceNode.data().name;
+                        var sourceId = sourceNode.data().id;
+                        console.log(sourceNode.data());
                         var targetAttribute = targetNodes.data().label;
                         var targetParams = targetNodes.parent().data().parameters;
                         targetParams.input[targetAttribute].value = "@<" + sourceId + ">";
-                        console.log(targetParams);
-                        //console.log(sourceParameters);
+                        console.log(targetParams.input[targetAttribute].value);
                     }
                     else{
                         addedEntities[i].data('parameters', {
@@ -1204,7 +1206,9 @@ $(function(){
         transformInputsToLoad(workflowData);
 
         cy.add(steps);
+
         addInputElements(workflowData);
+
         cy.fit(50);
 
         setStartNode(workflowData.start);
@@ -1221,6 +1225,7 @@ $(function(){
         cy.on('remove', 'edge', onEdgeRemove);
 
         $("#cy-json-data").val(JSON.stringify(workflowData, null, 2));
+
 
     }
 
