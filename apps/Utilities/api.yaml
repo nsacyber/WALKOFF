@@ -16,12 +16,13 @@ actions:
           description: The json object to select from
           required: true
           schema:
-              type: object
+            type: object
         - name: path
           description: Path through the json
           required: true
-          schema:
-              type: array
+          type: array
+          items:
+            type: string
     returns:
       Success:
         schema:
