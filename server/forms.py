@@ -224,7 +224,7 @@ class AddUserForm(Form):
 class EditUserForm(Form):
     username = StringField('Username', [validators.required(message='Enter a user name')])
     old_password = PasswordField('Old Password', [validators.Optional()])
-    new_password = PasswordField('New Password', [validators.Optional(), EqualTo('confirm', message='Passwords must match')])
-    confirm = PasswordField('Repeat New Password')
+    new_password = PasswordField('New Password', [validators.Optional(), EqualTo('confirm_new_password', message='Passwords must match')])
+    confirm_new_password = PasswordField('Repeat New Password')
     roles = SelectField('Roles', choices=[])
     # email = StringField('Email', [validators.DataRequired("Please enter an email address.")])

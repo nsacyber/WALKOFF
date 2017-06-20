@@ -55,6 +55,11 @@ $(function() {
             return;
         }
 
+        if ($('#new_password').val() !== $('#confirm_new_password').val()) {
+            $.notify('The newly entered passwords do not match.', 'error');
+            return;
+        }
+
         $.ajax({
             url: 'users/' + $currentUser['username'],
             data: $("#editUserForm").serialize(),
@@ -122,6 +127,11 @@ $("#username").change(function () {
 });
 
 $("#saveNewUser").click(function(){
+    if ($('#password').val() !== $('#confirm').val()) {
+        $.notify('The newly entered passwords do not match.', 'error');
+        return;
+    }
+
     username = $("#addUserForm #username").val();
     $.ajax({
         url: 'users/' + username,
