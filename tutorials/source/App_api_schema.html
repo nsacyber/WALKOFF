@@ -1,0 +1,188 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>App API schema</h1>
+
+        <h4>Primitive type conversion</h4>
+        <p>Primitive types are converted to the following Python data types</p>
+        <table>
+            <tr>
+                <th>Schema Type</th>
+                <th>Python Type</th>
+            </tr>
+            <tr>
+                <td>string</td>
+                <td>str</td>
+            </tr>
+            <tr>
+                <td>integer</td>
+                <td>int</td>
+            </tr>
+            <tr>
+                <td>number</td>
+                <td>float</td>
+            </tr>
+            <tr>
+                <td>boolean</td>
+                <td>bool</td>
+            </tr>
+        </table>
+
+        <h3><b>In the following examples we use the app API schema demonstrate schema validation capabilities</b></h3>
+        
+        <h4><b>Limiting numbers to minimum and maximum values</b></h4>
+        <p>Type can be either <code>"number"</code> or <code>"integer"</code>. The limits of integer types, of course,
+            must also be integers</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: value
+        type: number
+        minimum: 0.35
+        maximum: 1000.36
+        </code></pre>
+
+        <h4><b>Limiting the length of a string</b></h4>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: password
+        type: string
+        minimumLength: 4
+        maximumLength: 25
+        </code></pre>
+
+        <h4><b>Using enumerations</b></h4>
+        <p>You can limit the input of an action to a set of values. These allowed inputs will be displayed as a drop-down
+            menu in the workflow editor</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        type: string
+        enum: ['on', off, running, error]
+        </code></pre>
+        <p>Note: The "on" parameter is in quotations because it is a reserved keyword in YAML</p>
+        <h4><b>Using arrays of primitive values</b></h4>
+        <p>You can use arrays of primitive values as inputs. An array of numbers such as [7.5, 8,2, 3, 9,7] is specified 
+            in the following way:</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        schema:
+          type: array
+          items:
+            type: number
+        </code></pre>
+
+        <h4><b>Describing objects</b></h4>
+        <p>You can use objects as inputs. This schema would define an object with fields 
+            <code>field1, field2, field3</code> with types <code>string, integer</code>, and <code>array</code> of 
+            strings</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        schema:
+          type: object
+          properties:
+            field1:
+              type: string
+            field2:
+              type: integer
+            field3:
+              type: array
+              items:
+                type: string
+        </code></pre>
+
+        <h4><b>Describing arrays of objects</b></h4>
+        <p>This schema would define an input which is an array of objects each with fields <code>field1, field2</code> 
+            with types <code>string, integer</code>.</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        schema:
+          type: array
+          items:
+            type: object
+              properties:
+                field1:
+                  type: string
+                field2:
+                  type: integer
+        </code></pre>
+
+        <h4><b>Required parameters</b></h4>
+        <p>By default, no parameter is required, and it defaults to <code>None</code>. To make a parameter required, you 
+            can mark it as required. </p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: value
+        type: number
+        required: true
+        </code></pre> 
+        <p>Note that <code>required: false</code> is a redundant and invalid specifier and will cause your api to be 
+            invalidated on initialization of the server.</p>
+
+        <h4><b>Required object properties</b></h4>
+        <p>You can set some properties of an object as required. This schema would define an object with fields
+            <code>field1, field2, field3</code> of which only <code>field1</code> and <code>field2</code> are required.</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        schema:
+          type: object
+          required: [field1, field2]
+          properties:
+            field1:
+              type: string
+            field2:
+              type: integer
+            field3:
+              type: array
+              items:
+                type: string
+        </code></pre>
+
+        <h4><b>Using defaults</b></h4>
+        <p>You can set a default parameter with the <code>default</code> field. The following schema sets the default to 
+            10.</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        type: integer
+        default: 10
+        </code></pre>
+        <p>This default will be displayed on the workflow editor.</p>
+
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
