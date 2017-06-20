@@ -1,8 +1,6 @@
 import logging
 from apps import App, action
 import teslajson
-import core.config.paths
-import pyaes
 
 logger = logging.getLogger(__name__)
 

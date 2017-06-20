@@ -1,5 +1,5 @@
 from setuptools import setup
 
 setup(
-    install_requires = ['splunk-sdk']
+    install_requires = ['pyowm']
 )
