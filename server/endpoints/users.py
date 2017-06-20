@@ -74,8 +74,8 @@ def update_user(user_name):
                 if verify_password(form.old_password.data, user.password):
                     user.password = encrypt_password(form.new_password.data)
                 else:
-                    current_app.logger.error('Could not edit user {0}. Passwords do not match.'.format(user_name))
-                    return {"error": 'Passwords do not match.'.format(user_name)}, INVALID_INPUT_ERROR
+                    current_app.logger.error('Could not edit user {0}. Current user password was entered incorrectly.'.format(user_name))
+                    return {"error": 'Current user password was entered incorrectly.'.format(user_name)}, INVALID_INPUT_ERROR
             if form.roles.data:
                 user.set_roles(form.roles.data)
             running_context.db.session.commit()
