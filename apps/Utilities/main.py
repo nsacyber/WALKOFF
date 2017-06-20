@@ -9,9 +9,8 @@ class Main(App):
     @action
     def json_select(self, json, path):
         working = json
-        for path_element in path:
+        for path_element in path.split('.'):
             working = working[path_element]
-        print('Selected: {0}'.format(working))
         return working
 
     @action

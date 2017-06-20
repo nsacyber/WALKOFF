@@ -1,8 +1,8 @@
 walkoff: '0.1'
 info:
   version: 1.0.0
-  title: WebCam
-  description: A simple app for webcams. Linux only.
+  title: Skeleton App
+  description: An app template.
   contact:
     name: Walkoff Team
   license:
