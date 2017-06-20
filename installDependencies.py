@@ -1,6 +1,7 @@
-import os, shutil
+import os
 import argparse
 from core.helpers import list_apps
+import pip
 
 
 def cmd_line():
@@ -19,12 +20,8 @@ if __name__ == '__main__':
 
     for app in apps:
         print("Installing dependencies for " + app + " App...")
-        deps = []
-        path = os.path.abspath('apps/' + app + '/setup.py')
+        path = os.path.abspath('apps/' + app + '/requirements.txt')
         if os.path.isfile(path) is False:
-            print("No setup.py script found in "+app+" folder. Skipping...")
+            print("No requirements.txt file found in "+app+" folder. Skipping...")
             continue
-        os.system("python "+path+" install")
-
-    if os.path.isdir('./UNKNOWN.egg-info'):
-        shutil.rmtree('./UNKNOWN.egg-info')
+        pip.main(['install', '-r', path])
