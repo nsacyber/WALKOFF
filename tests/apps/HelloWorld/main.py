@@ -42,10 +42,6 @@ class Main(App):
         raise CustomException
 
     @action
-    def add_to_previous_step(self, data, num):
-        return data + num
-
-    @action
     def json_sample(self, json_in):
         return (json_in['a'] + json_in['b']['a'] + json_in['b']['b'] + sum(json_in['c']) +
                 sum([x['b'] for x in json_in['d']]))

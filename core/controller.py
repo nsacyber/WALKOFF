@@ -77,7 +77,10 @@ def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
     args = {'start': start, 'start_input': start_input}
     subscription.set_subscriptions(subs)
     workflow.uid = uid
-    workflow.execute(**args)
+    try:
+        workflow.execute(**args)
+    except Exception as e:
+        logger.error('Caught error while executing workflow {0}. {1}'.format(workflow.name, e))
     return "done"
 
 

@@ -127,7 +127,6 @@ class Triggers(Base):
             conditionals = json.loads(trigger.condition)
             if all(Triggers.__execute_trigger(conditional, data_in) for conditional in conditionals):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
-
                 if workflow_to_be_executed:
                     if input_in:
                         logger.info(
@@ -139,7 +138,6 @@ class Triggers(Base):
                                                                           workflow_name=trigger.workflow,
                                                                           start_input=input_in)
                         returned_json["executed"].append({'name': trigger.name, 'id': uid})
-
                     except Exception as e:
                         returned_json["errors"].append({trigger.name: "Error executing workflow: {0}".format(str(e))})
                 else:
@@ -152,11 +150,17 @@ class Triggers(Base):
         return returned_json
 
     @staticmethod
+    def __to_new_input_format(args_json):
+        return {arg['name']: arg['value'] for arg in args_json}
+
+    @staticmethod
     def __execute_trigger(conditional, data_in):
         filters = [Filter(action=filter_element['action'],
-                          args=filter_element['args'])
+                          args=Triggers.__to_new_input_format(filter_element['args']))
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['flag'], args=conditional['args'], filters=filters)(data_in, {})
+        return Flag(action=conditional['flag'],
+                    args=Triggers.__to_new_input_format(conditional['args']),
+                    filters=filters)(data_in, {})
 
     def __repr__(self):
         return json.dumps(self.as_json())
