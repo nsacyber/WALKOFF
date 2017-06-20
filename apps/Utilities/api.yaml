@@ -12,17 +12,14 @@ actions:
     run: json_select
     description: Gets a selected sub element of a json
     parameters:
-        - name: json
-          description: The json object to select from
+        - name: json_reference
+          description: Step reference to the json object
           required: true
-          schema:
-            type: object
-        - name: path
-          description: Path through the json
+          type: string
+        - name: element
+          description: element of the json
           required: true
-          type: array
-          items:
-            type: string
+          type: string
     returns:
       Success:
         schema:
@@ -31,10 +28,10 @@ actions:
     run: list_select
     description: Gets an element from a list
     parameters:
-        - name: list_in
-          description: The list from which to select the element
+        - name: list_reference
+          description: Step reference to the list from which to select the element
           required: true
-          type: array
+          type: string
         - name: index
           description: The index of the element
           required: True

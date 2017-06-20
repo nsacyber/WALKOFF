@@ -39,7 +39,10 @@ TYPE_MAP = {
 
 def make_type(value, type_literal):
     type_func = TYPE_MAP.get(type_literal)
-    return type_func(value)
+    if (isinstance(value, dict) or isinstance(value, list)) and type_func == str:
+        return json.dumps(value)
+    else:
+        return type_func(value)
 
 
 def convert_primitive_type(value, parameter_type):

@@ -1,5 +1,6 @@
 from apps import App, action
 import time
+import json
 
 class Main(App):
 
@@ -7,15 +8,12 @@ class Main(App):
         App.__init__(self, name, device)
 
     @action
-    def json_select(self, json, path):
-        working = json
-        for path_element in path.split('.'):
-            working = working[path_element]
-        return working
+    def json_select(self, json_reference, element):
+        return json.loads(json_reference)[element]
 
     @action
-    def list_select(self, list_in, index):
-        return list_in[index]
+    def list_select(self, list_reference, index):
+        return json.loads(list_reference)[index]
 
     @action
     def linear_scale(self, value, min_value, max_value, low_scale, high_scale):

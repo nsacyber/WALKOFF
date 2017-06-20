@@ -195,3 +195,4 @@ class TestFilter(unittest.TestCase):
 
     def test_get_children(self):
         self.assertDictEqual(Filter(ancestry=['filter_parent'], action='Top Filter').get_children(['anything']), {})
+

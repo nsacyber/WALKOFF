@@ -48,7 +48,7 @@ class TestServer(ServerTestCase):
                                               'properties': {'a': {'type': 'number'},
                                                              'c': {'items': {'type': 'integer'}, 'type': 'array'},
                                                              'b': {'type': 'number'}}}}]},
-                    'select json': {'args': [{'required': True, 'type': 'array', 'name': 'path'}]}}
+                    'select json': {'args': [{'required': True, 'type': 'string', 'name': 'element'}]}}
         self.assertDictEqual(response, {'filters': expected})
 
     def test_read_flags(self):

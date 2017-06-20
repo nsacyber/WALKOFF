@@ -224,15 +224,14 @@ filters:
           type: object
   'select json':
     run: json_select
-    dataIn: json
+    dataIn: json_in
     parameters:
-        - name: json
+        - name: json_in
           required: true
-          schema:
-              type: object
-        - name: path
+          type: object
+        - name: element
+          type: string
           required: true
-          type: array
     returns:
       Success:
         schema:

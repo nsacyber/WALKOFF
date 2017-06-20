@@ -1,6 +1,6 @@
 from core.decorators import *
 import re
-
+import json
 
 @datafilter
 def top_level_filter(value):
@@ -63,9 +63,6 @@ def length(value):
         return None
 
 @datafilter
-def json_select(json, path):
-    working = json
-    for path_element in path:
-        working = working[path_element]
-    print('Selected: {0}'.format(working))
-    return working
+def json_select(json_in, element):
+    return json_in[element]
+

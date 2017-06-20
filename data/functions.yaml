@@ -57,19 +57,17 @@ filters:
           type: object
   'json select':
     run: selection.json_select
-    dataIn: json
-    description: Gets a selected sub element of a json
+    dataIn: json_in
+    description: Gets a selected sub element of a json from the output of a step
     parameters:
-        - name: json
+        - name: json_in
           description: The json object to select from
           required: true
-          type: object
-        - name: path
-          description: Path through the json
+          type: string
+        - name: element
+          description: The element of the JSON to select
           required: true
-          type: array
-          items:
-            type: string
+          type: string
     returns:
       Success:
         schema:
@@ -80,7 +78,7 @@ filters:
     description: Gets an element from a list
     parameters:
         - name: list_in
-          description: The list from which to select the element
+          description: The reference to the step to get the list from which to select the element
           required: true
           type: array
         - name: index
