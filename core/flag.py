@@ -72,7 +72,18 @@ class Flag(ExecutionElement):
             return False
 
     def __get_arg_type(self, arg_name):
-        return next((arg_api['type'] for arg_api in self.args_api if arg_api['name'] == arg_name), 'string')
+        for arg_api in self.args_api:
+            if arg_api['name'] == arg_name:
+                if 'type' in arg_api:
+                    return arg_api['type']
+                elif 'schema' in arg_api:
+                    return arg_api['schema']['type']
+                else:
+                    logger.error('Invalid api schema. This should never happen! Returning string type')
+                    return 'string'
+        else:
+            logger.error('Invalid api schema. This should never happen! Returning string type')
+            return 'string'
 
     def as_json(self, with_children=True):
         """Gets the JSON representation of a Flag object.

@@ -80,26 +80,30 @@ class TestFlag(unittest.TestCase):
 
     def test_as_json_with_args_with_children(self):
         flag = Flag(action='mod1_flag2', args={'arg1': '11113'})
-        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': []}
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 11113}},
+                    'filters': []}
         self.assertDictEqual(flag.as_json(), expected)
 
     def test_as_json_with_args_without_children(self):
         flag = Flag(action='mod1_flag2', args={'arg1': '11113'})
-        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': []}
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 11113}},
+                    'filters': []}
         self.assertDictEqual(flag.as_json(with_children=False), expected)
 
     def test_as_json_with_args_and_filters_with_children(self):
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
         flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters)
         filters_json = [filter_element.as_json() for filter_element in flag.filters]
-        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': filters_json}
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 11113}},
+                    'filters': filters_json}
         self.assertDictEqual(flag.as_json(), expected)
 
     def test_as_json_with_args_and_filters_without_children(self):
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
         flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters)
         filters_json = [filter_element.name for filter_element in flag.filters]
-        expected = {'action': 'mod1_flag2', 'args': {'arg1': 11113}, 'filters': filters_json}
+        expected = {'action': 'mod1_flag2', 'args': {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 11113}},
+                    'filters': filters_json}
         self.assertDictEqual(flag.as_json(with_children=False), expected)
 
     def test_to_xml_action_only(self):
@@ -222,24 +226,28 @@ class TestFlag(unittest.TestCase):
         self.__compare_init(flag, 'Top Flag', 'parent', ['a', 'b', 'Top Flag'], [], {})
 
     def test_from_json_with_args(self):
-        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': []}
+        args = {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 3}}
+        json_in = {'action': 'mod1_flag2', 'args': args, 'filters': []}
         flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
         self.__compare_init(flag, 'mod1_flag2', 'parent', ['a', 'b', 'mod1_flag2'], [], {'arg1': 3})
 
     def test_from_json_with_args_and_routing(self):
-        json_in = {'action': 'mod1_flag2', 'args': {'arg1': '@step1'}, 'filters': []}
+        args = {'arg1': {'format': 'integer', 'key': 'arg1', 'value': '@step1'}}
+        json_in = {'action': 'mod1_flag2', 'args': args, 'filters': []}
         flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
         self.__compare_init(flag, 'mod1_flag2', 'parent', ['a', 'b', 'mod1_flag2'], [], {'arg1': '@step1'})
 
     def test_from_json_with_invalid_args(self):
-        json_in = {'action': 'mod1_flag2', 'args': {'invalid': 3}, 'filters': []}
+        args = {'invalid': {'format': 'integer', 'key': 'invalid', 'value': 3}}
+        json_in = {'action': 'mod1_flag2', 'args': args, 'filters': []}
         with self.assertRaises(InvalidInput):
             Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
 
     def test_from_json_with_filters(self):
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
         filters_json = [filter_elem.as_json() for filter_elem in filters]
-        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': filters_json}
+        args = {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 3}}
+        json_in = {'action': 'mod1_flag2', 'args': args, 'filters': filters_json}
         flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
         self.__compare_init(flag, 'mod1_flag2', 'parent', ['a', 'b', 'mod1_flag2'], filters, {'arg1': 3})
         for filter_element in flag.filters:
@@ -247,14 +255,18 @@ class TestFlag(unittest.TestCase):
             self.assertListEqual(filter_element.ancestry, ['a', 'b', 'mod1_flag2', filter_element.action])
 
     def test_from_json_with_filters_with_invalid_action(self):
-        filters_json = [{'action': 'Top Filter', 'args': {}}, {'action': 'invalid', 'args': {'arg1': '5.4'}}]
-        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': filters_json}
+        args = {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 3}}
+        filters_json = [{'action': 'Top Filter', 'args': {}}, {'action': 'invalid',
+                                                               'args': {'arg1': {'format': 'number', 'key': 'arg1', 'value': 5.4}}}]
+        json_in = {'action': 'mod1_flag2', 'args': args, 'filters': filters_json}
         with self.assertRaises(UnknownFilter):
             Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
 
     def test_from_json_with_filters_with_invalid_args(self):
-        filters_json = [{'action': 'Top Filter', 'args': {}}, {'action': 'mod1_filter2', 'args': {'arg1': 'invalid'}}]
-        json_in = {'action': 'mod1_flag2', 'args': {'arg1': 3}, 'filters': filters_json}
+        args = {'arg1': {'format': 'integer', 'key': 'arg1', 'value': 3}}
+        filter2_args = {'arg1': {'format': 'number', 'key': 'arg1', 'value': 'invalid'}}
+        filters_json = [{'action': 'Top Filter', 'args': {}}, {'action': 'mod1_filter2', 'args': filter2_args}]
+        json_in = {'action': 'mod1_flag2', 'args': args, 'filters': filters_json}
         with self.assertRaises(InvalidInput):
             Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
 
