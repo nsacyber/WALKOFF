@@ -6,7 +6,7 @@ function formatPlaybooksForJSTree(playbook_data){
         var workflows = [];
         for(workflow in playbook_data[playbook]){
             x++;
-            workflows.push({"id":x.toString(), "text":playbook_data[playbook][workflow], "type":"workflow"})
+            workflows.push({"id":x.toString(), "text":playbook_data[playbook][workflow], icon: "jstree-file", "type":"workflow"})
         }
         entry["children"] = workflows;
         result.push(entry);

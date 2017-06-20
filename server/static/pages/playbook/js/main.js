@@ -67,7 +67,10 @@ $(function(){
             app.text = appName;
             app.children = [];
             _.each(actions, function(actionProperties, actionName) {
-                app.children.push({text: actionName, icon: "jstree-file", data: {app: appName}});
+                var child = {text: actionName, icon: "jstree-file", data: {app: appName}};
+                console.log(actionProperties);
+                if (actionProperties.description) child.a_attr = { title: actionProperties.description };
+                app.children.push(child);
             });
 
             // Sort children by action name
