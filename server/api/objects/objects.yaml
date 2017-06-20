@@ -13,7 +13,7 @@ ActionArgument:
       type: string
     type:
       type: string
-    reqired:
+    required:
       description: is the argument required
       type: boolean
     default:

@@ -31,7 +31,7 @@
     description: ''
     operationId: server.endpoints.playbooks.create_playbook
     consumes:
-      - mutlipart/form-data
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -216,7 +216,7 @@
               type: array
               items:
                 type: string
-              example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
+              example: [workflow_1, HelloWorldWorkflow, ThatOneWorkflow]
       461:
         description: Playbook does not exist.
         schema:

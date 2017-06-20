@@ -58,7 +58,7 @@ WorkflowMetric:
       type: string
       example: HelloWorldWorkflow
     count:
-      description: Number of times the workflwo has been used
+      description: Number of times the workflow has been used
       type: integer
       example: 42
     avg_time:
