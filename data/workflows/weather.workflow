@@ -1,0 +1,138 @@
+<?xml version="1.0" ?>
+<workflows>
+	<workflow name="weather">
+		<options>
+			<enabled>true</enabled>
+			<scheduler autorun="false" type="cron">
+				<sDT>2016-1-1 12:00:00</sDT>
+				<interval>0.1</interval>
+				<eDT>2016-3-15 12:00:00</eDT>
+			</scheduler>
+		</options>
+		<start>1</start>
+		<steps>
+			<step id="1">
+				<name>1</name>
+				<app>Weather</app>
+				<action>get current temperature</action>
+				<device>WeatherApi</device>
+				<position>
+					<x>-10</x>
+					<y>-130</y>
+				</position>
+				<inputs>
+					<city>baltimore</city>
+				</inputs>
+				<next step="2">
+					<flag action="count">
+						<args>
+							<operator>ge</operator>
+							<threshold>70.0</threshold>
+						</args>
+					</flag>
+				</next>
+				<next step="4"/>
+			</step>
+			<step id="3">
+				<name>3</name>
+				<app>Lifx</app>
+				<action>set state</action>
+				<device>Light1</device>
+				<position>
+					<x>-50</x>
+					<y>50</y>
+				</position>
+				<inputs>
+					<color>red</color>
+					<duration>1.0</duration>
+					<brightness>@2</brightness>
+					<power>on</power>
+					<infrared>0.0</infrared>
+				</inputs>
+				<next step="6"/>
+				<next step="7"/>
+			</step>
+			<step id="2">
+				<name>2</name>
+				<app>Utilities</app>
+				<action>linearly scale</action>
+				<position>
+					<x>-50</x>
+					<y>-50</y>
+				</position>
+				<inputs>
+					<max_value>90.0</max_value>
+					<min_value>70.0</min_value>
+					<low_scale>0.0</low_scale>
+					<high_scale>1.0</high_scale>
+					<value>@1</value>
+				</inputs>
+				<next step="3"/>
+			</step>
+			<step id="5">
+				<name>5</name>
+				<app>Lifx</app>
+				<action>set state</action>
+				<device>Light1</device>
+				<position>
+					<x>70</x>
+					<y>50</y>
+				</position>
+				<inputs>
+					<color>blue</color>
+					<duration>1.0</duration>
+					<brightness>@4</brightness>
+					<power>on</power>
+					<infrared>0.0</infrared>
+				</inputs>
+				<next step="7"/>
+				<next step="6"/>
+			</step>
+			<step id="4">
+				<name>4</name>
+				<app>Utilities</app>
+				<action>linearly scale</action>
+				<position>
+					<x>70</x>
+					<y>-50</y>
+				</position>
+				<inputs>
+					<max_value>70.0</max_value>
+					<min_value>50.0</min_value>
+					<low_scale>0.0</low_scale>
+					<high_scale>1.0</high_scale>
+					<value>@1</value>
+				</inputs>
+				<next step="5"/>
+			</step>
+			<step id="7">
+				<name>7</name>
+				<app>SMS</app>
+				<action>send</action>
+				<device>Justin</device>
+				<position>
+					<x>70</x>
+					<y>130</y>
+				</position>
+				<inputs>
+					<to>+14102596369</to>
+					<message>@1</message>
+				</inputs>
+			</step>
+			<step id="6">
+				<name>6</name>
+				<app>SMS</app>
+				<action>send</action>
+				<device>Justin</device>
+				<position>
+					<x>-50</x>
+					<y>130</y>
+				</position>
+				<inputs>
+					<to>+14102596369</to>
+					<message>@1</message>
+				</inputs>
+			</step>
+		</steps>
+	</workflow>
+</workflows>

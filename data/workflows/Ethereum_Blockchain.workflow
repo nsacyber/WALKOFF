@@ -19,9 +19,9 @@
 					<x>173</x>
 					<y>133</y>
 				</position>
-				<input>
-					<total_nodes format="int">5</total_nodes>
-				</input>
+				<inputs>
+					<total_nodes>5</total_nodes>
+				</inputs>
 				<next step="2"/>
 			</step>
 			<step id="3">
@@ -32,9 +32,9 @@
 					<x>348.096805232115</x>
 					<y>338.1871205254445</y>
 				</position>
-				<input>
-					<greeting format="str">Hello human user!!</greeting>
-				</input>
+				<inputs>
+					<greeting>Hello human user!!</greeting>
+				</inputs>
 			</step>
 			<step id="2">
 				<id>2</id>

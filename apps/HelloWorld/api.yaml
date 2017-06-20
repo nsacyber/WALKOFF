@@ -1,0 +1,59 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: HelloWorldApp
+  description: A sample walkoff app specification
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  helloWorld:
+    run: helloWorld
+    description: Returns an introductory message
+    returns:
+      Success:
+        description: introductory message
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+  repeatBackToMe:
+    run: repeatBackToMe
+    description: Repeats the call argument
+    parameters:
+        - name: call
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        description: repeated method
+        schema:
+          type: string
+  returnPlusOne:
+    run: returnPlusOne
+    description: Increments a given number by 1
+    parameters:
+        - name: number
+          description: number to increment
+          required: true
+          type: integer
+          format: int32
+    returns:
+      Success:
+        description: incremented number
+        schema:
+          type: integer
+  pause:
+    run: pause
+    description: pauses execution for an amount of time
+    parameters:
+      - name: seconds
+        description: The seconds to pause for
+        required: true
+        type: number
+    returns:
+      Success:
+        description: successfully paused

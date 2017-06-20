@@ -1,38 +1,56 @@
 <?xml version="1.0" ?>
 <workflows>
-	<workflow name="helloWorldWorkflow">
+	<workflow name="test2">
 		<options>
 			<enabled>true</enabled>
 			<scheduler autorun="false" type="cron">
-				<hours>*</hours>
-				<minutes>*/0.1</minutes>
-				<day>*</day>
-				<month>11-12</month>
+				<sDT>2016-1-1 12:00:00</sDT>
+				<interval>0.1</interval>
+				<eDT>2016-3-15 12:00:00</eDT>
 			</scheduler>
 		</options>
-		<start>start</start>
+		<start>2</start>
 		<steps>
-			<step id="start">
-				<id>start</id>
-				<app>HelloWorld</app>
-				<action>repeatBackToMe</action>
-				<device>hwTest</device>
-				<input>
-					<call format="str">Hello World</call>
-				</input>
-				<next step="1">
-					<flag action="regMatch">
-						<args>
-							<regex format="str">(.*)</regex>
-						</args>
-						<filters>
-							<filter action="length">
-								<args/>
-							</filter>
-						</filters>
-					</flag>
-				</next>
-				<error step="1"/>
+			<step id="1">
+				<name>1</name>
+				<app>ARDrone</app>
+				<action>move_backward</action>
+				<position>
+					<x>490</x>
+					<y>430</y>
+				</position>
+				<inputs>
+					<millisec>1000</millisec>
+					<speed>1</speed>
+				</inputs>
+				<next step="2"/>
+			</step>
+			<step id="3">
+				<name>3</name>
+				<app>ARDrone</app>
+				<action>move_forward</action>
+				<position>
+					<x>690</x>
+					<y>390</y>
+				</position>
+				<inputs>
+					<millisec>3000</millisec>
+					<speed>3</speed>
+				</inputs>
+			</step>
+			<step id="2">
+				<name>2</name>
+				<app>ARDrone</app>
+				<action>move_down</action>
+				<position>
+					<x>570</x>
+					<y>390</y>
+				</position>
+				<inputs>
+					<millisec>5000</millisec>
+					<speed>5</speed>
+				</inputs>
+				<next step="3"/>
 			</step>
 		</steps>
 	</workflow>

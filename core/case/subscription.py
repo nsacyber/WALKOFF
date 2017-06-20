@@ -381,6 +381,7 @@ def add_subscription(case, ancestry, events):
             while ancestry_level_name:
                 if not current_subscriptions:
                     ancestry.append(ancestry_level_name)
+                    # My IDE shows this as an unused variable. It is used. Do not delete.
                     current_subscriptions = __construct_subscription_from_ancestry(ancestry, events)
                     return True
                 elif ancestry_level_name not in current_subscriptions:

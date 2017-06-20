@@ -4,6 +4,7 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
 from core import helpers
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from core.options import Options
 import core.config.config
 import core.config.paths
@@ -352,7 +353,8 @@ def delete_workflow(playbook_name, workflow_name):
                 try:
                     os.remove(playbook_filename)
                 except OSError:
-                    current_app.logger.warning('Cannot remove playbook {0}. The playbook does not exist.'.format(playbook_name))
+                    current_app.logger.warning('Cannot remove playbook {0}. '
+                                               'The playbook does not exist.'.format(playbook_name))
 
             else:
                 write_playbook_to_file(playbook_name)
@@ -435,9 +437,9 @@ def execute_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             write_playbook_to_file(playbook_name)
-            running_context.controller.execute_workflow(playbook_name, workflow_name)
+            uid = running_context.controller.execute_workflow(playbook_name, workflow_name)
             current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {}, SUCCESS_ASYNC
+            return {'id': uid}, SUCCESS_ASYNC
         else:
             current_app.logger.error(
                 'Cannot execute workflow {0}-{1}. Does not exist in controller'.format(playbook_name,
@@ -453,9 +455,9 @@ def pause_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            uuid = running_context.controller.pause_workflow(playbook_name, workflow_name)
+            running_context.controller.pause_workflow(playbook_name, workflow_name)
             current_app.logger.info('Paused workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {"uuid": uuid}, SUCCESS
+            return SUCCESS
         else:
             current_app.logger.error('Cannot pause workflow '
                                      '{0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
@@ -492,18 +494,26 @@ def save_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
-            if 'start' in request.get_json():
-                workflow.start_step = request.get_json()['start']
             try:
-                write_playbook_to_file(playbook_name)
-                current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
-                return {"steps": workflow.get_cytoscape_data()}, SUCCESS
-            except (OSError, IOError) as e:
-                current_app.logger.info(
-                    'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
-                return {"error": "Error saving: {0}".format(e.message),
-                        "steps": workflow.get_cytoscape_data()}, IO_ERROR
+                workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+            except UnknownApp as e:
+                return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
+            except UnknownAppAction as e:
+                return {'error': 'Unknown action {0} for app {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+            except InvalidInput as e:
+                return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
+            else:
+                if 'start' in request.get_json():
+                    workflow.start_step = request.get_json()['start']
+                try:
+                    write_playbook_to_file(playbook_name)
+                    current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
+                    return {"steps": workflow.get_cytoscape_data()}, SUCCESS
+                except (OSError, IOError) as e:
+                    current_app.logger.info(
+                        'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
+                    return {"error": "Error saving: {0}".format(e.message),
+                            "steps": workflow.get_cytoscape_data()}, IO_ERROR
         else:
             current_app.logger.info('Cannot save workflow {0}-{1}. Workflow not in controller'.format(playbook_name,
                                                                                                       workflow_name))
@@ -518,5 +528,15 @@ def add_default_template(playbook_name, workflow_name):
                                                              workflow_name=workflow_name)
 
 
+def read_results():
+    ret = []
+    for workflow_uuid, result in server.workflowresults.results.items():
+        if result['status'] == 'completed':
+            ret.append({'name': result['name'],
+                        'timestamp': result['completed_at'],
+                        'result': json.dumps(result['results'])})
+    return ret, SUCCESS
+
+
 def read_all_results():
-    return list(server.workflowresults.results), SUCCESS
+    return server.workflowresults.results, SUCCESS

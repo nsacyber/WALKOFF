@@ -14,8 +14,9 @@
             <action>returnPlusOne</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <number format="str">
+            <templated>true</templated>
+            <inputs>
+                <number>
                     {%- if steps | length > 0 -%}
                         {%- set x = outputFrom(steps, -1) -%}
                     {%- endif -%}
@@ -26,11 +27,11 @@
                         1
                     {%- endif -%}
                 </number>
-            </input>
+            </inputs>
             <next step="start">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">1|2|3|4</regex>
+                        <regex>1|2|3|4</regex>
                     </args>
                     <filters>
                     </filters>
@@ -39,7 +40,7 @@
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">5</regex>
+                        <regex>5</regex>
                     </args>
                     <filters>
                     </filters>
@@ -51,9 +52,10 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <call format="str">{{outputFrom(steps, -1)}}</call>
-            </input>
+            <templated>true</templated>
+            <inputs>
+                <call>{{outputFrom(steps, -1)}}</call>
+            </inputs>
             <error step="1"></error>
         </step>
     </steps>

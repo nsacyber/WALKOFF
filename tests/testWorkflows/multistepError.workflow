@@ -14,37 +14,27 @@
             <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-            </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">(.*)</regex>
+                        <regex>(.*)</regex>
                     </args>
                     <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
+                        <filter action="length"/>
                     </filters>
                 </flag>
             </next>
             <error step="1"></error>
         </step>
         <step id="1">
-            <action>repeatBackToMe</action>
+            <action>Buggy</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <call format="int">Hello World</call>
-            </input>
-            <next>
-            </next>
             <error step="error">
                 <flag action="regMatch">
                     <args>
                         <regex format="str">(.*)</regex>
                     </args>
-                    <filters></filters>
                 </flag>
             </error>
         </step>
@@ -52,11 +42,9 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <call format="str">Hello World</call>
-            </input>
-            <next>
-            </next>
+            <inputs>
+                <call>Hello World</call>
+            </inputs>
         </step>
     </steps>
 </workflow>

@@ -2,7 +2,7 @@ import gevent
 from gevent.event import Event, AsyncResult
 import random
 from flask import Blueprint, Response
-from server.blueprints import WidgetBlueprint
+from apps import WidgetBlueprint
 
 blueprint = WidgetBlueprint(blueprint=Blueprint('HelloWorldTestWidgetPage', __name__))
 blueprint2 = WidgetBlueprint(blueprint=Blueprint('HelloWorldTestWidgetPage2', __name__), rule='/<string:action>')

@@ -16,7 +16,6 @@
 				<id>start</id>
 				<app>CyberAnalytic</app>
 				<action>begin_monitoring</action>
-				<input/>
 			</step>
 		</steps>
 	</workflow>

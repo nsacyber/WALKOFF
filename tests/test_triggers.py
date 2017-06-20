@@ -4,12 +4,22 @@ from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 from server.triggers import Triggers
 from server.return_codes import *
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from tests.apps import App
+from tests import config
+import core.config.config
 
 from core.case.callbacks import FunctionExecutionSuccess
 
 
 class TestTriggers(ServerTestCase):
     def setUp(self):
+        App.registry = {}
+        import_all_apps(path=config.test_apps_path, reload=True)
+        core.config.config.load_app_apis(apps_path=config.test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=config.function_api_path)
         self.test_trigger_name = "testTrigger"
         self.test_trigger_workflow = "helloWorldWorkflow"
 
@@ -26,7 +36,7 @@ class TestTriggers(ServerTestCase):
             server.running_context.controller.workflows = {}
 
     def test_add_and_display_and_remove_trigger(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -80,7 +90,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response._status_code, 400)
 
     def test_add_trigger_add_duplicate(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
@@ -92,10 +102,11 @@ class TestTriggers(ServerTestCase):
 
     def test_remove_trigger_does_not_exist(self):
         self.delete_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-                                      error="Trigger does not exist.", headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                      error="Trigger does not exist.", headers=self.headers,
+                                      status_code=OBJECT_DNE_ERROR)
 
     def test_edit_trigger(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
@@ -109,18 +120,25 @@ class TestTriggers(ServerTestCase):
                                     headers=self.headers, data=edited_data)
 
     def test_trigger_execute(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
-        self.post_with_status_check('/execution/listener/execute',
-                                    headers=self.headers, data={"data": "hellohellohello"})
+        response = self.post_with_status_check('/execution/listener/execute',
+                                               headers=self.headers,
+                                               data={"data": "hellohellohello"},
+                                               status_code=SUCCESS_ASYNC)
+        self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
+        self.assertEqual(len(response['executed']), 1)
+        self.assertIn('id', response['executed'][0])
+        self.assertEqual(response['executed'][0]['name'], 'testTrigger')
+        self.assertListEqual(response['errors'], [])
 
     def test_trigger_execute_invalid_name(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": "invalid_workflow_name",
                 "conditional": json.dumps([condition])}
@@ -135,7 +153,7 @@ class TestTriggers(ServerTestCase):
         self.assertIn(error, response["errors"])
 
     def test_trigger_execute_no_matching_trigger(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": 'aaa'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': 'aaaa'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -146,7 +164,7 @@ class TestTriggers(ServerTestCase):
                                     headers=self.headers, data={"data": "bbb"}, status_code=SUCCESS_WITH_WARNING)
 
     def test_trigger_execute_change_input(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -161,16 +179,42 @@ class TestTriggers(ServerTestCase):
         FunctionExecutionSuccess.connect(step_finished_listener)
 
         data = {"data": "hellohellohello",
-                "input": json.dumps([{"key": "call", "value": "CHANGE INPUT"}])}
+                "input": json.dumps({"call": "CHANGE INPUT"})}
 
-        self.post_with_status_check('/execution/listener/execute',
-                                    headers=self.headers, data=data)
+        response = self.post_with_status_check('/execution/listener/execute',
+                                               headers=self.headers, data=data, status_code=SUCCESS_ASYNC)
+        self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
+        self.assertEqual(len(response['executed']), 1)
+        self.assertIn('id', response['executed'][0])
+        self.assertEqual(response['executed'][0]['name'], 'testTrigger')
+        self.assertListEqual(response['errors'], [])
+        step_input = {'result': 'REPEATING: CHANGE INPUT'}
+        self.assertDictEqual(json.loads(result['value']), step_input)
 
-        input = {'result': 'REPEATING: CHANGE INPUT'}
-        self.assertDictEqual(json.loads(result['value']), input)
+    def test_trigger_with_change_input_invalid_input(self):
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditional": json.dumps([condition])}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=data, status_code=OBJECT_CREATED)
+
+        data = {"data": "hellohellohello",
+                "input": json.dumps({"invalid": "CHANGE INPUT"})}
+
+        response = self.post_with_status_check('/execution/listener/execute',
+                                               headers=self.headers, data=data, status_code=SUCCESS_ASYNC)
+
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
+        self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
+        self.assertEqual(len(response['executed']), 1)
+        self.assertEqual(response['executed'][0]['name'], 'testTrigger')
+        self.assertListEqual(response['errors'], [])
 
     def test_trigger_execute_one(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -190,14 +234,18 @@ class TestTriggers(ServerTestCase):
         data = {"data": "hellohellohello"}
 
         response = self.post_with_status_check('/execution/listener/execute?name=execute_me',
-                                               headers=self.headers, data=data)
+                                               headers=self.headers, data=data, status_code=SUCCESS_ASYNC)
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
         self.assertEqual(1, result['value'])
-        self.assertIn("execute_me", response["executed"])
-        self.assertEqual(1, len(response["executed"]))
+        self.assertEqual(len(response['executed']), 1)
+        self.assertIn('id', response['executed'][0])
+        self.assertEqual(response['executed'][0]['name'], 'execute_me')
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_one_invalid_name(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -205,12 +253,13 @@ class TestTriggers(ServerTestCase):
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         response = self.post_with_status_check('/execution/listener/execute?name=badname',
-                                    headers=self.headers, data={"data": "hellohellohello"}, status_code=SUCCESS_WITH_WARNING)
+                                               headers=self.headers, data={"data": "hellohellohello"},
+                                               status_code=SUCCESS_WITH_WARNING)
         self.assertEqual(0, len(response["executed"]))
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_tag(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition]),
@@ -218,7 +267,7 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
-        data["tag"]="execute_tag"
+        data["tag"] = "execute_tag"
 
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
@@ -235,15 +284,18 @@ class TestTriggers(ServerTestCase):
         data = {"data": "hellohellohello"}
 
         response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag',
-                                               headers=self.headers, data=data)
+                                               headers=self.headers, data=data, status_code=SUCCESS_ASYNC)
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
         self.assertEqual(2, result['value'])
-        self.assertIn("execute_one", response["executed"])
-        self.assertIn("execute_two", response["executed"])
-        self.assertEqual(2, len(response["executed"]))
+        self.assertEqual(len(response['executed']), 2)
+        executed_names = {executed['name'] for executed in response['executed']}
+        self.assertSetEqual(executed_names, {'execute_one', 'execute_two'})
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_multiple_tags(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition]),
@@ -251,12 +303,12 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
-        data["tag"]="execute_tag"
+        data["tag"] = "execute_tag"
 
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
-        data["tag"]="execute_tag_two"
+        data["tag"] = "execute_tag_two"
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
@@ -270,15 +322,19 @@ class TestTriggers(ServerTestCase):
         data = {"data": "hellohellohello"}
 
         response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag&tags=execute_tag_two',
-                                               headers=self.headers, data=data)
+                                               headers=self.headers, data=data, status_code=SUCCESS_ASYNC)
+
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
         self.assertEqual(2, result['value'])
-        self.assertIn("execute_one", response["executed"])
-        self.assertIn("execute_two", response["executed"])
+        executed_names = {executed['name'] for executed in response['executed']}
+        self.assertSetEqual(executed_names, {'execute_one', 'execute_two'})
         self.assertEqual(2, len(response["executed"]))
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_multiple_tags_with_name(self):
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition]),
@@ -286,14 +342,14 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
-        data["tag"]="execute_tag"
+        data["tag"] = "execute_tag"
 
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
-        data["tag"]="execute_tag_two"
+        data["tag"] = "execute_tag_two"
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_three"),
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
         self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_four"),
@@ -301,56 +357,54 @@ class TestTriggers(ServerTestCase):
 
         data = {"data": "hellohellohello"}
 
-        response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag&tags=execute_tag_two&name=testTrigger',
-                                               headers=self.headers, data=data)
-        self.assertIn("execute_one", response["executed"])
-        self.assertIn("execute_two", response["executed"])
-        self.assertIn("execute_three", response["executed"])
-        self.assertIn("execute_four", response["executed"])
-        self.assertIn("testTrigger", response["executed"])
+        response = self.post_with_status_check(
+            '/execution/listener/execute?tags=execute_tag&tags=execute_tag_two&name=testTrigger',
+            headers=self.headers, data=data, status_code=SUCCESS_ASYNC)
+        executed_names = {executed['name'] for executed in response['executed']}
+        self.assertSetEqual(executed_names, {'execute_one', 'execute_two', 'execute_three', 'execute_four', 'testTrigger'})
         self.assertEqual(5, len(response["executed"]))
         self.assertEqual(0, len(response["errors"]))
 
     def test_triggers_change_playbook_name(self):
         self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
-                                              status_code=OBJECT_CREATED)
+                                   status_code=OBJECT_CREATED)
         self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
                                    headers=self.headers, status_code=OBJECT_CREATED)
 
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test_playbook",
                 "workflow": "test_workflow",
                 "conditional": json.dumps([condition])}
-        self.put_with_status_check('/execution/listener/triggers/'+self.test_trigger_name,
+        self.put_with_status_check('/execution/listener/triggers/' + self.test_trigger_name,
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         data = {'new_name': 'test_playbook_new'}
         self.post_with_status_check('/playbooks/test_playbook',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    content_type='application/json')
 
         trigger = Triggers.query.filter_by(name=self.test_trigger_name).first()
         self.assertEqual('test_playbook_new', trigger.playbook)
 
     def test_triggers_change_workflow_name(self):
         self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
-                                              status_code=OBJECT_CREATED)
+                                   status_code=OBJECT_CREATED)
         self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
                                    headers=self.headers, status_code=OBJECT_CREATED)
 
-        condition = {"flag": 'regMatch', "args": [{"key": "regex", "value": '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test_playbook",
                 "workflow": "test_workflow",
                 "conditional": json.dumps([condition])}
-        self.put_with_status_check('/execution/listener/triggers/'+self.test_trigger_name,
+        self.put_with_status_check('/execution/listener/triggers/' + self.test_trigger_name,
                                    headers=self.headers, data=data, status_code=OBJECT_CREATED)
 
         data = {'new_name': 'test_workflow_new'}
         self.post_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    content_type='application/json')
 
         trigger = Triggers.query.filter_by(name=self.test_trigger_name).first()
         self.assertEqual('test_workflow_new', trigger.workflow)

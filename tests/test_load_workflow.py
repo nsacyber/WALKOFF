@@ -1,11 +1,23 @@
 import unittest
-
-from core import arguments, controller
+from core import controller
+from core.config.config import initialize
 from tests import config
 from core.controller import _WorkflowKey
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from tests.config import test_apps_path, function_api_path
+import core.config.config
 
 
 class TestLoadWorkflow(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        import_all_apps(path=test_apps_path)
+        core.config.config.load_app_apis(apps_path=test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=function_api_path)
+
     def setUp(self):
         self.c = controller.Controller()
         self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.workflow')
@@ -17,6 +29,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertIn(self.workflow_name, self.c.workflows)
 
     def test_baseWorkflowAttributes(self):
+
         # Correct number of steps
         self.assertEqual(len(self.testWorkflow.steps), 1)
 
@@ -29,10 +42,6 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.app, 'HelloWorld')
         self.assertEqual(step.action, 'repeatBackToMe')
         self.assertEqual(step.device, 'hwTest')
-
-    def test_workflowInput(self):
-        arg = arguments.Argument(key='call', value='Hello World', format='string')
-        #self.assertDictTrue(step.input == {"call":arg})
 
     def test_workflowNextSteps(self):
         next_step = self.testWorkflow.steps['start'].conditionals
@@ -65,3 +74,27 @@ class TestLoadWorkflow(unittest.TestCase):
         errors = self.testWorkflow.steps['start'].errors
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0].name, '1')
+
+    def test_load_workflow_invalid_app(self):
+        original_workflows = self.c.get_all_workflows()
+        self.c.load_workflows_from_file(
+            path='{}invalidAppWorkflow.workflow'.format(config.test_invalid_workflows_path))
+        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+
+    def test_load_workflow_invalid_action(self):
+        original_workflows = self.c.get_all_workflows()
+        self.c.load_workflows_from_file(
+            path='{}invalidActionWorkflow.workflow'.format(config.test_invalid_workflows_path))
+        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+
+    def test_load_workflow_invalid_input(self):
+        original_workflows = self.c.get_all_workflows()
+        self.c.load_workflows_from_file(
+            path='{}invalidInputWorkflow.workflow'.format(config.test_invalid_workflows_path))
+        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+
+    def test_load_workflow_too_many_inputs(self):
+        original_workflows = self.c.get_all_workflows()
+        self.c.load_workflows_from_file(
+            path='{}tooManyStepInputsWorkflow.workflow'.format(config.test_invalid_workflows_path))
+        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)

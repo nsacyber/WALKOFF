@@ -6,7 +6,8 @@ from server.return_codes import *
 class TestAppBlueprint(ServerTestCase):
 
     def test_list_functions(self):
-        expected_actions = ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause']
+        expected_actions = ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
+                            'returnPlusOne', 'helloWorld', 'Hello World', 'Json Sample']
         response = self.get_with_status_check('/apps/HelloWorld/actions', headers=self.headers)
         self.assertIn('actions', response)
         orderless_list_compare(self, response['actions'], expected_actions)

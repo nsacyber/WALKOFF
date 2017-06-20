@@ -1,16 +1,13 @@
 import os
 import logging
-
 from jinja2 import Environment, FileSystemLoader
 from core import helpers
 from core.config import paths
 import core.config.config
 import connexion
-from gevent import monkey
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
-
-monkey.patch_all()
+from gevent import monkey
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +38,75 @@ def compose_yamls():
         composed_yaml.writelines(final_yaml)
 
 
+def register_blueprints(flaskapp):
+    from server.blueprints import app as app
+    from server.blueprints import widget, events, widgets, workflowresult
+    flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
+    flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
+    flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
+    flaskapp.register_blueprint(events.events_page, url_prefix='/events')
+    flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
+    __register_all_app_blueprints(flaskapp)
+
+
+def __get_blueprints_in_module(module, sub_module_name='display'):
+    from importlib import import_module
+    from apps import AppWidgetBlueprint
+    import_module('{0}.{1}'.format(module.__name__, sub_module_name))
+    display_module = getattr(module, sub_module_name)
+    blueprints = [getattr(display_module, field)
+                  for field in dir(display_module) if (not field.startswith('__')
+                                                       and isinstance(getattr(display_module, field),
+                                                                      AppWidgetBlueprint))]
+    return blueprints
+
+
+def __register_app_blueprint(flaskapp, blueprint, url_prefix):
+    rule = '{0}{1}'.format(url_prefix, blueprint.rule) if blueprint.rule else url_prefix
+    flaskapp.register_blueprint(blueprint.blueprint, url_prefix=rule)
+
+
+def __register_all_app_blueprints(flaskapp):
+    from core.helpers import import_submodules
+    import apps
+    imported_apps = import_submodules(apps)
+    for app_name, app_module in imported_apps.items():
+        try:
+            blueprints = __get_blueprints_in_module(app_module)
+        except ImportError:
+            continue
+        else:
+            url_prefix = '/apps/{0}'.format(app_name.split('.')[-1])
+            for blueprint in blueprints:
+                __register_app_blueprint(flaskapp, blueprint, url_prefix)
+
+            __register_all_app_widget_blueprints(flaskapp, app_module)
+
+
+def __register_all_app_widget_blueprints(flaskapp, app_module):
+    from importlib import import_module
+    from core.helpers import import_submodules
+    try:
+        widgets_module = import_module('{0}.widgets'.format(app_module.__name__))
+    except ImportError:
+        return
+    else:
+        app_name = app_module.__name__.split('.')[-1]
+        imported_widgets = import_submodules(widgets_module)
+        for widget_name, widget_module in imported_widgets.items():
+            try:
+                blueprints = __get_blueprints_in_module(widget_module)
+            except ImportError:
+                continue
+            else:
+                url_prefix = '/apps/{0}/{1}'.format(app_name, widget_name.split('.')[-1])
+                for blueprint in blueprints:
+                    __register_app_blueprint(flaskapp, blueprint, url_prefix)
+
+
 def create_app():
-    connexion_app = connexion.App(__name__, specification_dir='api/', server='gevent')
+    from .blueprints.events import setup_case_stream
+    connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
     compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
@@ -61,8 +125,11 @@ def create_app():
 
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     connexion_app.add_api('composed_api.yaml')
+    register_blueprints(_app)
+    core.config.config.initialize()
+    setup_case_stream()
+    monkey.patch_all()
     return _app
 
 

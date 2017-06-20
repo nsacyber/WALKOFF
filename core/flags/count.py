@@ -1,47 +1,21 @@
-import json
-from core.flags import FlagType
+from core.decorators import flag
 
 
-class count(FlagType):
-    @staticmethod
-    def execute(args, value):
-        """
-        Compares the value of of an input using ==, >, <, >=, or <=. See data/functions.json for argument information
+@flag
+def count(value, operator, threshold):
+    if operator == 'g' and value > threshold:
+        return True
 
-        Returns:
-            The result of the comparison
-        """
-        if not args["type"] or args["type"] == "json":
-            var = len(json.loads(value))
-        else:
-            try:
-                var = int(value)
-            except ValueError:
-                var = len(value)
+    elif operator == 'ge' and value >= threshold:
+        return True
 
-        threshold = args["threshold"]
+    elif operator == 'l' and value < threshold:
+        return True
 
-        if args["operator"] == "g":
-            if var > threshold:
-                return True
+    elif operator == 'le' and value <= threshold:
+        return True
 
-        elif args["operator"] == "ge":
-            if var >= threshold:
-                return True
-
-        elif args["operator"] == "l":
-            if var < threshold:
-                return True
-
-        elif args["operator"] == "le":
-            if var <= threshold:
-                return True
-
-        elif args["operator"] == "e":
-            if var == threshold:
-                return True
-        else:
-            if var == threshold:
-                return True
-
-        return False
+    elif operator == 'e' and value == threshold:
+        return True
+    else:
+        return value == threshold

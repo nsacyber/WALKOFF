@@ -14,13 +14,10 @@
             <action>getQuote</action>
             <app>DailyQuote</app>
             <device>hwTest</device>
-            <input>
-                <call format="str">Hello World</call>
-            </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">(.*)</regex>
+                        <regex>(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">

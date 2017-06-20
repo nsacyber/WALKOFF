@@ -1,4 +1,4 @@
-from apps import App
+from apps import App, action
 import requests
 import json
 
@@ -13,16 +13,18 @@ class Main(App):
         self.s = requests.Session()
 
     # Returns the message defined in init above
-    def quoteIntro(self, args={}):
+    @action
+    def quoteIntro(self):
         return self.introMessage
 
-    def repeatBackToMe(self, args={}):
-        return "REPEATING: " + args["call"]()
+    @action
+    def repeatBackToMe(self, call):
+        return "REPEATING: " + call
 
     # Uses argument passed to function to make an api request
-    def forismaticQuote(self, args={}):
+    @action
+    def forismaticQuote(self, url):
         headers = {'content-type': 'application/json'}
-        url = args["url"]()
         payload = {'method': 'getQuote', 'format': 'json', 'lang': 'en'}
         result = self.s.get(url, params=payload, verify=False)
         try:
@@ -33,7 +35,8 @@ class Main(App):
             return {'success': False, 'text': result.text}
 
     # Uses the url defined in _init to make a getQuote api call and returns the quote
-    def getQuote(self, args={}):
+    @action
+    def getQuote(self):
         headers = {'content-type': 'application/json'}
         url = self.baseUrl
         result = self.s.get(url, headers=headers, verify=False)

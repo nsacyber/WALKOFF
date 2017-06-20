@@ -1,4 +1,4 @@
-from apps import App
+from apps import App, action
 import psutil
 import gevent
 import json
@@ -27,15 +27,16 @@ class Main(App):
                     if proc.parent() and "explorer.exe" not in proc.parent().exe():
                         suspicious_pids.append(threat_pid("cmd.exe", proc.name(), proc.pid))
 
-    def begin_monitoring(self, args={}):
+    @action
+    def begin_monitoring(self):
         if not self.is_running:
             gevent.spawn(self.__monitor_processes)
+        return "Success"
 
-    def get_exe_pids(self, args={}):
+    @action
+    def get_exe_pids(self):
         return json.dumps(suspicious_pids)
 
-    def get_exe_pids_by_name(self, args={}):
-        if args["name"]():
-            return [x for x in suspicious_pids if x.name == args["name"]()]
-        else:
-            return []
+    @action
+    def get_exe_pids_by_name(self, name):
+        return [x for x in suspicious_pids if x.name == name]

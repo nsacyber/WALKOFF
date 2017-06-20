@@ -2,10 +2,11 @@ import json
 from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-import logging
+# from core.api import WalkoffAppDefinition
 from . import database
 import core.config.paths
 import pyaes
+import logging
 
 db = database.db
 
@@ -40,6 +41,10 @@ class App(database.Base, object):
         """
         self.name = app
         self.devices = [Device(name=device_name) for device_name in devices]
+
+    def initialize(self):
+        # self.api = WalkoffAppDefinition(self.name, self)
+        pass
 
     @staticmethod
     def get_all_devices_for_app(app_name):
@@ -181,7 +186,7 @@ class Device(database.Base):
             else:
                 if form.old_password.data == self.get_password():
                     aes = pyaes.AESModeOfOperationCTR(key)
-                    pw = form.new_password.data
+                    pw = form.pw.data
                     self.password = aes.encrypt(pw)
 
         if form.ipaddr.data:
@@ -223,5 +228,5 @@ class Device(database.Base):
         return output
 
     def __repr__(self):
-        return json.dumps({"name": self.name, "username": self.username, "password": self.password,
+        return str({"name": self.name, "username": self.username, "password": self.password,
                            "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})

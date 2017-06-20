@@ -18,13 +18,13 @@
                 <action>repeatBackToMe</action>
                 <app>HelloWorld</app>
                 <device>hwTest</device>
-                <input>
-                    <call format="str">Parent Step One</call>
-                </input>
+                <inputs>
+                    <call>Parent Step One</call>
+                </inputs>
                 <next step="@childWorkflow:start:1">
                     <flag action="regMatch">
                         <args>
-                            <regex format="str">(.*)</regex>
+                            <regex>(.*)</regex>
                         </args>
                         <filters>
                             <filter action="length">
@@ -39,9 +39,9 @@
                 <action>repeatBackToMe</action>
                 <app>HelloWorld</app>
                 <device>hwTest</device>
-                <input>
-                    <call format="str">Parent Step Two</call>
-                </input>
+                <inputs>
+                    <call>Parent Step Two</call>
+                </inputs>
                 <next></next>
                 <error></error>
             </step>
@@ -62,9 +62,9 @@
                 <action>repeatBackToMe</action>
                 <app>HelloWorld</app>
                 <device>hwTest</device>
-                <input>
-                    <call format="str">Child Step One</call>
-                </input>
+                <inputs>
+                    <call>Child Step One</call>
+                </inputs>
                 <next></next>
                 <error></error>
             </step>

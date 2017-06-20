@@ -11,6 +11,86 @@ from server.return_codes import *
 
 
 class TestServer(ServerTestCase):
+    def test_login(self):
+        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
+        self.assertEqual(response.status_code, SUCCESS)
+
+    def test_list_apps(self):
+        expected_apps = ['HelloWorld', 'DailyQuote']
+        response = self.app.get('/apps', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        orderless_list_compare(self, response['apps'], expected_apps)
+
+    def test_list_widgets(self):
+        expected = {'HelloWorld': ['testWidget', 'testWidget2'], 'DailyQuote': []}
+        response = self.app.get('/widgets', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertDictEqual(response, expected)
+
+    def test_read_filters(self):
+        response = self.get_with_status_check('/filters', headers=self.headers)
+        expected = {'sub_top_filter': {'args': []},
+                    'mod1_filter2': {'args': [{'required': True, 'type': 'number', 'name': 'arg1'}]},
+                    'mod1_filter1': {'args': []},
+                    'sub1_filter1': {'args': [{'required': True, 'name': 'arg1',
+                                               'schema': {
+                                                   'type': 'object',
+                                                   'properties': {'a': {'type': 'number'}, 'b': {'type': 'string'}}}}]},
+                    'length': {'args': [], 'description': 'Returns the length of a collection'},
+                    'sub1_filter3': {'args': []},
+                    'filter1': {'args': []},
+                    'Top Filter': {'args': []},
+                    'complex': {'args': [{'required': True, 'name': 'arg',
+                                          'schema': {
+                                              'type': 'object',
+                                              'properties': {'a': {'type': 'number'},
+                                                             'c': {'items': {'type': 'integer'}, 'type': 'array'},
+                                                             'b': {'type': 'number'}}}}]},
+                    'select json': {'args': [{'required': True, 'type': 'array', 'name': 'path'}]}}
+        self.assertDictEqual(response, {'filters': expected})
+
+    def test_read_flags(self):
+        response = self.get_with_status_check('/flags', headers=self.headers)
+        expected = {
+            'count':
+                {'description': 'Compares two numbers',
+                 'args': [{'name': 'operator',
+                           'enum': ['g', 'ge', 'l', 'le', 'e'],
+                           'description': "The comparison operator ('g', 'ge', etc.)",
+                           'default': 'e',
+                           'required': True,
+                           'type': 'string'},
+                          {'name': 'threshold',
+                           'required': True,
+                           'type': 'number',
+                           'description': 'The value with which to compare the input'}]},
+            'Top Flag': {'args': []},
+            'regMatch': {'description': 'Matches an input against a regular expression',
+                         'args': [{'name': 'regex',
+                                   'required': True,
+                                   'type': 'string',
+                                   'description': 'The regular expression to match'}]},
+            'mod1_flag1': {'args': []},
+            'mod1_flag2': {'args': [{'required': True, 'type': 'integer', 'name': 'arg1'}]},
+            'mod2_flag2': {'args': [{'required': True, 'name': 'arg1',
+                                     'schema': {'type': 'object',
+                                                'properties': {'a': {'type': 'integer'}, 'b': {'type': 'integer'}}}}]},
+            'mod2_flag1': {'args': []},
+            'sub1_top_flag': {'args': []}}
+        self.assertDictEqual(response, {'flags': expected})
+
+        # def test_get_all_list_actions(self):
+        #     expected_reduced_json = {
+        #         'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
+        #         'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
+        #                        'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
+        #     response = self.get_with_status_check('/apps/actions', headers=self.headers)
+        #     orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
+
+
+class TestConfiguration(ServerTestCase):
     def setUp(self):
         config_fields = [x for x in dir(core.config.config) if
                          not x.startswith('__') and type(getattr(core.config.config, x)).__name__
@@ -28,33 +108,6 @@ class TestServer(ServerTestCase):
     def tearDown(self):
         for key, value in self.original_configs.items():
             setattr(core.config.config, key, value)
-
-    def test_login(self):
-        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.assertEqual(response.status_code, SUCCESS)
-
-    def test_list_apps(self):
-        expected_apps = ['HelloWorld']
-        response = self.app.get('/apps', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response['apps'], expected_apps)
-
-    def test_list_widgets(self):
-        expected = {'HelloWorld': ['testWidget', 'testWidget2']}
-        response = self.app.get('/widgets', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected)
-
-    def test_get_all_list_actions(self):
-        expected_json = {"HelloWorld": ['helloWorld', 'repeatBackToMe', 'returnPlusOne', 'pause']}
-        response = self.app.get('/apps/actions', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response.keys(), expected_json.keys())
-        for app, functions in response.items():
-            orderless_list_compare(self, functions, expected_json[app])
 
     def test_get_configuration(self):
         config_fields = [x for x in dir(core.config.config) if
@@ -129,14 +182,6 @@ class TestServer(ServerTestCase):
         for key, value in paths.items():
             if key in data:
                 self.assertEqual(value, data[key])
-
-    def test_set_apps_path(self):
-        original_function_info = copy.deepcopy(core.config.config.function_info)
-        modified_function_info = copy.deepcopy(core.config.config.function_info)
-        modified_function_info['testApp'] = {}
-        data = {"apps_path": core.config.paths.apps_path}
-        self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
-        self.assertDictEqual(core.config.config.function_info, original_function_info)
 
     def test_set_workflows_path(self):
         workflow_files = [os.path.splitext(workflow)[0]

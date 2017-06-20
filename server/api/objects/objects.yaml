@@ -13,6 +13,11 @@ ActionArgument:
       type: string
     type:
       type: string
+    required:
+      description: is the argument required
+      type: boolean
+    default:
+      description: default value for the argument
 Action:
   type: object
   required: [args]
@@ -67,8 +72,6 @@ WorkflowUpdate:
         type: string
       options:
         type: object
-ResumeWorkflow:
-    type: string
 
 Error:
   type: object

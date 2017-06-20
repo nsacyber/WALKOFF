@@ -14,7 +14,7 @@ class Context(object):
         from server.database import User, Role, userRoles, db, user_datastore
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
-        from core.controller import controller
+        from core.controller import Controller
 
         self.User = User
         self.Role = Role
@@ -26,7 +26,7 @@ class Context(object):
         self.user_roles = userRoles
         self.db = db
         self.user_datastore = user_datastore
-        self.controller = controller
+        self.controller = Controller()
 
     @staticmethod
     def get_apps(path=core.config.paths.apps_path):

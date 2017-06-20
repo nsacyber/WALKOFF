@@ -19,13 +19,33 @@ def read_all_apps():
     return __func()
 
 
+def __format_app_action_api(api):
+    ret = {}
+    data_in = api.get('dataIn', False)
+    if 'description' in api:
+        ret['description'] = api['description']
+    args = []
+    if 'parameters' in api:
+        for arg in api['parameters']:
+            if data_in and arg['name'] == data_in:
+                continue
+            args.append(arg)
+    ret['args'] = args
+    return ret
+
+
+def __format_all_app_actions(app_api):
+    return {action_name: __format_app_action_api(action_api)
+            for action_name, action_api in app_api['actions'].items()}
+
+
 def read_all_app_actions():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        core.config.config.load_function_info()
-        return core.config.config.function_info['apps'], SUCCESS
+        return {app_name: __format_all_app_actions(app_api)
+                for app_name, app_api in core.config.config.app_apis.items()},  SUCCESS
 
     return __func()
 
@@ -36,12 +56,14 @@ def list_app_actions(app_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        core.config.config.load_function_info()
-        if app_name in core.config.config.function_info['apps']:
-            return {'actions': core.config.config.function_info['apps'][app_name]}, SUCCESS
-        else:
+        try:
+            app_api = core.config.config.app_apis[app_name]
+        except KeyError:
             current_app.logger.error('Could not get action for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
+        else:
+            return {'actions': __format_all_app_actions(app_api)}, SUCCESS
+
     return __func()
 
 
@@ -51,7 +73,7 @@ def read_all_devices(app_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             query = running_context.Device.query.all()
             output = []
             if query:
@@ -62,6 +84,7 @@ def read_all_devices(app_name):
         else:
             current_app.logger.error('Could not get devices for app {0}. App does not exist'.format(app_name))
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -72,7 +95,7 @@ def create_device(app_name, device_name):
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.AddNewDeviceForm(request.form)
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             if len(running_context.Device.query.filter_by(name=device_name).all()) > 0:
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Device already exists.'.format(device_name, app_name))
@@ -99,6 +122,7 @@ def create_device(app_name, device_name):
             current_app.logger.error('Could not create device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist."}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -108,7 +132,7 @@ def read_device(app_name, device_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 return dev.as_json(), SUCCESS
@@ -131,7 +155,7 @@ def update_device(app_name, device_name):
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.EditDeviceForm(request.form)
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 dev.edit_device(form)
@@ -149,6 +173,7 @@ def update_device(app_name, device_name):
             current_app.logger.error('Could not update device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist"}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -158,7 +183,7 @@ def delete_device(app_name, device_name):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        if app_name in core.config.config.function_info['apps']:
+        if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
             if dev is not None:
                 running_context.db.session.delete(dev)
@@ -173,6 +198,7 @@ def delete_device(app_name, device_name):
             current_app.logger.error('Could not delete device {0} for app {1}. '
                                      'App does not exist'.format(device_name, app_name))
             return {"error": "App does not exist"}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -235,4 +261,5 @@ def export_devices(app_name):
         else:
             current_app.logger.debug('Exported devices to {0}'.format(filename))
             return {}, SUCCESS
+
     return __func()

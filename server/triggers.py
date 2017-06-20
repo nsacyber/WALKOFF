@@ -1,6 +1,5 @@
 import json
 import logging
-from core.arguments import Argument
 from core.filter import Filter
 from core.flag import Flag
 from .database import db, Base
@@ -101,14 +100,13 @@ class Triggers(Base):
         
         Args:
             data_in (str): Data to be used to match against the conditionals
-            input_in (str): The input to the first step of the workflow
+            input_in (list): The input to the first step of the workflow
             trigger_name (str): The name of the specific trigger to execute
-            tags (array): A list of tags to find the specific triggers to execute
+            tags (list): A list of tags to find the specific triggers to execute
             
         Returns:
             Dictionary of {"status": <status string>}
         """
-
         triggers = set()
         if trigger_name:
             t = Triggers.query.filter_by(name=trigger_name).first()
@@ -123,11 +121,7 @@ class Triggers(Base):
                     triggers.add(Triggers.query.filter_by(tag=tag).first())
         if not (trigger_name or tags):
             triggers = Triggers.query.all()
-
-        returned_json = dict()
-        returned_json["executed"] = []
-        returned_json["errors"] = []
-
+        returned_json = {'executed': [], 'errors': []}
         from server.flaskserver import running_context
         for trigger in triggers:
             conditionals = json.loads(trigger.condition)
@@ -135,39 +129,38 @@ class Triggers(Base):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
                     if input_in:
-                        input_args = {arg['key']: Argument(key=arg['key'],
-                                                           value=arg['value'],
-                                                           format=arg.get('format', 'str'))
-                                      for arg in input_in}
-                        workflow_to_be_executed.execute(start_input=input_args)
-                        logger.info('Workflow {0} executed with input {1}'.format(workflow_to_be_executed.name,
-                                                                                  input_args))
+                        logger.info(
+                            'Workflow {0} executing with input {1}'.format(workflow_to_be_executed.name, input_in))
                     else:
-                        workflow_to_be_executed.execute()
-                        logger.info('Workflow {0} executed with no input'.format(workflow_to_be_executed.name))
-                    returned_json["executed"].append(trigger.name)
+                        logger.info('Workflow {0} executing with no input'.format(workflow_to_be_executed.name))
+                    try:
+                        uid = running_context.controller.execute_workflow(playbook_name=trigger.playbook,
+                                                                          workflow_name=trigger.workflow,
+                                                                          start_input=input_in)
+                        returned_json["executed"].append({'name': trigger.name, 'id': uid})
+                    except Exception as e:
+                        returned_json["errors"].append({trigger.name: "Error executing workflow: {0}".format(str(e))})
                 else:
                     logger.error('Workflow associated with trigger is not in controller')
                     returned_json["errors"].append({trigger.name: "Workflow could not be found."})
 
         if not (returned_json["executed"] or returned_json["errors"]):
             logging.debug('No trigger matches data input')
+
         return returned_json
 
     @staticmethod
+    def __to_new_input_format(args_json):
+        return {arg['name']: arg['value'] for arg in args_json}
+
+    @staticmethod
     def __execute_trigger(conditional, data_in):
-        flag_args = {arg['key']: Argument(key=arg['key'],
-                                          value=arg['value'],
-                                          format=arg.get('format', 'str'))
-                     for arg in conditional['args']}
         filters = [Filter(action=filter_element['action'],
-                          args={arg['key']: Argument(key=arg['key'],
-                                                     value=arg['value'],
-                                                     format=arg.get('format', 'str'))
-                                for arg in filter_element['args']}
-                          )
+                          args=Triggers.__to_new_input_format(filter_element['args']))
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['flag'], args=flag_args, filters=filters)(data_in)
+        return Flag(action=conditional['flag'],
+                    args=Triggers.__to_new_input_format(conditional['args']),
+                    filters=filters)(data_in, {})
 
     def __repr__(self):
         return json.dumps(self.as_json())

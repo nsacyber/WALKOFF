@@ -25,29 +25,23 @@
 				
         
 			</scheduler>
-			
-    
 		</options>
-		
-    
 		<steps>
 			<step id="start">
 				<id>start</id>
 				<app>HelloWorld</app>
 				<action>repeatBackToMe</action>
 				<device>hwTest</device>
-				<input>
-					<call format="str">Hello World</call>
-				</input>
+				<inputs>
+					<call>Hello World</call>
+				</inputs>
 				<next step="1">
 					<flag action="regMatch">
 						<args>
-							<regex format="str">(.*)</regex>
+							<regex>(.*)</regex>
 						</args>
 						<filters>
-							<filter action="length">
-								<args/>
-							</filter>
+							<filter action="length"/>
 						</filters>
 					</flag>
 				</next>

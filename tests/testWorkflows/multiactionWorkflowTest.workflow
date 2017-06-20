@@ -19,7 +19,7 @@
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">(.*)</regex>
+                        <regex>(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">
@@ -34,9 +34,9 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <call format="str">Hello World</call>
-            </input>
+            <inputs>
+                <call>Hello World</call>
+            </inputs>
             <next></next>
             <error></error>
         </step>

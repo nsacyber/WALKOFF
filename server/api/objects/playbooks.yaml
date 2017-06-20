@@ -8,7 +8,7 @@ Workflow:
       type: string
       example: HelloWorldWorkflow
     steps:
-      description: The steps definied in this workflow. Form of '{step_name -> step}'
+      description: The steps defined in this workflow. Form of '{step_name -> step}'
       type: object
     accumulated_risk:
       description: The risk which has been accumulated as this workflow has been executed
@@ -31,7 +31,7 @@ WorkflowOptions:
       required: [autorun, type]
       properties:
         autorun:
-          description: Should this workfoow be run automatically?
+          description: Should this workflow be run automatically?
           type: boolean
           example: true
         type:
@@ -47,7 +47,7 @@ WorkflowOptions:
       type: boolean
       example: true
     children:
-      description: List of child workflows. Form of {worklfow_name -> Workflow}
+      description: List of child workflows. Form of {workflow_name -> Workflow}
       type: object
 
 Step:
@@ -177,7 +177,7 @@ Filter:
 Argument:
   type: object
   required: [key, value]
-  description: Obejct used for passing an argument into various actions
+  description: Object used for passing an argument into various actions
   properties:
     key:
       type: string
@@ -187,6 +187,7 @@ Argument:
       example: WALK(.*)
     format:
       type: string
+      description: Note -- Ignored completely with new version.
       default: str
       example: string
       enum: [str, string, unicode, int]
@@ -200,3 +201,11 @@ WorkflowFromCytoscape:
       example: step1
     cytoscape:
       type: object
+
+WorkflowId:
+  type: object
+  required: [id]
+  properties:
+    id:
+      type: string
+      description: 32-byte hexidecimal string representing the ID of the workflow

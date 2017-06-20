@@ -12,56 +12,60 @@
 		<start>1</start>
 		<steps>
 			<step id="1">
-				<id>1</id>
+				<name>1</name>
 				<app>Lifx</app>
-				<action>breathe_effect</action>
-				<device>LIFX 12cf1f</device>
+				<action>breathe</action>
+				<device>Light2</device>
 				<position>
-					<x>494.055032258</x>
-					<y>437.567112283</y>
+					<x>490</x>
+					<y>430</y>
 				</position>
-				<input>
-					<power_on format="str">true</power_on>
-					<color format="str">red</color>
-					<period format="int">1</period>
-					<peak format="int">5</peak>
-					<persist format="str">false</persist>
-					<from_color format="str">blue</from_color>
-					<cycles format="int">5</cycles>
-				</input>
-				<next step="2"/>
+				<inputs>
+					<power_on>True</power_on>
+					<color>red</color>
+					<period>1.0</period>
+					<peak>0.5</peak>
+					<persist>False</persist>
+					<from_color>blue</from_color>
+					<cycles>5.0</cycles>
+					<wait>False</wait>
+				</inputs>
+				<next step="3"/>
 			</step>
 			<step id="3">
-				<id>3</id>
+				<name>3</name>
 				<app>Lifx</app>
-				<action>pulse_effect</action>
-				<device>LIFX 12cf1f</device>
+				<action>pulse</action>
+				<device>Light1</device>
 				<position>
-					<x>406.540089357</x>
-					<y>333.60458204</y>
+					<x>410</x>
+					<y>330</y>
 				</position>
-				<input>
-					<power_on format="str">true</power_on>
-					<color format="str">red</color>
-					<period format="int">1</period>
-					<persist format="str">true</persist>
-					<from_color format="str">blue</from_color>
-					<cycles format="int">10</cycles>
-				</input>
+				<inputs>
+					<power_on>True</power_on>
+					<color>red</color>
+					<period>1.0</period>
+					<persist>True</persist>
+					<from_color>blue</from_color>
+					<cycles>10.0</cycles>
+					<wait>False</wait>
+				</inputs>
+				<next step="2"/>
 			</step>
 			<step id="2">
-				<id>2</id>
-				<app>Lifx</app>
-				<action>toggle_power</action>
-				<device>LIFX 12cf1f</device>
+				<name>3</name>
+				<app>Utilities</app>
+				<action>select json</action>
 				<position>
-					<x>452.952347395</x>
-					<y>381.806710298</y>
+					<x>410</x>
+					<y>330</y>
 				</position>
-				<input>
-					<duration format="int">2</duration>
-				</input>
-				<next step="3"/>
+				<inputs>
+					<json>@3</json>
+					<path>
+					    <item>results</item>
+					</path>
+				</inputs>
 			</step>
 		</steps>
 	</workflow>

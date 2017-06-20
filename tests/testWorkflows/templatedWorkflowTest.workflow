@@ -14,12 +14,10 @@
             <action>helloWorld</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-            </input>
             <next step="1">
                 <flag action="regMatch">
                     <args>
-                        <regex format="str">(.*)</regex>
+                        <regex>(.*)</regex>
                     </args>
                     <filters>
                         <filter action="length">
@@ -34,9 +32,9 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <input>
-                <call format="str">{{outputFrom(steps, -1)}}</call>
-            </input>
+            <inputs>
+                <call>{{outputFrom(steps, -1)}}</call>
+            </inputs>
             <next>
             </next>
             <error step="1"></error>

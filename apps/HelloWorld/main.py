@@ -1,5 +1,8 @@
-from apps import App
 import time
+import logging
+from apps import App, action
+
+logger = logging.getLogger(__name__)
 
 
 # There is an associated Hello world test workflow which can be executed
@@ -12,23 +15,24 @@ class Main(App):
 
     # Every function in Main is an action that can be taken
     # Every function needs to define an args argument which receives a dictionary of input parameters
-    def helloWorld(self, args={}):
-        # LOOK AT YOUR CONSOLE WHEN EXECUTING
-        # print(self.introMessage)
+    @action
+    def helloWorld(self):
         return self.introMessage
 
     # Example using arguments
     # Repeats back the contents of the call argument
-    def repeatBackToMe(self, args={}):
-        # print("REPEATING: " + args["call"]())
-        return "REPEATING: " + args["call"]()
+    @action
+    def repeatBackToMe(self, call):
+        return "REPEATING: " + call
 
     # Increments number by one
-    def returnPlusOne(self, args={}):
-        return str(int(args["number"]()) + 1)
+    @action
+    def returnPlusOne(self, number):
+        return number + 1
 
-    def pause(self, args={}):
-        time.sleep(int(args['seconds']()))
+    @action
+    def pause(self, seconds):
+        time.sleep(seconds)
 
     def shutdown(self):
         # print("SHUTTING DOWN")
