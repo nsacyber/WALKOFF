@@ -44,32 +44,32 @@ class TestHelperFunctions(unittest.TestCase):
     #     self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
 
     def test_locate_workflows(self):
-        expected_workflows = ['basicWorkflowTest.workflow',
-                              'DailyQuote.workflow',
-                              'dataflowTest.workflow',
-                              'dataflowTestStepNotExecuted.workflow',
-                              'loopWorkflow.workflow',
-                              'multiactionWorkflowTest.workflow',
-                              'pauseWorkflowTest.workflow',
-                              'multistepError.workflow',
-                              'simpleDataManipulationWorkflow.workflow',
-                              'templatedWorkflowTest.workflow',
-                              'testExecutionWorkflow.workflow',
-                              'testScheduler.workflow',
-                              'tieredWorkflow.workflow']
+        expected_workflows = ['basicWorkflowTest.playbook',
+                              'DailyQuote.playbook',
+                              'dataflowTest.playbook',
+                              'dataflowTestStepNotExecuted.playbook',
+                              'loopWorkflow.playbook',
+                              'multiactionWorkflowTest.playbook',
+                              'pauseWorkflowTest.playbook',
+                              'multistepError.playbook',
+                              'simpleDataManipulationWorkflow.playbook',
+                              'templatedWorkflowTest.playbook',
+                              'testExecutionWorkflow.playbook',
+                              'testScheduler.playbook',
+                              'tieredWorkflow.playbook']
         received_workflows = locate_workflows_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 
         self.assertListEqual(locate_workflows_in_directory('.'), [])
 
     def test_get_workflow_names_from_file(self):
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
         self.assertListEqual(workflows, ['helloWorldWorkflow'])
 
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'tieredWorkflow.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'tieredWorkflow.playbook'))
         self.assertListEqual(workflows, ['parentWorkflow', 'childWorkflow'])
 
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.workflow'))
+        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
         self.assertIsNone(workflows)
 
     def test_list_apps(self):

@@ -231,7 +231,7 @@ class Controller(object):
         Returns:
             True on success, False if otherwise.
         """
-        path = '{0}{1}{2}.workflow'.format(core.config.paths.templates_path, sep, template_playbook)
+        path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
         return self.load_workflow_from_file(path=path,
                                             workflow_name=template_name,
                                             name_override=workflow_name,
@@ -246,7 +246,7 @@ class Controller(object):
             template_playbook (str): The name of the playbook template to load. Default is "emptyWorkflow".
         """
         # TODO: Need a handler for returning workflow key and status
-        path = '{0}{1}{2}.workflow'.format(core.config.paths.templates_path, sep, template_playbook)
+        path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
         self.load_workflows_from_file(path=path, playbook_override=playbook_name)
 
     def remove_workflow(self, playbook_name, workflow_name):

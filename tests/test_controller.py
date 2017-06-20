@@ -37,7 +37,7 @@ class TestController(unittest.TestCase):
         self.assertEqual(self.controller.ancestry, ["testController"])
 
     def test_load_workflow_from_file(self):
-        path = '{0}{1}.workflow'.format(config.test_workflows_path_with_generated, "test")
+        path = '{0}{1}.playbook'.format(config.test_workflows_path_with_generated, "test")
         playbook_name = "testPlaybook"
         workflow_name = "helloWorldWorkflow"
         key = _WorkflowKey(playbook_name, workflow_name)
@@ -46,7 +46,7 @@ class TestController(unittest.TestCase):
         self.assertTrue(key in self.controller.workflows)
 
     def test_load_workflows_from_file(self):
-        path = config.test_workflows_path + "tieredWorkflow.workflow"
+        path = config.test_workflows_path + "tieredWorkflow.playbook"
         playbook_name = "testPlaybook"
         self.controller.load_workflows_from_file(path=path, playbook_override=playbook_name)
         key = _WorkflowKey(playbook_name, "parentWorkflow")

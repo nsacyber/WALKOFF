@@ -33,7 +33,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_workflowExecutionEvents(self):
         workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         c = Controller(name="testExecutionEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.playbook")
 
         subs = {'testExecutionEventsController':
                     Subscription(subscriptions=
@@ -62,7 +62,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_stepExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = Controller(name="testStepExecutionEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.playbook")
 
         subs = {'testStepExecutionEventsController':
             Subscription(subscriptions=
@@ -90,7 +90,7 @@ class TestExecutionEvents(unittest.TestCase):
     def test_ffkExecutionEvents(self):
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         c = Controller(name="testStepFFKEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.playbook")
 
         filter_sub = Subscription(events=['Filter Success', 'Filter Error'])
         flag_sub = Subscription(events=['Flag Success', 'Flag Error'], subscriptions={'length': filter_sub})
@@ -119,7 +119,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_ffkExecutionEventsCase(self):
         c = Controller(name="testStepFFKEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.playbook")
         workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
         filter_sub = Subscription(events=['Filter Error'])
         flag_sub = Subscription(events=['Flag Success', 'Flag Error'], subscriptions={'length': filter_sub})

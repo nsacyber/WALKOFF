@@ -45,7 +45,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         case_database.initialize()
         self.controller = Controller(workflows_path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
         self.controller.load_workflows_from_file(
-            path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.workflow'))
+            path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.workflow_name = construct_workflow_name_key(*self.id_tuple)
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
@@ -135,7 +135,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_to_from_cytoscape_data(self):
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path,
-                                                                'multiactionWorkflowTest.workflow'))
+                                                                'multiactionWorkflowTest.playbook'))
         workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         original_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
         cytoscape_data = workflow.get_cytoscape_data()
@@ -207,7 +207,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_pause_and_resume_workflow(self):
         from gevent import monkey
         monkey.patch_all()
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.workflow'))
+        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         waiter = Event()
         uid = None
@@ -236,7 +236,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_pause_and_resume_workflow_breakpoint(self):
         from gevent import monkey
         monkey.patch_all()
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.workflow'))
+        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         waiter = Event()
         def step_2_finished_listener(sender, **kwargs):
