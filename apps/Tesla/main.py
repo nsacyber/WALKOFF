@@ -1,6 +1,6 @@
 import logging
 from apps import App, action
-import teslajson
+import apps.Tesla.teslajson as teslajson
 
 logger = logging.getLogger(__name__)
 
