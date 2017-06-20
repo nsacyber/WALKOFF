@@ -68,7 +68,6 @@ $(function(){
             app.children = [];
             _.each(actions, function(actionProperties, actionName) {
                 var child = {text: actionName, icon: "jstree-file", data: {app: appName}};
-                console.log(actionProperties);
                 if (actionProperties.description) child.a_attr = { title: actionProperties.description };
                 app.children.push(child);
             });
