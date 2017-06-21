@@ -39,7 +39,7 @@
 				<action>set state</action>
 				<device>Light1</device>
 				<position>
-					<x>-50</x>
+					<x>-70</x>
 					<y>50</y>
 				</position>
 				<inputs>
@@ -57,7 +57,7 @@
 				<app>Utilities</app>
 				<action>linearly scale</action>
 				<position>
-					<x>-50</x>
+					<x>-70</x>
 					<y>-50</y>
 				</position>
 				<inputs>
@@ -85,8 +85,6 @@
 					<power>on</power>
 					<infrared>0.0</infrared>
 				</inputs>
-				<next step="7"/>
-				<next step="6"/>
 			</step>
 			<step id="4">
 				<name>4</name>
@@ -104,34 +102,6 @@
 					<value>@1</value>
 				</inputs>
 				<next step="5"/>
-			</step>
-			<step id="7">
-				<name>7</name>
-				<app>SMS</app>
-				<action>send</action>
-				<device>Justin</device>
-				<position>
-					<x>70</x>
-					<y>130</y>
-				</position>
-				<inputs>
-					<to>+14102596369</to>
-					<message>@1</message>
-				</inputs>
-			</step>
-			<step id="6">
-				<name>6</name>
-				<app>SMS</app>
-				<action>send</action>
-				<device>Justin</device>
-				<position>
-					<x>-50</x>
-					<y>130</y>
-				</position>
-				<inputs>
-					<to>+14102596369</to>
-					<message>@1</message>
-				</inputs>
 			</step>
 		</steps>
 	</workflow>
