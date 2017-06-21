@@ -167,7 +167,7 @@ def locate_workflows_in_directory(path=None):
     path = path if path is not None else core.config.paths.workflows_path
     if os.path.exists(path):
         return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
-                                                              and workflow.endswith('.workflow'))]
+                                                              and workflow.endswith('.playbook'))]
     else:
         logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
         return []

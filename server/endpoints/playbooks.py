@@ -100,8 +100,8 @@ def update_playbook(playbook_name):
                                    for playbook in
                                    helpers.locate_workflows_in_directory(core.config.paths.workflows_path)]
                 if playbook_name in saved_playbooks:
-                    os.rename(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)),
-                              os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(new_name)))
+                    os.rename(os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name)),
+                              os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(new_name)))
                 current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
                 return {"playbooks": running_context.controller.get_all_workflows()}, SUCCESS
             else:
@@ -125,7 +125,7 @@ def delete_playbook(playbook_name):
             current_app.logger.info('Deleted playbook {0} from controller'.format(playbook_name))
             if playbook_name in [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]:
                 try:
-                    os.remove(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)))
+                    os.remove(os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name)))
                     current_app.logger.info('Deleted playbook {0} from workflow directory'.format(playbook_name))
                 except (IOError, OSError) as e:
                     current_app.logger.error('Error deleting playbook {0}: {1}'.format(playbook_name, e))
@@ -349,7 +349,7 @@ def delete_workflow(playbook_name, workflow_name):
 
             if len(running_context.controller.get_all_workflows_by_playbook(playbook_name)) == 0:
                 current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_name))
-                playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))
+                playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
                 try:
                     os.remove(playbook_filename)
                 except OSError:

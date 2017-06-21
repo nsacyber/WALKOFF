@@ -21,7 +21,7 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_startStopExecutionLoop(self):
         c = controller.Controller(name="startStopController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "testScheduler.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "testScheduler.playbook")
         subs = {'startStopController': Subscription(events=[EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
                                                             EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED,
                                                             EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
@@ -39,7 +39,7 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_pauseResumeSchedulerExecution(self):
         c = controller.Controller(name="pauseResumeController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "testScheduler.workflow")
+        c.load_workflows_from_file(path=config.test_workflows_path + "testScheduler.playbook")
 
         subs = {'pauseResumeController': Subscription(events=[EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
                                                               EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED,

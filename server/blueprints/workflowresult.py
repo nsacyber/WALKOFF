@@ -56,7 +56,7 @@ def __step_ended_callback(sender, **kwargs):
     __workflow_step_event_json.set(json.dumps(result))
     __step_signal.set()
     __step_signal.clear()
-    sleep(1)
+    sleep(0)
 
 
 def __step_error_callback(sender, **kwargs):
@@ -73,7 +73,7 @@ def __step_error_callback(sender, **kwargs):
     __workflow_step_event_json.set(json.dumps(result))
     __step_signal.set()
     __step_signal.clear()
-    sleep(1)
+    sleep(0)
 
 
 @FunctionExecutionSuccess.connect

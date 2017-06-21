@@ -11,7 +11,7 @@ class TestWorkflowResults(ServerTestCase):
     def test_workflow_result_recording(self):
         print(server.workflowresults.results)
         flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'multiactionWorkflowTest.workflow')
+                                                                        'multiactionWorkflowTest.playbook')
         multiaction_key = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():

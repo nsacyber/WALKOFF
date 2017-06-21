@@ -125,7 +125,7 @@ def list_all_widgets():
 
 
 def write_playbook_to_file(playbook_name):
-    playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))
+    playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
     backup = None
     try:
         with open(playbook_filename) as original_file:

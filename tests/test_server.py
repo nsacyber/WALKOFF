@@ -186,7 +186,7 @@ class TestConfiguration(ServerTestCase):
     def test_set_workflows_path(self):
         workflow_files = [os.path.splitext(workflow)[0]
                           for workflow in os.listdir(core.config.paths.workflows_path)
-                          if workflow.endswith('.workflow')]
+                          if workflow.endswith('.playbook')]
         self.app.put('/playbooks/test_playbook', headers=self.headers)
         original_workflow_keys = list(server.running_context.controller.workflows.keys())
         data = {"apps_path": core.config.paths.apps_path,
@@ -194,5 +194,5 @@ class TestConfiguration(ServerTestCase):
         self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
         self.assertNotEqual(len(server.running_context.controller.workflows.keys()), len(original_workflow_keys))
         new_files = [os.path.splitext(workflow)[0]
-                     for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.workflow')]
+                     for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.playbook')]
         self.assertNotEqual(len(new_files), len(workflow_files))
