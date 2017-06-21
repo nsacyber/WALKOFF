@@ -32,6 +32,7 @@
             <action>repeatBackToMe</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
+            <templated>true</templated>
             <inputs>
                 <call>{{outputFrom(steps, -1)}}</call>
             </inputs>

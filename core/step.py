@@ -162,13 +162,14 @@ class Step(ExecutionElement):
         Args:
             kwargs (dict[str]): Arguments to use in the JINJA templating.
         """
-        if sys.version_info[0] > 2:
-            content = ElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
-        else:
-            content = ElementTree.tostring(self.raw_xml, method='xml')
-        t = Template(Markup(content).unescape(), autoescape=True)
-        xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
-        self._update_xml(step_xml=ElementTree.fromstring(str(xml)))
+        if self.templated:
+            if sys.version_info[0] > 2:
+                content = ElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
+            else:
+                content = ElementTree.tostring(self.raw_xml, method='xml')
+            t = Template(Markup(content).unescape(), autoescape=True)
+            xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
+            self._update_xml(step_xml=ElementTree.fromstring(xml))
 
     def set_input(self, new_input):
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
