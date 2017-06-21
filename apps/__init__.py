@@ -34,7 +34,7 @@ class AppRegistry(type):
             module_name = cls.__module__.rsplit('.', 1)[0]
             display_module = importlib.import_module('{0}.display'.format(module_name))
         except ImportError:
-            _logger.warning('App {0} has no module "display"'.format(cls._get_app_name()))
+            # _logger.warning('App {0} has no module "display"'.format(cls._get_app_name()))
             return None
         else:
             try:

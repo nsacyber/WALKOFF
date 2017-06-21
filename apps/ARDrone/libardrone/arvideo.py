@@ -39,7 +39,8 @@ import sys
 try:
     import psyco
 except ImportError:
-    print("Please install psyco for better video decoding performance.")
+    # print("Please install psyco for better video decoding performance.")
+    pass
 
 
 # from zig-zag back to normal
@@ -542,7 +543,8 @@ try:
     psyco.bind(inverse_dct)
     psyco.bind(read_picture)
 except NameError:
-    print("Unable to bind video decoding methods with psyco. Proceeding anyways, but video decoding will be slow!")
+    # print("Unable to bind video decoding methods with psyco. Proceeding anyways, but video decoding will be slow!")
+    pass
 
 
 def main():
