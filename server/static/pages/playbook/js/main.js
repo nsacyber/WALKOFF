@@ -67,7 +67,9 @@ $(function(){
             app.text = appName;
             app.children = [];
             _.each(actions, function(actionProperties, actionName) {
-                app.children.push({text: actionName, icon: "jstree-file", data: {app: appName}});
+                var child = {text: actionName, icon: "jstree-file", data: {app: appName}};
+                if (actionProperties.description) child.a_attr = { title: actionProperties.description };
+                app.children.push(child);
             });
 
             // Sort children by action name
@@ -136,8 +138,11 @@ $(function(){
                 var input = _.cloneDeep(arg);
                 var inputName = input.name;
                 delete input.name;
+
                 input.title = "Type: " + input.type;
-                if (!input.enum) input.type = "string";
+
+                //Hack: allow for output references "@<step_name>" for number fields
+                if (input.type === "number" || input.type === "integer") input.type = "string";
                 
                 // var valueSchema = null;
                 // if (pythonType === "string") {
@@ -192,7 +197,6 @@ $(function(){
                     }
                 }
             });
-
 
             return subSchema;
         }
@@ -777,7 +781,7 @@ $(function(){
                     format: _.find(appData[step.data.parameters.app].actions[step.data.parameters.action].args, function (arg) {
                         return arg.name === inputName;
                     }).type
-                }
+                };
                 return result;
             }, {});
         });
@@ -912,7 +916,7 @@ $(function(){
                         'shape': 'roundrectangle',
                         //'background-color': '#aecbdc',
                         'selection-box-color': 'red',
-                        'font-family': 'Oswald',
+                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
                         'font-weight': 'lighter',
                         'font-size': '15px',
                         'width':'40',
@@ -1210,11 +1214,11 @@ $(function(){
                     "plugins" : [ "contextmenu" ],
                     "contextmenu" : { items: customMenu }
                 })
-                    .bind("ready.jstree", function (event, data) {
-                        $(this).jstree("open_all"); // Expand all
-                    });
+                .bind("ready.jstree", function (event, data) {
+                    $(this).jstree("open_all"); // Expand all
+                })
                 // handle double click on workflow, load workflow graph for editing
-                $("#workflows").bind("dblclick.jstree", function (event, data) {
+                .bind("dblclick.jstree", function (event, data) {
 
                     var node = $(event.target).closest("li");
                     var node_id = node[0].id; //id of the selected node
@@ -1560,9 +1564,10 @@ $(function(){
                     'data' : formatAppsActionJsonDataForJsTree(data)
                 }
             })
-            .bind("ready.jstree", function (event, data) {
-                $(this).jstree("open_all"); // Expand all
-            })
+            //Commented out for now
+            // .bind("ready.jstree", function (event, data) {
+            //     $(this).jstree("open_all"); // Expand all
+            // })
             // handle double click on workflow, add action node to center of canvas
             .bind("dblclick.jstree", function (event, data) {
                 if (cy === null)

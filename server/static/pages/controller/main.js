@@ -103,7 +103,7 @@ $("#casesTree").jstree({
 $("#addCase").on("click", function(){
     id = Object.keys($("#casesTree").jstree()._model.data).length;
     name = "case_"+id;
-    $("#casesTree").jstree().create_node("#", {"id": name, "text" : name, "type":"case"}, "last", function(){});
+    $("#casesTree").jstree().create_node("#", {"id": name, "text" : name, "type":"case", "icon": "jstree-file"}, "last", function(){});
     addCase(name);
 });
 
