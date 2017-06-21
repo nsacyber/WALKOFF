@@ -916,7 +916,7 @@ $(function(){
                         'shape': 'roundrectangle',
                         //'background-color': '#aecbdc',
                         'selection-box-color': 'red',
-                        'font-family': 'Oswald',
+                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
                         'font-weight': 'lighter',
                         'font-size': '15px',
                         'width':'40',
