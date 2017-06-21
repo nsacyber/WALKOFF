@@ -55,16 +55,14 @@
 			<step id="2">
 				<name>3</name>
 				<app>Utilities</app>
-				<action>select json</action>
+				<action>json select</action>
 				<position>
 					<x>410</x>
 					<y>330</y>
 				</position>
 				<inputs>
-					<json>@3</json>
-					<path>
-					    <item>results</item>
-					</path>
+					<json_reference>@3</json_reference>
+					<element>results</element>
 				</inputs>
 			</step>
 		</steps>
