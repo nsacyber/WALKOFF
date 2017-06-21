@@ -40,6 +40,33 @@ flags:
           description: The value with which to compare the input
           required: true
           type: number
+  timeCompare:
+    run: timeCompare.timeCompare
+    description: Compares two UNIX time values, or a time value against current time.
+    dataIn: value
+    parameters:
+        - name: value
+          description: The first time value
+          required: true
+          type: number
+        - name: operator
+          description: The comparison operator ('g', 'ge', etc.)
+          required: true
+          type: string
+          enum: [g, ge, l, le, e]
+          default: e
+        - name: currentTime
+          description: The second time value, will default to current UNIX time.
+          type: string
+  temperature:
+    run: temperature.temperature
+    description: Returns a color value based on temperature
+    dataIn: value
+    parameters:
+        - name: value
+          description: The temperature value
+          required: true
+          type: number
 filters:
   length:
     run: length.length
