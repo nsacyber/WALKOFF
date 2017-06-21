@@ -257,6 +257,7 @@ class CaseDatabase(object):
                     for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
         return result
 
+
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""
     return _singleton

@@ -2,6 +2,7 @@ from apps import App, action
 import time
 import json
 
+
 class Main(App):
 
     def __init__(self, name=None, device=None):

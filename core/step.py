@@ -1,6 +1,5 @@
 import json
 import sys
-from copy import deepcopy
 from xml.etree import ElementTree
 from collections import namedtuple
 import logging
@@ -10,12 +9,12 @@ from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-from core.helpers import (get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml, InvalidInput,
-                          dereference_step_routing)
+from core.helpers import (get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml,
+                          InvalidInput, dereference_step_routing)
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
-from core.validator import validate_app_action_parameters, validate_parameter
+from core.validator import validate_app_action_parameters
 
 logger = logging.getLogger(__name__)
 
@@ -213,6 +212,7 @@ class Step(ExecutionElement):
         Args:
             error (bool, optional): Boolean to determine whether or not to use the errors field or the conditionals
                 field to find the NextStep object.
+            accumulator (dict): A record of teh previously-executed steps. Of form {step_name: result}
                  
         Returns:
             The NextStep object to be executed.
@@ -330,8 +330,8 @@ class Step(ExecutionElement):
         """Forms a Step object from the provided JSON object.
         
         Args:
-            json_in (JSON object): The JSON object to convert from.
-            position (JSON): position of the step node of the form {'x': <x position>, 'y': <y position>}
+            json_in (dict): The JSON object to convert from.
+            position (dict): position of the step node of the form {'x': <x position>, 'y': <y position>}
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             ancestry (list[str], optional): The ancestry for the new Step object. Defaults to None.
             

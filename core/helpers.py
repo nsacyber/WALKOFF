@@ -5,7 +5,6 @@ from six import string_types
 from xml.etree import ElementTree
 import pkgutil
 import logging
-from copy import deepcopy
 import core.config.paths
 import core.config.config
 from dicttoxml import dicttoxml

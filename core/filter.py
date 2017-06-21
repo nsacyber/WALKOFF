@@ -43,6 +43,15 @@ class Filter(ExecutionElement):
         self.args = validate_filter_parameters(self.args_api, args, self.action)
 
     def __call__(self, data_in, accumulator):
+        """
+        Executes the flag
+
+        Args:
+            data_in: The input to the flag. Typically from the last step of the workflow or the input to a trigger
+            accumulator (dict): A record of executed steps and their results. Of form {step_name: result}
+        Returns:
+            (bool): Is the flag true for the given data and accumulator
+        """
         original_data_in = deepcopy(data_in)
         try:
             data_in = validate_parameter(data_in, self.data_in_api, 'Filter {0}'.format(self.action))

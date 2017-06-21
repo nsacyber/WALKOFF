@@ -106,7 +106,8 @@ def create_device(app_name, device_name):
                     key = key_file.read()
             except (OSError, IOError) as e:
                 current_app.logger.error('Could not create device {0} for app {1}. '
-                                         'Could not get key from AES key file'.format(device_name, app_name))
+                                         'Could not get key from AES key file. '
+                                         'Error: {2}'.format(device_name, app_name, e))
                 return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)

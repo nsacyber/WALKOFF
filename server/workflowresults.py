@@ -33,6 +33,7 @@ def __append_step_result(uid, data, step_type):
               'timestamp': str(datetime.utcnow())}
     results[uid]['results'].append(result)
 
+
 @StepExecutionSuccess.connect
 def __step_execution_success_callback(sender, **kwargs):
     global results

@@ -61,6 +61,7 @@ def __update_action_tracker(form, app, action):
                 (app_metrics[app]['actions'][action][form]['avg_time'] + execution_time) / 2
         del __action_tmp[(app, action)]
 
+
 @WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
     # TODO: This identifier should be replaced by step id when that happens

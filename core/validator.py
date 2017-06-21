@@ -10,11 +10,12 @@ from connexion.utils import boolean
 from six import string_types
 import sys
 import logging
-
-logger = logging.getLogger(__name__)
 from core.helpers import InvalidInput
 import core.config.paths
 import core.config.config
+
+logger = logging.getLogger(__name__)
+
 
 __new_inspection = False
 if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
@@ -94,8 +95,9 @@ def convert_json(spec, param_in, message_prefix):
             try:
                 return convert_primitive_type(param_in, parameter_type)
             except ValueError:
-                message = '{0} has invalid input. ' \
-                          'Input {1} could not be converted to type {2}'.format(message_prefix, param_in, parameter_type)
+                message = (
+                    '{0} has invalid input. '
+                    'Input {1} could not be converted to type {2}'.format(message_prefix, param_in, parameter_type))
                 logger.error(message)
                 raise InvalidInput(message)
         elif parameter_type == 'array':
@@ -371,4 +373,3 @@ def validate_flag_parameters(api, inputs, flag):
 
 def validate_filter_parameters(api, inputs, filter_name):
     return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
-

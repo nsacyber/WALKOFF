@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class App(database.Base, object):
-
     __tablename__ = 'app'
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
@@ -154,7 +153,7 @@ class Device(database.Base):
         try:
             with open(core.config.paths.AES_key_path, 'rb') as key_file:
                 key = key_file.read()
-        except (OSError, IOError) as e:
+        except (OSError, IOError):
             current_app.logger.error('No AES key found')
             return None
         else:
@@ -178,7 +177,8 @@ class Device(database.Base):
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
             except (OSError, IOError) as e:
-                current_app.logger.error('Error loading AES key from from {0}: {1}'.format(core.config.paths.AES_key_path, e))
+                current_app.logger.error('Error loading AES key from from {0}: '
+                                         '{1}'.format(core.config.paths.AES_key_path, e))
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
                 pw = form.pw.data
@@ -224,4 +224,4 @@ class Device(database.Base):
 
     def __repr__(self):
         return str({"name": self.name, "username": self.username, "password": self.password,
-                           "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})
+                    "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})

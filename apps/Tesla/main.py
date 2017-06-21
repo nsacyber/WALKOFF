@@ -62,14 +62,6 @@ class Main(App):
     def get_battery_current(self):
         return (self.vehicle.data_request('charge_state'))['battery_current']
 
-    # @action
-    # def get_charge_starting_range(self):
-    #     return (self.vehicle.data_request('charge_state'))['charge_starting_range']
-    #
-    # @action
-    # def get_charge_starting_soc(self):
-    #     return (self.vehicle.data_request('charge_state'))['charge_starting_soc']
-
     @action
     def get_charger_voltage(self):
         return float((self.vehicle.data_request('charge_state'))['charger_voltage'])
@@ -341,9 +333,4 @@ class Main(App):
     def remote_start(self):
         # Args: password to the account
         return bool(self.vehicle.command('remote_start_drive',
-                                    data={"password": self.get_device().get_password()})['result'])
-
-    # @action
-    # def open_trunk(self):
-    #     # Currently inoperable
-    #     return self.vehicle.command('trunk_open', data={'which_trunk': 'rear'})['result'])
+                                         data={"password": self.get_device().get_password()})['result'])

@@ -6,8 +6,9 @@ from os import sep
 from xml.etree import ElementTree
 import uuid
 import logging
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
+                                EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED)
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from apscheduler.schedulers.gevent import GeventScheduler
 import core.config.config

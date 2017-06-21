@@ -305,7 +305,7 @@ class Workflow(ExecutionElement):
         for step, step_result in self.accumulator.items():
             try:
                 result_str[step] = json.dumps(step_result)
-            except Exception as e:
+            except Exception:
                 logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
                 result_str[step] = 'error: could not convert to JSON'
         callbacks.WorkflowShutdown.send(self, data=self.accumulator)

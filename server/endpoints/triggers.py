@@ -3,7 +3,6 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
 from server.return_codes import *
-from core.helpers import InvalidInput
 
 
 def read_all_triggers():

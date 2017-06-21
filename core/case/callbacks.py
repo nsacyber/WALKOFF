@@ -6,9 +6,9 @@ from blinker import Signal
 import core.case.subscription as case_subscription
 from core.case import database
 
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, \
-    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
+                                EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED)
 
 logging.basicConfig()  # needed so apscheduler can log to console when an error occurs
 

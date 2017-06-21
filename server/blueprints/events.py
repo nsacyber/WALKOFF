@@ -40,6 +40,7 @@ def setup_case_stream():
 @auth_token_required
 def stream_case_events():
     from server.flaskserver import running_context
+
     @roles_accepted(*running_context.user_roles['/cases'])
     def inner():
         return Response(__case_event_stream(), mimetype='text/event-stream')

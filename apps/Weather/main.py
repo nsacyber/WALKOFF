@@ -1,6 +1,7 @@
 import pyowm
 from apps import App, action
 
+
 class Weather(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
