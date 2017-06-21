@@ -49,8 +49,6 @@
 					<power>on</power>
 					<infrared>0.0</infrared>
 				</inputs>
-				<next step="6"/>
-				<next step="7"/>
 			</step>
 			<step id="2">
 				<name>2</name>
