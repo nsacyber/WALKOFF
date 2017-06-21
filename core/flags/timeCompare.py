@@ -23,3 +23,4 @@ def timeCompare(value, operator, currentTime = None):
         return True
     else:
       	return None
+    
