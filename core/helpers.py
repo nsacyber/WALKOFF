@@ -28,7 +28,13 @@ def import_py_file(module_name, path_to_file):
     """
     if sys.version_info[0] == 2:
         from imp import load_source
-        imported = load_source(module_name, os.path.abspath(path_to_file))
+        import exceptions, warnings
+        with warnings.catch_warnings(record=True) as w:
+            imported = load_source(module_name, os.path.abspath(path_to_file))
+            mod_name = module_name.replace('.main','')
+            if not (type(w[-1].category) == type(exceptions.RuntimeWarning) or
+                    'Parent module \'apps.'+mod_name+'\' not found while handling absolute import' in w[-1].message):
+                print(w[-1].message)
     else:
         from importlib import machinery
         loader = machinery.SourceFileLoader(module_name, os.path.abspath(path_to_file))

@@ -2,7 +2,7 @@ import pyowm
 from apps import App, action
 
 
-class Weather(App):
+class Main(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         self.owm = pyowm.OWM(self.get_device().get_password())
