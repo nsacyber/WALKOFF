@@ -43,6 +43,25 @@ Tested on Windows and Linux
 
 *Requirements for apps may differ* 
 
+## Installation Instructions
+First, install the dependencies with the following command:
+
+   `pip install -r requirements.txt`
+   
+To install the dependencies for each individual app, run:
+
+   `python installDependencies.py`
+   
+Or to just install the dependencies for specific apps:
+
+   `python installDependencies -a AppOne,AppTwo,AppThree`
+
+That's it! To start up the server, just run:
+
+   `python startServer.py` 
+   
+Then, navigate to the specified IP and port to start using WALKOFF. The default is http://127.0.0.1:5000.
+
 ## Apps
 WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
 
