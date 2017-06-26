@@ -40,6 +40,7 @@ $(document).ready(function(){
     });
 
     $("#ss_playbook").on("click", function(e){
+        setMenuItemActive(this);
         core.stop();
         core.start("systemPage", {
             options: {page: "playbook"}
@@ -47,6 +48,7 @@ $(document).ready(function(){
     });
 
     $("#ss_devices").on("click", function(e){
+        setMenuItemActive(this);
         core.stop();
         core.start("systemPage", {
             options: {page: "devices"}
@@ -54,6 +56,7 @@ $(document).ready(function(){
     });
 
     $("#ss_settings").on("click", function(e){
+        setMenuItemActive(this);
         core.stop();
         core.start("systemPage", {
             options: {page: "settings"}
@@ -61,6 +64,7 @@ $(document).ready(function(){
     });
 
     $("#ss_triggers").on("click", function(e){
+        setMenuItemActive(this);
         core.stop();
         core.start("systemPage", {
             options: {page: "triggers"}
@@ -68,6 +72,7 @@ $(document).ready(function(){
     });
 
     $("#ss_cases").on("click", function(e){
+        setMenuItemActive(this);
         core.stop();
         core.start("systemPage", {
             options: {page: "cases"}
@@ -75,6 +80,7 @@ $(document).ready(function(){
     });
 
     $("#ss_controller").on("click", function(e){
+        setMenuItemActive(this);
         core.stop();
         core.start("systemPage", {
             options: {page: "controller"}
@@ -82,6 +88,9 @@ $(document).ready(function(){
     });
 
     $(".installedApp").on("click", function(e){
+        //set main Installed Apps sidebar menu active
+        setMenuItemActive("#ss_installed_apps");
+
         app = e["target"]["childNodes"][1]["data"].trim()
         core.stop();
         core.start("systemPage", {
@@ -92,4 +101,9 @@ $(document).ready(function(){
             }
         });
     });
+
+    function setMenuItemActive(subMenuId){
+        $(subMenuId).parent().addClass("active");
+        $(subMenuId).parent().siblings("li").removeClass("active");
+    }
 });
