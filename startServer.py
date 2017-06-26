@@ -62,11 +62,13 @@ if __name__ == "__main__":
         host = config.host
         if ssl_context:
             server = WSGIServer((host, port), application=flaskserver.app, ssl_context=ssl_context)
+            proto = 'https'
 
         else:
             server = WSGIServer((host, port), application=flaskserver.app)
+            proto = 'http'
         setup_logger()
-        logger.info('Listening on host https://{0}:{1}'.format(host, port))
+        logger.info('Listening on host {2}://{0}:{1}'.format(host, port, proto))
         try:
             server.serve_forever()
         except KeyboardInterrupt:
