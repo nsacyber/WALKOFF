@@ -124,16 +124,16 @@ WALKOFF
 
         <h4><b>2. Create a basic Main class inside of <code>main.py</code></b></h4>
         <p>Inside of the HelloWorld package, we need to create a <code>main.py</code> module. Inside of this module,
-        we will define a class called <code>Main</code> which will extend the <code>App</code> class from
-            <code>server.appdevice</code> module. This class is the primary interface to the WALKOFF orchestrator.
+        we will define a class called <code>Main</code> which will extend the <code>App</code> class from the
+            <code>apps.__init__</code> module. This class is the primary interface to the WALKOFF orchestrator.
         There are only two requirements for this class: </p>
         <ol>
-            <li>The <code>__init__</code> must take a name and a device parameters</li>
+            <li>The <code>__init__</code> function must take a name and a device as parameters</li>
             <li>A method named shutdown must be implemented</li>
         </ol>
-        <p>The first requirement is needed to initialize the App's base class. If we expect ant cleanup would be necessary
-            to terminate a session with the app, we need to create override a method called "shutdown". I
-            n our example, we won't need any so we'll just omit that function.</p>
+        <p>The first requirement is needed to initialize the App's base class. If we expect any cleanup would be necessary
+            to terminate a session with the app, we need to override a method called "shutdown". In our example,
+            we won't need any so the only code we'll put in that function will be the keyword <code>pass</code></p>
 
         <pre><code class="python">
 from apps import App
@@ -145,9 +145,9 @@ class Main(App):
 
         <h4><b>3. Write some methods</b></h4>
         <p>Each method you write in this class can be turned into an action.  We are going to start with the standard
-            "Hello World" action,  an action which takes an argument named "number" and increments it by one, an
+            "Hello World" action,  an action which takes an argument called "number" and increments it by one, an
             action which returns a specific letter of a string at a given index, and an action which prints a message to
-            the console
+            the console.
             </p>
             <pre><code class="python">
 from apps import App
@@ -156,17 +156,18 @@ class Main(App):
     def __init__(self, name, device):
         App.__init__(self, name, device)
 
-    def hello_world(self, args={}):
-        return {"message": "Hello World"}
+    def hello_world(self):
+        return self.introMessage
 
-    def plus_one(self, number_in):
-        return number_in + 1
+    def returnPlusOne(self, number):
+        return number + 1
 
     def get_letter(self, string_in, index):
         return string_in[index]
 
     def print_message(self, message):
         print(message)
+        return 'success'
 
             </code></pre>
         <h4><b>4. Convert the methods to actions</b></h4>
@@ -182,11 +183,11 @@ class Main(App):
 
     @action
     def hello_world(self):
-        return {"message": "Hello World"}
+        return self.introMessage
 
     @action
-    def plus_one(self, number_in):
-        return number_in + 1
+    def returnPlusOne(self, number):
+        return number + 1
 
     @action
     def get_letter(self, string_in, index):
@@ -218,9 +219,9 @@ actions:
             message:
               type: string
   plus one:
-    run: plus_one
+    run: returnPlusOne
     parameters:
-      - name: number_in
+      - name: number
         type: number
         required: true
     returns:
@@ -260,11 +261,11 @@ actions:
             <li>When your action is executed, inputs of different types will be cast into the appropriate types if
                 possible, so there should be no reason to cast your arguments into the correct types in the action</li>
             <li>JSON schema descriptions such as limiting the length of the string or the maximum value of a number or
-                integer are available to further validate the parameter. To learn more look at
+                integer are available to further validate the parameter. To learn more, look at
                 <a href="App_api_schema.html">App Api Schemas</a>.</li>
             <li>It is good practice to return something from an action to help with debugging your action. If you wish
                 to omit a return type, you do not need to specify any returns.</li>
-            <li>The return types of the actions are not validated, only the inputs to the actions.</li>
+            <li>The return types of the actions are not validated, only the inputs to the actions are validated.</li>
         </ol>
         <p>We should give a little more information to help a user know more about what our app and its actions do. In
             particular, we should include descriptions on the action parameters. These will be rendered on the workflow
@@ -295,10 +296,10 @@ actions:
               type: string
               enum: [Hello World]
   plus one:
-    run: plus_one
+    run: returnPlusOne
     description: Adds one to a number
     parameters:
-      - name: number_in
+      - name: number
         description: The number to add to
         type: number
         required: true
@@ -343,15 +344,17 @@ actions:
           type: string
           enum: [success]
         </code></pre>
-        <p>If you are concerned if your app API is correct, you can do a quick scan by running the
-            <code>validateappapi.py</code> script included at the root of the WALKOFF repository.</p>
+        <p>If you are concerned about whether or not your app API is correct, you can do a quick scan by running the
+            <code>validateappfunctions.py</code> script included at the root of the WALKOFF repository.</p>
             <pre><code class="console">
-python validateappapi.py --apps HelloWorld
+python validateappfunctions.py --apps HelloWorld
             </code></pre>
         <p>You can see more options using </p>
         <pre><code class="console">
-python validateappapi.py --help
+python validateappfunctions.py --help
         </code></pre>
+        <p>Note that this script only validates some aspects of the app API, and does not guarantee correctness. It is
+                possible that you may have some runtime or other errors in your app API.</p>
         <h4><b>Congratulations! You now have made your first WALKOFF app.</b></h4>
         <p>Go have a look in the webapp and see the name of your app included in the "Installed Apps" portion of the
             dashboard and see the actions you defined included in the workflow editor. Next you'll learn how to manage
