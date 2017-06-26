@@ -7,13 +7,7 @@ import core.config.config
 import connexion
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
-<<<<<<< HEAD
-from flask import Flask
-
-monkey.patch_all()
-=======
 from gevent import monkey
->>>>>>> upstream/development
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +35,6 @@ def compose_yamls():
                 final_yaml.append(line)
     with open(os.path.join(paths.api_path, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
-
-<<<<<<< HEAD
-=======
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
@@ -110,8 +101,6 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_app_blueprint(flaskapp, blueprint, url_prefix)
 
-
->>>>>>> upstream/development
 def create_app():
     from .blueprints.events import setup_case_stream
     connexion_app = connexion.App(__name__, specification_dir='api/')
