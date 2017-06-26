@@ -7,6 +7,11 @@ import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
+<<<<<<< HEAD
+=======
+from server.return_codes import SUCCESS, UNAUTHORIZED_ERROR
+
+>>>>>>> upstream/development
 from core.helpers import combine_dicts
 
 
@@ -15,28 +20,7 @@ def read_all_possible_subscriptions():
 
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
-        return core.config.config.possible_events
-
-    return __func()
-
-
-def get_apps():
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
-        return {"apps": helpers.list_apps()}
-
-    return __func()
-
-
-def get_app_actions():
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
-        core.config.config.load_function_info()
-        return core.config.config.function_info['apps']
+        return core.config.config.possible_events, SUCCESS
 
     return __func()
 
@@ -46,7 +30,24 @@ def read_all_filters():
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
-        return {"status": "success", "filters": core.config.config.function_info['filters']}
+        filter_api = core.config.config.function_apis['filters']
+        filters = {}
+        for filter_name, filter_body in filter_api.items():
+            ret = {}
+            if 'description' in filter_body:
+                ret['description'] = filter_body['description']
+            data_in_param = filter_body['dataIn']
+            args = []
+            for arg in (x for x in filter_body['parameters'] if x['name'] != data_in_param):
+                arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
+                if 'description' in arg:
+                    arg_ret['description'] = arg['description']
+                if 'required' in arg:
+                    arg_ret['required'] = arg['required']
+                args.append(arg)
+            ret['args'] = args
+            filters[filter_name] = ret
+        return {'filters': filters}, SUCCESS
 
     return __func()
 
@@ -56,8 +57,24 @@ def read_all_flags():
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
-        core.config.config.load_function_info()
-        return {"status": "success", "flags": core.config.config.function_info['flags']}
+        flag_api = core.config.config.function_apis['flags']
+        flags = {}
+        for flag_name, flag in flag_api.items():
+            ret = {}
+            if 'description' in flag:
+                ret['description'] = flag['description']
+            data_in_param = flag['dataIn']
+            args = []
+            for arg in (x for x in flag['parameters'] if x['name'] != data_in_param):
+                arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
+                if 'description' in arg:
+                    arg_ret['description'] = arg['description']
+                if 'required' in arg:
+                    arg_ret['required'] = arg['required']
+                args.append(arg)
+            ret['args'] = args
+            flags[flag_name] = ret
+        return {"flags": flags}, SUCCESS
 
     return __func()
 
@@ -71,10 +88,10 @@ def sys_pages(interface_name):
         if current_user.is_authenticated and interface_name:
             args = getattr(interface, interface_name)()
             combine_dicts(args, {"authKey": current_user.get_auth_token()})
-            return render_template("pages/" + interface_name + "/index.html", **args)
+            return render_template("pages/" + interface_name + "/index.html", **args), SUCCESS
         else:
             current_app.logger.debug('Unsuccessful login attempt')
-            return {"status": "Could Not Log In."}
+            return {"error": "Could not Log In."}, UNAUTHORIZED_ERROR
 
     return __func()
 
@@ -83,10 +100,10 @@ def login_info():
     @login_required
     def __func():
         if current_user.is_authenticated:
-            return json.dumps({"auth_token": current_user.get_auth_token()})
+            return json.dumps({"auth_token": current_user.get_auth_token()}), SUCCESS
         else:
             current_app.logger.debug('Unsuccessful login attempt')
-            return {"status": "Could Not Log In."}
+            return {"error": "Could not log in."}, UNAUTHORIZED_ERROR
 
     return __func()
 

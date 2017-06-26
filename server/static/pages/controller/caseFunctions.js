@@ -96,8 +96,10 @@ function editSubscription(selectedCase, ancestry, events){
             'async': false,
             'type': "POST",
             'global': false,
-            'data':{"ancestry": ancestry, "events" : events},
-            'headers':{"Authentication-Token":authKey},
+            'dataType': 'json',
+            'contentType': 'application/json; charset=utf-8',
+            'data': JSON.stringify({ "ancestry": ancestry, "events": events }),
+            'headers': { "Authentication-Token": authKey, },
             'url': "/cases/" + selectedCase + "/subscriptions",
             'success': function (data) {
                 tmp = data;
@@ -245,7 +247,7 @@ function getSelectedList(){
 
 function getCheckedEvents(){
     var selectedEvents = [];
-    $.each($(".subscriptionSelection > li > input:checked"), function(i, el){
+    $.each($(".subscriptionSelection > input:checked"), function(i, el){
         var x = $(el).val() || "";
         selectedEvents.push(x);
     });
@@ -255,7 +257,7 @@ function getCheckedEvents(){
 function formatSubscriptionList(availableSubscriptions){
     for(subscription in availableSubscriptions){
         sub = availableSubscriptions[subscription];
-        $(".subscriptionSelection").append("<li><input type='checkbox' name='" + sub + "' value='" + sub + "' /><label for='" + sub + "'>" + sub + "</label></li>");
+        $(".subscriptionSelection").append("<input type='checkbox' name='" + sub + "' value='" + sub + "' /><label for='" + sub + "'>" + sub + "</label><br>");
     }
 }
 

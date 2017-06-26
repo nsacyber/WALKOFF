@@ -1,0 +1,73 @@
+WorkflowResult:
+  type: object
+  required: [name, timestamp, result]
+  properties:
+    name:
+      description: The name of the workflow. Contains both playbook and workflow information
+      type: string
+      example: PlaybookName-WorkflowName
+    timestamp:
+      description: The timestamp of when the workflow completed
+      type: string
+      example: '2017-05-24 00:42:22.934058'
+    result:
+      description: The result of the workflow
+      type: string
+
+CompleteWorkflowResults:
+  type: object
+  required: [id]
+  properties:
+    id:
+      $ref: '#/definitions/DetailedWorkflowResult'
+
+DetailedWorkflowResult:
+  type: object
+  required: [name, started_at, status, results]
+  properties:
+    name:
+      description: The name of the workflow. Contains both playbook and workflow information
+      type: string
+      example: PlaybookName-WorkflowName
+    started_at:
+      description: The timestamp of when the workflow completed
+      type: string
+      example: '2017-05-24 00:42:22.934058'
+    completed_at:
+      description: The timestamp of when the workflow completed
+      type: string
+      example: '2017-05-24 00:43:26.930892'
+    status:
+      description: The status of the workflow
+      type: string
+      enum: [completed, running]
+    results:
+      description: The results of the workflow steps
+      type: array
+      items:
+        $ref: '#/definitions/DetailedStepResult'
+
+DetailedStepResult:
+  type: object
+  required: [name, result, input, type, timestamp]
+  description: A result of a step execution
+  properties:
+    name:
+      description: The name of the step
+      type: string
+      example: 'This One step'
+    result:
+      description: The result of the step
+      type: object
+    type:
+      description: Success or failure of the step
+      type: string
+      example: SUCCESS
+      enum: [SUCCESS, ERROR]
+    timestamp:
+      description: The timestamp of when the step completed
+      type: string
+      example: '2017-05-24 00:43:26.930892'
+    input:
+      description: The input to the step. Of form {input_name -> value}
+      type: object

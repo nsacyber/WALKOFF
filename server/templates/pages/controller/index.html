@@ -18,6 +18,11 @@
             #casesTree {
                 margin-bottom: 10px;
             }
+
+            input.form-control.input-sm {
+                margin-left: 10px;
+            }
+
             /*#loadedWorkflowsTreeDiv{
                 height:400px;
                 border:solid;
@@ -72,8 +77,7 @@
     <body>
         <div id="main">
             <div id="header">
-                <h2> Controller Management </h2>
-                <h3>{{currentController}}</h3>
+                <h2> Controller Management - {{currentController}}</h2>
             </div>
             <div class="row">
                 <h3 class="col-xs-4">Playbook Management</h3>
@@ -85,13 +89,13 @@
                     <div class="controllerCol">
                         <h4>Loaded Workflows</h4>
                         <div id="loadedPlaybooksTree"></div>
-                        <div id="loadWorkflowDiv"></div>
-                        <div>
-                            <h4>Status</h5>
+                        <!--<div id="loadWorkflowDiv"></div>-->
+                        <!--<div>
+                            <h4>Status</h4>
                             <div id="executionResult">
                                 <ul id="eventList"></ul>
                             </div>
-                        </div>
+                        </div>-->
                     </div>
                 </div>
 
@@ -115,8 +119,15 @@
                     </div>
                 </div>
             </div>
-            
-            <div id="editSubscriptionDialog" title="subscription parameters" class="ui-widget">
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <h4>Workflow Status</h4>
+                    <table id="workflowResultsTable" class="table table-bordered table-hover"></table>
+                </div>
+            </div>
+
+            <div id="editSubscriptionDialog" title="Subscription Parameters" class="ui-widget">
                 <table>
                     <tr>
                         <td>Ancestry</td>
@@ -160,13 +171,10 @@
                     </tr>
                     <tr>
                         <td>Subscriptions</td>
-                         <td>
-                            <ul class="subscriptionSelection"></ul>
+                        <td style="padding-left: 10px;">
+                            <div class="subscriptionSelection"></div>
+                            <button id="submitForm" class="btn btn-primary">Submit</button>
                         </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><button id="submitForm">Submit</button></td>
                     </tr>
                 </table>
             </div>
@@ -184,14 +192,13 @@
             <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
             <script src="{{ url_for('static', filename='plugins/jstree/jstree.min.js') }}"></script>
             <script src="{{ url_for('static', filename='plugins/repeatableFields/repeatable-fields.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/notifyjs/notify.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='plugins/datatables/dataTables.min.js' ) }}"></script>
             <script type="text/javascript">
                 loadedWorkflows = {{loadedWorkflows | safe}};
                 schedulerStatusNo = {{schedulerStatus}};
                 controllers = ["{{currentController}}"];
-
                 ancestryElement = '{{editSubscriptionForm.ancestry | safe}}';
-
-
             </script>
 
             <script src="{{ url_for('static', filename='pages/controller/loadedWorkflows.js' ) }}"> </script>

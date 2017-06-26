@@ -35,10 +35,22 @@
     "core": {
       "level": "WARNING",
       "handlers": ["file_handler"]
+    },
+    "apps": {
+      "level": "WARNING",
+      "handlers": ["file_handler"]
+    },
+    "connexion": {
+      "level": "ERROR",
+      "handlers": ["file_handler"]
+    },
+    "dicttoxml": {
+      "level": "ERROR",
+      "handlers": ["file_handler"]
     }
   },
   "root": {
-    "level": "INFO",
+    "level": "DEBUG",
     "handlers": ["console"]
   }
 }

@@ -1,0 +1,148 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Utilities
+  description: Miscellaneous utility actions
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  'json select':
+    run: json_select
+    description: Gets a selected sub element of a json
+    parameters:
+        - name: json_reference
+          description: Step reference to the json object
+          required: true
+          type: string
+        - name: element
+          description: element of the json
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: object
+  'list select':
+    run: list_select
+    description: Gets an element from a list
+    parameters:
+        - name: list_reference
+          description: Step reference to the list from which to select the element
+          required: true
+          type: string
+        - name: index
+          description: The index of the element
+          required: True
+          type: integer
+    returns:
+      Success:
+        schema:
+          type: object
+  'linearly scale':
+    run: linear_scale
+    description: Linearly scales a value which is limited to some min and max value to a number between a low and high value
+    parameters:
+        - name: value
+          description: The value to scale
+          required: true
+          type: number
+        - name: min_value
+          description: The minimum value of the input (if value less than this, this value acts as a cutoff)
+          required: true
+          type: number
+        - name: max_value
+          description: The maximum value of the input (if value less than this, this value acts as a cutoff)
+          required: true
+          type: number
+        - name: low_scale
+          description: The lowest possible output value
+          required: true
+          type: number
+          default: 0.0
+        - name: high_scale
+          description: The highest possible output value
+          required: true
+          type: number
+          default: 1.0
+    returns:
+      Success:
+        schema:
+          type: number
+  'divide':
+    run: divide
+    description: Divides a number
+    parameters:
+        - name: value
+          description: The value to divide
+          required: true
+          type: number
+        - name: divisor
+          description: The number to divide the input by
+          required: true
+          type: number
+    returns:
+      Success:
+        schema:
+          type: number
+  'multiply':
+    run: multiply
+    description: Multiplies a number
+    parameters:
+        - name: value
+          description: The value to multiply
+          required: true
+          type: number
+        - name: multiplier
+          description: The number to multiply the input by
+          required: true
+          type: number
+    returns:
+      Success:
+        schema:
+          type: number
+  'add':
+    run: add
+    description: Adds two numbers
+    parameters:
+        - name: num1
+          description: The first number
+          required: true
+          type: number
+        - name: num2
+          description: The second number
+          required: true
+          type: number
+    returns:
+      Success:
+        schema:
+          type: number
+  'subtract':
+    run: subtract
+    description: Subtracts a number from another number
+    parameters:
+        - name: value
+          description: The starting value
+          required: true
+          type: number
+        - name: subtractor
+          description: The number to subtract from the input value
+          required: true
+          type: number
+    returns:
+      Success:
+        schema:
+          type: number
+  'pause':
+    run: pause
+    description: Pauses execution of a workflow for a given amount of time
+    parameters:
+        - name: seconds
+          description: The seconds to pause the execution for
+          required: true
+          type: number
+    returns:
+      Success:
+        schema:
+          type: string

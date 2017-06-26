@@ -1,14 +1,16 @@
 Flask >= 0.10.0
 Flask_Login >= 0.3.2, <0.4.0
 Flask_Principal >= 0.4.0
-Flask_SQLAlchemy >= 2.1
-Flask_Security >= 1.7.5
+Flask_SQLAlchemy == 2.1
+Flask_Security == 1.7.5
 Flask_WTF >= 0.12
-jinja2 >= 2.8
-sqlalchemy >= 1.0.12
+jinja2 == 2.9.4
+sqlalchemy == 1.1.5
 wtforms >= 2.1
-werkzeug >= 0.11.4
+werkzeug == 0.11.15
 requests >= 2.9.1
 APscheduler >= 3.0.0
-gevent
-connexion
+gevent >= 1.2 
+connexion == 1.1.10
+pyaes == 1.6.0
+dicttoxml

@@ -1,0 +1,34 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Weather
+  description: Uses Open Weather Map to get the weather
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  'get current weather':
+    run: get_current_weather
+    description: Gets the current weather
+    parameters:
+        - name: city
+          description: The US city to get the weather for
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: object
+  'get current temperature':
+    run: get_current_temperature
+    description: Gets the current temperature
+    parameters:
+        - name: city
+          description: The US city to get the weather for
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: number

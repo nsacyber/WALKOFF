@@ -1,0 +1,64 @@
+Trigger:
+    type: object
+    required: [conditional, playbook, workflow]
+    properties:
+      name:
+        description: Name of the trigger
+        type: string
+        example: triggerOne
+      conditional:
+        description: String representation of a list of Flag objects
+        type: string
+        example: '[{"flag": "regMatch", "args": {"regex", "(.*)"}, "filters": []}]'
+      playbook:
+        description: The name of the playbook that relates to this trigger
+        type: string
+        example: HelloWorldPlaybook
+      workflow:
+        description: The name of the workflow that relates to this trigger
+        type: string
+        example: HelloWorldWorkflow
+DisplayTrigger:
+    type: object
+    properties:
+      name:
+        description: Name of the trigger
+        type: string
+        example: triggerOne
+      conditions:
+        description: A list of Flag objects (see Flag for further description)
+        type: array
+        items:
+          $ref: '#/definitions/Flag'
+      playbook:
+        description: The name of the playbook that relates to this trigger
+        type: string
+        example: HelloWorldPlaybook
+      workflow:
+        description: The name of the workflow that relates to this trigger
+        type: string
+        example: HelloWorldWorkflow
+
+TriggerExecutionResponse:
+    type: object
+    required: [errors, executed]
+    properties:
+        errors:
+            description: The errors executed. Array of the form [{trigger_name -> error message}]
+            type: array
+        executed:
+            description: The executed workflows
+            type: array
+            items:
+                $ref: '#/definitions/TriggeredWorkflow'
+
+TriggeredWorkflow:
+    type: object
+    required: [id, name]
+    properties:
+        id:
+            type: string
+            description: The UID of the workflow executing
+        name:
+            type: string
+            description: The name of the trigger executing

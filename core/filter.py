@@ -1,15 +1,18 @@
-from xml.etree import cElementTree
-from core.filters import *
-from core.filters import execute_filter
-from core import arguments
+from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
-import core.config.config
+from core.helpers import (get_filter, get_filter_api, InvalidInput, InvalidElementConstructed,
+                          inputs_xml_to_dict, inputs_to_xml, dereference_step_routing)
+from core.validator import validate_filter_parameters, validate_parameter
+from copy import deepcopy
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Filter(ExecutionElement):
 
-    def __init__(self, xml=None, parent_name='', action='', args=None, ancestry=None):
+    def __init__(self, action=None, xml=None, parent_name='', args=None, ancestry=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
         
         Args:
@@ -20,75 +23,65 @@ class Filter(ExecutionElement):
                 converted to a dictionary of str:Argument. Defaults to None.
             ancestry (list[str], optional): The ancestry for the Filter object. Defaults to None.
         """
-        if xml:
+        if xml is not None:
             self._from_xml(xml, parent_name, ancestry)
         else:
+            if action is None:
+                raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
             ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
             self.action = action
+            self.args_api, self.data_in_api = get_filter_api(self.action)
             args = args if args is not None else {}
-            self.args = {arg_name: arguments.Argument(key=arg_name, value=arg_value, format=type(arg_value).__name__)
-                         for arg_name, arg_value in args.items()}
-
-    def reconstruct_ancestry(self, parent_ancestry):
-        """Reconstructs the ancestry for a Filter object. This is needed in case a workflow and/or playbook is renamed.
-        
-        Args:
-            parent_ancestry(list[str]): The parent ancestry list.
-        """
-        self._construct_ancestry(parent_ancestry)
+            self.args = validate_filter_parameters(self.args_api, args, self.action)
 
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
-        self.args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
-                     for arg in xml_element.findall('args/*')}
+        self.args_api, self.data_in_api = get_filter_api(self.action)
+        args_xml = xml_element.find('args')
+        args = (inputs_xml_to_dict(args_xml) or {}) if args_xml is not None else {}
+        self.args = validate_filter_parameters(self.args_api, args, self.action)
 
-    def to_xml(self, *args):
-        """Converts the Filter object to XML format.
-        
+    def __call__(self, data_in, accumulator):
+        """
+        Executes the flag
+
         Args:
-            args (list[str], optional): A list of arguments to place in the XML.
-            
+            data_in: The input to the flag. Typically from the last step of the workflow or the input to a trigger
+            accumulator (dict): A record of executed steps and their results. Of form {step_name: result}
         Returns:
-            The XML representation of the Filter object.
+            (bool): Is the flag true for the given data and accumulator
         """
-        elem = cElementTree.Element('filter')
-        elem.set('action', self.action)
-        args_element = cElementTree.SubElement(elem, 'args')
-        for arg in self.args:
-            args_element.append(self.args[arg].to_xml())
-        return elem
+        original_data_in = deepcopy(data_in)
+        try:
+            data_in = validate_parameter(data_in, self.data_in_api, 'Filter {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.name))
+            args.update({self.data_in_api['name']: data_in})
+            result = get_filter(self.action)(**args)
+            callbacks.FilterSuccess.send(self)
+            return result
+        except InvalidInput as e:
+            callbacks.FilterError.send(self)
+            logger.error('Filter {0} has invalid input {1}. Error: {2}. '
+                         'Returning unmodified data'.format(self.action, original_data_in, str(e)))
+        except Exception as e:
+            callbacks.FilterError.send(self)
+            logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
+        return original_data_in
 
-    def validate_args(self):
-        """Ensures that the arguments passed in are properly formed.
-        
-        Returns:
-             True if arguments are valid, False otherwise.
-        """
-        if self.action in core.config.config.function_info['filters']:
-            possible_args = core.config.config.function_info['filters'][self.action]['args']
-            if possible_args:
-                return (len(list(possible_args)) == len(list(self.args.keys()))
-                        and all(arg.validate(possible_args) for arg in self.args.values()))
-            else:
-                return True
-        return False
-
-    def __call__(self, output=None):
-        if self.validate_args():
-            try:
-                result = execute_filter(self.action, args=self.args, value=output)
-                callbacks.FilterSuccess.send(self)
-                return result
-            except:
-                callbacks.FilterError.send(self)
-                print("FILTER ERROR")
-        return output
-
-    def __repr__(self):
-        output = {'action': self.action,
-                  'args': {arg: self.args[arg].__dict__ for arg in self.args}}
-        return str(output)
+    def __get_arg_type(self, arg_name):
+        for arg_api in self.args_api:
+            if arg_api['name'] == arg_name:
+                if 'type' in arg_api:
+                    return arg_api['type']
+                elif 'schema' in arg_api:
+                    return arg_api['schema']['type']
+                else:
+                    logger.error('Invalid api schema. This should never happen! Returning string type')
+                    return 'string'
+        else:
+            logger.error('Invalid api schema. This should never happen! Returning string type')
+            return 'string'
 
     def as_json(self):
         """Gets the JSON representation of a Filter object.
@@ -96,8 +89,10 @@ class Filter(ExecutionElement):
         Returns:
             The JSON representation of a Filter object.
         """
+        args = {arg_name: {'key': arg_name, 'value': arg_value, 'format': self.__get_arg_type(arg_name)}
+                for arg_name, arg_value in self.args.items()}
         return {"action": self.action,
-                "args": {arg: self.args[arg].as_json() for arg in self.args}}
+                "args": args}
 
     @staticmethod
     def from_json(json, parent_name='', ancestry=None):
@@ -111,13 +106,35 @@ class Filter(ExecutionElement):
         Returns:
             The Filter object parsed from the JSON object.
         """
-        args = {arg_name: arguments.Argument.from_json(arg_json) for arg_name, arg_json in json['args'].items()}
         out_filter = Filter(action=json['action'],
-                            args=args,
+                            args={arg_name: arg_value['value'] for arg_name, arg_value in json['args'].items()},
                             parent_name=parent_name,
                             ancestry=ancestry)
-        out_filter.args = args
         return out_filter
+
+    def to_xml(self, *args):
+        """Converts the Filter object to XML format.
+
+        Args:
+            args (list[str], optional): A list of arguments to place in the XML.
+
+        Returns:
+            The XML representation of the Filter object.
+        """
+        elem = ElementTree.Element('filter')
+        elem.set('action', self.action)
+        if self.args:
+            args = inputs_to_xml(self.args, root='args')
+            elem.append(args)
+        return elem
+
+    def reconstruct_ancestry(self, parent_ancestry):
+        """Reconstructs the ancestry for a Filter object. This is needed in case a workflow and/or playbook is renamed.
+
+        Args:
+            parent_ancestry(list[str]): The parent ancestry list.
+        """
+        self._construct_ancestry(parent_ancestry)
 
     def get_children(self, ancestry):
         """Gets the children Filters of the Flag in JSON format.
@@ -129,3 +146,8 @@ class Filter(ExecutionElement):
             Empty dictionary {}
         """
         return {}
+
+    def __repr__(self):
+        output = {'action': self.action,
+                  'args': self.args}
+        return str(output)

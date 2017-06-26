@@ -1,0 +1,37 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: WebCam
+  description: A simple app for webcams. Linux only.
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  start:
+    run: start
+    description: Starts the webcam
+    returns:
+      Success:
+        schema:
+          type: string
+  stop:
+    run: stop
+    description: Stops the camera
+    returns:
+      Success:
+        description: repeated method
+        schema:
+          type: string
+  'save screenshot':
+    run: save_screenshot
+    description: Saves a screenshot to a given path
+    parameters:
+        - name: path
+          description: The path to save the screenshoot to
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: integer

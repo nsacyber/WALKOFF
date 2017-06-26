@@ -1,0 +1,26 @@
+/workflowresults:
+  get:
+    tags: [Workflows]
+    summary: Gets the results of the last 50 workflows
+    description: ''
+    operationId: server.endpoints.playbooks.read_results
+    produces: [application/json]
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/WorkflowResult'
+
+/workflowresults/all:
+  get:
+    tags: [Workflow]
+    summary: Gets all the results from all teh executed workflows
+    operationId: server.endpoints.playbooks.read_all_results
+    produces: [application/json]
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/CompleteWorkflowResults'

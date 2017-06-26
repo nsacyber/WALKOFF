@@ -1,0 +1,53 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Splunk
+  description: A simple app to interact with Splunk
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  set_create_args:
+    run: set_create_args
+    description: Sets a kwarg for creating a new search. These kwargs are persistent across searches.
+    parameters:
+      - name: key
+        required: true
+        type: string
+        description: The following are the keys that may be set. earliest_time, latest_time, now, time_format, exec_mode,
+                  search_mode, rt_blocking, rt_queue_size, rt_maxblocksecs, rt_indexfilter, id, status_buckets,
+                  max_count, max_time, timeout, auto_finalize_ec, enable_lookups, reload_macros, reduce_freq,
+                  spawn_process, required_field_list, rf, auto_cancel, auto_pause
+      - name: value
+        required: true
+        type: string
+  set_results_args:
+    run: set_results_args
+    description: Sets a kwarg for getting the results from the search. These kwargs are persistent across searches.
+    parameters:
+      - name: key
+        required: true
+        type: string
+        description: The following are the keys that may be set. offset, count, search, field_list, f, output_mode.
+                  Output_mode by default is set to json
+      - name: value
+        required: true
+        type: string
+  clear_create_args:
+    run: clear_create_args
+    description: Resets the kwargs for creating a new search
+  clear_results_args:
+    run: clear_results_args
+    description: Resets the kwargs for getting the results from the search
+  search:
+    run: search
+    description: Conducts the search and waits for it to complete. Returns the specified type in kwargs_results
+    parameters:
+        - name: query
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: object
