@@ -13,6 +13,8 @@ def cmd_line():
                         help='List of apps for which you would like to test')
     parser.add_argument('-A', '--all', action='store_true', help='Test all apps')
     args = parser.parse_args()
+    if (not args.all) and (not args.apps):
+        parser.print_help()
     return args
 
 
@@ -49,7 +51,7 @@ if __name__ == '__main__':
     if cmd_args.all:
         for app in all_apps:
             ret &= test_app(app)
-    else:
+    elif cmd_args.apps:
         for app in cmd_args.apps:
             if app in all_apps:
                 ret &= test_app(app)
