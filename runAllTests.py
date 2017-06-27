@@ -1,3 +1,6 @@
+import os
+os.environ['PYTHON_UNITTEST'] = 'true'
+
 import unittest
 import sys
 from multiprocessing import freeze_support

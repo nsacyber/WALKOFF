@@ -26,7 +26,6 @@ def load_config():
                 elif hasattr(self, key):
                     setattr(self, key, value)
 
-
 def write_values_to_file(keys=None):
     """ Writes the current walkoff configuration to a file
     """
