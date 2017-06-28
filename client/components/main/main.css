@@ -12,3 +12,42 @@
     width: 100%;
     height: 100%;
 }
+
+.navbar-custom {
+  background-color: #3c8dbc;
+}
+
+.navbar-custom a {
+  color: #f6f6f6;
+}
+
+.navbar-custom .dropdown-item {
+  color: #333333;
+}
+
+.navbar-nav > .user-menu .user-image {
+  float: left;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: -2px;
+}
+
+@media (max-width: 767px) {
+  .navbar-nav > .user-menu .user-image {
+    float: none;
+    margin-right: 0;
+    margin-top: -8px;
+    line-height: 10px;
+  }
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 51px;
+  background-color: #e7e7e7;
+  padding: 15px;
+}
