@@ -162,12 +162,9 @@ else:
   build_data['icons'] = sorted(build_data['icons'], key=lambda k: k['name'])
 
   print "Save Manifest, Icons: %s" % ( len(manifest_data['icons']) )
-  f = open(MANIFEST_PATH, 'w')
-  f.write( json.dumps(manifest_data, indent=2, separators=(',', ': ')) )
-  f.close()
+  with open(MANIFEST_PATH, 'w') as f:
+    f.write(json.dumps(manifest_data, indent=2, separators=(',', ': ')))
 
   print "Save Build, Icons: %s" % ( len(build_data['icons']) )
-  f = open(BUILD_DATA_PATH, 'w')
-  f.write( json.dumps(build_data, indent=2, separators=(',', ': ')) )
-  f.close()
-
+  with open(BUILD_DATA_PATH, 'w') as f:
+    f.write(json.dumps(build_data, indent=2, separators=(',', ': ')))

@@ -73,9 +73,8 @@ def generate_less(data):
   for ionicon in data['icons']:
     chr_code = ionicon['code'].replace('0x', '\\')
     d.append('@ionicon-var-%s: "%s";' % (ionicon['name'], chr_code) )
-  f = open(variables_file_path, 'w')
-  f.write( '\n'.join(d) )
-  f.close()
+  with open(variables_file_path, 'w') as f:
+    f.write('\n'.join(d))
 
   d = []
   d.append('// Ionicons Icons')
@@ -95,9 +94,8 @@ def generate_less(data):
     chr_code = ionicon['code'].replace('0x', '\\')
     d.append('.@{ionicons-prefix}%s:before { content: @ionicon-var-%s; }' % (ionicon['name'], ionicon['name']) )
 
-  f = open(icons_file_path, 'w')
-  f.write( '\n'.join(d) )
-  f.close()
+  with open(icons_file_path, 'w') as f:
+    f.write('\n'.join(d))
 
 
 def generate_scss(data):
@@ -119,9 +117,8 @@ def generate_scss(data):
   for ionicon in data['icons']:
     chr_code = ionicon['code'].replace('0x', '\\')
     d.append('$ionicon-var-%s: "%s";' % (ionicon['name'], chr_code) )
-  f = open(variables_file_path, 'w')
-  f.write( '\n'.join(d) )
-  f.close()
+  with open(variables_file_path, 'w') as f:
+    f.write('\n'.join(d))
 
   d = []
   d.append('// Ionicons Icons')
@@ -141,9 +138,8 @@ def generate_scss(data):
     chr_code = ionicon['code'].replace('0x', '\\')
     d.append('.#{$ionicons-prefix}%s:before { content: $ionicon-var-%s; }' % (ionicon['name'], ionicon['name']) )
 
-  f = open(icons_file_path, 'w')
-  f.write( '\n'.join(d) )
-  f.close()
+  with open(icons_file_path, 'w') as f:
+    f.write( '\n'.join(d) )
 
   generate_css_from_scss(data)
 
@@ -170,13 +166,11 @@ def generate_cheatsheet(data):
   template_path = os.path.join(BUILDER_PATH, 'cheatsheet', 'template.html')
   icon_row_path = os.path.join(BUILDER_PATH, 'cheatsheet', 'icon-row.html')
 
-  f = open(template_path, 'r')
-  template_html = f.read()
-  f.close()
+  with open(template_path, 'r') as f:
+    template_html = f.read()
 
-  f = open(icon_row_path, 'r')
-  icon_row_template = f.read()
-  f.close()
+  with open(icon_row_path, 'r') as f:
+    icon_row_template = f.read()
 
   content = []
 
@@ -199,9 +193,8 @@ def generate_cheatsheet(data):
   template_html = template_html.replace("{{icon_count}}", str(len(data["icons"])) )
   template_html = template_html.replace("{{content}}", '\n'.join(content) )
 
-  f = open(cheatsheet_file_path, 'w')
-  f.write(template_html)
-  f.close()
+  with open(cheatsheet_file_path, 'w') as f:
+    f.write(template_html)
 
 
 def generate_component_json(data):
@@ -228,9 +221,8 @@ def generate_component_json(data):
   txt = json.dumps(d, indent=4, separators=(',', ': '))
 
   component_file_path = os.path.join(ROOT_PATH, 'component.json')
-  f = open(component_file_path, 'w')
-  f.write(txt)
-  f.close()
+  with open(component_file_path, 'w') as f:
+    f.write(txt)
 
 
 def generate_composer_json(data):
@@ -266,9 +258,8 @@ def generate_composer_json(data):
   txt = json.dumps(d, indent=4, separators=(',', ': '))
 
   composer_file_path = os.path.join(ROOT_PATH, 'composer.json')
-  f = open(composer_file_path, 'w')
-  f.write(txt)
-  f.close()
+  with open(composer_file_path, 'w') as f:
+    f.write(txt)
 
 
 def generate_bower_json(data):
@@ -301,16 +292,14 @@ def generate_bower_json(data):
   txt = json.dumps(d, indent=4, separators=(',', ': '))
 
   bower_file_path = os.path.join(ROOT_PATH, 'bower.json')
-  f = open(bower_file_path, 'w')
-  f.write(txt)
-  f.close()
+  with open(bower_file_path, 'w') as f:
+    f.write(txt)
 
 
 def get_build_data():
   build_data_path = os.path.join(BUILDER_PATH, 'build_data.json')
-  f = open(build_data_path, 'r')
-  data = json.loads(f.read())
-  f.close()
+  with open(build_data_path, 'r') as f:
+    data = json.loads(f.read())
   return data
 
 

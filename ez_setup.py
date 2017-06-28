@@ -213,9 +213,8 @@ def update_md5(filenames):
 
     for name in filenames:
         base = os.path.basename(name)
-        f = open(name,'rb')
-        md5_data[base] = md5(f.read()).hexdigest()
-        f.close()
+        with open(name, 'rb') as f:
+            md5_data[base] = md5(f.read()).hexdigest()
 
     data = ["    %r: %r,\n" % it for it in md5_data.items()]
     data.sort()
@@ -223,7 +222,8 @@ def update_md5(filenames):
 
     import inspect
     srcfile = inspect.getsourcefile(sys.modules[__name__])
-    f = open(srcfile, 'rb'); src = f.read(); f.close()
+    with open(srcfile, 'rb') as f:
+        src = f.read()
 
     match = re.search("\nmd5_data = {\n([^}]+)}", src)
     if not match:
@@ -231,9 +231,8 @@ def update_md5(filenames):
         sys.exit(2)
 
     src = src[:match.start(1)] + repl + src[match.end(1):]
-    f = open(srcfile,'w')
-    f.write(src)
-    f.close()
+    with open(srcfile, 'w') as f:
+        f.write(src)
 
 
 if __name__=='__main__':
@@ -241,8 +240,3 @@ if __name__=='__main__':
         update_md5(sys.argv[2:])
     else:
         main(sys.argv[1:])
-
-
-
-
-
