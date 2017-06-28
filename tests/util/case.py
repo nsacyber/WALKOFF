@@ -2,7 +2,7 @@ from core.case.subscription import *
 
 
 def construct_case1():
-    '''
+    """
     Assumes case where the possible events are as follows:
     controller: a,b,c
     workflow: d,e,f
@@ -12,7 +12,7 @@ def construct_case1():
     filter: x,y,z
     Constructs a specific case of roughly 3 events per execution level subscribed to combinations of events
     :return:
-    '''
+    """
 
     global_subs = GlobalSubscriptions(controller=['a'], next_step=[4, 5], flag=['u', 'v', 'w'], filter=['x'])
 
@@ -81,7 +81,7 @@ def construct_case1():
 
 
 def construct_case2():
-    '''
+    """
     Assumes case where the possible events are as follows:
     controller: a,b,c
     workflow: d,e,f
@@ -91,7 +91,7 @@ def construct_case2():
     filter: x,y,z
     Constructs a specific case which is simpler than case 1
     :return:
-    '''
+    """
 
     global_subs = GlobalSubscriptions(controller=['a'], next_step=[4, 5], flag=['u', 'v', 'w'], filter=['x'])
 
@@ -137,13 +137,13 @@ def construct_case2():
 
 
 def __visit_node(node, paths, current):
-    '''
+    """
     Depth first search through subscription tree
     :param node: Current Node
     :param paths: accumulator for all valid ancestries along with accepted and rejected events for each level
     :param current: current ancestry
     :return:
-    '''
+    """
     paths.append({'ancestry': current, 'events': node['events'], 'rejected': node['rejected']})
     for name, subnode in node['subs'].items():
         current_cpy = list(current)

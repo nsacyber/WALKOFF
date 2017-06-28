@@ -13,13 +13,13 @@ class MetricsServerTest(ServerTestCase):
         metrics.app_metrics = {}
 
     def test_convert_action_time_average(self):
-        '''
+        """
         ret = deepcopy(metrics.app_metrics)
         for app in ret:
             for action in app['actions']:
                 ret[app]['actions'][action]['avg_time'] = str(action['avg_time'])
         return ret
-        '''
+        """
 
         test1 = {'app1': {'actions': {'action1': {'success': {'count': 0,
                                                               'avg_time': timedelta(100, 0, 1)}},
