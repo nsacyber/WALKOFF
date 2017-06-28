@@ -32,3 +32,40 @@ actions:
       Success:
         schema:
           type: number
+  'get sunrise':
+    run: get_sunrise
+    description: Gets the sunrise time
+    parameters:
+        - name: city
+          description: The US city to get the sunrise time
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: integer
+  'get sunset':
+    run: get_sunset
+    description: Gets the sunset time
+    parameters:
+        - name: city
+          description: The US city to get the sunset time
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: integer
+  'temp color':
+    run: temp_color
+    description: Assigns a color to a temperature
+    parameters:
+        - name: temperature
+          description: A temperature in F 
+          required: true
+          type: integer
+    returns:
+      Success:
+        schema:
+          type: string
+
