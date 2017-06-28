@@ -22,10 +22,10 @@ class TestAppUtilities(unittest.TestCase):
         with flaskserver.running_context.flask_app.app_context():
             create_user()
 
-    def test_get_all_devices_for_nonexistant_app_empty_db(self):
-        self.assertListEqual(App.get_all_devices_for_app('non-existant-app'), [])
+    def test_get_all_devices_for_nonexistent_app_empty_db(self):
+        self.assertListEqual(App.get_all_devices_for_app('non-existent-app'), [])
 
-    def test_get_all_devices_for_nonexistant_app_full_db(self):
+    def test_get_all_devices_for_nonexistent_app_full_db(self):
         for app_name in ['App1', 'App2', 'App3']:
             flaskserver.running_context.db.session.add(flaskserver.running_context.App(app=app_name, devices=[]))
         flaskserver.running_context.db.session.commit()
@@ -42,8 +42,8 @@ class TestAppUtilities(unittest.TestCase):
         flaskserver.running_context.db.session.commit()
         self.assertListEqual(App.get_all_devices_for_app('App1'), [])
 
-    def test_get_device_for_nonexistant_app_and_device_empty_db(self):
-        self.assertIsNone(App.get_device('non-existant-app', 'nonexistant-device'))
+    def test_get_device_for_nonexistent_app_and_device_empty_db(self):
+        self.assertIsNone(App.get_device('non-existent-app', 'nonexistent-device'))
 
     @staticmethod
     def __setup_database():
@@ -52,26 +52,26 @@ class TestAppUtilities(unittest.TestCase):
         flaskserver.running_context.db.session.add(flaskserver.running_context.App(app='App3', devices=['a', 'c', 'd']))
         flaskserver.running_context.db.session.commit()
 
-    def test_get_device_for_nonexistant_app_device(self):
+    def test_get_device_for_nonexistent_app_device(self):
         self.__setup_database()
-        self.assertIsNone(App.get_device('non-existant-app', 'nonexistant-device'))
+        self.assertIsNone(App.get_device('non-existent-app', 'nonexistent-device'))
 
-    def test_get_device_for_nonexistant_app_existing_device(self):
+    def test_get_device_for_nonexistent_app_existing_device(self):
         self.__setup_database()
         for device_name in ['a', 'b', 'c', 'd']:
-            self.assertIsNone(App.get_device('non-existiant-app', device_name))
+            self.assertIsNone(App.get_device('non-existent-app', device_name))
 
-    def test_get_device_for_existant_app_nonexistant_device(self):
+    def test_get_device_for_existent_app_nonexistent_device(self):
         self.__setup_database()
         for app_name in ['App1', 'App2', 'App3']:
-            self.assertIsNone(App.get_device(app_name, 'non-existant-device'))
+            self.assertIsNone(App.get_device(app_name, 'non-existent-device'))
 
-    def test_get_device_for_existant_app_no_devices(self):
+    def test_get_device_for_existent_app_no_devices(self):
         self.__setup_database()
         for device_name in ['a', 'b', 'c', 'd']:
             self.assertIsNone(App.get_device('App1', device_name))
 
-    def test_get_device_for_existant_app_with_devices(self):
+    def test_get_device_for_existent_app_with_devices(self):
         self.__setup_database()
         app_devices = {'App2': ['a', 'b'],
                        'App3': ['a', 'c', 'd']}

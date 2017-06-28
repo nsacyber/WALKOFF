@@ -115,7 +115,7 @@ class Controller(object):
 
     # TODO: Turns out this doesn't work at all
     def __workflow_completed_callback(self, workflow, **kwargs):
-        print('COMPLETEDE')
+        print('COMPLETED')
         if workflow.uuid in self.workflow_status:
             self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 

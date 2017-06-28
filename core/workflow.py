@@ -60,7 +60,7 @@ class Workflow(ExecutionElement):
         """Retrieve a workflow from the name of the workflow.
         
         Args:
-            workflow_name: The name of the Workflow objet to be retrieved.
+            workflow_name: The name of the Workflow object to be retrieved.
             
         Returns:
             The Workflow object from the provided workflow name.
