@@ -14,3 +14,4 @@ gevent >= 1.2
 connexion == 1.1.10
 pyaes == 1.6.0
 dicttoxml
+pyyaml
