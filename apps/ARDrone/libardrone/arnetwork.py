@@ -92,7 +92,7 @@ class IPCThread(threading.Thread):
     """Inter Process Communication Thread.
 
     This thread collects the data from the ARDroneNetworkProcess and forwards
-    it to the ARDreone.
+    it to the ARDrone.
     """
 
     def __init__(self, drone):

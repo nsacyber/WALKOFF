@@ -20,7 +20,7 @@ Walkoff apps can be found at: https://github.com/iadgov/WALKOFF-Apps
     * Can granularly configure which events to log on a per-case basis
 
 4. Drag and Drop Workflow Editor
-    * Makes creation and editing of workflows as easy as dragging and dropping capablities. 
+    * Makes creation and editing of workflows as easy as dragging and dropping capabilities.
     
 5. Flexible Workflow Execution
     * Manual Execution - Execute a workflow by pressing a button

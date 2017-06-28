@@ -106,9 +106,9 @@ class TestCaseServer(ServerTestCase):
                                for event in response['case']['events']]
             expected_events = [{key: event[key] for key in ['type', 'message', 'ancestry']}
                                for event in expected_events]
-            self.assertEqual(len(received_events), len(expected_events), 'Unexpected number of events receieved')
+            self.assertEqual(len(received_events), len(expected_events), 'Unexpected number of events received')
             for event in expected_events:
-                self.assertTrue(event in received_events, 'Expected event is not in receieved events')
+                self.assertTrue(event in received_events, 'Expected event is not in received events')
 
     def test_add_case_no_existing_cases(self):
         response = self.app.put('/cases/case1', headers=self.headers)

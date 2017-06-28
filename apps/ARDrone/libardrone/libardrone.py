@@ -46,7 +46,7 @@ ARDRONE_COMMAND_PORT = 5556
 class ARDrone(object):
     """ARDrone Class.
 
-    Instanciate this class to control your drone and receive decoded video and
+    Instantiate this class to control your drone and receive decoded video and
     navdata.
     """
 
@@ -148,7 +148,7 @@ class ARDrone(object):
     def commwdg(self):
         """Communication watchdog signal.
 
-        This needs to be send regulary to keep the communication w/ the drone
+        This needs to be send regularly to keep the communication w/ the drone
         alive.
         """
         self.at(at_comwdg)
@@ -285,7 +285,7 @@ def at_led(seq, anim, f, d):
     Parameters:
     seq -- sequence number
     anim -- Integer: animation to play
-    f -- ?: frequence in HZ of the animation
+    f -- ?: frequency in HZ of the animation
     d -- Integer: total duration in seconds of the animation
     """
     pass
@@ -295,7 +295,7 @@ def at_anim(seq, anim, d):
     Makes the drone execute a predefined movement (animation).
 
     Parameters:
-    seq -- sequcence number
+    seq -- sequence number
     anim -- Integer: animation to play
     d -- Integer: total duration in sections of the animation
     """
