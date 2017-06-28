@@ -210,7 +210,7 @@ class Workflow(ExecutionElement):
                     _ = yield
                 callbacks.NextStepFound.send(self)
                 tuple = (step.app, step.device)
-                if tuplegit  not in instances:
+                if tuple not in instances:
                     instances[tuple] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
