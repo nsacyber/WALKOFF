@@ -87,11 +87,11 @@ def default():
     if current_user.is_authenticated:
         return render_template("index.html")
     else:
-        return redirect(url_for('/login'))
+        return redirect(url_for('login'))
 
-@app.route('/login', methods=['GET'])
-def login():
-    return render_template("login.html")
+# @app.route('/login', methods=['GET'])
+# def login():
+#     return render_template("login_user.html")
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required

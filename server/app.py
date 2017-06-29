@@ -169,6 +169,7 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
 
 def create_app():
     from .blueprints.events import setup_case_stream
+    from flask import Flask
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
     compose_yamls()
@@ -189,7 +190,7 @@ def create_app():
         variable_start_string='<%',
         variable_end_string='%>',
     ))
-    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login.html"
+    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     connexion_app.add_api('composed_api.yaml')
     register_blueprints(_app)

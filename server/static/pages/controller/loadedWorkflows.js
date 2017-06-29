@@ -72,8 +72,6 @@ $("#loadedPlaybooksTree").jstree({
     'contextmenu':{
         items: customMenu
     }
-});
-
-$("#loadedPlaybooksTree").on('loaded.jstree', function(){
+}).on('loaded.jstree', function(){
     $("#loadedPlaybooksTree").jstree("open_all");
 });

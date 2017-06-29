@@ -2,9 +2,16 @@ import { Injectable } 			from '@angular/core';
 import { Http, Response } 		from '@angular/http';
 
 @Injectable()
-export class ControllerService {
+export class SettingsService {
 	constructor (private http: Http) { }
 
+	getSettings() : Promise<string> {
+		return this.http.get('/')
+			.toPromise()
+			.then(this.extractData)
+			.catch(this.handleError);
+	};
+	
 	doSomething() : Promise<string> {
 		return Promise.resolve('hello');
 

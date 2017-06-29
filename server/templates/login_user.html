@@ -3,25 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title> WALKOFF - Automation for Everyone. Login </title>
-
-    <script src="{{ url_for('static', filename='node_modules/core-js/client/shim.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/zone.js/dist/zone.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/rxjs/bundles/Rx.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/@angular/core/bundles/core.umd.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/@angular/common/bundles/common.umd.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/@angular/compiler/bundles/compiler.umd.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/@angular/platform-browser/bundles/platform-browser.umd.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js') }}"></script>
-
+    <link href="<% url_for('static', filename='pages/login/style.css') %>" rel="stylesheet" />
     <!-- jQuery 2.2.3 -->
-    <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
+    <script src="<% url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') %>"></script>
 
-    <script type="application/javascript" src="{{ url_for('static', filename='pages/login/login.component.js') }}"></script>
-    <script type="application/javascript" src="{{ url_for('static', filename='pages/login/main.module.js') }}"></script>
-    <script type="application/javascript" src="{{ url_for('static', filename='pages/login/main.js') }}"></script>
+    <script type="application/javascript" src="<% url_for('static', filename='pages/login/main.js') %>"></script>
 </head>
 <body>
-    <login-page></login-page>
+    <div class="login-page">
+
+        <div class="form">
+            <div class="formHeader">
+                <img   src="<% url_for('static', filename='pages/login/img/walkoffLogo.png')  %>" height="150" width="250" style="padding-left:20px; text-align:center;"/>
+                <h2> WALKOFF </h2>
+            </div>
+            <!--{% from "security/_macros.html" import render_field_with_errors, render_field %}-->
+                {% include "security/_messages.html" %}
+                {% from "pages/_formhelpers.html" import render_field %}
+
+                <form action="<% url_for_security('login') %>" method="POST" name="login_user_form">
+                  <% login_user_form.hidden_tag() %>
+                  <% render_field(login_user_form.email) %>
+                  <% render_field(login_user_form.password) %>
+
+                  <% login_user_form.submit %>
+                </form>
+              {% include "security/_menu.html" %}
+        </div>
+    </div>
+
 </body>
 </html>
-

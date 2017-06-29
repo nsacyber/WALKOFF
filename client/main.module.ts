@@ -6,10 +6,9 @@ import { FormsModule }   from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 // Custom routing module
-import { RoutingModule } from '../routing';
-
-import { MainComponent } from '../../components/main/main';
-import { ControllerComponent } from '../../components/controller/controller';
+import { RoutingModule } from './routing';
+import { MainComponent } from './main/main.component';
+import { ControllerComponent } from './controller/controller.component';
 
 @NgModule({
 	imports: [
