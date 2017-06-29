@@ -27,18 +27,18 @@
 			<div class="controllerCol">
 				<h4>Loaded Cases</h4>
 				<div id="casesTree"></div>
-				<button class="btn btn-primary" id="addCase">Add Case</button>
+				<button class="btn btn-primary" (click)="addCase()" id="addCase">Add Case</button>
 			</div>
 		</div>
 
 		<div class="col-xs-4">
 			<div class="controllerCol">
 				<div id="schedulerStatus">
-					<h4>Scheduler Currently: <span id="status"></span></h4>
+					<h4>Scheduler Currently: <span id="status">{{schedulerStatus}}</span></h4>
 				</div>
-				<button class="btn btn-primary" id="startSchedulerBtn">Start</button>
-				<button class="btn" id="pauseSchedulerBtn">Pause</button>
-				<button class="btn" id="stopSchedulerBtn">Stop</button>
+				<button *ngIf="canStart()" (click)="changeSchedulerStatus('start')" class="btn btn-primary" id="startSchedulerBtn">Start</button>
+				<button *ngIf="canPause()" (click)="changeSchedulerStatus('pause')" class="btn btn-warning" id="pauseSchedulerBtn">Pause</button>
+				<button *ngIf="canStop()" (click)="changeSchedulerStatus('stop')" class="btn btn-danger" id="stopSchedulerBtn">Stop</button>
 				<div id="messageDetail"></div>
 			</div>
 		</div>

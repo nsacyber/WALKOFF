@@ -56,8 +56,19 @@
 
         <!-- 2. Configure SystemJS -->
     <script src="client/systemjs.config.js"></script>
-    <script>
+    <script type="application/javascript">
         SystemJS.import('main').catch(function(err){ console.error(err); });
+
+        var authKey = '<% authKey | safe %>';
+        // var default_page = '{{default_page | safe}}';
+        // var apps = {{apps | safe}};
+        var currentUser = '<%currentUser%>';
+
+        document.addEventListener("DOMContentLoaded", function(e){
+            if (Notification.permission !== "granted"){
+                Notification.requestPermission();
+            }
+        });
     </script>
 </head>
 <!--
