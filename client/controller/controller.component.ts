@@ -55,6 +55,16 @@ export class ControllerComponent {
 			.then(newCase => this.cases.push(newCase));
 	}
 
+	changeSchedulerStatus(status: string): void {
+		if (status === 'start' && this.schedulerStatus === 'paused') status = 'resume';
+
+		this.controllerService
+			.changeSchedulerStatus(status)
+			.then((newStatus) => {
+				if (newStatus) this.schedulerStatus = newStatus;
+			});
+	}
+
 	notifyMe() : void {
 		if (!Notification) {
 			console.log('Desktop notifications not available in your browser. Try Chromium.');
@@ -70,5 +80,17 @@ export class ControllerComponent {
 				window.open("https://github.com/iadgov");
 			};
 		}
+	}
+
+	canStart() : boolean {
+		return this.schedulerStatus !== 'running';
+	}
+
+	canStop() : boolean {
+		return this.schedulerStatus !== 'stopped';
+	}
+	
+	canPause() : boolean {
+		return this.schedulerStatus === 'running';
 	}
 }

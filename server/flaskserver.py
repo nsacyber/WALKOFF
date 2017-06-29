@@ -83,9 +83,19 @@ def client_app_folder(filename):
 #         return {"status": "Could Not Log In."}
 
 @app.route('/')
+@app.route('/controller')
+@app.route('/playbook')
+@app.route('/devices')
+@app.route('/triggers')
+@app.route('/cases')
+@app.route('/settings')
 def default():
     if current_user.is_authenticated:
-        return render_template("index.html")
+        args = {"apps": running_context.get_apps(),
+                "authKey": current_user.get_auth_token(),
+                "currentUser": current_user.email,
+                "default_page": 'controller'}
+        return render_template("index.html", **args)
     else:
         return redirect(url_for('login'))
 
