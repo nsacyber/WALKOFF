@@ -33,6 +33,21 @@ class Main(App):
         return nmap_proc.stdout
 
     @action
+    def get_hosts_from_scan(self, target, options=""):
+        nmap_proc = NmapProcess(targets=target, options=options)
+        nmap_proc.run()
+
+        nmap_report_obj = NmapParser.parse(nmap_proc.stdout)
+
+        hosts = {}
+
+        for host in nmap_report_obj.hosts:
+            hosts[host.address] = host.status
+
+        print(hosts)
+        return hosts
+
+    @action
     def run_scan_check_whitelist(self, target, options):
         nmap_proc = NmapProcess(targets=target, options=options)
         nmap_proc.run()

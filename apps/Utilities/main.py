@@ -1,6 +1,8 @@
 from apps import App, action
 import time
 import json
+import csv
+import sys
 
 
 class Main(App):
@@ -41,3 +43,26 @@ class Main(App):
     def pause(self, seconds):
         time.sleep(seconds)
         return 'success'
+
+    @action
+    def write_ips_to_csv(self, ips_reference, path):
+        ips = json.loads(ips_reference)
+
+        if sys.version_info[0] == 2:
+            with open(path, 'wb') as csvfile:
+                fieldnames = ['Host', 'Up']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                for ip in ips:
+                    if ips[ip] == "up":
+                        writer.writerow({'Host': ip, 'Up': 'X'})
+                    else:
+                        writer.writerow({'Host': ip})
+        else:
+            with open(path, 'w', newline='') as csvfile:
+                fieldnames = ['Host', 'Up']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                for ip in ips:
+                    if ips[ip] == "up":
+                        writer.writerow({'Host': ip, 'Up': 'X'})
+                    else:
+                        writer.writerow({'Host': ip})
