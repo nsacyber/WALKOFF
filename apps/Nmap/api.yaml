@@ -42,6 +42,23 @@ actions:
       Success:
         schema:
           type: string
+  get active hosts:
+    run: get_hosts_from_scan
+    description: Gets the list of active hosts on a network from an nmap scan
+    parameters:
+      - name: target
+        required: true
+        type: string
+        description: The target (or targets in CIDR notation) to scan
+      - name: options
+        type: string
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            host:
+              type: string
   run_scan_check_whitelist:
     run: run_scan_check_whitelist
     description: Runs a scan and then parses the output for the hosts on the network. It returns the number of hosts
