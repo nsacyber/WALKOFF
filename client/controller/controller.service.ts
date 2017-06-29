@@ -8,9 +8,15 @@ import 'rxjs/add/operator/toPromise';
 import { AvailableSubscription } from './availableSubscription';
 import { Case } from './case';
 
+const schedulerStatusNumberMapping: Object = {
+	"0": "stopped",
+	"1": "running",
+	"2": "paused"
+};
+
 @Injectable()
 export class ControllerService {
-	schedulerStatusNumberMapping: Object;
+
 	headers: Headers;
 	authKey: string;
 
@@ -19,12 +25,6 @@ export class ControllerService {
 		// console.log(this.authKey);
 		// this.headers = new Headers();
 		// this.headers.append('Authentication-Token', this.authKey);
-
-		this.schedulerStatusNumberMapping = {
-			"0": "stopped",
-			"1": "running",
-			"2": "paused"
-		};
 	}
 
 	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
@@ -76,7 +76,7 @@ export class ControllerService {
 		return this.http.get('/execution/scheduler/', this.headers)
 			.toPromise()
 			.then(this.extractData)
-			.then(statusObj => this.schedulerStatusNumberMapping[statusObj.status])
+			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
 			.catch(this.handleError);
 	}
 
@@ -85,7 +85,7 @@ export class ControllerService {
 		return this.http.post('/execution/scheduler/' + status, {}, this.headers)
 			.toPromise()
 			.then(this.extractData)
-			.then(statusObj => this.schedulerStatusNumberMapping[statusObj.status])
+			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
 			.catch(this.handleError);
 	}
 
