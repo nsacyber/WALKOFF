@@ -110,7 +110,7 @@ class Event(_Base):
 
 class CaseDatabase(object):
     """
-    Wrapper for the SQLAlchhemy Case database object
+    Wrapper for the SQLAlchemy Case database object
     """
     def __init__(self):
         self.create()

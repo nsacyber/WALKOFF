@@ -209,7 +209,7 @@ def _first_half(data):
 
 
 def _second_half(data):
-    """Helper function to precompute the nonzeror values in a 15 bit datum.
+    """Helper function to precompute the non-zero values in a 15 bit datum.
     """
     # data has to be 15 bits wide
     streamlen = 0
@@ -250,7 +250,7 @@ class BitReader(object):
         self.read_bits = 0
 
     def read(self, nbits, consume=True):
-        """Read nbits and return the integervalue of the read bits.
+        """Read nbits and return the integer value of the read bits.
 
         If consume is False, it behaves like a 'peek' method (ie it reads the
         bits but does not consume them.

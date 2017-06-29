@@ -60,7 +60,7 @@ class Workflow(ExecutionElement):
         """Retrieve a workflow from the name of the workflow.
         
         Args:
-            workflow_name: The name of the Workflow objet to be retrieved.
+            workflow_name: The name of the Workflow object to be retrieved.
             
         Returns:
             The Workflow object from the provided workflow name.
@@ -209,8 +209,9 @@ class Workflow(ExecutionElement):
                 if step.name in self.breakpoint_steps:
                     _ = yield
                 callbacks.NextStepFound.send(self)
-                if step.device not in instances:
-                    instances[step.device] = Instance.create(step.app, step.device)
+                tuple = (step.app, step.device)
+                if tuple not in instances:
+                    instances[tuple] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
@@ -220,7 +221,7 @@ class Workflow(ExecutionElement):
                     if start_input:
                         self.__swap_step_input(step, start_input)
 
-                error_flag = self.__execute_step(step, instances[step.device])
+                error_flag = self.__execute_step(step, instances[tuple])
                 total_steps.append(step)
                 steps.send(error_flag)
                 self.accumulator[step.name] = step.output

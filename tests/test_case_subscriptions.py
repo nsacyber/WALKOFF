@@ -351,7 +351,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
 
     def test_edit_global_subscription_invalid_case(self):
         global_subs = GlobalSubscriptions()
-        self.assertFalse(edit_global_subscription('nonesense_case_name', global_subs))
+        self.assertFalse(edit_global_subscription('nonsense_case_name', global_subs))
 
     def test_edit_subscriptions(self):
         case1, acceptance1 = construct_case1()
@@ -384,7 +384,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         cases = {'case2': case_sub}
         set_subscriptions(cases)
         original_subscriptions = copy.deepcopy(get_subscriptions())
-        self.assertFalse(edit_subscription('nonesense_case', ['a', 'b', 'c'], ['d', 'e']))
+        self.assertFalse(edit_subscription('nonsense_case', ['a', 'b', 'c'], ['d', 'e']))
         # Apparently assertDictEquals says this is false. Infuriating.
         self.assertEqual(str(original_subscriptions), str(get_subscriptions()))
 
@@ -419,7 +419,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         cases = {'case2': case_sub}
         set_subscriptions(cases)
         original_subscriptions = copy.deepcopy(get_subscriptions())
-        self.assertFalse(add_subscription('nonesense_case', ['a', 'b', 'c'], ['d', 'e']))
+        self.assertFalse(add_subscription('nonsense_case', ['a', 'b', 'c'], ['d', 'e']))
         # Apparently assertDictEquals says this is false. Infuriating.
         self.assertEqual(str(original_subscriptions), str(get_subscriptions()))
 
@@ -555,6 +555,6 @@ class TestSubscriptionFunctions(unittest.TestCase):
         cases = {'case2': case_sub}
         set_subscriptions(cases)
         original_subscriptions = copy.deepcopy(get_subscriptions())
-        self.assertFalse(remove_subscription_node('nonesense_case', ['a', 'b', 'c']))
+        self.assertFalse(remove_subscription_node('nonsense_case', ['a', 'b', 'c']))
         # Apparently assertDictEquals says this is false. Infuriating.
         self.assertEqual(str(original_subscriptions), str(get_subscriptions()))
