@@ -1,0 +1,158 @@
+/execution/listener/triggers:
+  get:
+    tags:
+      - Triggers
+    summary: Get all triggers
+    description: ''
+    operationId: server.endpoints.triggers.read_all_triggers
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: A list of trigger objects
+          type: object
+          properties:
+            triggers:
+              type: array
+              items:
+                $ref: '#/definitions/DisplayTrigger'
+/execution/listener/execute:
+  post:
+    tags:
+      - Triggers
+    summary: Execute the trigger listener
+    description: ''
+    operationId: server.endpoints.triggers.listener
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    responses:
+      202:
+        description: Success asynchronous.
+        schema:
+            $ref: '#/definitions/TriggerExecutionResponse'
+
+/execution/listener/triggers/{trigger_name}:
+  parameters:
+    - name: trigger_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
+  put:
+    tags:
+      - Triggers
+    summary: Create a trigger
+    description: ''
+    operationId: server.endpoints.triggers.create_trigger
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: formData
+        name: conditional
+        description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
+        type: string
+        required: true
+      - in: formData
+        name: playbook
+        description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
+        type: string
+        required: true
+      - in: formData
+        name: workflow
+        description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
+        type: string
+        required: true
+    responses:
+      201:
+        description: Trigger created.
+      462:
+        description: Trigger already exists.
+        schema:
+          $ref: '#/definitions/Error'
+      463:
+        description: Invalid JSON in conditional field.
+        schema:
+          $ref: '#/definitions/Error'
+  get:
+    tags:
+      - Triggers
+    summary: Get a trigger
+    description: ''
+    operationId: server.endpoints.triggers.read_trigger
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: The trigger object
+          type: object
+          properties:
+            trigger:
+              $ref: '#/definitions/DisplayTrigger'
+      461:
+        description: Trigger does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+  post:
+    tags:
+      - Triggers
+    summary: Update a trigger
+    description: ''
+    operationId: server.endpoints.triggers.update_trigger
+    consumes:
+      - multipart/form-data
+    produces:
+      - application/json
+    parameters:
+      - in: formData
+        name: conditional
+        description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
+        type: string
+        required: true
+      - in: formData
+        name: playbook
+        description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
+        type: string
+        required: true
+      - in: formData
+        name: workflow
+        description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
+        type: string
+        required: true
+    responses:
+      200:
+        description: Success
+      461:
+        description: Trigger does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Trigger already exists.
+        schema:
+          $ref: '#/definitions/Error'
+      463:
+        description: Invalid JSON in conditional field.
+        schema:
+          $ref: '#/definitions/Error'
+  delete:
+    tags:
+      - Triggers
+    summary: Delete a trigger
+    description: ''
+    operationId: server.endpoints.triggers.delete_trigger
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: Trigger does not exist.
+        schema:
+          $ref: '#/definitions/Error'

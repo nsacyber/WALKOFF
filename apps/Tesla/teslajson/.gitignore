@@ -1,0 +1,9 @@
+# osx noise
+.DS_Store
+profile
+
+*.pyc
+build/
+teslajson.egg-info/
+dist/
+MANIFEST

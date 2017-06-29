@@ -1,5 +1,6 @@
 from flask_security import roles_accepted
 import server.metrics as metrics
+from server.return_codes import *
 
 
 def read_app_metrics():
@@ -7,7 +8,7 @@ def read_app_metrics():
 
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
-        return _convert_action_time_averages()
+        return _convert_action_time_averages(), SUCCESS
 
     return __func()
 
@@ -17,7 +18,7 @@ def read_workflow_metrics():
 
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
-        return _convert_workflow_time_averages()
+        return _convert_workflow_time_averages(), SUCCESS
 
     return __func()
 

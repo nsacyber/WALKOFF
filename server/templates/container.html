@@ -62,7 +62,7 @@ desired effect
     <!-- Logo -->
     <a href="/" class="logo">
       <!-- mini logo for sidebar mini 50x50 pixels -->
-      <span class="logo-mini"><b>WALK</b>OFF</span>
+      <span class="logo-mini"><b>W</b>O</span>
       <!-- logo for regular state and mobile devices -->
       <span class="logo-lg"><b>WALK</b>OFF</span>
     </a>
@@ -143,7 +143,7 @@ desired effect
       <ul class="sidebar-menu">
         <li class="header">TOOLS</li>
         <li class="treeview">
-          <a href="#"><i class="fa fa-link"></i> <span>Installed Apps</span>
+          <a id="ss_installed_apps" href="#"><i class="fa fa-link"></i> <span>Installed Apps</span>
             <span class="pull-right-container">
               <i class="fa fa-angle-right pull-right"></i>
             </span>
@@ -157,22 +157,22 @@ desired effect
           </ul>
         </li>
         <li>
-            <a id="ss_controller" href="#"><i class="fa fa-gear"></i> Controller </a>
+            <a id="ss_controller" href="#"><i class="fa fa-gears"></i> <span>Controller</span> </a>
         </li>
         <li>
-            <a id="ss_playbook" href="#"><i class="fa fa-sitemap"></i> Playbook </a>
+            <a id="ss_playbook" href="#"><i class="fa fa-sitemap"></i> <span>Playbook</span> </a>
         </li>
         <li>
-            <a id="ss_devices" href="#"><i class="fa fa-sitemap"></i> Devices </a>
+            <a id="ss_devices" href="#"><i class="fa fa-desktop"></i> <span>Devices</span> </a>
         </li>
         <li>
-            <a id="ss_triggers" href="#"><i class="fa fa-sitemap"></i> Triggers </a>
+            <a id="ss_triggers" href="#"><i class="fa fa-flag"></i> <span>Triggers</span> </a>
         </li>
         <li>
-            <a id="ss_cases" href="#"><i class="fa fa-sitemap"></i> Cases </a>
+            <a id="ss_cases" href="#"><i class="fa fa-list-alt"></i> <span>Cases</span> </a>
         </li>
         <li>
-            <a id="ss_settings" href="#"><i class="fa fa-gear"></i> Settings </a>
+            <a id="ss_settings" href="#"><i class="fa fa-wrench"></i> <span>Settings</span> </a>
         </li>
 
         <!-- <li>
@@ -224,10 +224,12 @@ desired effect
 <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js') }}"></script>
 <!-- AdminLTE App -->
 <script src="{{ url_for('static', filename='dist/js/app.min.js') }}"></script>
+<!-- NotifyJS -->
+<script src="{{ url_for('static', filename='plugins/notifyjs/notify.min.js') }}"></script>
 
 <!-- Main JavaScript -->
 <script id="globalVariables" type="application/javascript">
-    var authKey = '{{ authKey|safe }}';
+    var authKey = '{{ authKey | safe }}';
     var default_page = '{{default_page | safe}}';
     var apps = {{apps | safe}};
     var currentUser = '{{currentUser}}';

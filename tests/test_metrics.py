@@ -5,7 +5,6 @@ from tests.util.assertwrappers import orderless_list_compare
 import server.metrics as metrics
 from core.helpers import construct_workflow_name_key
 
-
 class MetricsTest(ServerTestCase):
     def setUp(self):
         metrics.app_metrics = {}
@@ -13,7 +12,7 @@ class MetricsTest(ServerTestCase):
 
     def test_action_metrics(self):
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'multistepError.workflow')
+                                                                        'multistepError.playbook')
 
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
 
@@ -25,11 +24,11 @@ class MetricsTest(ServerTestCase):
         self.assertEqual(metrics.app_metrics['HelloWorld']['count'], 3)
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorld']['actions'].keys()),
-                               ['repeatBackToMe', 'helloWorld'])
+                               ['repeatBackToMe', 'helloWorld', 'Buggy'])
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorld']['actions']['repeatBackToMe'].keys()),
-                               ['success', 'error'])
-        for form in ['success', 'error']:
+                               ['success'])
+        for form in ['success']:
             orderless_list_compare(self,
                                    list(metrics.app_metrics['HelloWorld']['actions']['repeatBackToMe'][form].keys()),
                                    ['count', 'avg_time'])
@@ -44,11 +43,11 @@ class MetricsTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                       'multistepError.workflow')
+                                                                       'multistepError.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'tieredWorkflow.workflow')
+                                                                        'tieredWorkflow.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'multiactionWorkflowTest.workflow')
+                                                                        'multiactionWorkflowTest.playbook')
         error_key = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
         tiered_parent_key = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
         tiered_child_key = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
@@ -58,6 +57,10 @@ class MetricsTest(ServerTestCase):
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
         keys = [error_key, tiered_child_key, tiered_parent_key, multiaction_key]
         orderless_list_compare(self,
                                list(metrics.workflow_metrics.keys()),

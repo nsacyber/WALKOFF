@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 from core.config.paths import case_db_path
 import core.config.config
@@ -110,7 +110,7 @@ class Event(_Base):
 
 class CaseDatabase(object):
     """
-    Wrapper for the SQLAlchhemy Case database object
+    Wrapper for the SQLAlchemy Case database object
     """
     def __init__(self):
         self.create()
@@ -124,7 +124,7 @@ class CaseDatabase(object):
 
         Session = sessionmaker()
         Session.configure(bind=self.engine)
-        self.session = Session()
+        self.session = scoped_session(Session)
 
         _Base.metadata.bind = self.engine
         _Base.metadata.create_all(self.engine)
@@ -142,7 +142,8 @@ class CaseDatabase(object):
         Args:
             case_names (list[str]): A list of case names to add
         """
-        additions = [Case(name=case_name) for case_name in set(case_names)]
+        existing_cases = [case.name for case in self.session.query(Case).all()]
+        additions = [Case(name=case_name) for case_name in set(case_names) if case_name not in existing_cases]
         self.session.add_all(additions)
         self.session.commit()
 
@@ -204,11 +205,15 @@ class CaseDatabase(object):
             event (cls): A core.case.callbacks._EventEntry object to add to the cases
             cases (list[str]): The cases to add the event to
         """
+        try:
+            data = json.dumps(event.data)
+        except:
+            data = str(event.data)
         event_log = Event(type=event.type,
                           timestamp=event.timestamp,
                           ancestry=','.join(map(str, event.ancestry)),
                           message=event.message,
-                          data=event.data)
+                          data=data)
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
@@ -245,11 +250,12 @@ class CaseDatabase(object):
             The JSON representation of all Event objects without their cases.
         """
         event_id = self.session.query(Case).filter(Case.name == case_name).first().id
-        if event_id:
-            result = [event.as_json()
-                      for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
-            return result
-        return {}
+        if not event_id:
+            raise Exception
+
+        result = [event.as_json()
+                    for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
+        return result
 
 
 def get_case_db(_singleton=CaseDatabase()):
@@ -263,6 +269,7 @@ case_db = get_case_db()
 def initialize():
     """ Initializes the case database
     """
+
     _Base.metadata.drop_all()
     _Base.metadata.create_all()
 

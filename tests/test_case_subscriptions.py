@@ -351,7 +351,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
 
     def test_edit_global_subscription_invalid_case(self):
         global_subs = GlobalSubscriptions()
-        self.assertFalse(edit_global_subscription('nonesense_case_name', global_subs))
+        self.assertFalse(edit_global_subscription('nonsense_case_name', global_subs))
 
     def test_edit_subscriptions(self):
         case1, acceptance1 = construct_case1()
@@ -384,7 +384,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         cases = {'case2': case_sub}
         set_subscriptions(cases)
         original_subscriptions = copy.deepcopy(get_subscriptions())
-        self.assertFalse(edit_subscription('nonesense_case', ['a', 'b', 'c'], ['d', 'e']))
+        self.assertFalse(edit_subscription('nonsense_case', ['a', 'b', 'c'], ['d', 'e']))
         # Apparently assertDictEquals says this is false. Infuriating.
         self.assertEqual(str(original_subscriptions), str(get_subscriptions()))
 
@@ -396,12 +396,12 @@ class TestSubscriptionFunctions(unittest.TestCase):
 
         ancestry1 = ['controller3', 'workflow3', 'step4', 'aaa']
         events1 = [3, 2]
-        add_subscription('case1', ancestry1, events1)
+        self.assertTrue(add_subscription('case1', ancestry1, events1))
         self.assertTrue(all(get_subscriptions()['case1'].is_subscribed(ancestry1, event) for event in events1))
 
         ancestry2 = ['controller1', 'workflow1', 'step1', 'next2', 'madeup1', 'madeup2']
         events2 = ['y', 'z']
-        add_subscription('case2', ancestry2, events2)
+        self.assertTrue(add_subscription('case2', ancestry2, events2))
         self.assertTrue(all(get_subscriptions()['case2'].is_subscribed(ancestry2, event) for event in events2))
 
         case1, acceptance1 = construct_case1()
@@ -409,7 +409,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         set_subscriptions(cases)
         ancestry3 = ['controller3', 'workflow3', 'step4']
         events3 = [3, 2]
-        add_subscription('case1', ancestry3, events3)
+        self.assertTrue(add_subscription('case1', ancestry3, events3))
         self.assertTrue(all(get_subscriptions()['case1'].is_subscribed(ancestry3, event) for event in events3))
 
     def test_add_subscriptions_invalid_case(self):
@@ -419,7 +419,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         cases = {'case2': case_sub}
         set_subscriptions(cases)
         original_subscriptions = copy.deepcopy(get_subscriptions())
-        add_subscription('nonesense_case', ['a', 'b', 'c'], ['d', 'e'])
+        self.assertFalse(add_subscription('nonsense_case', ['a', 'b', 'c'], ['d', 'e']))
         # Apparently assertDictEquals says this is false. Infuriating.
         self.assertEqual(str(original_subscriptions), str(get_subscriptions()))
 
@@ -481,14 +481,14 @@ class TestSubscriptionFunctions(unittest.TestCase):
                                                  'sub8': {'sub5': {'sub3': {}}}},
                                        'sub12': {'sub9': {'sub6': {}}},
                                        'sub13': {}}}
-        remove_subscription_node('case1', ['sub14', 'sub13', 'sub10'])
+        self.assertTrue(remove_subscription_node('case1', ['sub14', 'sub13', 'sub10']))
         self.assertDictEqual({'case1': construct_case_json(tree1_after_rem10), 'case2': construct_case_json(tree2)},
                              subscriptions_as_json())
 
         tree2_after_rem20 = {'sub21': {'sub18': {'sub15': {},
                                                  'sub16': {}}},
                              'sub22': {'sub19': {'sub17': {}}}}
-        remove_subscription_node('case2', ['sub22', 'sub20'])
+        self.assertTrue(remove_subscription_node('case2', ['sub22', 'sub20']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem10), 'case2': construct_case_json(tree2_after_rem20)},
             subscriptions_as_json())
@@ -499,7 +499,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
                                       'sub12': {},
                                       'sub13': {}}}
 
-        remove_subscription_node('case1', ['sub14', 'sub12', 'sub9'])
+        self.assertTrue(remove_subscription_node('case1', ['sub14', 'sub12', 'sub9']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem9), 'case2': construct_case_json(tree2_after_rem20)},
             subscriptions_as_json())
@@ -509,7 +509,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
                                       'sub12': {},
                                       'sub13': {}}}
 
-        remove_subscription_node('case1', ['sub14', 'sub11', 'sub7', 'sub4'])
+        self.assertTrue(remove_subscription_node('case1', ['sub14', 'sub11', 'sub7', 'sub4']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem4), 'case2': construct_case_json(tree2_after_rem20)},
             subscriptions_as_json())
@@ -517,7 +517,7 @@ class TestSubscriptionFunctions(unittest.TestCase):
         tree2_after_rem18 = {'sub21': {},
                              'sub22': {'sub19': {'sub17': {}}}}
 
-        remove_subscription_node('case2', ['sub21', 'sub18'])
+        self.assertTrue(remove_subscription_node('case2', ['sub21', 'sub18']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem4), 'case2': construct_case_json(tree2_after_rem18)},
             subscriptions_as_json())
@@ -525,26 +525,26 @@ class TestSubscriptionFunctions(unittest.TestCase):
         tree1_after_rem11 = {'sub14': {'sub12': {},
                                        'sub13': {}}}
 
-        remove_subscription_node('case1', ['sub14', 'sub11'])
+        self.assertTrue(remove_subscription_node('case1', ['sub14', 'sub11']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem11), 'case2': construct_case_json(tree2_after_rem18)},
             subscriptions_as_json())
 
         tree1_after_rem14 = {}
-        remove_subscription_node('case1', ['sub14'])
+        self.assertTrue(remove_subscription_node('case1', ['sub14']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem14), 'case2': construct_case_json(tree2_after_rem18)},
             subscriptions_as_json())
 
         tree2_after_rem22 = {'sub21': {}}
 
-        remove_subscription_node('case2', ['sub22'])
+        self.assertTrue(remove_subscription_node('case2', ['sub22']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem14), 'case2': construct_case_json(tree2_after_rem22)},
             subscriptions_as_json())
 
         tree2_after_rem21 = {}
-        remove_subscription_node('case2', ['sub21'])
+        self.assertTrue(remove_subscription_node('case2', ['sub21']))
         self.assertDictEqual(
             {'case1': construct_case_json(tree1_after_rem14), 'case2': construct_case_json(tree2_after_rem21)},
             subscriptions_as_json())
@@ -555,6 +555,6 @@ class TestSubscriptionFunctions(unittest.TestCase):
         cases = {'case2': case_sub}
         set_subscriptions(cases)
         original_subscriptions = copy.deepcopy(get_subscriptions())
-        remove_subscription_node('nonesense_case', ['a', 'b', 'c'])
+        self.assertFalse(remove_subscription_node('nonsense_case', ['a', 'b', 'c']))
         # Apparently assertDictEquals says this is false. Infuriating.
         self.assertEqual(str(original_subscriptions), str(get_subscriptions()))

@@ -1,0 +1,52 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: DailyQuote
+  description: A sample walkoff app specification
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  quoteIntro:
+    run: quoteIntro
+    description: Prints an introductry string
+    returns:
+      Success:
+        description: introductory message
+        schema:
+          type: string
+  repeatBackToMe:
+    run: repeatBackToMe
+    description: Repeats the call argument
+    parameters:
+        - name: call
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        description: repeated method
+        schema:
+          type: string
+  forismaticQuote:
+    run: forismaticQuote
+    description: Gets a quote
+    parameters:
+        - name: url
+          description: url to get quote from
+          required: true
+          type: string
+    returns:
+      Success:
+        description: the quote
+        schema:
+          type: integer
+  getQuote:
+    run: getQuote
+    description: gets a quote
+    returns:
+      Success:
+        description: a quote
+        schema:
+          type: integer

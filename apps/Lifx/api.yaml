@@ -1,0 +1,191 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Lifx
+  description: Controls a Lifx Bulb
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  list lights:
+    run: list_lights
+    description: gets the status of all lights
+    returns:
+      Success:
+        schema:
+          type: object
+  set state:
+    run: set_state
+    description: Sets the state of the light
+    parameters:
+      - name: power
+        description: The power state you want to set on the selector. on or off
+        type: string
+        enum: ['on', 'off']
+      - name: color
+        description: The color to set the light to.
+        type: string
+      - name: brightness
+        description: The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
+        type: number
+        minimum: 0.0
+        maximum: 1.0
+      - name: duration
+        description: How long in seconds you want the power action to take. Range = 0.0 to 3155760000.0 (100 years)
+        type: number
+        minimum: 0.0
+        maximum: 3155760000.0
+        default: 1.0
+      - name: infrared
+        description: The maximum brightness of the infrared channel.
+        type: number
+        minimum: 0.0
+        maximum: 1.0
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: The id of the light
+            label:
+              type: string
+              description: the label of the light
+            status:
+              type: string
+              description: The status of the operation
+  toggle power:
+    run: toggle_power
+    description: Turns the light on and off
+    parameters:
+      - name: duration
+        description: How long in seconds you want the power action to take. Range = 0.0 to 3155760000.0 (100 years)
+        type: number
+        minimum: 0.0
+        maximum: 3155760000.0
+        default: 1.0
+      - name: wait
+        description: Should the workflow wait for the effect to complete?
+        type: boolean
+        default: false
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: The id of the light
+            label:
+              type: string
+              description: the label of the light
+            status:
+              type: string
+              description: The status of the operation
+              enum: [ok, offline, timed_out]
+  breathe:
+    run: breathe_effect
+    description: Slowly transitions between two colors
+    parameters:
+      - name: color
+        description: The color to use for the breathe effect
+        required: true
+        type: string
+      - name: from_color
+        description: The color to start the effect from. If this parameter is omitted then the color the bulb is currently set to is used instead.
+        type: string
+      - name: period
+        description: The time in seconds for one cyles of the effect.
+        type: number
+        minimum: 0.0
+        maximum: 3155760000.0
+        default: 1.0
+      - name: cycles
+        description: The number of times to repeat the effect.
+        type: number
+        minimum: 0.0
+        default: 1.0
+      - name: persist
+        description: If false set the light back to its previous value when effect ends, if true leave the last effect color.
+        type: boolean
+        default: false
+      - name: power_on
+        description: If true, turn the bulb on if it is not already on.
+        type: boolean
+        default: true
+      - name: peak
+        description: Defines where in a period the target color is at its maximum. Minimum 0.0, maximum 1.0.
+        type: number
+        minimum: 0.0
+        maximum: 1.0
+        default: 0.5
+      - name: wait
+        description: Should the workflow wait for the effect to complete?
+        type: boolean
+        default: false
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: The id of the light
+            label:
+              type: string
+              description: the label of the light
+            status:
+              type: string
+              description: The status of the operation
+              enum: [ok, offline, timed_out]
+  pulse:
+    run: pulse_effect
+    description: Swicthes between two colors
+    parameters:
+      - name: color
+        description: The color to use for the breathe effect
+        required: true
+        type: string
+      - name: from_color
+        description: The color to start the effect from. If this parameter is omitted then the color the bulb is currently set to is used instead.
+        type: string
+      - name: period
+        description: The time in seconds for one cyles of the effect.
+        type: number
+        minimum: 0.0
+        maximum: 3155760000.0
+        default: 1.0
+      - name: cycles
+        description: The number of times to repeat the effect.
+        type: number
+        minimum: 0.0
+        default: 1.0
+      - name: persist
+        description: If false set the light back to its previous value when effect ends, if true leave the last effect color.
+        type: boolean
+        default: false
+      - name: power_on
+        description: If true, turn the bulb on if it is not already on.
+        type: boolean
+        default: true
+      - name: wait
+        description: Should the workflow wait for the effect to complete?
+        type: boolean
+        default: false
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: The id of the light
+            label:
+              type: string
+              description: the label of the light
+            status:
+              type: string
+              description: The status of the operation
+              enum: [ok, offline, timed_out]
