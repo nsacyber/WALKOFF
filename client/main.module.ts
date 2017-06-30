@@ -1,5 +1,3 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
@@ -9,6 +7,8 @@ import { HttpModule } from '@angular/http';
 import { RoutingModule } from './routing';
 import { MainComponent } from './main/main.component';
 import { ControllerComponent } from './controller/controller.component';
+import { CasesComponent } from './cases/cases.component';
+import { SettingsComponent } from './settings/settings.component';
 
 @NgModule({
 	imports: [
@@ -20,9 +20,9 @@ import { ControllerComponent } from './controller/controller.component';
 	declarations: [
 		MainComponent,
 		ControllerComponent,
+		CasesComponent,
+		SettingsComponent,
 	],
 	bootstrap: [MainComponent]
 })
 export class MainModule { }
-
-platformBrowserDynamic().bootstrapModule(MainModule);
