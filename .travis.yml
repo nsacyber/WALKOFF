@@ -1,4 +1,9 @@
 language: python
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
 os:
     - linux
 
@@ -7,10 +12,15 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
+
+env:
+  global:
+    - PYTHON_UNITTEST=true
+
 install: pip install -r requirements.txt
 script: python installDependencies.py && python runAllTests.py test
 branches:
-    only: 
+    only:
     - master
     - development
-
+    - /^issue-.*$/
