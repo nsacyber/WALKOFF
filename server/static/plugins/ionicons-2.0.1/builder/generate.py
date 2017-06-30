@@ -57,12 +57,12 @@ def generate_less(data):
   icons_file_path = os.path.join(LESS_FOLDER_PATH, '_ionicons-icons.less')
 
   d = []
-  d.append('/*!');
-  d.append('Ionicons, v%s' % (font_version) );
-  d.append('Created by Ben Sperry for the Ionic Framework, http://ionicons.com/');
-  d.append('https://twitter.com/benjsperry  https://twitter.com/ionicframework');
-  d.append('MIT License: https://github.com/driftyco/ionicons');
-  d.append('*/');
+  d.append('/*!')
+  d.append('Ionicons, v%s' % (font_version))
+  d.append('Created by Ben Sperry for the Ionic Framework, http://ionicons.com/')
+  d.append('https://twitter.com/benjsperry  https://twitter.com/ionicframework')
+  d.append('MIT License: https://github.com/driftyco/ionicons')
+  d.append('*/')
   d.append('// Ionicons Variables')
   d.append('// --------------------------\n')
   d.append('@ionicons-font-path: "../fonts";')
