@@ -1,4 +1,4 @@
-import { Case } from '../controller/case'
+import { Case } from './case'
 
 export class Event {
 	id: number;

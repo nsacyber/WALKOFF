@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 
 import { SettingsService } from './settings.service';
 
-import { Configuration } from './configuration';
+import { Configuration } from '../models/configuration';
 
 @Component({
 	selector: 'settings-component',

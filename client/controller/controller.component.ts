@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 
 import { ControllerService } from './controller.service';
 
-import { AvailableSubscription } from './availableSubscription';
-import { Case } from './case';
+import { AvailableSubscription } from '../models/availableSubscription';
+import { Case } from '../models/case';
 
 @Component({
 	selector: 'controller-component',
