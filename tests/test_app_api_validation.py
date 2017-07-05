@@ -228,3 +228,16 @@ class TestAppApiValidation(unittest.TestCase):
                                    'HelloWorld',
                                    'Add Three',
                                    get_app_action('HelloWorld', 'addThree'))
+
+    def test_validate_action_params_event(self):
+        self.basicapi['actions']['Sample Event'] = {'run': 'sample_event',
+                                                    'event': 'Event1',
+                                                    'parameters': [{'name': 'arg1',
+                                                                    'type': 'number'},
+                                                                   ]}
+        self.__generate_resolver_dereferencer(self.basicapi)
+        validate_action_params(self.basicapi['actions']['Sample Event']['parameters'],
+                               self.dereferencer,
+                               'HelloWorld',
+                               'Sample Event',
+                               get_app_action('HelloWorld', 'Sample Event'))

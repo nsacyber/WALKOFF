@@ -211,6 +211,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         waiter = Event()
         uid = None
+
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
                 waiter.set()
@@ -239,6 +240,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         waiter = Event()
+
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
                 waiter.set()

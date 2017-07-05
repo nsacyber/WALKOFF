@@ -13,6 +13,16 @@ try:
     from importlib import reload as reload_module
 except ImportError:
     from imp import reload as reload_module
+
+__new_inspection = False
+if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
+    from inspect import signature as getsignature
+
+    __new_inspection = True
+else:
+    from inspect import getargspec as getsignature
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -478,3 +488,9 @@ def dereference_step_routing(input_, accumulator, message_prefix):
         else:
             return input_
 
+
+def get_function_arg_names(func):
+    if __new_inspection:
+        return list(getsignature(func).parameters.keys())
+    else:
+        return getsignature(func).args

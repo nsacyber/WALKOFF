@@ -10,20 +10,11 @@ from connexion.utils import boolean
 from six import string_types
 import sys
 import logging
-from core.helpers import InvalidInput
+from core.helpers import InvalidInput, get_function_arg_names
 import core.config.paths
 import core.config.config
 
 logger = logging.getLogger(__name__)
-
-
-__new_inspection = False
-if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
-    from inspect import signature as getsignature
-
-    __new_inspection = True
-else:
-    from inspect import getargspec as getsignature
 
 
 class InvalidApi(Exception):
@@ -198,18 +189,17 @@ def validate_actions(actions, dereferencer, app_name):
                              'which is not defined in App {2}'.format(action_name, action['run'], app_name))
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
-        if 'dataIn' in action:
-            validate_data_in_param(action_params, action['dataIn'], 'App {0} action {1}'.format(app_name, action_name))
+        event = 'event' in action
         if action_params:
             validate_action_params(action_params, dereferencer, app_name,
-                                   action_name, get_app_action(app_name, action['run']))
+                                   action_name, get_app_action(app_name, action['run']), event=event)
         seen.add(action['run'])
     if seen != set(defined_actions.keys()):
         logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
                        '{1}'.format(app_name, (set(defined_actions.keys()) - seen)))
 
 
-def validate_action_params(parameters, dereferencer, app_name, action_name, action_func):
+def validate_action_params(parameters, dereferencer, app_name, action_name, action_func, event=False):
     seen = set()
     for parameter in parameters:
         parameter = deref(parameter, dereferencer)
@@ -218,12 +208,20 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
             raise InvalidApi('Duplicate parameter {0} in api for {1} '
                              'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
-    if __new_inspection:
-        method_params = list(getsignature(action_func).parameters.keys())
-    else:
-        method_params = getsignature(action_func).args
+
+    method_params = get_function_arg_names(action_func) if not event else getattr(action_func, '__arg_names')
+
     if method_params and method_params[0] == 'self':
         method_params.pop(0)
+
+    if event:
+        if method_params:
+            method_params.pop(0)
+        else:
+            raise InvalidApi('Event action has too few parameters. '
+                             'There must be a "self" and a second parameter to receive data from the event.')
+        # TODO: Assert the documented event name is the same. Warn otherwise, no error
+
     if not seen == set(method_params):
         only_in_api = seen - set(method_params)
         only_in_definition = set(method_params) - seen

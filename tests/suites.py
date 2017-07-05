@@ -18,7 +18,7 @@ __execution_tests = [test_execution_runtime, test_execution_element, test_execut
                      test_step, test_helper_functions, test_filter, test_flag, test_next_step,
                      test_instance, test_controller, test_widget_signals, test_metrics,
                      test_app_utilities, test_apps_registration, test_input_validation, test_decorators,
-                     test_app_api_validation, test_flag_filter_validation]
+                     test_app_api_validation, test_flag_filter_validation, test_app_event]
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 

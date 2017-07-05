@@ -1,5 +1,6 @@
 __all__ = ['test_app_blueprint',
            'test_app_api_validation',
+           'test_app_event',
            'test_app_utilities',
            'test_apps_registration',
            'test_case_database',

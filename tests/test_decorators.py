@@ -1,5 +1,14 @@
 import unittest
 from core.decorators import *
+from apps import Event
+import socket
+try:
+    from importlib import reload
+except ImportError:
+    from imp import reload
+from gevent import monkey, sleep, spawn
+from timeit import default_timer
+
 
 class TestDecorators(unittest.TestCase):
 
@@ -28,3 +37,75 @@ class TestDecorators(unittest.TestCase):
 
         self.assertTrue(getattr(add_one, 'filter'))
         self.assertEqual(add_one(1), 2)
+
+
+class TestEventDecorator(unittest.TestCase):
+
+    def setUp(self):
+        monkey.patch_socket()
+
+    def tearDown(self):
+        reload(socket)
+
+    def test_event_is_tagged_as_action(self):
+        event1 = Event()
+
+        class TestClass(object):
+            @event(event1)
+            def ev(self, data):
+                return data
+
+        self.assertTrue(getattr(TestClass.ev, 'action'))
+
+    def test_event_has_arg_names(self):
+        event1 = Event()
+
+        class TestClass(object):
+            @event(event1)
+            def ev(self, data, a):
+                return data
+
+        self.assertListEqual(getattr(TestClass.ev, '__arg_names'), ['self', 'data', 'a'])
+
+    def test_event_execution(self):
+        event1 = Event('Event1')
+
+        class TestClass(object):
+            @event(event1)
+            def ev(self, data):
+                return data
+
+        b = TestClass()
+        test_data = {1: 2}
+
+        def sender():
+            sleep(0.1)
+            event1.trigger(test_data)
+
+        start = default_timer()
+        spawn(sender)
+        result = b.ev()
+        duration = default_timer() - start
+        self.assertDictEqual(result, test_data)
+        self.assertSetEqual(event1.receivers, set())
+        self.assertTrue(duration > 0.1)
+
+    def test_event_execution_with_timeout(self):
+        event1 = Event('Event1')
+
+        class TestClass(object):
+            @event(event1, timeout=0)
+            def ev(self, data):
+                return data
+
+        b = TestClass()
+        test_data = {1: 2}
+
+        def sender():
+            sleep(0.1)
+            event1.trigger(test_data)
+
+        spawn(sender)
+        result = b.ev()
+        self.assertEqual(result, 'Getting event Event1 timed out at 0 seconds')
+        self.assertSetEqual(event1.receivers, set())

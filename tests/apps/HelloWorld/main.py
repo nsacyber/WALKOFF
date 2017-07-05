@@ -1,6 +1,7 @@
 import time
-from tests.apps import App, action
+from tests.apps import App, action, event
 from tests.apps.HelloWorld.exceptions import CustomException
+from tests.apps.HelloWorld.events import event1
 
 # There is an associated Hello world test workflow which can be executed
 class Main(App):
@@ -46,6 +47,9 @@ class Main(App):
         return (json_in['a'] + json_in['b']['a'] + json_in['b']['b'] + sum(json_in['c']) +
                 sum([x['b'] for x in json_in['d']]))
 
+    @event(event1)
+    def sample_event(self, data, arg1):
+        return data + arg1
+
     def shutdown(self):
-        # print("SHUTTING DOWN")
         return
