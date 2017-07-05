@@ -4,9 +4,11 @@
 	var map = {
 		// 'login': 'client/modules/login',
 		'main': 'client',
+		'models': 'client/models',
 		'rxjs': 'client/node_modules/rxjs',
 		//'angular2-in-memory-web-api': 'client/node_modules/angular2-in-memory-web-api',
 		'@angular': 'client/node_modules/@angular',
+		'lodash': 'client/node_modules/lodash',
 		'ts': 'client/node_modules/plugin-typescript/lib/plugin.js',
 		'tsconfig.json': 'client/tsconfig.json',
 		'typescript': 'client/node_modules/typescript/lib/typescript.js',
@@ -16,8 +18,10 @@
 	var packages = {
 		// 'login': { main: 'login',  defaultExtension: 'ts' },
 		'main': { main: 'main',  defaultExtension: 'ts' },
+		'models': { defaultExtension: 'ts' },
 		'rxjs': { defaultExtension: 'js' },
 		'ts': { defaultExtension: 'js' },
+		'lodash': { main: 'index.js', defaultExtension: 'js' },
 		//'angular2-in-memory-web-api': { defaultExtension: 'js' },
 	};
 

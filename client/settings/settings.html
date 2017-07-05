@@ -1,0 +1,125 @@
+<div id="main">
+    <div id="settingsTabs">
+        <ul class="nav nav-tabs" role="tablist">
+            <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
+            <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+        </ul>
+
+        <div id="systemSettings">
+            <h1 class="settingsHeader">System Settings</h1>
+            <div class="row">
+                <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
+                    <div class="col-md-4">
+                        <h3>Path Configuration</h3>
+                        <div class="form-group">
+                            <label for="name">Workflows Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Templates Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.templates_path" name="templates_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Profile Visualizations Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.profile_visualizations_path" name="profile_visualizations_path"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Keywords Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.keywords_path" name="keywords_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Database Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.db_path" name="db_path" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <h3>Authorization Configuration</h3>
+                        <div class="form-group">
+                            <label for="name">Use HTTPS</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">TLS Version</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Certificate Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.certificate_path" name="certificate_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Private Key Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.private_key_path" name="private_key_path" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <h3>Interface Configuration</h3>
+                        <div class="form-group">
+                            <label for="name">Debug Mode</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.debug" name="debug" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Default Server</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.default_server" name="default_server" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Host Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.host" name="host" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Port</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.port" name="port" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="row">
+                <button id="formSubmit" type="submit" class="btn btn-primary">Submit Changes</button>
+                <button (click)="resetConfiguration()" id="resetConfiguration" class="btn btn-danger">Reset to Defaults</button>
+            </div>
+        </div>
+
+        <div id="userSettings">
+            <div>
+                <h1 class="settingsHeader">User Settings</h1>
+            </div>
+            <div id="userForms" class="row">
+                <div id="currentUserInfo" class="col-md-4">
+                    <h3>User Configuration</h3>
+
+                    <form id="userForm">
+                        <!-- use jinja and formhelpers.html to populate form -->
+                        <!-- below is pulled from devices\index.html -->
+                        <!--{% from "pages/_formhelpers.html" import render_field %} {{ render_field(userForm.username) }} {{ render_field(userForm.password)
+                        }} {{ render_field(userForm.active) }}-->
+                    </form>
+                    <div id="crudButtons">
+                        <button id="addUser" class="btn btn-primary">Add User</button>
+                        <button id="editUser" class="btn btn-success">Edit User</button>
+                        <button id="deleteUser" class="btn btn-danger">Delete User</button>
+                    </div>
+                </div>
+                <div id="createUser" class="col-md-4">
+                    <h3>Add user</h3>
+                    <form id="addUserForm">
+                        <!--{% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
+                        }} {{ render_field(addUserForm.roles) }} {{ render_field(addUserForm.password) }} {{ render_field(addUserForm.confirm)
+                        }}-->
+                    </form>
+                    <button id="saveNewUser" class="btn btn-primary">Submit</button>
+                </div>
+                <div id="updateUser" class="col-md-4">
+                    <h3>Edit User</h3>
+                    <form id="updateUserForm">
+                        <!--{% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
+                        }} {{ render_field(addUserForm.roles) }} {{ render_field(addUserForm.password) }} {{ render_field(addUserForm.confirm)
+                        }}-->
+                    </form>
+                    <button id="submitUpdate" class="btn btn-primary">Submit Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

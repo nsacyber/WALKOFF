@@ -1,31 +1,32 @@
 import { Injectable } 			from '@angular/core';
 import { Http, Response } 		from '@angular/http';
 
+import { Configuration } from './configuration'
+
 @Injectable()
 export class SettingsService {
 	constructor (private http: Http) { }
 
-	getSettings() : Promise<string> {
-		return this.http.get('/')
+	getConfiguration() : Promise<Configuration> {
+		return this.http.get('/configuration')
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Configuration)
 			.catch(this.handleError);
 	};
+
+	updateConfiguration(configuration: Configuration) : Promise<Configuration> {
+		console.log(configuration);
+		return this.http.post('/configuration', configuration)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Configuration)
+			.catch(this.handleError);
+	}
 	
-	doSomething() : Promise<string> {
-		return Promise.resolve('hello');
-
-		// return this.http.post('/login', {
-		// 	username: username,
-		// 	password: password
-		// })
-		// .map(this.extractData)
-		// .catch(this.handleError);
-	};
-
 	private extractData (res: Response) {
 		let body = res.json();
-		return body.data || {};
+		return body || {};
 	}
 
 	private handleError (error: Response | any) {

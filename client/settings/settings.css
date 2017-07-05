@@ -1,0 +1,53 @@
+#main {
+	padding: 10px 15px;
+}
+
+/*input[type=text],
+input[type=password] {
+	width: 300px;
+	background-color: #F0F8FF;
+}*/
+
+/*select {
+	width: 300px;
+	background-color: #F0F8FF;
+	height: 30px;
+}*/
+
+/*AdminLTE overrides, should remove once we remove the AdminLTE styling*/
+input[type=checkbox].form-control {
+	-webkit-appearance: checkbox;
+	-moz-appearance: checkbox;
+	width: 34px;
+	margin: 0 5px;
+}
+
+input[type=radio].form-control {
+	-webkit-appearance: radio;
+	-moz-appearance: radio;
+	width: 34px;
+	margin: 0 5px;
+}
+
+#formSubmit {
+	margin-left: 20px;
+}
+
+#settingsForm,
+#userForm,
+#addUserForm,
+#updateUserForm {
+	margin-bottom: 20px;
+}
+
+/*input {
+	border: none;
+}*/
+
+select#username {
+	border: none;
+}
+
+select#roles {
+	border: none;
+}

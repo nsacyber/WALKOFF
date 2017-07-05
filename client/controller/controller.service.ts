@@ -73,7 +73,7 @@ export class ControllerService {
 	}
 
 	getSchedulerStatus() : Promise<string> {
-		return this.http.get('/execution/scheduler/', this.headers)
+		return this.http.get('/execution/scheduler')
 			.toPromise()
 			.then(this.extractData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
