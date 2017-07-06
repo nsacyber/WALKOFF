@@ -1,6 +1,7 @@
 from gevent.event import AsyncResult
 from gevent import Timeout
-from core.helpers import get_function_arg_names
+from core.helpers import get_function_arg_names, InvalidApi
+from core.validator import InvalidApi
 
 def tag(func, tag_name):
     setattr(func, tag_name, True)
@@ -30,6 +31,11 @@ def event(event_, timeout=300):
         (func) Tagged function
     """
     def _event(func):
+        arg_names = get_function_arg_names(func)
+        if len(arg_names) < 2:
+            raise InvalidApi('Event action has too few parameters. '
+                             'There must be a "self" and a second parameter to receive data from the event.')
+
         def wrapper(*args, **kwargs):
             result = AsyncResult()
 

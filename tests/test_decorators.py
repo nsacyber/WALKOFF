@@ -69,6 +69,14 @@ class TestEventDecorator(unittest.TestCase):
 
         self.assertListEqual(getattr(TestClass.ev, '__arg_names'), ['self', 'data', 'a'])
 
+    def test_event_raises_with_too_few_args(self):
+        event1 = Event()
+        with self.assertRaises(InvalidApi):
+            class TestClass(object):
+                @event(event1)
+                def ev(self):
+                    return 1
+
     def test_event_execution(self):
         event1 = Event('Event1')
 

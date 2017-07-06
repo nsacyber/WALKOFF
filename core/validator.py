@@ -1,25 +1,21 @@
-from swagger_spec_validator.validator20 import deref
-from swagger_spec_validator import ref_validators
-from functools import partial
-import os
 import json
+import logging
+import os
 from copy import deepcopy
+from functools import partial
+
+from connexion.utils import boolean
 from jsonschema import RefResolver, draft4_format_checker, ValidationError
 from jsonschema.validators import Draft4Validator
-from connexion.utils import boolean
 from six import string_types
-import sys
-import logging
-from core.helpers import InvalidInput, get_function_arg_names
-import core.config.paths
+from swagger_spec_validator import ref_validators
+from swagger_spec_validator.validator20 import deref
+
 import core.config.config
+import core.config.paths
+from core.helpers import InvalidInput, get_function_arg_names, InvalidApi
 
 logger = logging.getLogger(__name__)
-
-
-class InvalidApi(Exception):
-    pass
-
 
 TYPE_MAP = {
     'integer': int,
@@ -215,11 +211,8 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
         method_params.pop(0)
 
     if event:
-        if method_params:
-            method_params.pop(0)
-        else:
-            raise InvalidApi('Event action has too few parameters. '
-                             'There must be a "self" and a second parameter to receive data from the event.')
+        method_params.pop(0)
+
         if action_func.__event_name != event:
             logger.warning('In app {0} action {1}, event documented {2} does not match '
                            'event specified {3}'.format(app_name, action_name, event, action_func.__event_name))

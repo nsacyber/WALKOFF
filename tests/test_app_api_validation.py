@@ -1,11 +1,13 @@
 import unittest
-from core.validator import *
+
 import yaml
-from tests.config import basic_app_api, test_apps_path
-from jsonschema.exceptions import RefResolutionError, ValidationError
-from core.helpers import import_all_apps
-from tests.apps import *
+from jsonschema.exceptions import RefResolutionError
+
 from core.config.paths import walkoff_schema_path
+from core.helpers import import_all_apps
+from core.validator import *
+from tests.apps import *
+from tests.config import basic_app_api, test_apps_path
 
 
 class TestAppApiValidation(unittest.TestCase):
@@ -242,16 +244,3 @@ class TestAppApiValidation(unittest.TestCase):
                                'Sample Event',
                                get_app_action('HelloWorld', 'sample_event'),
                                event='event1')
-
-    def test_validate_action_params_event_too_few_params(self):
-        self.basicapi['actions']['Invalid Event'] = {'run': 'invalid_event',
-                                                     'event': 'Event1',
-                                                     'parameters': []}
-        self.__generate_resolver_dereferencer(self.basicapi)
-        with self.assertRaises(InvalidApi):
-            validate_action_params(self.basicapi['actions']['Invalid Event']['parameters'],
-                                   self.dereferencer,
-                                   'HelloWorld',
-                                   'Invalid Event',
-                                   get_app_action('HelloWorld', 'invalid_event'),
-                                   event='event1')

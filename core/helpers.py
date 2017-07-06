@@ -294,6 +294,8 @@ def import_all_apps(path=None, reload=False):
             import_app_main(app_name, path=path, reload=reload)
         except ImportError:
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
+        except InvalidApi as e:
+            logger.error('App {0} has an invalid API: {0}'.format(e))
 
 
 def get_app_action_api(app, action):
@@ -494,3 +496,7 @@ def get_function_arg_names(func):
         return list(getsignature(func).parameters.keys())
     else:
         return getsignature(func).args
+
+
+class InvalidApi(Exception):
+    pass

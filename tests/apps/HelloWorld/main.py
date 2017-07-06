@@ -42,9 +42,5 @@ class Main(App):
     def sample_event(self, data, arg1):
         return data + arg1
 
-    @event(event1)
-    def invalid_event(self):
-        return 3
-
     def shutdown(self):
         return

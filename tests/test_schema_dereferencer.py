@@ -1,6 +1,6 @@
 import unittest
 from core.schemas.dereference import *
-from core.validator import InvalidApi
+from core.helpers import InvalidApi
 
 
 class TestSchemaDereferencer(unittest.TestCase):
