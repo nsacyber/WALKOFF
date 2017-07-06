@@ -41,10 +41,12 @@ class TestDecorators(unittest.TestCase):
 
 class TestEventDecorator(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         monkey.patch_socket()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         reload(socket)
 
     def test_event_is_tagged_as_action(self):

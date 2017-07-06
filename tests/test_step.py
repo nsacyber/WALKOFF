@@ -1,4 +1,5 @@
 import unittest
+import socket
 from core.flag import Flag
 from core.step import Step, _Widget
 from core.nextstep import NextStep
@@ -8,6 +9,12 @@ from tests.config import test_apps_path, function_api_path
 from core.instance import Instance
 from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
                           import_all_filters)
+import gevent
+import gevent.monkey
+try:
+    from importlib import reload
+except ImportError:
+    from imp import reload
 
 
 class TestStep(unittest.TestCase):
@@ -18,6 +25,7 @@ class TestStep(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
+        gevent.monkey.patch_socket()
 
     def setUp(self):
         self.basic_json = {'app': 'HelloWorld',
@@ -37,6 +45,9 @@ class TestStep(unittest.TestCase):
                                  'errors': [],
                                  'position': {},
                                  'input': {}}
+    @classmethod
+    def tearDownClass(cls):
+        reload(socket)
 
     def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, errors, ancestry,
                        widgets, risk=0., position=None):
@@ -564,6 +575,24 @@ class TestStep(unittest.TestCase):
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(CustomException):
             step.execute(instance.instance, {})
+
+    def test_execute_event(self):
+        step = Step(app='HelloWorld', action='Sample Event', inputs={'arg1': 1})
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+
+        import time
+        from tests.apps.HelloWorld.events import event1
+
+        def sender():
+            gevent.sleep(0.1)
+            event1.trigger(3)
+
+        start = time.time()
+        gevent.spawn(sender)
+        result = step.execute(instance.instance, {})
+        end = time.time()
+        self.assertEqual(result, 4)
+        self.assertTrue((end-start) > 0.1)
 
     def test_get_next_step_no_next_steps_no_errors(self):
         step = Step(app='HelloWorld', action='helloWorld')

@@ -30,13 +30,13 @@ def event(event_, timeout=300):
         (func) Tagged function
     """
     def _event(func):
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             result = AsyncResult()
 
             @event_.connect
             def send(data):
-                if len(args) > 1:
-                    result.set(func(args[0], data, *args[1:]))
+                if len(kwargs) > 0:
+                    result.set(func(args[0], data, **kwargs))
                 else:
                     result.set(func(args[0], data))
 
@@ -50,6 +50,7 @@ def event(event_, timeout=300):
 
         tag(wrapper, 'action')
         wrapper.__arg_names = get_function_arg_names(func)
+        wrapper.__event_name = event_.name
         return wrapper
 
     return _event

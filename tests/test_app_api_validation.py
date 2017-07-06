@@ -240,4 +240,18 @@ class TestAppApiValidation(unittest.TestCase):
                                self.dereferencer,
                                'HelloWorld',
                                'Sample Event',
-                               get_app_action('HelloWorld', 'Sample Event'))
+                               get_app_action('HelloWorld', 'sample_event'),
+                               event='event1')
+
+    def test_validate_action_params_event_too_few_params(self):
+        self.basicapi['actions']['Invalid Event'] = {'run': 'invalid_event',
+                                                     'event': 'Event1',
+                                                     'parameters': []}
+        self.__generate_resolver_dereferencer(self.basicapi)
+        with self.assertRaises(InvalidApi):
+            validate_action_params(self.basicapi['actions']['Invalid Event']['parameters'],
+                                   self.dereferencer,
+                                   'HelloWorld',
+                                   'Invalid Event',
+                                   get_app_action('HelloWorld', 'invalid_event'),
+                                   event='event1')

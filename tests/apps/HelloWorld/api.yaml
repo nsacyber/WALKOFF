@@ -132,6 +132,7 @@ actions:
         - name: arg1
           required: true
           type: number
+    event: Event1
     returns:
       Success:
         description: summation

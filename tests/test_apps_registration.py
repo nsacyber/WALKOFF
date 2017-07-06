@@ -33,7 +33,7 @@ class TestAppsRegistration(unittest.TestCase):
     def test_get_all_app_actions_valid_app(self):
         actions = get_all_actions_for_app('HelloWorld')
         expected_actions = {'pause', 'helloWorld', 'returnPlusOne', 'repeatBackToMe', 'addThree', 'buggy_action',
-                            'json_sample'}
+                            'json_sample', 'invalid_event', 'sample_event'}
         self.assertSetEqual(set(actions.keys()), expected_actions)
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
