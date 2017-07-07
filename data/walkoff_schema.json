@@ -356,7 +356,7 @@
     },
     "returns": {
       "type": "object",
-      "description": "Response objects names can either be any valid HTTP status code or 'default'.",
+      "description": "Response objects names can be any string",
       "minProperties": 1,
       "additionalProperties": false,
       "patternProperties": {

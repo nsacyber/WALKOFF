@@ -26,6 +26,7 @@ def __format_app_action_api(api):
     ret['args'] = api.get('parameters', [])
     if 'event' in api:
         ret['event'] = api['event']
+    ret['returns'] = api['returns'].keys() if 'returns' in api else []
     return ret
 
 
