@@ -205,7 +205,10 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
                              'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
 
-    method_params = get_function_arg_names(action_func) if event is '' else action_func.__arg_names
+    if hasattr(action_func, '__arg_names'):
+        method_params = action_func.__arg_names
+    else:
+        method_params = get_function_arg_names(action_func)
 
     if method_params and method_params[0] == 'self':
         method_params.pop(0)

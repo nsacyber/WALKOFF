@@ -198,6 +198,7 @@ class Step(ExecutionElement):
             raise
         except Exception as e:
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
+            # TODO Make a default UncaughtError status to provide uniform handling
             self.output = 'error: {0}'.format(str(e))
             raise
         else:

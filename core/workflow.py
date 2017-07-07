@@ -209,9 +209,9 @@ class Workflow(ExecutionElement):
                 if step.name in self.breakpoint_steps:
                     _ = yield
                 callbacks.NextStepFound.send(self)
-                tuple = (step.app, step.device)
-                if tuple not in instances:
-                    instances[tuple] = Instance.create(step.app, step.device)
+                device_id = (step.app, step.device)
+                if device_id not in instances:
+                    instances[device_id] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
@@ -221,7 +221,7 @@ class Workflow(ExecutionElement):
                     if start_input:
                         self.__swap_step_input(step, start_input)
 
-                error_flag = self.__execute_step(step, instances[tuple])
+                error_flag = self.__execute_step(step, instances[device_id])
                 total_steps.append(step)
                 steps.send(error_flag)
                 self.accumulator[step.name] = step.output
@@ -275,7 +275,9 @@ class Workflow(ExecutionElement):
             data['step']['result'] = step.output
             callbacks.StepExecutionError.send(self, data=json.dumps(data))
             error_flag = True
-            self.accumulated_risk += float(step.risk) / self.total_risk
+            if self.total_risk > 0:
+                print('here')
+                self.accumulated_risk += float(step.risk) / self.total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry, e))
         finally:
             return error_flag

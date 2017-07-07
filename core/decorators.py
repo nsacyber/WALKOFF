@@ -1,7 +1,11 @@
 from gevent.event import AsyncResult
 from gevent import Timeout
 from core.helpers import get_function_arg_names, InvalidApi
-from core.validator import InvalidApi
+from collections import namedtuple
+from functools import wraps
+
+ActionResult = namedtuple('ActionResults', ['result', 'status'])
+
 
 def tag(func, tag_name):
     setattr(func, tag_name, True)
@@ -16,8 +20,16 @@ def action(func):
     Returns:
         (func) Tagged function
     """
-    tag(func, 'action')
-    return func
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if not isinstance(result, tuple):
+            return ActionResult(result, 'Success')
+        else:
+            return ActionResult(*result)
+    tag(wrapper, 'action')
+    wrapper.__arg_names = get_function_arg_names(func)
+    return wrapper
 
 
 def event(event_, timeout=300):
@@ -35,7 +47,7 @@ def event(event_, timeout=300):
         if len(arg_names) < 2:
             raise InvalidApi('Event action has too few parameters. '
                              'There must be a "self" and a second parameter to receive data from the event.')
-
+        @wraps(func)
         def wrapper(*args, **kwargs):
             result = AsyncResult()
 
@@ -55,7 +67,7 @@ def event(event_, timeout=300):
             return result
 
         tag(wrapper, 'action')
-        wrapper.__arg_names = get_function_arg_names(func)
+        wrapper.__arg_names = arg_names
         wrapper.__event_name = event_.name
         return wrapper
 
