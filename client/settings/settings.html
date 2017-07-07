@@ -1,11 +1,11 @@
 <div id="main">
     <div id="settingsTabs">
         <ul class="nav nav-tabs" role="tablist">
-            <li id="systemsTab" class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
-            <li id="userTab"><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+            <li class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
+            <li><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
         </ul>
 
-        <div id="systemSettings">
+        <div id="systemSettings" class="tab-pane fade in active">
             <h1 class="settingsHeader">System Settings</h1>
             <div class="row">
                 <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
@@ -81,19 +81,75 @@
             </div>
         </div>
 
-        <div id="userSettings">
-            <div>
+        <div id="userSettings" class="tab-pane fade">
+            <div class="row">
                 <h1 class="settingsHeader">User Settings</h1>
             </div>
-            <div id="userForms" class="row">
+
+            <div class="row">
+                <!--<div class="col-xs-6">
+                    <label class="label-control">Filter:</span>
+                    <input class="form-control" [(ngModel)]="filterQuery"/>
+                </div>-->
+                <div class="col-xs-6">
+                    <button (click)="addUser()" class="btn btn-primary"><span class="fa fa-plus"></span></button>
+                </div>
+            </div>
+
+            <div class="row">
+                <table class="table table-striped">
+                    <!--[mfData]="userNames" #mf="mfDataTable"
+                    [mfRowsOnPage]="rowsOnPage" [(mfSortBy)]="sortBy" [(mfSortOrder)]="sortOrder">-->
+                    <thead>
+                    <tr>
+                        <th style="width: 20%"></th>
+                        <th style="width: 70%">
+                            User Name
+                            <!--<mfDefaultSorter by="username">User Name</mfDefaultSorter>-->
+                        </th>
+                        <!--<th style="width: 60%">
+                            <mfDefaultSorter by="roles">Roles</mfDefaultSorter>
+                        </th>-->
+                        <th style="width: 10%"></th>
+                    </tr>
+                    <tr>
+                        <th colspan="5">
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--<tr *ngFor="let item of mf.userNames">-->
+                    <tr *ngFor="let item of userNames">
+                        <td>
+                            <button (click)="editUser(item)" class="btn btn-primary"><span class="fa fa-times"></span></button>
+                        </td>
+                        <td>{{item}}</td>
+                        <td>
+                            <button (click)="deleteUser(item)" class="btn btn-danger"><span class="fa fa-edit"></span></button>
+                        </td>
+                    </tr>
+                    <!--<tr *ngIf="!mf.userNames || !mf.userNames.length">-->
+                    <tr *ngIf="!userNames || !userNames.length">
+                        <td colspan="3">No users to display</td>
+                    </tr>
+                    </tbody>
+                    <!--<tfoot>
+                    <tr>
+                        <td colspan="3">
+                            <mfBootstrapPaginator [rowsOnPageSet]="[10,25,50]"></mfBootstrapPaginator>
+                        </td>
+                    </tr>
+                    </tfoot>-->
+                </table>
+            </div>
+
+            <!--<div id="userForms" class="row">
                 <div id="currentUserInfo" class="col-md-4">
                     <h3>User Configuration</h3>
 
                     <form id="userForm">
-                        <!-- use jinja and formhelpers.html to populate form -->
-                        <!-- below is pulled from devices\index.html -->
-                        <!--{% from "pages/_formhelpers.html" import render_field %} {{ render_field(userForm.username) }} {{ render_field(userForm.password)
-                        }} {{ render_field(userForm.active) }}-->
+                        {% from "pages/_formhelpers.html" import render_field %} {{ render_field(userForm.username) }} {{ render_field(userForm.password)
+                        }} {{ render_field(userForm.active) }}
                     </form>
                     <div id="crudButtons">
                         <button id="addUser" class="btn btn-primary">Add User</button>
@@ -104,22 +160,22 @@
                 <div id="createUser" class="col-md-4">
                     <h3>Add user</h3>
                     <form id="addUserForm">
-                        <!--{% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
+                        {% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
                         }} {{ render_field(addUserForm.roles) }} {{ render_field(addUserForm.password) }} {{ render_field(addUserForm.confirm)
-                        }}-->
+                        }}
                     </form>
                     <button id="saveNewUser" class="btn btn-primary">Submit</button>
                 </div>
                 <div id="updateUser" class="col-md-4">
                     <h3>Edit User</h3>
                     <form id="updateUserForm">
-                        <!--{% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
+                        {% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
                         }} {{ render_field(addUserForm.roles) }} {{ render_field(addUserForm.password) }} {{ render_field(addUserForm.confirm)
-                        }}-->
+                        }}
                     </form>
                     <button id="submitUpdate" class="btn btn-primary">Submit Changes</button>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </div>

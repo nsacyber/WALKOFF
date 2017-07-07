@@ -1,6 +1,8 @@
+import { Event } from './event'
+
 export class Case {
-	id: Number;
-	name: String;
-	note: String;
-	//events: [Event]
+	id: number;
+	name: string;
+	note: string;
+	events: Event[];
 }

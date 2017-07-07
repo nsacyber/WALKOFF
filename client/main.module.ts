@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 import { HttpModule } from '@angular/http';
+// import { DataTableModule } from 'angular2-datatable';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -16,6 +17,7 @@ import { SettingsComponent } from './settings/settings.component';
 		FormsModule,
 		HttpModule,
 		RoutingModule,
+		// DataTableModule,
 	],
 	declarations: [
 		MainComponent,
