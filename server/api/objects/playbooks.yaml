@@ -133,6 +133,10 @@ NextStep:
       description: The name of the next step
       type: string
       example: step2
+    status:
+      description: The status return code to use
+      type: string
+      example: Success
     flags:
       description: List of flags to evaluate
       type: array
