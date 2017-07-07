@@ -53,17 +53,22 @@ def __get_blueprints_in_module(module, sub_module_name='display'):
     from importlib import import_module
     from apps import AppWidgetBlueprint
     import_module('{0}.{1}'.format(module.__name__, sub_module_name))
-    display_module = getattr(module, sub_module_name)
-    blueprints = [getattr(display_module, field)
-                  for field in dir(display_module) if (not field.startswith('__')
-                                                       and isinstance(getattr(display_module, field),
-                                                                      AppWidgetBlueprint))]
+    submodule = getattr(module, sub_module_name)
+    blueprints = [getattr(submodule, field)
+                  for field in dir(submodule) if (not field.startswith('__')
+                                                  and isinstance(getattr(submodule, field), AppWidgetBlueprint))]
     return blueprints
 
 
-def __register_app_blueprint(flaskapp, blueprint, url_prefix):
+def __register_blueprint(flaskapp, blueprint, url_prefix):
     rule = '{0}{1}'.format(url_prefix, blueprint.rule) if blueprint.rule else url_prefix
     flaskapp.register_blueprint(blueprint.blueprint, url_prefix=rule)
+
+
+def __register_app_blueprints(flaskapp, app_name, blueprints):
+    url_prefix = '/apps/{0}'.format(app_name.split('.')[-1])
+    for blueprint in blueprints:
+        __register_blueprint(flaskapp, blueprint, url_prefix)
 
 
 def __register_all_app_blueprints(flaskapp):
@@ -72,15 +77,20 @@ def __register_all_app_blueprints(flaskapp):
     imported_apps = import_submodules(apps)
     for app_name, app_module in imported_apps.items():
         try:
-            blueprints = __get_blueprints_in_module(app_module)
+            display_blueprints = __get_blueprints_in_module(app_module)
         except ImportError:
-            continue
+            pass
         else:
-            url_prefix = '/apps/{0}'.format(app_name.split('.')[-1])
-            for blueprint in blueprints:
-                __register_app_blueprint(flaskapp, blueprint, url_prefix)
+            __register_app_blueprints(flaskapp, app_name, display_blueprints)
 
-            __register_all_app_widget_blueprints(flaskapp, app_module)
+        try:
+            blueprints = __get_blueprints_in_module(app_module, sub_module_name='events')
+        except ImportError:
+            pass
+        else:
+            __register_app_blueprints(flaskapp, app_name, blueprints)
+
+        __register_all_app_widget_blueprints(flaskapp, app_module)
 
 
 def __register_all_app_widget_blueprints(flaskapp, app_module):
@@ -101,7 +111,7 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
             else:
                 url_prefix = '/apps/{0}/{1}'.format(app_name, widget_name.split('.')[-1])
                 for blueprint in blueprints:
-                    __register_app_blueprint(flaskapp, blueprint, url_prefix)
+                    __register_blueprint(flaskapp, blueprint, url_prefix)
 
 
 def create_app():
