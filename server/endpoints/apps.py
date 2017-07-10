@@ -24,9 +24,12 @@ def __format_app_action_api(api):
     if 'description' in api:
         ret['description'] = api['description']
     ret['args'] = api.get('parameters', [])
+    returns = list(api['returns'].keys()) if 'returns' in api else ['Success']
+    returns.extend(['UnhandledException', 'InvalidInput'])
     if 'event' in api:
         ret['event'] = api['event']
-    ret['returns'] = list(api['returns'].keys()) if 'returns' in api else []
+        returns.append('EventTimedOut')
+    ret['returns'] = returns
     return ret
 
 
