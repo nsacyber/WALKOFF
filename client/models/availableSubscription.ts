@@ -1,4 +1,4 @@
 export class AvailableSubscription {
-	type: String;
-	events: [String];
+	type: string;
+	events: string[];
 }

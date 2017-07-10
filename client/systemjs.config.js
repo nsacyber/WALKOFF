@@ -8,6 +8,7 @@
 		'rxjs': 'client/node_modules/rxjs',
 		//'angular2-in-memory-web-api': 'client/node_modules/angular2-in-memory-web-api',
 		'@angular': 'client/node_modules/@angular',
+		'angular2-datatable': 'client/node_modules/angular2-datatable',
 		'lodash': 'client/node_modules/lodash',
 		'ts': 'client/node_modules/plugin-typescript/lib/plugin.js',
 		'tsconfig.json': 'client/tsconfig.json',
@@ -22,6 +23,7 @@
 		'rxjs': { defaultExtension: 'js' },
 		'ts': { defaultExtension: 'js' },
 		'lodash': { main: 'index.js', defaultExtension: 'js' },
+		'angular2-datatable': { main: 'index.js', defaultExtension: 'js' },
 		//'angular2-in-memory-web-api': { defaultExtension: 'js' },
 	};
 
