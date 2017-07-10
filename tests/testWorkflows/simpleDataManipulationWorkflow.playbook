@@ -29,7 +29,6 @@
                     </filters>
                 </flag>
             </next>
-            <error></error>
         </step>
     </steps>
 </workflow>

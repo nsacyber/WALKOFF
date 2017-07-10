@@ -189,7 +189,8 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response['executed'][0]['name'], 'testTrigger')
         self.assertListEqual(response['errors'], [])
         step_input = {'result': 'REPEATING: CHANGE INPUT'}
-        self.assertDictEqual(json.loads(result['value']), step_input)
+        self.assertDictEqual(json.loads(result['value']),
+                             {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
 
     def test_trigger_with_change_input_invalid_input(self):
         condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}

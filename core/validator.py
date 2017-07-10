@@ -24,6 +24,7 @@ TYPE_MAP = {
     'string': str
 }
 
+reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
 
 def make_type(value, type_literal):
     type_func = TYPE_MAP.get(type_literal)
@@ -189,6 +190,7 @@ def validate_actions(actions, dereferencer, app_name):
         if action_params:
             validate_action_params(action_params, dereferencer, app_name,
                                    action_name, get_app_action(app_name, action['run']), event=event)
+        validate_app_action_return_codes(action.get('returns', []), app_name, action_name)
         seen.add(action['run'])
     if seen != set(defined_actions.keys()):
         logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
@@ -205,7 +207,10 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
                              'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
 
-    method_params = get_function_arg_names(action_func) if event is '' else action_func.__arg_names
+    if hasattr(action_func, '__arg_names'):
+        method_params = action_func.__arg_names
+    else:
+        method_params = get_function_arg_names(action_func)
 
     if method_params and method_params[0] == 'self':
         method_params.pop(0)
@@ -226,6 +231,14 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
             message += ' Only in API: {0}.'.format(only_in_api)
         if only_in_definition:
             message += ' Only in definition: {0}'.format(only_in_definition)
+        raise InvalidApi(message)
+
+
+def validate_app_action_return_codes(return_codes, app, action):
+    reserved = [return_code for return_code in return_codes if return_code in reserved_return_codes]
+    if reserved:
+        message = 'App {0} action {1} has return codes {2} which are reserved'.format(app, action, reserved)
+        logger.error(message)
         raise InvalidApi(message)
 
 

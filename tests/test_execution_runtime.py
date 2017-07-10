@@ -42,7 +42,7 @@ class TestExecutionRuntime(unittest.TestCase):
         from the workflow history.
     """
 
-    def test_TemplatedWorkflow(self):
+    def test_templated_workflow(self):
         workflow_name = construct_workflow_name_key('templatedWorkflowTest', 'templatedWorkflow')
         step_names = ['start', '1']
         setup_subscriptions_for_step(workflow_name, step_names)
@@ -55,23 +55,20 @@ class TestExecutionRuntime(unittest.TestCase):
                                         'Expected {0}, got {1}'.format(2, len(steps)))
         names = [step['ancestry'].split(',')[-1] for step in steps]
         orderless_list_compare(self, names, step_names)
-        name_result = {'start': {"message": "HELLO WORLD"},
-                       '1': "REPEATING: {'message': 'HELLO WORLD'}"}
+        name_result = {'start': {'result': {'message': 'HELLO WORLD'}, 'status': 'Success'},
+                       '1': {'status': 'Success', 'result': "REPEATING: {'message': 'HELLO WORLD'}"}}
 
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
             result = json.loads(step['data'])
-            if type(name_result[name]) == dict:
-                self.assertDictEqual(result['result'], name_result[name])
-            else:
-                self.assertEqual(result['result'], name_result[name])
+            self.assertDictEqual(result['result'], name_result[name])
 
     """
         Tests the calling of nested workflows
     """
 
-    def test_SimpleTieredWorkflow(self):
+    def test_simple_tiered_workflow(self):
         workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
         workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
@@ -87,9 +84,9 @@ class TestExecutionRuntime(unittest.TestCase):
         expected_ids = [(workflow_name1, 'start'), (workflow_name1, '1'), (workflow_name2, 'start')]
         orderless_list_compare(self, name_ids, expected_ids)
 
-        name_result = {(workflow_name1, 'start'): "REPEATING: Parent Step One",
-                       (workflow_name2, 'start'): "REPEATING: Child Step One",
-                       (workflow_name1, '1'): "REPEATING: Parent Step Two"}
+        name_result = {(workflow_name1, 'start'):  {'status': 'Success', 'result': 'REPEATING: Parent Step One'},
+                       (workflow_name2, 'start'):  {'status': 'Success', 'result': 'REPEATING: Child Step One'},
+                       (workflow_name1, '1'): {'status': 'Success', 'result': 'REPEATING: Parent Step Two'}}
 
         for step in steps:
             ancestry = step['ancestry'].split(',')
@@ -105,7 +102,7 @@ class TestExecutionRuntime(unittest.TestCase):
         Tests a workflow that loops a few times
     """
 
-    def test_Loop(self):
+    def test_loop(self):
         from gevent import monkey, spawn
         from gevent.event import Event
         from core.case.callbacks import WorkflowShutdown

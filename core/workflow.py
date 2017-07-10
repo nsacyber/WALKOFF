@@ -102,11 +102,9 @@ class Workflow(ExecutionElement):
         """
         arg_input = arg_input if arg_input is not None else {}
         next_steps = next_steps if next_steps is not None else []
-        errors = errors if errors is not None else []
         ancestry = list(self.ancestry)
         self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
-                                next_steps=next_steps, errors=errors, ancestry=ancestry, parent_name=self.name,
-                                risk=risk)
+                                next_steps=next_steps, ancestry=ancestry, parent_name=self.name, risk=risk)
         self.total_risk += risk
         logger.info('Step added to workflow {0}. Step: {1}'.format(self.ancestry, self.steps[name].as_json()))
 
@@ -125,7 +123,7 @@ class Workflow(ExecutionElement):
             self.steps = new_dict
             logger.debug('Removed step {0} from workflow {1}'.format(name, self.ancestry))
             return True
-        logger.warning('Could not remove step {0} from workflow {1}. Step does nto exist'.format(name, self.ancestry))
+        logger.warning('Could not remove step {0} from workflow {1}. Step does not exist'.format(name, self.ancestry))
         return False
 
     def to_xml(self, *args):
@@ -209,9 +207,9 @@ class Workflow(ExecutionElement):
                 if step.name in self.breakpoint_steps:
                     _ = yield
                 callbacks.NextStepFound.send(self)
-                tuple = (step.app, step.device)
-                if tuple not in instances:
-                    instances[tuple] = Instance.create(step.app, step.device)
+                device_id = (step.app, step.device)
+                if device_id not in instances:
+                    instances[device_id] = Instance.create(step.app, step.device)
                     callbacks.AppInstanceCreated.send(self)
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
@@ -221,10 +219,9 @@ class Workflow(ExecutionElement):
                     if start_input:
                         self.__swap_step_input(step, start_input)
 
-                error_flag = self.__execute_step(step, instances[tuple])
+                self.__execute_step(step, instances[device_id])
                 total_steps.append(step)
-                steps.send(error_flag)
-                self.accumulator[step.name] = step.output
+                self.accumulator[step.name] = step.output.result
         self.__shutdown(instances)
         yield
 
@@ -233,8 +230,8 @@ class Workflow(ExecutionElement):
         current_name = initial_step_name
         current = self.steps[current_name]
         while current:
-            error_flag = yield current
-            next_step = current.get_next_step(self.accumulator, error=error_flag)
+            yield current
+            next_step = current.get_next_step(self.accumulator)
             # Check for call to child workflow
             if next_step and next_step[0] == '@':
                 child_step_generator, child_next_step, child_name = self.__get_child_step_generator(next_step)
@@ -242,8 +239,7 @@ class Workflow(ExecutionElement):
                     for child_step in child_step_generator:
                         if child_step:
                             yield  # needed so outer for-loop is in sync
-                            error_flag = yield child_step
-                            child_step_generator.send(error_flag)
+                            yield child_step
                         callbacks.WorkflowShutdown.send(self.options.children[child_name])
                     next_step = child_next_step
             current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
@@ -262,23 +258,21 @@ class Workflow(ExecutionElement):
             callbacks.WorkflowInputInvalid.send(self)
 
     def __execute_step(self, step, instance):
-        error_flag = False
-        data = {"step": {"app": step.app,
-                         "action": step.action,
-                         "name": step.name,
-                         "input": step.input}}
+        # TODO: These callbacks should be sent by the step, not the workflow. Func should only execute and handle risk
+        data = {"app": step.app,
+                "action": step.action,
+                "name": step.name,
+                "input": step.input}
         try:
             step.execute(instance=instance(), accumulator=self.accumulator)
-            data['step']['result'] = step.output
+            data['result'] = step.output.as_json()
             callbacks.StepExecutionSuccess.send(self, data=json.dumps(data))
         except Exception as e:
-            data['step']['result'] = step.output
+            data['result'] = step.output.as_json()
             callbacks.StepExecutionError.send(self, data=json.dumps(data))
-            error_flag = True
-            self.accumulated_risk += float(step.risk) / self.total_risk
+            if self.total_risk > 0:
+                self.accumulated_risk += float(step.risk) / self.total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry, e))
-        finally:
-            return error_flag
 
     def __get_child_step_generator(self, tiered_step_str):
         params = tiered_step_str.split(':')

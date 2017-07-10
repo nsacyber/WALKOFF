@@ -12,16 +12,36 @@ from timeit import default_timer
 
 class TestDecorators(unittest.TestCase):
 
-    def test_action_decorator(self):
+    def test_action_decorator_is_tagged(self):
 
         @action
         def add_three(a,  b, c):
             return a+b+c
 
         self.assertTrue(getattr(add_three, 'action'))
-        self.assertEqual(add_three(1, 2, 3), 6)
 
-    def test_flag_decorator(self):
+    def test_action_decorator_has_arg_names(self):
+        @action
+        def add_three(a, b, c):
+            return a + b + c
+
+        self.assertListEqual(getattr(add_three, '__arg_names'), ['a', 'b', 'c'])
+
+    def test_action_wraps_execution_return_not_specified(self):
+        @action
+        def add_three(a, b, c):
+            return a + b + c
+
+        self.assertTupleEqual(add_three(1, 2, 3), ActionResult(6, 'Success'))
+
+    def test_action_wraps_execution_return_specified(self):
+        @action
+        def add_three(a, b, c):
+            return a + b + c, 'Custom'
+
+        self.assertTupleEqual(add_three(1, 2, 3), ActionResult(6, 'Custom'))
+
+    def test_flag_decorator_is_tagged(self):
 
         @flag
         def is_even(x):
@@ -30,7 +50,7 @@ class TestDecorators(unittest.TestCase):
         self.assertTrue(getattr(is_even, 'flag'))
         self.assertTrue(is_even(2))
 
-    def test_filter_decorator(self):
+    def test_filter_decorator_is_tagged(self):
         @datafilter
         def add_one(x):
             return x+1
@@ -96,7 +116,7 @@ class TestEventDecorator(unittest.TestCase):
         spawn(sender)
         result = b.ev()
         duration = default_timer() - start
-        self.assertDictEqual(result, test_data)
+        self.assertTupleEqual(result, (test_data, 'Success'))
         self.assertSetEqual(event1.receivers, set())
         self.assertTrue(duration > 0.1)
 
@@ -117,5 +137,5 @@ class TestEventDecorator(unittest.TestCase):
 
         spawn(sender)
         result = b.ev()
-        self.assertEqual(result, 'Getting event Event1 timed out at 0 seconds')
+        self.assertEqual(result, ('Getting event Event1 timed out at 0 seconds', 'EventTimedOut'))
         self.assertSetEqual(event1.receivers, set())

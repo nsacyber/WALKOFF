@@ -48,7 +48,7 @@ class TestAppsRegistration(unittest.TestCase):
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
         instance = hello_world_main_class()
-        self.assertDictEqual(getattr(hello_world_main_class, 'helloWorld')(instance), {'message': 'HELLO WORLD'})
+        self.assertTupleEqual(getattr(hello_world_main_class, 'helloWorld')(instance), ({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_get_app_action_valid(self):
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
