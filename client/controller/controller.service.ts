@@ -1,12 +1,12 @@
 import { Injectable } 			from '@angular/core';
-import { Http, Headers, Response } 		from '@angular/http';
+import { Http, Headers, Response, RequestOptions } 		from '@angular/http';
 
 import { Observable }     from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
-import { AvailableSubscription } from './availableSubscription';
-import { Case } from './case';
+import { AvailableSubscription } from '../models/availableSubscription';
+import { Case } from '../models/case';
 
 const schedulerStatusNumberMapping: Object = {
 	"0": "stopped",
@@ -16,49 +16,46 @@ const schedulerStatusNumberMapping: Object = {
 
 @Injectable()
 export class ControllerService {
-
-	headers: Headers;
-	authKey: string;
+	requestOptions : RequestOptions;
 
 	constructor (private http: Http) {
-		// this.authKey = Window.authkey;
-		// console.log(this.authKey);
-		// this.headers = new Headers();
-		// this.headers.append('Authentication-Token', this.authKey);
+		let authKey = localStorage.getItem('authKey');
+		let headers = new Headers({ 'Accept': 'application/json' });
+		headers.append('Authentication-Token', authKey);
+
+		this.requestOptions = new RequestOptions({ headers: headers });
 	}
 
 	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
-		return this.http.get('/availablesubscriptions', this.headers)
+		return this.http.get('/availablesubscriptions', this.requestOptions)
 			.toPromise()
 			.then(res => res.json().data as AvailableSubscription[])
 			.catch(this.handleError);
 	}
 
 	getCases() : Promise<Case[]> {
-		let headers = new Headers;
-		headers.append('Authentication-Token', this.authKey);
-		return this.http.get('/cases', { headers: headers })
+		return this.http.get('/cases', this.requestOptions)
 			.toPromise()
 			.then(res => res.json().data as Case[])
 			.catch(this.handleError);
 	}
 
 	addCase(name: String) : Promise<Case> {
-		return this.http.put('/cases/' + name, {}, this.headers)
+		return this.http.put('/cases/' + name, {}, this.requestOptions)
 			.toPromise()
 			.then(res => res.json().data as Case)
 			.catch(this.handleError);
 	}
 
 	updateCase(editedCase: Case) : Promise<Case> {
-		return this.http.post('/cases/' + name, editedCase, this.headers)
+		return this.http.post('/cases/' + name, editedCase, this.requestOptions)
 			.toPromise()
 			.then(res => res.json().data as Case)
 			.catch(this.handleError);
 	}
 
 	removeCase(id: String) : Promise<void> {
-		return this.http.delete('/cases/' + id, this.headers)
+		return this.http.delete('/cases/' + id, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
@@ -66,14 +63,14 @@ export class ControllerService {
 
 	//TODO: route should most likely be GET
 	executeWorkflow(playbook: string, workflow: string) : Promise<void> {
-		return this.http.post('/playbooks/' + playbook + '/workflows/' + workflow + '/execute', {}, this.headers)
+		return this.http.post('/playbooks/' + playbook + '/workflows/' + workflow + '/execute', {}, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
 	getSchedulerStatus() : Promise<string> {
-		return this.http.get('/execution/scheduler')
+		return this.http.get('/execution/scheduler', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
@@ -82,7 +79,7 @@ export class ControllerService {
 
 	//TODO: route should most likely be GET
 	changeSchedulerStatus(status: string) : Promise<string> {
-		return this.http.post('/execution/scheduler/' + status, {}, this.headers)
+		return this.http.post('/execution/scheduler/' + status, {}, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])

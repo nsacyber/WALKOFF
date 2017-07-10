@@ -60,7 +60,7 @@
                   <!-- The user image in the navbar-->
                   <img src="client/main/img/genericUser.png" class="user-image" alt="User Image">
                   <!-- hidden-xs hides the username on small devices so only the image appears. -->
-                  <span class="hidden-xs"><%currentUser%></span>
+                  <span class="hidden-xs">{{currentUser}}</span>
                 </a>
                 <ul class="dropdown-menu">
                   <!-- The user image in the menu -->
@@ -68,7 +68,7 @@
                     <img src="client/main/img/genericUser.png" class="img-circle" alt="User Image">
 
                     <p>
-                      <%currentUser%>
+                      {{currentUser}}
                     </p>
                   </li>
                   <!-- Menu Body -->
@@ -82,10 +82,10 @@
                   <li class="user-footer">
 
                     <div class="pull-right">
-                      <a href="/logout" class="btn btn-default btn-flat">Sign out</a>
+                      <a href="/logout" class="btn btn-default btn-primary">Sign out</a>
                     </div>
                     <div class="pull-left">
-                      <a href="/key" onclick="window.open(this.href, 'targetWindow', 'width=925, height=150'); return false;" class="btn btn-default btn-flat">API Key</a>
+                      <a href="/key" onclick="window.open(this.href, 'targetWindow', 'width=925, height=150'); return false;" class="btn btn-default btn-primary">API Key</a>
                     </div>
                   </li>
                 </ul>

@@ -1,15 +1,23 @@
-import { Injectable } 			from '@angular/core';
-import { Http, Response } 		from '@angular/http';
+import { Injectable } from '@angular/core';
+import { Http, Response, Headers, RequestOptions } from '@angular/http';
 
 import { Configuration } from '../models/configuration'
 import { User } from '../models/user'
 
 @Injectable()
 export class SettingsService {
-	constructor (private http: Http) { }
+	requestOptions: RequestOptions;
+
+	constructor (private http: Http) {
+		let authKey = localStorage.getItem('authKey');
+		let headers = new Headers({ 'Accept': 'application/json' });
+		headers.append('Authentication-Token', authKey);
+
+		this.requestOptions = new RequestOptions({ headers: headers });
+	}
 
 	getConfiguration() : Promise<Configuration> {
-		return this.http.get('/configuration')
+		return this.http.get('/configuration', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -17,7 +25,7 @@ export class SettingsService {
 	};
 
 	updateConfiguration(configuration: Configuration) : Promise<Configuration> {
-		return this.http.post('/configuration', configuration)
+		return this.http.post('/configuration', configuration, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -25,7 +33,7 @@ export class SettingsService {
 	};
 
 	getUsers() : Promise<User[]> {
-		return this.http.get('/users')
+		return this.http.get('/users', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User[])
@@ -34,14 +42,14 @@ export class SettingsService {
 
 	//TODO: temporary, should remove once the API is updated to properly return user objects
 	getUserNames() : Promise<string[]> {
-		return this.http.get('/users')
+		return this.http.get('/users', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	};
 
 	addUser(user: User) : Promise<User> {
-		return this.http.put('/users', user)
+		return this.http.put('/users', user, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -49,7 +57,7 @@ export class SettingsService {
 	}
 
 	editUser(user: User) : Promise<User> {
-		return this.http.post('/users', user)
+		return this.http.post('/users', user, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -57,7 +65,7 @@ export class SettingsService {
 	}
 
 	deleteUser(userName: string) : Promise<void> {
-		return this.http.delete('/users/' + userName)
+		return this.http.delete('/users/' + userName, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
