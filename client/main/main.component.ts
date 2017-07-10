@@ -12,5 +12,9 @@ import { Component } from '@angular/core';
 	],
 })
 export class MainComponent {
-	
+	currentUser: string;
+
+	constructor() { 
+		this.currentUser = localStorage.getItem('currentUser');
+	}
 }
