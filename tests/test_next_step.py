@@ -129,13 +129,6 @@ class TestNextStep(unittest.TestCase):
         self.assertEqual(xml.get('step'), 'name')
         self.assertEqual(len(xml.findall('flag')), 0)
 
-    def test_to_xml_error_no_flags(self):
-        next_step = NextStep(name='name')
-        xml = next_step.to_xml(tag='error')
-        self.assertEqual(xml.tag, 'error')
-        self.assertEqual(xml.get('step'), 'name')
-        self.assertEqual(len(xml.findall('flag')), 0)
-
     def test_to_xml_with_status(self):
         next_step = NextStep(name='name', status='test_status')
         xml = next_step.to_xml()
@@ -151,14 +144,6 @@ class TestNextStep(unittest.TestCase):
         next_step = NextStep(name='name', flags=flags)
         xml = next_step.to_xml()
         self.assertEqual(xml.tag, 'next')
-        self.assertEqual(xml.get('step'), 'name')
-        self.assertEqual(len(xml.findall('flag')), 2)
-
-    def test_to_xml_error(self):
-        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
-        next_step = NextStep(name='name', flags=flags)
-        xml = next_step.to_xml(tag='error')
-        self.assertEqual(xml.tag, 'error')
         self.assertEqual(xml.get('step'), 'name')
         self.assertEqual(len(xml.findall('flag')), 2)
 

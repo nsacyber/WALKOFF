@@ -3,9 +3,24 @@ from gevent import Timeout
 from core.helpers import get_function_arg_names, InvalidApi
 from collections import namedtuple
 from functools import wraps
+import json
 
 ActionResult = namedtuple('ActionResults', ['result', 'status'])
 
+
+def action_result_as_json(self):
+    try:
+        json.dumps(self.result)
+        return {"result": self.result, "status": self.status}
+    except:
+        return {"result": str(self.result), "status": self.status}
+ActionResult.as_json = action_result_as_json
+
+def format_result(result):
+    if not isinstance(result, tuple):
+        return ActionResult(result, 'Success')
+    else:
+        return ActionResult(*result)
 
 def tag(func, tag_name):
     setattr(func, tag_name, True)
@@ -22,11 +37,8 @@ def action(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-        if not isinstance(result, tuple):
-            return ActionResult(result, 'Success')
-        else:
-            return ActionResult(*result)
+        return format_result(func(*args, **kwargs))
+
     tag(wrapper, 'action')
     wrapper.__arg_names = get_function_arg_names(func)
     return wrapper
@@ -47,6 +59,7 @@ def event(event_, timeout=300):
         if len(arg_names) < 2:
             raise InvalidApi('Event action has too few parameters. '
                              'There must be a "self" and a second parameter to receive data from the event.')
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             result = AsyncResult()
@@ -61,10 +74,10 @@ def event(event_, timeout=300):
             try:
                 result = result.get(timeout=timeout)
             except Timeout:
-                result = 'Getting event {0} timed out at {1} seconds'.format(event_.name, timeout)
+                result = 'Getting event {0} timed out at {1} seconds'.format(event_.name, timeout), 'EventTimedOut'
 
             event_.disconnect(send)
-            return result
+            return format_result(result)
 
         tag(wrapper, 'action')
         wrapper.__arg_names = arg_names
@@ -98,4 +111,3 @@ def datafilter(func):
     """
     tag(func, 'filter')
     return func
-

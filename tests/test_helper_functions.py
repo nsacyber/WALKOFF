@@ -415,3 +415,21 @@ class TestHelperFunctions(unittest.TestCase):
         def x(a, b, c): pass
 
         self.assertListEqual(get_function_arg_names(x), ['a', 'b', 'c'])
+
+    def test_format_exception_message_no_exception_message(self):
+        class CustomError(Exception):
+            pass
+
+        try:
+            raise CustomError
+        except CustomError as e:
+            self.assertEqual(format_exception_message(e), 'CustomError')
+
+    def test_format_exception_message_with_exception_message(self):
+        class CustomError(Exception):
+            pass
+
+        try:
+            raise CustomError('test')
+        except CustomError as e:
+            self.assertEqual(format_exception_message(e), 'CustomError: test')

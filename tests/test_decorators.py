@@ -116,7 +116,7 @@ class TestEventDecorator(unittest.TestCase):
         spawn(sender)
         result = b.ev()
         duration = default_timer() - start
-        self.assertDictEqual(result, test_data)
+        self.assertTupleEqual(result, (test_data, 'Success'))
         self.assertSetEqual(event1.receivers, set())
         self.assertTrue(duration > 0.1)
 
@@ -137,5 +137,5 @@ class TestEventDecorator(unittest.TestCase):
 
         spawn(sender)
         result = b.ev()
-        self.assertEqual(result, 'Getting event Event1 timed out at 0 seconds')
+        self.assertEqual(result, ('Getting event Event1 timed out at 0 seconds', 'EventTimedOut'))
         self.assertSetEqual(event1.receivers, set())

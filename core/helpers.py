@@ -500,3 +500,9 @@ def get_function_arg_names(func):
 
 class InvalidApi(Exception):
     pass
+
+
+def format_exception_message(exception):
+    exception_message = str(exception)
+    class_name = exception.__class__.__name__
+    return '{0}: {1}'.format(class_name, exception_message) if exception_message else class_name

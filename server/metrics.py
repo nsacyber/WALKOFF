@@ -33,7 +33,7 @@ def __action_ended_callback(sender, **kwargs):
 
 @StepExecutionError.connect
 def __action_ended_error_callback(sender, **kwargs):
-    step = json.loads(kwargs['data'])['step']
+    step = json.loads(kwargs['data'])
     __update_error_action_tracker(step['app'], step['action'])
 
 
