@@ -171,11 +171,3 @@ actions:
         schema:
           type: string
           enum: [success]
-      SomeEvent:
-        schema:
-          type: string
-          enum: [success]
-      OtherEvent:
-        schema:
-          type: string
-          enum: [success]
