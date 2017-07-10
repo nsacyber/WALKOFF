@@ -244,3 +244,12 @@ class TestAppApiValidation(unittest.TestCase):
                                'Sample Event',
                                get_app_action('HelloWorld', 'sample_event'),
                                event='event1')
+
+    def test_validate_return_codes(self):
+        return_codes = ['A', 'B', 'Success']
+        validate_app_action_return_codes(return_codes, 'app', 'action')
+
+    def test_invalidate_return_codes_with_reserved(self):
+        return_codes = ['UnhandledException', 'B', 'Success']
+        with self.assertRaises(InvalidApi):
+            validate_app_action_return_codes(return_codes, 'app', 'action')
