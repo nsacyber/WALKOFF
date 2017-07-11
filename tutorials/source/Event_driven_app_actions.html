@@ -1,0 +1,110 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Event-driven app actions</h1>
+        <p>With WALKOFF, it is possible to write an action which waits for an event and responds to that event.
+            We call these types of actions "events". In this tutorial, we will make a simple event which is connected to
+            a custom server endpoint. We don't need to use a server endpoint as the triggering mechanism for the event,
+            we could use any method we want to trigger an event. Of course we are good developers and would prefer not
+            to make our app spin and waste resources, so we should avoid polling.</p>
+         <h2 class="w3-padding-32">Step one: Create the event</h2>
+        <p>Inside of the <code>apps</code> module, there is a class called <code>Event</code> which will send results to
+            our action, and our action will wait until this event is triggered. We must add this event inside a Python
+            module called <code>events.py</code> which will be located inside our app. If we didn't want to use a custom
+            endpoint, we could place this event anywhere, but for the server endpoint to be registered with our server,
+            we need to name our module <code>events.py</code>. Let's add it to our HelloWorld app. Our app structure
+            should now look like this:</p>
+        <pre><code class="console">
+WALKOFF
+|-- apps
+  |-- __init__.py
+  |-- HelloWorld
+    |-- __init__.py
+    |-- main.py
+    |-- events.py
+    |-- api.yaml
+  |-- [Other apps]
+        </code></pre>
+        <p>Inside of the "events.py" module, we should create our event. We will call it "MyEvent".</p>
+        <pre><code class="python">
+from apps import Event
+
+my_event = Event('MyEvent')
+        </code></pre>
+        <h2 class="w3-padding-32">Step two: Connect an endpoint to our event</h2>
+        <p>Now that we have an event, we will use a custom server endpoint to trigger the event. To do this we use a
+            class called an <code>AppBlueprint</code> which is located in the <code>apps</code> module. This class in a
+            thin wrapper around a Flask Blueprint. For our endpoint, we will just grab the JSON from the HTTP request
+            body and trigger our event with this data</p>
+        <pre><code class="python">
+from apps import Event, AppBlueprint
+from flask import Blueprint
+
+blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldEvents', __name__))
+
+my_event = Event('MyEvent')
+
+@blueprint.blueprint.route('/resume', methods=['POST'])
+def resume():
+    data = request.get_json()
+    my_event.trigger(data)
+        </code></pre>
+        <h2 class="w3-padding-32">Step three: Create our event action</h2>
+        <p>Now that we have the event created we need to create an action to use this event. We will put this action
+            alongside our other actions inside the <code>Main</code> class inside the <code>main.py</code> module of our
+            app. For this action we will specify that we will only wait one minute before continuing with our workflow.
+            (By default, this value is five minutes.) Our action will simply take the "input" field of the JSON passed
+            to the trigger and add it to another argument, arg1, specified by the workflow.</p>
+        <pre><code class="python">
+from apps import App, event
+from apps.HelloWorld.events import my_event
+
+class Main(App):
+    # ... Other actions ...
+
+    @event(my_event, timeout=60)
+    def my_event_handler(self, data, arg1):
+        return data['input'] + arg1
+
+        </code></pre>
+        <p>Each event needs to have at least two parameters -- the first argument is the cannonical "self" argument; the
+            second argument is the argument which will receive the data of from the event. It should be noted that this
+            data parameter, unlike other action arguments, is not currently validated at run-time, so validation must be
+            done in the action itself if required.</p>
+        <p>Additionally, events have another default return status code called <code>EventTimedOut</code> which is used
+            when an event times out. The return value when this happens is an debugging error string containing the name
+            of the event upon which the event action was waiting and the number of seconds it waited before timing
+            out.</p>
+        <h2 class="w3-padding-32">Step four: Create an entry in our metadata YAML file for the event action</h2>
+        <p>Inside our YAML file, we need to create an entry for the event. For our event, the metadata entry would look
+            like this:</p>
+        <pre><code class="yaml">
+walkoff: '0.1'
+info:
+  title: HelloWorld
+  version: 1.0.0
+actions:
+  my event:
+    run: my_event_handler
+    event: MyEvent
+    parameters:
+      - name: arg1
+        type: number
+    returns:
+      Success:
+        schema:
+          type: number
+        </code></pre>
+        <p>The additional "event" field marks this action as an event. We value of this field is the name of the Event
+            which triggers the event action.</p>
+        <h4><b>Congratulations! You now have made your first event-driven app action.</b></h4>
+        <div align="center" style="border:1px solid blue">
+            <h5><a href="Manage_app_dependencies.html">Next >></a></h5>
+        </div>
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
