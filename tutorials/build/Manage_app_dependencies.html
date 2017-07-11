@@ -114,15 +114,11 @@ img.media-object.image{
             root directory of the repository. However, you may develop an app which needs additional dependencies.
             For example, if you were developing an app which incorporated machine learning, your app my depend on the popular
         <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
-            didn't need your app, we can spare them needing to install them by including them in them in your app's
-        <code>setup.py</code> file. For our example, our setup.py would look like this:</p>
-        <pre><code class="python">
-from setuptools import setup
-
-setup(install_requires=['scikit-learn'])
+            didn't need your app, we can spare them needing to install them by including them in them in your app's own
+        <code>requirements.txt</code> file. For our example, our requirements.txt would look like this:</p>
+        <pre><code class="console">
+scikit-learn
         </code></pre>
-        <p>You can customize the installation process using Python's setuptools package. However, if all you need are
-        extra dependencies, then you can simply include those dependencies to the install_requires argument.</p>
         <h3>Installing app dependencies</h3>
         <p>To install an app dependency, you can use the <code>installDependencies.py</code> script included at the top
             level of the repository.</p>
