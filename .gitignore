@@ -20,3 +20,4 @@ data/log/*.log
 server/api/composed_api.yaml
 node_modules/
 .vscode/
+client/build/

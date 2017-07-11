@@ -5,7 +5,7 @@ import { Observable }     from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
-import { Case } from '../controller/case';
+import { Case } from '../models/case';
 
 @Injectable()
 export class CasesService {

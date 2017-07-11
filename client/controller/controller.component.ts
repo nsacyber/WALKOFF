@@ -65,22 +65,22 @@ export class ControllerComponent {
 			});
 	}
 
-	notifyMe() : void {
-		if (!Notification) {
-			console.log('Desktop notifications not available in your browser. Try Chromium.');
-		}
-		else if (Notification.permission !== "granted") Notification.requestPermission();
-		else {
-			var notification = new Notification('WALKOFF event', {
-				icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
-				body: "workflow was executed!",
-			});
+	// notifyMe() : void {
+	// 	if (!Notification) {
+	// 		console.log('Desktop notifications not available in your browser. Try Chromium.');
+	// 	}
+	// 	else if (Notification.permission !== "granted") Notification.requestPermission();
+	// 	else {
+	// 		var notification = new Notification('WALKOFF event', {
+	// 			icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+	// 			body: "workflow was executed!",
+	// 		});
 
-			notification.onclick = function () {
-				window.open("https://github.com/iadgov");
-			};
-		}
-	}
+	// 		notification.onclick = function () {
+	// 			window.open("https://github.com/iadgov");
+	// 		};
+	// 	}
+	// }
 
 	canStart() : boolean {
 		return this.schedulerStatus !== 'running';

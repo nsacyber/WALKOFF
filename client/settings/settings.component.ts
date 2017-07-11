@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import _ from 'lodash/lodash.js';
+import _ from 'lodash';
 
 import { SettingsService } from './settings.service';
 
@@ -14,7 +14,7 @@ import { Configuration } from '../models/configuration';
 	providers: [SettingsService]
 })
 export class SettingsComponent {
-	configuration: Configuration;
+	configuration: Configuration = new Configuration();
 
 	//User Data Table params
 	userNames: string[];
@@ -30,8 +30,7 @@ export class SettingsComponent {
 	getConfiguration(): void {
 		this.settingsService
 			.getConfiguration()
-			.then(configuration => this.configuration = configuration)
-			.catch(e => this.configuration = Configuration.getDefaultConfiguration());
+			.then(configuration => configuration ? this.configuration = configuration : null);
 	}
 
 	updateConfiguration(): void {
@@ -54,7 +53,7 @@ export class SettingsComponent {
 	resetConfiguration(): void {
 		if (!confirm("Are you sure you want to reset the configuration? Note that you'll have to save the configuration after reset to update it on the server.")) return; 
 
-		let defaultConfig = new Configuration();
+		let defaultConfig = Configuration.getDefaultConfiguration();
 
 		_.assign(this.configuration, defaultConfig);
 
