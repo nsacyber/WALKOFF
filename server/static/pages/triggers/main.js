@@ -64,9 +64,6 @@
     };
     getTriggerList();
 
-
-    var $slidee = $("#smart").children('ul').eq(0);
-
     // Add item
     $("#triggerList").on("change",function(){
         $("#editTrigger").prop("disabled",false);
