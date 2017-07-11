@@ -521,6 +521,9 @@
         },
         "multipleOf": {
           "$ref": "#/definitions/multipleOf"
+        },
+        "example": {
+          "type": ["number", "integer", "string", "boolean"]
         }
       }
     },
