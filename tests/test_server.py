@@ -124,7 +124,7 @@ class TestConfiguration(ServerTestCase):
                     'walkoff_db_type': core.config.config.walkoff_db_type,
                     'case_db_type': core.config.config.case_db_type,
                     'https': bool(core.config.config.https),
-                    'tls_version': float(core.config.config.tls_version),
+                    'tls_version': core.config.config.tls_version,
                     'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup)}
         response = self.get_with_status_check('/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
@@ -133,7 +133,7 @@ class TestConfiguration(ServerTestCase):
         data = {"templates_path": 'templates_path_reset',
                 "workflows_path": 'workflows_path_reset',
                 "db_path": 'db_path_reset',
-                "tls_version": 1.1,
+                "tls_version": '1.1',
                 "https": True,
                 "host": 'host_reset',
                 "port": 1100}
