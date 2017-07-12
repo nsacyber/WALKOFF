@@ -1,11 +1,13 @@
 import unittest
-from core.validator import *
+
 import yaml
-from tests.config import basic_app_api, test_apps_path
-from jsonschema.exceptions import RefResolutionError, ValidationError
-from core.helpers import import_all_apps
-from tests.apps import *
+from jsonschema.exceptions import RefResolutionError
+
 from core.config.paths import walkoff_schema_path
+from core.helpers import import_all_apps
+from core.validator import *
+from tests.apps import *
+from tests.config import basic_app_api, test_apps_path
 
 
 class TestAppApiValidation(unittest.TestCase):
@@ -228,3 +230,26 @@ class TestAppApiValidation(unittest.TestCase):
                                    'HelloWorld',
                                    'Add Three',
                                    get_app_action('HelloWorld', 'addThree'))
+
+    def test_validate_action_params_event(self):
+        self.basicapi['actions']['Sample Event'] = {'run': 'sample_event',
+                                                    'event': 'Event1',
+                                                    'parameters': [{'name': 'arg1',
+                                                                    'type': 'number'},
+                                                                   ]}
+        self.__generate_resolver_dereferencer(self.basicapi)
+        validate_action_params(self.basicapi['actions']['Sample Event']['parameters'],
+                               self.dereferencer,
+                               'HelloWorld',
+                               'Sample Event',
+                               get_app_action('HelloWorld', 'sample_event'),
+                               event='event1')
+
+    def test_validate_return_codes(self):
+        return_codes = ['A', 'B', 'Success']
+        validate_app_action_return_codes(return_codes, 'app', 'action')
+
+    def test_invalidate_return_codes_with_reserved(self):
+        return_codes = ['UnhandledException', 'B', 'Success']
+        with self.assertRaises(InvalidApi):
+            validate_app_action_return_codes(return_codes, 'app', 'action')

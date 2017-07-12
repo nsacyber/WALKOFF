@@ -197,11 +197,11 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         instance = Instance.create(app_name='HelloWorld', device_name='test_device_name')
 
-        workflow._Workflow__execute_step(workflow.steps["step_one"], instance())
+        workflow._Workflow__execute_step(workflow.steps["step_one"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0 / 6.5)
-        workflow._Workflow__execute_step(workflow.steps["step_two"], instance())
+        workflow._Workflow__execute_step(workflow.steps["step_two"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, (1.0 / 6.5) + (2.0 / 6.5))
-        workflow._Workflow__execute_step(workflow.steps["step_three"], instance())
+        workflow._Workflow__execute_step(workflow.steps["step_three"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
@@ -211,6 +211,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         waiter = Event()
         uid = None
+
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
                 waiter.set()
@@ -239,6 +240,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         waiter = Event()
+
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
                 waiter.set()
@@ -276,4 +278,5 @@ class TestWorkflowManipulation(unittest.TestCase):
         FunctionExecutionSuccess.connect(step_finished_listener)
 
         self.testWorkflow.execute(start_input=input_arg)
-        self.assertDictEqual(json.loads(result['value']), {"result": "REPEATING: CHANGE INPUT"})
+        self.assertDictEqual(json.loads(result['value']),
+                             {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})

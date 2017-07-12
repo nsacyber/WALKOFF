@@ -21,16 +21,15 @@ def read_all_apps():
 
 def __format_app_action_api(api):
     ret = {}
-    data_in = api.get('dataIn', False)
     if 'description' in api:
         ret['description'] = api['description']
-    args = []
-    if 'parameters' in api:
-        for arg in api['parameters']:
-            if data_in and arg['name'] == data_in:
-                continue
-            args.append(arg)
-    ret['args'] = args
+    ret['args'] = api.get('parameters', [])
+    returns = list(api['returns'].keys()) if 'returns' in api else ['Success']
+    returns.extend(['UnhandledException', 'InvalidInput'])
+    if 'event' in api:
+        ret['event'] = api['event']
+        returns.append('EventTimedOut')
+    ret['returns'] = returns
     return ret
 
 

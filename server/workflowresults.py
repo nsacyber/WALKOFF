@@ -38,11 +38,11 @@ def __append_step_result(uid, data, step_type):
 def __step_execution_success_callback(sender, **kwargs):
     global results
     if sender.uid in results:
-        __append_step_result(sender.uid, json.loads(kwargs['data'])['step'], 'SUCCESS')
+        __append_step_result(sender.uid, json.loads(kwargs['data']), 'SUCCESS')
 
 
 @StepExecutionError.connect
 def __step_execution_error_callback(sender, **kwargs):
     global results
     if sender.uid in results:
-        __append_step_result(sender.uid, json.loads(kwargs['data'])['step'], 'ERROR')
+        __append_step_result(sender.uid, json.loads(kwargs['data']), 'ERROR')

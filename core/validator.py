@@ -1,34 +1,21 @@
-from swagger_spec_validator.validator20 import deref
-from swagger_spec_validator import ref_validators
-from functools import partial
-import os
 import json
+import logging
+import os
 from copy import deepcopy
+from functools import partial
+
+from connexion.utils import boolean
 from jsonschema import RefResolver, draft4_format_checker, ValidationError
 from jsonschema.validators import Draft4Validator
-from connexion.utils import boolean
 from six import string_types
-import sys
-import logging
-from core.helpers import InvalidInput
-import core.config.paths
+from swagger_spec_validator import ref_validators
+from swagger_spec_validator.validator20 import deref
+
 import core.config.config
+import core.config.paths
+from core.helpers import InvalidInput, get_function_arg_names, InvalidApi
 
 logger = logging.getLogger(__name__)
-
-
-__new_inspection = False
-if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
-    from inspect import signature as getsignature
-
-    __new_inspection = True
-else:
-    from inspect import getargspec as getsignature
-
-
-class InvalidApi(Exception):
-    pass
-
 
 TYPE_MAP = {
     'integer': int,
@@ -37,6 +24,7 @@ TYPE_MAP = {
     'string': str
 }
 
+reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
 
 def make_type(value, type_literal):
     type_func = TYPE_MAP.get(type_literal)
@@ -198,18 +186,18 @@ def validate_actions(actions, dereferencer, app_name):
                              'which is not defined in App {2}'.format(action_name, action['run'], app_name))
         action = dereferencer(action)
         action_params = dereferencer(action.get('parameters', []))
-        if 'dataIn' in action:
-            validate_data_in_param(action_params, action['dataIn'], 'App {0} action {1}'.format(app_name, action_name))
+        event = action.get('event', '')
         if action_params:
             validate_action_params(action_params, dereferencer, app_name,
-                                   action_name, get_app_action(app_name, action['run']))
+                                   action_name, get_app_action(app_name, action['run']), event=event)
+        validate_app_action_return_codes(action.get('returns', []), app_name, action_name)
         seen.add(action['run'])
     if seen != set(defined_actions.keys()):
         logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
                        '{1}'.format(app_name, (set(defined_actions.keys()) - seen)))
 
 
-def validate_action_params(parameters, dereferencer, app_name, action_name, action_func):
+def validate_action_params(parameters, dereferencer, app_name, action_name, action_func, event=''):
     seen = set()
     for parameter in parameters:
         parameter = deref(parameter, dereferencer)
@@ -218,20 +206,39 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
             raise InvalidApi('Duplicate parameter {0} in api for {1} '
                              'for action {2}'.format(name, app_name, action_name))
         seen.add(name)
-    if __new_inspection:
-        method_params = list(getsignature(action_func).parameters.keys())
+
+    if hasattr(action_func, '__arg_names'):
+        method_params = action_func.__arg_names
     else:
-        method_params = getsignature(action_func).args
+        method_params = get_function_arg_names(action_func)
+
     if method_params and method_params[0] == 'self':
         method_params.pop(0)
+
+    if event:
+        method_params.pop(0)
+
+        if action_func.__event_name != event:
+            logger.warning('In app {0} action {1}, event documented {2} does not match '
+                           'event specified {3}'.format(app_name, action_name, event, action_func.__event_name))
+
     if not seen == set(method_params):
         only_in_api = seen - set(method_params)
         only_in_definition = set(method_params) - seen
-        message = 'Discrepancy between defined parameters in API and in method definition.'
+        message = ('Discrepancy between defined parameters in API and in method definition '
+                   'for app {0} action {1}.'.format(app_name, action_name))
         if only_in_api:
             message += ' Only in API: {0}.'.format(only_in_api)
         if only_in_definition:
             message += ' Only in definition: {0}'.format(only_in_definition)
+        raise InvalidApi(message)
+
+
+def validate_app_action_return_codes(return_codes, app, action):
+    reserved = [return_code for return_code in return_codes if return_code in reserved_return_codes]
+    if reserved:
+        message = 'App {0} action {1} has return codes {2} which are reserved'.format(app, action, reserved)
+        logger.error(message)
         raise InvalidApi(message)
 
 

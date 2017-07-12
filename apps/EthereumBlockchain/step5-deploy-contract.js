@@ -29,8 +29,8 @@ var greeting = "Hello miner!"
 var greeter = greeterContract.new(greeting, {
     from: nodeAcc,
     data: "0x" + greeterBin,
-    gas: 300000,
-  }, function(error, contract) {
+    gas: 300000
+}, function(error, contract) {
     if (error) {
       console.log("Error creating contract...", error);
     } else {
@@ -40,7 +40,7 @@ var greeter = greeterContract.new(greeting, {
         console.log("Contract mined! Address: " + contract.address);
         var contractDeployed = {
           address: contract.address,
-          abi: greeterAbi,
+          abi: greeterAbi
         };
         fs.writeFileSync(path.resolve(__dirname, "dd/extras/contract-info.js"), "module.exports.contractDeployed = " + JSON.stringify(contractDeployed, null, "  ") + ";");
       }

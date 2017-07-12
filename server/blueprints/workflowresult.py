@@ -99,8 +99,8 @@ def __step_error_callback(sender, **kwargs):
     result = {'name': sender.name, 'type': 'ERROR'}
     if 'data' in kwargs:
         data = json.loads(kwargs['data'])
-        result['input'] = data['step']['input']
-        result['result'] = data['step']['result']
+        result['input'] = data['input']
+        result['result'] = data['result']
     __workflow_step_event_json.set(json.dumps(result))
     __step_signal.set()
     __step_signal.clear()

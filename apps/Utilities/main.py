@@ -1,8 +1,9 @@
-from apps import App, action
+from apps import App, action, event
 import time
 import json
 import csv
 import sys
+from apps.Utilities.events import wait
 
 
 class Main(App):
@@ -66,3 +67,7 @@ class Main(App):
                         writer.writerow({'Host': ip, 'Up': 'X'})
                     else:
                         writer.writerow({'Host': ip})
+
+    @event(wait)
+    def wait_for_event(self, data):
+        return 'success'

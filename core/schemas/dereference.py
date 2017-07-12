@@ -1,5 +1,5 @@
 import logging
-from core.validator import InvalidApi
+from core.helpers import InvalidApi
 
 logger = logging.getLogger(__name__)
 

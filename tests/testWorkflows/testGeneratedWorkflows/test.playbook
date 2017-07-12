@@ -4,10 +4,10 @@
 		<options>
 			<enabled>true</enabled>
 			<scheduler autorun="false" type="cron">
+				<month>11-12</month>
+				<day>*</day>
 				<hours>*</hours>
 				<minutes>*/0.1</minutes>
-				<day>*</day>
-				<month>11-12</month>
 			</scheduler>
 		</options>
 		<start>start</start>
@@ -30,7 +30,6 @@
 						</filters>
 					</flag>
 				</next>
-				<error step="1"/>
 			</step>
 		</steps>
 	</workflow>

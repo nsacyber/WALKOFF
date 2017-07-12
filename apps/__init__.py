@@ -1,7 +1,8 @@
 from six import add_metaclass
 import logging
 import importlib
-from core.decorators import action  # Change namespace of action
+from core.decorators import *  # Change namespace of action
+from blinker import NamedSignal
 
 from core.helpers import UnknownApp, UnknownAppAction
 
@@ -119,3 +120,56 @@ class AppWidgetBlueprint(object):
 AppBlueprint = AppWidgetBlueprint
 WidgetBlueprint = AppWidgetBlueprint
 
+
+class Event(object):
+    """
+    Encapsulated an asynchronous event.
+
+    Attributes:
+        name (str, optional): Name of the event. Defaults to ''
+        receivers (set{func}): Set of functions waiting on the event
+    """
+    def __init__(self, name=''):
+        """
+        Constructor
+
+        Args:
+             name (str, optional): Name of the Event. Defaults to ''
+        """
+        self.name = name
+        self.receivers = set()
+
+    def connect(self, func):
+        """
+        Connects a function to the event as a callback
+
+        Args:
+            func (func): Function to register as a callback
+        Returns:
+            (func): The unmodified function
+        """
+        self.receivers.add(func)
+        return func
+
+    def disconnect(self, func):
+        """
+        Disconnects a function
+
+        Args:
+            func (func): The function to disconnect
+        """
+        try:
+            self.receivers.remove(func)
+        except KeyError:
+            pass
+
+    def trigger(self, data):
+        """
+        Triggers an event and calls all the functions with the data provided
+
+        Args:
+            data: Data to send to all the callbacks registered to this event
+
+        """
+        for func in self.receivers:
+            func(data)

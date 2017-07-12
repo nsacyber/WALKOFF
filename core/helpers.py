@@ -13,6 +13,16 @@ try:
     from importlib import reload as reload_module
 except ImportError:
     from imp import reload as reload_module
+
+__new_inspection = False
+if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
+    from inspect import signature as getsignature
+
+    __new_inspection = True
+else:
+    from inspect import getargspec as getsignature
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -284,6 +294,8 @@ def import_all_apps(path=None, reload=False):
             import_app_main(app_name, path=path, reload=reload)
         except ImportError:
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
+        except InvalidApi as e:
+            logger.error('App {0} has an invalid API: {0}'.format(e))
 
 
 def get_app_action_api(app, action):
@@ -478,3 +490,19 @@ def dereference_step_routing(input_, accumulator, message_prefix):
         else:
             return input_
 
+
+def get_function_arg_names(func):
+    if __new_inspection:
+        return list(getsignature(func).parameters.keys())
+    else:
+        return getsignature(func).args
+
+
+class InvalidApi(Exception):
+    pass
+
+
+def format_exception_message(exception):
+    exception_message = str(exception)
+    class_name = exception.__class__.__name__
+    return '{0}: {1}'.format(class_name, exception_message) if exception_message else class_name

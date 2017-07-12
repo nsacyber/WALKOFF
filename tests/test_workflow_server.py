@@ -811,7 +811,7 @@ class TestWorkflowServer(ServerTestCase):
         ancestry = step['ancestry'].split(',')
         self.assertEqual(ancestry[-1], "start")
         result = json.loads(step['data'])
-        self.assertEqual(result['result'], "REPEATING: Hello World")
+        self.assertEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     # TODO: FIX THIS TEST
     def test_execute_workflow_in_memory(self):
@@ -842,7 +842,7 @@ class TestWorkflowServer(ServerTestCase):
         ancestry = step['ancestry'].split(',')
         self.assertEqual(ancestry[-1], "start")
         result = json.loads(step['data'])
-        self.assertEqual(result['result'], "REPEATING: Hello World")
+        self.assertDictEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_results(self):
         server.workflowresults.results.clear()

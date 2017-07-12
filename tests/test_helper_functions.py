@@ -405,3 +405,31 @@ class TestHelperFunctions(unittest.TestCase):
         accumulator = {'step1': 1, 'step2': 3, 'step3': 5}
         output = {'a': 1, 'b': '2', 'c': [{'a': 1, 'b': 3}, {'a': 10, 'b': 5}], 'd': {'e': 3, 'f': 3}}
         self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
+
+    def test_get_arg_names_no_args(self):
+        def x(): pass
+
+        self.assertListEqual(get_function_arg_names(x), [])
+
+    def test_get_arg_names(self):
+        def x(a, b, c): pass
+
+        self.assertListEqual(get_function_arg_names(x), ['a', 'b', 'c'])
+
+    def test_format_exception_message_no_exception_message(self):
+        class CustomError(Exception):
+            pass
+
+        try:
+            raise CustomError
+        except CustomError as e:
+            self.assertEqual(format_exception_message(e), 'CustomError')
+
+    def test_format_exception_message_with_exception_message(self):
+        class CustomError(Exception):
+            pass
+
+        try:
+            raise CustomError('test')
+        except CustomError as e:
+            self.assertEqual(format_exception_message(e), 'CustomError: test')

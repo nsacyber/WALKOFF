@@ -194,7 +194,7 @@ def _first_half(data):
     # data has to be 12 bits wide
     streamlen = 0
     # count the zeros
-    zerocount = CLZLUT[data >> 4];
+    zerocount = CLZLUT[data >> 4]
     data = (data << (zerocount + 1)) & 0b111111111111
     streamlen += zerocount + 1
     # get number of remaining bits to read

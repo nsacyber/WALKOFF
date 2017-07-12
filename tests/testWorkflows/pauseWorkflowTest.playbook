@@ -15,7 +15,6 @@
             <app>HelloWorld</app>
             <device>hwTest</device>
             <next step="1"></next>
-            <error></error>
         </step>
         <step id="1">
             <action>pause</action>
@@ -25,7 +24,6 @@
                 <seconds>1</seconds>
             </inputs>
             <next step="2"></next>
-            <error></error>
         </step>
         <step id="2">
             <action>pause</action>
@@ -34,8 +32,6 @@
             <inputs>
                 <seconds>1</seconds>
             </inputs>
-            <next></next>
-            <error></error>
         </step>
     </steps>
 </workflow>

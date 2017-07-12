@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class NextStep(ExecutionElement):
-    def __init__(self, xml=None, name='', parent_name='', flags=None, ancestry=None):
+    def __init__(self, xml=None, status='Success', name='', parent_name='', flags=None, ancestry=None):
         """Initializes a new NextStep object.
         
         Args:
@@ -22,10 +22,14 @@ class NextStep(ExecutionElement):
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
             ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+            self.status = status
             self.flags = flags if flags is not None else []
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         name = xml_element.get('step')
+        status_field = xml_element.find('status')
+        self.status = status_field.text if status_field is not None else 'Success'
+
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         self.flags = [Flag(xml=flag_element, parent_name=self.name, ancestry=self.ancestry)
                       for flag_element in xml_element.findall('flag')]
@@ -40,39 +44,46 @@ class NextStep(ExecutionElement):
         for flag in self.flags:
             flag.reconstruct_ancestry(self.ancestry)
 
-    def to_xml(self, tag='next'):
+    def to_xml(self):
         """Converts the NextStep object to XML format.
         
-        Args:
-            tag (str, optional): The tag name for the NextStep object. Defaults to "next".
-            
         Returns:
             The XML representation of the NextStep object.
         """
         if self.name is not None:
-            elem = ElementTree.Element(tag)
+            elem = ElementTree.Element('next')
             name = self.name if self.name else ''
             elem.set('step', name)
+
+            if self.status.lower() != 'success':
+                status = ElementTree.Element('status')
+                status.text = self.status
+                elem.append(status)
+
             if self.flags:
                 for flag in self.flags:
                     elem.append(flag.to_xml())
             return elem
 
     def __eq__(self, other):
-        return self.name == other.name and set(self.flags) == set(other.flags)
+        return self.name == other.name and self.status == other.status and set(self.flags) == set(other.flags)
 
     def __call__(self, data_in, accumulator):
-        if all(flag(data_in=data_in, accumulator=accumulator) for flag in self.flags):
-            callbacks.NextStepTaken.send(self)
-            logger.debug('NextStep is valid for input {0}'.format(data_in))
-            return self.name
+        if data_in is not None and data_in.status == self.status:
+            if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
+                callbacks.NextStepTaken.send(self)
+                logger.debug('NextStep is valid for input {0}'.format(data_in))
+                return self.name
+            else:
+                logger.debug('NextStep is not valid for input {0}'.format(data_in))
+                callbacks.NextStepNotTaken.send(self)
+                return None
         else:
-            logger.debug('NextStep is not valid for input {0}'.format(data_in))
-            callbacks.NextStepNotTaken.send(self)
             return None
 
     def __repr__(self):
         output = {'flags': [flag.as_json() for flag in self.flags],
+                  'status': self.status,
                   'name': self.name}
         return str(output)
 
@@ -89,9 +100,11 @@ class NextStep(ExecutionElement):
         name = str(self.name) if self.name else ''
         if with_children:
             return {"flags": [flag.as_json() for flag in self.flags],
+                    "status": self.status,
                     "name": name}
         else:
             return {"flags": [flag.name for flag in self.flags],
+                    "status": self.status,
                     "name": name}
 
     @staticmethod
@@ -107,7 +120,8 @@ class NextStep(ExecutionElement):
             The NextStep object parsed from the JSON object.
         """
         name = json['name'] if 'name' in json else ''
-        next_step = NextStep(name=name, parent_name=parent_name, ancestry=ancestry)
+        status = json['status'] if 'status' in json else 'Success'
+        next_step = NextStep(name=name, status=status, parent_name=parent_name, ancestry=ancestry)
         if json['flags']:
             next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
                                for flag in json['flags']]
