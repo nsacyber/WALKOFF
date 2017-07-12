@@ -1,2 +1,0 @@
-pyHS100
-win_inet_pton
