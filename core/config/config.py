@@ -2,10 +2,10 @@ import importlib
 import json
 import sys
 import logging
-from os import listdir, environ, pathsep
+from os import listdir
 from os.path import isfile, join, splitext
 import core.config.paths
-from core.config.paths import keywords_path, graphviz_path
+from core.config.paths import keywords_path
 from collections import OrderedDict
 import yaml
 
@@ -46,13 +46,6 @@ def write_values_to_file(keys=None):
 
     with open(core.config.paths.config_path, 'w') as config_file:
         config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
-
-
-# Enables/Disables Browser Notifications
-notifications = "True"
-
-# Path to graphviz location
-environ["PATH"] += (pathsep + graphviz_path)
 
 # Database Path
 
