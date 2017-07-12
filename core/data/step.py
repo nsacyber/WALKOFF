@@ -205,3 +205,32 @@ class StepData(ExecutionElement):
             step.conditionals = [NextStepData.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                                  for next_step in json_in['next'] if next_step]
         return step
+
+    def get_children(self, ancestry):
+        """Gets the children NextSteps of the Step in JSON format.
+
+        Args:
+            ancestry (list[str]): The ancestry list for the NextStep to be returned.
+
+        Returns:
+            The NextStep in the ancestry (if provided) as a JSON, otherwise None.
+        """
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            if next_child in [conditional.name for conditional in self.conditionals]:
+                next_step_index = [conditional.name for conditional in self.conditionals].index(next_child)
+                return self.conditionals[next_step_index].get_children(ancestry)
+            else:
+                return None
+
+    def reconstruct_ancestry(self, parent_ancestry):
+        """Reconstructs the ancestry for a Step object. This is needed in case a workflow and/or playbook is renamed.
+
+        Args:
+            parent_ancestry(list[str]): The parent ancestry list.
+        """
+        self._construct_ancestry(parent_ancestry)
+        for next_step in self.conditionals:
+            next_step.reconstruct_ancestry(self.ancestry)
