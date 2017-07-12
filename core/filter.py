@@ -50,6 +50,27 @@ class Filter(FilterData):
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 
+
+
+    def reconstruct_ancestry(self, parent_ancestry):
+        """Reconstructs the ancestry for a Filter object. This is needed in case a workflow and/or playbook is renamed.
+
+        Args:
+            parent_ancestry(list[str]): The parent ancestry list.
+        """
+        self._construct_ancestry(parent_ancestry)
+
+    def get_children(self, ancestry):
+        """Gets the children Filters of the Flag in JSON format.
+        
+        Args:
+            ancestry (list[str]): The ancestry list for the Filter to be returned.
+            
+        Returns:
+            Empty dictionary {}
+        """
+        return {}
+
     def __repr__(self):
         output = {'action': self.action,
                   'args': self.args}

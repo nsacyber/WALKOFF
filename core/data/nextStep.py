@@ -80,33 +80,3 @@ class NextStepData(ExecutionElement):
             next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
                                for flag in json['flags']]
         return next_step
-
-    def reconstruct_ancestry(self, parent_ancestry):
-        """Reconstructs the ancestry for a NextStep object. This is needed in case a workflow and/or playbook is renamed.
-
-        Args:
-            parent_ancestry(list[str]): The parent ancestry list.
-        """
-        self._construct_ancestry(parent_ancestry)
-        for flag in self.flags:
-            flag.reconstruct_ancestry(self.ancestry)
-
-    def get_children(self, ancestry):
-        """Gets the children Flags of the NextStep in JSON format.
-
-        Args:
-            ancestry (list[str]): The ancestry list for the Flag to be returned.
-
-        Returns:
-            The Flag in the ancestry (if provided) as a JSON, otherwise None.
-        """
-        if not ancestry:
-            return self.as_json(with_children=False)
-        else:
-            next_child = ancestry.pop()
-            try:
-                flag_index = [flag.name for flag in self.flags].index(next_child)
-                return self.flags[flag_index].get_children(ancestry)
-            except ValueError:
-                return None
-

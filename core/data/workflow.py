@@ -106,32 +106,3 @@ class WorkflowData(ExecutionElement):
         except (UnknownApp, UnknownAppAction):
             self.steps = backup_steps
             raise
-
-    def reconstruct_ancestry(self, parent_ancestry):
-        """Reconstructs the ancestry for a Workflow object. This is needed in case a workflow and/or playbook is renamed.
-
-        Args:
-            parent_ancestry(list[str]): The parent ancestry list.
-        """
-        self._construct_ancestry(parent_ancestry)
-        for key in self.steps:
-            self.steps[key].reconstruct_ancestry(self.ancestry)
-
-    def get_children(self, ancestry):
-        """Gets the children Steps of the Workflow in JSON format.
-
-        Args:
-            ancestry (list[str]): The ancestry list for the Step to be returned.
-
-        Returns:
-            The Step in the ancestry (if provided) as a JSON, otherwise None.
-        """
-        if not ancestry:
-            return {'steps': list(self.steps.keys())}
-        else:
-            ancestry = ancestry[::-1]
-            next_child = ancestry.pop()
-            if next_child in self.steps:
-                return self.steps[next_child].get_children(ancestry)
-            else:
-                return None

@@ -52,7 +52,34 @@ class Flag(FlagData):
 
 
 
+    def reconstruct_ancestry(self, parent_ancestry):
+        """Reconstructs the ancestry for a Flag object. This is needed in case a workflow and/or playbook is renamed.
 
+        Args:
+            parent_ancestry(list[str]): The parent ancestry list.
+        """
+        self._construct_ancestry(parent_ancestry)
+        for filter_element in self.filters:
+            filter_element.reconstruct_ancestry(self.ancestry)
+
+    def get_children(self, ancestry):
+        """Gets the children Filters of the Flag in JSON format.
+        
+        Args:
+            ancestry (list[str]): The ancestry list for the Filter to be returned.
+            
+        Returns:
+            The Filter in the ancestry (if provided) as a JSON, otherwise None.
+        """
+        if not ancestry:
+            return self.as_json(with_children=False)
+        else:
+            next_child = ancestry.pop()
+            try:
+                filter_index = [filter_element.name for filter_element in self.filters].index(next_child)
+                return self.filters[filter_index].as_json()
+            except ValueError:
+                return None
 
     def __repr__(self):
         output = {'action': self.action,
