@@ -3,7 +3,7 @@
 	// map tells the System loader where to look for things
 	var map = {
 		// 'login': 'client/modules/login',
-		'main': 'client',
+		'main': 'client/build',
 		'models': 'client/models',
 		'rxjs': 'client/node_modules/rxjs',
 		//'angular2-in-memory-web-api': 'client/node_modules/angular2-in-memory-web-api',
@@ -18,7 +18,7 @@
 	// packages tells the System loader how to load when no filename and/or no extension
 	var packages = {
 		// 'login': { main: 'login',  defaultExtension: 'ts' },
-		'main': { main: 'main',  defaultExtension: 'ts' },
+		'main': { main: 'main',  defaultExtension: 'js' },
 		'models': { defaultExtension: 'ts' },
 		'rxjs': { defaultExtension: 'js' },
 		'ts': { defaultExtension: 'js' },
@@ -52,15 +52,15 @@
 	var config = {
 		map: map,
 		packages: packages,
-		transpiler: 'ts',
-		typescriptOptions: { 
-			tsconfig: true
-		},
-		meta: {
-			typescript: {
-				exports: "ts"
-			}
-		}
+		// transpiler: 'ts',
+		// typescriptOptions: { 
+		// 	tsconfig: true
+		// },
+		// meta: {
+		// 	typescript: {
+		// 		exports: "ts"
+		// 	}
+		// }
 	};
 
 	// filterSystemConfig - index.html's chance to modify config before we register it.

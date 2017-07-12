@@ -8,7 +8,11 @@ import 'rxjs/add/operator/toPromise';
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Case } from '../models/case';
 
-const schedulerStatusNumberMapping: Object = {
+interface IStringKeyObject {
+	[key: string]: string;
+};
+
+const schedulerStatusNumberMapping: IStringKeyObject = {
 	"0": "stopped",
 	"1": "running",
 	"2": "paused"
