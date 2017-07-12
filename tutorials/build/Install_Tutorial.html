@@ -116,13 +116,21 @@ img.media-object.image{
             <h6>2. Change directories to the WALKOFF directory</h6>
             <pre><code class="console">cd WALKOFF </code></pre>
 
-            <h6>3. Run the command <code class="console"> python setup.py install </code>
-                    this command must be run as root (i.e. using sudo, or in an administrative command shell).</h6>
+            <h6>3. Run the command</h6>
+                    <pre><code class="console">pip install -r requirements.txt</code></pre>
+                    <p>to install the required libraries. This command must be run as root (i.e. using sudo, or in an
+                    administrative command shell).</p>
 
-            <h6>4. Run the command </h6>
-            <pre><code class="console"> pip install -r "requirements.txt" </code></pre>
-            <p>to install the required libraries. This command must be run as root (i.e. using sudo, or in an administrative command
-                shell).</p>
+            <h6>4. Each app must have a requirements.txt file inside of its main directory. In order to
+                    save the user the effort of manually installing the dependencies for each app, the user can run the
+                    command</h6>
+            <pre><code class="console"> python installDependencies.py -a|--apps AppOne AppTwo ...</code></pre>
+            <p>this command must be run as root
+                (i.e. using sudo, or in an administrative command shell). Simply provide the <code>installDependencies</code> script
+                with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces. Alternatively,
+                run the command</p>
+                <pre><code class="console">python installDependencies.py</code></pre>
+                <p>This will install the dependencies for every app in the apps folder.</p>
 
             <h6>5. Run the command </h6>
             <pre><code class="console"> python startServer.py </code></pre>
@@ -136,19 +144,10 @@ img.media-object.image{
             <pre><code class="console"> admin </code></pre>
             <p>The default password is </p>
             <pre><code class="console"> admin </code></pre>
-            <p>these can be changed upon initial login</p>
-
-            <h6>7. <i>Optional</i> - Each app must have a setup.py script inside of its main directory. In order to
-                    save the user the effort of manually running the setup.py script for each app, the user can run the
-                    command</h6>
-            <pre><code class="console"> python installDependencies.py -a|--apps AppOne AppTwo ...</code></pre>
-            <p>this command must be run as root
-                (i.e. using sudo, or in an administrative command shell). Simply provide the <code>installDependencies</code> script
-                with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces.</p>
+            <p>These can be changed upon initial login.</p>
         </div>
     </div>
 </div>
-
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
     <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>

@@ -110,15 +110,16 @@ img.media-object.image{
       <h1>Managing app dependencies</h1>
         <p>WALKOFF allows you to reduce the number of dependencies needed by allowing you to selectively install apps.</p>
         <h3>Specifying app dependencies</h3>
-        <p>WALKOFF already requires several dependencies to run. There are listed in the `requirements.txt` file in the
+        <p>WALKOFF in and of itself already requires several dependencies to run. These are listed in the `requirements.txt` file in the
             root directory of the repository. However, you may develop an app which needs additional dependencies.
             For example, if you were developing an app which incorporated machine learning, your app my depend on the popular
         <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
-            didn't need your app, we can spare them needing to install them by including them in them in your app's own
+            didn't need your app, we can spare them from installing all of these dependencies by including the app-specific requirements in your app's
         <code>requirements.txt</code> file. For our example, our requirements.txt would look like this:</p>
-        <pre><code class="console">
-scikit-learn
+        <pre><code class="python">
+scikit-learn >= 0.18.2
         </code></pre>
+        <p>The <code> >=0.18.2</code> specifies that the app requires scikit-learn with the version at least at 0.18.2</p>
         <h3>Installing app dependencies</h3>
         <p>To install an app dependency, you can use the <code>installDependencies.py</code> script included at the top
             level of the repository.</p>
@@ -129,6 +130,8 @@ python installDependencies.py --apps App1
         <pre><code class="console">
 python installDependencies.py --help
         </code></pre>
+        <p>To install the dependencies for all apps in the apps folder, simply run</p>
+        <pre><code class="console">python installDependencies.py</code></pre>
         <p>Next, you'll learn how to make a custom interface for your app (right now the server will quietly complain if you try to display your app)</p>
         <div align="center" style="border:1px solid blue">
             <h5><a href="Develop_an_app.html"><< Prev</a>   ||   <a href="Develop_an_app_interface.html">Next >></a></h5>
@@ -140,7 +143,6 @@ python installDependencies.py --help
     </div>
   </div>
 </div>
-
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
     <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>

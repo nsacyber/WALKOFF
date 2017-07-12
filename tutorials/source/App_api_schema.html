@@ -28,8 +28,8 @@
             </tr>
         </table>
 
-        <h3><b>In the following examples we use the app API schema demonstrate schema validation capabilities</b></h3>
-        
+        <h3><b>In the following examples we use the app API schema to demonstrate schema validation capabilities</b></h3>
+
         <h4><b>Limiting numbers to minimum and maximum values</b></h4>
         <p>Type can be either <code>"number"</code> or <code>"integer"</code>. The limits of integer types, of course,
             must also be integers</p>
@@ -70,7 +70,7 @@ actions:
         </code></pre>
         <p>Note: The "on" parameter is in quotations because it is a reserved keyword in YAML</p>
         <h4><b>Using arrays of primitive values</b></h4>
-        <p>You can use arrays of primitive values as inputs. An array of numbers such as [7.5, 8,2, 3, 9,7] is specified 
+        <p>You can use arrays of primitive values as inputs. An array of numbers such as [7.5, 8,2, 3, 9,7] is specified
             in the following way:</p>
         <pre><code class="yaml">
 actions:
@@ -85,8 +85,8 @@ actions:
         </code></pre>
 
         <h4><b>Describing objects</b></h4>
-        <p>You can use objects as inputs. This schema would define an object with fields 
-            <code>field1, field2, field3</code> with types <code>string, integer</code>, and <code>array</code> of 
+        <p>You can use objects as inputs. This schema would define an object with fields
+            <code>field1, field2, field3</code> with types <code>string, integer</code>, and <code>array</code> of
             strings</p>
         <pre><code class="yaml">
 actions:
@@ -108,7 +108,7 @@ actions:
         </code></pre>
 
         <h4><b>Describing arrays of objects</b></h4>
-        <p>This schema would define an input which is an array of objects each with fields <code>field1, field2</code> 
+        <p>This schema would define an input which is an array of objects each with fields <code>field1, field2</code>
             with types <code>string, integer</code>.</p>
         <pre><code class="yaml">
 actions:
@@ -128,7 +128,7 @@ actions:
         </code></pre>
 
         <h4><b>Required parameters</b></h4>
-        <p>By default, no parameter is required, and it defaults to <code>None</code>. To make a parameter required, you 
+        <p>By default, no parameter is required, and it defaults to <code>None</code>. To make a parameter required, you
             can mark it as required. </p>
         <pre><code class="yaml">
 actions:
@@ -138,8 +138,8 @@ actions:
       - name: value
         type: number
         required: true
-        </code></pre> 
-        <p>Note that <code>required: false</code> is a redundant and invalid specifier and will cause your api to be 
+        </code></pre>
+        <p>Note that <code>required: false</code> is a redundant and invalid specifier and will cause your api to be
             invalidated on initialization of the server.</p>
 
         <h4><b>Required object properties</b></h4>
@@ -166,7 +166,7 @@ actions:
         </code></pre>
 
         <h4><b>Using defaults</b></h4>
-        <p>You can set a default parameter with the <code>default</code> field. The following schema sets the default to 
+        <p>You can set a default parameter with the <code>default</code> field. The following schema sets the default to
             10.</p>
         <pre><code class="yaml">
 actions:
