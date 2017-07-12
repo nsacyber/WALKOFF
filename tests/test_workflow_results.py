@@ -9,16 +9,14 @@ class TestWorkflowResults(ServerTestCase):
         server.workflowresults.results.clear()
 
     def test_workflow_result_recording(self):
-        print(server.workflowresults.results)
         flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
         multiaction_key = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
             flaskserver.running_context.shutdown_threads()
-        print(server.workflowresults.results)
         self.assertEqual(len(server.workflowresults.results), 1)
-        key = server.workflowresults.results.keys()[0]
+        key = list(server.workflowresults.results.keys())[0]
         self.assertIn('status', server.workflowresults.results[key])
         self.assertEqual(server.workflowresults.results[key]['status'], 'completed')
         self.assertIn('name', server.workflowresults.results[key])
