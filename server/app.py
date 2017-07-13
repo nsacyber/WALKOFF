@@ -177,6 +177,7 @@ def create_user():
 
     app.logger.handlers = logging.getLogger('server').handlers
 
+
 def create_test_data():
     from server.context import running_context
     from . import database

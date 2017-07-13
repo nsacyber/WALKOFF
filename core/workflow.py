@@ -8,7 +8,8 @@ from core import options
 from core.case import callbacks
 from core.config import paths
 from core.executionelement import ExecutionElement
-from core.helpers import construct_workflow_name_key, extract_workflow_name, UnknownAppAction, UnknownApp, InvalidInput
+from core.helpers import (construct_workflow_name_key, extract_workflow_name, UnknownAppAction, UnknownApp, InvalidInput,
+                          format_exception_message)
 from core.instance import Instance
 from core.step import Step
 
@@ -168,7 +169,7 @@ class Workflow(ExecutionElement):
             self.is_paused = False
             self.executor.send(None)
         except (StopIteration, AttributeError) as e:
-            logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.ancestry, e))
+            logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.ancestry, format_exception_message(e)))
             pass
 
     def resume_breakpoint_step(self):
@@ -178,7 +179,8 @@ class Workflow(ExecutionElement):
             logger.debug('Attempting to resume workflow {0} from breakpoint'.format(self.ancestry))
             self.executor.send(None)
         except (StopIteration, AttributeError) as e:
-            logger.warning('Cannot resume workflow {0} from breakpoint. Reason: {1}'.format(self.ancestry, e))
+            logger.warning('Cannot resume workflow {0} from breakpoint. '
+                           'Reason: {1}'.format(self.ancestry, format_exception_message(e)))
             pass
 
     def execute(self, start=None, start_input=''):
@@ -254,7 +256,7 @@ class Workflow(ExecutionElement):
             callbacks.WorkflowInputValidated.send(self)
         except InvalidInput as e:
             logger.error('Cannot change input to workflow {0}. '
-                         'Invalid input. Error: {1}'.format(self.name, str(e)))
+                         'Invalid input. Error: {1}'.format(self.name, format_exception_message(e)))
             callbacks.WorkflowInputInvalid.send(self)
 
     def __execute_step(self, step, instance):
@@ -272,7 +274,8 @@ class Workflow(ExecutionElement):
             callbacks.StepExecutionError.send(self, data=json.dumps(data))
             if self.total_risk > 0:
                 self.accumulated_risk += float(step.risk) / self.total_risk
-            logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry, e))
+            logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.ancestry,
+                                                                                   format_exception_message(e)))
 
     def __get_child_step_generator(self, tiered_step_str):
         params = tiered_step_str.split(':')
@@ -295,7 +298,7 @@ class Workflow(ExecutionElement):
                 instances[instance].shutdown()
             except Exception as e:
                 logger.error('Error caught while shutting down app instance. '
-                             'Device: {0}. Error {1}'.format(instance, e))
+                             'Device: {0}. Error {1}'.format(instance, format_exception_message(e)))
         result_str = {}
         for step, step_result in self.accumulator.items():
             try:

@@ -4,7 +4,7 @@ from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
 from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
-                          inputs_to_xml, inputs_xml_to_dict, dereference_step_routing)
+                          inputs_to_xml, inputs_xml_to_dict, dereference_step_routing, format_exception_message)
 from core.validator import validate_flag_parameters, validate_parameter
 import logging
 logger = logging.getLogger(__name__)
@@ -61,13 +61,13 @@ class Flag(ExecutionElement):
             return get_flag(self.action)(**args)
         except InvalidInput as e:
             logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
-                         'Returning False'.format(self.action, data_in, data, str(e)))
+                         'Returning False'.format(self.action, data_in, data, format_exception_message(e)))
             callbacks.FlagError.send(self)
             return False
         except Exception as e:
             logger.error('Error encountered executing '
                          'flag {0} with arguments {1} and value {2}: '
-                         'Error {3}. Returning False'.format(self.action, self.args, data, str(e)))
+                         'Error {3}. Returning False'.format(self.action, self.args, data, format_exception_message(e)))
             callbacks.FlagError.send(self)
             return False
 

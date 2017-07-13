@@ -115,7 +115,7 @@ def import_app_main(app_name, path=None, reload=False):
         sys.modules[module_name] = imported_module
         return imported_module
     except (ImportError, IOError, OSError, SyntaxError) as e:
-        logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, str(e)))
+        logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, format_exception_message(e)))
         pass
 
 
@@ -125,7 +125,7 @@ def __list_valid_directories(path):
                 if (os.path.isdir(os.path.join(path, f))
                     and not f.startswith('__'))]
     except (IOError, OSError) as e:
-        logger.error('Cannot get valid directories inside {0}. Error: {1}'.format(path, e))
+        logger.error('Cannot get valid directories inside {0}. Error: {1}'.format(path, format_exception_message(e)))
         return []
 
 
@@ -295,7 +295,7 @@ def import_all_apps(path=None, reload=False):
         except ImportError:
             logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
         except InvalidApi as e:
-            logger.error('App {0} has an invalid API: {0}'.format(e))
+            logger.error('App {0} has an invalid API: {0}'.format(format_exception_message(e)))
 
 
 def get_app_action_api(app, action):

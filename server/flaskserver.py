@@ -143,6 +143,7 @@ def write_playbook_to_file(playbook_name):
             xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
             workflow_out.write(xml_dom.encode('utf-8'))
     except Exception as e:
-        logger.error('Could not save playbook to file. Reverting file to original. Error: {0}'.format(e))
+        logger.error('Could not save playbook to file. Reverting file to original. '
+                     'Error: {0}'.format(helpers.format_exception_message(e)))
         with open(playbook_filename, 'w') as f:
             f.write(backup)

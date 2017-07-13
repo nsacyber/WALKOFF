@@ -3,6 +3,7 @@ import logging
 from core.filter import Filter
 from core.flag import Flag
 from .database import db, Base
+from core.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,8 @@ class Triggers(Base):
                                                                           start_input=input_in)
                         returned_json["executed"].append({'name': trigger.name, 'id': uid})
                     except Exception as e:
-                        returned_json["errors"].append({trigger.name: "Error executing workflow: {0}".format(str(e))})
+                        returned_json["errors"].append(
+                            {trigger.name: "Error executing workflow: {0}".format(format_exception_message(e))})
                 else:
                     logger.error('Workflow associated with trigger is not in controller')
                     returned_json["errors"].append({trigger.name: "Workflow could not be found."})
