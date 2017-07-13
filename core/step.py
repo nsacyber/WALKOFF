@@ -280,7 +280,7 @@ class Step(ExecutionElement):
                   'position': self.position,
                   'widget': str([{'app': widget.app, 'name': widget.widget} for widget in self.widgets])}
         if self.output:
-            output["output"] = self.output
+            output["output"] = self.output.as_json()
         return str(output)
 
     def as_json(self, with_children=True):
@@ -302,7 +302,7 @@ class Step(ExecutionElement):
                   'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
                   "position": self.position}
         if self.output:
-            output["output"] = str(self.output)
+            output["output"] = self.output.as_json()
         if with_children:
             output["next"] = [next_step.as_json() for next_step in self.conditionals if next_step.name is not None]
         else:
