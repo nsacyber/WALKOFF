@@ -151,7 +151,7 @@ class Triggers(Base):
 
     @staticmethod
     def __to_new_input_format(args_json):
-        return {arg['name']: arg['value'] for arg in args_json}
+        return {arg['key']: arg['value'] for arg in args_json}
 
     @staticmethod
     def __execute_trigger(conditional, data_in):

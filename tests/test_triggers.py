@@ -36,7 +36,7 @@ class TestTriggers(ServerTestCase):
             server.running_context.controller.workflows = {}
 
     def test_add_and_display_and_remove_trigger(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -90,7 +90,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response._status_code, 400)
 
     def test_add_trigger_add_duplicate(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
@@ -106,7 +106,7 @@ class TestTriggers(ServerTestCase):
                                       status_code=OBJECT_DNE_ERROR)
 
     def test_edit_trigger(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps(condition)}
@@ -120,7 +120,7 @@ class TestTriggers(ServerTestCase):
                                     headers=self.headers, data=edited_data)
 
     def test_trigger_execute(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -138,7 +138,7 @@ class TestTriggers(ServerTestCase):
         self.assertListEqual(response['errors'], [])
 
     def test_trigger_execute_invalid_name(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": "invalid_workflow_name",
                 "conditional": json.dumps([condition])}
@@ -153,7 +153,7 @@ class TestTriggers(ServerTestCase):
         self.assertIn(error, response["errors"])
 
     def test_trigger_execute_no_matching_trigger(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': 'aaaa'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': 'aaaa'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -164,7 +164,7 @@ class TestTriggers(ServerTestCase):
                                     headers=self.headers, data={"data": "bbb"}, status_code=SUCCESS_WITH_WARNING)
 
     def test_trigger_execute_change_input(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -193,7 +193,7 @@ class TestTriggers(ServerTestCase):
                              {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
 
     def test_trigger_with_change_input_invalid_input(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -215,7 +215,7 @@ class TestTriggers(ServerTestCase):
         self.assertListEqual(response['errors'], [])
 
     def test_trigger_execute_one(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -246,7 +246,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_one_invalid_name(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition])}
@@ -260,7 +260,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_tag(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition]),
@@ -296,7 +296,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_multiple_tags(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition]),
@@ -335,7 +335,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_multiple_tags_with_name(self):
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditional": json.dumps([condition]),
@@ -372,7 +372,7 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
                                    headers=self.headers, status_code=OBJECT_CREATED)
 
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test_playbook",
                 "workflow": "test_workflow",
                 "conditional": json.dumps([condition])}
@@ -394,7 +394,7 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
                                    headers=self.headers, status_code=OBJECT_CREATED)
 
-        condition = {"flag": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        condition = {"flag": 'regMatch', "args": [{'key': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test_playbook",
                 "workflow": "test_workflow",
                 "conditional": json.dumps([condition])}
