@@ -33,7 +33,6 @@
                         </filters>
                     </flag>
                 </next>
-                <error></error>
             </step>
             <step id="1">
                 <action>repeatBackToMe</action>
@@ -42,8 +41,6 @@
                 <inputs>
                     <call>Parent Step Two</call>
                 </inputs>
-                <next></next>
-                <error></error>
             </step>
         </steps>
     </workflow>
@@ -65,8 +62,6 @@
                 <inputs>
                     <call>Child Step One</call>
                 </inputs>
-                <next></next>
-                <error></error>
             </step>
         </steps>
     </workflow>

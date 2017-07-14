@@ -1,48 +1,42 @@
 from core.case.callbacks import WorkflowShutdown, WorkflowExecutionStart, StepExecutionError, StepExecutionSuccess
-from collections import OrderedDict
-from datetime import datetime
+import core.case.database as case_database
+from core.case.workflowresults import WorkflowResult, StepResult
 import json
-
-max_results = 50
-
-results = OrderedDict()
 
 
 @WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
-    global results
-    if sender.uid in results:
-        results[sender.uid]['completed_at'] = str(datetime.utcnow())
-        results[sender.uid]['status'] = 'completed'
+    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
+        WorkflowResult.uid == sender.uid).first()
+    if workflow_result is not None:
+        workflow_result.complete()
+        case_database.case_db.session.commit()
 
 
 @WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
-    results[sender.uid] = {'name': sender.name,
-                           'started_at': str(datetime.utcnow()),
-                           'status': 'running',
-                           'results': []}
+    workflow_result = WorkflowResult(sender.uid, sender.name)
+    case_database.case_db.session.add(workflow_result)
+    case_database.case_db.session.commit()
 
 
-def __append_step_result(uid, data, step_type):
-    global results
-    result = {'name': data['name'],
-              'result': data['result'],
-              'input': data['input'],
-              'type': step_type,
-              'timestamp': str(datetime.utcnow())}
-    results[uid]['results'].append(result)
+def __append_step_result(workflow_result, data, step_type):
+    step_result = StepResult(data['name'], json.dumps(data['result']), json.dumps(data['input']), step_type)
+    workflow_result.results.append(step_result)
+    case_database.case_db.session.commit()
 
 
 @StepExecutionSuccess.connect
 def __step_execution_success_callback(sender, **kwargs):
-    global results
-    if sender.uid in results:
-        __append_step_result(sender.uid, json.loads(kwargs['data'])['step'], 'SUCCESS')
+    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
+        WorkflowResult.uid == sender.uid).first()
+    if workflow_result is not None:
+        __append_step_result(workflow_result, json.loads(kwargs['data']), 'success')
 
 
 @StepExecutionError.connect
 def __step_execution_error_callback(sender, **kwargs):
-    global results
-    if sender.uid in results:
-        __append_step_result(sender.uid, json.loads(kwargs['data'])['step'], 'ERROR')
+    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
+        WorkflowResult.uid == sender.uid).first()
+    if workflow_result is not None:
+        __append_step_result(workflow_result, json.loads(kwargs['data']), 'error')

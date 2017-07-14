@@ -9,7 +9,7 @@
 				<eDT>2016-3-15 12:00:00</eDT>
 			</scheduler>
 		</options>
-		<start>1</start>
+		<start>4</start>
 		<steps>
 			<step id="1">
 				<name>1</name>
@@ -53,17 +53,41 @@
 				<next step="2"/>
 			</step>
 			<step id="2">
-				<name>3</name>
+				<name>2</name>
 				<app>Utilities</app>
 				<action>json select</action>
 				<position>
-					<x>410</x>
-					<y>330</y>
+					<x>330</x>
+					<y>350</y>
 				</position>
 				<inputs>
 					<json_reference>@3</json_reference>
 					<element>results</element>
 				</inputs>
+			</step>
+			<step id="5">
+				<name>5</name>
+				<app>Utilities</app>
+				<action>write IPs to CSV</action>
+				<position>
+					<x>650</x>
+					<y>430</y>
+				</position>
+				<inputs>
+					<path>0</path>
+					<ips_reference>0</ips_reference>
+				</inputs>
+			</step>
+			<step id="4">
+				<name>4</name>
+				<app>Utilities</app>
+				<action>wait for event</action>
+				<position>
+					<x>570</x>
+					<y>490</y>
+				</position>
+				<next step="1"/>
+				<next step="5"/>
 			</step>
 		</steps>
 	</workflow>

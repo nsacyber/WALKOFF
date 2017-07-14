@@ -46,7 +46,6 @@
                     </filters>
                 </flag>
             </next>
-            <error step="1"></error>
         </step>
         <step id="1">
             <action>repeatBackToMe</action>
@@ -56,7 +55,6 @@
             <inputs>
                 <call>{{outputFrom(steps, -1)}}</call>
             </inputs>
-            <error step="1"></error>
         </step>
     </steps>
 </workflow>

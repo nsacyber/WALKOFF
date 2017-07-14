@@ -1,0 +1,57 @@
+{
+  "quoteIntro":{
+    "description":"Prints an introductory string",
+    "run":"DailyQuote.main.Main.quoteIntro",
+    "aliases": ["quoteintro", "quote_intro", "quoteGreetings", "QuoteIntro"],
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"str",
+    "output_type":"str",
+    "args":[]
+  },
+
+  "repeatBackToMe":{
+    "description":"Prints a generic str with the call argument appended.  For debugging purposes",
+    "run":"DailyQuote.main.Main.repeatBackToMe",
+    "aliases": ["parrot", "Parrot", "RepeatBackToMe", "repeat_back_to_me", "repeat"],
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"str",
+    "output_type":"str",
+    "args":[
+      {
+        "name":"call",
+        "type":"str"
+      }
+    ]
+  },
+
+  "forismaticQuote":{
+    "description":"",
+    "run":"DailyQuote.main.Main.returnPlusOne",
+    "aliases": ["forismaticquote", "otherquote", "new_quote", "forismatic_quote"],
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"str",
+    "output_type":"str",
+    "args":[
+      {
+        "name":"url",
+        "type":"str"
+      }
+    ]
+  },
+
+  "getQuote":{
+    "description":"",
+    "run":"DailyQuote.main.Main.getQuote",
+    "aliases": ["getquote","get_quote","fetch_quote"],
+    "highlight":"",
+    "highlight_reverse":"",
+    "input_type":"str",
+    "output_type":"str",
+    "args":[]
+  }
+}
+
+

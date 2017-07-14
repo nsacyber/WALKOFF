@@ -21,16 +21,15 @@ def read_all_apps():
 
 def __format_app_action_api(api):
     ret = {}
-    data_in = api.get('dataIn', False)
     if 'description' in api:
         ret['description'] = api['description']
-    args = []
-    if 'parameters' in api:
-        for arg in api['parameters']:
-            if data_in and arg['name'] == data_in:
-                continue
-            args.append(arg)
-    ret['args'] = args
+    ret['args'] = api.get('parameters', [])
+    returns = list(api['returns'].keys()) if 'returns' in api else ['Success']
+    returns.extend(['UnhandledException', 'InvalidInput'])
+    if 'event' in api:
+        ret['event'] = api['event']
+        returns.append('EventTimedOut')
+    ret['returns'] = returns
     return ret
 
 
@@ -107,7 +106,7 @@ def create_device(app_name, device_name):
             except (OSError, IOError) as e:
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Could not get key from AES key file. '
-                                         'Error: {2}'.format(device_name, app_name, e))
+                                         'Error: {2}'.format(device_name, app_name, helpers.format_exception_message(e)))
                 return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
@@ -216,7 +215,8 @@ def import_devices(app_name):
                 read_file = read_file.replace('\n', '')
                 apps_devices = json.loads(read_file)
         except (OSError, IOError) as e:
-            current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
+            current_app.logger.error('Error importing devices from {0}: '
+                                     '{1}'.format(filename, helpers.format_exception_message(e)))
             return {"error": "Error reading file."}, IO_ERROR
         for app in apps_devices:
             for device in apps_devices[app]:
@@ -256,7 +256,8 @@ def export_devices(app_name):
             with open(filename, 'w') as appdevice_file:
                 appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
         except (OSError, IOError) as e:
-            current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
+            current_app.logger.error('Error importing devices from {0}: '
+                                     '{1}'.format(filename, helpers.format_exception_message(e)))
             return {"error": "Error writing file"}, IO_ERROR
         else:
             current_app.logger.debug('Exported devices to {0}'.format(filename))

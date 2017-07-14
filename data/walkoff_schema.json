@@ -251,6 +251,10 @@
         "returns": {
           "$ref": "#/definitions/returns"
         },
+        "event": {
+          "type": "string",
+          "description": "The name of the event needed for this action to occur"
+        },
         "deprecated": {
           "type": "boolean",
           "default": false
@@ -352,7 +356,7 @@
     },
     "returns": {
       "type": "object",
-      "description": "Response objects names can either be any valid HTTP status code or 'default'.",
+      "description": "Response objects names can be any string",
       "minProperties": 1,
       "additionalProperties": false,
       "patternProperties": {
@@ -517,6 +521,9 @@
         },
         "multipleOf": {
           "$ref": "#/definitions/multipleOf"
+        },
+        "example": {
+          "type": ["number", "integer", "string", "boolean"]
         }
       }
     },

@@ -292,7 +292,7 @@ def get_table_directory(data):
         raise FontError, 'truncated font data'
     sfntvers, numTables = struct.unpack(OpenType.SFNT_UNPACK, data[:sfntsize])[:2]
     if sfntvers != OpenType.SFNT_CFF and sfntvers != OpenType.SFNT_TRUE:
-        raise FontError, 'invalid font type';
+        raise FontError, 'invalid font type'
     
     font = {}
     font['version'] = sfntvers

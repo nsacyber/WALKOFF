@@ -146,3 +146,28 @@ actions:
       Success:
         schema:
           type: string
+  write IPs to CSV:
+    run: write_ips_to_csv
+    description: Writes a list of IPs to a CSV file
+    parameters:
+        - name: ips_reference
+          description: Step reference to the list of IPs
+          required: true
+          type: string
+        - name: path
+          description: The path to the CSV file to be written to
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+  wait for event:
+    run: wait_for_event
+    description: waits for a post to the endpoint /apps/Utilities/resume
+    event: Wait
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: [success]

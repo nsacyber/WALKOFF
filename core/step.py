@@ -8,9 +8,10 @@ from core import contextdecorator
 from core import nextstep
 import core.config.config
 from core.case import callbacks
+from core.decorators import ActionResult
 from core.executionelement import ExecutionElement
 from core.helpers import (get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml,
-                          InvalidInput, dereference_step_routing)
+                          InvalidInput, dereference_step_routing, format_exception_message)
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -30,7 +31,6 @@ class Step(ExecutionElement):
                  device='',
                  inputs=None,
                  next_steps=None,
-                 errors=None,
                  parent_name='',
                  position=None,
                  ancestry=None,
@@ -48,7 +48,6 @@ class Step(ExecutionElement):
             inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
                 to None.
             next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
-            errors (list[NextStep], optional): A list of NextStep error objects for the Step object. Defaults to None.
             parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
                 for UI display purposes. Defaults to None.
@@ -73,7 +72,6 @@ class Step(ExecutionElement):
             self.device = device
             self.risk = risk
             self.conditionals = next_steps if next_steps is not None else []
-            self.errors = errors if errors is not None else []
             self.position = position if position is not None else {}
             self.widgets = [_Widget(widget_app, widget_name)
                             for (widget_app, widget_name) in widgets] if widgets is not None else []
@@ -90,8 +88,6 @@ class Step(ExecutionElement):
         """
         self._construct_ancestry(parent_ancestry)
         for next_step in self.conditionals:
-            next_step.reconstruct_ancestry(self.ancestry)
-        for next_step in self.errors:
             next_step.reconstruct_ancestry(self.ancestry)
 
     def _from_xml(self, step_xml, parent_name='', ancestry=None):
@@ -120,8 +116,6 @@ class Step(ExecutionElement):
         self.risk = risk_field.text if risk_field is not None else 0
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
-        self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
-                       for error_step_element in step_xml.findall('error')]
         self.widgets = [_Widget(widget.get('app'), widget.text) for widget in step_xml.findall('widgets/*')]
         position = step_xml.find('position')
         if position is None:
@@ -152,8 +146,6 @@ class Step(ExecutionElement):
             self.input = validate_app_action_parameters(self.input_api, {}, self.app, self.action)
         self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
                              for next_step_element in step_xml.findall('next')]
-        self.errors = [nextstep.NextStep(xml=error_step_element, parent_name=self.name, ancestry=self.ancestry)
-                       for error_step_element in step_xml.findall('error')]
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -190,38 +182,37 @@ class Step(ExecutionElement):
             args = validate_app_action_parameters(self.input_api, args, self.app, self.action)
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
-            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result}))
+            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result.as_json()}))
         except InvalidInput as e:
-            logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
+            formatted_error = format_exception_message(e)
+            logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
             callbacks.StepInputInvalid.send(self)
-            self.output = 'error: {0}'.format(str(e))
+            self.output = ActionResult('error: {0}'.format(formatted_error), 'InvalidInput')
             raise
         except Exception as e:
-            logger.error('Error calling step {0}. Error: {1}'.format(self.name, str(e)))
-            self.output = 'error: {0}'.format(str(e))
+            formatted_error = format_exception_message(e)
+            logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
+            self.output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
             raise
         else:
             self.output = result
             for widget in self.widgets:
-                get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result}))
+                get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result.as_json()}))
             logger.debug('Step {0} executed successfully'.format(self.ancestry))
             return result
 
-    def get_next_step(self, accumulator, error=False):
+    def get_next_step(self, accumulator):
         """Gets the NextStep object to be executed after the current Step.
         
         Args:
-            error (bool, optional): Boolean to determine whether or not to use the errors field or the conditionals
-                field to find the NextStep object.
             accumulator (dict): A record of teh previously-executed steps. Of form {step_name: result}
                  
         Returns:
             The NextStep object to be executed.
         """
-        next_steps = self.errors if error else self.conditionals
-        for next_step in next_steps:
+        for next_step in self.conditionals:
             next_step = next_step(self.output, accumulator)
-            if next_step:
+            if next_step is not None:
                 self.next_up = next_step
                 callbacks.ConditionalsExecuted.send(self)
                 return next_step
@@ -275,11 +266,6 @@ class Step(ExecutionElement):
             if next_xml is not None:
                 step.append(next_step.to_xml())
 
-        for error in self.errors:
-            error_xml = error.to_xml()
-            if error_xml is not None:
-                step.append(error.to_xml(tag='error'))
-
         return step
 
     def __repr__(self):
@@ -290,12 +276,11 @@ class Step(ExecutionElement):
                   'risk': str(self.risk),
                   'input': self.input,
                   'next': [next_step for next_step in self.conditionals],
-                  'errors': [error for error in self.errors],
                   'nextUp': self.next_up,
                   'position': self.position,
                   'widget': str([{'app': widget.app, 'name': widget.widget} for widget in self.widgets])}
         if self.output:
-            output["output"] = self.output
+            output["output"] = self.output.as_json()
         return str(output)
 
     def as_json(self, with_children=True):
@@ -317,13 +302,11 @@ class Step(ExecutionElement):
                   'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
                   "position": self.position}
         if self.output:
-            output["output"] = str(self.output)
+            output["output"] = self.output.as_json()
         if with_children:
             output["next"] = [next_step.as_json() for next_step in self.conditionals if next_step.name is not None]
-            output["errors"] = [error.as_json() for error in self.errors if error.name is not None]
         else:
             output["next"] = [next_step.name for next_step in self.conditionals if next_step.name is not None]
-            output["errors"] = [error.name for error in self.errors if error.name is not None]
         return output
 
     @staticmethod
@@ -360,9 +343,6 @@ class Step(ExecutionElement):
         if json_in['next']:
             step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                                  for next_step in json_in['next'] if next_step]
-        if json_in['errors']:
-            step.errors = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
-                           for next_step in json_in['errors'] if next_step]
         return step
 
     def get_children(self, ancestry):
@@ -381,8 +361,5 @@ class Step(ExecutionElement):
             if next_child in [conditional.name for conditional in self.conditionals]:
                 next_step_index = [conditional.name for conditional in self.conditionals].index(next_child)
                 return self.conditionals[next_step_index].get_children(ancestry)
-            elif next_child in [error_step.name for error_step in self.errors]:
-                next_step_index = [error_step.name for error_step in self.errors].index(next_child)
-                return self.errors[next_step_index].get_children(ancestry)
             else:
                 return None

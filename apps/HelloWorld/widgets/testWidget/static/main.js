@@ -27,7 +27,7 @@ $(function(){
                 label: {
                 text: 'Magnitude',
                 position: 'outer-middle'
-                },
+                }
             },
             x: {
                 tick: {

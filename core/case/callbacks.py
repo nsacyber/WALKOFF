@@ -63,7 +63,7 @@ def __construct_logging_signal(event_type, message_name, entry_message):
         module variable for the signal to work.
         
     Args:
-        event_type (str): Type of event whcih is logged 'Workflow, Step, etc.'
+        event_type (str): Type of event which is logged 'Workflow, Step, etc.'
         message_name (str): Name of message
         entry_message (str): More detailed message to log
         data (str): Extra information

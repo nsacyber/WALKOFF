@@ -289,12 +289,19 @@ $(function(){
                 items: {
                     type: "object",
                     headerTemplate: "Next Node {{ i1 }}: {{ self.name }}",
+                    required: ['status'],
                     properties: {
                         name: {
                             type: "string",
                             options: {
                                 hidden: true
                             }
+                        },
+                        status: {
+                            type: "string",
+                            title: "Status",
+                            enum: appData[parameters.app].actions[parameters.action].returns,
+                            default: "Success"
                         },
                         flags: {
                             type: "array",
@@ -439,7 +446,7 @@ $(function(){
             //updatedParameters.next = next;
 
             ele.data('parameters', updatedParameters);
-            ele.data('label', updatedParameters.action);
+            // ele.data('label', updatedParameters.action);
             setStartNode(updatedParameters.name);
         });
     }
@@ -540,6 +547,8 @@ $(function(){
                 }
             },
         };
+
+        setNodeDisplayProperties(nodeToBeAdded);
 
         if (shouldUseRenderedPosition) nodeToBeAdded.renderedPosition = { x: x, y: y };
         else nodeToBeAdded.position = { x: x, y: y };
@@ -870,6 +879,21 @@ $(function(){
         saveWorkflow(playbookName, workflowName, workflowData)
     }
 
+    function setNodeDisplayProperties(step) {
+        //add a type field to handle node styling
+        var app = appData[step.data.parameters.app];
+        var action = app.actions[step.data.parameters.action];
+
+        if (action.event) {
+            step.data.type = 'eventAction';
+
+            // step.data.label += ' (' + action.event + ')';
+        }
+        else {
+            step.data.type = 'action';
+        }
+    }
+
     function loadWorkflow(playbookName, workflowName) {
 
         currentPlaybook = playbookName;
@@ -885,6 +909,10 @@ $(function(){
                 'headers':{"Authentication-Token":authKey},
                 'url': "/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
+                    _.each(data.steps, function (step) {
+                        if (step.group === 'nodes') setNodeDisplayProperties(step);
+                    });
+
                     tmp = data;
                 },
                 'error': function (e) {
@@ -908,19 +936,42 @@ $(function(){
             layout: { name: 'preset' },
             style: [
                 {
-                    selector: 'node',
+                    selector: 'node[type="action"]',
                     css: {
                         'content': 'data(label)',
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'shape': 'roundrectangle',
-                        //'background-color': '#aecbdc',
+                        'background-color': '#bbb',
                         'selection-box-color': 'red',
                         'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
                         'font-weight': 'lighter',
                         'font-size': '15px',
                         'width':'40',
                         'height':'40'
+                    }
+                },
+                {
+                    selector: 'node[type="eventAction"]',
+                    css: {
+                        'content': 'data(label)',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'shape': 'star',
+                        'background-color': '#edbd21',
+                        'selection-box-color': 'red',
+                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
+                        'font-weight': 'lighter',
+                        'font-style': 'italic',
+                        'font-size': '15px',
+                        'width':'40',
+                        'height':'40'
+                    }
+                },
+                {
+                    selector: 'node:selected',
+                    css: {
+                        'background-color': '#45F'
                     }
                 },
                 {
@@ -947,8 +998,7 @@ $(function(){
                         'padding-bottom': '10px',
                         'padding-right': '10px',
                         'text-valign': 'top',
-                        'text-halign': 'center',
-                        'background-color': '#bbb'
+                        'text-halign': 'center'
                     }
                 },
                 {
@@ -999,6 +1049,7 @@ $(function(){
 
                     sourceParameters.next.push({
                         flags: [],
+                        status: 'Success',
                         name: targetNodes[i].data().id // Note use id, not name since name can be changed
                     });
 

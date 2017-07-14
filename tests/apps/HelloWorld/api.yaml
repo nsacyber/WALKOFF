@@ -125,3 +125,16 @@ actions:
         description: summation
         schema:
           type: number
+
+  Sample Event:
+    run: sample_event
+    parameters:
+        - name: arg1
+          required: true
+          type: number
+    event: Event1
+    returns:
+      Success:
+        description: summation
+        schema:
+          type: number

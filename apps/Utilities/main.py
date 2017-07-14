@@ -1,6 +1,9 @@
-from apps import App, action
+from apps import App, action, event
 import time
 import json
+import csv
+import sys
+from apps.Utilities.events import wait
 
 
 class Main(App):
@@ -40,4 +43,31 @@ class Main(App):
     @action
     def pause(self, seconds):
         time.sleep(seconds)
+        return 'success'
+
+    @action
+    def write_ips_to_csv(self, ips_reference, path):
+        ips = json.loads(ips_reference)
+
+        if sys.version_info[0] == 2:
+            with open(path, 'wb') as csvfile:
+                fieldnames = ['Host', 'Up']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                for ip in ips:
+                    if ips[ip] == "up":
+                        writer.writerow({'Host': ip, 'Up': 'X'})
+                    else:
+                        writer.writerow({'Host': ip})
+        else:
+            with open(path, 'w', newline='') as csvfile:
+                fieldnames = ['Host', 'Up']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                for ip in ips:
+                    if ips[ip] == "up":
+                        writer.writerow({'Host': ip, 'Up': 'X'})
+                    else:
+                        writer.writerow({'Host': ip})
+
+    @event(wait)
+    def wait_for_event(self, data):
         return 'success'

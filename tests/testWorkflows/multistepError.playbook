@@ -24,19 +24,19 @@
                     </filters>
                 </flag>
             </next>
-            <error step="1"></error>
         </step>
         <step id="1">
             <action>Buggy</action>
             <app>HelloWorld</app>
             <device>hwTest</device>
-            <error step="error">
+            <next step="error">
+                <status>UnhandledException</status>
                 <flag action="regMatch">
                     <args>
                         <regex format="str">(.*)</regex>
                     </args>
                 </flag>
-            </error>
+            </next>
         </step>
         <step id="error">
             <action>repeatBackToMe</action>
