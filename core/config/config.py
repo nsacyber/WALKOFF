@@ -52,12 +52,12 @@ def write_values_to_file(keys=None):
 reinitialize_case_db_on_startup = True
 
 tls_version = "1.2"
-https = "false"
+https = False
 
-debug = "True"
-default_server = "True"
+debug = True
+default_server = True
 host = "127.0.0.1"
-port = "5000"
+port = 5000
 
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'

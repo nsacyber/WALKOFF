@@ -13,6 +13,7 @@
 		'ts': 'client/node_modules/plugin-typescript/lib/plugin.js',
 		'tsconfig.json': 'client/tsconfig.json',
 		'typescript': 'client/node_modules/typescript/lib/typescript.js',
+		'@ng-bootstrap/ng-bootstrap': 'client/node_modules/@ng-bootstrap/ng-bootstrap/bundles/ng-bootstrap.js',
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension
