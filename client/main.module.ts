@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 import { HttpModule } from '@angular/http';
 // import { DataTableModule } from 'angular2-datatable';
+// import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -18,6 +19,7 @@ import { SettingsComponent } from './settings/settings.component';
 		HttpModule,
 		RoutingModule,
 		// DataTableModule,
+		// NgbModule.forRoot()
 	],
 	declarations: [
 		MainComponent,

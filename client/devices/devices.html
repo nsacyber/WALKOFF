@@ -1,0 +1,25 @@
+<div class="content" id="main">
+    <div id="header">
+        <h1> Device Management </h1>
+    </div>
+    <div id="appSelect" class="col-xs-3">
+        <h3> Apps </h3>
+        <select id="appList" size="10" multiple></select>
+    </div>
+    <div id="deviceSelect" class="col-xs-3">
+        <h3> Devices </h3>
+        <select id="deviceList" size="10" multiple></select>
+        <div>
+            <button id="removeDevice" class="btn btn-danger">Remove Device</button>
+        </div>
+    </div>
+    <div id="parameterSelect" class="col-xs-6 ">
+        <h3> Parameters </h3>
+        <form id="deviceForm">
+            {% from "pages/_formhelpers.html" import render_field %} {{ render_field(form.name) }} {{ render_field(form.username) }}
+            {{ render_field(form.pw) }} {{ render_field(form.ipaddr) }} {{ render_field(form.port) }}
+        </form>
+        <button id="addNewDevice" class="btn btn-primary">Add New Device</button>
+        <button id="editDevice" name="editDevice" class="btn btn-primary">Edit Device</button>
+    </div>
+</div>

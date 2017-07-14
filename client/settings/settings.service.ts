@@ -40,14 +40,6 @@ export class SettingsService {
 			.catch(this.handleError);
 	};
 
-	//TODO: temporary, should remove once the API is updated to properly return user objects
-	getUserNames() : Promise<string[]> {
-		return this.http.get('/users', this.requestOptions)
-			.toPromise()
-			.then(this.extractData)
-			.catch(this.handleError);
-	};
-
 	addUser(user: User) : Promise<User> {
 		return this.http.put('/users', user, this.requestOptions)
 			.toPromise()
@@ -78,13 +70,15 @@ export class SettingsService {
 
 	private handleError (error: Response | any) {
 		let errMsg: string;
+		let err: string;
 		if (error instanceof Response) {
 			const body = error.json() || '';
-			const err = body.error || JSON.stringify(body);
+			err = body.error || body.detail || JSON.stringify(body);
 			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
 		} else {
-			errMsg = error.message ? error.message : error.toString();
+			err = errMsg = error.message ? error.message : error.toString();
 		}
 		console.error(errMsg);
+		throw new Error(err);
 	}
 }

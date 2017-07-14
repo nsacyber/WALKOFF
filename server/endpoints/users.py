@@ -10,7 +10,8 @@ def read_all_users():
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        result = str(running_context.User.query.all())
+        result = [user.display() for user in running_context.User.query.all()]
+
         return result, SUCCESS
     return __func()
 

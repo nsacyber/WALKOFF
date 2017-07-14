@@ -3,132 +3,159 @@
         <li class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
         <li><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
     </ul>
+    <div class="tab-content">
+        <div id="systemSettings" class="tab-pane fade in active">
+            <h1 class="settingsHeader">System Settings</h1>
+            <div class="row">
+                <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
+                    <div class="col-md-4">
+                        <h3>Path Configuration</h3>
+                        <div class="form-group">
+                            <label for="name">Workflows Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Templates Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.templates_path" name="templates_path" required>
+                        </div>
+                        <!--<div class="form-group">
+                            <label for="name">Profile Visualizations Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.profile_visualizations_path" name="profile_visualizations_path"
+                                required>
+                        </div>-->
+                        <!--<div class="form-group">
+                            <label for="name">Keywords Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.keywords_path" name="keywords_path" required>
+                        </div>-->
+                        <div class="form-group">
+                            <label for="name">WALKOFF Database Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.db_path" name="db_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">WALKOFF Database Type</label>
+                            <select class="form-control" [(ngModel)]="configuration.walkoff_db_type" name="walkoff_db_type">
+                                <option *ngFor="let i of dbTypes" [value]="i" [label]="i"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Case Database Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.case_db_path" name="case_db_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Case Database Type</label>
+                            <select class="form-control" [(ngModel)]="configuration.case_db_type" name="case_db_type">
+                                <option *ngFor="let i of dbTypes" [value]="i" [label]="i"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Clear Case Database on Startup</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.clear_case_db_on_startup" name="clear_case_db_on_startup"
+                                required>
+                        </div>
+                    </div>
 
-    <div id="systemSettings" class="tab-pane fade in active">
-        <h1 class="settingsHeader">System Settings</h1>
-        <div class="row">
-            <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
-                <div class="col-md-4">
-                    <h3>Path Configuration</h3>
-                    <div class="form-group">
-                        <label for="name">Workflows Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
+                    <div class="col-md-4">
+                        <h3>Authorization Configuration</h3>
+                        <div class="form-group">
+                            <label for="name">Use HTTPS</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">TLS Version</label>
+                            <select class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version">
+                                <option *ngFor="let i of tlsVersions" [value]="i" [label]="i"></option>
+                            </select>
+                        </div>
+                        <!--<div class="form-group">
+                            <label for="name">Certificate Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.certificate_path" name="certificate_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Private Key Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.private_key_path" name="private_key_path" required>
+                        </div>-->
                     </div>
-                    <div class="form-group">
-                        <label for="name">Templates Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.templates_path" name="templates_path" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Profile Visualizations Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.profile_visualizations_path" name="profile_visualizations_path"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Keywords Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.keywords_path" name="keywords_path" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Database Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.db_path" name="db_path" required>
-                    </div>
-                </div>
 
-                <div class="col-md-4">
-                    <h3>Authorization Configuration</h3>
-                    <div class="form-group">
-                        <label for="name">Use HTTPS</label>
-                        <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
+                    <div class="col-md-4">
+                        <h3>Interface Configuration</h3>
+                        <!--<div class="form-group">
+                            <label for="name">Debug Mode</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.debug" name="debug" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Default Server</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.default_server" name="default_server" required>
+                        </div>-->
+                        <div class="form-group">
+                            <label for="name">Host Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.host" name="host" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Port</label>
+                            <input type="number" min="1" max="65535" class="form-control" [(ngModel)]="configuration.port" name="port" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="name">TLS Version</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Certificate Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.certificate_path" name="certificate_path" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Private Key Path</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.private_key_path" name="private_key_path" required>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <h3>Interface Configuration</h3>
-                    <div class="form-group">
-                        <label for="name">Debug Mode</label>
-                        <input type="checkbox" class="form-control" [(ngModel)]="configuration.debug" name="debug" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Default Server</label>
-                        <input type="checkbox" class="form-control" [(ngModel)]="configuration.default_server" name="default_server" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Host Address</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.host" name="host" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Port</label>
-                        <input type="text" class="form-control" [(ngModel)]="configuration.port" name="port" required>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="row">
-            <button (click)="updateConfiguration()" id="formSubmit" class="btn btn-primary">Submit Changes</button>
-            <button (click)="resetConfiguration()" id="resetConfiguration" class="btn btn-danger">Reset to Defaults</button>
-        </div>
-    </div>
-
-    <div id="userSettings" class="tab-pane fade">
-        <div class="row">
-            <h1 class="settingsHeader">User Settings</h1>
-        </div>
-
-        <div class="row">
-            <!--<div class="col-xs-6">
-                    <label class="label-control">Filter:</span>
-                    <input class="form-control" [(ngModel)]="filterQuery"/>
-                </div>-->
-            <div class="col-xs-6">
-                <button (click)="addUser()" class="btn btn-primary"><span class="fa fa-plus"></span></button>
+                </form>
+            </div>
+            <div class="row">
+                <button (click)="updateConfiguration()" id="formSubmit" class="btn btn-primary">Submit Changes</button>
+                <button (click)="resetConfiguration()" id="resetConfiguration" class="btn btn-danger">Reset to Defaults</button>
             </div>
         </div>
 
-        <div class="row">
+        <div id="userSettings" class="tab-pane fade">
+            <h1 class="settingsHeader">User Settings</h1>
+
+            <div class="row">
+                <!--<div class="col-xs-6">
+                    <label class="label-control">Filter:</span>
+                    <input class="form-control" [(ngModel)]="filterQuery"/>
+                </div>-->
+                <div class="col-xs-6">
+                    <button (click)="addUser()" class="btn btn-primary"><span class="fa fa-plus"></span>Add User</button>
+                </div>
+            </div>
+
             <table class="table table-striped">
                 <!--[mfData]="userNames" #mf="mfDataTable"
                     [mfRowsOnPage]="rowsOnPage" [(mfSortBy)]="sortBy" [(mfSortOrder)]="sortOrder">-->
                 <thead>
                     <tr>
-                        <th style="width: 20%"></th>
-                        <th style="width: 70%">
+                        <th style="width: 30%">
                             User Name
                             <!--<mfDefaultSorter by="username">User Name</mfDefaultSorter>-->
+                        </th>
+                        <th style="width: 40%">
+                            Role(s)
+                        </th>
+                        <th style="width: 10%">
+                            Active?
                         </th>
                         <!--<th style="width: 60%">
                             <mfDefaultSorter by="roles">Roles</mfDefaultSorter>
                         </th>-->
-                        <th style="width: 10%"></th>
-                    </tr>
-                    <tr>
-                        <th colspan="5">
+                        <th style="width: 20%">
+                            Actions
                         </th>
                     </tr>
+                    <!--<tr>
+                        <th colspan="5">
+                        </th>
+                    </tr>-->
                 </thead>
                 <tbody>
-                    <!--<tr *ngFor="let item of mf.userNames">-->
-                    <tr *ngFor="let item of userNames">
+                    <!--<tr *ngFor="let user of mf.users">-->
+                    <tr *ngFor="let user of users">
+                        <td>{{user.username}}</td>
+                        <td>{{getFriendlyRoles(user.roles)}}</td>
+                        <td>{{getFriendlyBool(user.active)}}</td>
                         <td>
-                            <button (click)="editUser(item)" class="btn btn-primary"><span class="fa fa-times"></span></button>
-                        </td>
-                        <td>{{item}}</td>
-                        <td>
-                            <button (click)="deleteUser(item)" class="btn btn-danger"><span class="fa fa-edit"></span></button>
+                            <button (click)="editUser(user)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit User</button>
+                            <button (click)="deleteUser(user.username)" class="btn btn-danger"><span class="fa fa-times"></span>Delete User</button>
                         </td>
                     </tr>
                     <!--<tr *ngIf="!mf.userNames || !mf.userNames.length">-->
-                    <tr *ngIf="!userNames || !userNames.length">
+                    <tr *ngIf="!users || !users.length">
                         <td colspan="3">No users to display</td>
                     </tr>
                 </tbody>
@@ -140,9 +167,8 @@
                     </tr>
                     </tfoot>-->
             </table>
-        </div>
 
-        <!--<div id="userForms" class="row">
+            <!--<div id="userForms" class="row">
                 <div id="currentUserInfo" class="col-md-4">
                     <h3>User Configuration</h3>
 
@@ -175,5 +201,7 @@
                     <button id="submitUpdate" class="btn btn-primary">Submit Changes</button>
                 </div>
             </div>-->
+        </div>
     </div>
+
 </div>

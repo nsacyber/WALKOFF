@@ -12,7 +12,7 @@
 		<start>2</start>
 		<steps>
 			<step id="2">
-				<id>2</id>
+				<name>2</name>
 				<app>FacebookUserPost</app>
 				<action>post to wall</action>
 				<position>
