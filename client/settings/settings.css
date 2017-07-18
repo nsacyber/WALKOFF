@@ -14,17 +14,13 @@ input[type=password] {
 	height: 30px;
 }*/
 
-/*AdminLTE overrides, should remove once we remove the AdminLTE styling*/
+
 input[type=checkbox].form-control {
-	-webkit-appearance: checkbox;
-	-moz-appearance: checkbox;
 	width: 34px;
 	margin: 0 5px;
 }
 
 input[type=radio].form-control {
-	-webkit-appearance: radio;
-	-moz-appearance: radio;
 	width: 34px;
 	margin: 0 5px;
 }

@@ -109,7 +109,8 @@ class User(Base, UserMixin):
         Returns:
             The dictionary representation of a User object.
         """
-        return {"username": self.email,
+        return {"id": self.id,
+                "username": self.email,
                 "roles": [role.to_string() for role in self.roles],
                 "active": self.active}
 

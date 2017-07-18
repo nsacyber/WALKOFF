@@ -4,6 +4,7 @@
 	var map = {
 		// 'login': 'client/modules/login',
 		'main': 'client/build',
+		// 'npm:' : 'client/node_modules/',
 		'models': 'client/models',
 		'rxjs': 'client/node_modules/rxjs',
 		//'angular2-in-memory-web-api': 'client/node_modules/angular2-in-memory-web-api',

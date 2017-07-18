@@ -16,21 +16,21 @@ def read_all_users():
     return __func()
 
 
-def create_user(user_name):
+def create_user():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        form = forms.NewUserForm(request.form)
-        if not running_context.User.query.filter_by(email=user_name).first():
-            un = user_name
-            pw = encrypt_password(form.password.data)
+        data = request.get_json()
+        un = data['username']
+        if not running_context.User.query.filter_by(email=un).first():
+            pw = encrypt_password(data['password'])
 
             # Creates User
-            u = running_context.user_datastore.create_user(email=un, password=pw)
+            u = running_context.user_datastore.create_user(email=un, password=pw, active=data['active'])
 
-            if form.role.data:
-                u.set_roles(form.role.data)
+            if 'roles' in data:
+                u.set_roles(data['roles'])
 
             has_admin = False
             for role in u.roles:
@@ -41,29 +41,29 @@ def create_user(user_name):
 
             running_context.db.session.commit()
             current_app.logger.info('User added: {0}'.format(
-                {"name": user_name, "roles": [str(_role) for _role in u.roles]}))
-            return {}, OBJECT_CREATED
+                {"name": u.email, "roles": [str(_role) for _role in u.roles]}))
+            return u.display(), OBJECT_CREATED
         else:
-            current_app.logger.warning('Could not create user {0}. User already exists.'.format(user_name))
-            return {"error": "User already exists.".format(user_name)}, OBJECT_EXISTS_ERROR
+            current_app.logger.warning('Could not create user {0}. User already exists.'.format(un))
+            return {"error": "User {0} already exists.".format(un)}, OBJECT_EXISTS_ERROR
     return __func()
 
 
-def read_user(user_name):
+def read_user(user_id):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        user = running_context.user_datastore.get_user(user_name)
+        user = running_context.user_datastore.get_user(user_id)
         if user:
             return user.display(), SUCCESS
         else:
-            current_app.logger.error('Could not display user {0}. User does not exist.'.format(user_name))
-            return {"error": 'User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
+            current_app.logger.error('Could not display user {0}. User does not exist.'.format(user_id))
+            return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
     return __func()
 
 
-def update_user(user_name):
+def update_user():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/users'])
@@ -84,22 +84,22 @@ def update_user(user_name):
     return __func()
 
 
-def delete_user(user_name):
+def delete_user(user_id):
     from server.flaskserver import running_context, current_user
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        user = running_context.user_datastore.get_user(user_name)
+        user = running_context.user_datastore.get_user(user_id)
         if user:
             if user != current_user:
                 running_context.user_datastore.delete_user(user)
                 running_context.db.session.commit()
-                current_app.logger.info('User {0} deleted'.format(user_name))
+                current_app.logger.info('User {0} deleted'.format(user.email))
                 return {}, SUCCESS
             else:
-                current_app.logger.error('Could not delete user {0}. User is current user.'.format(user_name))
-                return {"error": 'User is current user.'.format(user_name)}, UNAUTHORIZED_ERROR
+                current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.email))
+                return {"error": 'User {0} is current user.'.format(user.email)}, UNAUTHORIZED_ERROR
         else:
-            current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_name))
-            return {"error": 'User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
+            current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_id))
+            return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
     return __func()

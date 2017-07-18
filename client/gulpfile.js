@@ -15,13 +15,10 @@ gulp.task('ts', function () {
 });
 
 gulp.task('watch', function () {
-	// Watch .ts files
-	gulp.watch('**/*.ts', function(event) {
+	var watcher = gulp.watch('**/*.ts', ['ts']);
+	watcher.on('change', function(event) {
 		console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
-		gulp.run('ts');
 	});
 });
 
-gulp.task('default', function() {
-	gulp.run('ts', 'watch');
-});
+gulp.task('default', ['ts', 'watch']);

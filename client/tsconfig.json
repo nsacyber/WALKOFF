@@ -3,7 +3,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "lib": ["es2015", "dom"],
-    "module": "system",
+    "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "removeComments": true,

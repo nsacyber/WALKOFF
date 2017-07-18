@@ -16,7 +16,7 @@
 				<!--TODO: roles-->
 			</div>
 			<div class="col-xs-6">
-				<div class="form-group">
+				<div class="form-group" *ngIf="workingUser.id">
 					<label for="name">Current Password</label>
 					<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" name="currentPassword" required>
 				</div>
@@ -24,14 +24,14 @@
 					<label for="name">New Password</label>
 					<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" name="newPassword" required>
 				</div>
-				<div class="form-group">
+				<div class="form-group" *ngIf="workingUser.id">
 					<label for="name">Confirm New Password</label>
-					<input type="password" class="form-control" [(ngModel)]="configuration.confirmNewPassword" name="confirmNewPassword" required>
+					<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" name="confirmNewPassword" required>
 				</div>
 			</div>
 		</div>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-secondary" data-dismiss="userModal">Undo Changes and Close</button>
-	<button type="button" class="btn btn-primary" (click)="submit(workingUser)">{{submitText}}</button>
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" (click)="submit()">{{submitText}}</button>
 </div>

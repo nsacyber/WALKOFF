@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { SettingsService } from './settings.service';
@@ -44,14 +44,14 @@ export class SettingsComponent {
 	getConfiguration(): void {
 		this.settingsService
 			.getConfiguration()
-			.then(configuration => _.assign(this.configuration, configuration))
+			.then(configuration => Object.assign(this.configuration, configuration))
 			.catch(e => console.log(e));
 	}
 
 	updateConfiguration(): void {
 		this.settingsService
 			.updateConfiguration(this.configuration)
-			.then(configuration => _.assign(this.configuration, configuration))
+			.then(configuration => Object.assign(this.configuration, configuration))
 			.catch(e => console.log(e));
 	}
 
@@ -59,9 +59,7 @@ export class SettingsComponent {
 	resetConfiguration(): void {
 		if (!confirm("Are you sure you want to reset the configuration? Note that you'll have to save the configuration after reset to update it on the server.")) return; 
 
-		_.assign(this.configuration, Configuration.getDefaultConfiguration());
-
-		console.log(this.configuration);
+		Object.assign(this.configuration, Configuration.getDefaultConfiguration());
 	}
 
 	//User Settings
@@ -76,7 +74,14 @@ export class SettingsComponent {
 		const modalRef = this.modalService.open(SettingsUserModalComponent);
 		modalRef.componentInstance.title = 'Add New User';
 		modalRef.componentInstance.submitText = 'Add User';
-		modalRef.componentInstance.workingUser = new WorkingUser();
+
+		let workingUser = new WorkingUser();
+		workingUser.active = true;
+		modalRef.componentInstance.workingUser = workingUser;
+		
+		modalRef.result
+			.then(workingUser => WorkingUser.toUser(workingUser))
+			.then(user => this.addUserOrSaveChanges(user));
 	}
 
 	editUser(user: User): void {
@@ -87,13 +92,14 @@ export class SettingsComponent {
 	}
 
 	addUserOrSaveChanges(user: User): void {
+		console.log(user);
 		//If user has an ID, user already exists, call update
 		if (user.id) {
 			this.settingsService
 				.editUser(user)
 				.then((user) => {
 					let toUpdate = _.find(this.users, u => u.id === user.id);
-					_.assign(toUpdate, user);
+					Object.assign(toUpdate, user);
 				})
 				.catch(e => console.log(e));
 		}
@@ -105,12 +111,12 @@ export class SettingsComponent {
 		}
 	}
 
-	deleteUser(userName: string): void {
-		if (!confirm(`Are you sure you want to delete the user "${userName}"?`)) return; 
+	deleteUser(userToDelete: User): void {
+		if (!confirm(`Are you sure you want to delete the user "${userToDelete.username}"?`)) return;
 
 		this.settingsService
-			.deleteUser(userName)
-			.then(() => this.users = _.reject(this.users, user => user.username === userName))
+			.deleteUser(userToDelete.id)
+			.then(() => this.users = _.reject(this.users, user => user.id === userToDelete.id))
 			.catch(e => console.log(e));
 	}
 
