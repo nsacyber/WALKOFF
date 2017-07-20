@@ -4,6 +4,7 @@
 	var map = {
 		// 'login': 'client/modules/login',
 		'main': 'client/build',
+		// 'npm:' : 'client/node_modules/',
 		'models': 'client/models',
 		'rxjs': 'client/node_modules/rxjs',
 		//'angular2-in-memory-web-api': 'client/node_modules/angular2-in-memory-web-api',
@@ -14,6 +15,7 @@
 		'tsconfig.json': 'client/tsconfig.json',
 		'typescript': 'client/node_modules/typescript/lib/typescript.js',
 		'@ng-bootstrap/ng-bootstrap': 'client/node_modules/@ng-bootstrap/ng-bootstrap/bundles/ng-bootstrap.js',
+		'@swimlane/ngx-datatable': 'client/node_modules/@swimlane/ngx-datatable/release/index.js'
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension

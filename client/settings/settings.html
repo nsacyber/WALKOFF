@@ -107,23 +107,50 @@
             <h1 class="settingsHeader">User Settings</h1>
 
             <div class="row">
-                <!--<div class="col-xs-6">
-                    <label class="label-control">Filter:</span>
-                    <input class="form-control" [(ngModel)]="filterQuery"/>
-                </div>-->
                 <div class="col-xs-6">
                     <button (click)="addUser()" class="btn btn-primary"><span class="fa fa-plus"></span>Add User</button>
                 </div>
+                <div class="col-xs-6">
+                    <div class="form-group row">
+                        <label class="col-xs-2 col-form-label">Search Filter</label>
+                        <div class="col-xs-10">
+                            <input class="form-control" [(ngModel)]="filterQuery"/>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <table class="table table-striped">
-                <!--[mfData]="userNames" #mf="mfDataTable"
-                    [mfRowsOnPage]="rowsOnPage" [(mfSortBy)]="sortBy" [(mfSortOrder)]="sortOrder">-->
+            <ngx-datatable #userTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
+                [rows]='users' [limit]="10">
+                <!-- Column Templates -->
+                <ngx-datatable-column name="Username" [flexGrow]="3">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        {{row.username}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Roles" [flexGrow]="3">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        {{getFriendlyRoles(row.roles)}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Active" [flexGrow]="1">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        {{getFriendlyBool(row.active)}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <button (click)="editUser(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit User</button>
+                        <button (click)="deleteUser(row)" class="btn btn-danger"><span class="fa fa-times"></span>Delete User</button>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+
+            <!--<table class="table table-striped">
                 <thead>
                     <tr>
                         <th style="width: 30%">
                             User Name
-                            <!--<mfDefaultSorter by="username">User Name</mfDefaultSorter>-->
                         </th>
                         <th style="width: 40%">
                             Role(s)
@@ -131,77 +158,26 @@
                         <th style="width: 10%">
                             Active?
                         </th>
-                        <!--<th style="width: 60%">
-                            <mfDefaultSorter by="roles">Roles</mfDefaultSorter>
-                        </th>-->
                         <th style="width: 20%">
                             Actions
                         </th>
                     </tr>
-                    <!--<tr>
-                        <th colspan="5">
-                        </th>
-                    </tr>-->
                 </thead>
                 <tbody>
-                    <!--<tr *ngFor="let user of mf.users">-->
                     <tr *ngFor="let user of users">
                         <td>{{user.username}}</td>
                         <td>{{getFriendlyRoles(user.roles)}}</td>
                         <td>{{getFriendlyBool(user.active)}}</td>
                         <td>
                             <button (click)="editUser(user)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit User</button>
-                            <button (click)="deleteUser(user.username)" class="btn btn-danger"><span class="fa fa-times"></span>Delete User</button>
+                            <button (click)="deleteUser(user)" class="btn btn-danger"><span class="fa fa-times"></span>Delete User</button>
                         </td>
                     </tr>
-                    <!--<tr *ngIf="!mf.userNames || !mf.userNames.length">-->
                     <tr *ngIf="!users || !users.length">
                         <td colspan="3">No users to display</td>
                     </tr>
                 </tbody>
-                <!--<tfoot>
-                    <tr>
-                        <td colspan="3">
-                            <mfBootstrapPaginator [rowsOnPageSet]="[10,25,50]"></mfBootstrapPaginator>
-                        </td>
-                    </tr>
-                    </tfoot>-->
-            </table>
-
-            <!--<div id="userForms" class="row">
-                <div id="currentUserInfo" class="col-md-4">
-                    <h3>User Configuration</h3>
-
-                    <form id="userForm">
-                        {% from "pages/_formhelpers.html" import render_field %} {{ render_field(userForm.username) }} {{ render_field(userForm.password)
-                        }} {{ render_field(userForm.active) }}
-                    </form>
-                    <div id="crudButtons">
-                        <button id="addUser" class="btn btn-primary">Add User</button>
-                        <button id="editUser" class="btn btn-success">Edit User</button>
-                        <button id="deleteUser" class="btn btn-danger">Delete User</button>
-                    </div>
-                </div>
-                <div id="createUser" class="col-md-4">
-                    <h3>Add user</h3>
-                    <form id="addUserForm">
-                        {% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
-                        }} {{ render_field(addUserForm.roles) }} {{ render_field(addUserForm.password) }} {{ render_field(addUserForm.confirm)
-                        }}
-                    </form>
-                    <button id="saveNewUser" class="btn btn-primary">Submit</button>
-                </div>
-                <div id="updateUser" class="col-md-4">
-                    <h3>Edit User</h3>
-                    <form id="updateUserForm">
-                        {% from "pages/_formhelpers.html" import render_field %} {{ render_field(addUserForm.username) }} {{ render_field(addUserForm.email)
-                        }} {{ render_field(addUserForm.roles) }} {{ render_field(addUserForm.password) }} {{ render_field(addUserForm.confirm)
-                        }}
-                    </form>
-                    <button id="submitUpdate" class="btn btn-primary">Submit Changes</button>
-                </div>
-            </div>-->
+            </table>-->
         </div>
     </div>
-
 </div>

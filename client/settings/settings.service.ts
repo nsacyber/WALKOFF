@@ -56,8 +56,8 @@ export class SettingsService {
 			.catch(this.handleError);
 	}
 
-	deleteUser(userName: string) : Promise<void> {
-		return this.http.delete('/users/' + userName, this.requestOptions)
+	deleteUser(id: number) : Promise<void> {
+		return this.http.delete('/users/' + id, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
