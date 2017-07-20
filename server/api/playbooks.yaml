@@ -31,7 +31,7 @@
     description: ''
     operationId: server.endpoints.playbooks.create_playbook
     consumes:
-      - mutlipart/form-data
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -216,7 +216,7 @@
               type: array
               items:
                 type: string
-              example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
+              example: [workflow_1, HelloWorldWorkflow, ThatOneWorkflow]
       461:
         description: Playbook does not exist.
         schema:
@@ -461,6 +461,8 @@
     responses:
       202:
         description: Success asynchronous.
+        schema:
+          $ref: '#/definitions/WorkflowId'
       461:
         description: Playbook or workflow does not exist.
         schema:
@@ -483,17 +485,18 @@
         description: 'The name that needs to be fetched. '
         required: true
         type: string
+      - name: id
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/WorkflowId'
+    consumes:
+      - application/json
     produces:
       - application/json
     responses:
       200:
         description: Success
-        schema:
-          description: The UUID necessary to resume the workflow (for security purposes)
-          type: object
-          properties:
-            uuid:
-              type: string
       461:
         description: Playbook or workflow does not exist.
         schema:
@@ -516,14 +519,13 @@
         description: 'The name that needs to be fetched. '
         required: true
         type: string
-      - in: body
-        name: body
-        description: The UUID for this transaction, returned from pause_workflow
+      - name: id
+        in: body
         required: true
         schema:
-          $ref: '#/definitions/ResumeWorkflow'
+          $ref: '#/definitions/WorkflowId'
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
     responses:
@@ -564,6 +566,10 @@
         description: Success
       461:
         description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      463:
+        description: Invalid action or app in workflow
         schema:
           $ref: '#/definitions/Error'
       515:

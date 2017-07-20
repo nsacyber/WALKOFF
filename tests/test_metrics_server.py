@@ -70,26 +70,26 @@ class MetricsServerTest(ServerTestCase):
 
 
     def test_convert_workflow_time_average(self):
-        test1 = {'worfklow1': {'count': 0,
+        test1 = {'workflow1': {'count': 0,
                                'avg_time': timedelta(100, 0, 1)},
-                 'worfklow2': {'count': 2,
+                 'workflow2': {'count': 2,
                                'avg_time': timedelta(0, 0, 1000)},
-                 'worfklow3': {'count': 0,
+                 'workflow3': {'count': 0,
                                'avg_time': timedelta(0, 100, 1)},
-                 'worfklow4': {'count': 100,
+                 'workflow4': {'count': 100,
                                'avg_time': timedelta(1, 100, 500)}}
         expected_json = {'workflows': [{'count': 100,
                                         'avg_time': '1 day, 0:01:40.000500',
-                                        'name': 'worfklow4'},
+                                        'name': 'workflow4'},
                                        {'count': 2,
                                         'avg_time': '0:00:00.001000',
-                                        'name': 'worfklow2'},
+                                        'name': 'workflow2'},
                                        {'count': 0,
                                         'avg_time': '0:01:40.000001',
-                                        'name': 'worfklow3'},
+                                        'name': 'workflow3'},
                                        {'count': 0,
                                         'avg_time': '100 days, 0:00:00.000001',
-                                        'name': 'worfklow1'}]}
+                                        'name': 'workflow1'}]}
         metrics.workflow_metrics = test1
         converted = _convert_workflow_time_averages()
         orderless_list_compare(self, converted.keys(), ['workflows'])
@@ -99,7 +99,7 @@ class MetricsServerTest(ServerTestCase):
 
     def test_action_metrics(self):
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'multistepError.workflow')
+                                                                        'multistepError.playbook')
 
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
 
@@ -110,11 +110,11 @@ class MetricsServerTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'multistepError.workflow')
+                                                                        'multistepError.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'tieredWorkflow.workflow')
+                                                                        'tieredWorkflow.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                        'multiactionWorkflowTest.workflow')
+                                                                        'multiactionWorkflowTest.playbook')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')

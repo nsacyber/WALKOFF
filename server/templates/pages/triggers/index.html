@@ -1,38 +1,39 @@
 <html>
     <head>
-        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <!--<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">-->
         <link rel="stylesheet" href="{{ url_for('static', filename='jqueryui.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
         <style>
+            #main {
+                padding: 10px 15px;
+            }
             .selectColumn{
                 border:solid;
                 height:800px;
             }
-            #trigger{
-                width:130px;
+            #triggerList{
+                width:90%;
                 background-color: #F0F8FF;
                 border: none;
                 margin-left:10px;
             }
-            #deviceList{
-                width:130px;
+            /*#deviceList{
                 background-color: #F0F8FF;
                 border: none;
                 margin-left:10px;
-            }
+            }*/
 
             h1 {
-                font-family: 'Lato', sans-serif;
-                font-weight: bold;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+                /*font-weight: bold;
                 font-size: 30px;
-                color: #255876;
+                color: #255876;*/
             }
             h3 {
-              font-family: 'Lato', sans-serif;
-              font-weight: bold;
-              /*font-size: 20px;*/
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+              /*font-weight: bold;*/
             }
-            input {
+            /*input {
               background-color: #F0F8FF;
               border: none;
             }
@@ -49,7 +50,7 @@
               background-color: #102632;
               color: #fff;
               border: none;
-            }
+            }*/
             button {
               display: block;
               margin-top: 10px;
@@ -58,71 +59,52 @@
             .selectColumn {
               border: none;
             }
-            .col-xs-2 {
+            /*.col-xs-2 {
               width: 30%;
-            }
+            }*/
 
         </style>
     </head>
     <body>
-        <div id="header">
-            <h1> Triggers </h1>
-        </div>
         <div class="content" id="main">
-            <div class="row">
-                <div id="deviceSelect" class="col-md-2">
-                <h3> Triggers </h3>
-                <select id="trigger" size="10" multiple></select>
-                <div>
-                    <button class="btn btn-danger remove">Delete Trigger</button>
-                    <button id="editTrigger" class="btn btn-success">Edit</button>
-
-                </div>
-
-                </div>
-                <div class="col-md-3">
-                    <h2>Playbook</h2>
-                    <div class="list-group playbook">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <h2>Workflow</h2>
-                    <div class="list-group workflow">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <h2>Conditional</h2>
-                    <div class="list-group conditional">
-                    </div>
-                </div>
-
+            <div id="header">
+                <h1> Triggers </h1>
             </div>
             <div class="row">
-
-
-                <div id="parameterSelect" class="col-md-4 ">
-                    <form id="deviceForm" class="hidden">
+                <div id="triggerSelect" class="col-md-4">
+                    <h3>Triggers</h3>
+                    <select id="triggerList" size="10" multiple></select>
+                    <div>
+                        <button class="btn btn-danger remove">Delete Trigger</button>
+                        <button id="editTrigger" class="btn btn-primary">Edit Trigger</button>
+                    </div>
+                    <h3>Selected Trigger Info</h3>
+                    <h4>Playbook</h4>
+                    <div class="list-group playbook"></div>
+                    <h4>Workflow</h4>
+                    <div class="list-group workflow"></div>
+                    <h4>Conditional</h4>
+                    <div class="list-group conditional"></div>
+                </div>
+                <div id="parameterSelect" class="col-md-8">
+                    <form id="triggerForm" class="hidden">
                         {% from "pages/_formhelpers.html" import render_field, render_multi_field %}
                         {{ render_field(form.name) }}
                         {{ render_field(form.playbook) }}
                         {{ render_field(form.workflow) }}
                         {{ render_field(form.conditional) }}
                     </form>
-                    <div id="conditionalParameters">
-                    </div>
-                    <button id="addTrigger" class="btn btn-primary">Add</button>
-                    <button id="editformSubmit" class="btn btn-success">Submit Edits</button>
-
+                    <div id="conditionalParameters"></div>
+                    <button id="addTrigger" class="btn btn-primary">Add Trigger</button>
+                    <button id="editformSubmit" class="btn btn-primary">Submit Edits</button>
                 </div>
             </div>
-
-            </div>
-
         </div>
         <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
         <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
         <script src="{{ url_for('static', filename='plugins/jsoneditor/jsoneditor.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='plugins/notifyjs/notify.min.js') }}"></script>
         <script type="app/javascript">
             var triggers = {{triggers|safe}};
         </script>

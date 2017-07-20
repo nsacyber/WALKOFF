@@ -3,9 +3,8 @@ from gevent import ssl
 from os.path import isfile
 import json
 from gevent.wsgi import WSGIServer
-import core.case.database as case_database
 from core.config import config, paths
-from server import flaskserver
+from apps import *
 
 logger = logging.getLogger('startserver')
 
@@ -49,6 +48,9 @@ def setup_logger():
 
 
 if __name__ == "__main__":
+    # The order of these imports matter for initialization (should probably be fixed)
+    from server import flaskserver
+    import core.case.database as case_database
     case_database.initialize()
     ssl_context = get_ssl_context()
     flaskserver.running_context.init_threads()
@@ -60,11 +62,13 @@ if __name__ == "__main__":
         host = config.host
         if ssl_context:
             server = WSGIServer((host, port), application=flaskserver.app, ssl_context=ssl_context)
+            proto = 'https'
 
         else:
             server = WSGIServer((host, port), application=flaskserver.app)
+            proto = 'http'
         setup_logger()
-        logger.info('Listening on host https://{0}:{1}'.format(host, port))
+        logger.info('Listening on host {2}://{0}:{1}'.format(host, port, proto))
         try:
             server.serve_forever()
         except KeyboardInterrupt:

@@ -11,7 +11,7 @@ def create_widget_signal_name(app_name, widget_name):
     
     Args:
         app_name (str): The app name
-        widget_name (str): The widget anme
+        widget_name (str): The widget name
     """
     return '{0}{1}{2}'.format(app_name, __widget_signal_name_separator, widget_name)
 

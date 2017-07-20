@@ -1,36 +1,46 @@
-from server import appdevice
-import gevent
+import time
+from tests.apps import App, action, event
+from tests.apps.HelloWorld.exceptions import CustomException
+from tests.apps.HelloWorld.events import event1
 
 
-# There is an associated Hello world test workflow which can be executed
-
-class Main(appdevice.App):
+class Main(App):
     def __init__(self, name=None, device=None):
-        # The parent app constructor looks for a device configuration and returns that as a dict called self.config
-        appdevice.App.__init__(self, name, device)
-        # Functions and Variables that are designed to exist across functions go here
+        App.__init__(self, name, device)
         self.introMessage = {"message": "HELLO WORLD"}
 
-    # Every function in Main is an action that can be taken
-    # Every function needs to define an args argument which receives a dictionary of input parameters
-    def helloWorld(self, args={}):
-        # LOOK AT YOUR CONSOLE WHEN EXECUTING
-        # print(self.introMessage)
+    @action
+    def helloWorld(self):
         return self.introMessage
 
-    # Example using arguments
-    # Repeats back the contents of the call argument
-    def repeatBackToMe(self, args={}):
-        # print("REPEATING: " + args["call"]())
-        return "REPEATING: " + args["call"]()
+    @action
+    def repeatBackToMe(self, call):
+        return "REPEATING: " + call
 
-    # Increments number by one
-    def returnPlusOne(self, args={}):
-        return str(int(args["number"]()) + 1)
+    @action
+    def returnPlusOne(self, number):
+        return number + 1
 
-    def pause(self, args={}):
-        gevent.sleep(args['seconds']())
+    @action
+    def pause(self, seconds):
+        time.sleep(seconds)
+
+    @action
+    def addThree(self, num1, num2, num3):
+        return num1 + num2 + num3
+
+    @action
+    def buggy_action(self):
+        raise CustomException
+
+    @action
+    def json_sample(self, json_in):
+        return (json_in['a'] + json_in['b']['a'] + json_in['b']['b'] + sum(json_in['c']) +
+                sum([x['b'] for x in json_in['d']]))
+
+    @event(event1)
+    def sample_event(self, data, arg1):
+        return data + arg1
 
     def shutdown(self):
-        # print("SHUTTING DOWN")
         return

@@ -9,7 +9,7 @@ from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
 import core.config.config
 import core.config.paths
-from core.helpers import construct_workflow_name_key
+from core.helpers import construct_workflow_name_key, format_exception_message
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from server.return_codes import *
@@ -125,10 +125,10 @@ def import_cases():
                     running_context.db.session.commit()
                 return {"cases": case_subscription.subscriptions_as_json()}, SUCCESS
             except (OSError, IOError) as e:
-                current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, e))
+                current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, format_exception_message(e)))
                 return {"error": "Error reading file."}, IO_ERROR
             except ValueError as e:
-                current_app.logger.error('Error importing cases from file {0}: Invalid JSON {1}'.format(filename, e))
+                current_app.logger.error('Error importing cases from file {0}: Invalid JSON {1}'.format(filename, format_exception_message(e)))
                 return {"error": "Invalid JSON file."}, INVALID_INPUT_ERROR
         else:
             current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
@@ -150,7 +150,7 @@ def export_cases():
             current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
             return SUCCESS
         except (OSError, IOError) as e:
-            current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, e))
+            current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, format_exception_message(e)))
             return {"error": "Could not write to file."}, IO_ERROR
     return __func()
 
@@ -171,12 +171,13 @@ def read_all_events(case):
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
-        result = case_database.case_db.case_events_as_json(case)
-        if result:
-            return result, SUCCESS
-        else:
+        try:
+            result = case_database.case_db.case_events_as_json(case)
+        except:
             current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+
+        return result, SUCCESS
     return __func()
 
 

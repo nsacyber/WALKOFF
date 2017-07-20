@@ -16,7 +16,7 @@ def settings():
     add_user_form = forms.AddUserForm()
     roles = [(x.name, str(x.name)) for x in running_context.Role.query.all()]
     add_user_form.roles.choices = roles
-    return {"systemForm": forms.SettingsForm(), "userForm": user_form, "addUserForm": add_user_form }
+    return {"systemForm": forms.SettingsForm(), "userForm": user_form, "addUserForm": add_user_form}
 
 
 def playbook():

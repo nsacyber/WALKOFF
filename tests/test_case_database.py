@@ -5,6 +5,7 @@ import core.case.database as case_database
 from core.case.callbacks import _EventEntry
 from core.executionelement import ExecutionElement
 from tests.util.case import *
+from tests.util.assertwrappers import orderless_list_compare
 
 
 class TestCaseDatabase(unittest.TestCase):
@@ -29,6 +30,18 @@ class TestCaseDatabase(unittest.TestCase):
         cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         self.assertSetEqual(set(cases.keys()), set(cases_in_db), 'Not all cases were added to subscribed cases')
         self.assertEqual(len(set(cases_in_db)), len(cases_in_db), 'Duplicate case was added to database')
+
+    def test_add_duplicate_case_not_allowed(self):
+        TestCaseDatabase.__construct_basic_db()
+        case_database.case_db.add_cases(['case1', 'case2'])
+        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
+        orderless_list_compare(self, cases_in_db, ['case1', 'case2', 'case3', 'case4'])
+
+    def test_add_cases_with_empty_list(self):
+        TestCaseDatabase.__construct_basic_db()
+        case_database.case_db.add_cases([])
+        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
+        orderless_list_compare(self, cases_in_db, ['case1', 'case2', 'case3', 'case4'])
 
     def test_delete_cases(self):
         TestCaseDatabase.__construct_basic_db()
@@ -229,10 +242,10 @@ class TestCaseDatabase(unittest.TestCase):
         events = case_database.case_db.session.query(case_database.Event).all()
         event_json_list = [event.as_json() for event in events]
 
-        input_output = {'message1': '',
+        input_output = {'message1': None,
                         'message2': 'some_string',
                         'message3': 6,
-                        'message4': event4_data}
+                        'message4': json.dumps(event4_data)}
 
         self.assertEqual(len(event_json_list), len(list(input_output.keys())))
         for event in event_json_list:

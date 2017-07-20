@@ -37,11 +37,11 @@ Event:
       enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
       example: Step
     ancestry:
-      description: An indentifier of the event through its trace through the ancestry
+      description: An identifier of the event through its trace through the ancestry
       type: array
       items:
         type: string
-      example: [defaultController, myplaybook, montiroingworkflow, step1, step3, flag_action1]
+      example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
     message:
       description: The message attached to the event
       type: string
@@ -69,7 +69,7 @@ SubscriptionChange:
         type: array
         items:
           type: string
-        example: [defaultController, myplaybook, montiroingworkflow, step1, step3, flag_action1]
+        example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
       events:
         description: The list of events to subscribe to
         type: array

@@ -20,6 +20,7 @@ from server.context import running_context
 from . import database, interface
 from server import app
 
+logger = logging.getLogger(__name__)
 
 monkey.patch_all()
 
@@ -124,10 +125,25 @@ def list_all_widgets():
 
 
 def write_playbook_to_file(playbook_name):
+    playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
+    backup = None
+    try:
+        with open(playbook_filename) as original_file:
+            backup = original_file.read()
+        os.remove(playbook_filename)
+    except (IOError, OSError):
+        pass
+
     app.logger.debug('Writing playbook {0} to file'.format(playbook_name))
     write_format = 'w' if sys.version_info[0] == 2 else 'wb'
-    playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name))
-    with open(playbook_filename, write_format) as workflow_out:
-        xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
-        xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
-        workflow_out.write(xml_dom.encode('utf-8'))
+
+    try:
+        with open(playbook_filename, write_format) as workflow_out:
+            xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
+            xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
+            workflow_out.write(xml_dom.encode('utf-8'))
+    except Exception as e:
+        logger.error('Could not save playbook to file. Reverting file to original. '
+                     'Error: {0}'.format(helpers.format_exception_message(e)))
+        with open(playbook_filename, 'w') as f:
+            f.write(backup)

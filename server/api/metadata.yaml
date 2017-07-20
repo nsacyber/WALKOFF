@@ -11,43 +11,10 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            controller:
-              description: All events related to the controller
-              type: array
-              items:
-                type: string
-            playbook:
-              description: All events related to playooks
-              type: array
-              items:
-                type: string
-            workflow:
-              description: All events related to workflows
-              type: array
-              items:
-                type: string
-            step:
-              description: All events related to steps
-              type: array
-              items:
-                type: string
-            nextstep:
-              description: All events related to next step objects
-              type: array
-              items:
-                type: string
-            flag:
-              description: All events related to flags
-              type: array
-              items:
-                type: string
-            filter:
-              description: All events related to filters
-              type: array
-              items:
-                type: string
+          description: List of available subscriptions in hierarchical order from controller to filter
+          type: array
+          items:
+            $ref: '#/definitions/AvailableSubscriptions'
 /filters:
   get:
     tags:

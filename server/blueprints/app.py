@@ -26,7 +26,7 @@ def read_app():
     return template
 
 
-#TODO: DELETE
+# TODO: DELETE
 @app_page.route('/display', methods=['POST'])
 @auth_token_required
 @roles_required('admin')

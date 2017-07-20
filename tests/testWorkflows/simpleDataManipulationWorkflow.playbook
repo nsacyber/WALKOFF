@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<workflow name="helloWorldWorkflow">
+    <options>
+        <enabled>true</enabled>
+        <scheduler type="cron" autorun="false">
+            <month>1-2</month>
+            <day>*</day>
+            <hour>*</hour>
+            <second>*/10</second>
+        </scheduler>
+    </options>
+    <steps>
+        <step id="start">
+            <action>repeatBackToMe</action>
+            <app>HelloWorld</app>
+            <device>hwTest</device>
+            <inputs>
+                <call>Hello World</call>
+            </inputs>
+            <next step="1">
+                <flag action="regMatch">
+                    <args>
+                        <regex>(.*)</regex>
+                    </args>
+                    <filters>
+                        <filter action="length">
+                            <args></args>
+                        </filter>
+                    </filters>
+                </flag>
+            </next>
+        </step>
+    </steps>
+</workflow>

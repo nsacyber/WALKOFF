@@ -117,6 +117,7 @@ class AddNewTriggerForm(Form):
 
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
+    tag = StringField('Tag', [validators.Length(min=1, max=255), validators.Optional()])
 
 
 class EditTriggerForm(Form):
@@ -124,6 +125,7 @@ class EditTriggerForm(Form):
     conditional = TextAreaField('Conditionals', [validators.Optional()])
     playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.required()])
     workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.required()])
+    tag = StringField('Tag', [validators.Length(min=1, max=255), validators.Optional()])
 
 
 class ConditionalArgsField(Form):

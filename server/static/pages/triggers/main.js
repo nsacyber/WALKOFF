@@ -50,10 +50,10 @@
             success:function(data){
                 result = data;
                 triggers = result['triggers'];
-                $("#trigger .triggerOption").remove();
+                $("#triggerList .triggerOption").remove();
                 for(i=0;i<triggers.length;i++){
                     trigger=triggers['' +i +""];
-                    $("#trigger").append("<option value="+ i  + " class='triggerOption'>"+ trigger['name'] + "</option>");
+                    $("#triggerList").append("<option value="+ i  + " class='triggerOption'>"+ trigger['name'] + "</option>");
                 }
                 triggerData = result;
             },
@@ -68,11 +68,11 @@
     var $slidee = $("#smart").children('ul').eq(0);
 
     // Add item
-    $("#trigger").on("change",function(){
+    $("#triggerList").on("change",function(){
         $("#editTrigger").prop("disabled",false);
         $(".remove").prop("disabled",false);
-        val = $("#trigger option:selected").val();
-        index = $("#trigger option:selected").val();
+        val = $("#triggerList option:selected").val();
+        index = $("#triggerList option:selected").val();
         trigger = triggerData['triggers'][''+ val +''];
         $(".workflow").empty().append('<div>' + trigger['workflow'] + '</div>');
         $(".playbook").empty().append('<div>' + trigger['playbook'] + '</div>');
@@ -214,16 +214,16 @@
 
             $.ajax({
                 url: 'execution/listener/triggers/' + values.name,
-                data: $("#deviceForm").serialize(),
+                data: $("#triggerForm").serialize(),
                 headers: {"Authentication-Token": authKey},
                 type: "PUT",
                 success: function (data) {
-                    console.log('trigger add success');
+                    $.notify('Trigger ' + values.name + ' added successfully.', 'success');
                     getTriggerList();
                     resetTriggerEditor();
                 },
                 error: function (e) {
-                    console.log('trigger add failed');
+                    $.notify('Trigger ' + values.name + ' could not be added.', 'error');
                     console.log(e);
                 }
             });
@@ -232,10 +232,10 @@
 
         //Show edit dialog
         $("#editTrigger").on('click',function(){
-            index = $("#trigger option:selected").val();
+            index = $("#triggerList option:selected").val();
             $("#editformSubmit").prop("disabled",false);
             trigger = triggerData['triggers'][''+index];
-            if($("#trigger option:selected").attr('value') == 'none'){
+            if($("#triggerList option:selected").attr('value') == 'none'){
             }else{
                 triggerEditor.setValue({
                     name: trigger['name'],
@@ -248,10 +248,10 @@
 
         //Edit item
         $("#editformSubmit").on('click',function(){
-            if($("#trigger option:selected").attr('value') == 'none'){
+            if($("#triggerList option:selected").attr('value') == 'none'){
                 alert("Select a trigger");
             }else{
-                var name = $("#trigger option:selected").text();
+                var name = $("#triggerList option:selected").text();
 
                 // Transfer the data from the JSON editor to the hidden form.
                 // This makes it easier to serialize.
@@ -269,16 +269,18 @@
 
                 $.ajax({
                     url:'execution/listener/triggers/' + name ,
-                    data: $("#deviceForm").serialize(),
+                    data: $("#triggerForm").serialize(),
                     headers:{"Authentication-Token":authKey},
                     type:"POST",
                     success:function(e){
+                        $.notify('Trigger ' + name + ' edited successfully.', 'success');
                         //refresh the list of triggers
                         getTriggerList();
                         resetTriggerEditor();
                     },
                     error: function(e){
-                        console.log("ERROR");
+                        $.notify('Trigger ' + name + ' could not be edited.', 'error');
+                        console.log(e);
                     }
                 });
             };
@@ -286,22 +288,24 @@
 
         // Remove item
         $('.remove').on('click', function () {
-            if($("#trigger option:selected").attr('value') == 'none'){
+            if($("#triggerList option:selected").attr('value') == 'none'){
                 alert("Select a trigger");
             }else{
-                name = $("#trigger option:selected").text();
+                name = $("#triggerList option:selected").text();
                  $.ajax({
                 url:'execution/listener/triggers/'+ name,
                 data:{},
                 headers:{"Authentication-Token":authKey},
                 type:"DELETE",
                 success:function(e){
+                    $.notify('Trigger ' + name + ' removed successfully.', 'success');
                     // refresh the list of triggers
-                    $("#trigger option:selected").remove()
+                    $("#triggerList option:selected").remove()
                     getTriggerList();
                 },
                 error: function(e){
-                    console.log("ERROR");
+                    $.notify('Trigger ' + name + ' could not be removed.', 'error');
+                    console.log(e);
                 }
             });
             };

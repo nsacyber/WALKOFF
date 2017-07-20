@@ -4,10 +4,14 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
 from core import helpers
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from core.options import Options
+import core.case.database as case_database
+from core.case.workflowresults import WorkflowResult
 import core.config.config
 import core.config.paths
 from server.return_codes import *
+import server.workflowresults
 
 
 def get_playbooks():
@@ -93,12 +97,13 @@ def update_playbook(playbook_name):
 
                 new_name = data['new_name']
                 running_context.controller.update_playbook_name(playbook_name, new_name)
+                running_context.Triggers.update_playbook(old_playbook=playbook_name, new_playbook=new_name)
                 saved_playbooks = [os.path.splitext(playbook)[0]
                                    for playbook in
                                    helpers.locate_workflows_in_directory(core.config.paths.workflows_path)]
                 if playbook_name in saved_playbooks:
-                    os.rename(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)),
-                              os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(new_name)))
+                    os.rename(os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name)),
+                              os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(new_name)))
                 current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
                 return {"playbooks": running_context.controller.get_all_workflows()}, SUCCESS
             else:
@@ -122,7 +127,7 @@ def delete_playbook(playbook_name):
             current_app.logger.info('Deleted playbook {0} from controller'.format(playbook_name))
             if playbook_name in [os.path.splitext(playbook)[0] for playbook in helpers.locate_workflows_in_directory()]:
                 try:
-                    os.remove(os.path.join(core.config.paths.workflows_path, '{0}.workflow'.format(playbook_name)))
+                    os.remove(os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name)))
                     current_app.logger.info('Deleted playbook {0} from workflow directory'.format(playbook_name))
                 except (IOError, OSError) as e:
                     current_app.logger.error('Error deleting playbook {0}: {1}'.format(playbook_name, e))
@@ -130,8 +135,8 @@ def delete_playbook(playbook_name):
                             'playbooks': running_context.controller.get_all_workflows()}, IO_ERROR
         else:
             current_app.logger.error('Could not delete playbook {0}. Playbook does not exist.'.format(playbook_name))
-            return {'error': 'Playbook does not exist.', 'playbooks': running_context.controller.get_all_workflows()}, \
-                OBJECT_DNE_ERROR
+            return {'error': 'Playbook does not exist.',
+                    'playbooks': running_context.controller.get_all_workflows()}, OBJECT_DNE_ERROR
 
         return {'playbooks': running_context.controller.get_all_workflows()}, SUCCESS
 
@@ -152,19 +157,19 @@ def copy_playbook(playbook_name):
                 new_playbook_name = playbook_name + "_Copy"
 
             if running_context.controller.is_playbook_registered(new_playbook_name):
-                current_app.logger.error('Cannot copy playbook {0} to {1}. Name already exists'.format(playbook_name,
-                                                                                                       new_playbook_name))
+                current_app.logger.error('Cannot copy playbook {0} to {1}. '
+                                         'Name already exists'.format(playbook_name, new_playbook_name))
                 return {"error": 'Playbook already exists.'}, OBJECT_EXISTS_ERROR
             else:
                 running_context.controller.copy_playbook(playbook_name, new_playbook_name)
                 write_playbook_to_file(new_playbook_name)
                 current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
 
-            return {},OBJECT_CREATED
+            return {}, OBJECT_CREATED
         else:
             current_app.logger.error('Could not copy playbook {0}. Playbook does not exist.'.format(playbook_name))
-            return {'error': 'Playbook does not exist.', 'playbooks': running_context.controller.get_all_workflows()}, \
-                OBJECT_DNE_ERROR
+            return {'error': 'Playbook does not exist.',
+                    'playbooks': running_context.controller.get_all_workflows()}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -196,7 +201,7 @@ def create_workflow(playbook_name, workflow_name):
         template_playbook = form.playbook.data
         template = form.template.data
 
-        #TODO: UNCOMMENT THIS
+        # TODO: UNCOMMENT THIS
         # if not running_context.controller.is_playbook_registered(playbook_name):
         #     current_app.logger.error('Could not create workflow {0}. Playbook does not exist.'.format(playbook_name))
         #     return {"error": 'Playbook does not exist.'}, OBJECT_DNE_ERROR
@@ -222,7 +227,7 @@ def create_workflow(playbook_name, workflow_name):
                     return {'workflow': {'name': workflow_name,
                                          'steps': workflow.get_cytoscape_data(),
                                          'options': workflow.options.as_json(),
-                                         'start': workflow.start_step} }, SUCCESS_WITH_WARNING
+                                         'start': workflow.start_step}}, SUCCESS_WITH_WARNING
                 else:
                     current_app.logger.info('Workflow {0}-{1} created from template {2}-{3}. '
                                             'Using default template'.format(playbook_name, workflow_name,
@@ -237,7 +242,7 @@ def create_workflow(playbook_name, workflow_name):
                 return {'workflow': {'name': workflow_name,
                                      'steps': workflow.get_cytoscape_data(),
                                      'options': workflow.options.as_json(),
-                                     'start': workflow.start_step} }, SUCCESS_WITH_WARNING
+                                     'start': workflow.start_step}}, SUCCESS_WITH_WARNING
         else:
             add_default_template(playbook_name, workflow_name)
             current_app.logger.info('Workflow {0}-{1} created from default template'.format(playbook_name,
@@ -247,7 +252,7 @@ def create_workflow(playbook_name, workflow_name):
             return {'workflow': {'name': workflow_name,
                                  'steps': workflow.get_cytoscape_data(),
                                  'options': workflow.options.as_json(),
-                                 'start': workflow.start_step} }, OBJECT_CREATED
+                                 'start': workflow.start_step}}, OBJECT_CREATED
         else:
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {'error': 'Could not add workflow.'}, INVALID_INPUT_ERROR
@@ -311,12 +316,13 @@ def update_workflow(playbook_name, workflow_name):
                                                                     wf_name,
                                                                     playbook_name,
                                                                     data['new_name'])
+                    running_context.Triggers.update_workflow(old_workflow=wf_name, new_workflow=data['new_name'])
                     wf_name = data['new_name']
             workflow = running_context.controller.get_workflow(playbook_name, wf_name)
             if workflow:
                 returned_json = {'workflow': {'name': wf_name,
                                               'options': workflow.options.as_json(),
-                                              'start': workflow.start_step} }
+                                              'start': workflow.start_step}}
                 current_app.logger.info('Updated workflow {0}-{1} to {2}'.format(playbook_name,
                                                                                  wf_name,
                                                                                  returned_json))
@@ -336,11 +342,25 @@ def update_workflow(playbook_name, workflow_name):
 
 def delete_workflow(playbook_name, workflow_name):
     from server.context import running_context
+    from server.flaskserver import write_playbook_to_file
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             running_context.controller.remove_workflow(playbook_name, workflow_name)
+
+            if len(running_context.controller.get_all_workflows_by_playbook(playbook_name)) == 0:
+                current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_name))
+                playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
+                try:
+                    os.remove(playbook_filename)
+                except OSError:
+                    current_app.logger.warning('Cannot remove playbook {0}. '
+                                               'The playbook does not exist.'.format(playbook_name))
+
+            else:
+                write_playbook_to_file(playbook_name)
+
             current_app.logger.info('Deleted workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {"playbooks": running_context.controller.get_all_workflows()}, SUCCESS
         else:
@@ -364,8 +384,9 @@ def read_workflow_risk(playbook_name, workflow_name):
             return {"risk_percent": risk_percent,
                     "risk_number": risk_number}, SUCCESS
         else:
-            current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot retrieve risk.'.format(playbook_name,
-                                                                                                     workflow_name))
+            current_app.logger.info(
+                'Workflow {0}-{1} not found in controller. Cannot retrieve risk.'.format(playbook_name,
+                                                                                         workflow_name))
             return {"error": 'Playbook or workflow does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
@@ -401,10 +422,10 @@ def copy_workflow(playbook_name, workflow_name):
                 current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
                                                                                     new_playbook_name,
                                                                                     new_workflow_name))
-                return {},OBJECT_CREATED
+                return {}, OBJECT_CREATED
         else:
             current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot copy it.'.format(playbook_name,
-                                                                                                     workflow_name))
+                                                                                                       workflow_name))
             return {"error": 'Playbook or workflow does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
@@ -418,9 +439,9 @@ def execute_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             write_playbook_to_file(playbook_name)
-            running_context.controller.execute_workflow(playbook_name, workflow_name)
+            uid = running_context.controller.execute_workflow(playbook_name, workflow_name)
             current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {},SUCCESS_ASYNC
+            return {'id': uid}, SUCCESS_ASYNC
         else:
             current_app.logger.error(
                 'Cannot execute workflow {0}-{1}. Does not exist in controller'.format(playbook_name,
@@ -436,9 +457,9 @@ def pause_workflow(playbook_name, workflow_name):
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            uuid = running_context.controller.pause_workflow(playbook_name, workflow_name)
+            running_context.controller.pause_workflow(playbook_name, workflow_name)
             current_app.logger.info('Paused workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {"uuid": uuid}, SUCCESS
+            return SUCCESS
         else:
             current_app.logger.error('Cannot pause workflow '
                                      '{0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
@@ -475,18 +496,26 @@ def save_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
-            if 'start' in request.get_json():
-                workflow.start_step = request.get_json()['start']
             try:
-                write_playbook_to_file(playbook_name)
-                current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
-                return {"steps": workflow.get_cytoscape_data()}, SUCCESS
-            except (OSError, IOError) as e:
-                current_app.logger.info(
-                    'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
-                return {"error": "Error saving: {0}".format(e.message),
-                        "steps": workflow.get_cytoscape_data()}, IO_ERROR
+                workflow.from_cytoscape_data(json.loads(request.get_json()['cytoscape']))
+            except UnknownApp as e:
+                return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
+            except UnknownAppAction as e:
+                return {'error': 'Unknown action {0} for app {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+            except InvalidInput as e:
+                return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
+            else:
+                if 'start' in request.get_json():
+                    workflow.start_step = request.get_json()['start']
+                try:
+                    write_playbook_to_file(playbook_name)
+                    current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
+                    return {"steps": workflow.get_cytoscape_data()}, SUCCESS
+                except (OSError, IOError) as e:
+                    current_app.logger.info(
+                        'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
+                    return {"error": "Error saving: {0}".format(e.message),
+                            "steps": workflow.get_cytoscape_data()}, IO_ERROR
         else:
             current_app.logger.info('Cannot save workflow {0}-{1}. Workflow not in controller'.format(playbook_name,
                                                                                                       workflow_name))
@@ -499,3 +528,21 @@ def add_default_template(playbook_name, workflow_name):
     from server.context import running_context
     running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
                                                              workflow_name=workflow_name)
+
+
+def read_results():
+    ret = []
+    completed_workflows = [workflow.as_json() for workflow in
+                           case_database.case_db.session.query(WorkflowResult).filter(
+                               WorkflowResult.status == 'completed').all()]
+    for result in completed_workflows:
+        if result['status'] == 'completed':
+            ret.append({'name': result['name'],
+                        'timestamp': result['completed_at'],
+                        'result': json.dumps(result['results'])})
+    return ret, SUCCESS
+
+
+def read_all_results():
+    return [workflow.as_json() for workflow in
+            case_database.case_db.session.query(WorkflowResult).all()], SUCCESS

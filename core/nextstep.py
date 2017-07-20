@@ -1,4 +1,4 @@
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 import logging
 from core.case import callbacks
 from core.executionelement import ExecutionElement
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class NextStep(ExecutionElement):
-    def __init__(self, xml=None, parent_name='', name='', flags=None, ancestry=None):
+    def __init__(self, xml=None, status='Success', name='', parent_name='', flags=None, ancestry=None):
         """Initializes a new NextStep object.
         
         Args:
@@ -22,7 +22,17 @@ class NextStep(ExecutionElement):
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
             ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+            self.status = status
             self.flags = flags if flags is not None else []
+
+    def _from_xml(self, xml_element, parent_name='', ancestry=None):
+        name = xml_element.get('step')
+        status_field = xml_element.find('status')
+        self.status = status_field.text if status_field is not None else 'Success'
+
+        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+        self.flags = [Flag(xml=flag_element, parent_name=self.name, ancestry=self.ancestry)
+                      for flag_element in xml_element.findall('flag')]
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a NextStep object. This is needed in case a workflow and/or playbook is renamed.
@@ -34,77 +44,46 @@ class NextStep(ExecutionElement):
         for flag in self.flags:
             flag.reconstruct_ancestry(self.ancestry)
 
-    def _from_xml(self, xml_element, parent_name='', ancestry=None):
-        name = xml_element.get('step')
-        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
-        self.flags = [Flag(xml=flag_element, parent_name=self.name, ancestry=self.ancestry)
-                      for flag_element in xml_element.findall('flag')]
-
-    def to_xml(self, tag='next'):
+    def to_xml(self):
         """Converts the NextStep object to XML format.
         
-        Args:
-            tag (str, optional): The tag name for the NextStep object. Defaults to "next".
-            
         Returns:
             The XML representation of the NextStep object.
         """
         if self.name is not None:
-            elem = cElementTree.Element(tag)
+            elem = ElementTree.Element('next')
             name = self.name if self.name else ''
             elem.set('step', name)
-            for flag in self.flags:
-                elem.append(flag.to_xml())
+
+            if self.status.lower() != 'success':
+                status = ElementTree.Element('status')
+                status.text = self.status
+                elem.append(status)
+
+            if self.flags:
+                for flag in self.flags:
+                    elem.append(flag.to_xml())
             return elem
 
-    def create_flag(self, action="", args=None, filters=None):
-        """Creates a new Flag object and adds it to the NextStep object's list of Flags.
-        
-        Args:
-            action (str, optional): The action name for the Flag. Defaults to an empty string.
-            args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
-            converted to a dictionary of str:Argument. Defaults to None.
-            filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
-        """
-        new_flag = Flag(action=action,
-                        args=(args if args is not None else {}),
-                        filters=(filters if filters is not None else []),
-                        parent_name=self.name,
-                        ancestry=self.ancestry)
-        self.flags.append(new_flag)
-
-    def remove_flag(self, index=-1):
-        """Removes a Flag object from the NextStep's list of Flags at a given index.
-        
-        Args:
-            index(int): The index of the Flag object to be removed.
-            
-        Returns:
-            True on success, False otherwise.
-        """
-        try:
-            self.flags.remove(self.flags[index])
-            logger.debug('Flag {0} removed from next step {1}'.format(index, self.ancestry))
-            return True
-        except IndexError:
-            logger.error('Cannot remove flag {0} from NextStep {1}. Index out of bounds'.format(index, self.ancestry))
-            return False
-
     def __eq__(self, other):
-        return self.name == other.name and set(self.flags) == set(other.flags)
+        return self.name == other.name and self.status == other.status and set(self.flags) == set(other.flags)
 
-    def __call__(self, output=None):
-        if all(flag(output=output) for flag in self.flags):
-            callbacks.NextStepTaken.send(self)
-            logger.debug('NextStep is valid for input {0}'.format(output))
-            return self.name
+    def __call__(self, data_in, accumulator):
+        if data_in is not None and data_in.status == self.status:
+            if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
+                callbacks.NextStepTaken.send(self)
+                logger.debug('NextStep is valid for input {0}'.format(data_in))
+                return self.name
+            else:
+                logger.debug('NextStep is not valid for input {0}'.format(data_in))
+                callbacks.NextStepNotTaken.send(self)
+                return None
         else:
-            logger.debug('NextStep is not valid for input {0}'.format(output))
-            callbacks.NextStepNotTaken.send(self)
             return None
 
     def __repr__(self):
         output = {'flags': [flag.as_json() for flag in self.flags],
+                  'status': self.status,
                   'name': self.name}
         return str(output)
 
@@ -121,9 +100,11 @@ class NextStep(ExecutionElement):
         name = str(self.name) if self.name else ''
         if with_children:
             return {"flags": [flag.as_json() for flag in self.flags],
+                    "status": self.status,
                     "name": name}
         else:
             return {"flags": [flag.name for flag in self.flags],
+                    "status": self.status,
                     "name": name}
 
     @staticmethod
@@ -139,7 +120,8 @@ class NextStep(ExecutionElement):
             The NextStep object parsed from the JSON object.
         """
         name = json['name'] if 'name' in json else ''
-        next_step = NextStep(name=name, parent_name=parent_name, ancestry=ancestry)
+        status = json['status'] if 'status' in json else 'Success'
+        next_step = NextStep(name=name, status=status, parent_name=parent_name, ancestry=ancestry)
         if json['flags']:
             next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
                                for flag in json['flags']]

@@ -20,23 +20,21 @@ __action_tmp = {}
 __workflow_tmp = {}
 
 
+@StepInputValidated.connect
 def __action_started_callback(sender, **kwargs):
     # TODO: This identifier should be replaced by step id when that happens
     __action_tmp[(sender.app, sender.action)] = datetime.utcnow()
 
 
+@FunctionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
     __update_success_action_tracker(sender.app, sender.action)
 
 
+@StepExecutionError.connect
 def __action_ended_error_callback(sender, **kwargs):
-    step = json.loads(kwargs['data'])['step']
+    step = json.loads(kwargs['data'])
     __update_error_action_tracker(step['app'], step['action'])
-
-StepInputValidated.connect(__action_started_callback)
-StepInputInvalid.connect(__action_started_callback)
-FunctionExecutionSuccess.connect(__action_ended_callback)
-StepExecutionError.connect(__action_ended_error_callback)
 
 
 def __update_success_action_tracker(app, action):
@@ -64,12 +62,14 @@ def __update_action_tracker(form, app, action):
         del __action_tmp[(app, action)]
 
 
+@WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
     # TODO: This identifier should be replaced by step id when that happens
     __workflow_tmp[sender.name] = datetime.utcnow()
 
 
-def __workflow_ended_callback(sender, **kwwargs):
+@WorkflowShutdown.connect
+def __workflow_ended_callback(sender, **kwargs):
     if sender.name in __workflow_tmp:
         execution_time = datetime.utcnow() - __workflow_tmp[sender.name]
         if sender.name not in workflow_metrics:
@@ -78,6 +78,3 @@ def __workflow_ended_callback(sender, **kwwargs):
             workflow_metrics[sender.name]['count'] += 1
             workflow_metrics[sender.name]['avg_time'] = (workflow_metrics[sender.name]['avg_time'] + execution_time) / 2
         del __workflow_tmp[sender.name]
-
-WorkflowExecutionStart.connect(__workflow_started_callback)
-WorkflowShutdown.connect(__workflow_ended_callback)

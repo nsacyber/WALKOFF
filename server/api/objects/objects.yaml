@@ -13,6 +13,11 @@ ActionArgument:
       type: string
     type:
       type: string
+    required:
+      description: is the argument required
+      type: boolean
+    default:
+      description: default value for the argument
 Action:
   type: object
   required: [args]
@@ -67,8 +72,6 @@ WorkflowUpdate:
         type: string
       options:
         type: object
-ResumeWorkflow:
-    type: string
 
 Error:
   type: object
@@ -79,3 +82,20 @@ Error:
       type: string
       description: error message
       example: Something really bad happened
+
+AvailableSubscriptions:
+  type: object
+  required: [type, events]
+  description: The events which can be subscribed to for an execution element
+  properties:
+    type:
+      description: The type of execution element
+      type: string
+      example: Flag
+      enum: [controller, playbook, workflow, step, nextstep, flag, filter]
+    events:
+      description: Events which can be subscribed to
+      type: array
+      items:
+        type: string
+      example: [Event1, Event_2, 'Event 3']

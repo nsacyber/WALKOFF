@@ -1,7 +1,7 @@
 function formatCasesForJSTree(cases){
     var result = [];
     for(x in cases){
-        result.push({"id": cases[x].id, "text": cases[x].name, "type": "case"});
+        result.push({"id": cases[x].id, "text": cases[x].name, icon: "jstree-file", "type": "case"});
     }
     return result;
 }

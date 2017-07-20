@@ -3,21 +3,21 @@ from collections import namedtuple
 from concurrent import futures
 from copy import deepcopy
 from os import sep
-from xml.etree import cElementTree
+from xml.etree import ElementTree
 import uuid
 import logging
-
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
+from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
+                                EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
+                                EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED)
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from apscheduler.schedulers.gevent import GeventScheduler
-
 import core.config.config
 import core.config.paths
 from core import workflow as wf
 from core.case import callbacks
 from core.case import subscription
-from core.helpers import locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name
+from core.helpers import (locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name,
+                          UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -26,6 +26,10 @@ workflows = None
 threading_is_initialized = False
 
 logger = logging.getLogger(__name__)
+
+WORKFLOW_RUNNING = 1
+WORKFLOW_PAUSED = 2
+WORKFLOW_COMPLETED = 4
 
 
 def initialize_threading():
@@ -58,22 +62,27 @@ def shutdown_pool():
     logger.debug('Controller thread pool shutdown')
 
 
-def execute_workflow_worker(workflow, subs, start=None):
+def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
     """Executes the workflow in a multi-threaded fashion.
     
     Args:
         workflow (Workflow): The workflow to be executed.
-        start (str, otpional): Name of the first step to be executed in the workflow.
+        uid (str): The unique identifier of the workflow
+        start (str, optional): Name of the first step to be executed in the workflow.
         subs (Subscription): The current subscriptions. This is necessary for resetting the subscriptions.
+        start_input (dict, optional): The input to the starting step of the workflow
         
     Returns:
         "Done" when the workflow has finished execution.
     """
+    args = {'start': start, 'start_input': start_input}
     subscription.set_subscriptions(subs)
-    if start is not None:
-        workflow.execute(start=start)
-    else:
-        workflow.execute()
+    workflow.uid = uid
+    try:
+        workflow.execute(**args)
+    except Exception as e:
+        logger.error('Caught error while executing workflow {0}. {1}'.format(workflow.name,
+                                                                             format_exception_message(e)))
     return "done"
 
 
@@ -87,6 +96,7 @@ class Controller(object):
         """
         self.name = name
         self.workflows = {}
+        self.workflow_status = {}
         self.load_all_workflows_from_directory(path=workflows_path)
         self.instances = {}
         self.tree = None
@@ -98,13 +108,30 @@ class Controller(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.ancestry = [self.name]
-        self.paused_workflows = {}
+
+        def workflow_completed_callback(sender, **kwargs):
+            self.__workflow_completed_callback(sender, **kwargs)
+
+        callbacks.WorkflowShutdown.connect(workflow_completed_callback)
+
+    # TODO: Turns out this doesn't work at all
+    def __workflow_completed_callback(self, workflow, **kwargs):
+        print('COMPLETED')
+        if workflow.uuid in self.workflow_status:
+            self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
     def reconstruct_ancestry(self):
         """Reconstructs the ancestry list field of a workflow in case it changes.
         """
         for key in self.workflows:
             self.workflows[key].reconstruct_ancestry(self.ancestry)
+
+    def __add_workflow(self, key, name, xml, playbook):
+        try:
+            self.workflows[key] = wf.Workflow(name=name, xml=xml, parent_name=self.name, playbook_name=playbook)
+            logger.info('Adding workflow {0} to controller'.format(name))
+        except (UnknownApp, UnknownAppAction, InvalidInput) as e:
+            logger.error('Cannot load workflow {0}: Error: {1}'.format(key, format_exception_message(e)))
 
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.
@@ -118,7 +145,7 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
-        self.tree = cElementTree.ElementTree(file=path)
+        self.tree = ElementTree.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
         for workflow in self.tree.iter(tag='workflow'):
             current_workflow_name = workflow.get('name')
@@ -127,11 +154,7 @@ class Controller(object):
                     workflow_name = name_override
                 name = construct_workflow_name_key(playbook_name, workflow_name)
                 key = _WorkflowKey(playbook_name, workflow_name)
-                self.workflows[key] = wf.Workflow(name=name,
-                                                  xml=workflow,
-                                                  parent_name=self.name,
-                                                  playbook_name=playbook_name)
-                logger.info('Adding workflow {0} to controller'.format(name))
+                self.__add_workflow(key, name, workflow, playbook_name)
                 break
         else:
             logger.warning('Workflow {0} not found in playbook {0}. Cannot load.'.format(workflow_name, playbook_name))
@@ -149,17 +172,14 @@ class Controller(object):
             name_override (str, optional): Name that the workflow should be changed to. 
             playbook_override (str, optional): Name that the playbook should be changed to.
         """
-        self.tree = cElementTree.ElementTree(file=path)
+        self.tree = ElementTree.ElementTree(file=path)
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
         for workflow in self.tree.iter(tag='workflow'):
             workflow_name = name_override if name_override else workflow.get('name')
             name = construct_workflow_name_key(playbook_name, workflow_name)
             key = _WorkflowKey(playbook_name, workflow_name)
-            self.workflows[key] = wf.Workflow(name=name,
-                                              xml=workflow,
-                                              parent_name=self.name,
-                                              playbook_name=playbook_name)
-            logger.info('Adding workflow {0} to controller'.format(name))
+            self.__add_workflow(key, name, workflow, playbook_name)
+
         self.add_child_workflows()
         self.add_workflow_scheduled_jobs()
 
@@ -213,7 +233,7 @@ class Controller(object):
         Returns:
             True on success, False if otherwise.
         """
-        path = '{0}{1}{2}.workflow'.format(core.config.paths.templates_path, sep, template_playbook)
+        path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
         return self.load_workflow_from_file(path=path,
                                             workflow_name=template_name,
                                             name_override=workflow_name,
@@ -228,7 +248,7 @@ class Controller(object):
             template_playbook (str): The name of the playbook template to load. Default is "emptyWorkflow".
         """
         # TODO: Need a handler for returning workflow key and status
-        path = '{0}{1}{2}.workflow'.format(core.config.paths.templates_path, sep, template_playbook)
+        path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
         self.load_workflows_from_file(path=path, playbook_override=playbook_name)
 
     def remove_workflow(self, playbook_name, workflow_name):
@@ -244,6 +264,7 @@ class Controller(object):
         name = _WorkflowKey(playbook_name, workflow_name)
         if name in self.workflows:
             del self.workflows[name]
+
             logger.debug('Removed workflow {0}'.format(name))
             return True
         logger.warning('Cannot remove workflow {0}. Does not exist in controller'.format(name))
@@ -346,33 +367,39 @@ class Controller(object):
         if workflow:
             workflow.breakpoint_steps.extend(steps)
 
-    def execute_workflow(self, playbook_name, workflow_name, start=None):
+    def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
         """Executes a workflow.
         
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first step. Defaults to "start".
+            start_input (dict, optional): The input to the starting step of the workflow
         """
         global pool
         global workflows
         global threading_is_initialized
-
         key = _WorkflowKey(playbook_name, workflow_name)
         if key in self.workflows:
+
             workflow = self.workflows[key]
             subs = deepcopy(subscription.subscriptions)
+            uid = uuid.uuid4().hex
 
             # If threading has not been initialized, initialize it.
             if not threading_is_initialized:
                 initialize_threading()
-            if start is not None:
-                logger.info('Executing workflow {0} for step {1}'.format(key, start))
-                workflows.append(pool.submit(execute_workflow_worker, workflow, subs, start))
-            else:
-                logger.info('Executing workflow {0} with default starting step'.format(key, start))
-                workflows.append(pool.submit(execute_workflow_worker, workflow, subs))
+
+            args = {'start': start, 'start_input': start_input}
+            logger.info('Executing workflow {0} for step {1} with args{2}'.format(key, start, args))
+            workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid, **args))
             callbacks.SchedulerJobExecuted.send(self)
+            # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
+            self.workflow_status[uid] = WORKFLOW_RUNNING
+            return uid
+        else:
+            logger.error('Attempted to execute playbook which does not exist in controller')
+            return None, 'Attempted to execute playbook which does not exist in controller'
 
     def get_workflow(self, playbook_name, workflow_name):
         """Get a workflow object.
@@ -415,7 +442,7 @@ class Controller(object):
         """
         all_workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
         if all_workflows:
-            xml = cElementTree.Element('workflows')
+            xml = ElementTree.Element('workflows')
             for workflow in all_workflows:
                 xml.append(workflow.to_xml())
             return xml
@@ -453,24 +480,19 @@ class Controller(object):
         for workflow in [workflow.workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
             self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
 
-    def pause_workflow(self, playbook_name, workflow_name):
+    def pause_workflow(self, playbook_name, workflow_name, uid):
         """Pauses a workflow that is currently executing.
         
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
-            
-        Returns:
-            A randomly-generated key that needs to be used in order to resume the workflow. This feature is added for
-            security purposes.
+            uid (str): The uid of the workflow
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        wf_key = _WorkflowKey(playbook_name, workflow_name)
-        self.paused_workflows[wf_key] = uuid.uuid4()
-        if workflow:
+        if workflow and uid in self.workflow_status and self.workflow_status[uid] == WORKFLOW_RUNNING:
             logger.info('Pausing workflow {0}'.format(workflow.name))
             workflow.pause()
-        return self.paused_workflows[wf_key].hex
+            self.workflow_status[uid] = WORKFLOW_PAUSED
 
     def resume_workflow(self, playbook_name, workflow_name, validate_uuid):
         """Resumes a workflow that has been paused.
@@ -485,11 +507,11 @@ class Controller(object):
             "Success" if it is successful, or other error messages.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        wf_key = _WorkflowKey(playbook_name, workflow_name)
         if workflow:
-            if validate_uuid == self.paused_workflows[wf_key].hex:
+            if validate_uuid in self.workflow_status and self.workflow_status[validate_uuid] == WORKFLOW_PAUSED:
                 logger.info('Resuming workflow {0}'.format(workflow.name))
                 workflow.resume()
+                self.workflow_status[validate_uuid] = WORKFLOW_RUNNING
                 return True
             else:
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
@@ -594,6 +616,9 @@ class Controller(object):
         logger.info('Resuming job {0}'.format(job_id))
         self.scheduler.resume_job(job_id=job_id)
 
+    def get_workflow_status(self, uid):
+        return self.workflow_status.get(uid, None)
+
     # Returns jobs scheduled for active execution
     def get_scheduled_jobs(self):
         """Get all actively scheduled jobs.
@@ -620,6 +645,3 @@ class Controller(object):
                 print('Error: Unknown event sent!')
 
         return event_selector
-
-
-controller = Controller()

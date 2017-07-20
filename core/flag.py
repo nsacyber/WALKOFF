@@ -1,18 +1,17 @@
-from xml.etree import cElementTree
-from core.flags import execute_flag, FlagExecutionNotImplementedError, FlagNotImplementedError
-from core.flags import *  # needed to put all flags in sys.modules for them to be registered
-from core import arguments
+from copy import deepcopy
+from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
-import core.config.config
+from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
+                          inputs_to_xml, inputs_xml_to_dict, dereference_step_routing, format_exception_message)
+from core.validator import validate_flag_parameters, validate_parameter
 import logging
-
 logger = logging.getLogger(__name__)
 
 
 class Flag(ExecutionElement):
-    def __init__(self, xml=None, parent_name='', action='', args=None, filters=None, ancestry=None):
+    def __init__(self, action=None, xml=None, parent_name='', args=None, filters=None, ancestry=None):
         """Initializes a new Flag object. 
         
         Args:
@@ -24,144 +23,67 @@ class Flag(ExecutionElement):
             filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
             ancestry (list[str], optional): The ancestry for the Filter object. Defaults to None.
         """
-        if xml:
+        if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
         else:
+            if action is None:
+                raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
             ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
             self.action = action
-            self.args = args if args is not None else {}
+            args = args if args is not None else {}
+            self.args_api, self.data_in_api = get_flag_api(self.action)
+            self.args = validate_flag_parameters(self.args_api, args, self.action)
             self.filters = filters if filters is not None else []
-
-    def reconstruct_ancestry(self, parent_ancestry):
-        """Reconstructs the ancestry for a Flag object. This is needed in case a workflow and/or playbook is renamed.
-        
-        Args:
-            parent_ancestry(list[str]): The parent ancestry list.
-        """
-        self._construct_ancestry(parent_ancestry)
-        for filter in self.filters:
-            filter.reconstruct_ancestry(self.ancestry)
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get('action')
         ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
-        self.args = {arg.tag: arguments.Argument(key=arg.tag, value=arg.text, format=arg.get('format'))
-                     for arg in xml_element.findall('args/*')}
+        self.args_api, self.data_in_api = get_flag_api(self.action)
+        args_xml = xml_element.find('args')
+        args = (inputs_xml_to_dict(args_xml) or {}) if args_xml is not None else {}
+        self.args = validate_flag_parameters(self.args_api, args, self.action)
         self.filters = [Filter(xml=filter_element,
                                parent_name=self.name,
                                ancestry=self.ancestry)
                         for filter_element in xml_element.findall('filters/*')]
 
-    def set(self, attribute=None, value=None):
-        """Sets an attribute for the Flag object.
-        
-        Args:
-            attribute (str): The attribute key.
-            value (any): The attribute value.
-        """
-        setattr(self, attribute, value)
+    def __call__(self, data_in, accumulator):
+        data = data_in
 
-    def to_xml(self, *args):
-        """Converts the Flag object to XML format.
-        
-        Args:
-            args (list[str], optional): A list of arguments to place in the XML.
-            
-        Returns:
-            The XML representation of the Flag object.
-        """
-        elem = cElementTree.Element('flag')
-        elem.set('action', self.action)
-        args_element = cElementTree.SubElement(elem, 'args')
-        for arg in self.args:
-            args_element.append(self.args[arg].to_xml())
-
-        filters_element = cElementTree.SubElement(elem, 'filters')
         for filter_element in self.filters:
-            filters_element.append(filter_element.to_xml())
-        return elem
-
-    def add_filter(self, action='', args=None, index=None):
-        """Adds a Filter object to the Flag's list of Filters.
-        
-        Args:
-            action (str, optional): The action name for the filter. Defaults to an empty string.
-            args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
-            converted to a dictionary of str:Argument. Defaults to None.
-            index (any, optional): If index is not None, then the Filter will be inserted at the front of the Filters
-            list. Otherwise, it will be appended to the back. Defaults to None.
-                
-        Returns:
-            True upon completion.
-        """
-        if index is not None:
-            self.filters.insert(index, Filter(action=action, args=(args if args is not None else {})))
-        else:
-            self.filters.append(Filter(action=action, args=(args if args is not None else {})))
-        return True
-
-    def remove_filter(self, index=-1):
-        """Removes a Filter object from the Flag's list of Filters at a given index.
-        
-        Args:
-            index(int): The index of the Filter object to be removed.
-            
-        Returns:
-            True on success, False otherwise.
-        """
+            data = filter_element(data, accumulator)
         try:
-            del self.filters[index]
-        except IndexError:
+            data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.name))
+            callbacks.FlagSuccess.send(self)
+            logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
+            args.update({self.data_in_api['name']: data})
+            return get_flag(self.action)(**args)
+        except InvalidInput as e:
+            logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
+                         'Returning False'.format(self.action, data_in, data, format_exception_message(e)))
+            callbacks.FlagError.send(self)
             return False
-        return True
+        except Exception as e:
+            logger.error('Error encountered executing '
+                         'flag {0} with arguments {1} and value {2}: '
+                         'Error {3}. Returning False'.format(self.action, self.args, data, format_exception_message(e)))
+            callbacks.FlagError.send(self)
+            return False
 
-    def validate_args(self):
-        """Ensures that the arguments passed in are properly formed.
-        
-        Returns:
-             True if arguments are valid, False otherwise.
-        """
-        if self.action in core.config.config.function_info['flags']:
-            possible_args = core.config.config.function_info['flags'][self.action]['args']
-            if possible_args:
-                return (len(list(possible_args)) == len(list(self.args.keys()))
-                        and all(arg.validate(possible_args) for arg in self.args.values()))
-            else:
-                return True
-        return False
-
-    def __call__(self, output=None):
-        data = output
-        for filter_element in self.filters:
-            data = filter_element(output=data)
-
-        result = False
-        if self.validate_args():
-            try:
-                result = execute_flag(self.action, args=self.args, value=data)
-                callbacks.FlagArgsValid.send(self)
-                logger.debug('Arguments passed to flag {0} are valid'.format(self.ancestry))
-            except FlagNotImplementedError:
-                logger.error('Flag {0} is not implemented'.format(self.action))
-                return False
-            except FlagExecutionNotImplementedError:
-                logger.error('Flag {0} execution is not properly implemented'.format(self.action))
-                return False
-            except Exception as e:
-                logger.error('Error encountered executing '
-                             'flag {0} with arguments {1} and value {2}'.format(self.action, self.args, data))
-                return False
+    def __get_arg_type(self, arg_name):
+        for arg_api in self.args_api:
+            if arg_api['name'] == arg_name:
+                if 'type' in arg_api:
+                    return arg_api['type']
+                elif 'schema' in arg_api:
+                    return arg_api['schema']['type']
+                else:
+                    logger.error('Invalid api schema. This should never happen! Returning string type')
+                    return 'string'
         else:
-            logger.warning('Arguments passed to flag {0} are invalid. Arguments {1}'.format(self.ancestry,
-                                                                                            self.args))
-            callbacks.FlagArgsInvalid.send(self)
-        return result
-
-    def __repr__(self):
-        output = {'action': self.action,
-                  'args': {arg: self.args[arg].as_json() for arg in self.args},
-                  'filters': [filter_element.as_json() for filter_element in self.filters]}
-        return str(output)
+            logger.error('Invalid api schema. This should never happen! Returning string type')
+            return 'string'
 
     def as_json(self, with_children=True):
         """Gets the JSON representation of a Flag object.
@@ -173,8 +95,10 @@ class Flag(ExecutionElement):
         Returns:
             The JSON representation of a Flag object.
         """
+        args = {arg_name: {'key': arg_name, 'value': arg_value, 'format': self.__get_arg_type(arg_name)}
+                for arg_name, arg_value in self.args.items()}
         out = {"action": self.action,
-               "args": {arg: self.args[arg].as_json() for arg in self.args}}
+               "args": args}
         if with_children:
             out["filters"] = [filter_element.as_json() for filter_element in self.filters]
         else:
@@ -193,12 +117,42 @@ class Flag(ExecutionElement):
         Returns:
             The Flag object parsed from the JSON object.
         """
-        args = {arg_name: arguments.Argument.from_json(arg_json) for arg_name, arg_json in json['args'].items()}
+        args = {arg_name: arg_value['value'] for arg_name, arg_value in json['args'].items()}
         flag = Flag(action=json['action'], args=args, parent_name=parent_name, ancestry=ancestry)
         filters = [Filter.from_json(filter_element, parent_name=flag.name, ancestry=flag.ancestry)
                    for filter_element in json['filters']]
         flag.filters = filters
         return flag
+
+    def to_xml(self, *args):
+        """Converts the Flag object to XML format.
+
+        Args:
+            args (list[str], optional): A list of arguments to place in the XML.
+
+        Returns:
+            The XML representation of the Flag object.
+        """
+        elem = ElementTree.Element('flag')
+        elem.set('action', self.action)
+        if self.args:
+            args = inputs_to_xml(self.args, root='args')
+            elem.append(args)
+        if self.filters:
+            filters_element = ElementTree.SubElement(elem, 'filters')
+            for filter_element in self.filters:
+                filters_element.append(filter_element.to_xml())
+        return elem
+
+    def reconstruct_ancestry(self, parent_ancestry):
+        """Reconstructs the ancestry for a Flag object. This is needed in case a workflow and/or playbook is renamed.
+
+        Args:
+            parent_ancestry(list[str]): The parent ancestry list.
+        """
+        self._construct_ancestry(parent_ancestry)
+        for filter_element in self.filters:
+            filter_element.reconstruct_ancestry(self.ancestry)
 
     def get_children(self, ancestry):
         """Gets the children Filters of the Flag in JSON format.
@@ -218,3 +172,9 @@ class Flag(ExecutionElement):
                 return self.filters[filter_index].as_json()
             except ValueError:
                 return None
+
+    def __repr__(self):
+        output = {'action': self.action,
+                  'args': self.args,
+                  'filters': [filter_element.as_json() for filter_element in self.filters]}
+        return str(output)

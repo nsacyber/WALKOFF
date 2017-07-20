@@ -9,7 +9,7 @@ Trigger:
       conditional:
         description: String representation of a list of Flag objects
         type: string
-        example: '[{"flag": "regMatch", "args": [{"key": "regex", "value": "(.*)"}], "filters": []}]'
+        example: '[{"flag": "regMatch", "args": {"regex", "(.*)"}, "filters": []}]'
       playbook:
         description: The name of the playbook that relates to this trigger
         type: string
@@ -38,3 +38,27 @@ DisplayTrigger:
         description: The name of the workflow that relates to this trigger
         type: string
         example: HelloWorldWorkflow
+
+TriggerExecutionResponse:
+    type: object
+    required: [errors, executed]
+    properties:
+        errors:
+            description: The errors executed. Array of the form [{trigger_name -> error message}]
+            type: array
+        executed:
+            description: The executed workflows
+            type: array
+            items:
+                $ref: '#/definitions/TriggeredWorkflow'
+
+TriggeredWorkflow:
+    type: object
+    required: [id, name]
+    properties:
+        id:
+            type: string
+            description: The UID of the workflow executing
+        name:
+            type: string
+            description: The name of the trigger executing

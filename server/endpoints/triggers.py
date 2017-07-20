@@ -20,19 +20,31 @@ def listener():
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
-        form = forms.IncomingDataForm(request.form)
-        data_input = None
-        if form.input.data:
-            data_input = json.loads(form.input.data)
-        returned_json = running_context.Triggers.execute(form.data.data, data_input)
 
-        if returned_json:
+        form = forms.IncomingDataForm(request.form)
+        trigger_args = {'data_in': form.data.data,
+                        'input_in': json.loads(form.input.data) if form.input.data else '',
+                        'trigger_name': '',
+                        'tags': []}
+
+        if request.args:
+            if 'name' in request.args:
+                trigger_args['trigger_name'] = request.args['name']
+
+            if 'tags' in request.args:
+                trigger_args['tags'] = request.args.getlist('tags')
+
+        returned_json = running_context.Triggers.execute(**trigger_args)
+
+        if not (returned_json["executed"] or returned_json["errors"]):
+            return returned_json, SUCCESS_WITH_WARNING
+        elif returned_json["errors"]:
             return returned_json, INVALID_INPUT_ERROR
         else:
             current_app.logger.info(
                 'Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
-                                                                                         data_input))
-            return returned_json, SUCCESS
+                                                                                         trigger_args['data_in']))
+            return returned_json, SUCCESS_ASYNC
 
     return __func()
 
@@ -51,15 +63,17 @@ def create_trigger(trigger_name):
                     running_context.Triggers(name=trigger_name,
                                              condition=form.conditional.data,
                                              playbook=form.playbook.data,
-                                             workflow=form.workflow.data))
+                                             workflow=form.workflow.data,
+                                             tag=form.tag.data))
 
                 running_context.db.session.commit()
                 current_app.logger.info('Added trigger: '
                                         '{0}'.format({"name": trigger_name,
                                                       "condition": form.conditional.data,
                                                       "workflow": "{0}-{1}".format(form.playbook.data,
-                                                                                   form.workflow.data)}))
-                return {},OBJECT_CREATED
+                                                                                   form.workflow.data),
+                                                      "tag": form.tag.data}))
+                return {}, OBJECT_CREATED
             except ValueError:
                 current_app.logger.error(
                     'Cannot create trigger {0}. Invalid JSON in conditional field'.format(trigger_name))

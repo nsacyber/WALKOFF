@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<workflow name="pauseWorkflow">
+    <options>
+        <enabled>true</enabled>
+        <scheduler type="cron" autorun="false">
+            <month>11-12</month>
+            <day>*</day>
+            <hour>*</hour>
+            <minute>*/0.1</minute>
+        </scheduler>
+    </options>
+    <steps>
+        <step id="start">
+            <action>helloWorld</action>
+            <app>HelloWorld</app>
+            <device>hwTest</device>
+            <next step="1"></next>
+        </step>
+        <step id="1">
+            <action>pause</action>
+            <app>HelloWorld</app>
+            <device>hwTest</device>
+            <inputs>
+                <seconds>1</seconds>
+            </inputs>
+            <next step="2"></next>
+        </step>
+        <step id="2">
+            <action>pause</action>
+            <app>HelloWorld</app>
+            <device>hwTest</device>
+            <inputs>
+                <seconds>1</seconds>
+            </inputs>
+        </step>
+    </steps>
+</workflow>

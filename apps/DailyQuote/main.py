@@ -1,33 +1,30 @@
-from server import appdevice
+from apps import App, action
 import requests
 import json
 
 
 # There is an associated Daily Quote test workflow which can be executed
 
-class Main(appdevice.App):
+class Main(App):
     def __init__(self, name=None, device=None):
-        # The parent app constructor looks for a device configuration and returns that as a
-        # dictionary called self.config
-        appdevice.App.__init__(self, name, device)
+        App.__init__(self, name, device)
         self.introMessage = {"message": "Quote App"}
         self.baseUrl = "http://quotes.rest/qod.json?category=inspire"
         self.s = requests.Session()
 
     # Returns the message defined in init above
-    def quoteIntro(self, args={}):
-        # LOOK AT YOUR CONSOLE WHEN EXECUTING
+    @action
+    def quoteIntro(self):
         return self.introMessage
 
-    # Returns the argument that was passed to it. Used to test passing arguments
-    def repeatBackToMe(self, args={}):
-        # print("REPEATING: " + args["call"]())
-        return "REPEATING: " + args["call"]()
+    @action
+    def repeatBackToMe(self, call):
+        return "REPEATING: " + call
 
     # Uses argument passed to function to make an api request
-    def forismaticQuote(self, args={}):
+    @action
+    def forismaticQuote(self, url):
         headers = {'content-type': 'application/json'}
-        url = args["url"]()
         payload = {'method': 'getQuote', 'format': 'json', 'lang': 'en'}
         result = self.s.get(url, params=payload, verify=False)
         try:
@@ -38,7 +35,8 @@ class Main(appdevice.App):
             return {'success': False, 'text': result.text}
 
     # Uses the url defined in _init to make a getQuote api call and returns the quote
-    def getQuote(self, args={}):
+    @action
+    def getQuote(self):
         headers = {'content-type': 'application/json'}
         url = self.baseUrl
         result = self.s.get(url, headers=headers, verify=False)

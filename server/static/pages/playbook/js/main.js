@@ -1,3 +1,12 @@
+if (typeof(EventSource) !== "undefined") {
+    stepResultsSSE = new EventSource('workflowresults/stream-steps');
+
+}
+else {
+    console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
+}
+
+
 $(function(){
     "use strict";
 
@@ -18,7 +27,7 @@ $(function(){
     var flagsList = [];
     var filtersList = [];
     var startNode = null;
-
+    var currentNodeInParametersEditor = null; // node being displayed in json editor
     //--------------------
     // Top level functions
     //--------------------
@@ -29,11 +38,11 @@ $(function(){
         data = data.playbooks;
         workflowList = data;
         var jstreeData = [];
-        $.each(data, function( playbookName, workflows ) {
+        _.each(data, function(workflows, playbookName) {
             var playbook = {};
             playbook.text = playbookName;
             playbook.children = [];
-            $.each(workflows.sort(), function( index, workflowName ) {
+            _.each(workflows.sort(), function(workflowName) {
                 playbook.children.push({text: workflowName, icon: "jstree-file", data: {playbook: playbookName}});
             });
             jstreeData.push(playbook);
@@ -53,12 +62,14 @@ $(function(){
     function formatAppsActionJsonDataForJsTree(data) {
         appData = {};
         var jstreeData = [];
-        $.each(data, function( appName, actions ) {
+        _.each(data, function(actions, appName) {
             var app = {};
             app.text = appName;
             app.children = [];
-            $.each(actions, function( actionName, actionProperties ) {
-                app.children.push({text: actionName, icon: "jstree-file", data: {app: appName}});
+            _.each(actions, function(actionProperties, actionName) {
+                var child = {text: actionName, icon: "jstree-file", data: {app: appName}};
+                if (actionProperties.description) child.a_attr = { title: actionProperties.description };
+                app.children.push(child);
             });
 
             // Sort children by action name
@@ -96,11 +107,9 @@ $(function(){
         }
     }
 
-    function createSchema(parameters) {
+    function createNodeSchema(parameters) {
         var appNames = [];
-        $.each(appData, function( appName, value ) {
-            appNames.push(appName);
-        });
+        if (!_.isEmpty(appData)) appNames = _.keys(appData);
 
         // This function creates a subschema for a single action. It contains
         // all the inputs of the action so the user only needs to enter the value.
@@ -110,6 +119,10 @@ $(function(){
             var subSchema = {
                 type: "object",
                 title: "Inputs",
+                required: ['$action'],
+                options: {
+                    hidden: args.length === 0
+                },
                 properties: {
                     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
                         type: "string",
@@ -121,54 +134,62 @@ $(function(){
                 }
             };
 
-            $.each(args, function( index, arg ) {
-                var pythonType = arg.type;
-                var valueSchema = null;
-                if (pythonType === "str") {
-                    valueSchema = {
-                        type: "string",
-                        title: "Type: string"
-                    };
-                }
-                else if (pythonType === "int") {
-                    valueSchema = {
-                        type: "integer",
-                        title: "Type: integer"
-                    };
-                }
-                else if (pythonType === "float") {
-                    valueSchema = {
-                        type: "number",
-                        title: "Type: float"
-                    };
-                }
-                else if (pythonType === "bool") {
-                    valueSchema = {
-                        type: "boolean",
-                        format: "checkbox",
-                        title: "Type: boolean"
-                    };
-                }
+            _.each(args, function(arg, index) {
+                var input = _.cloneDeep(arg);
+                var inputName = input.name;
+                delete input.name;
 
-                subSchema.properties[arg.name] = {
+                input.title = "Type: " + input.type;
+
+                //Hack: allow for output references "@<step_name>" for number fields
+                if (input.type === "number" || input.type === "integer") input.type = "string";
+                
+                // var valueSchema = null;
+                // if (pythonType === "string") {
+                //     valueSchema = {
+                //         type: "string",
+                //         title: "Type: string"
+                //     };
+                // }
+                // else if (pythonType === "integer") {
+                //     valueSchema = {
+                //         type: "integer",
+                //         title: "Type: integer"
+                //     };
+                // }
+                // else if (pythonType === "number") {
+                //     valueSchema = {
+                //         type: "number",
+                //         title: "Type: float"
+                //     };
+                // }
+                // else if (pythonType === "boolean") {
+                //     valueSchema = {
+                //         type: "boolean",
+                //         format: "checkbox",
+                //         title: "Type: boolean"
+                //     };
+                // }
+
+                subSchema.properties[inputName] = {
                     type: "object",
-                    title: "Input " + (index+1) + ": " + arg.name,
+                    title: "Input " + (index+1) + ": " + inputName + (input.required ? ' *' : ''),
                     propertyOrder: index,
                     options: {
                         disable_collapse: true
                     },
                     properties: {
-                        value: valueSchema,
+                        value: input,
                         key: { // This is hidden since it should not be modified by user
                             type: "string",
-                            default: arg.name,
+                            default: inputName,
                             options: {
                                 hidden: true
                             }
                         },
                         format: { // This is hidden since it should not be modified by user
                             type: "string",
-                            default: pythonType,
+                            default: input.type,
                             options: {
                                 hidden: true
                             }
@@ -177,28 +198,18 @@ $(function(){
                 }
             });
 
-
             return subSchema;
         }
 
         var definitions = {};
 
-        // Create the sub-schema for the actions
-        var actions = appData[parameters.app].actions;
-        var oneOfActions = [];
-        $.each(actions, function( actionName, actionProperties ) {
-            var args = actionProperties.args;
-            definitions["action_" + actionName] = convertInputToSchema(args, actionName);
-            oneOfActions.push({
-                $ref: "#/definitions/" + "action_" + actionName,
-                title: actionName
-            });
-        });
+        // Create the sub-schema for the action inputs
+        var actionInputSchema = convertInputToSchema(appData[parameters.app].actions[parameters.action].args, parameters.action);
 
         // Create the sub-schema for the flags
         var flags = flagsList;
         var oneOfFlags = [];
-        $.each(flags, function( flagName, flagProperties ) {
+        _.each(flags, function(flagProperties, flagName) {
             var args = flagProperties.args;
             definitions["flag_" + flagName] = convertInputToSchema(args, flagName);
             oneOfFlags.push({
@@ -210,7 +221,7 @@ $(function(){
         // Create the sub-schema for the filters
         var filters = filtersList;
         var oneOfFilters = [];
-        $.each(filters, function( filterName, filterProperties ) {
+        _.each(filters, function(filterProperties, filterName) {
             var args = filterProperties.args;
             definitions["filter_" + filterName] = convertInputToSchema(args, filterName);
             oneOfFilters.push({
@@ -224,6 +235,7 @@ $(function(){
             type: "object",
             title: "Node Parameters",
             definitions: definitions,
+            required: ['name', 'start', 'app'],
             properties: {
                 name: {
                     type: "string",
@@ -244,14 +256,12 @@ $(function(){
                     title: "Device",
                     enum: appData[parameters.app].devices
                 },
-                // Note instead of having a separate action
-                // property, we use a oneOf to include an
-                // action plus its inputs in a subschema.
-                // Similarly for flags and filters below.
-                input: {
+                action: {
+                    type: "string",
                     title: "Action",
-                    oneOf: deepcopy(oneOfActions)
+                    enum: [parameters.action]
                 },
+                input: _.cloneDeep(actionInputSchema),
                 next: {
                     options: {
                         hidden: true
@@ -279,12 +289,19 @@ $(function(){
                 items: {
                     type: "object",
                     headerTemplate: "Next Node {{ i1 }}: {{ self.name }}",
+                    required: ['status'],
                     properties: {
                         name: {
                             type: "string",
                             options: {
                                 hidden: true
                             }
+                        },
+                        status: {
+                            type: "string",
+                            title: "Status",
+                            enum: appData[parameters.app].actions[parameters.action].returns,
+                            default: "Success"
                         },
                         flags: {
                             type: "array",
@@ -296,7 +313,9 @@ $(function(){
                                 properties: {
                                     args: {
                                         title: "Select Flag",
-                                        oneOf: deepcopy(oneOfFlags) // See comment above regarding action inputs
+                                        // Use a oneOf to include a flag plus its
+                                        // inputs in a subschema.
+                                        oneOf: _.cloneDeep(oneOfFlags)
                                     },
                                     filters: {
                                         type: "array",
@@ -307,7 +326,9 @@ $(function(){
                                             properties: {
                                                 args: {
                                                     title: "Select Filter",
-                                                    oneOf: deepcopy(oneOfFilters) // See comment above regarding action inputs
+                                                    // Use a oneOf to include a filter plus its
+                                                    // inputs in a subschema.
+                                                    oneOf: _.cloneDeep(oneOfFilters)
                                                 },
                                             }
                                         }
@@ -323,13 +344,9 @@ $(function(){
         return schema;
     }
 
-    function deepcopy(obj) {
-        return JSON.parse(JSON.stringify(obj));
-    }
-
     // Modify the parameters JSON object a little to conform to the schema expected by the parameters form
     function transformParametersToSchema(parameters) {
-        parameters = deepcopy(parameters);
+        parameters = _.cloneDeep(parameters);
 
         // We need to store a hidden property since in an oneOf,
         // the schema must match exactly one of the options. There
@@ -339,12 +356,11 @@ $(function(){
         // modified by the user.
         parameters.input.$action = parameters.action;
 
-        $.each(parameters.next, function( nextIndex, nextStep ) {
-            $.each(nextStep.flags, function( index, flag ) {
-
+        _.each(parameters.next, function(nextStep) {
+            _.each(nextStep.flags, function(flag) {
                 flag.args.$action = flag.action;
 
-                $.each(flag.filters, function( index, filter ) {
+                _.each(flag.filters, function(filter) {
                     filter.args.$action = filter.action;
                 });
             });
@@ -356,19 +372,18 @@ $(function(){
     }
 
     // Revert changes to the parameters JSON object of previous function
-    function transformParametersFromSchema(parameters) {
-        parameters = deepcopy(parameters);
+    function transformParametersFromSchema(_parameters) {
+        var parameters =  _.cloneDeep(_parameters);
 
         parameters.action = parameters.input.$action;
         delete parameters.input.$action;
 
-        $.each(parameters.next, function( nextIndex, nextStep ) {
-            $.each(nextStep.flags, function( index, flag ) {
-
+        _.each(parameters.next, function(nextStep) {
+            _.each(nextStep.flags, function(flag) {
                 flag.action = flag.args.$action;
                 delete flag.args.$action;
 
-                $.each(flag.filters, function( index, filter ) {
+                _.each(flag.filters, function(filter) {
                     filter.action = filter.args.$action;
                     delete filter.args.$action;
                 });
@@ -378,23 +393,24 @@ $(function(){
         return parameters;
     }
 
-    // This function displays a form next to the graph for editing a node/edge when clicked upon
-    function onClick(e) {
+    // This function displays a form next to the graph for editing a node when clicked upon
+    function onNodeSelect(e) {
         var ele = e.cyTarget;
 
-        // Ignore edges for now.
-        if (ele.isEdge()) {
-            return;
-        }
+        currentNodeInParametersEditor = ele;
 
+        $("#parametersBar").removeClass('hidden');
         var parameters = ele.data('parameters');
-        $("#parameters").removeClass('hidden');
         $("#parameters").empty();
 
         parameters = transformParametersToSchema(parameters);
+        
+        //Omit the 'next' parameter, should only be edited when selecting an edge
+        // var next = _.cloneDeep(parameters.next);
+        // parameters = _.omit(parameters, ['next']);
 
         // Initialize the editor with a JSON schema
-        var schema = createSchema(parameters);
+        var schema = createNodeSchema(parameters);
         JSONEditor.defaults.options.theme = 'bootstrap3';
         JSONEditor.defaults.options.iconlib = "bootstrap3";
         var editor = new JSONEditor(document.getElementById('parameters'),{
@@ -410,10 +426,11 @@ $(function(){
             no_additional_properties: true,
 
             // Require all properties by default
-            required_by_default: true
+            required_by_default: false
         });
 
         editor.getEditor('root.app').disable();
+        editor.getEditor('root.action').disable();
         editor.getEditor('root.name').disable();
 
         // Hack: It appears this function is called as soon as you click on the node.
@@ -426,10 +443,34 @@ $(function(){
             }
             var updatedParameters = editor.getValue();
             updatedParameters = transformParametersFromSchema(updatedParameters);
+            //updatedParameters.next = next;
+
             ele.data('parameters', updatedParameters);
-            ele.data('label', updatedParameters.action);
+            // ele.data('label', updatedParameters.action);
             setStartNode(updatedParameters.name);
         });
+    }
+
+    //TODO: bring up a separate JSON editor for "next" step information (filters/flags)
+    function onEdgeSelect(event) {
+        return;
+    }
+
+    function onUnselect(event) {
+        if (!cy.$('node:selected').length) hideParameters();
+    }
+    
+    // when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
+    function onEdgeRemove(event) {
+        var edgeData = event.cyTarget.data();
+        // Do nothing if this is a temporary edge (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
+        if (!edgeData.parameters || edgeData.parameters.temp) return;
+
+        var parentNode = event.cyTarget.source();
+        var parentData = _.cloneDeep(parentNode.data());
+
+        parentData.parameters.next = _.reject(parentData.parameters.next, (next) => { return next.name === event.cyTarget.data().target; });
+        parentNode.data(parentData);
     }
 
     // This is called while the user is dragging
@@ -437,7 +478,6 @@ $(function(){
         // Return empty div for helper so that original dragged item does not move
         return '<div></div>';
     }
-
 
     // This function is called when the user drops a new node onto the graph
     function handleDropEvent( event, ui ) {
@@ -457,6 +497,10 @@ $(function(){
         var x = event.pageX - this.offsetLeft;
         var y = event.pageY - this.offsetTop;
 
+        insertNode(app, action, x, y, true);
+    }
+
+    function insertNode(app, action, x, y, shouldUseRenderedPosition) {
         // Find next available id
         var id = 1;
         while (true) {
@@ -466,9 +510,28 @@ $(function(){
             id += 1;
         }
 
+        var inputs = {};
+        var actionInfo = appData[app].actions[action];
+        _.each(actionInfo.args, function(inputInfo) {
+
+            var defaultValue;
+            if (inputInfo.type === "str")
+                defaultValue = "";
+            else if (inputInfo.type === "bool")
+                defaultValue = false;
+            else
+                defaultValue = 0;
+
+            inputs[inputInfo.name] = {
+                format: inputInfo.type,
+                key: inputInfo.name,
+                value: defaultValue
+            };
+        });
+
         // Add the node with the id just found to the graph in the location dropped
         // into by the mouse.
-        var newNode = ur.do('add', {
+        var nodeToBeAdded = {
             group: 'nodes',
             data: {
                 id: id.toString(),
@@ -476,22 +539,21 @@ $(function(){
                 parameters: {
                     action: action,
                     app: app,
-                    device: "None",
+                    device: "",
                     errors: [],
-                    input: {},
+                    input: inputs,
                     name: id.toString(),
                     next: [],
                 }
             },
-            renderedPosition: { x: x, y: y }
-        });
+        };
 
-        newNode.on('click', onClick);
-    }
+        setNodeDisplayProperties(nodeToBeAdded);
 
-
-    function getNumberOfNodesInGraph() {
-        return cy.nodes().size();
+        if (shouldUseRenderedPosition) nodeToBeAdded.renderedPosition = { x: x, y: y };
+        else nodeToBeAdded.position = { x: x, y: y };
+        
+        var newNode = ur.do('add', nodeToBeAdded);
     }
 
     // This function removes selected nodes and edges
@@ -504,7 +566,7 @@ $(function(){
     function onNodeAdded(event) {
         var node = event.cyTarget;
         // If the number of nodes in the graph is one, set the start node to it.
-        if (node.isNode() && getNumberOfNodesInGraph() === 1) {
+        if (node.isNode() && cy.nodes().size() === 1) {
             setStartNode(node.data("parameters").name);
         }
     }
@@ -516,6 +578,29 @@ $(function(){
         if (parameters && node.isNode() && getStartNode() == parameters.name) {
             setStartNode();
         }
+        // If an edge was deleted, delete the corresponding next
+        // element in the node from which the edge originated.
+        else if (node.isEdge()) {
+            var source = node.source();
+            var target = node.target();
+            if (source.data("parameters") && target.data("parameters")) {
+                var parameters = source.data("parameters");
+                var next = parameters.next;
+                var indexToDelete = -1;
+                $.each(next, function( nextIndex, nextStep ) {
+                    if (nextStep.name == target.data("parameters").name) {
+                        indexToDelete = nextIndex;
+                    }
+                });
+                if (indexToDelete >= 0) {
+                    next.splice(indexToDelete, 1);
+                    source.data("parameters", parameters);
+                }
+            }
+        }
+
+        if (currentNodeInParametersEditor == node)
+            hideParameters();
     }
 
     function cut() {
@@ -526,15 +611,25 @@ $(function(){
         }
     }
 
-
     function copy() {
         cy.clipboard().copy(cy.$(":selected"));
     }
 
-
     function paste() {
         var newNodes = ur.do("paste");
-        newNodes.on('click', onClick);
+
+        // Change the names of these new nodes so that they are the
+        // same as the id. This is needed since only the name is
+        // stored on the server and serves as the unique id of the
+        // node. It therefore must be the same as the Cytoscape id.
+        // Also delete the next field since user needs to explicitely
+        // create new edges for the new node.
+        for (var i=0; i<newNodes.length; ++i) {
+            var parameters = newNodes[i].data("parameters");
+            parameters.name = newNodes[i].data("id")
+            parameters.next = [];
+            newNodes[i].data("parameters", parameters);
+        }
     }
 
     function renamePlaybook(oldPlaybookName, newPlaybookName) {
@@ -549,6 +644,11 @@ $(function(){
             'data': JSON.stringify({'new_name': newPlaybookName}),
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Playbook ' + newPlaybookName + ' renamed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Playbook ' + newPlaybookName + ' could not be renamed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -564,6 +664,11 @@ $(function(){
             'data': {playbook: newPlaybookName},
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Playbook ' + newPlaybookName + ' duplicated successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Playbook ' + newPlaybookName + ' could not be duplicated.', 'error');
+                console.log(e);
             }
         });
     }
@@ -580,6 +685,12 @@ $(function(){
 
                 if (currentPlaybook === playbookName)
                     closeCurrentWorkflow();
+
+                $.notify('Playbook ' + playbookName + ' removed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Playbook ' + playbookName + ' could not be removed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -596,6 +707,11 @@ $(function(){
             'data': JSON.stringify({'new_name': newWorkflowName}),
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Workflow ' + newWorkflowName + ' renamed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + newWorkflowName + ' could not be renamed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -611,6 +727,11 @@ $(function(){
             'data': {playbook: playbookName, workflow: newWorkflowName},
             'success': function (data) {
                 downloadWorkflowList();
+                $.notify('Workflow ' + newWorkflowName + ' duplicated successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + newWorkflowName + ' could not be duplicated.', 'error');
+                console.log(e);
             }
         });
     }
@@ -627,6 +748,12 @@ $(function(){
 
                 if (currentPlaybook === playbookName && currentWorkflow === workflowName)
                     closeCurrentWorkflow();
+
+                $.notify('Workflow ' + workflowName + ' removed successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + workflowName + ' could not be removed.', 'error');
+                console.log(e);
             }
         });
     }
@@ -641,12 +768,48 @@ $(function(){
             'success': function (data) {
                 saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
+
+                //If nothing is currently loaded, load our new workflow.
+                if (!cy) loadWorkflow(playbookName, workflowName);
+
+                $.notify('Workflow ' + workflowName + ' added successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + workflowName + ' could not be added.', 'error');
+                console.log(e);
             }
         });
     }
 
+    function transformInputsToLoad(workflowData) {
+        _.each(workflowData.steps, function (step) {
+            step.data.parameters.input = _.reduce(step.data.parameters.input, function (result, inputValue, inputName) {
+                result[inputName] = {
+                    key: inputName,
+                    value: inputValue,
+                    format: _.find(appData[step.data.parameters.app].actions[step.data.parameters.action].args, function (arg) {
+                        return arg.name === inputName;
+                    }).type
+                };
+                return result;
+            }, {});
+        });
+    }
 
-    function saveWorkflow(playbookName, workflowName, workflowData) {
+    function transformInputsToSave(workflowData) {
+        _.each(workflowData, function (data) {
+            if (data.group === "edges") return;
+
+            data.data.parameters.input = _.reduce(data.data.parameters.input, function (result, inputData, inputName) {
+                result[inputName] = inputData.value;
+                return result;
+            }, {});
+        });
+    }
+
+    function saveWorkflow(playbookName, workflowName, _workflowData) {
+        var workflowData = _.cloneDeep(_workflowData);
+        transformInputsToSave(workflowData);
         var data = JSON.stringify({start: startNode, cytoscape: JSON.stringify(workflowData)});
         $.ajax({
             'async': false,
@@ -658,16 +821,84 @@ $(function(){
             'url': "/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
             'data': data,
             'success': function (data) {
+                $.notify('Workflow ' + workflowName + ' saved successfully.', 'success');
+            },
+            'error': function (e) {
+                $.notify('Workflow ' + workflowName + ' could not be saved.', 'error');
+                console.log(e);
             }
         });
     }
 
+    function saveWorkflowJson(playbookName, workflowName, workflowDataEditor) {
+        // Convert data in string format under JSON tab to a dictionary
+        var dataJson = JSON.parse(workflowDataEditor);
+
+        // Get current list of steps from cytoscape data in JSON format
+        var workflowData = cy.elements().jsons();
+
+        // Track existing steps using a dictionary where the keys are the
+        // step ID and the values are the index of the step in workflowData
+        var ids = {}
+        for (var step = 0; step < workflowData.length; step++) {
+            ids[workflowData[step].data.id] = step.toString();
+        }
+
+        // Compare current list of steps with updated list and modify current list
+        var stepsJson = dataJson.steps; // Get updated list of steps
+        stepsJson.forEach(function(stepJson) {
+            var idJson = stepJson.data.id;
+            if (idJson in ids) {
+                // If step already exists, then just update its fields
+                var step = Number(ids[idJson])
+                workflowData[step].data = stepJson.data;
+                workflowData[step].group = stepJson.group;
+                workflowData[step].position = stepJson.position;
+                // Delete step id
+                delete ids[idJson]
+            } else {
+                // If step is absent, then create a new step
+                var newStep = getStepTemplate();
+                newStep.data = stepJson.data;
+                newStep.group = stepJson.group;
+                newStep.position = stepJson.position;
+                // Add new step
+                workflowData.push(newStep)
+            }
+        })
+
+        if (Object.keys(ids).length > 0) {
+            // If steps have been removed, then delete steps
+            for (id in Object.keys(ids)) {
+                var step = Number(ids[idJson])
+                workflowData.splice(step, 1)
+            }
+        }
+
+        // Save updated cytoscape data in JSON format
+        saveWorkflow(playbookName, workflowName, workflowData)
+    }
+
+    function setNodeDisplayProperties(step) {
+        //add a type field to handle node styling
+        var app = appData[step.data.parameters.app];
+        var action = app.actions[step.data.parameters.action];
+
+        if (action.event) {
+            step.data.type = 'eventAction';
+
+            // step.data.label += ' (' + action.event + ')';
+        }
+        else {
+            step.data.type = 'action';
+        }
+    }
 
     function loadWorkflow(playbookName, workflowName) {
 
         currentPlaybook = playbookName;
         currentWorkflow = workflowName;
-        $("#currentWorkflowText").text(currentWorkflow);
+        $("#currentWorkflowText").text(currentPlaybook + " - " + currentWorkflow);
 
         var workflowData = function () {
             var tmp = null;
@@ -678,14 +909,22 @@ $(function(){
                 'headers':{"Authentication-Token":authKey},
                 'url': "/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
+                    _.each(data.steps, function (step) {
+                        if (step.group === 'nodes') setNodeDisplayProperties(step);
+                    });
+
                     tmp = data;
+                },
+                'error': function (e) {
+                    $.notify('Workflow ' + currentWorkflow + ' could not be loaded properly.', 'error');
+                    console.log(e);
                 }
             });
             return tmp;
         }();
 
         // Remove instructions
-        $("#cy-instructions").addClass('hidden');
+        hideInstructions();
 
         // Create the Cytoscape graph
         cy = cytoscape({
@@ -697,19 +936,58 @@ $(function(){
             layout: { name: 'preset' },
             style: [
                 {
-                    selector: 'node',
+                    selector: 'node[type="action"]',
                     css: {
                         'content': 'data(label)',
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'shape': 'roundrectangle',
-                        //'background-color': '#aecbdc',
+                        'background-color': '#bbb',
                         'selection-box-color': 'red',
-                        'font-family': 'Oswald',
+                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
                         'font-weight': 'lighter',
                         'font-size': '15px',
                         'width':'40',
                         'height':'40'
+                    }
+                },
+                {
+                    selector: 'node[type="eventAction"]',
+                    css: {
+                        'content': 'data(label)',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'shape': 'star',
+                        'background-color': '#edbd21',
+                        'selection-box-color': 'red',
+                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
+                        'font-weight': 'lighter',
+                        'font-style': 'italic',
+                        'font-size': '15px',
+                        'width':'40',
+                        'height':'40'
+                    }
+                },
+                {
+                    selector: 'node:selected',
+                    css: {
+                        'background-color': '#45F'
+                    }
+                },
+                {
+                    selector: '.good-highlighted',
+                    css: {
+                        'background-color': '#399645',
+                        'transition-property': 'background-color',
+                        'transition-duration': '0.5s'
+                    }
+                },
+                {
+                    selector: '.bad-highlighted',
+                    css: {
+                        'background-color': '#8e3530',
+                        'transition-property': 'background-color',
+                        'transition-duration': '0.5s'
                     }
                 },
                 {
@@ -720,8 +998,7 @@ $(function(){
                         'padding-bottom': '10px',
                         'padding-right': '10px',
                         'text-valign': 'top',
-                        'text-halign': 'center',
-                        'background-color': '#bbb'
+                        'text-halign': 'center'
                     }
                 },
                 {
@@ -748,45 +1025,79 @@ $(function(){
             preview: false,
             toggleOffOnLeave: true,
             complete: function( sourceNode, targetNodes, addedEntities ) {
-                // The edge hendles extension is not integrated into the undo/redo extension.
+                var sourceParameters = sourceNode.data().parameters;
+                if (!sourceParameters.hasOwnProperty("next"))
+                    sourceParameters.next = [];
+
+                // The edge handles extension is not integrated into the undo/redo extension.
                 // So in order that adding edges is contained in the undo stack,
                 // remove the edge just added and add back in again using the undo/redo
                 // extension. Also add info to edge which is displayed when user clicks on it.
-                for (var i=0; i<targetNodes.length; ++i) {
+                for (var i=0; i<targetNodes.length; i++) {
                     addedEntities[i].data('parameters', {
                         flags: [],
                         name: targetNodes[i].data().parameters.name,
-                        nextStep: targetNodes[i].data().parameters.name
+                        nextStep: targetNodes[i].data().parameters.name,
+                        temp: true
                     });
 
-                    //Update the next property of the source node to contain the new next steps
-                    var parameters = sourceNode.data().parameters;
-                    if (!parameters.hasOwnProperty("next"))
-                        parameters.next = [];
+                    //If we attempt to draw an edge that already exists, please remove it and take no further action
+                    if (_.find(sourceParameters.next, (next) => { return next.name === targetNodes[i].data().id })) {
+                        cy.remove(addedEntities);
+                        return;
+                    }
 
-                    // If for some reason, the next array already
-                    // contains an item with the same next node as
-                    // this new link (probably due to some bug),
-                    // remove it now
-                    parameters.next.filter(function(next) {
-                        return next.name !== targetNodes[i].data().id;
-                    });
-
-                    parameters.next.push({
+                    sourceParameters.next.push({
                         flags: [],
+                        status: 'Success',
                         name: targetNodes[i].data().id // Note use id, not name since name can be changed
                     });
-                    sourceNode.data('parameters', parameters);
+
+                    sourceNode.data('parameters', sourceParameters);
                 }
-                cy.remove(addedEntities); // Remove NOT using undo/redo extension
+
+                cy.remove(addedEntities);
+
+                _.each(addedEntities, function (ae) {
+                    var data = ae.data();
+                    delete data.parameters.temp;
+                    ae.data(data);
+                });
+
                 var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension
-                newEdges.on('click', onClick);
             },
         });
 
         // Extension for copy and paste
         cy.clipboard();
 
+        //Extension for grid and guidelines
+        cy.gridGuide({
+            // drawGrid: true,
+            // strokeStyle: '#222'
+            //options...
+        });
+
+        //var contextMenusInstance = cy.contextMenus();
+
+        // var edgeBendEditingInstance = cy.edgeBendEditing({
+        //     // this function specifies the positions of bend points
+        //     bendPositionsFunction: function(ele) {
+        //         return ele.data('bendPointPositions');
+        //     },
+        //     // whether to initilize bend points on creation of this extension automatically
+        //     initBendPointsAutomatically: true,
+        //     // whether the bend editing operations are undoable (requires cytoscape-undo-redo.js)
+        //     undoable: true,
+        //     // the size of bend shape is obtained by multipling width of edge with this parameter
+        //     bendShapeSizeFactor: 6,
+        //     // whether to start the plugin in the enabled state
+        //     enabled: true,
+        //     // title of add bend point menu item (User may need to adjust width of menu items according to length of this option)
+        //     addBendMenuItemTitle: "Add Bend Point",
+        //     // title of remove bend point menu item (User may need to adjust width of menu items according to length of this option)
+        //     removeBendMenuItemTitle: "Remove Bend Point"
+        // });
 
         // Load the data into the graph
         // If a node does not have a label field, set it to
@@ -798,25 +1109,49 @@ $(function(){
             return value;
         });
 
+        transformInputsToLoad(workflowData);
+
         cy.add(steps);
 
-        cy.fit();
+        cy.fit(50);
 
         setStartNode(workflowData.start);
 
         // Configure handler when user clicks on node or edge
-        cy.$('*').on('click', onClick);
+        cy.on('select', 'node', onNodeSelect);
+        cy.on('select', 'edge', onEdgeSelect);
+        cy.on('unselect', onUnselect);
 
-        // Configure handlers when nodes are added or removed
-        cy.on('add', onNodeAdded);
-        cy.on('remove', onNodeRemoved);
+        // Configure handlers when nodes/edges are added or removed
+        cy.on('add', 'node', onNodeAdded);
+        cy.on('remove', 'node', onNodeRemoved);
+        cy.on('remove', 'edge', onEdgeRemove);
+
+        $("#cy-json-data").val(JSON.stringify(workflowData, null, 2));
+
     }
 
 
     function closeCurrentWorkflow() {
         $("#cy").empty();
+        $("#currentWorkflowText").text("");
+        hideParameters();
+        showInstruction();
     }
 
+    function showInstruction() {
+        var cyInstructions = $( "#cy-instructions-template" ).clone().removeClass('hidden');
+        cyInstructions.attr("id", "cy-instructions");
+        $("#cy").append(cyInstructions);
+    }
+
+    function hideInstructions() {
+        $("#cy-instructions").remove();
+    }
+
+    function hideParameters() {
+        $("#parametersBar").addClass('hidden');
+    }
 
     // Download list of workflows for display in the Workflows list
     function downloadWorkflowList() {
@@ -917,8 +1252,10 @@ $(function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/playbooks",
             'success': function (data) {
+                //Destroy the existing tree if necessary
                 if ($("#workflows").jstree(true))
                     $("#workflows").jstree(true).destroy();
+
                 $('#workflows').jstree({
                     'core' : {
                         "check_callback" : true,
@@ -928,11 +1265,11 @@ $(function(){
                     "plugins" : [ "contextmenu" ],
                     "contextmenu" : { items: customMenu }
                 })
-                    .bind("ready.jstree", function (event, data) {
-                        $(this).jstree("open_all"); // Expand all
-                    });
-                // handle double click on workflow
-                $("#workflows").bind("dblclick.jstree", function (event, data) {
+                .bind("ready.jstree", function (event, data) {
+                    $(this).jstree("open_all"); // Expand all
+                })
+                // handle double click on workflow, load workflow graph for editing
+                .bind("dblclick.jstree", function (event, data) {
 
                     var node = $(event.target).closest("li");
                     var node_id = node[0].id; //id of the selected node
@@ -943,9 +1280,16 @@ $(function(){
                         loadWorkflow(node.data.playbook, workflowName);
 
                         // hide parameters panel until first click on node
-                        $("#parameters").addClass('hidden');
+                        hideParameters();
+
+                        //hide our bootstrap modal
+                        $('#workflowsModal').modal('hide');
                     }
                 });
+            },
+            'error': function (e) {
+                $.notify('Error retrieving playbooks.', 'error');
+                console.log(e);
             }
         });
     }
@@ -1134,12 +1478,55 @@ $(function(){
                    checkIfWorkflowExists);
     });
 
+    $( "#execute-button" ).click(function() {
+        window.executionDialog = $("#executionModal").clone().removeClass('hidden');
+        executionDialog.dialog({
+            autoOpen: false,
+            modal: false,
+            title: "Execution Results",
+            width: 600,
+            close: function(event, ui){
+                cy.elements().removeClass("good-highlighted bad-highlighted");
+            }
+        });
+
+        executionDialog.dialog( "open" );
+
+        $(executionDialog).find("button").on("click", function(){
+            cy.elements().removeClass("good-highlighted bad-highlighted");
+            executionDialog.dialog("close");
+        });
+        $.ajax({
+            'async': true,
+            'type': "POST",
+            'global': false,
+            'headers':{"Authentication-Token":authKey},
+            'url': "playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
+            'success': function (data) {
+                console.log(currentWorkflow + ' is scheduled to execute.', 'success');
+                //Set up event listener for workflow results if possible
+            },
+            'error': function (jqXHR, status, error) {
+                console.log(currentWorkflow + ' has failed to be scheduled.', 'error');
+                //$("#eventList").append("<li>" + currentWorkflow + " has failed to be scheduled.</li>");
+            }
+        });
+    });
+
+
+
     // Handle save button press
     $( "#save-button" ).click(function() {
         if (cy === null)
             return;
 
-        saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
+        if ($("#playbookEditorTabs ul li.ui-state-active").index() == 0) {
+            // If the graphical editor tab is active
+            saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
+        } else {
+            // If the JSON tab is active
+            saveWorkflowJson(currentPlaybook, currentWorkflow, document.getElementById('cy-json-data').value);
+        }
     });
 
     // Handle delete button press
@@ -1189,20 +1576,21 @@ $(function(){
             removeSelectedNodes();
         }
         else if (e.ctrlKey) {
-            if (e.which === 90) // 'Ctrl+Z', Undo
-                ur.undo();
-            else if (e.which === 89) // 'Ctrl+Y', Redo
-                ur.redo();
-            else if (e.which == 67) // Ctrl + C, Copy
+            //TODO: re-enable undo/redo once we restructure how next steps / edges are stored
+            // if (e.which === 90) // 'Ctrl+Z', Undo
+            //     ur.undo();
+            // else if (e.which === 89) // 'Ctrl+Y', Redo
+            //     ur.redo();
+            if (e.which == 67) // Ctrl + C, Copy
                 copy();
             else if (e.which == 86) // Ctrl + V, Paste
                 paste();
             else if (e.which == 88) // Ctrl + X, Cut
                 cut();
-            else if (e.which == 65) { // 'Ctrl+A', Select All
-                cy.elements().select();
-                e.preventDefault();
-            }
+            // else if (e.which == 65) { // 'Ctrl+A', Select All
+            //     cy.elements().select();
+            //     e.preventDefault();
+            // }
         }
     });
 
@@ -1227,8 +1615,29 @@ $(function(){
                     'data' : formatAppsActionJsonDataForJsTree(data)
                 }
             })
-            .bind("ready.jstree", function (event, data) {
-                $(this).jstree("open_all"); // Expand all
+            //Commented out for now
+            // .bind("ready.jstree", function (event, data) {
+            //     $(this).jstree("open_all"); // Expand all
+            // })
+            // handle double click on workflow, add action node to center of canvas
+            .bind("dblclick.jstree", function (event, data) {
+                if (cy === null)
+                    return;
+
+                var node = $(event.target).closest("li");
+                var node_id = node[0].id; //id of the selected node
+                node = $('#actions').jstree(true).get_node(node_id);
+
+                if (!node.data)
+                    return;
+                    
+                var app = node.data.app;
+                var action = node.text;
+                var extent = cy.extent();
+
+                function avg(a, b) { return (a + b) / 2; }
+
+                insertNode(app, action, avg(extent.x1, extent.x2), avg(extent.y1, extent.y2), false);
             })
             .on('after_open.jstree', function (e, data) {
                 for(var i = 0; i < data.node.children.length; i++) {
@@ -1242,7 +1651,7 @@ $(function(){
             });
 
             // Now is a good time to download all devices for all apps
-            $.each(appData, function( appName, actions ) {
+            _.each(appData, function(actions, appName) {
                 $.ajax({
                     'async': false,
                     'type': "GET",
@@ -1254,7 +1663,7 @@ $(function(){
                     'data': {},
                     'success': function (data) {
                         appData[appName].devices = [];
-                        $.each(data, function( index, value ) {
+                        _.each(data, function(value) {
                             appData[appName].devices.push(value.name);
                         });
                     }
@@ -1288,4 +1697,71 @@ $(function(){
             filtersList = data.filters;
         }
     });
+
+    //---------------------------------
+    // Other setup
+    //---------------------------------
+    showInstruction();
+
+    $("#playbookEditorTabs UL LI A").each(function() {
+        $(this).attr("href", location.href.toString()+$(this).attr("href"));
+    });
+    $("#playbookEditorTabs").tabs();
+
+    function getStepTemplate() {
+        return {
+            "classes": "",
+            "data": {},
+            "grabbable": true,
+            "group": "",
+            "locked": false,
+            "position": {},
+            "removed": false,
+            "selectable": true,
+            "selected": false
+        };
+    }
+
+    function handleStreamStepsEvent(data){
+        var id = data.name;
+        var type = data.type;
+        var elem = cy.elements('node[id="' + id + '"]');
+
+        var row = executionDialog.find("table").get(0).insertRow(-1);
+        var id_cell = row.insertCell(0);
+        id_cell.innerHTML = data.name;
+
+        var type_cell = row.insertCell(1);
+        type_cell.innerHTML = data.type;
+
+        var input_cell = row.insertCell(2);
+        input_cell.innerHTML = data.input;
+
+        var result_cell = row.insertCell(3);
+        result_cell.innerHTML = data.result;
+
+        if(type === "SUCCESS"){
+            elem.addClass('good-highlighted');
+        }
+        else if(type === "ERROR"){
+            elem.addClass('bad-highlighted');
+        }
+
+    }
+
+
+
+
+    window.stepResultsSSE.onmessage = function(message) {
+        var data = JSON.parse(message.data);
+        handleStreamStepsEvent(data);
+    }
+    window.stepResultsSSE.onerror = function(e){
+        console.log("ERROR");
+        console.log(e);
+        stepResultsSSE.close();
+    }
 });
+
+
+
