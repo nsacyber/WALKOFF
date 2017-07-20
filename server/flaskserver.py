@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, send_from_directory
 from flask_security import login_required, auth_token_required, current_user, roles_accepted
 from flask_security.utils import encrypt_password
 from gevent import monkey
@@ -57,20 +57,51 @@ def create_user():
 
     app.logger.handlers = logging.getLogger('server').handlers
 
+# This is required by zone.js as it need to access the
+# "main.js" file in the "ClientApp\app" folder which it
+# does by accessing "<your-site-path>/app/main.js"
+# @app.route('/app/<path:filename>')
+# def client_app_app_folder(filename):
+#     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
+
+# Custom static data
+@app.route('/client/<path:filename>')
+def client_app_folder(filename):
+    return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
+
+# @app.route('/')
+# @login_required
+# def default():
+#     if current_user.is_authenticated:
+#         default_page_name = 'dashboard'
+#         args = {"apps": running_context.get_apps(),
+#                 "authKey": current_user.get_auth_token(),
+#                 "currentUser": current_user.email,
+#                 "default_page": default_page_name}
+#         return render_template("container.html", **args)
+#     else:
+#         return {"status": "Could Not Log In."}
 
 @app.route('/')
-@login_required
+@app.route('/controller')
+@app.route('/playbook')
+@app.route('/devices')
+@app.route('/triggers')
+@app.route('/cases')
+@app.route('/settings')
 def default():
     if current_user.is_authenticated:
-        default_page_name = 'dashboard'
         args = {"apps": running_context.get_apps(),
                 "authKey": current_user.get_auth_token(),
                 "currentUser": current_user.email,
-                "default_page": default_page_name}
-        return render_template("container.html", **args)
+                "default_page": 'controller'}
+        return render_template("index.html", **args)
     else:
-        return redirect(url_for('/login'))
+        return redirect(url_for('login'))
 
+# @app.route('/login', methods=['GET'])
+# def login():
+#     return render_template("login_user.html")
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required

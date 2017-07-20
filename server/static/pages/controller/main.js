@@ -68,7 +68,6 @@ function notifyMe() {
         notification.onclick = function () {
             window.open("https://github.com/iadgov");
         };
-
     }
 }
 

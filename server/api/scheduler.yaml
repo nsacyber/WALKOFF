@@ -1,3 +1,22 @@
+/execution/scheduler:
+  get:
+    tags:
+      - Scheduler
+    summary: Get the current scheduler status.
+    description: ''
+    operationId: server.endpoints.scheduler.get_scheduler_status
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+          properties:
+            status:
+              description: State of scheduler
+              type: string
+              example: 0 for stopped, 1 for running, 2 for paused
 /execution/scheduler/start:
   post:
     tags:

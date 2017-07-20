@@ -123,3 +123,24 @@
         schema:
           type: object
           description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'
+
+/client/{filename}:
+  get:
+    tags:
+      - Client
+    summary: Get a client file
+    description: ''
+    operationId: server.endpoints.metadata.read_client_file
+    produces:
+      - application/json
+    parameters:
+      - name: filename
+        in: path
+        description: The name of the file to fetch
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+      463:
+        description: Invalid filename

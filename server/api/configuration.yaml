@@ -1,39 +1,44 @@
-'/configuration/{key}':
+'/configuration':
   get:
     tags:
       - Configuration
-    summary: Read a configuration key
-    description: ''
+    summary: Reads the configuration
     operationId: server.endpoints.configuration.read_config_values
-    parameters:
-      - name: key
-        in: path
-        description: 'The configuration key '
-        required: true
-        type: string
     produces:
       - application/json
     responses:
       200:
         description: Success
         schema:
-          type: object
-          description: '{[key]: <current value>}'
-      461:
-        description: Configuration key does not exist.
+          $ref: '#/definitions/Configuration'
+      401:
+        description: Unauthorized access
         schema:
           $ref: '#/definitions/Error'
-/configuration/set:
   post:
     tags:
       - Configuration
-    summary: Update a configuration value
-    description: ''
+    summary: Updates the configuration
     operationId: server.endpoints.configuration.update_configuration
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
+    parameters:
+      - name: configuration
+        in: body
+        description: The configuration object
+        required: true
+        schema:
+          $ref: '#/definitions/Configuration'
     responses:
       200:
         description: Success
+      401:
+        description: Unauthorized access
+        schema:
+          $ref: '#/definitions/Error'
+      515:
+        description: Could not write configuration to file
+        schema:
+          $ref: '#/definitions/Error'

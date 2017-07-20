@@ -1,7 +1,11 @@
 User:
     type: object
-    required: [username, password]
+    required: [id, username, password]
     properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
       username:
         description: Username or email of the user
         type: string
@@ -10,7 +14,7 @@ User:
         description: Password for the user
         type: string
         example: password123
-      role:
+      roles:
         description: A list of endpoints that this user can access
         type: array
         items:
@@ -19,6 +23,10 @@ User:
           - /users
           - /cases
           - /playbooks
+      active:
+        description: A boolean displaying whether or not a user is currently active
+        type: boolean
+        example: True
 EditUser:
     type: object
     properties:

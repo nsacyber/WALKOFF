@@ -10,9 +10,10 @@
 				<minutes>*/0.1</minutes>
 			</scheduler>
 		</options>
+		<start>start</start>
 		<steps>
 			<step id="start">
-				<id>start</id>
+				<name>start</name>
 				<app>HelloWorld</app>
 				<action>repeatBackToMe</action>
 				<device>hwTest</device>

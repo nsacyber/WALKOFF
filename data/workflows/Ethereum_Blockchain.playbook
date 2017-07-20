@@ -12,7 +12,7 @@
 		<start>1</start>
 		<steps>
 			<step id="start">
-				<id>start</id>
+				<name>start</name>
 				<app>EthereumBlockchain</app>
 				<action>create_accounts</action>
 				<position>
@@ -25,7 +25,7 @@
 				<next step="2"/>
 			</step>
 			<step id="3">
-				<id>3</id>
+				<name>3</name>
 				<app>EthereumBlockchain</app>
 				<action>submit_greeting</action>
 				<position>
@@ -37,14 +37,13 @@
 				</inputs>
 			</step>
 			<step id="2">
-				<id>2</id>
+				<name>2</name>
 				<app>EthereumBlockchain</app>
 				<action>set_up_network</action>
 				<position>
 					<x>236.6709793476604</x>
 					<y>232.47543955814143</y>
 				</position>
-				<input/>
 				<next step="3"/>
 			</step>
 		</steps>

@@ -18,5 +18,6 @@ build/*
 *.pem
 data/log/*.log
 server/api/composed_api.yaml
-.vscode/
 node_modules/
+.vscode/
+client/build/

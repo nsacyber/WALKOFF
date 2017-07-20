@@ -1,0 +1,19 @@
+<div class="form">
+    <div class="formHeader">
+        <img src="img/walkoffLogo.png" height="150" width="250" style="padding-left:20px; text-align:center;"/>
+        <h2>{{title}}</h2>
+    </div>
+    <form name="login_user_form">
+        <div class="row">
+            <label class="col-4-xs">Username:</label>
+            <input #username type="text" class="col-8-xs">
+        </div>
+        <div class="row">
+            <label class="col-4-xs">Password:</label>
+            <input #password type="password" class="col-8-xs">
+        </div>
+        <div class="row">
+            <button class="btn btn-primary" (click)="login()"></button>
+        </div>
+    </form>
+</div>

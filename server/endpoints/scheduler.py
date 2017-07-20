@@ -2,6 +2,14 @@ from flask import current_app
 from flask_security import roles_accepted
 from server.return_codes import *
 
+def get_scheduler_status():
+    from server.context import running_context
+
+    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    def __func():
+        return {"status": running_context.controller.scheduler.state}, SUCCESS
+    return __func()
+
 
 def start_scheduler():
     from server.context import running_context

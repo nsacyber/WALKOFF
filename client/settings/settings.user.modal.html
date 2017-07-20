@@ -1,0 +1,37 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-6">
+				<div class="form-group">
+					<label for="name">Username</label>
+					<input type="text" class="form-control" [(ngModel)]="workingUser.username" name="username" required>
+				</div>
+				<div class="form-group">
+					<label for="name">Active</label>
+					<input type="checkbox" class="form-control" [(ngModel)]="workingUser.active" name="active" required>
+				</div>
+				<!--TODO: roles-->
+			</div>
+			<div class="col-xs-6">
+				<div class="form-group" *ngIf="workingUser.id">
+					<label for="name">Current Password</label>
+					<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" name="currentPassword" required>
+				</div>
+				<div class="form-group">
+					<label for="name">New Password</label>
+					<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" name="newPassword" required>
+				</div>
+				<div class="form-group" *ngIf="workingUser.id">
+					<label for="name">Confirm New Password</label>
+					<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" name="confirmNewPassword" required>
+				</div>
+			</div>
+		</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" (click)="submit()">{{submitText}}</button>
+</div>
