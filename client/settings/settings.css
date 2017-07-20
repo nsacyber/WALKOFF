@@ -1,3 +1,7 @@
+@import '/client/node_modules/@swimlane/ngx-datatable/release/index.css';
+@import '/client/node_modules/@swimlane/ngx-datatable/release/themes/material.css';
+@import '/client/node_modules/@swimlane/ngx-datatable/release/assets/icons.css';
+
 #main {
 	padding: 10px 30px;
 }
@@ -46,4 +50,25 @@ select#username {
 
 select#roles {
 	border: none;
+}
+
+.ngx-datatable .datatable-header {
+	margin-left: 10px;
+}
+
+.ngx-datatable .datatable-header .datatable-header-cell-label {
+	font-weight: bold;
+	font-size: 18px;
+}
+
+.ngx-datatable .datatable-body {
+	margin-left: 10px;
+}
+
+.ngx-datatable .datatable-footer {
+	margin-left: 10px;
+}
+
+.ngx-datatable .datatable-row-odd {
+	background-color: #CCC;
 }

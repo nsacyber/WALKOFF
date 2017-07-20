@@ -24,7 +24,7 @@ export class SettingsComponent {
 	tlsVersions: string[] = ['1.1', '1.2', '1.3'];
 
 	//User Data Table params
-	users: User[];
+	users: User[] = [];
 	filterQuery: string = "";
 	rowsOnPage: number = 10;
 	sortBy: string = "username";
@@ -89,10 +89,13 @@ export class SettingsComponent {
 		modalRef.componentInstance.title = `Edit User: ${user.username}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.workingUser = User.toWorkingUser(user);
+
+		modalRef.result
+			.then(workingUser => WorkingUser.toUser(workingUser))
+			.then(user => this.addUserOrSaveChanges(user));
 	}
 
 	addUserOrSaveChanges(user: User): void {
-		console.log(user);
 		//If user has an ID, user already exists, call update
 		if (user.id) {
 			this.settingsService

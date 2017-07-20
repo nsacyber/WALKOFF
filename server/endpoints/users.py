@@ -68,19 +68,26 @@ def update_user():
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        user = running_context.user_datastore.get_user(user_name)
+        data = request.get_json()
+        new_username = data['username']
+
+        user = running_context.user_datastore.get_user(new_username)
         if user:
-            form = forms.EditUserForm(request.form)
-            if form.password:
+            current_username = user.email
+
+            if 'active' in data:
+                user.active = data['active']
+            if 'password' in data:
                 user.password = encrypt_password(form.password.data)
-                running_context.db.session.commit()
-            if form.role.data:
-                user.set_roles(form.role.data)
-            current_app.logger.info('Updated user {0}. Roles: {1}'.format(user_name, form.role.data))
+            if 'roles' in data:
+                user.set_roles(data['roles'])
+
+            running_context.db.session.commit()
+            current_app.logger.info('Updated user {0}. Roles: {1}'.format(current_username, data['roles']))
             return user.display(), SUCCESS
         else:
-            current_app.logger.error('Could not edit user {0}. User does not exist.'.format(user_name))
-            return {"error": 'User does not exist.'.format(user_name)}, OBJECT_DNE_ERROR
+            current_app.logger.error('Could not edit user {0}. User does not exist.'.format(new_username))
+            return {"error": 'User {0} does not exist.'.format(new_username)}, OBJECT_DNE_ERROR
     return __func()
 
 

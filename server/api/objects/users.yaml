@@ -25,7 +25,7 @@ User:
           - /playbooks
       active:
         description: A boolean displaying whether or not a user is currently active
-        type: string
+        type: boolean
         example: True
 EditUser:
     type: object

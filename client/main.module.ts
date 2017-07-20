@@ -4,6 +4,7 @@ import { FormsModule }   from '@angular/forms';
 import { HttpModule } from '@angular/http';
 // import { DataTableModule } from 'angular2-datatable';
 import { NgbRootModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -19,8 +20,8 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		FormsModule,
 		HttpModule,
 		RoutingModule,
-		// DataTableModule,
-		NgbRootModule
+		NgbRootModule,
+		NgxDatatableModule,
 	],
 	declarations: [
 		//Main component

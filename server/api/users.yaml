@@ -90,11 +90,8 @@
       200:
         description: Success
         schema:
-          description: A list of user objects
-          type: object
-          properties:
-            user:
-              $ref: '#/definitions/User'
+          description: The user object matching the user id inputted
+          $ref: '#/definitions/User'
       461:
         description: Could not display user <username>. User does not exist.
         schema:
