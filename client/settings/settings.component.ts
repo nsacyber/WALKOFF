@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 import { SettingsService } from './settings.service';
 
@@ -74,9 +74,7 @@ export class SettingsComponent {
 		workingUser.active = true;
 		modalRef.componentInstance.workingUser = workingUser;
 		
-		modalRef.result
-			.then(workingUser => WorkingUser.toUser(workingUser))
-			.then(user => this.addUserOrSaveChanges(user));
+		this._handleModalClose(modalRef);
 	}
 
 	editUser(user: User): void {
@@ -85,9 +83,25 @@ export class SettingsComponent {
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.workingUser = User.toWorkingUser(user);
 
+		this._handleModalClose(modalRef);
+	}
+
+	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
-			.then(workingUser => WorkingUser.toUser(workingUser))
-			.then(user => this.addUserOrSaveChanges(user));
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.user) return;
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					let toUpdate = _.find(this.users, u => u.id === result.user.id);
+					Object.assign(toUpdate, result.user);
+				}
+				//On add, push the new item
+				else {
+					this.users.push(result.user);
+				}
+			});
 	}
 
 	addUserOrSaveChanges(user: User): void {

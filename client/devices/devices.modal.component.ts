@@ -10,7 +10,8 @@ import { Device } from '../models/device';
 	templateUrl: 'client/devices/devices.modal.html',
 	styleUrls: [
 		'client/devices/devices.css'
-	]
+	],
+	providers: [DevicesService]
 })
 export class DevicesModalComponent {
 	@Input() workingDevice: Device;
@@ -22,7 +23,7 @@ export class DevicesModalComponent {
 	submit(): void {
 		if (!this.validate()) return;
 
-		//If user has an ID, user already exists, call update
+		//If device has an ID, device already exists, call update
 		if (this.workingDevice.id) {
 			this.devicesService
 				.editDevice(this.workingDevice)
