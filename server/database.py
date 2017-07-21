@@ -121,8 +121,8 @@ class User(Base, UserMixin):
             roles (list[str]): A list of Role names with which the User will be associated.
         """
         for role in roles:
-            if role and not self.has_role(role):
-                q = user_datastore.find_role(role)
+            if role['name'] and not self.has_role(role['name']):
+                q = user_datastore.find_role(role['name'])
                 if q:
                     user_datastore.add_role_to_user(self, q)
 
