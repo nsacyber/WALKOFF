@@ -69,25 +69,26 @@ def update_user():
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         data = request.get_json()
-        new_username = data['username']
 
-        user = running_context.user_datastore.get_user(new_username)
+        user = running_context.user_datastore.get_user(id=data['id'])
         if user:
             current_username = user.email
 
             if 'active' in data:
                 user.active = data['active']
             if 'password' in data:
-                user.password = encrypt_password(form.password.data)
+                user.password = encrypt_password(data['password'])
             if 'roles' in data:
                 user.set_roles(data['roles'])
+            if 'username' in data:
+                user.email = data['username']
 
             running_context.db.session.commit()
             current_app.logger.info('Updated user {0}. Roles: {1}'.format(current_username, data['roles']))
             return user.display(), SUCCESS
         else:
-            current_app.logger.error('Could not edit user {0}. User does not exist.'.format(new_username))
-            return {"error": 'User {0} does not exist.'.format(new_username)}, OBJECT_DNE_ERROR
+            current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
+            return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
     return __func()
 
 
