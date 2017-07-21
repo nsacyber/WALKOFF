@@ -37,7 +37,8 @@ def create_user():
                 if role.name == 'admin':
                     has_admin = True
             if not has_admin:
-                u.set_roles(['admin'])
+                role = {'name': 'admin', 'description': None}
+                u.set_roles([role])
 
             running_context.db.session.commit()
             current_app.logger.info('User added: {0}'.format(
