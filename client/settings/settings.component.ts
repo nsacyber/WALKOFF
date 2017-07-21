@@ -30,11 +30,6 @@ export class SettingsComponent {
 	sortBy: string = "username";
 	sortOrder: string = "asc";
 
-	//User modal params
-	userModalTitle: string;
-	userModalSubmitText: string;
-	workingUser: User;
-
 	constructor(private settingsService: SettingsService, private modalService: NgbModal) {
 		this.getConfiguration();
 		this.getUsers();

@@ -10,8 +10,11 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { RoutingModule } from './routing';
 import { MainComponent } from './main/main.component';
 import { ControllerComponent } from './controller/controller.component';
+import { DevicesComponent } from './devices/devices.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
+
+import { DevicesModalComponent } from './devices/devices.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 
 @NgModule({
@@ -28,13 +31,16 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		MainComponent,
 		//Router module components
 		ControllerComponent,
+		DevicesComponent,
 		CasesComponent,
 		SettingsComponent,
 		//Modals
+		DevicesModalComponent,
 		SettingsUserModalComponent,
 	],
 	entryComponents: [
-		SettingsUserModalComponent
+		DevicesModalComponent,
+		SettingsUserModalComponent,
 	],
 	bootstrap: [MainComponent]
 })
