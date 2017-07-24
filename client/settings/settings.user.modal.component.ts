@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 
 import { SettingsService } from './settings.service';
 
@@ -18,12 +19,14 @@ export class SettingsUserModalComponent {
 	@Input() title: string;
 	@Input() submitText: string;
 
-	constructor(private settingsService: SettingsService, private activeModal: NgbActiveModal) { }
+	constructor(private settingsService: SettingsService, private activeModal: NgbActiveModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+		this.toastyConfig.theme = 'bootstrap';
+	}
 
 	submit(): void {
 		let validationMessage = this.validate();
 		if (validationMessage) {
-			console.error(validationMessage);
+			this.toastyService.error(validationMessage);
 			return;
 		}
 
@@ -35,7 +38,7 @@ export class SettingsUserModalComponent {
 					user: user,
 					isEdit: true
 				}))
-				.catch(e => console.log(e));
+				.catch(this.toastyService.error(e.message));
 		}
 		else {
 			this.settingsService
@@ -44,13 +47,14 @@ export class SettingsUserModalComponent {
 					user: user,
 					isEdit: false
 				}))
-				.catch(e => console.log(e));
+				.catch(this.toastyService.error(e.message));
 		}
 	}
 
 	validate(): string {
 		if (!this.workingUser) return 'User is not specified.';
-		if (this.workingUser.id && this.workingUser.newPassword && this.workingUser.confirmNewPassword !== this.workingUser.newPassword) return 'Passwords do not match.';
+		if (!this.workingUser.id && !this.workingUser.newPassword) return 'You must specify a password.';
+		if (this.workingUser.confirmNewPassword !== this.workingUser.newPassword) return 'Passwords do not match.';
 
 		return '';
 	}

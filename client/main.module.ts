@@ -3,8 +3,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 import { HttpModule } from '@angular/http';
 // import { DataTableModule } from 'angular2-datatable';
-import { NgbRootModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { ToastyModule } from 'ng2-toasty';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -23,8 +24,9 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		FormsModule,
 		HttpModule,
 		RoutingModule,
-		NgbRootModule,
+		NgbModule.forRoot(),
 		NgxDatatableModule,
+		ToastyModule.forRoot(),
 	],
 	declarations: [
 		//Main component
