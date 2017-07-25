@@ -38,7 +38,7 @@ export class SettingsUserModalComponent {
 					user: user,
 					isEdit: true
 				}))
-				.catch(this.toastyService.error(e.message));
+				.catch(e => this.toastyService.error(e.message));
 		}
 		else {
 			this.settingsService
@@ -47,7 +47,7 @@ export class SettingsUserModalComponent {
 					user: user,
 					isEdit: false
 				}))
-				.catch(this.toastyService.error(e.message));
+				.catch(e => this.toastyService.error(e.message));
 		}
 	}
 
