@@ -27,7 +27,8 @@ def create_user():
 
             # Creates User
             if 'active' in data:
-                user = running_context.user_datastore.create_user(email=username, password=password, active=True)
+                user = running_context.user_datastore.create_user(
+                    email=username, password=password, active=data['active'])
             else:
                 user = running_context.user_datastore.create_user(email=username, password=password)
             if 'roles' in data:
