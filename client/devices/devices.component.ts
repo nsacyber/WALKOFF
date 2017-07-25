@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 
 import { DevicesModalComponent } from './devices.modal.component';
 
@@ -22,14 +23,17 @@ export class DevicesComponent {
 	devices: Device[] = [];
 	filterQuery: string = "";
 
-	constructor(private devicesService: DevicesService, private modalService: NgbModal) {
+	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+		this.toastyConfig.theme = 'bootstrap';
+
 		this.getDevices();
 	}
 
 	getDevices(): void {
 		this.devicesService
 			.getDevices()
-			.then(devices => this.devices = devices);
+			.then(devices => this.devices = devices)
+			.catch(e => this.toastyService.error(e.message));
 	}
 
 	addDevice(): void {
@@ -38,6 +42,8 @@ export class DevicesComponent {
 		modalRef.componentInstance.submitText = 'Add Device';
 
 		modalRef.componentInstance.workingDevice = new Device();
+
+		this._handleModalClose(modalRef);
 	}
 
 	editDevice(device: Device): void {
@@ -46,6 +52,29 @@ export class DevicesComponent {
 		modalRef.componentInstance.submitText = 'Save Changes';
 
 		modalRef.componentInstance.workingDevice = _.cloneDeep(device);
+
+		this._handleModalClose(modalRef);
+	}
+
+	private _handleModalClose(modalRef: NgbModalRef): void {
+		modalRef.result
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.device) return;
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					let toUpdate = _.find(this.devices, d => d.id === result.device.id);
+					Object.assign(toUpdate, result.device);
+
+					this.toastyService.success(`Device "${result.device.name}" successfully edited.`);
+				}
+				//On add, push the new item
+				else {
+					this.devices.push(result.device);
+					this.toastyService.success(`Device "${result.device.name}" successfully added.`);
+				}
+			});
 	}
 
 	deleteDevice(deviceToDelete: Device): void {
@@ -54,7 +83,7 @@ export class DevicesComponent {
 		this.devicesService
 			.deleteDevice(deviceToDelete.id)
 			.then(() => this.devices = _.reject(this.devices, device => device.id === deviceToDelete.id))
-			.catch(e => console.log(e));
+			.catch(e => this.toastyService.error(e.message));
 	}
 }
 

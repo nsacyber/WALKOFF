@@ -56,6 +56,7 @@ paths:
   $ref: ./apps.yaml
   $ref: ./cases.yaml
   $ref: ./configuration.yaml
+  $ref: ./devices.yaml
   $ref: ./events.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml

@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 
 import { DevicesService } from './devices.service';
 
@@ -18,7 +19,9 @@ export class DevicesModalComponent {
 	@Input() title: string;
 	@Input() submitText: string;
 
-	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal) { }
+	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+		this.toastyConfig.theme = 'bootstrap';
+	}
 
 	submit(): void {
 		if (!this.validate()) return;
@@ -28,13 +31,13 @@ export class DevicesModalComponent {
 			this.devicesService
 				.editDevice(this.workingDevice)
 				.then(device => this.activeModal.close(device))
-				.catch(e => console.log(e));
+				.catch(e => this.toastyService.error(e.message));
 		}
 		else {
 			this.devicesService
 				.addDevice(this.workingDevice)
 				.then(device => this.activeModal.close(device))
-				.catch(e => console.log(e));
+				.catch(e => this.toastyService.error(e.message));
 		}
 	}
 

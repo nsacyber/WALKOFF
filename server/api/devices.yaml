@@ -1,4 +1,4 @@
-/devices:
+/api/devices:
   get:
     tags:
       - Devices
@@ -14,7 +14,7 @@
           type: array
           items:
             $ref: '#/definitions/OutputDevice'
-/devices/import:
+/api/devices/import:
   get:
     tags:
       - Devices
@@ -27,8 +27,8 @@
       - application/json
     parameters:
       - name: filename
+        in: formData
         description: The name of the JSON file to import. Defaults to ./data/appdevice.json
-        required: false
         type: string
     responses:
       200:
@@ -37,7 +37,7 @@
         description: Error reading file
       '405':
         description: Validation exception
-/devices/export:
+/api/devices/export:
   post:
     tags:
       - Devices
@@ -48,15 +48,15 @@
       - application/json
     parameters:
       - name: filename
+        in: formData
         description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
-        required: false
         type: string
     responses:
       200:
         description: Success
       515:
         description: Error writing to file
-/devices/{device_id}:
+/api/devices/{device_id}:
   parameters:
     - in: path
       name: device_id
@@ -89,7 +89,23 @@
         description: Success
       461:
         description: Device does not exist
-/devices:
+/api/devices:
+  get:
+    tags:
+      - Devices
+    summary: Read all devices
+    description: ''
+    operationId: server.endpoints.devices.read_all_devices
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          description: A list of devices
+          items:
+            $ref: '#/definitions/OutputDevice'
   put:
     tags:
       - Devices
@@ -101,35 +117,37 @@
     produces:
       - application/json
     parameters:
-      - name: name
-        description: Name of the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - name: username
-        description: Username for the device
-        type: string
-        required: false
-        maxLength: 50
-      - name: pw
-        description: Password for the device
-        type: string
-        required: false
-      - name: ipaddr
-        description: IP address of the device
-        type: string
-        required: false
-      - name: port
-        description: Port of the device
-        type: integer
-        required: false
-        minimum: 1
-        maximum: 65535
-      - name: extraFields
-        description: String representation of JSON to use as extra parameters
-        required: false
-        type: string
+      - in: body
+        name: device
+        description: Device data to add
+        required: true
+        schema:
+          type: object
+          required: [name]
+          properties:
+            name:
+              description: Name of the device
+              type: string
+              minLength: 4
+              maxLength: 25
+            username:
+              description: Username for the device
+              type: string
+              maxLength: 50
+            pw:
+              description: Password for the device
+              type: string
+            ipaddr:
+              description: IP address of the device
+              type: string
+            port:
+              description: Port of the device
+              type: integer
+              minimum: 1
+              maximum: 65535
+            extraFields:
+              description: String representation of JSON to use as extra parameters
+              type: string
     responses:
       201:
         description: Success
@@ -146,40 +164,40 @@
     produces:
       - application/json
     parameters:
-      - name: id
-        description: ID of the device
-        type: string
+      - in: body
+        name: device
+        description: Device data to update
         required: true
-      - name: name
-        description: Name of the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - name: username
-        description: Username for the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - name: pw
-        description: Password for the device
-        type: string
-        required: false
-      - name: ipaddr
-        description: IP address of the device
-        type: string
-        required: false
-      - name: port
-        description: Port of the device
-        type: integer
-        required: false
-        minimum: 1
-        maximum: 65535
-      - name: extraFields
-        description: String representation of JSON to use as extra parameters
-        required: false
-        type: string
+        schema:
+          type: object
+          required: [id, name]
+          properties:
+            id:
+              description: ID of the device
+              type: integer
+            name:
+              description: Name of the device
+              type: string
+              minLength: 4
+              maxLength: 25
+            username:
+              description: Username for the device
+              type: string
+              maxLength: 50
+            pw:
+              description: Password for the device
+              type: string
+            ipaddr:
+              description: IP address of the device
+              type: string
+            port:
+              description: Port of the device
+              type: integer
+              minimum: 1
+              maximum: 65535
+            extraFields:
+              description: String representation of JSON to use as extra parameters
+              type: string
     responses:
       200:
         description: Success
