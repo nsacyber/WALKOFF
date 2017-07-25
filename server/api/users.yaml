@@ -31,7 +31,7 @@
         description: The new user object to be created
         required: true
         schema:
-          $ref: '#/definitions/EditUser'
+          $ref: '#/definitions/AddUser'
     responses:
       201:
         description: User created.
@@ -65,6 +65,10 @@
         schema:
           description: The updated user.
           $ref: '#/definitions/DisplayUser'
+      400:
+        description: Invalid password
+        schema:
+          $ref: '#/definitions/Error'
       461:
         description: Could not edit user <username>. User does not exist.
         schema:

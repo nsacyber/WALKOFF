@@ -10,13 +10,6 @@ Role:
         description: Description of the role
         type: string
         example: A user with this role can access any page and has administrative-level privileges.
-EditRole:
-    type: object
-    properties:
-      name:
-        description: Name of the role
-        type: string
-        example: administrative_role
       pages:
         description: A string representation of a list of pages that a user with this role can access
         type: string

@@ -63,7 +63,7 @@ class Role(Base, RoleMixin):
         """
         self.description = description
 
-    def to_string(self):
+    def as_json(self):
         """Returns the dictionary representation of the Role object.
         
         Returns:
@@ -111,7 +111,7 @@ class User(Base, UserMixin):
         """
         return {"id": self.id,
                 "username": self.email,
-                "roles": [role.to_string() for role in self.roles],
+                "roles": [role.as_json() for role in self.roles],
                 "active": self.active}
 
     def set_roles(self, roles):
