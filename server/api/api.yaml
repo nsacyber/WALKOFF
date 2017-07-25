@@ -56,6 +56,7 @@ paths:
   $ref: ./apps.yaml
   $ref: ./cases.yaml
   $ref: ./configuration.yaml
+  $ref: ./devices.yaml
   $ref: ./events.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
@@ -80,6 +81,7 @@ definitions:
     $ref: ./objects/appdevice.yaml
     $ref: ./objects/cases.yaml
     $ref: ./objects/configuration.yaml
+    $ref: ./objects/devices.yaml
     $ref: ./objects/metrics.yaml
     $ref: ./objects/playbooks.yaml
     $ref: ./objects/roles.yaml

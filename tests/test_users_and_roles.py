@@ -56,14 +56,16 @@ class TestUsersAndRoles(ServerTestCase):
 
     def test_add_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/users', data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                   content_type="application/json")
 
         self.put_with_status_check('/users/'+self.email, error='User already exists.', data=data, headers=self.headers,
                                    status_code=OBJECT_EXISTS_ERROR)
 
     def test_edit_user_password(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/users', data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                   content_type="application/json")
 
         data = {"password": self.password}
         response = json.loads(
@@ -78,13 +80,15 @@ class TestUsersAndRoles(ServerTestCase):
 
     def test_remove_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/users', data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                   content_type="application/json")
 
         self.delete_with_status_check('/users/{0}'.format(self.email), status_code=SUCCESS, headers=self.headers)
 
     def test_add_role_to_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/users', data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                   content_type="application/json")
 
         data = {"name": self.name}
         self.put_with_status_check('/roles/'+self.name, data=data, headers=self.headers, status_code=OBJECT_CREATED)
@@ -99,7 +103,8 @@ class TestUsersAndRoles(ServerTestCase):
 
     def test_add_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/users', data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                   content_type="application/json")
 
         data = {"username": "test", "password": self.password}
         self.put_with_status_check('/users/' + "test", data=data, headers=self.headers, status_code=OBJECT_CREATED)

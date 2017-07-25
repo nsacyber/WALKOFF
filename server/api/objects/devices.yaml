@@ -1,0 +1,44 @@
+CreateDevice:
+  type: object
+  properties:
+    name:
+      type: string
+      example: Server1
+    username:
+      type: string
+      example: alligator9
+    pw:
+      type: string
+      example: password123
+    ipaddr:
+      type: string
+      example: 127.0.0.1
+    port:
+      type: integer
+      example: 25
+    extra_fields:
+      type: object
+EditDevice:
+  type: object
+  required: [id]
+  properties:
+    id:
+      type: integer
+      example: 1234
+    name:
+      type: string
+      example: Server1
+    username:
+      type: string
+      example: alligator9
+    pw:
+      type: string
+      example: password123
+    ipaddr:
+      type: string
+      example: 127.0.0.1
+    port:
+      type: integer
+      example: 25
+    extra_fields:
+      type: object

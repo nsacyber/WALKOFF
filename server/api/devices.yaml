@@ -26,10 +26,16 @@
     produces:
       - application/json
     parameters:
-      - name: filename
+      - in: body
+        name: body
         description: The name of the JSON file to import. Defaults to ./data/appdevice.json
         required: false
-        type: string
+        schema:
+          type: object
+          properties:
+            filename:
+              type: string
+              example: import_list.json
     responses:
       200:
         description: Success
@@ -47,10 +53,16 @@
     produces:
       - application/json
     parameters:
-      - name: filename
+      - in: body
+        name: body
         description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
         required: false
-        type: string
+        schema:
+          type: object
+          properties:
+            filename:
+              type: string
+              example: export_list.json
     responses:
       200:
         description: Success
@@ -101,35 +113,12 @@
     produces:
       - application/json
     parameters:
-      - name: name
-        description: Name of the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - name: username
-        description: Username for the device
-        type: string
-        required: false
-        maxLength: 50
-      - name: pw
-        description: Password for the device
-        type: string
-        required: false
-      - name: ipaddr
-        description: IP address of the device
-        type: string
-        required: false
-      - name: port
-        description: Port of the device
-        type: integer
-        required: false
-        minimum: 1
-        maximum: 65535
-      - name: extraFields
-        description: String representation of JSON to use as extra parameters
-        required: false
-        type: string
+      - in: body
+        name: body
+        description: The new device object to be created
+        required: true
+        schema:
+          $ref: '#/definitions/CreateDevice'
     responses:
       201:
         description: Success
@@ -146,40 +135,12 @@
     produces:
       - application/json
     parameters:
-      - name: id
-        description: ID of the device
-        type: string
+      - in: body
+        name: body
+        description: The new device object to be created
         required: true
-      - name: name
-        description: Name of the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - name: username
-        description: Username for the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - name: pw
-        description: Password for the device
-        type: string
-        required: false
-      - name: ipaddr
-        description: IP address of the device
-        type: string
-        required: false
-      - name: port
-        description: Port of the device
-        type: integer
-        required: false
-        minimum: 1
-        maximum: 65535
-      - name: extraFields
-        description: String representation of JSON to use as extra parameters
-        required: false
-        type: string
+        schema:
+          $ref: '#/definitions/EditDevice'
     responses:
       200:
         description: Success

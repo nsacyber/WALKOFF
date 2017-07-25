@@ -27,7 +27,7 @@ def create_user():
             pw = encrypt_password(data['password'])
 
             # Creates User
-            u = running_context.user_datastore.create_user(email=un, password=pw, active=data['active'])
+            u = running_context.user_datastore.create_user(email=un, password=pw, active=data['active'] if 'active' in data else True)
 
             if 'roles' in data:
                 u.set_roles(data['roles'])

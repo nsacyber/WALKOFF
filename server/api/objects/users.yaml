@@ -22,7 +22,7 @@ User:
         example: True
 EditUser:
     type: object
-    required: [username, active]
+    required: [username]
     properties:
       id:
         description: Database id of the user

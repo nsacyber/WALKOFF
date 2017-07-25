@@ -28,7 +28,7 @@ class TestAppsAndDevices(ServerTestCase):
     def test_add_device(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
+        self.put_with_status_check('/devices'.format(self.name),
                                    data=data,
                                    headers=self.headers,
                                    status_code=OBJECT_CREATED)
@@ -41,7 +41,7 @@ class TestAppsAndDevices(ServerTestCase):
     def test_display_device(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers,
+        self.put_with_status_check('/devices', data=data, headers=self.headers,
                                    status_code=OBJECT_CREATED)
 
         response = json.loads(
@@ -58,7 +58,7 @@ class TestAppsAndDevices(ServerTestCase):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": str(self.extraFields)}
 
-        self.put_with_status_check('/apps/HelloWorld/devices/' + self.name, data=data, headers=self.headers,
+        self.put_with_status_check('/devices', data=data, headers=self.headers,
                                    status_code=OBJECT_CREATED)
 
         data = {"ipaddr": "192.168.196.1"}
@@ -81,10 +81,8 @@ class TestAppsAndDevices(ServerTestCase):
     def test_add_and_display_multiple_devices(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
-                                   data=data,
-                                   headers=self.headers,
-                                   status_code=OBJECT_CREATED)
+        self.put_with_status_check('/devices'.format(self.name), data=data, headers=self.headers,
+                                   status_code=OBJECT_CREATED, content_type='application/json')
 
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
@@ -106,7 +104,7 @@ class TestAppsAndDevices(ServerTestCase):
     def test_export_apps_devices_no_filename(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDevice',
+        self.put_with_status_check('/devices',
                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
@@ -151,7 +149,7 @@ class TestAppsAndDevices(ServerTestCase):
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
 
-        self.put_with_status_check('/apps/HelloWorld/devices/testDevice',
+        self.put_with_status_check('/devices',
                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
 
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
@@ -198,7 +196,7 @@ class TestAppsAndDevices(ServerTestCase):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
                 "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/testDevice',
+        self.put_with_status_check('/devices',
                                    data=data, headers=self.headers, status_code=OBJECT_CREATED)
 
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip,
@@ -271,7 +269,7 @@ class TestAppsAndDevices(ServerTestCase):
     def test_device_password(self):
         data = {"username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
                 "extraFields": json.dumps(self.extraFields)}
-        self.put_with_status_check('/apps/HelloWorld/devices/{0}'.format(self.name),
+        self.put_with_status_check('/devices'.format(self.name),
                                    data=data,
                                    headers=self.headers,
                                    status_code=OBJECT_CREATED)
