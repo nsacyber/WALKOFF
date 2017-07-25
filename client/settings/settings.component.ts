@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 
 import { SettingsService } from './settings.service';
 
@@ -30,12 +31,9 @@ export class SettingsComponent {
 	sortBy: string = "username";
 	sortOrder: string = "asc";
 
-	//User modal params
-	userModalTitle: string;
-	userModalSubmitText: string;
-	workingUser: User;
+	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+		this.toastyConfig.theme = 'bootstrap';
 
-	constructor(private settingsService: SettingsService, private modalService: NgbModal) {
 		this.getConfiguration();
 		this.getUsers();
 	}
@@ -45,14 +43,17 @@ export class SettingsComponent {
 		this.settingsService
 			.getConfiguration()
 			.then(configuration => Object.assign(this.configuration, configuration))
-			.catch(e => console.log(e));
+			.catch(e => this.toastyService.error(e.message));
 	}
 
 	updateConfiguration(): void {
 		this.settingsService
 			.updateConfiguration(this.configuration)
-			.then(configuration => Object.assign(this.configuration, configuration))
-			.catch(e => console.log(e));
+			.then((configuration) => {
+				Object.assign(this.configuration, configuration);
+				this.toastyService.success('Configuration successfully updated.');
+			})
+			.catch(e => this.toastyService.error(e.message));
 	}
 
 	//TODO: add a better confirm dialog
@@ -67,7 +68,7 @@ export class SettingsComponent {
 		this.settingsService
 			.getUsers()
 			.then(users => this.users = users)
-			.catch(e => console.log(e));
+			.catch(e => this.toastyService.error(e.message));
 	}
 
 	addUser(): void {
@@ -79,9 +80,7 @@ export class SettingsComponent {
 		workingUser.active = true;
 		modalRef.componentInstance.workingUser = workingUser;
 		
-		modalRef.result
-			.then(workingUser => WorkingUser.toUser(workingUser))
-			.then(user => this.addUserOrSaveChanges(user));
+		this._handleModalClose(modalRef);
 	}
 
 	editUser(user: User): void {
@@ -90,28 +89,28 @@ export class SettingsComponent {
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.workingUser = User.toWorkingUser(user);
 
-		modalRef.result
-			.then(workingUser => WorkingUser.toUser(workingUser))
-			.then(user => this.addUserOrSaveChanges(user));
+		this._handleModalClose(modalRef);
 	}
 
-	addUserOrSaveChanges(user: User): void {
-		//If user has an ID, user already exists, call update
-		if (user.id) {
-			this.settingsService
-				.editUser(user)
-				.then((user) => {
-					let toUpdate = _.find(this.users, u => u.id === user.id);
-					Object.assign(toUpdate, user);
-				})
-				.catch(e => console.log(e));
-		}
-		else {
-			this.settingsService
-				.addUser(user)
-				.then(user => this.users.push(user))
-				.catch(e => console.log(e));
-		}
+	private _handleModalClose(modalRef: NgbModalRef): void {
+		modalRef.result
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.user) return;
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					let toUpdate = _.find(this.users, u => u.id === result.user.id);
+					Object.assign(toUpdate, result.user);
+
+					this.toastyService.success(`User "${result.user.username}" successfully edited.`);
+				}
+				//On add, push the new item
+				else {
+					this.users.push(result.user);
+					this.toastyService.success(`User "${result.user.username}" successfully added.`);
+				}
+			});
 	}
 
 	deleteUser(userToDelete: User): void {
@@ -119,8 +118,12 @@ export class SettingsComponent {
 
 		this.settingsService
 			.deleteUser(userToDelete.id)
-			.then(() => this.users = _.reject(this.users, user => user.id === userToDelete.id))
-			.catch(e => console.log(e));
+			.then(() => {
+				this.users = _.reject(this.users, user => user.id === userToDelete.id);
+
+				this.toastyService.success(`User "${userToDelete.username}" successfully deleted.`);
+			})
+			.catch(e => this.toastyService.error(e.message));
 	}
 
 	getFriendlyRoles(roles: Role[]): string {

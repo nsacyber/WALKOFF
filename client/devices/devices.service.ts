@@ -31,6 +31,14 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	getDevices() : Promise<Device[]> {
+		return this.http.get(`/devices`, this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Device[])
+			.catch(this.handleError);
+	}
+
 	addDevice(device: Device) : Promise<Device> {
 		return this.http.put(`/devices`, device, this.requestOptions)
 			.toPromise()
@@ -55,8 +63,8 @@ export class DevicesService {
 	// 		.catch(this.handleError);
 	// }
 
-	deleteDevice(device: Device) : Promise<void> {
-		return this.http.delete(`/apps/${device.app_name}/devices/${device.name}`, this.requestOptions)
+	deleteDevice(deviceId: number) : Promise<void> {
+		return this.http.delete(`/devices/${deviceId}`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);

@@ -4,34 +4,57 @@
 <div class="modal-body">
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-xs-6">
-				<div class="form-group">
-					<label for="name">Username</label>
-					<input type="text" class="form-control" [(ngModel)]="workingUser.username" name="username" required>
+			<form #userForm="ngForm" (ngSubmit)="submit()">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">Username</label>
+						<input type="text" class="form-control" [(ngModel)]="workingUser.username" name="username" #username="ngModel" required>
+						<div *ngIf="username.errors && (username.dirty || username.touched)" class="alert alert-danger">
+							<div [hidden]="!username.errors.required">
+								Username is required.
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="name">Active</label>
+						<input type="checkbox" class="form-control" [(ngModel)]="workingUser.active" name="active">
+					</div>
+					<!--TODO: roles-->
 				</div>
-				<div class="form-group">
-					<label for="name">Active</label>
-					<input type="checkbox" class="form-control" [(ngModel)]="workingUser.active" name="active" required>
+				<div class="col-xs-6">
+					<div class="form-group" *ngIf="workingUser.id">
+						<label for="name">Current Password</label>
+						<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" #currentPassword="ngModel" name="currentPassword">
+						<div *ngIf="currentPassword.errors && (currentPassword.dirty || currentPassword.touched)" class="alert alert-danger">
+							<div [hidden]="!currentPassword.errors.required">
+								The user's current password is required.
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="name">New Password</label>
+						<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" #newPassword="ngModel" name="newPassword">
+					</div>
+					<div *ngIf="((currentPassword && currentPassword.value) || !workingUser.id) && (newPassword.dirty || newPassword.touched) && !newPassword.value" class="alert alert-danger">
+						<div>
+							Password is required.
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="name">Confirm New Password</label>
+						<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" #confirmNewPassword="ngModel" name="confirmNewPassword">
+					</div>
+					<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && confirmNewPassword.value && newPassword.value !== confirmNewPassword.value" class="alert alert-danger">
+						Passwords do not match.
+					</div>
+					<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && !confirmNewPassword.value" class="alert alert-danger">
+						You must re-enter the new password to confirm.
+					</div>
 				</div>
-				<!--TODO: roles-->
-			</div>
-			<div class="col-xs-6">
-				<div class="form-group" *ngIf="workingUser.id">
-					<label for="name">Current Password</label>
-					<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" name="currentPassword" required>
-				</div>
-				<div class="form-group">
-					<label for="name">New Password</label>
-					<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" name="newPassword" required>
-				</div>
-				<div class="form-group" *ngIf="workingUser.id">
-					<label for="name">Confirm New Password</label>
-					<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" name="confirmNewPassword" required>
-				</div>
-			</div>
+			</form>
 		</div>
-</div>
-<div class="modal-footer">
-	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
-	<button type="button" class="btn btn-primary" (click)="submit()">{{submitText}}</button>
-</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+		<button type="button" class="btn btn-primary" [disabled]="!userForm.form.valid" (click)="submit()">{{submitText}}</button>
+	</div>

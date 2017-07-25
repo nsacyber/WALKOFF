@@ -31,7 +31,7 @@
         description: The new user object to be created
         required: true
         schema:
-          $ref: '#/definitions/User'
+          $ref: '#/definitions/EditUser'
     responses:
       201:
         description: User created.

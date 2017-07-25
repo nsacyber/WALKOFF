@@ -1,6 +1,6 @@
 User:
     type: object
-    required: [username, password]
+    required: [username]
     properties:
       username:
         description: Username or email of the user
@@ -22,7 +22,7 @@ User:
         example: True
 EditUser:
     type: object
-    required: [id]
+    required: [username, active]
     properties:
       id:
         description: Database id of the user
@@ -38,7 +38,7 @@ EditUser:
         example: password123
       active:
         description: A boolean displaying whether or not a user is currently active
-        type: string
+        type: boolean
         example: True
       roles:
         description: New list of role objects that this user possesses
@@ -63,7 +63,7 @@ DisplayUser:
           $ref: '#/definitions/Role'
       active:
         description: A boolean displaying whether or not a user is currently active
-        type: string
+        type: boolean
         example: True
       id:
         description: Database id of the user
