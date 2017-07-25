@@ -37,8 +37,8 @@ def create_user():
                 if role.name == 'admin':
                     has_admin = True
             if not has_admin:
-                role = {'name': 'admin', 'description': None}
-                u.set_roles([role])
+                r = {'name': 'admin', 'description': None}
+                u.set_roles([r])
 
             running_context.db.session.commit()
             current_app.logger.info('User added: {0}'.format(
@@ -71,7 +71,7 @@ def update_user():
     def __func():
         data = request.get_json()
 
-        user = running_context.user_datastore.get_user(id=data['id'])
+        user = running_context.user_datastore.get_user(data['id'])
         if user:
             current_username = user.email
 
