@@ -160,19 +160,19 @@ class Device(database.Base):
             aes = pyaes.AESModeOfOperationCTR(key)
             return aes.decrypt(self.password)
 
-    def edit_device(self, form):
+    def edit_device(self, data):
         """Edits various fields of the Device object. 
         
         Args:
-            form (WTForm): The WTForm object containing the fields that the user wishes to change.
+            data (dict): The data object containing the fields that the user wishes to change.
         """
-        if form.name.data:
-            self.name = form.name.data
+        if 'name' in data:
+            self.name = data['name']
 
-        if form.username.data:
-            self.username = form.username.data
+        if 'username' in data:
+            self.username = data['username']
 
-        if form.pw.data:
+        if 'pw' in data:
             try:
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
@@ -181,19 +181,19 @@ class Device(database.Base):
                                          '{1}'.format(core.config.paths.AES_key_path, e))
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
-                pw = form.pw.data
+                pw = data['pw']
                 self.password = aes.encrypt(pw)
 
-        if form.ipaddr.data:
-            self.ip = form.ipaddr.data
+        if 'ipaddr' in data:
+            self.ip = data['ipaddr']
 
-        if form.port.data:
-            self.port = form.port.data
+        if 'port' in data:
+            self.port = data['port']
 
-        if form.extraFields.data:
-            fields_dict = json.loads(form.extraFields.data.replace("\'", "\""))
+        if 'extraFields' in data:
+            fields_dict = json.loads(data['extraFields'].replace("\'", "\""))
             if self.extra_fields == "":
-                self.extra_fields = form.extraFields.data
+                self.extra_fields = data['extraFields']
             else:
                 extra_fields = json.loads(self.extra_fields)
                 for field in fields_dict:

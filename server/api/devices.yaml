@@ -1,0 +1,301 @@
+/devices:
+  get:
+    tags:
+      - Devices
+    summary: Get all devices
+    description: ''
+    operationId: server.endpoints.devices.read_all_devices
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/OutputDevice'
+/devices/import:
+  get:
+    tags:
+      - Devices
+    summary: Import devices
+    description: ''
+    operationId: server.endpoints.devices.import_devices
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: filename
+        description: The name of the JSON file to import. Defaults to ./data/appdevice.json
+        required: false
+        type: string
+    responses:
+      200:
+        description: Success
+      515:
+        description: Error reading file
+      '405':
+        description: Validation exception
+/devices/export:
+  post:
+    tags:
+      - Devices
+    summary: Export devices
+    description: ''
+    operationId: server.endpoints.devices.export_devices
+    produces:
+      - application/json
+    parameters:
+      - name: filename
+        description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
+        required: false
+        type: string
+    responses:
+      200:
+        description: Success
+      515:
+        description: Error writing to file
+/devices/{device_id}:
+  parameters:
+    - in: path
+      name: device_id
+      description: ID of the device
+      type: string
+      required: true
+  get:
+    tags:
+      - Devices
+    summary: Get a device
+    description: ''
+    operationId: server.endpoints.devices.read_device
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: Device does not exist.
+  delete:
+    tags:
+      - Devices
+    summary: Remove a device
+    description: ''
+    operationId: server.endpoints.devices.delete_device
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: Device does not exist
+/devices:
+  put:
+    tags:
+      - Devices
+    summary: Add a device
+    description: ''
+    operationId: server.endpoints.devices.create_device
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: name
+        description: Name of the device
+        type: string
+        required: false
+        minLength: 4
+        maxLength: 25
+      - name: username
+        description: Username for the device
+        type: string
+        required: false
+        maxLength: 50
+      - name: pw
+        description: Password for the device
+        type: string
+        required: false
+      - name: ipaddr
+        description: IP address of the device
+        type: string
+        required: false
+      - name: port
+        description: Port of the device
+        type: integer
+        required: false
+        minimum: 1
+        maximum: 65535
+      - name: extraFields
+        description: String representation of JSON to use as extra parameters
+        required: false
+        type: string
+    responses:
+      201:
+        description: Success
+      462:
+        description: Device already exists
+  post:
+    tags:
+      - Devices
+    summary: Update a device
+    description: ''
+    operationId: server.endpoints.devices.update_device
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - name: id
+        description: ID of the device
+        type: string
+        required: true
+      - name: name
+        description: Name of the device
+        type: string
+        required: false
+        minLength: 4
+        maxLength: 25
+      - name: username
+        description: Username for the device
+        type: string
+        required: false
+        minLength: 4
+        maxLength: 25
+      - name: pw
+        description: Password for the device
+        type: string
+        required: false
+      - name: ipaddr
+        description: IP address of the device
+        type: string
+        required: false
+      - name: port
+        description: Port of the device
+        type: integer
+        required: false
+        minimum: 1
+        maximum: 65535
+      - name: extraFields
+        description: String representation of JSON to use as extra parameters
+        required: false
+        type: string
+    responses:
+      200:
+        description: Success
+      461:
+        description: Device does not exist
+
+# /devices:
+#   get:
+#     tags:
+#       - Devices
+#     summary: Read all devices
+#     description: ''
+#     operationId: server.endpoints.apps.read_all_devices
+#     produces:
+#       - application/json
+#     responses:
+#       200:
+#         description: Success
+#         schema:
+#           type: array
+#           description: A list of devices
+#           items:
+#             $ref: '#/definitions/OutputDevice'
+#   put:
+#     tags:
+#       - Devices
+#     summary: Create a device
+#     description: ''
+#     operationId: server.endpoints.apps.create_device
+#     consumes:
+#       - application/json
+#     produces:
+#       - application/json
+#     parameters:
+#       - in: body
+#         name: body
+#         description: The new device object to be created
+#         required: true
+#         schema:
+#           $ref: '#/definitions/OutputDevice'
+#     responses:
+#       201:
+#         description: Device created.
+#         schema:
+#           description: The newly created device.
+#           $ref: '#/definitions/OutputDevice'
+#       462:
+#         description: Could not create device <name> for <app_name>. Device already exists.
+#         schema:
+#           $ref: '#/definitions/Error'
+#   post:
+#     tags:
+#       - Devices
+#     summary: Update a device
+#     description: ''
+#     operationId: server.endpoints.apps.update_device
+#     consumes:
+#       - application/json
+#     produces:
+#       - application/json
+#     parameters:
+#       - in: body
+#         name: body
+#         description: Updated fields for the device object
+#         required: true
+#         schema:
+#           $ref: '#/definitions/OutputDevice'
+#     responses:
+#       200:
+#         description: Success
+#         schema:
+#           description: The updated device.
+#           $ref: '#/definitions/Device'
+#       461:
+#         description: Could not edit device <name> under app <app_name>. Device does not exist.
+#         schema:
+#           $ref: '#/definitions/Error'
+
+
+# /devices/{device_id}:
+#   parameters:
+#     - name: device_id
+#       in: path
+#       description: The id of the device to be fetched
+#       required: true
+#       type: integer
+#   get:
+#     tags:
+#       - Devices
+#     summary: Get a device
+#     description: ''
+#     operationId: server.endpoints.apps.read_device
+#     produces:
+#       - application/json
+#     responses:
+#       200:
+#         description: Success
+#         schema:
+#           description: The device object matching the device id inputted
+#           $ref: '#/definitions/OutputDevice'
+#       461:
+#         description: Could not read device with id <device_id>. Device does not exist.
+#         schema:
+#           $ref: '#/definitions/Error'
+#   delete:
+#     tags:
+#       - Devices
+#     summary: Delete a device
+#     description: ''
+#     operationId: server.endpoints.apps.delete_device
+#     produces:
+#       - application/json
+#     responses:
+#       200:
+#         description: Success
+#       461:
+#         description: Could not delete device with id <device_id>. Device does not exist.
+#         schema:
+#           $ref: '#/definitions/Error'
