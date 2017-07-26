@@ -76,8 +76,8 @@ def update_user():
         if user:
             current_username = user.email
 
-            if 'old_password' in data and 'new_password' in data:
-                if verify_password(data['old_password'], user.password):
+            if 'password' in data and 'new_password' in data:
+                if verify_password(data['password'], user.password):
                     user.password = encrypt_password(data['new_password'])
                 else:
                     return {"error": "Could not reset password"}, 400
