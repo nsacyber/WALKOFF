@@ -4,7 +4,6 @@ from flask_security import roles_accepted, auth_token_required
 import core.config.config
 import core.config.paths
 from server.return_codes import *
-from server import forms
 import pyaes
 import ast
 
@@ -38,7 +37,7 @@ def import_devices():
                 read_file = devices_file.read()
                 read_file = read_file.replace('\n', '')
                 devices = ast.literal_eval(read_file)
-                devices = [n.strip() for n in devices]
+                # devices = [n.strip() for n in devices]
         except (OSError, IOError) as e:
             current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
             return {"error": "Error reading file."}, IO_ERROR
@@ -144,13 +143,13 @@ def create_device():
             pw = data['pw'] if 'pw' in data else ''
             enc_pw = aes.encrypt(pw)
 
-        running_context.Device.add_device(name=data['name'] if 'name' in data else '',
+        dev = running_context.Device.add_device(name=data['name'] if 'name' in data else '',
                                           username=data['username'] if 'username' in data else '',
                                           password=enc_pw,
                                           ip=data['ipaddr'] if 'ipaddr' in data else '',
                                           port=data['port'] if 'port' in data else '',
                                           extra_fields=data['extraFields'] if 'extraFields' in data else '')
-        return {}, OBJECT_CREATED
+        return dev, OBJECT_CREATED
 
     return __func()
 
