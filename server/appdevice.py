@@ -129,7 +129,7 @@ class Device(database.Base):
             self.extra_fields = extra_fields
 
     @staticmethod
-    def add_device(name, username, password, ip, port, extra_fields, app_server):
+    def add_device(name, username, password, ip, port, extra_fields):
         """Adds a new Device object.
         
         Args:
@@ -143,11 +143,11 @@ class Device(database.Base):
             app_server (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
             empty string.
         """
-        device = Device(name=name, username=username, password=password, ip=ip, port=port, extra_fields=extra_fields,
-                        app_id=app_server)
+        device = Device(name=name, username=username, password=password, ip=ip, port=port, extra_fields=extra_fields)
         db.session.add(device)
         db.session.commit()
-        current_app.logger.info('Adding device to app {0}: {1}'.format(app_server, device.as_json(with_apps=False)))
+        current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
+        return device.as_json()
 
     def get_password(self):
         try:
@@ -200,7 +200,7 @@ class Device(database.Base):
                     extra_fields[field] = fields_dict[field]
                 self.extra_fields = json.dumps(extra_fields)
 
-    def as_json(self, with_apps=True):
+    def as_json(self, with_apps=False):
         """Gets the JSON representation of a Device object.
         
         Args:
@@ -212,10 +212,10 @@ class Device(database.Base):
         """
         output = {'id': str(self.id), 'name': self.name, 'username': self.username, 'ip': self.ip,
                   'port': str(self.port)}
-        if with_apps:
-            output['app'] = self.app.as_json()
-        else:
-            output['app'] = self.app.name
+        # if with_apps:
+        #     output['app'] = self.app.as_json()
+        # else:
+        #     output['app'] = self.app.name
         if self.extra_fields:
             extra_fields = json.loads(self.extra_fields)
             for field in extra_fields:

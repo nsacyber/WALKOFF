@@ -42,3 +42,23 @@ EditDevice:
       example: 25
     extra_fields:
       type: object
+OutputDevice:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1234
+    name:
+      type: string
+      example: [Server1]
+    username:
+      type: string
+      example: [alligator9]
+    ip:
+      type: string
+      example: 127.0.0.1
+    port:
+      type: integer
+      example: 25
+    extra_fields:
+      type: object

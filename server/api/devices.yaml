@@ -1,20 +1,4 @@
-/devices:
-  get:
-    tags:
-      - Devices
-    summary: Get all devices
-    description: ''
-    operationId: server.endpoints.devices.read_all_devices
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/OutputDevice'
-/devices/import:
+/api/devices/import:
   get:
     tags:
       - Devices
@@ -43,7 +27,7 @@
         description: Error reading file
       '405':
         description: Validation exception
-/devices/export:
+/api/devices/export:
   post:
     tags:
       - Devices
@@ -56,7 +40,7 @@
       - in: body
         name: body
         description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
-        required: false
+        required: true
         schema:
           type: object
           properties:
@@ -68,7 +52,7 @@
         description: Success
       515:
         description: Error writing to file
-/devices/{device_id}:
+/api/devices/{device_id}:
   parameters:
     - in: path
       name: device_id
@@ -86,6 +70,8 @@
     responses:
       200:
         description: Success
+        schema:
+          $ref: '#/definitions/OutputDevice'
       461:
         description: Device does not exist.
   delete:
@@ -101,7 +87,22 @@
         description: Success
       461:
         description: Device does not exist
-/devices:
+/api/devices:
+  get:
+    tags:
+      - Devices
+    summary: Get all devices
+    description: ''
+    operationId: server.endpoints.devices.read_all_devices
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/OutputDevice'
   put:
     tags:
       - Devices
@@ -122,6 +123,8 @@
     responses:
       201:
         description: Success
+        schema:
+          $ref: '#/definitions/OutputDevice'
       462:
         description: Device already exists
   post:
@@ -144,6 +147,8 @@
     responses:
       200:
         description: Success
+        schema:
+          $ref: '#/definitions/OutputDevice'
       461:
         description: Device does not exist
 
