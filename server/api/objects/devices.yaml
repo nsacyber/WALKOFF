@@ -1,5 +1,6 @@
 CreateDevice:
   type: object
+  required: [name, app]
   properties:
     name:
       type: string
@@ -7,17 +8,21 @@ CreateDevice:
     username:
       type: string
       example: alligator9
-    pw:
+    password:
       type: string
       example: password123
-    ipaddr:
+    ip:
       type: string
       example: 127.0.0.1
     port:
       type: integer
       example: 25
+    app:
+      type: string
+      example: HelloWorld
     extra_fields:
       type: object
+      example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
 EditDevice:
   type: object
   required: [id]
@@ -31,17 +36,21 @@ EditDevice:
     username:
       type: string
       example: alligator9
-    pw:
+    password:
       type: string
       example: password123
-    ipaddr:
+    ip:
       type: string
       example: 127.0.0.1
     port:
       type: integer
       example: 25
+    app:
+      type: string
+      example: HelloWorld
     extra_fields:
       type: object
+      example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
 OutputDevice:
   type: object
   properties:
@@ -50,15 +59,19 @@ OutputDevice:
       example: 1234
     name:
       type: string
-      example: [Server1]
+      example: Server1
     username:
       type: string
-      example: [alligator9]
+      example: alligator9
     ip:
       type: string
       example: 127.0.0.1
     port:
       type: integer
       example: 25
+    app:
+      type: string
+      example: HelloWorld
     extra_fields:
       type: object
+      example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"

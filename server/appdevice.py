@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class App(database.Base, object):
     __tablename__ = 'app'
+
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String)
     devices = db.relationship("Device", back_populates="app")
@@ -103,7 +104,7 @@ class Device(database.Base):
     app_id = db.Column(db.String, db.ForeignKey('app.name'))
     app = db.relationship(App, back_populates="devices")
 
-    def __init__(self, name="", username="", password=None, ip="0.0.0.0", port=0, extra_fields="", app_id=""):
+    def __init__(self, name, app_id, username="", password=None, ip="0.0.0.0", port=0, extra_fields=""):
         """Initializes a new Device object, which will be associated with an App object.
         
         Args:
@@ -114,36 +115,34 @@ class Device(database.Base):
             port (int, optional): The port for the Device object. Defaults to 0.
             extra_fields (str, optional): The string representation of a dictionary that holds various custom
                 extra fields for the Device object. Defaults to an empty string.
-            app_id (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
-                empty string.
+            app_id (str): The ID of the App object to which this Device is associated.
         """
         self.name = name
+        self.app_id = app_id
         self.username = username
         self.password = password
         self.ip = ip
         self.port = port
-        self.app_id = app_id
         if self.extra_fields != "":
             self.extra_fields = extra_fields.replace("\'", "\"")
         else:
             self.extra_fields = extra_fields
 
     @staticmethod
-    def add_device(name, username, password, ip, port, extra_fields):
+    def add_device(name, app_id, username, password, ip, port, extra_fields):
         """Adds a new Device object.
         
         Args:
             name (str, optional): The name of the Device object. Defaults to an empty string.
+            app (str): The ID of the App object to which this Device is associated.
             username (str, optional): The username for the Device object. Defaults to an empty string.
             password (str, optional): The password for the Device object. Defaults to an empty string.
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
             port (int, optional): The port for the Device object. Defaults to 0.
             extra_fields (str, optional): The string representation of a dictionary that holds various custom
             extra fields for the Device object. Defaults to an empty string.
-            app_server (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
-            empty string.
         """
-        device = Device(name=name, username=username, password=password, ip=ip, port=port, extra_fields=extra_fields)
+        device = Device(name=name, username=username, app_id=app_id, password=password, ip=ip, port=port, extra_fields=extra_fields)
         db.session.add(device)
         db.session.commit()
         current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
@@ -169,10 +168,13 @@ class Device(database.Base):
         if 'name' in data:
             self.name = data['name']
 
+        if 'app' in data:
+            self.app_id = data['app']
+
         if 'username' in data:
             self.username = data['username']
 
-        if 'pw' in data:
+        if 'password' in data:
             try:
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
@@ -181,11 +183,11 @@ class Device(database.Base):
                                          '{1}'.format(core.config.paths.AES_key_path, e))
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
-                pw = data['pw']
+                pw = data['password']
                 self.password = aes.encrypt(pw)
 
-        if 'ipaddr' in data:
-            self.ip = data['ipaddr']
+        if 'ip' in data:
+            self.ip = data['ip']
 
         if 'port' in data:
             self.port = data['port']
@@ -200,7 +202,7 @@ class Device(database.Base):
                     extra_fields[field] = fields_dict[field]
                 self.extra_fields = json.dumps(extra_fields)
 
-    def as_json(self, with_apps=False):
+    def as_json(self, with_apps=True):
         """Gets the JSON representation of a Device object.
         
         Args:
@@ -212,10 +214,10 @@ class Device(database.Base):
         """
         output = {'id': str(self.id), 'name': self.name, 'username': self.username, 'ip': self.ip,
                   'port': str(self.port)}
-        # if with_apps:
-        #     output['app'] = self.app.as_json()
-        # else:
-        #     output['app'] = self.app.name
+        if with_apps:
+            output['app'] = self.app.as_json()
+        else:
+            output['app'] = self.app.name
         if self.extra_fields:
             extra_fields = json.loads(self.extra_fields)
             for field in extra_fields:

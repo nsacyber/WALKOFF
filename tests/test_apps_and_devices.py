@@ -26,8 +26,8 @@ class TestAppsAndDevices(ServerTestCase):
             server.database.db.session.commit()
 
     def test_add_device(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
         self.put_with_status_check('/api/devices',
                                    data=json.dumps(data),
                                    headers=self.headers,
@@ -41,16 +41,14 @@ class TestAppsAndDevices(ServerTestCase):
                                    content_type="application/json")
 
     def test_display_device(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
-                "extraFields": str(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,
+                "extraFields": str(self.extraFields), "app": "HelloWorld"}
         response = self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
 
         dev_id = response['id']
 
-        response = json.loads(
-            self.app.get('/api/devices/'+dev_id, headers=self.headers).get_data(
-                as_text=True))
+        response = json.loads(self.app.get('/api/devices/'+dev_id, headers=self.headers).get_data(as_text=True))
         self.assertEqual(response["username"], self.username)
         self.assertEqual(response["name"], self.name)
         self.assertEqual(response["ip"], self.ip)
@@ -59,13 +57,13 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(response["extraFieldTwo"], "extraNameTwo")
 
     def test_edit_device(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
-                "extraFields": str(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,
+                "extraFields": str(self.extraFields), "app": "HelloWorld"}
 
         response = self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
         dev_id = response['id']
-        data = {"ipaddr": "192.168.196.1", "id": int(dev_id)}
+        data = {"ip": "192.168.196.1", "id": int(dev_id)}
         self.post_with_status_check('/api/devices',
                                     data=json.dumps(data), headers=self.headers, content_type="application/json")
 
@@ -83,34 +81,33 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(response["extraFieldOne"], "extraNameOneOne")
 
     def test_add_and_display_multiple_devices(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type='application/json')
 
-        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
-                "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": "testDeviceTwo", "username": self.username, "password": self.password, "ip": self.ip,
+                "port": self.port, "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
 
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
 
-        response = self.get_with_status_check('/api/devices', headers=self.headers)
+        response = self.get_with_status_check('/api/devices', headers=self.headers, data=json.dumps({}),
+                                              content_type="application/json")
 
         self.assertEqual(len(response), 2)
         self.assertEqual(response[0]["name"], self.name)
         self.assertEqual(response[1]["name"], "testDeviceTwo")
-        # self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])
+        self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])
 
     def test_export_apps_devices_no_filename(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "passwrd": self.password, "ip": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
         self.put_with_status_check('/api/devices',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
                                    content_type = "application/json")
-        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
-                "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": "testDeviceTwo", "username": self.username, "password": self.password, "ip": self.ip,
+                "port": self.port, "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
 
         self.put_with_status_check('/api/devices',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
@@ -136,11 +133,10 @@ class TestAppsAndDevices(ServerTestCase):
             read_file = appdevice_file.read()
             read_file = read_file.replace('\n', '')
             read_json = json.loads(read_file)
-        # self.assertIn('HelloWorld', read_json)
-        # self.assertTrue(len(read_json['HelloWorld']) >= 2)
+        self.assertIn('HelloWorld', read_json)
+        self.assertTrue(len(read_json['HelloWorld']) >= 2)
         devices_read = 0
-        for device in read_json:
-            del device['id']
+        for device in read_json['HelloWorld']:
             if device['name'] == 'testDevice':
                 self.assertDictEqual(device, test_device_one_json)
                 devices_read += 1
@@ -150,16 +146,14 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(devices_read, 2)
 
     def test_export_apps_devices_with_filename(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip,
-                "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip,
+                "port": self.port, "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
 
         self.put_with_status_check('/api/devices',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED, content_type = "application/json")
+                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
-                "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": "testDeviceTwo", "username": self.username, "password": self.password, "ip": self.ip,
+                "port": self.port, "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
 
         self.put_with_status_check('/api/devices',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED, content_type = "application/json")
@@ -185,11 +179,10 @@ class TestAppsAndDevices(ServerTestCase):
             read_file = appdevice_file.read()
             read_file = read_file.replace('\n', '')
             read_json = json.loads(read_file)
-        # self.assertIn('HelloWorld', read_json)
-        # self.assertTrue(len(read_json['HelloWorld']) >= 2)
+        self.assertIn('HelloWorld', read_json)
+        self.assertTrue(len(read_json['HelloWorld']) >= 2)
         devices_read = 0
-        for device in read_json:
-            del device['id']
+        for device in read_json['HelloWorld']:
             if device['name'] == 'testDevice':
                 self.assertDictEqual(device, test_device_one_json)
                 devices_read += 1
@@ -199,15 +192,13 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(devices_read, 2)
 
     def test_import_apps_devices(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip,
-                "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip,
+                "port": self.port, "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
         self.put_with_status_check('/api/devices',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED, content_type = "application/json")
 
-        data = {"name": "testDeviceTwo", "username": self.username, "pw": self.password, "ipaddr": self.ip,
-                "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": "testDeviceTwo", "username": self.username, "password": self.password, "ip": self.ip,
+                "port": self.port, "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
 
         self.put_with_status_check('/api/devices',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED, content_type = "application/json")
@@ -217,16 +208,16 @@ class TestAppsAndDevices(ServerTestCase):
                                 "ip": "127.0.0.1",
                                 "name": "testDevice",
                                 "port": "6000",
-                                "username": "testUsername"
-                                # 'app': {"name": "HelloWorld"}
+                                "username": "testUsername",
+                                'app': {"name": "HelloWorld"}
                                 }
         test_device_two_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": u"127.0.0.1",
                                 "name": "testDeviceTwo",
                                 "port": "6000",
-                                "username": "testUsername"
-                                # 'app': {"name": "HelloWorld"}
+                                "username": "testUsername",
+                                'app': {"name": "HelloWorld"}
                                 }
 
         filename = 'testappdevices.json'
@@ -248,36 +239,36 @@ class TestAppsAndDevices(ServerTestCase):
                     for key, value in json_in.items()}
 
         with server.running_context.flask_app.app_context():
-            # app = server.running_context.App.query.filter_by(name="HelloWorld").all()
+            app = server.running_context.App.query.filter_by(name="HelloWorld").all()
             devices = server.running_context.Device.query.all()
-            # self.assertEqual(len(app), 1)
-            # app = app[0]
-            # self.assertEqual(len(app.devices), 2)
+            self.assertEqual(len(app), 1)
+            app = app[0]
+            self.assertEqual(len(app.devices), 2)
             checked_apps = 0
             for device in devices:
                 if device.name == 'testDevice':
                     device_json = convert_all_json_to_str(device.as_json())
                     if 'id' in device_json:
                         device_json.pop('id', None)
-                    # self.assertIn('app', device_json)
-                    # self.assertIn('id', device_json['app'])
-                    # device_json['app'].pop('id', None)
+                    self.assertIn('app', device_json)
+                    self.assertIn('id', device_json['app'])
+                    device_json['app'].pop('id', None)
                     self.assertDictEqual(device_json, test_device_one_json)
                     checked_apps += 1
                 elif device.name == 'testDeviceTwo':
                     device_json = convert_all_json_to_str(device.as_json())
                     if 'id' in device_json:
                         device_json.pop('id', None)
-                    # self.assertIn('app', device_json)
-                    # self.assertIn('id', device_json['app'])
-                    # device_json['app'].pop('id', None)
+                    self.assertIn('app', device_json)
+                    self.assertIn('id', device_json['app'])
+                    device_json['app'].pop('id', None)
                     self.assertDictEqual(device_json, test_device_two_json)
                     checked_apps += 1
             self.assertEqual(checked_apps, 2)
 
     def test_device_password(self):
-        data = {"name": self.name, "username": self.username, "pw": self.password, "ipaddr": self.ip, "port": self.port,
-                "extraFields": json.dumps(self.extraFields)}
+        data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,
+                "extraFields": json.dumps(self.extraFields), "app": "HelloWorld"}
         self.put_with_status_check('/api/devices'.format(self.name),
                                    data=json.dumps(data),
                                    headers=self.headers,

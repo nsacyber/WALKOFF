@@ -5,7 +5,6 @@ import core.config.config
 import core.config.paths
 from server.return_codes import *
 import pyaes
-import ast
 
 
 def read_all_devices():
@@ -14,11 +13,19 @@ def read_all_devices():
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        query = running_context.Device.query.all()
-        output = []
-        if query:
-            for device in query:
-                output.append(device.as_json())
+        data = request.get_json()
+        if 'app' in data and data['app'] in core.config.config.app_apis.keys():
+            query = running_context.App.query.filter_by(name=data['app']).first()
+            output = []
+            if query:
+                for device in query.devices:
+                    output.append(device.as_json())
+        else:
+            query = running_context.Device.query.all()
+            output = []
+            if query:
+                for device in query:
+                    output.append(device.as_json())
         return output, SUCCESS
 
     return __func()
@@ -36,19 +43,20 @@ def import_devices():
             with open(filename, 'r') as devices_file:
                 read_file = devices_file.read()
                 read_file = read_file.replace('\n', '')
-                devices = ast.literal_eval(read_file)
-                # devices = [n.strip() for n in devices]
+                apps_devices = json.loads(read_file)
         except (OSError, IOError) as e:
             current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
             return {"error": "Error reading file."}, IO_ERROR
-        for device in devices:
-            extra_fields = {}
-            for key in device:
-                if key not in ['ip', 'name', 'port', 'username']:
-                    extra_fields[key] = device[key]
-            extra_fields_str = json.dumps(extra_fields)
-            running_context.Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
-                                              port=device['port'], extra_fields=extra_fields_str, password=None)
+        for app in apps_devices:
+            for device in apps_devices[app]:
+                extra_fields = {}
+                for key in device:
+                    if key not in ['ip', 'name', 'port', 'username']:
+                        extra_fields[key] = device[key]
+                extra_fields_str = json.dumps(extra_fields)
+                running_context.Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
+                                                  port=device['port'], extra_fields=extra_fields_str, password=None,
+                                                  app_id=app)
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 
@@ -63,14 +71,19 @@ def export_devices():
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
-        devices = running_context.Device.query.all()
-        devices_list = []
-        for device in devices:
-            device_json = device.as_json(with_apps=False)
-            devices_list.append(device_json)
+        returned_json = {}
+        apps = running_context.App.query.all()
+        for app in apps:
+            devices = []
+            for device in app.devices:
+                device_json = device.as_json()
+                device_json.pop('app', None)
+                device_json.pop('id', None)
+                devices.append(device_json)
+            returned_json[app.as_json()['name']] = devices
         try:
             with open(filename, 'w') as appdevice_file:
-                appdevice_file.write(json.dumps(devices_list, indent=4, sort_keys=True))
+                appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
         except (OSError, IOError) as e:
             current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
             return {"error": "Error writing file"}, IO_ERROR
@@ -125,7 +138,7 @@ def create_device():
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         data = request.get_json()
-        if 'name' in data and len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
+        if len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
             current_app.logger.error('Could not create device {0}. '
                                      'Device already exists.'.format(data['name']))
             return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
@@ -140,15 +153,16 @@ def create_device():
             return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
         else:
             aes = pyaes.AESModeOfOperationCTR(key)
-            pw = data['pw'] if 'pw' in data else ''
+            pw = data['password'] if 'password' in data else ''
             enc_pw = aes.encrypt(pw)
 
-        dev = running_context.Device.add_device(name=data['name'] if 'name' in data else '',
+        dev = running_context.Device.add_device(name=data['name'],
                                           username=data['username'] if 'username' in data else '',
                                           password=enc_pw,
-                                          ip=data['ipaddr'] if 'ipaddr' in data else '',
+                                          ip=data['ip'] if 'ip' in data else '',
                                           port=data['port'] if 'port' in data else '',
-                                          extra_fields=data['extraFields'] if 'extraFields' in data else '')
+                                          extra_fields=data['extraFields'] if 'extraFields' in data else '',
+                                          app_id=data['app'])
         return dev, OBJECT_CREATED
 
     return __func()
