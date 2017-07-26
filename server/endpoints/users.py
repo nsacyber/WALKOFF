@@ -1,7 +1,6 @@
 from flask import request, current_app
 from flask_security import roles_accepted
-from flask_security.utils import encrypt_password
-from server import forms
+from flask_security.utils import encrypt_password, verify_password
 from server.return_codes import *
 
 
@@ -22,31 +21,33 @@ def create_user():
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         data = request.get_json()
-        un = data['username']
-        if not running_context.User.query.filter_by(email=un).first():
-            pw = encrypt_password(data['password'])
+        username = data['username']
+        if not running_context.User.query.filter_by(email=username).first():
+            password = encrypt_password(data['password'])
 
             # Creates User
-            u = running_context.user_datastore.create_user(email=un, password=pw, active=data['active'])
-
+            if 'active' in data:
+                user = running_context.user_datastore.create_user(
+                    email=username, password=password, active=data['active'])
+            else:
+                user = running_context.user_datastore.create_user(email=username, password=password)
             if 'roles' in data:
-                u.set_roles(data['roles'])
+                user.set_roles(data['roles'])
 
             has_admin = False
-            for role in u.roles:
+            for role in user.roles:
                 if role.name == 'admin':
                     has_admin = True
             if not has_admin:
                 r = {'name': 'admin', 'description': None}
-                u.set_roles([r])
+                user.set_roles([r])
 
             running_context.db.session.commit()
-            current_app.logger.info('User added: {0}'.format(
-                {"name": u.email, "roles": [str(_role) for _role in u.roles]}))
-            return u.display(), OBJECT_CREATED
+            current_app.logger.info('User added: {0}'.format(user.display()))
+            return user.display(), OBJECT_CREATED
         else:
-            current_app.logger.warning('Could not create user {0}. User already exists.'.format(un))
-            return {"error": "User {0} already exists.".format(un)}, OBJECT_EXISTS_ERROR
+            current_app.logger.warning('Could not create user {0}. User already exists.'.format(username))
+            return {"error": "User {0} already exists.".format(username)}, OBJECT_EXISTS_ERROR
     return __func()
 
 
@@ -75,17 +76,21 @@ def update_user():
         if user:
             current_username = user.email
 
+            if 'old_password' in data and 'new_password' in data:
+                if verify_password(data['old_password'], user.password):
+                    user.password = encrypt_password(data['new_password'])
+                else:
+                    return {"error": "Could not reset password"}, 400
+
             if 'active' in data:
                 user.active = data['active']
-            if 'password' in data:
-                user.password = encrypt_password(data['password'])
             if 'roles' in data:
                 user.set_roles(data['roles'])
             if 'username' in data:
                 user.email = data['username']
 
             running_context.db.session.commit()
-            current_app.logger.info('Updated user {0}. Roles: {1}'.format(current_username, data['roles']))
+            current_app.logger.info('Updated user {0}. Updated to: {1}'.format(current_username, user.display()))
             return user.display(), SUCCESS
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))

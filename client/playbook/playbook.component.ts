@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import * as _ from 'lodash';
-//import $ from 'jquery';
+// import * as $ from 'jquery';
 // import JSONEditor from 'jsoneditor';
 
 import { PlaybookService } from './playbook.service';

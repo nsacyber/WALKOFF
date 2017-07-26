@@ -1,3 +1,4 @@
+import { Control } from '@angular/common'
 import { Component } from '@angular/core';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -26,16 +27,25 @@ export class SettingsComponent {
 
 	//User Data Table params
 	users: User[] = [];
-	filterQuery: string = "";
-	rowsOnPage: number = 10;
-	sortBy: string = "username";
-	sortOrder: string = "asc";
+	displayUsers: User[] = [];
+	searchBox: Control = new Control();
 
 	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();
 		this.getUsers();
+
+		this.searchBox
+			.valueChanges
+			.debounceTime(300)
+			.subscribe(event => filterUsers(event));
+	}
+
+	filterUsers(searchFilter: string) {
+		this.displayUsers = this.users.filter((user) => {
+			
+		});
 	}
 
 	// System Settings
@@ -64,6 +74,10 @@ export class SettingsComponent {
 	}
 
 	//User Settings
+	filterUsers($event): void {
+		console.log($event);
+	}
+
 	getUsers(): void {
 		this.settingsService
 			.getUsers()
@@ -110,7 +124,8 @@ export class SettingsComponent {
 					this.users.push(result.user);
 					this.toastyService.success(`User "${result.user.username}" successfully added.`);
 				}
-			});
+			},
+			(error) => { if (error) this.toastyService.error(error.message); });
 	}
 
 	deleteUser(userToDelete: User): void {
@@ -134,37 +149,3 @@ export class SettingsComponent {
 		return boolean ? 'Yes' : 'No';
 	}
 }
-
-
-// @Component({
-//   	selector: 'user-modal',
-// 	templateUrl: 'client/settings/settings.user.modal.html',
-// 	// styleUrls: [
-// 	// 	'client/settings/settings.user.modal.css',
-// 	// ],
-// 	providers: [SettingsService]
-// })
-// export class UserModalComponent {
-// 	public visible = false;
-// 	public visibleAnimate = false;
-
-// 	public show(): void {
-// 		this.visible = true;
-// 		setTimeout(() => this.visibleAnimate = true, 100);
-// 	}
-
-// 	public hide(): void {
-// 		this.visibleAnimate = false;
-// 		setTimeout(() => this.visible = false, 300);
-// 	}
-
-// 	public validate(): void {
-		
-// 	}
-
-// 	public onContainerClicked(event: MouseEvent): void {
-// 		if ((<HTMLElement>event.target).classList.contains('modal')) {
-// 		this.hide();
-// 		}
-// 	}
-// }

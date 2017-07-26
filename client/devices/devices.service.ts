@@ -55,18 +55,17 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
-	// listDevices(page: any) : Promise<Device[]> {
-	// 	return this.http.post(`/api/devices/list`, page, this.requestOptions)
-	// 		.toPromise()
-	// 		.then(this.extractData)
-	// 		.then(data => data as Device[])
-	// 		.catch(this.handleError);
-	// }
-
 	deleteDevice(deviceId: number) : Promise<void> {
 		return this.http.delete(`/api/devices/${deviceId}`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
+			.catch(this.handleError);
+	}
+
+	getApps() : Promise<string[]> {
+		return this.http.get(`/api/apps`, this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
 			.catch(this.handleError);
 	}
 	

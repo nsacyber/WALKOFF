@@ -15,9 +15,10 @@ import { Device } from '../models/device';
 	providers: [DevicesService]
 })
 export class DevicesModalComponent {
-	@Input() workingDevice: Device;
+	@Input() workingDevice: Device = new Device();
 	@Input() title: string;
 	@Input() submitText: string;
+	@Input() appNames: string[] = [];
 
 	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';

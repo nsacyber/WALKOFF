@@ -11,6 +11,7 @@ import { ToastyModule } from 'ng2-toasty';
 import { RoutingModule } from './routing';
 import { MainComponent } from './main/main.component';
 import { ControllerComponent } from './controller/controller.component';
+import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -33,6 +34,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		MainComponent,
 		//Router module components
 		ControllerComponent,
+		PlaybookComponent,
 		DevicesComponent,
 		CasesComponent,
 		SettingsComponent,

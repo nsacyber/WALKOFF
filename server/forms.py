@@ -3,27 +3,6 @@ from wtforms import Form, BooleanField, StringField, PasswordField, validators, 
 from flask_security.forms import Required, EqualTo
 
 
-class NewUserForm(Form):
-    username = StringField('username', [validators.Length(min=4, max=25), validators.Optional()])
-    password = PasswordField('password', [validators.data_required()])
-    role = FieldList(StringField('role'), [validators.Optional()])
-
-
-class EditUserForm(Form):
-    password = PasswordField('password')
-    role = FieldList(StringField('role'), [validators.Optional()])
-
-
-class NewRoleForm(Form):
-    name = StringField('name', [validators.Optional()])
-    description = StringField('description')
-
-
-class EditRoleForm(Form):
-    description = StringField('description')
-    pages = StringField('pages')
-
-
 class AddWorkflowForm(Form):
     playbook = StringField('playbook', [validators.Length(min=1, max=50), validators.Optional()])
     template = StringField('template', [validators.Length(min=1, max=50), validators.Optional()])
@@ -59,19 +38,6 @@ class AddEditStepForm(Form):
     action = StringField('action', [validators.Optional()])
     input = StringField('input', [validators.Optional()])
     error = FieldList(StringField('error'), [validators.Optional()])
-
-
-class EditConfigForm(Form):
-    key = StringField('key', [validators.data_required(), validators.length(min=1, max=25)])
-    value = StringField('value')
-
-
-class EditSingleConfigForm(Form):
-    value = StringField('value')
-
-
-class RemoveConfigForm(Form):
-    key = StringField('key', [validators.data_required(), validators.length(min=1, max=25)])
 
 
 class RenderArgsForm(Form):
@@ -186,25 +152,3 @@ class AddSubscriptionForm(Form):
 
 class DeleteSubscriptionForm(Form):
     ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
-
-
-class UserForm(Form):
-    username = SelectField('Username', [validators.Optional()], choices=[])
-    email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
-    password = PasswordField('Password')
-    active = BooleanField()
-    confirmed_at = DateTimeField('Confirmed at', [validators.Optional()])
-    roles = SelectField('Roles', choices=[])
-    last_login_at = DateTimeField("Last login at")
-    current_login_at = DateTimeField("Current login at")
-    last_login_ip = StringField("Last login ip")
-    current_login_ip = StringField("Current login ip")
-    login_count = IntegerField("Login count")
-
-
-class AddUserForm(Form):
-    username = StringField('Username', [validators.required(message='Enter a user name')])
-    password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
-    confirm = PasswordField('Repeat Password')
-    roles = SelectField('Roles', choices=[])
-    email = StringField('Email', [validators.DataRequired("Please enter your email address.")])
