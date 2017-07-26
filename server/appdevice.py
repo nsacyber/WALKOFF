@@ -40,7 +40,7 @@ class App(database.Base, object):
                 one to many mapping from Apps to Devices.
         """
         self.name = app
-        self.devices = [Device(name=device_name) for device_name in devices]
+        self.devices = [Device(name=device_name, app_id=app) for device_name in devices]
 
     def initialize(self):
         # self.api = WalkoffAppDefinition(self.name, self)
