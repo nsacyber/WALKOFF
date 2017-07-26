@@ -10,6 +10,7 @@ from tests.util.case_db_help import *
 from tests.apps import App
 import json
 
+
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
