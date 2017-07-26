@@ -1,8 +1,10 @@
-import { Control } from '@angular/common'
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { Observable } from 'rxjs/Observable';
+import "rxjs/add/operator/debounceTime";
 
 import { SettingsService } from './settings.service';
 
@@ -28,7 +30,7 @@ export class SettingsComponent {
 	//User Data Table params
 	users: User[] = [];
 	displayUsers: User[] = [];
-	searchBox: Control = new Control();
+	filterQuery: FormControl = new FormControl();
 
 	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
@@ -36,15 +38,17 @@ export class SettingsComponent {
 		this.getConfiguration();
 		this.getUsers();
 
-		this.searchBox
+		this.filterQuery
 			.valueChanges
-			.debounceTime(300)
-			.subscribe(event => filterUsers(event));
+			.debounceTime(500)
+			.subscribe(event => this.filterUsers(event));
 	}
 
 	filterUsers(searchFilter: string) {
+		searchFilter = searchFilter.toLocaleLowerCase();
+
 		this.displayUsers = this.users.filter((user) => {
-			
+			return user.username.toLocaleLowerCase().includes(searchFilter);
 		});
 	}
 
@@ -73,15 +77,10 @@ export class SettingsComponent {
 		Object.assign(this.configuration, Configuration.getDefaultConfiguration());
 	}
 
-	//User Settings
-	filterUsers($event): void {
-		console.log($event);
-	}
-
 	getUsers(): void {
 		this.settingsService
 			.getUsers()
-			.then(users => this.users = users)
+			.then(users => this.displayUsers = this.users = users)
 			.catch(e => this.toastyService.error(e.message));
 	}
 

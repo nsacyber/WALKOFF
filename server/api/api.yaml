@@ -78,7 +78,6 @@ security:
 
 definitions:
     $ref: ./objects/objects.yaml
-    $ref: ./objects/appdevice.yaml
     $ref: ./objects/cases.yaml
     $ref: ./objects/configuration.yaml
     $ref: ./objects/devices.yaml
