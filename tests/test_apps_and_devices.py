@@ -98,7 +98,6 @@ class TestAppsAndDevices(ServerTestCase):
         self.assertEqual(len(response), 2)
         self.assertEqual(response[0]["name"], self.name)
         self.assertEqual(response[1]["name"], "testDeviceTwo")
-        self.assertEqual(response[0]["app"]["name"], response[1]["app"]["name"])
 
     def test_export_apps_devices_no_filename(self):
         data = {"name": self.name, "username": self.username, "passwrd": self.password, "ip": self.ip, "port": self.port,
@@ -209,7 +208,7 @@ class TestAppsAndDevices(ServerTestCase):
                                 "name": "testDevice",
                                 "port": "6000",
                                 "username": "testUsername",
-                                'app': {"name": "HelloWorld"}
+                                'app': "HelloWorld"
                                 }
         test_device_two_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
@@ -217,7 +216,7 @@ class TestAppsAndDevices(ServerTestCase):
                                 "name": "testDeviceTwo",
                                 "port": "6000",
                                 "username": "testUsername",
-                                'app': {"name": "HelloWorld"}
+                                'app': "HelloWorld"
                                 }
 
         filename = 'testappdevices.json'
@@ -251,7 +250,6 @@ class TestAppsAndDevices(ServerTestCase):
                     if 'id' in device_json:
                         device_json.pop('id', None)
                     self.assertIn('app', device_json)
-                    device_json['app'].pop('id', None)
                     self.assertDictEqual(device_json, test_device_one_json)
                     checked_apps += 1
                 elif device.name == 'testDeviceTwo':
@@ -259,7 +257,6 @@ class TestAppsAndDevices(ServerTestCase):
                     if 'id' in device_json:
                         device_json.pop('id', None)
                     self.assertIn('app', device_json)
-                    device_json['app'].pop('id', None)
                     self.assertDictEqual(device_json, test_device_two_json)
                     checked_apps += 1
             self.assertEqual(checked_apps, 2)

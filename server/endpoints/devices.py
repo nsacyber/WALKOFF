@@ -13,19 +13,11 @@ def read_all_devices():
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        data = request.get_json()
-        if 'app' in data and data['app'] in core.config.config.app_apis.keys():
-            query = running_context.App.query.filter_by(name=data['app']).first()
-            output = []
-            if query:
-                for device in query.devices:
-                    output.append(device.as_json())
-        else:
-            query = running_context.Device.query.all()
-            output = []
-            if query:
-                for device in query:
-                    output.append(device.as_json())
+        query = running_context.Device.query.all()
+        output = []
+        if query:
+            for device in query:
+                output.append(device.as_json())
         return output, SUCCESS
 
     return __func()

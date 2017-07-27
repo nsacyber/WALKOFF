@@ -96,19 +96,6 @@
     operationId: server.endpoints.devices.read_all_devices
     produces:
       - application/json
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The name of the app from which to get the devices
-        required: false
-        schema:
-          type: object
-          properties:
-            app:
-              type: string
-              example: HelloWorld
     responses:
       200:
         description: Success
