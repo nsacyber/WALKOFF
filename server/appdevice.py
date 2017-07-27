@@ -146,7 +146,7 @@ class Device(database.Base):
         db.session.add(device)
         db.session.commit()
         current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
-        return device.as_json()
+        return device
 
     def get_password(self):
         try:
