@@ -1064,8 +1064,8 @@ class TestCaseServer(ServerTestCase):
         expected_event = altered_event[0].as_json()
         expected_event['note'] = 'Note1'
 
-        data = {'note': 'Note1'}
-        response = self.app.post('/events/{0}'.format(smallest_id), data=json.dumps(data), headers=self.headers,
+        data = {'note': 'Note1', 'id': smallest_id}
+        response = self.app.post('/api/events', data=json.dumps(data), headers=self.headers,
                                  content_type='application/json')
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
@@ -1073,8 +1073,8 @@ class TestCaseServer(ServerTestCase):
 
         expected_event['note'] = 'Note2'
 
-        data = {'note': 'Note2'}
-        response = self.app.post('/events/{0}'.format(smallest_id), data=json.dumps(data), headers=self.headers,
+        data = {'note': 'Note2', 'id': smallest_id}
+        response = self.app.post('/api/events', data=json.dumps(data), headers=self.headers,
                                  content_type='application/json')
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
@@ -1106,8 +1106,8 @@ class TestCaseServer(ServerTestCase):
         events = case_database.case_db.session.query(case_database.Event).all()
         invalid_id = max([event.id for event in events]) + 1
 
-        data = {"note": 'Note2'}
-        self.post_with_status_check('/events/{0}'.format(invalid_id),
+        data = {"note": 'Note2', "id": invalid_id}
+        self.post_with_status_check('/api/events',
                                     error='Event does not exist.',
                                     data=json.dumps(data),
                                     headers=self.headers,

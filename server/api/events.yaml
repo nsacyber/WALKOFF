@@ -1,10 +1,28 @@
-/events/{event_id}:
+/api/events/{event_id}:
   parameters:
     - name: event_id
       in: path
       description: The name that needs to be fetched.
       required: true
       type: string
+  get:
+    tags:
+      - Events
+    summary: Read an event
+    description: ''
+    operationId: server.endpoints.events.read_event
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Event'
+      461:
+        description: Object does not exist
+        schema:
+          $ref: '#/definitions/Error'
+/api/events:
   post:
     tags:
       - Events
@@ -17,33 +35,19 @@
       - application/json
     parameters:
       - in: body
-        name: note
+        name: body
         description: Note to add to the case
         required: true
         schema:
           type: object
-          required: [note]
+          required: [id, note]
           properties:
+            id:
+              type: integer
+              example: 1234
             note:
               type: string
               example: This event was import somehow. I should make a note about it
-    responses:
-      200:
-        description: Success
-        schema:
-          $ref: '#/definitions/Event'
-      461:
-        description: Object does not exist
-        schema:
-          $ref: '#/definitions/Error'
-  get:
-    tags:
-      - Events
-    summary: Read an event
-    description: ''
-    operationId: server.endpoints.events.read_event
-    produces:
-      - application/json
     responses:
       200:
         description: Success
