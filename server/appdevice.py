@@ -165,16 +165,16 @@ class Device(database.Base):
         Args:
             data (dict): The data object containing the fields that the user wishes to change.
         """
-        if 'name' in data:
+        if 'name' in data and data['name']:
             self.name = data['name']
 
-        if 'app' in data:
+        if 'app' in data and data['app']:
             self.app_id = data['app']
 
-        if 'username' in data:
+        if 'username' in data and data['username']:
             self.username = data['username']
 
-        if 'password' in data:
+        if 'password' in data and data['password']:
             try:
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
@@ -186,13 +186,13 @@ class Device(database.Base):
                 pw = data['password']
                 self.password = aes.encrypt(pw)
 
-        if 'ip' in data:
+        if 'ip' in data and data['ip']:
             self.ip = data['ip']
 
-        if 'port' in data:
+        if 'port' in data and data['port']:
             self.port = data['port']
 
-        if 'extraFields' in data:
+        if 'extraFields' in data and data['extraFields']:
             fields_dict = json.loads(data['extraFields'].replace("\'", "\""))
             if self.extra_fields == "":
                 self.extra_fields = data['extraFields']
