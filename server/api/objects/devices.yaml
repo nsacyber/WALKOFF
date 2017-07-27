@@ -3,24 +3,35 @@ CreateDevice:
   required: [name, app]
   properties:
     name:
+      description: Name of the device
       type: string
+      minLength: 4
+      maxLength: 25
       example: Server1
     username:
+      description: Username for the device
       type: string
+      maxLength: 50
       example: alligator9
     password:
+      description: Password for the device
       type: string
       example: password123
     ip:
+      description: IP address of the device
       type: string
       example: 127.0.0.1
     port:
+      description: Port of the device
       type: integer
+      minimum: 1
+      maximum: 65535
       example: 25
     app:
       type: string
       example: HelloWorld
     extra_fields:
+      description: String representation of JSON to use as extra parameters
       type: object
       example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
 EditDevice:
@@ -31,24 +42,35 @@ EditDevice:
       type: integer
       example: 1234
     name:
+      description: Name of the device
       type: string
+      minLength: 4
+      maxLength: 25
       example: Server1
     username:
+      description: Username for the device
       type: string
+      maxLength: 50
       example: alligator9
     password:
+      description: Password for the device
       type: string
       example: password123
     ip:
+      description: IP address of the device
       type: string
       example: 127.0.0.1
     port:
+      description: Port of the device
       type: integer
+      minimum: 1
+      maximum: 65535
       example: 25
     app:
       type: string
       example: HelloWorld
     extra_fields:
+      description: String representation of JSON to use as extra parameters
       type: object
       example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
 OutputDevice:

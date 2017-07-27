@@ -22,7 +22,10 @@
 				<div class="form-group">
 					<label for="name">Associated App</label>
 					<!--TODO: get list of apps, add as select-->
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.app_name" name="app_name" required>
+					<select class="form-control" [(ngModel)]="workingDevice.app" name="app">
+						<option value=""></option>
+						<option *ngFor="let i of appNames" [value]="i" [label]="i"></option>
+					</select>
 				</div>
 				<div class="form-group">
 					<label for="name">Port</label>

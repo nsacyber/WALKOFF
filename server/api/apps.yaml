@@ -12,6 +12,7 @@
         description: Success
         schema:
           type: array
+          description: List of app names
           items:
             type: string
             example: [PhillipsHue, OpenDaylight, PaloAlto]

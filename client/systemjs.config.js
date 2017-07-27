@@ -11,6 +11,7 @@
 		'@angular': 'client/node_modules/@angular',
 		'angular2-datatable': 'client/node_modules/angular2-datatable',
 		'lodash': 'client/node_modules/lodash',
+		'jquery': 'client/node_modules/jquery/dist/jquery.min.js',
 		'ts': 'client/node_modules/plugin-typescript/lib/plugin.js',
 		'tsconfig.json': 'client/tsconfig.json',
 		'typescript': 'client/node_modules/typescript/lib/typescript.js',

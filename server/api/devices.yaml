@@ -101,6 +101,7 @@
         description: Success
         schema:
           type: array
+          description: A list of devices
           items:
             $ref: '#/definitions/OutputDevice'
   put:

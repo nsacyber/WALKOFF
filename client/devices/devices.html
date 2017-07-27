@@ -9,14 +9,14 @@
             <div class="form-group row">
                 <label class="col-xs-2 col-form-label">Search Filter</label>
                 <div class="col-xs-10">
-                    <input class="form-control" [(ngModel)]="filterQuery" />
+                    <input class="form-control" [formControl]="filterQuery"/>
                 </div>
             </div>
         </div>
     </div>
 
     <ngx-datatable #deviceTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
-        [rows]='devices' [limit]="10">
+        [rows]='displayDevices' [limit]="10">
         <!-- Column Templates -->
         <ngx-datatable-column name="Name" [flexGrow]="3">
             <ng-template let-row="row" ngx-datatable-cell-template>
@@ -25,7 +25,7 @@
         </ngx-datatable-column>
         <ngx-datatable-column name="App" [flexGrow]="3">
             <ng-template let-row="row" ngx-datatable-cell-template>
-                {{row.app_name}}
+                {{row.app}}
             </ng-template>
         </ngx-datatable-column>
         <ngx-datatable-column name="IP Address" [flexGrow]="2">

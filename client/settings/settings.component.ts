@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import "rxjs/add/operator/debounceTime";
 
 import { SettingsService } from './settings.service';
 
@@ -26,16 +28,27 @@ export class SettingsComponent {
 
 	//User Data Table params
 	users: User[] = [];
-	filterQuery: string = "";
-	rowsOnPage: number = 10;
-	sortBy: string = "username";
-	sortOrder: string = "asc";
+	displayUsers: User[] = [];
+	filterQuery: FormControl = new FormControl();
 
 	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();
 		this.getUsers();
+
+		this.filterQuery
+			.valueChanges
+			.debounceTime(500)
+			.subscribe(event => this.filterUsers(event));
+	}
+
+	filterUsers(searchFilter: string) {
+		searchFilter = searchFilter.toLocaleLowerCase();
+
+		this.displayUsers = this.users.filter((user) => {
+			return user.username.toLocaleLowerCase().includes(searchFilter);
+		});
 	}
 
 	// System Settings
@@ -63,11 +76,10 @@ export class SettingsComponent {
 		Object.assign(this.configuration, Configuration.getDefaultConfiguration());
 	}
 
-	//User Settings
 	getUsers(): void {
 		this.settingsService
 			.getUsers()
-			.then(users => this.users = users)
+			.then(users => this.displayUsers = this.users = users)
 			.catch(e => this.toastyService.error(e.message));
 	}
 
@@ -110,7 +122,8 @@ export class SettingsComponent {
 					this.users.push(result.user);
 					this.toastyService.success(`User "${result.user.username}" successfully added.`);
 				}
-			});
+			},
+			(error) => { if (error) this.toastyService.error(error.message); });
 	}
 
 	deleteUser(userToDelete: User): void {
@@ -134,37 +147,3 @@ export class SettingsComponent {
 		return boolean ? 'Yes' : 'No';
 	}
 }
-
-
-// @Component({
-//   	selector: 'user-modal',
-// 	templateUrl: 'client/settings/settings.user.modal.html',
-// 	// styleUrls: [
-// 	// 	'client/settings/settings.user.modal.css',
-// 	// ],
-// 	providers: [SettingsService]
-// })
-// export class UserModalComponent {
-// 	public visible = false;
-// 	public visibleAnimate = false;
-
-// 	public show(): void {
-// 		this.visible = true;
-// 		setTimeout(() => this.visibleAnimate = true, 100);
-// 	}
-
-// 	public hide(): void {
-// 		this.visibleAnimate = false;
-// 		setTimeout(() => this.visible = false, 300);
-// 	}
-
-// 	public validate(): void {
-		
-// 	}
-
-// 	public onContainerClicked(event: MouseEvent): void {
-// 		if ((<HTMLElement>event.target).classList.contains('modal')) {
-// 		this.hide();
-// 		}
-// 	}
-// }
