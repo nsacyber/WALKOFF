@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
@@ -24,21 +25,38 @@ export class DevicesComponent {
 	displayDevices: Device[] = [];
 	appNames: string[] = [];
 	selectedApps: string[] = [];
-
-	filterQuery: string = "";
+	filterQuery: FormControl = new FormControl();
 
 	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getDevices();
 		this.getApps();
+
+		this.filterQuery
+			.valueChanges
+			.debounceTime(500)
+			.subscribe(event => this.filterDevices());
+	}
+
+	filterDevices(): void {
+		let searchFilter = this.filterQuery.value.toLocaleLowerCase();
+
+		this.displayDevices = this.devices.filter((device) => {
+			return (device.name.toLocaleLowerCase().includes(searchFilter) ||
+				device.app.toLocaleLowerCase().includes(searchFilter) ||
+				device.ip.includes(searchFilter) ||
+				device.port.toString().includes(searchFilter)) &&
+				(this.selectedApps.length ? this.selectedApps.indexOf(device.app) > -1 : true);
+		});
 	}
 
 	getDevices(): void {
 		this.devicesService
 			.getDevices()
-			.then(devices => this.devices = devices)
+			.then(devices => this.displayDevices = this.devices = devices)
 			.catch(e => this.toastyService.error(`Error retrieving devices: ${e.message}`));
+			
 	}
 
 	addDevice(): void {
@@ -88,7 +106,11 @@ export class DevicesComponent {
 
 		this.devicesService
 			.deleteDevice(deviceToDelete.id)
-			.then(() => this.devices = _.reject(this.devices, device => device.id === deviceToDelete.id))
+			.then(() => {
+				this.devices = _.reject(this.devices, device => device.id === deviceToDelete.id);
+
+				this.toastyService.success(`Device "${deviceToDelete.name}" successfully deleted.`);
+			})
 			.catch(e => this.toastyService.error(`Error deleting device: ${e.message}`));
 	}
 

@@ -17,7 +17,7 @@ export class SettingsService {
 	}
 
 	getConfiguration() : Promise<Configuration> {
-		return this.http.get('/configuration', this.requestOptions)
+		return this.http.get('/api/configuration', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -25,7 +25,7 @@ export class SettingsService {
 	};
 
 	updateConfiguration(configuration: Configuration) : Promise<Configuration> {
-		return this.http.post('/configuration', configuration, this.requestOptions)
+		return this.http.post('/api/configuration', configuration, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -33,7 +33,7 @@ export class SettingsService {
 	};
 
 	getUsers() : Promise<User[]> {
-		return this.http.get('/users', this.requestOptions)
+		return this.http.get('/api/users', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User[])
@@ -41,7 +41,7 @@ export class SettingsService {
 	};
 
 	addUser(user: User) : Promise<User> {
-		return this.http.put('/users', user, this.requestOptions)
+		return this.http.put('/api/users', user, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -49,7 +49,7 @@ export class SettingsService {
 	}
 
 	editUser(user: User) : Promise<User> {
-		return this.http.post('/users', user, this.requestOptions)
+		return this.http.post('/api/users', user, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -57,7 +57,7 @@ export class SettingsService {
 	}
 
 	deleteUser(id: number) : Promise<void> {
-		return this.http.delete('/users/' + id, this.requestOptions)
+		return this.http.delete('/api/users/' + id, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);

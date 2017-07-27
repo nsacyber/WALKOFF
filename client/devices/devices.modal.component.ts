@@ -31,13 +31,19 @@ export class DevicesModalComponent {
 		if (this.workingDevice.id) {
 			this.devicesService
 				.editDevice(this.workingDevice)
-				.then(device => this.activeModal.close(device))
+				.then(device => this.activeModal.close({
+					device: device,
+					isEdit: true
+				}))
 				.catch(e => this.toastyService.error(e.message));
 		}
 		else {
 			this.devicesService
 				.addDevice(this.workingDevice)
-				.then(device => this.activeModal.close(device))
+				.then(device => this.activeModal.close({
+					device: device,
+					isEdit: false
+				}))
 				.catch(e => this.toastyService.error(e.message));
 		}
 	}

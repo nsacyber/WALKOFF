@@ -3,7 +3,6 @@ import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
-import { Observable } from 'rxjs/Observable';
 import "rxjs/add/operator/debounceTime";
 
 import { SettingsService } from './settings.service';
