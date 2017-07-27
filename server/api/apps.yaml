@@ -11,14 +11,10 @@
       200:
         description: Success
         schema:
-          type: object
-          required: [apps]
-          properties:
-            apps:
-              type: array
-              items:
-                type: string
-              example: [PhillipsHue, OpenDaylight, PaloAlto]
+          type: array
+          items:
+            type: string
+            example: [PhillipsHue, OpenDaylight, PaloAlto]
 /api/apps/actions:
   get:
     tags:
