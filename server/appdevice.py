@@ -202,7 +202,7 @@ class Device(database.Base):
                     extra_fields[field] = fields_dict[field]
                 self.extra_fields = json.dumps(extra_fields)
 
-    def as_json(self, with_apps=True):
+    def as_json(self, with_apps=False):
         """Gets the JSON representation of a Device object.
         
         Args:
