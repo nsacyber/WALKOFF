@@ -212,8 +212,8 @@ class Device(database.Base):
         Returns:
             The JSON representation of a Device object.
         """
-        output = {'id': str(self.id), 'name': self.name, 'username': self.username, 'ip': self.ip,
-                  'port': str(self.port)}
+        output = {'id': self.id, 'name': self.name, 'username': self.username, 'ip': self.ip,
+                  'port': self.port}
         if with_apps:
             output['app'] = self.app.as_json()
         else:

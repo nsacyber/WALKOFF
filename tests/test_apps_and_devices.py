@@ -48,11 +48,12 @@ class TestAppsAndDevices(ServerTestCase):
 
         dev_id = response['id']
 
-        response = json.loads(self.app.get('/api/devices/'+dev_id, headers=self.headers).get_data(as_text=True))
+        response = self.get_with_status_check('/api/devices/'+str(dev_id), headers=self.headers)
+
         self.assertEqual(response["username"], self.username)
         self.assertEqual(response["name"], self.name)
         self.assertEqual(response["ip"], self.ip)
-        self.assertEqual(response["port"], str(self.port))
+        self.assertEqual(response["port"], self.port)
         self.assertEqual(response["extraFieldOne"], "extraNameOne")
         self.assertEqual(response["extraFieldTwo"], "extraNameTwo")
 
@@ -75,9 +76,8 @@ class TestAppsAndDevices(ServerTestCase):
         self.post_with_status_check('/api/devices',
                                     data=json.dumps(data), headers=self.headers, content_type="application/json")
 
-        response = json.loads(
-            self.app.get('/api/devices/'+dev_id, headers=self.headers, content_type="application/json").get_data(
-                as_text=True))
+        response = self.get_with_status_check('/api/devices/'+str(dev_id), headers=self.headers, content_type="application/json")
+
         self.assertEqual(response["extraFieldOne"], "extraNameOneOne")
 
     def test_add_and_display_multiple_devices(self):
@@ -116,13 +116,13 @@ class TestAppsAndDevices(ServerTestCase):
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": "127.0.0.1",
                                 "name": "testDevice",
-                                "port": "6000",
+                                "port": 6000,
                                 "username": "testUsername"}
         test_device_two_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": "127.0.0.1",
                                 "name": "testDeviceTwo",
-                                "port": "6000",
+                                "port": 6000,
                                 "username": "testUsername"}
 
         self.post_with_status_check('/api/devices/export', headers=self.headers, content_type="application/json",
@@ -160,13 +160,13 @@ class TestAppsAndDevices(ServerTestCase):
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": "127.0.0.1",
                                 "name": "testDevice",
-                                "port": "6000",
+                                "port": 6000,
                                 "username": "testUsername"}
         test_device_two_json = {"extraFieldOne": "extraNameOne",
                                 "extraFieldTwo": "extraNameTwo",
                                 "ip": "127.0.0.1",
                                 "name": "testDeviceTwo",
-                                "port": "6000",
+                                "port": 6000,
                                 "username": "testUsername"}
         filename = 'testappdevices.json'
         filepath = os.path.join(tests.config.test_data_path, filename)
