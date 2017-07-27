@@ -183,7 +183,7 @@ def update_device():
                                                                            dev.name,
                                                                            dev.as_json(with_apps=False)))
 
-            return {}, SUCCESS
+            return dev.as_json(), SUCCESS
         else:
             current_app.logger.error('Could not update device {0}. '
                                      'Device does not exist'.format(data['id']))

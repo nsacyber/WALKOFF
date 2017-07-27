@@ -15,7 +15,7 @@
           description: List of app names
           items:
             type: string
-          example: [PhillipsHue, OpenDaylight, PaloAlto]
+            example: [PhillipsHue, OpenDaylight, PaloAlto]
 /api/apps/actions:
   get:
     tags:
