@@ -1,4 +1,4 @@
-/roles:
+/api/roles:
   get:
     tags:
       - Roles
@@ -61,7 +61,7 @@
           $ref: '#/definitions/Role'
       461:
         description: Object does not exist.
-/roles/{role_name}:
+/api/roles/{role_name}:
   parameters:
     - name: role_name
       in: path

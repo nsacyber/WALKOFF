@@ -156,14 +156,14 @@ def create_device():
             pw = data['password'] if 'password' in data else ''
             enc_pw = aes.encrypt(pw)
 
-        dev = running_context.Device.add_device(name=data['name'],
+        device = running_context.Device.add_device(name=data['name'],
                                           username=data['username'] if 'username' in data else '',
                                           password=enc_pw,
                                           ip=data['ip'] if 'ip' in data else '',
                                           port=data['port'] if 'port' in data else '',
                                           extra_fields=data['extraFields'] if 'extraFields' in data else '',
                                           app_id=data['app'])
-        return dev, OBJECT_CREATED
+        return device.as_json(), OBJECT_CREATED
 
     return __func()
 

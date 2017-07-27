@@ -6,6 +6,6 @@ export class Device {
 	password: string;
 	ip: string;
 	port: number;
-	app_name: string;
+	app: string;
 	extra_fields: Object;
 }

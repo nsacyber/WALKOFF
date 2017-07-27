@@ -251,7 +251,6 @@ class TestAppsAndDevices(ServerTestCase):
                     if 'id' in device_json:
                         device_json.pop('id', None)
                     self.assertIn('app', device_json)
-                    self.assertIn('id', device_json['app'])
                     device_json['app'].pop('id', None)
                     self.assertDictEqual(device_json, test_device_one_json)
                     checked_apps += 1
@@ -260,7 +259,6 @@ class TestAppsAndDevices(ServerTestCase):
                     if 'id' in device_json:
                         device_json.pop('id', None)
                     self.assertIn('app', device_json)
-                    self.assertIn('id', device_json['app'])
                     device_json['app'].pop('id', None)
                     self.assertDictEqual(device_json, test_device_two_json)
                     checked_apps += 1

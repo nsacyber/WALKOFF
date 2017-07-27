@@ -1,4 +1,4 @@
-/users:
+/api/users:
   get:
     tags:
       - Users
@@ -75,7 +75,7 @@
           $ref: '#/definitions/Error'
 
 
-/users/{user_id}:
+/api/users/{user_id}:
   parameters:
     - name: user_id
       in: path

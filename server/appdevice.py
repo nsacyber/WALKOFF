@@ -26,7 +26,7 @@ class App(database.Base, object):
         Returns:
             The JSON representation of an App object.
         """
-        output = {'id': str(self.id), 'name': self.name}
+        output = {'name': self.name}
         if with_devices:
             output['devices'] = [device.as_json() for device in self.devices]
         return output
@@ -40,7 +40,7 @@ class App(database.Base, object):
                 one to many mapping from Apps to Devices.
         """
         self.name = app
-        self.devices = [Device(name=device_name) for device_name in devices]
+        self.devices = [Device(name=device_name, app_id=app) for device_name in devices]
 
     def initialize(self):
         # self.api = WalkoffAppDefinition(self.name, self)
@@ -146,7 +146,7 @@ class Device(database.Base):
         db.session.add(device)
         db.session.commit()
         current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
-        return device.as_json()
+        return device
 
     def get_password(self):
         try:

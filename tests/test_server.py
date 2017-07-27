@@ -16,7 +16,7 @@ class TestServer(ServerTestCase):
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
-        response = self.app.get('/apps', headers=self.headers)
+        response = self.app.get('/api/apps', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response['apps'], expected_apps)
@@ -126,7 +126,7 @@ class TestConfiguration(ServerTestCase):
                     'https': bool(core.config.config.https),
                     'tls_version': core.config.config.tls_version,
                     'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup)}
-        response = self.get_with_status_check('/configuration', headers=self.headers)
+        response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 
     def test_set_configuration(self):
@@ -138,7 +138,7 @@ class TestConfiguration(ServerTestCase):
                 "host": 'host_reset',
                 "port": 1100}
 
-        self.post_with_status_check('/configuration', headers=self.headers, data=json.dumps(data),
+        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json')
 
         expected = {core.config.paths.workflows_path: 'workflows_path_reset',
