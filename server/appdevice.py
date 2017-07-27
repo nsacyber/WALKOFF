@@ -26,7 +26,7 @@ class App(database.Base, object):
         Returns:
             The JSON representation of an App object.
         """
-        output = {'id': str(self.id), 'name': self.name}
+        output = {'name': self.name}
         if with_devices:
             output['devices'] = [device.as_json() for device in self.devices]
         return output

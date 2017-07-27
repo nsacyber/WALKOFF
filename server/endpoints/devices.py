@@ -163,7 +163,7 @@ def create_device():
                                           port=data['port'] if 'port' in data else '',
                                           extra_fields=data['extraFields'] if 'extraFields' in data else '',
                                           app_id=data['app'])
-        return dev, OBJECT_CREATED
+        return dev.as_json(), OBJECT_CREATED
 
     return __func()
 
