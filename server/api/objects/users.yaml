@@ -32,11 +32,11 @@ EditUser:
         description: New username or email of the user
         type: string
         example: administrator
-      password:
+      old_password:
         description: Previous password for the user
         type: string
         example: password123
-      new_password:
+      password:
         description: New password for the user
         type: string
         example: password321

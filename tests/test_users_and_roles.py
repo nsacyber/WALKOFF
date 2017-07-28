@@ -77,7 +77,7 @@ class TestUsersAndRoles(ServerTestCase):
             self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
                          content_type='application/json').get_data(as_text=True))
         user_id = response['id']
-        data = {"password": self.password, "new_password": "testPassword", "id": user_id}
+        data = {"old_password": self.password, "password": "testPassword", "id": user_id}
         self.post_with_status_check('/api/users', data=json.dumps(data),
                                     headers=self.headers, content_type='application/json', status_code=SUCCESS)
         with server.app.app_context():
@@ -90,7 +90,7 @@ class TestUsersAndRoles(ServerTestCase):
             self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
                          content_type='application/json').get_data(as_text=True))
         user_id = response['id']
-        data = {"password": 'supersecretpassword#1!', "new_password": "testPassword", "id": user_id}
+        data = {"old_password": 'supersecretpassword#1!', "password": "testPassword", "id": user_id}
         self.post_with_status_check('/api/users', data=json.dumps(data),
                                     headers=self.headers, content_type='application/json', status_code=400)
         with server.app.app_context():
