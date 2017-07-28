@@ -3,7 +3,9 @@ import { Role } from './role'
 export class User {
 	id: number;
 	username: string;
-	//Should never be populated when retrieving data
+	//Used to verify the user's old password on edit. Should never be populated when retrieving data.
+	old_password: string;
+	//Used for setting password on add/edit. Leave null or empty to not change password. Should never be populated when retrieving data.
 	password: string;
 	roles: Role[];
 	active: boolean;
@@ -30,7 +32,6 @@ export class WorkingUser {
 	confirmNewPassword: string;
 
 	static toUser(workingUser: WorkingUser): User {
-		console.log(workingUser);
 		let returnUser = new User();
 
 		returnUser.id = workingUser.id;
@@ -39,9 +40,9 @@ export class WorkingUser {
 		returnUser.active = workingUser.active;
 
 		//TODO: update once we merge the pw-fix branch in, need to submit current password as well
-		// returnUser.currentPassword = workingUser.currentPassword;
+		returnUser.old_password = workingUser.currentPassword;
 		returnUser.password = workingUser.newPassword;
-
+		console.log(returnUser);
 		return returnUser;
 	}
 }

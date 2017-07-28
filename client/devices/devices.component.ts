@@ -25,7 +25,7 @@ export class DevicesComponent {
 	devices: Device[] = [];
 	displayDevices: Device[] = [];
 	appNames: string[] = [];
-	availableApps: Select2OptionData[] = [{id:'test',text:'test'}];
+	availableApps: Select2OptionData[] = [];
 	appSelectConfig: Select2Options;
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
