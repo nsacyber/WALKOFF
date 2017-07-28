@@ -44,26 +44,26 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_cases_typical(self):
         cases = TestCaseServer.__basic_case_setup()
-        response = self.app.get('/cases', headers=self.headers)
+        response = self.app.get('/api/cases', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         expected_cases = set(cases.keys())
-        received_cases = [case['name'] for case in response['cases']]
+        received_cases = [case['name'] for case in response]
         orderless_list_compare(self, received_cases, expected_cases)
 
     def test_display_cases_none(self):
-        response = self.app.get('/cases', headers=self.headers)
+        response = self.app.get('/api/cases', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertListEqual(response['cases'], [])
+        self.assertListEqual(response, [])
 
     def test_display_case_not_found(self):
-        response = self.get_with_status_check('/cases/hiThere',
+        response = self.get_with_status_check('/api/cases/hiThere',
                                               error='Case does not exist.',
                                               headers=self.headers,
                                               status_code=OBJECT_DNE_ERROR)
         with self.assertRaises(KeyError):
-            _ = response['cases']
+            _ = response
 
     def test_display_case(self):
         TestCaseServer.__basic_case_setup()
@@ -98,7 +98,7 @@ class TestCaseServer(ServerTestCase):
         expected_events_collection = {case_name: event_logs_as_json(events) for case_name, events in case_events}
 
         for case_name, expected_events in expected_events_collection.items():
-            response = self.app.get('/cases/{0}'.format(case_name), headers=self.headers)
+            response = self.app.get('/api/cases/{0}'.format(case_name), headers=self.headers)
             self.assertEqual(response.status_code, SUCCESS)
             response = json.loads(response.get_data(as_text=True))
             self.assertEqual(case_name, response['case']['name'], 'Received case name differs from expected')
@@ -111,7 +111,8 @@ class TestCaseServer(ServerTestCase):
                 self.assertTrue(event in received_events, 'Expected event is not in received events')
 
     def test_add_case_no_existing_cases(self):
-        response = self.app.put('/cases/case1', headers=self.headers)
+        data = {'name': 'case1'}
+        response = self.app.put('/api/cases', headers=self.headers, data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, OBJECT_CREATED)
         response = json.loads(response.get_data(as_text=True))
         self.assertEqual(response, {'case1': CaseSubscriptions().as_json()})

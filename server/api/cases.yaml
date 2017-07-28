@@ -1,4 +1,4 @@
-/cases:
+/api/cases:
   get:
     tags:
       - Cases
@@ -11,19 +11,7 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            cases:
-              type: array
-              items:
-                $ref: '#/definitions/Case'
-/cases/{case}:
-  parameters:
-    - name: case
-      in: path
-      description: The name of the case
-      required: true
-      type: string
+          $ref: '#/definitions/Case'
   put:
     tags:
       - Cases
@@ -32,6 +20,19 @@
     operationId: server.endpoints.cases.create_case
     produces:
       - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The name of the case to be created
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Case_One
     responses:
       201:
         description: Object created
@@ -42,6 +43,52 @@
         description: Case already exists.
         schema:
           $ref: '#/definitions/Error'
+  post:
+    tags:
+      - Cases
+    summary: Update a case
+    description: ''
+    operationId: server.endpoints.cases.update_case
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+              description: ID of the Case object
+              example: 1234
+            name:
+              type: string
+              description: New name of the case
+              example: Case_One
+            note:
+              type: string
+              description: Note to add to the case
+              example: Case_One
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Case'
+      461:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+/api/cases/{case_id}:
+  parameters:
+    - name: case_id
+      in: path
+      description: The ID of the case
+      required: true
+      type: integer
   get:
     tags:
       - Cases
@@ -54,45 +101,7 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            case:
-              $ref: '#/definitions/Case'
-      461:
-        description: Case does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-  post:
-    tags:
-      - Cases
-    summary: Update a case
-    description: ''
-    operationId: server.endpoints.cases.update_case
-    consumes:
-      - application/x-www-form-urlencoded
-    produces:
-      - application/json
-    parameters:
-      - in: formData
-        name: name
-        description: New name of the case.
-        required: false
-        type: string
-      - in: formData
-        name: note
-        description: Note to add to the case
-        required: false
-        type: string
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          properties:
-            cases:
-              type: array
-              items:
-                $ref: '#/definitions/Case'
+          $ref: '#/definitions/Case'
       461:
         description: Case does not exist.
         schema:
@@ -112,8 +121,7 @@
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
-
-/cases/import:
+/api/cases/import:
   get:
     tags:
       - Cases
@@ -121,15 +129,20 @@
     description: ''
     operationId: server.endpoints.cases.import_cases
     consumes:
-      - application/x-www-form-urlencoded
+      - application/json
     produces:
       - application/json
     parameters:
-      - in: formData
-        name: filename
-        description: Filename of JSON to import into case database.
+      - in: body
+        name: body
+        description: Filename of JSON to import into Case database
         required: false
-        type: string
+        schema:
+          type: object
+          properties:
+            filename:
+              type: string
+              example: import_list.json
     responses:
       200:
         description: Success
@@ -142,7 +155,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/cases/export:
+/api/cases/export:
   post:
     tags:
       - Cases
@@ -150,15 +163,20 @@
     description: ''
     operationId: server.endpoints.cases.export_cases
     consumes:
-      - application/x-www-form-urlencoded
+      - application/json
     produces:
       - application/json
     parameters:
-      - in: formData
-        name: filename
-        description: Filename of JSON to import into case database.
+      - in: body
+        name: body
+        description: The name of the JSON file to export to.
         required: false
-        type: string
+        schema:
+          type: object
+          properties:
+            filename:
+              type: string
+              example: export_list.json
     responses:
       200:
         description: Success
