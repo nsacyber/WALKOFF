@@ -172,15 +172,15 @@ class CaseDatabase(object):
                 case.name = new_case_name
                 self.session.commit()
 
-    def edit_case_note(self, case_name, note):
+    def edit_case_note(self, case_id, note):
         """ Edits the note attached to a case
         
         Args:
-            case_name (str): The case to edit
+            case_id (int): The case to edit
             note (str): The case's note
         """
-        if case_name:
-            case = self.session.query(Case).filter(Case.name == case_name).first()
+        if case_id:
+            case = self.session.query(Case).filter(Case.id == case_id).first()
             if case:
                 case.note = note
                 self.session.commit()
@@ -232,8 +232,7 @@ class CaseDatabase(object):
         Returns:
             The JSON representation of all Case objects without their events.
         """
-        return {'cases': [case.as_json(with_events=False)
-                          for case in self.session.query(Case).all()]}
+        return [case.as_json(with_events=False) for case in self.session.query(Case).all()]
 
     def event_as_json(self, event_id):
         """Gets the JSON representation of an event in the case database.
