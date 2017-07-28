@@ -189,12 +189,6 @@ Argument:
     value:
       type: string
       example: WALK(.*)
-    format:
-      type: string
-      description: Note -- Ignored completely with new version.
-      default: str
-      example: string
-      enum: [str, string, unicode, int]
 
 WorkflowFromCytoscape:
   type: object
