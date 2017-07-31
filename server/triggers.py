@@ -18,7 +18,7 @@ class Triggers(Base):
     condition = db.Column(db.String(255, convert_unicode=False), nullable=False)
     tag = db.Column(db.String(255), nullable=False)
 
-    def __init__(self, name, playbook, workflow, condition, tag=''):
+    def __init__(self, name, playbook, workflow, conditions, tag=''):
         """
         Constructs a Trigger object
         
@@ -26,45 +26,38 @@ class Triggers(Base):
             name (str): Name of the trigger object
             playbook (str): Playbook of the workflow to be connected to the trigger
             workflow (str): The workflow to be connected to the trigger
-            condition (str): String of the JSON representation of the conditional to be checked by the trigger
+            conditions (str): String of the JSON representation of the conditional to be checked by the trigger
             tag (str): An optional tag (grouping parameter) for the trigger
         """
         self.name = name
         self.playbook = playbook
         self.workflow = workflow
-        self.condition = condition
+        self.condition = json.dumps(conditions)
         self.tag = tag
 
-    def edit_trigger(self, form=None):
+    def edit_trigger(self, data):
         """Edits a trigger
         
         Args:
-            form (form, optional): Wtf-form containing the edited information
+            data (dict): JSON containing the edited information
             
         Returns:
             True on successful edit, False otherwise.
         """
-        if form:
-            if form.name.data:
-                self.name = form.name.data
+        if 'name' in data:
+            self.name = data['name']
 
-            if form.playbook.data:
-                self.playbook = form.playbook.data
+        if 'playbook':
+            self.playbook = data['playbook']
 
-            if form.playbook.data:
-                self.workflow = form.workflow.data
+        if 'workflow':
+            self.workflow = data['workflow']
 
-            if form.conditional.data:
-                try:
-                    json.loads(form.conditional.data)
-                    self.condition = form.conditional.data
-                except ValueError:
-                    return False
+        if 'conditions' in data:
+            self.condition = json.dumps(data['conditions'])
 
-            if form.tag.data:
-                self.tag = form.tag.data
-
-        return True
+        if 'tag' in data:
+            self.tag = data['tag']
 
     @staticmethod
     def update_playbook(old_playbook, new_playbook):
@@ -158,7 +151,7 @@ class Triggers(Base):
         filters = [Filter(action=filter_element['action'],
                           args=Triggers.__to_new_input_format(filter_element['args']))
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['flag'],
+        return Flag(action=conditional['action'],
                     args=Triggers.__to_new_input_format(conditional['args']),
                     filters=filters)(data_in, {})
 

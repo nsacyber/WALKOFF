@@ -77,23 +77,6 @@ class LoginForm(Form):
     password = PasswordField('password')
 
 
-class AddNewTriggerForm(Form):
-    name = StringField('Name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = TextAreaField('Conditionals', [validators.data_required()])
-
-    playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.data_required()])
-    workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.data_required()])
-    tag = StringField('Tag', [validators.Length(min=1, max=255), validators.Optional()])
-
-
-class EditTriggerForm(Form):
-    name = StringField('New Name', [validators.Length(min=1, max=25), validators.Optional()])
-    conditional = TextAreaField('Conditionals', [validators.Optional()])
-    playbook = StringField('Playbook', [validators.Length(min=1, max=255), validators.required()])
-    workflow = StringField('Workflow', [validators.Length(min=1, max=255), validators.required()])
-    tag = StringField('Tag', [validators.Length(min=1, max=255), validators.Optional()])
-
-
 class ConditionalArgsField(Form):
     key = StringField('key', [validators.Length(min=1, max=25), validators.Optional()])
     value = StringField('value', [validators.Length(min=1, max=25), validators.Optional()])

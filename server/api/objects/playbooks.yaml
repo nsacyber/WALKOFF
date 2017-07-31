@@ -180,10 +180,10 @@ Filter:
 
 Argument:
   type: object
-  required: [key, value]
+  required: [name, value]
   description: Object used for passing an argument into various actions
   properties:
-    key:
+    name:
       type: string
       example: regex
     value:
