@@ -43,15 +43,13 @@ class TestWorkflowServer(ServerTestCase):
                                                               'flags': [
                                                                   {
                                                                       'action': 'regMatch',
-                                                                      'args': {
-                                                                          'regex': {
+                                                                      'args': [{
                                                                               'value': '(.*)',
-                                                                              'key': 'regex',
-                                                                              'format': 'string'}},
+                                                                              'name': 'regex'}],
                                                                       'filters': [
                                                                           {
                                                                               'action': 'length',
-                                                                              'args': {}}]}],
+                                                                              'args': []}]}],
                                                               'name': '1'}],
                                                           'device': 'hwTest',
                                                           'action': 'repeatBackToMe',

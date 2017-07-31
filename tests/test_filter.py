@@ -63,17 +63,17 @@ class TestFilter(unittest.TestCase):
 
     def test_as_json_no_args(self):
         filter_elem = Filter(action='Top Filter')
-        expected = {'action': 'Top Filter', 'args': {}}
+        expected = {'action': 'Top Filter', 'args': []}
         self.assertDictEqual(filter_elem.as_json(), expected)
 
     def test_as_json_with_args(self):
         filter_elem = Filter(action='mod1_filter2', args={'arg1': '-5.4'})
-        expected = {'action': 'mod1_filter2', 'args':  {'arg1': {'format': 'number', 'key': 'arg1', 'value': -5.4}}}
+        expected = {'action': 'mod1_filter2', 'args':  [{'name': 'arg1', 'value': -5.4}]}
         self.assertDictEqual(filter_elem.as_json(), expected)
 
     def test_as_json_with_args_with_routing(self):
         filter_elem = Filter(action='mod1_filter2', args={'arg1': '@step1'})
-        expected = {'action': 'mod1_filter2', 'args': {'arg1': {'format': 'number', 'key': 'arg1', 'value': '@step1'}}}
+        expected = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': '@step1'}]}
         self.assertDictEqual(filter_elem.as_json(), expected)
 
     def test_to_xml_no_args(self):
@@ -123,32 +123,32 @@ class TestFilter(unittest.TestCase):
         self.__assert_xml_is_convertible(original_filter)
 
     def test_from_json_no_args_default_parent_and_ancestry(self):
-        json_in = {'action': 'Top Filter', 'args': {}}
+        json_in = {'action': 'Top Filter', 'args': []}
         filter_elem = Filter.from_json(json_in)
         self.__compare_init(filter_elem, 'Top Filter', '', ['', 'Top Filter'])
 
     def test_from_json_no_args_default_parent_with_ancestry(self):
-        json_in = {'action': 'mod1_filter1', 'args': {}}
+        json_in = {'action': 'mod1_filter1', 'args': []}
         filter_elem = Filter.from_json(json_in, ancestry=['a', 'b'])
         self.__compare_init(filter_elem, 'mod1_filter1', '', ['a', 'b', 'mod1_filter1'])
 
     def test_from_json_no_args_with_parent_no_ancestry(self):
-        json_in = {'action': 'mod1_filter1', 'args': {}}
+        json_in = {'action': 'mod1_filter1', 'args': []}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent')
         self.__compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['test_parent', 'mod1_filter1'])
 
     def test_from_json_no_args_with_parent_and_ancestry(self):
-        json_in = {'action': 'mod1_filter1', 'args': {}}
+        json_in = {'action': 'mod1_filter1', 'args': []}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
         self.__compare_init(filter_elem, 'mod1_filter1', 'test_parent', ['a', 'b', 'mod1_filter1'])
 
     def test_from_json_with_args(self):
-        json_in = {'action': 'mod1_filter2', 'args': {'arg1': {'format': 'number', 'key': 'arg1', 'value': 5.4}}}
+        json_in = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': 5.4}]}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
         self.__compare_init(filter_elem, 'mod1_filter2', 'test_parent', ['a', 'b', 'mod1_filter2'], args={'arg1': 5.4})
 
     def test_from_json_with_args_with_routing(self):
-        json_in = {'action': 'mod1_filter2', 'args': {'arg1': {'format': 'number', 'key': 'arg1', 'value': '@step1'}}}
+        json_in = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': '@step1'}]}
         filter_elem = Filter.from_json(json_in, parent_name='test_parent', ancestry=['a', 'b'])
         self.__compare_init(filter_elem, 'mod1_filter2', 'test_parent', ['a', 'b', 'mod1_filter2'],
                             args={'arg1': '@step1'})

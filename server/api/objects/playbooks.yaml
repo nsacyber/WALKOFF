@@ -180,21 +180,15 @@ Filter:
 
 Argument:
   type: object
-  required: [key, value]
+  required: [name, value]
   description: Object used for passing an argument into various actions
   properties:
-    key:
+    name:
       type: string
       example: regex
     value:
       type: string
       example: WALK(.*)
-    format:
-      type: string
-      description: Note -- Ignored completely with new version.
-      default: str
-      example: string
-      enum: [str, string, unicode, int]
 
 WorkflowFromCytoscape:
   type: object

@@ -17,7 +17,7 @@
             triggers:
               type: array
               items:
-                $ref: '#/definitions/DisplayTrigger'
+                $ref: '#/definitions/Trigger'
 /execution/listener/execute:
   post:
     tags:
@@ -26,9 +26,16 @@
     description: ''
     operationId: server.endpoints.triggers.listener
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Fields to execute the trigger
+        required: true
+        schema:
+          $ref: '#/definitions/TriggerExecutionParameters'
     responses:
       202:
         description: Success asynchronous.
@@ -49,34 +56,21 @@
     description: ''
     operationId: server.endpoints.triggers.create_trigger
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
     parameters:
-      - in: formData
-        name: conditional
-        description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
-        type: string
+      - in: body
+        name: body
+        description: Fields for the trigger object
         required: true
-      - in: formData
-        name: playbook
-        description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
-        type: string
-        required: true
-      - in: formData
-        name: workflow
-        description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
-        type: string
-        required: true
+        schema:
+          $ref: '#/definitions/Trigger'
     responses:
       201:
         description: Trigger created.
       462:
         description: Trigger already exists.
-        schema:
-          $ref: '#/definitions/Error'
-      463:
-        description: Invalid JSON in conditional field.
         schema:
           $ref: '#/definitions/Error'
   get:
@@ -91,11 +85,7 @@
       200:
         description: Success
         schema:
-          description: The trigger object
-          type: object
-          properties:
-            trigger:
-              $ref: '#/definitions/DisplayTrigger'
+          $ref: '#/definitions/Trigger'
       461:
         description: Trigger does not exist.
         schema:
@@ -107,25 +97,16 @@
     description: ''
     operationId: server.endpoints.triggers.update_trigger
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
     parameters:
-      - in: formData
-        name: conditional
-        description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
-        type: string
+      - in: body
+        name: body
+        description: Fields for the trigger object
         required: true
-      - in: formData
-        name: playbook
-        description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
-        type: string
-        required: true
-      - in: formData
-        name: workflow
-        description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
-        type: string
-        required: true
+        schema:
+          $ref: '#/definitions/Trigger'
     responses:
       200:
         description: Success
@@ -135,10 +116,6 @@
           $ref: '#/definitions/Error'
       462:
         description: Trigger already exists.
-        schema:
-          $ref: '#/definitions/Error'
-      463:
-        description: Invalid JSON in conditional field.
         schema:
           $ref: '#/definitions/Error'
   delete:

@@ -69,28 +69,13 @@ class Filter(ExecutionElement):
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 
-    def __get_arg_type(self, arg_name):
-        for arg_api in self.args_api:
-            if arg_api['name'] == arg_name:
-                if 'type' in arg_api:
-                    return arg_api['type']
-                elif 'schema' in arg_api:
-                    return arg_api['schema']['type']
-                else:
-                    logger.error('Invalid api schema. This should never happen! Returning string type')
-                    return 'string'
-        else:
-            logger.error('Invalid api schema. This should never happen! Returning string type')
-            return 'string'
-
     def as_json(self):
         """Gets the JSON representation of a Filter object.
         
         Returns:
             The JSON representation of a Filter object.
         """
-        args = {arg_name: {'key': arg_name, 'value': arg_value, 'format': self.__get_arg_type(arg_name)}
-                for arg_name, arg_value in self.args.items()}
+        args = [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.args.items()]
         return {"action": self.action,
                 "args": args}
 
@@ -107,7 +92,7 @@ class Filter(ExecutionElement):
             The Filter object parsed from the JSON object.
         """
         out_filter = Filter(action=json['action'],
-                            args={arg_name: arg_value['value'] for arg_name, arg_value in json['args'].items()},
+                            args={arg['name']: arg['value'] for arg in json['args']},
                             parent_name=parent_name,
                             ancestry=ancestry)
         return out_filter
