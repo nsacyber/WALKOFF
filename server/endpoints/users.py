@@ -80,7 +80,7 @@ def update_user():
                 if verify_password(data['old_password'], user.password):
                     user.password = encrypt_password(data['password'])
                 else:
-                    return {"error": "Could not reset password"}, 400
+                    return {"error": "User's current password was entered incorrectly."}, 400
 
             if 'active' in data:
                 user.active = data['active']

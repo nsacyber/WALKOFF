@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { ToastyModule } from 'ng2-toasty';
+import { Select2Module } from 'ng2-select2';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -29,6 +30,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		NgbModule.forRoot(),
 		NgxDatatableModule,
 		ToastyModule.forRoot(),
+		Select2Module,
 	],
 	declarations: [
 		//Main component

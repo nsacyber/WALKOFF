@@ -3,6 +3,7 @@ import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { Select2OptionData } from 'ng2-select2';
 
 import { DevicesModalComponent } from './devices.modal.component';
 
@@ -24,11 +25,21 @@ export class DevicesComponent {
 	devices: Device[] = [];
 	displayDevices: Device[] = [];
 	appNames: string[] = [];
+	availableApps: Select2OptionData[] = [];
+	appSelectConfig: Select2Options;
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
 
 	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
+
+		this.appSelectConfig = {
+			width: '100%',
+			multiple: true,
+			allowClear: true,
+			placeholder: 'Filter by app(s)...',
+			closeOnSelect: false,
+		};
 
 		this.getDevices();
 		this.getApps();
@@ -39,8 +50,13 @@ export class DevicesComponent {
 			.subscribe(event => this.filterDevices());
 	}
 
+	appSelectChange($event: any): void {
+		this.selectedApps = $event.value;
+		this.filterDevices();
+	}
+
 	filterDevices(): void {
-		let searchFilter = this.filterQuery.value.toLocaleLowerCase();
+		let searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayDevices = this.devices.filter((device) => {
 			return (device.name.toLocaleLowerCase().includes(searchFilter) ||
@@ -117,7 +133,11 @@ export class DevicesComponent {
 	getApps(): void {
 		this.devicesService
 			.getApps()
-			.then(appNames => this.appNames = appNames)
+			.then((appNames) => {
+				appNames.sort();
+				this.appNames = appNames;
+				this.availableApps = appNames.map((appName) => { return { id: appName, text: appName } });
+			})
 			.catch(e => this.toastyService.error(`Error retrieving apps: ${e.message}`))
 	}
 }
