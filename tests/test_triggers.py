@@ -128,7 +128,7 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
                                    headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
 
-        response = self.post_with_status_check('/execution/listener/execute',
+        response = self.post_with_status_check('/api/triggers/execute',
                                                headers=self.headers,
                                                data=json.dumps({"data": "hellohellohello"}),
                                                status_code=SUCCESS_ASYNC, content_type='application/json')
@@ -138,234 +138,235 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response['executed'][0]['name'], 'testTrigger')
         self.assertListEqual(response['errors'], [])
 
-    # def test_trigger_execute_invalid_name(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": "invalid_workflow_name",
-    #             "conditions": [condition]}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     response = self.app.post('/execution/listener/execute', headers=self.headers, data={"data": "hellohellohello"})
-    #     error = {self.test_trigger_name: "Workflow could not be found."}
-    #     self.assertEqual(INVALID_INPUT_ERROR, response._status_code)
-    #     response = json.loads(response.get_data(as_text=True))
-    #     self.assertIn("errors", response)
-    #     self.assertIn(error, response["errors"])
+    def test_trigger_execute_invalid_name(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": "invalid_workflow_name",
+                "conditions": [condition]}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
 
-    # def test_trigger_execute_no_matching_trigger(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': 'aaaa'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition]}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     self.post_with_status_check('/execution/listener/execute',
-    #                                 headers=self.headers, data={"data": "bbb"}, status_code=SUCCESS_WITH_WARNING, content_type='application/json')
-    #
-    # def test_trigger_execute_change_input(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition]}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     result = {'value': None}
-    #
-    #     def step_finished_listener(sender, **kwargs):
-    #         result['value'] = kwargs['data']
-    #
-    #     FunctionExecutionSuccess.connect(step_finished_listener)
-    #
-    #     data = {"data": "hellohellohello",
-    #             "input": {"call": "CHANGE INPUT"}}
-    #
-    #     response = self.post_with_status_check('/execution/listener/execute',
-    #                                            headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-    #     self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
-    #     self.assertEqual(len(response['executed']), 1)
-    #     self.assertIn('id', response['executed'][0])
-    #     self.assertEqual(response['executed'][0]['name'], 'testTrigger')
-    #     self.assertListEqual(response['errors'], [])
-    #     self.assertDictEqual(json.loads(result['value']),
-    #                          {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
-    #
-    # def test_trigger_with_change_input_invalid_input(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition]}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED)
-    #
-    #     data = {"data": "hellohellohello",
-    #             "input": json.dumps({"invalid": "CHANGE INPUT"})}
-    #
-    #     response = self.post_with_status_check('/execution/listener/execute',
-    #                                            headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-    #
-    #     with server.running_context.flask_app.app_context():
-    #         server.running_context.shutdown_threads()
-    #
-    #     self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
-    #     self.assertEqual(len(response['executed']), 1)
-    #     self.assertEqual(response['executed'][0]['name'], 'testTrigger')
-    #     self.assertListEqual(response['errors'], [])
-    #
-    # def test_trigger_execute_one(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition]}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_me"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     result = {'value': 0}
-    #
-    #     def step_finished_listener(sender, **kwargs):
-    #         result['value'] += 1
-    #
-    #     FunctionExecutionSuccess.connect(step_finished_listener)
-    #
-    #     data = {"data": "hellohellohello"}
-    #
-    #     response = self.post_with_status_check('/execution/listener/execute?name=execute_me',
-    #                                            headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-    #     with server.running_context.flask_app.app_context():
-    #         server.running_context.shutdown_threads()
-    #
-    #     self.assertEqual(1, result['value'])
-    #     self.assertEqual(len(response['executed']), 1)
-    #     self.assertIn('id', response['executed'][0])
-    #     self.assertEqual(response['executed'][0]['name'], 'execute_me')
-    #     self.assertEqual(0, len(response["errors"]))
-    #
-    # def test_trigger_execute_one_invalid_name(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition]}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     response = self.post_with_status_check('/execution/listener/execute?name=badname',
-    #                                            headers=self.headers, data={"data": "hellohellohello"},
-    #                                            status_code=SUCCESS_WITH_WARNING, content_type='application/json')
-    #     self.assertEqual(0, len(response["executed"]))
-    #     self.assertEqual(0, len(response["errors"]))
-    #
-    # def test_trigger_execute_tag(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition],
-    #             "tag": "wrong_tag"}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     data["tag"] = "execute_tag"
-    #
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     result = {'value': 0}
-    #
-    #     def step_finished_listener(sender, **kwargs):
-    #         result['value'] += 1
-    #
-    #     FunctionExecutionSuccess.connect(step_finished_listener)
-    #
-    #     data = {"data": "hellohellohello"}
-    #
-    #     response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag',
-    #                                            headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-    #     with server.running_context.flask_app.app_context():
-    #         server.running_context.shutdown_threads()
-    #
-    #     self.assertEqual(2, result['value'])
-    #     self.assertEqual(len(response['executed']), 2)
-    #     executed_names = {executed['name'] for executed in response['executed']}
-    #     self.assertSetEqual(executed_names, {'execute_one', 'execute_two'})
-    #     self.assertEqual(0, len(response["errors"]))
-    #
-    # def test_trigger_execute_multiple_tags(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition],
-    #             "tag": "wrong_tag"}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     data["tag"] = "execute_tag"
-    #
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     data["tag"] = "execute_tag_two"
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     result = {'value': 0}
-    #
-    #     def step_finished_listener(sender, **kwargs):
-    #         result['value'] += 1
-    #
-    #     FunctionExecutionSuccess.connect(step_finished_listener)
-    #
-    #     data = {"data": "hellohellohello"}
-    #
-    #     response = self.post_with_status_check('/execution/listener/execute?tags=execute_tag&tags=execute_tag_two',
-    #                                            headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-    #
-    #     with server.running_context.flask_app.app_context():
-    #         server.running_context.shutdown_threads()
-    #
-    #     self.assertEqual(2, result['value'])
-    #     executed_names = {executed['name'] for executed in response['executed']}
-    #     self.assertSetEqual(executed_names, {'execute_one', 'execute_two'})
-    #     self.assertEqual(2, len(response["executed"]))
-    #     self.assertEqual(0, len(response["errors"]))
-    #
-    # def test_trigger_execute_multiple_tags_with_name(self):
-    #     condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
-    #     data = {"playbook": "test",
-    #             "workflow": self.test_trigger_workflow,
-    #             "conditions": [condition],
-    #             "tag": "wrong_tag"}
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     data["tag"] = "execute_tag"
-    #
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     data["tag"] = "execute_tag_two"
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_three"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #     self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_four"),
-    #                                headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
-    #
-    #     data = {"data": "hellohellohello"}
-    #
-    #     response = self.post_with_status_check(
-    #         '/execution/listener/execute?tags=execute_tag&tags=execute_tag_two&name=testTrigger',
-    #         headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-    #     executed_names = {executed['name'] for executed in response['executed']}
-    #     self.assertSetEqual(executed_names, {'execute_one', 'execute_two', 'execute_three', 'execute_four', 'testTrigger'})
-    #     self.assertEqual(5, len(response["executed"]))
-    #     self.assertEqual(0, len(response["errors"]))
-    #
+        response = self.app.post('/api/triggers/execute', headers=self.headers, data=json.dumps({"data": "hellohellohello"}), content_type='application/json')
+        error = {self.test_trigger_name: "Workflow could not be found."}
+        self.assertEqual(INVALID_INPUT_ERROR, response._status_code)
+        response = json.loads(response.get_data(as_text=True))
+        self.assertIn("errors", response)
+        self.assertIn(error, response["errors"])
+
+    def test_trigger_execute_no_matching_trigger(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': 'aaaa'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition]}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        self.post_with_status_check('/api/triggers/execute',
+                                    headers=self.headers, data=json.dumps({"data": "bbb"}), status_code=SUCCESS_WITH_WARNING, content_type='application/json')
+
+    def test_trigger_execute_change_input(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition]}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        result = {'value': None}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] = kwargs['data']
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data": "hellohellohello",
+                "inputs": {"call": "CHANGE INPUT"}}
+
+        response = self.post_with_status_check('/api/triggers/execute',
+                                               headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+        self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
+        self.assertEqual(len(response['executed']), 1)
+        self.assertIn('id', response['executed'][0])
+        self.assertEqual(response['executed'][0]['name'], 'testTrigger')
+        self.assertListEqual(response['errors'], [])
+        self.assertDictEqual(json.loads(result['value']),
+                             {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
+
+    def test_trigger_with_change_input_invalid_input(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition]}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data = {"data": "hellohellohello",
+                "inputs": {"invalid": "CHANGE INPUT"}}
+
+        response = self.post_with_status_check('/api/triggers/execute',
+                                               headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
+        self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
+        self.assertEqual(len(response['executed']), 1)
+        self.assertEqual(response['executed'][0]['name'], 'testTrigger')
+        self.assertListEqual(response['errors'], [])
+
+    def test_trigger_execute_one(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition]}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_me"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        result = {'value': 0}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] += 1
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data": "hellohellohello",
+                "triggers": ['execute_me']}
+
+        response = self.post_with_status_check('/api/triggers/execute?name=execute_me',
+                                               headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
+        self.assertEqual(1, result['value'])
+        self.assertEqual(len(response['executed']), 1)
+        self.assertIn('id', response['executed'][0])
+        self.assertEqual(response['executed'][0]['name'], 'execute_me')
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_one_invalid_name(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition]}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        response = self.post_with_status_check('/api/triggers/execute',
+                                               headers=self.headers, data=json.dumps({"data": "hellohellohello", "triggers": ['badname']}),
+                                               status_code=SUCCESS_WITH_WARNING, content_type='application/json')
+        self.assertEqual(0, len(response["executed"]))
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_tag(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition],
+                "tag": "wrong_tag"}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data["tag"] = "execute_tag"
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        result = {'value': 0}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] += 1
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data": "hellohellohello", "tags": ['execute_tag']}
+
+        response = self.post_with_status_check('/api/triggers/execute',
+                                               headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
+        self.assertEqual(2, result['value'])
+        self.assertEqual(len(response['executed']), 2)
+        executed_names = {executed['name'] for executed in response['executed']}
+        self.assertSetEqual(executed_names, {'execute_one', 'execute_two'})
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_multiple_tags(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition],
+                "tag": "wrong_tag"}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data["tag"] = "execute_tag"
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data["tag"] = "execute_tag_two"
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        result = {'value': 0}
+
+        def step_finished_listener(sender, **kwargs):
+            result['value'] += 1
+
+        FunctionExecutionSuccess.connect(step_finished_listener)
+
+        data = {"data": "hellohellohello", "tags": ['execute_tag', 'execute_tag_two']}
+
+        response = self.post_with_status_check('/api/triggers/execute',
+                                               headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+
+        with server.running_context.flask_app.app_context():
+            server.running_context.shutdown_threads()
+
+        self.assertEqual(2, result['value'])
+        executed_names = {executed['name'] for executed in response['executed']}
+        self.assertSetEqual(executed_names, {'execute_one', 'execute_two'})
+        self.assertEqual(2, len(response["executed"]))
+        self.assertEqual(0, len(response["errors"]))
+
+    def test_trigger_execute_multiple_tags_with_name(self):
+        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
+        data = {"playbook": "test",
+                "workflow": self.test_trigger_workflow,
+                "conditions": [condition],
+                "tag": "wrong_tag"}
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format(self.test_trigger_name),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data["tag"] = "execute_tag"
+
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_one"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_two"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data["tag"] = "execute_tag_two"
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_three"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+        self.put_with_status_check('/execution/listener/triggers/{0}'.format("execute_four"),
+                                   headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
+
+        data = {"data": "hellohellohello", "tags": ['execute_tag', 'execute_tag_two'], 'triggers': ['testTrigger']}
+
+        response = self.post_with_status_check(
+            '/api/triggers/execute',
+            headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+        executed_names = {executed['name'] for executed in response['executed']}
+        self.assertSetEqual(executed_names, {'execute_one', 'execute_two', 'execute_three', 'execute_four', 'testTrigger'})
+        self.assertEqual(5, len(response["executed"]))
+        self.assertEqual(0, len(response["errors"]))
+
     def test_triggers_change_playbook_name(self):
         self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
                                    status_code=OBJECT_CREATED)
