@@ -14,6 +14,7 @@ import { MainComponent } from './main/main.component';
 import { ControllerComponent } from './controller/controller.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
+import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 
@@ -39,6 +40,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		ControllerComponent,
 		PlaybookComponent,
 		DevicesComponent,
+		TriggersComponent,
 		CasesComponent,
 		SettingsComponent,
 		//Modals
