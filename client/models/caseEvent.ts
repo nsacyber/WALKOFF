@@ -1,9 +1,9 @@
 import { Case } from './case'
 
-export class Event {
-	id: number;
+export class CaseEvent {
+  id: number;
   timestamp: Date;
-  event_type: string;
+  type: string;
   ancestry: string[];
   message: string;
   note: string;

@@ -1,4 +1,4 @@
-import { Event } from './event'
+import { CaseEvent } from './caseEvent'
 
 export class Case {
 	id: number;

@@ -19,6 +19,7 @@
 		'@swimlane/ngx-datatable': 'client/node_modules/@swimlane/ngx-datatable/release/index.js',
 		'ng2-toasty': 'client/node_modules/ng2-toasty/bundles/index.umd.js',
 		'ng2-select2': 'client/node_modules/ng2-select2/ng2-select2.bundle.js',
+		'ngx-contextmenu': 'client/node_modules/ngx-contextmenu/lib/ngx-contextmenu.js',
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension

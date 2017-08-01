@@ -1,38 +1,46 @@
-import { Injectable } 			from '@angular/core';
-import { Http, Headers, Response } 		from '@angular/http';
+import { Injectable } from '@angular/core';
+import { Http, Response, Headers, RequestOptions } from '@angular/http';
 
-import { Observable }     from 'rxjs/Observable';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 import { Case } from '../models/case';
+import { CaseEvent } from '../models/caseEvent';
 
 @Injectable()
 export class CasesService {
-	headers: Headers;
-	authKey: string;
+	requestOptions: RequestOptions;
 
 	constructor (private http: Http) {
+		let authKey = localStorage.getItem('authKey');
+		let headers = new Headers({ 'Accept': 'application/json' });
+		headers.append('Authentication-Token', authKey);
+
+		this.requestOptions = new RequestOptions({ headers: headers });
 	}
 
 	getCases() : Promise<Case[]> {
-		return this.http.get('/cases')
+		return this.http.get('/api/cases', this.requestOptions)
 			.toPromise()
-			.then(res => res.json().data as Case[])
+			.then(this.extractData)
+			.then(data => data as Case[])
 			.catch(this.handleError);
 	}
 
 	getCaseSubscriptions() : Promise<Case[]> {
-		return this.http.get('/cases/subscriptions')
+		return this.http.get('/api/cases/subscriptions', this.requestOptions)
 			.toPromise()
-			.then(res => res.json().data as Case[])
+			.then(this.extractData)
+			.then(data => data as Case[])
 			.catch(this.handleError);
 	}
 
-	getEventsForCase(name: string) : Promise<Event[]> {
-		return this.http.get('/cases/' + name + '/events')
+	getEventsForCase(name: string) : Promise<CaseEvent[]> {
+		return this.http.get(`/cases/${name}/events`, this.requestOptions)
 			.toPromise()
-			.then(res => res.json().data as Event[])
+			.then(this.extractData)
+			.then(data => data as CaseEvent[])
 			.catch(this.handleError);
 	}
 
@@ -43,13 +51,15 @@ export class CasesService {
 
 	private handleError (error: Response | any) {
 		let errMsg: string;
+		let err: string;
 		if (error instanceof Response) {
 			const body = error.json() || '';
-			const err = body.error || JSON.stringify(body);
+			err = body.error || body.detail || JSON.stringify(body);
 			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
 		} else {
-			errMsg = error.message ? error.message : error.toString();
+			err = errMsg = error.message ? error.message : error.toString();
 		}
 		console.error(errMsg);
+		throw new Error(err);
 	}
 }

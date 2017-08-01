@@ -8,11 +8,7 @@ import 'rxjs/add/operator/toPromise';
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Case } from '../models/case';
 
-interface IStringKeyObject {
-	[key: string]: string;
-};
-
-const schedulerStatusNumberMapping: IStringKeyObject = {
+const schedulerStatusNumberMapping: any = {
 	"0": "stopped",
 	"1": "running",
 	"2": "paused"
@@ -67,14 +63,14 @@ export class ControllerService {
 
 	//TODO: route should most likely be GET
 	executeWorkflow(playbook: string, workflow: string) : Promise<void> {
-		return this.http.post('/playbooks/' + playbook + '/workflows/' + workflow + '/execute', {}, this.requestOptions)
+		return this.http.post(`/playbooks/${playbook}/workflows/${workflow}/execute`, {}, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
 	getSchedulerStatus() : Promise<string> {
-		return this.http.get('/execution/scheduler', this.requestOptions)
+		return this.http.get('/api/scheduler', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
@@ -83,7 +79,7 @@ export class ControllerService {
 
 	//TODO: route should most likely be GET
 	changeSchedulerStatus(status: string) : Promise<string> {
-		return this.http.post('/execution/scheduler/' + status, {}, this.requestOptions)
+		return this.http.post(`/api/scheduler/${status}`, {}, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
@@ -97,13 +93,15 @@ export class ControllerService {
 
 	private handleError (error: Response | any) {
 		let errMsg: string;
+		let err: string;
 		if (error instanceof Response) {
 			const body = error.json() || '';
-			const err = body.error || JSON.stringify(body);
+			err = body.error || body.detail || JSON.stringify(body);
 			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
 		} else {
-			errMsg = error.message ? error.message : error.toString();
+			err = errMsg = error.message ? error.message : error.toString();
 		}
 		console.error(errMsg);
+		throw new Error(err);
 	}
 }
