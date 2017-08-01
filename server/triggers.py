@@ -88,48 +88,49 @@ class Triggers(Base):
                 'tag': self.tag}
 
     @staticmethod
-    def execute(data_in, input_in, trigger_name=None, tags=None):
+    def execute(data, inputs, triggers=None, tags=None):
         """Tries to match the data_in against the conditionals of all the triggers registered in the database.
         
         Args:
-            data_in (str): Data to be used to match against the conditionals
-            input_in (list): The input to the first step of the workflow
-            trigger_name (str): The name of the specific trigger to execute
+            data (str): Data to be used to match against the conditionals
+            inputs (list): The input to the first step of the workflow
+            triggers (list): List of names of the specific trigger to execute
             tags (list): A list of tags to find the specific triggers to execute
             
         Returns:
             Dictionary of {"status": <status string>}
         """
-        triggers = set()
-        if trigger_name:
-            t = Triggers.query.filter_by(name=trigger_name).first()
-            if t:
-                triggers.add(t)
-        if tags:
+        from server.flaskserver import running_context
+        triggers_to_execute = set()
+        if triggers is not None:
+            for trigger in triggers:
+                t = Triggers.query.filter_by(name=trigger).first()
+                if t:
+                    triggers_to_execute.add(t)
+        if tags is not None:
             for tag in tags:
                 if len(Triggers.query.filter_by(tag=tag).all()) > 1:
                     for t in Triggers.query.filter_by(tag=tag):
-                        triggers.add(t)
+                        triggers_to_execute.add(t)
                 elif len(Triggers.query.filter_by(tag=tag).all()) == 1:
-                    triggers.add(Triggers.query.filter_by(tag=tag).first())
-        if not (trigger_name or tags):
-            triggers = Triggers.query.all()
+                    triggers_to_execute.add(Triggers.query.filter_by(tag=tag).first())
+        if not (triggers or tags):
+            triggers_to_execute = Triggers.query.all()
         returned_json = {'executed': [], 'errors': []}
-        from server.flaskserver import running_context
-        for trigger in triggers:
+        for trigger in triggers_to_execute:
             conditionals = json.loads(trigger.condition)
-            if all(Triggers.__execute_trigger(conditional, data_in) for conditional in conditionals):
+            if all(Triggers.__execute_trigger(conditional, data) for conditional in conditionals):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
-                    if input_in:
+                    if inputs:
                         logger.info(
-                            'Workflow {0} executing with input {1}'.format(workflow_to_be_executed.name, input_in))
+                            'Workflow {0} executing with input {1}'.format(workflow_to_be_executed.name, inputs))
                     else:
                         logger.info('Workflow {0} executing with no input'.format(workflow_to_be_executed.name))
                     try:
                         uid = running_context.controller.execute_workflow(playbook_name=trigger.playbook,
                                                                           workflow_name=trigger.workflow,
-                                                                          start_input=input_in)
+                                                                          start_input=inputs)
                         returned_json["executed"].append({'name': trigger.name, 'id': uid})
                     except Exception as e:
                         returned_json["errors"].append({trigger.name: "Error executing workflow: {0}".format(str(e))})

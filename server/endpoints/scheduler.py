@@ -2,6 +2,7 @@ from flask import current_app
 from flask_security import roles_accepted
 from server.return_codes import *
 
+
 def get_scheduler_status():
     from server.context import running_context
 
@@ -11,69 +12,44 @@ def get_scheduler_status():
     return __func()
 
 
-def start_scheduler():
+def update_scheduler_status(status):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
-        status = running_context.controller.start()
-        current_app.logger.info('Scheduler started. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
+        updated_status = running_context.controller.scheduler.state
+        if status == "start":
+            updated_status = running_context.controller.start()
+            current_app.logger.info('Scheduler started. Status {0}'.format(updated_status))
+        elif status == "stop":
+            updated_status = running_context.controller.stop()
+            current_app.logger.info('Scheduler stopped. Status {0}'.format(updated_status))
+        elif status == "pause":
+            updated_status = running_context.controller.pause()
+            current_app.logger.info('Scheduler paused. Status {0}'.format(updated_status))
+        elif status == "resume":
+            updated_status = running_context.controller.resume()
+            current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
+        return {"status": updated_status}, SUCCESS
+
     return __func()
 
 
-def stop_scheduler():
+def update_job_status(job_id, status):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
-        status = running_context.controller.stop()
-        current_app.logger.info('Scheduler stopped. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
-    return __func()
-
-
-def pause_scheduler():
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
-    def __func():
-        status = running_context.controller.pause()
-        current_app.logger.info('Scheduler paused. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
-    return __func()
-
-
-def resume_scheduler():
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
-    def __func():
-        status = running_context.controller.resume()
-        current_app.logger.info('Scheduler resumed. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
-    return __func()
-
-
-def pause_job(job_id):
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
-    def __func():
-        running_context.controller.pause_job(job_id)
-        current_app.logger.info('Scheduler paused job {0}'.format(job_id))
-        return {"status": "Job Paused"}, SUCCESS
-    return __func()
-
-
-def resume_job(job_id):
-    from server.context import running_context
-
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
-    def __func():
-        running_context.controller.resume_job(job_id)
-        current_app.logger.info('Scheduler resumed job {0}'.format(job_id))
-        return {"status": "Job Resumed"}, SUCCESS
+        updated_status = "No update"
+        if status == "pause":
+            running_context.controller.pause_job(job_id)
+            current_app.logger.info('Scheduler paused job {0}'.format(job_id))
+            updated_status = "Job Paused"
+        elif status == "resume":
+            running_context.controller.resume_job(job_id)
+            current_app.logger.info('Scheduler resumed job {0}'.format(job_id))
+            updated_status = "Job Resumed"
+        return {"status": updated_status}, SUCCESS
     return __func()
 
 

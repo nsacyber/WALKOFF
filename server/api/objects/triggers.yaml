@@ -24,12 +24,14 @@ Trigger:
 TriggerExecutionParameters:
   type: object
   properties:
-    data_in:
+    data:
       type: string
-    input_in:
+    inputs:
       type: object
-    trigger_name:
-      type: string
+    triggers:
+      type: array
+      items:
+        type: string
     tags:
       type: array
       items:

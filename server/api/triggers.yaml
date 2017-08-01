@@ -18,7 +18,7 @@
               type: array
               items:
                 $ref: '#/definitions/Trigger'
-/execution/listener/execute:
+/api/triggers/execute:
   post:
     tags:
       - Triggers

@@ -29,7 +29,7 @@ class TestServer(ServerTestCase):
         self.assertDictEqual(response, expected)
 
     def test_read_filters(self):
-        response = self.get_with_status_check('/filters', headers=self.headers)
+        response = self.get_with_status_check('/api/filters', headers=self.headers)
         expected = {'sub_top_filter': {'args': []},
                     'mod1_filter2': {'args': [{'required': True, 'type': 'number', 'name': 'arg1'}]},
                     'mod1_filter1': {'args': []},
@@ -51,7 +51,7 @@ class TestServer(ServerTestCase):
         self.assertDictEqual(response, {'filters': expected})
 
     def test_read_flags(self):
-        response = self.get_with_status_check('/flags', headers=self.headers)
+        response = self.get_with_status_check('/api/flags', headers=self.headers)
         expected = {
             'count':
                 {'description': 'Compares two numbers',

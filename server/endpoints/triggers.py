@@ -21,19 +21,17 @@ def listener():
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         trigger_args = request.get_json()
-        if 'input_in' not in trigger_args:
-            trigger_args['input_in'] = ''
-        print(trigger_args)
+        if 'inputs' not in trigger_args:
+            trigger_args['inputs'] = ''
         returned_json = running_context.Triggers.execute(**trigger_args)
-        print(returned_json)
         if not (returned_json["executed"] or returned_json["errors"]):
             return returned_json, SUCCESS_WITH_WARNING
         elif returned_json["errors"]:
             return returned_json, INVALID_INPUT_ERROR
         else:
             current_app.logger.info(
-                'Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
-                                                                                         trigger_args['data_in']))
+                'Executing triggers with conditional info {0} and input info {1}'.format(trigger_args['data'],
+                                                                                         trigger_args['inputs']))
             return returned_json, SUCCESS_ASYNC
 
     return __func()
