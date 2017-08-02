@@ -17,7 +17,7 @@ class TestCaseConfigDatabase(ServerTestCase):
     def __help_test_init(self, case, name, subscription):
         self.assertIsNotNone(case)
         self.assertEqual(case.name, name)
-        self.assertEqual(case.subscription, subscription)
+        self.assertEqual(case.subscriptions, subscription)
 
     def test_init(self):
         case = CaseSubscription('name')
@@ -33,19 +33,18 @@ class TestCaseConfigDatabase(ServerTestCase):
 
     def test_to_from_json(self):
         case = CaseSubscription('name')
-        expected_json = {'name': 'name', 'subscription': {}}
+        expected_json = {'id': None, 'name': 'name', 'note': '', 'subscriptions': {}}
         self.assertDictEqual(case.as_json(), expected_json)
         derived_json = CaseSubscription.from_json('name', {}).as_json()
         self.assertDictEqual(derived_json, expected_json)
 
-        case = CaseSubscription('name', '{{')
-        expected_json = {'name': 'name', 'subscription': {}}
+        case = CaseSubscription('name', '{}')
+        expected_json = {'id': None, 'name': 'name', 'note': '', 'subscriptions': {}}
         self.assertDictEqual(case.as_json(), expected_json)
 
-        test_json = {"a": {"b": {"c": []},
-                           "d": ["e", "f", "g"]}}
+        test_json = {'a': {'b': {'c': []}, 'd': ['e', 'f', 'g']}}
         case = CaseSubscription('name', json.dumps(test_json))
-        expected_json = {'name': 'name', 'subscription': test_json}
+        expected_json = {'name': 'name', 'subscriptions': test_json, "id": None, 'note': ''}
         self.assertDictEqual(case.as_json(), expected_json)
         derived_json = CaseSubscription.from_json('name', test_json).as_json()
         self.assertDictEqual(derived_json, expected_json)

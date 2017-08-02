@@ -75,32 +75,6 @@ class TestCaseDatabase(unittest.TestCase):
         self.assertSetEqual(set(expected_cases), set(cases_in_db))
         self.assertEqual(len(set(cases_in_db)), len(expected_cases))
 
-    def test_add_case_note(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.edit_case_note('case1', 'Note1')
-        case = case_database.case_db.session.query(case_database.Case).\
-                filter(case_database.Case.name == 'case1').first()
-        self.assertEqual(case.note, 'Note1')
-
-    def test_add_case_note_empty_case_name(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.edit_case_note('', 'Note1')
-        case = case_database.case_db.session.query(case_database.Case).\
-                filter(case_database.Case.name == 'case1').first()
-        self.assertIsNone(case.note)
-
-    def test_add_case_note_invalid_case(self):
-        TestCaseDatabase.__construct_basic_db()
-        original_cases_in_db = case_database.case_db.session.query(case_database.Case).all()
-        original_notes = [case.note for case in original_cases_in_db]
-        case_database.case_db.edit_case_note('case5', 'Note1')
-        result_cases_in_db = case_database.case_db.session.query(case_database.Case).all()
-        result_notes = [case.note for case in original_cases_in_db]
-        self.assertEqual(len(original_cases_in_db), len(result_cases_in_db))
-        self.assertSetEqual(set(original_cases_in_db), set(result_cases_in_db))
-        self.assertEqual(len(original_notes), len(result_notes))
-        self.assertSetEqual(set(original_notes), set(result_notes))
-
     def test_add_event(self):
         TestCaseDatabase.__construct_basic_db()
 
@@ -177,7 +151,7 @@ class TestCaseDatabase(unittest.TestCase):
         smallest_id = min([event.id for event in events])
         expected_json_list = [event.as_json() for event in events]
         for event in expected_json_list:
-            if event['id'] == str(smallest_id):
+            if event['id'] == smallest_id:
                 event['note'] = 'Note1'
 
         case_database.case_db.edit_event_note(smallest_id, 'Note1')

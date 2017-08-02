@@ -185,7 +185,7 @@ class CaseSubscriptions(object):
         """Gets the JSON representation of all the CaseSubscription object.
 
         Args:
-            names (booloptional): Should the names of the controller events be converted to names? Defaults to False
+            names (bool, optional): Should the names of the controller events be converted to names? Defaults to False
 
         Returns:
             The JSON representation of the CaseSubscription object.
@@ -231,6 +231,7 @@ def set_subscriptions(new_subscriptions):
     """
     global subscriptions
     subscriptions = new_subscriptions
+    database.case_db.add_cases(new_subscriptions.keys())
     database.case_db.add_cases(new_subscriptions.keys())
 
 

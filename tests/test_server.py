@@ -1,6 +1,4 @@
 import json
-import os
-from server import flaskserver as server
 from tests.util.assertwrappers import orderless_list_compare
 from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
@@ -19,7 +17,7 @@ class TestServer(ServerTestCase):
         response = self.app.get('/api/apps', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response['apps'], expected_apps)
+        orderless_list_compare(self, response, expected_apps)
 
     def test_list_widgets(self):
         expected = {'HelloWorld': ['testWidget', 'testWidget2'], 'DailyQuote': []}

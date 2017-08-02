@@ -4,7 +4,6 @@ from flask import request, current_app
 from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from server import forms
 from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
     rename_case
 import core.config.config
@@ -21,7 +20,7 @@ def read_all_cases():
     @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
-        return case_database.case_db.cases_as_json(), SUCCESS
+        return [case.as_json() for case in running_context.CaseSubscription.query.all()], SUCCESS
     return __func()
 
 
@@ -32,18 +31,18 @@ def create_case():
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         data = request.get_json()
-        case = data['case']
-
-        case_obj = CaseSubscriptions()
-        add_cases({"{0}".format(str(case)): case_obj})
-        case_obj = running_context.CaseSubscription.query.filter_by(name=case).first()
+        case_name = data['name']
+        case_obj = running_context.CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
-            running_context.db.session.add(running_context.CaseSubscription(name=case))
+
+            case = running_context.CaseSubscription(**data)
+            running_context.db.session.add(case)
             running_context.db.session.commit()
-            current_app.logger.debug('Case added: {0}'.format(case))
-            return case_subscription.subscriptions_as_json(), OBJECT_CREATED
+
+            current_app.logger.debug('Case added: {0}'.format(case_name))
+            return case.as_json(), OBJECT_CREATED
         else:
-            current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case))
+            current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
             return {"error": "Case already exists."}, OBJECT_EXISTS_ERROR
     return __func()
 
@@ -73,14 +72,19 @@ def update_case():
         data = request.get_json()
         case_obj = running_context.CaseSubscription.query.filter_by(id=data['id']).first()
         if case_obj:
+            original_name = case_obj.name
             if 'note' in data and data['note']:
-                case_database.case_db.edit_case_note(data['id'], data['note'])
+                case_obj.note = data['note']
             if 'name' in data and data['name']:
                 rename_case(case_obj.name, data['name'])
                 case_obj.name = data['name']
                 running_context.db.session.commit()
-                current_app.logger.debug('Case name changed to {0} for Case {1}'.format(data['name'], data['id']))
-            return case_database.case_db.cases_as_json(), SUCCESS
+                current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
+            if 'subscription' in data:
+                case_obj.subscriptions = json.dumps(data['subscriptions'])
+                # TODO: edit it in the actual subscriptions
+            running_context.db.session.commit()
+            return case_obj.as_json(), SUCCESS
         else:
             current_app.logger.error('Cannot update case {0}. Case does not exist.'.format(data['id']))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
@@ -95,12 +99,12 @@ def delete_case(case_id):
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         case_obj = running_context.CaseSubscription.query.filter_by(id=case_id).first()
-        delete_cases([case_obj.name])
         if case_obj:
+            delete_cases([case_obj.name])
             running_context.db.session.delete(case_obj)
             running_context.db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
-            return case_subscription.subscriptions_as_json(), SUCCESS
+            return {}, SUCCESS
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
@@ -114,7 +118,7 @@ def import_cases():
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         data = request.get_json()
-        filename = data['filename'] if 'filename' in data and data['filename'] else core.config.paths.default_case_export_path
+        filename = data['filename'] if (data is not None and 'filename' in data and data['filename']) else core.config.paths.default_case_export_path
         if os.path.isfile(filename):
             try:
                 with open(filename, 'r') as cases_file:
@@ -122,10 +126,10 @@ def import_cases():
                     cases_file = cases_file.replace('\n', '')
                     cases = json.loads(cases_file)
                 case_subscription.add_cases(cases)
-                for case in cases.keys():
+                for case in cases:
                     running_context.db.session.add(running_context.CaseSubscription(name=case))
                     running_context.CaseSubscription.update(case)
-                    running_context.db.session.commit()
+                running_context.db.session.commit()
                 return {"cases": case_subscription.subscriptions_as_json()}, SUCCESS
             except (OSError, IOError) as e:
                 current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, e))
@@ -146,7 +150,7 @@ def export_cases():
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         data = request.get_json()
-        filename = data['filename'] if 'filename' in data and data['filename'] else core.config.paths.default_case_export_path
+        filename = data['filename'] if (data is not None and 'filename' in data and data['filename']) else core.config.paths.default_case_export_path
         try:
             with open(filename, 'w') as cases_file:
                 cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))

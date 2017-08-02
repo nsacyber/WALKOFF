@@ -1,10 +1,28 @@
+AddCase:
+  type: object
+  required: [name]
+  additionalProperties: false
+  properties:
+    name:
+      description: Name of the case
+      type: string
+      example: case1
+    note:
+      description: A user-created note attached to the event
+      type: string
+      example: This case does some things I want it to do.
+    subscriptions:
+      description: The events this case is subscribed to
+      type: object
 Case:
   type: object
-  required: [name, note]
+  required: [id]
+  additionalProperties: false
   properties:
     id:
       description: Unique identifier for the case
       type: integer
+      readOnly: true
       example: 42
     name:
       description: Name of the case
@@ -14,11 +32,10 @@ Case:
       description: A user-created note attached to the event
       type: string
       example: This case does some things I want it to do.
-    events:
-      description: The events which are logged to this case
-      type: array
-      items:
-        $ref: '#/definitions/Event'
+    subscriptions:
+      description: The events this case is subscribed to
+      type: object
+
 Event:
   type: object
   required: [timestamp, event_type, ancestry, message, note, data]
@@ -26,25 +43,30 @@ Event:
     id:
       description: Unique identifier for the event
       type: integer
+      readOnly: true
       example: 42
     timestamp:
       description: String representation of the time at which the event happened
       type: string
+      readOnly: true
       example: '2017-05-12 15:54:18.121421'
     event_type:
       description: The type of event
       type: string
+      readOnly: true
       enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
       example: Step
     ancestry:
       description: An identifier of the event through its trace through the ancestry
       type: array
+      readOnly: true
       items:
         type: string
       example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
     message:
       description: The message attached to the event
       type: string
+      readOnly: true
       example: Next step not taken
     note:
       description: A user-created note attached to the event
@@ -53,10 +75,12 @@ Event:
     data:
       description: An object providing additional information about the event
       type: object
+      readOnly: true
       example: 'Output: This action output this: 1423'
     cases:
       description: The cases this event belongs to
       type: array
+      readOnly: true
       example: [case1, mycase, thatonecase, thatothercase]
       items:
         $ref: '#/definitions/Case'

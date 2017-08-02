@@ -11,7 +11,9 @@
       200:
         description: Success
         schema:
-          $ref: '#/definitions/Case'
+          type: array
+          items:
+            $ref: '#/definitions/Case'
   put:
     tags:
       - Cases
@@ -137,6 +139,7 @@
         name: body
         description: Filename of JSON to import into Case database
         required: false
+        x-nullable: true
         schema:
           type: object
           properties:
@@ -171,6 +174,7 @@
         name: body
         description: The name of the JSON file to export to.
         required: false
+        x-nullable: true
         schema:
           type: object
           properties:

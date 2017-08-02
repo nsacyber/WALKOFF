@@ -24,7 +24,6 @@ class Case(_Base):
     __tablename__ = 'case'
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    note = Column(String)
     events = relationship('Event', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_events=True):
@@ -37,9 +36,8 @@ class Case(_Base):
         Returns:
             The JSON representation of a Case object.
         """
-        output = {'id': str(self.id),
-                  'name': self.name,
-                  'note': self.note}
+        output = {'id': self.id,
+                  'name': self.name}
         if with_events:
             output['events'] = [event.as_json() for event in self.events]
         return output
@@ -68,13 +66,12 @@ class Event(_Base):
         Returns:
             The JSON representation of an Event object.
         """
-        output = {'id': str(self.id),
+        output = {'id': self.id,
                   'timestamp': str(self.timestamp),
                   'type': self.type,
                   'ancestry': self.ancestry,
                   'message': self.message,
-                  'data': self.data,
-                  'note': self.note}
+                  'note': self.note if self.note is not None else ''}
         if self.data:
             try:
                 output['data'] = json.loads(self.data)
@@ -170,19 +167,6 @@ class CaseDatabase(object):
             case = self.session.query(Case).filter(Case.name == old_case_name).first()
             if case:
                 case.name = new_case_name
-                self.session.commit()
-
-    def edit_case_note(self, case_id, note):
-        """ Edits the note attached to a case
-        
-        Args:
-            case_id (int): The case to edit
-            note (str): The case's note
-        """
-        if case_id:
-            case = self.session.query(Case).filter(Case.id == case_id).first()
-            if case:
-                case.note = note
                 self.session.commit()
 
     def edit_event_note(self, event_id, note):
