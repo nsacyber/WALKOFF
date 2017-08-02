@@ -1,3 +1,55 @@
+Playbook:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      playbook_template:
+        type: string
+UpdatePlaybook:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      new_name:
+        type: string
+AddWorkflow:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      workflow_template:
+        type: string
+      playbook_template:
+        type: string
+PlaybookWorkflow:
+    type: object
+    properties:
+      playbook:
+        type: string
+      workflow:
+        type: string
+WorkflowUpdate:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      new_name:
+        type: string
+      scheduler:
+        type: object
+        properties:
+          enabled:
+            type: string
+          scheduler_type:
+            type: string
+          autorun:
+            type: string
+          args:
+            type: string
 Workflow:
   type: object
   required: [name]

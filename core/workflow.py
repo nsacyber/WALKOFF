@@ -306,50 +306,6 @@ class Workflow(ExecutionElement):
         callbacks.WorkflowShutdown.send(self, data=self.accumulator)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self.accumulator))
 
-    def get_cytoscape_data(self):
-        """Gets the cytoscape data for the Workflow object.
-        
-        Returns:
-            The cytoscape data for the Workflow.
-        """
-        output = []
-        for step in self.steps:
-            node_id = self.steps[step].name if self.steps[step].name is not None else 'None'
-            step_json = self.steps[step].as_json()
-            position = step_json.pop('position')
-            node = {"group": "nodes", "data": {"id": node_id, "parameters": step_json},
-                    "position": {pos: float(val) for pos, val in position.items()}}
-            output.append(node)
-            for next_step in self.steps[step].conditionals:
-                edge_id = str(node_id) + str(next_step.name)
-                if next_step.name in self.steps:
-                    node = {"group": "edges",
-                            "data": {"id": edge_id, "source": node_id, "target": next_step.name,
-                                     "parameters": next_step.as_json()}}
-                    output.append(node)
-        return output
-
-    def from_cytoscape_data(self, data):
-        """Reconstruct a Workflow object based on cytoscape data.
-        
-        Args:
-            data (JSON dict): The cytoscape data to be parsed and reconstructed into a Workflow object.
-        """
-        backup_steps = deepcopy(self.steps)
-        self.steps = {}
-        try:
-            for node in data:
-                if 'source' not in node['data'] and 'target' not in node['data']:
-                    step_data = node['data']
-                    step_name = step_data['parameters']['name']
-                    self.steps[step_name] = Step.from_json(step_data['parameters'],
-                                                           node['position'],
-                                                           parent_name=self.name,
-                                                           ancestry=self.ancestry)
-        except (UnknownApp, UnknownAppAction):
-            self.steps = backup_steps
-            raise
-
     def get_children(self, ancestry):
         """Gets the children Steps of the Workflow in JSON format.
         
@@ -385,3 +341,21 @@ class Workflow(ExecutionElement):
                 'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00),
                 'options': self.options.as_json(),
                 'steps': {name: step.as_json() for name, step in self.steps.items()}}
+
+    def from_json(self, data):
+        """Reconstruct a Workflow object based on JSON data.
+
+       Args:
+           data (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
+       """
+        backup_steps = deepcopy(self.steps)
+        self.steps = {}
+        try:
+            if 'start' in data and data['start']:
+                self.start_step = data['start']
+            self.steps = {step_json['name']: Step.from_json(step_json, parent_name=self.name, ancestry=self.ancestry, position=step_json['position'])
+                          for step_json in data['steps']}
+
+        except (UnknownApp, UnknownAppAction):
+            self.steps = backup_steps
+            raise

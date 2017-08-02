@@ -45,34 +45,6 @@ Device:
         type: integer
       extraFields:
         type: string
-
-Playbook:
-    type: object
-    properties:
-      name:
-        type: string
-AddWorkflow:
-    type: object
-    properties:
-      playbook:
-        type: string
-      template:
-        type: string
-PlaybookWorkflow:
-    type: object
-    properties:
-      playbook:
-        type: string
-      workflow:
-        type: string
-WorkflowUpdate:
-    type: object
-    properties:
-      name:
-        type: string
-      options:
-        type: object
-
 Error:
   type: object
   required: [error]

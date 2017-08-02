@@ -368,9 +368,9 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_triggers_change_playbook_name(self):
-        self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
+        self.put_with_status_check('/api/playbooks/test_playbook', headers=self.headers,
                                    status_code=OBJECT_CREATED)
-        self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
+        self.put_with_status_check('/api/playbooks/test_playbook/workflows/test_workflow',
                                    headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json')
 
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
@@ -381,7 +381,7 @@ class TestTriggers(ServerTestCase):
                                    headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
 
         data = {'new_name': 'test_playbook_new'}
-        self.post_with_status_check('/playbooks/test_playbook',
+        self.post_with_status_check('/api/playbooks/test_playbook',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json')
@@ -390,9 +390,9 @@ class TestTriggers(ServerTestCase):
         self.assertEqual('test_playbook_new', trigger.playbook)
 
     def test_triggers_change_workflow_name(self):
-        self.put_with_status_check('/playbooks/test_playbook', headers=self.headers,
+        self.put_with_status_check('/api/playbooks/test_playbook', headers=self.headers,
                                    status_code=OBJECT_CREATED)
-        self.put_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
+        self.put_with_status_check('/api/playbooks/test_playbook/workflows/test_workflow',
                                    headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json')
 
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
@@ -403,7 +403,7 @@ class TestTriggers(ServerTestCase):
                                    headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
 
         data = {'new_name': 'test_workflow_new'}
-        self.post_with_status_check('/playbooks/test_playbook/workflows/test_workflow',
+        self.post_with_status_check('/api/playbooks/test_playbook/workflows/test_workflow',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json')
