@@ -767,7 +767,7 @@ class TestWorkflowServer(ServerTestCase):
         step = steps[0]
         ancestry = step['ancestry'].split(',')
         self.assertEqual(ancestry[-1], "start")
-        result = json.loads(step['data'])
+        result = step['data']
         self.assertEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     # TODO: FIX THIS TEST
@@ -799,7 +799,7 @@ class TestWorkflowServer(ServerTestCase):
         step = steps[0]
         ancestry = step['ancestry'].split(',')
         self.assertEqual(ancestry[-1], "start")
-        result = json.loads(step['data'])
+        result = step['data']
         self.assertDictEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_results(self):

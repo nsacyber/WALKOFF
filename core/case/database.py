@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+from six import string_types
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
@@ -70,13 +70,13 @@ class Event(_Base):
                   'timestamp': str(self.timestamp),
                   'type': self.type,
                   'ancestry': self.ancestry,
-                  'message': self.message,
+                  'message': self.message if self.message is not None else '',
                   'note': self.note if self.note is not None else ''}
-        if self.data:
+        if self.data is not None:
             try:
                 output['data'] = json.loads(self.data)
             except (ValueError, TypeError):
-                output['data'] = self.data
+                output['data'] = str(self.data)
         else:
             output['data'] = ''
         if with_cases:
@@ -93,7 +93,7 @@ class Event(_Base):
             timestamp (str): A string representation of a timestamp
             entry_message (str): The message associated with the event
             entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
-            data (str): Extra information to be logged with the event
+            data: Extra information to be logged with the event
             
         Returns:
             An Event object.
@@ -189,10 +189,13 @@ class CaseDatabase(object):
             event (cls): A core.case.callbacks._EventEntry object to add to the cases
             cases (list[str]): The cases to add the event to
         """
-        try:
-            data = json.dumps(event.data)
-        except:
-            data = str(event.data)
+        if not isinstance(event.data,string_types):
+            try:
+                data = json.dumps(event.data)
+            except:
+                data = str(event.data)
+        else:
+            data = event.data
         event_log = Event(type=event.type,
                           timestamp=event.timestamp,
                           ancestry=','.join(map(str, event.ancestry)),

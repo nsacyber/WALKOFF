@@ -56,7 +56,7 @@ class TestExecutionRuntime(unittest.TestCase):
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             self.assertDictEqual(result['result'], name_result[name])
 
     """
@@ -87,7 +87,7 @@ class TestExecutionRuntime(unittest.TestCase):
             ancestry = step['ancestry'].split(',')
             name_id = (ancestry[-2], ancestry[-1])
             self.assertIn(name_id, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             if type(name_result[name_id]) == dict:
                 self.assertDictEqual(result['result'], name_result[name_id])
             else:
