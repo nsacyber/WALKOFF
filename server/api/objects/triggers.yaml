@@ -57,6 +57,7 @@ TriggeredWorkflow:
       id:
           type: string
           description: The UID of the workflow executing
+          readOnly: true
       name:
           type: string
           description: The name of the trigger executing

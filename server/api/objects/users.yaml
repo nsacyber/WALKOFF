@@ -28,6 +28,7 @@ EditUser:
         description: Database id of the user
         type: integer
         example: 123
+        readOnly: true
       username:
         description: New username or email of the user
         type: string
@@ -60,6 +61,7 @@ DisplayUser:
         description: Database id of the user
         type: integer
         example: 123
+        readOnly: true
       username:
         description: Username or email of the user
         type: string

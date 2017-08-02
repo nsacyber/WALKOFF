@@ -66,6 +66,7 @@ Workflow:
       description: The risk which has been accumulated as this workflow has been executed
       type: number
       example: 0.43
+      readOnly: true
     options:
       $ref: '#/definitions/WorkflowOptions'
     start:
@@ -170,11 +171,6 @@ Step:
       type: array
       items:
         $ref: '#/definitions/NextStep'
-    errors:
-      description: The possible next steps to take if this step fails
-      type: array
-      items:
-        $ref: '#/definitions/NextStep'
 
 NextStep:
   type: object
@@ -259,3 +255,4 @@ WorkflowId:
     id:
       type: string
       description: 32-byte hexidecimal string representing the ID of the workflow
+      readOnly: true

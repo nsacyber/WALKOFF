@@ -29,18 +29,22 @@ DetailedWorkflowResult:
       description: The name of the workflow. Contains both playbook and workflow information
       type: string
       example: PlaybookName-WorkflowName
+      readOnly: true
     started_at:
       description: The timestamp of when the workflow completed
       type: string
       example: '2017-05-24 00:42:22.934058'
+      readOnly: true
     completed_at:
       description: The timestamp of when the workflow completed
       type: string
       example: '2017-05-24 00:43:26.930892'
+      readOnly: true
     status:
       description: The status of the workflow
       type: string
       enum: [completed, running]
+      readOnly: true
     results:
       description: The results of the workflow steps
       type: array
@@ -56,18 +60,23 @@ DetailedStepResult:
       description: The name of the step
       type: string
       example: 'This One step'
+      readOnly: true
     result:
       description: The result of the step
       type: object
+      readOnly: true
     type:
       description: Success or failure of the step
       type: string
       example: SUCCESS
       enum: [SUCCESS, ERROR]
+      readOnly: true
     timestamp:
       description: The timestamp of when the step completed
       type: string
       example: '2017-05-24 00:43:26.930892'
+      readOnly: true
     input:
       description: The input to the step. Of form {input_name -> value}
       type: object
+      readOnly: true

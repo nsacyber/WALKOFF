@@ -563,7 +563,7 @@
       - in: body
         name: body
         description: Start step and Steps
-        required: trues
+        required: true
         schema:
           type: object
           required: [steps]

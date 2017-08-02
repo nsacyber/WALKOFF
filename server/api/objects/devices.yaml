@@ -41,6 +41,7 @@ EditDevice:
     id:
       type: integer
       example: 1234
+      readOnly: true
     name:
       description: Name of the device
       type: string
@@ -79,6 +80,7 @@ OutputDevice:
     id:
       type: integer
       example: 1234
+      readOnly: true
     name:
       type: string
       example: Server1
