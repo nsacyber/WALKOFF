@@ -7,6 +7,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { ToastyModule } from 'ng2-toasty';
 import { Select2Module } from 'ng2-select2';
+// import { ContextMenuModule } from 'ngx-contextmenu';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -14,6 +15,7 @@ import { MainComponent } from './main/main.component';
 import { ControllerComponent } from './controller/controller.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
+import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 
@@ -31,6 +33,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		NgxDatatableModule,
 		ToastyModule.forRoot(),
 		Select2Module,
+		// ContextMenuModule
 	],
 	declarations: [
 		//Main component
@@ -39,6 +42,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		ControllerComponent,
 		PlaybookComponent,
 		DevicesComponent,
+		TriggersComponent,
 		CasesComponent,
 		SettingsComponent,
 		//Modals

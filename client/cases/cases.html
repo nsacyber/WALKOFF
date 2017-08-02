@@ -1,19 +1,60 @@
-<div id="main" class="content">
+<div id="main">
 	<div id="header">
 		<h1>Case Log</h1>
 	</div>
 	<div class="row">
-		<div id="sidebar" class="col-xs-3 box">
-			<div id="innerSidebar" class="innerSidebar">
-				<h3>Cases</h3>
-				<div id="casesDiv">
-					<ul class="list-group" id="caseSelect">
-
-					</ul>
+		<div class="box-header col-xs-2">
+			<h3 class="box-title">Events</h3>
+		</div>
+		<div class="col-xs-5">
+			<select2 [data]="availableCases" [value]="" [options]="caseSelectConfig" (valueChanged)="caseSelectChange($event)"></select2>
+		</div>
+		<div class="col-xs-5">
+			<div class="form-group row">
+				<label class="col-xs-2 col-form-label">Search Filter</label>
+				<div class="col-xs-10">
+					<input class="form-control" [formControl]="filterQuery" />
 				</div>
 			</div>
 		</div>
+	</div>
 
+	<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
+		[rows]='displayEvents' [sortType]="'multi'" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
+		<!-- Column Templates -->
+		<ngx-datatable-column name="ID" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.id}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Timestamp" [flexGrow]="2">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.timestamp}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Type" [flexGrow]="2">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.type}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Ancestry" [flexGrow]="4">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{getFriendlyArray(row.ancestry)}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Data" [flexGrow]="4">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{getFriendlyObject(row.data)}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Message" [flexGrow]="2">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.message}}
+			</ng-template>
+		</ngx-datatable-column>
+	</ngx-datatable>
+
+		<!--
 		<div class="col-xs-9">
 			<div class="box">
 				<div class="box-header">
@@ -35,6 +76,5 @@
 					</table>
 				</div>
 			</div>
-		</div>
-	</div>
+		</div>-->
 </div>

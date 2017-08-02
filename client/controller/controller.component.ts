@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 
 import { ControllerService } from './controller.service';
 
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Case } from '../models/case';
+import { Workflow } from '../models/workflow';
 
 @Component({
 	selector: 'controller-component',
@@ -19,18 +21,21 @@ export class ControllerComponent {
 	availableSubscriptions: AvailableSubscription[];
 	cases: Case[];
 
-	constructor(private controllerService: ControllerService) {
+	// @ViewChild(ContextMenuComponent) public basicMenu: ContextMenuComponent; 
+
+	constructor(private controllerService: ControllerService, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.currentController = "Default Controller";
 
-		this.getAvailableSubscriptions();
-		this.getCases();
+		// this.getAvailableSubscriptions();
+		// this.getCases();
 		this.getSchedulerStatus();
 	}
 
 	getAvailableSubscriptions(): void {
 		this.controllerService
 			.getAvailableSubscriptions()
-			.then(availableSubscriptions => this.availableSubscriptions = availableSubscriptions);
+			.then(availableSubscriptions => this.availableSubscriptions = availableSubscriptions)
+			.catch(e => this.toastyService.error(`Error retrieving available subscriptions: ${e.message}`));
 	}
 
 	getCases(): void {
@@ -42,7 +47,8 @@ export class ControllerComponent {
 	getSchedulerStatus(): void {
 		this.controllerService
 			.getSchedulerStatus()
-			.then(schedulerStatus => this.schedulerStatus = schedulerStatus);
+			.then(schedulerStatus => this.schedulerStatus = schedulerStatus)
+			.catch(e => this.toastyService.error(`Error retrieving scheduler status: ${e.message}`));
 	}
 	
 	addCase(): void {
@@ -62,7 +68,15 @@ export class ControllerComponent {
 			.changeSchedulerStatus(status)
 			.then((newStatus) => {
 				if (newStatus) this.schedulerStatus = newStatus;
-			});
+			})
+			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
+	}
+
+	executeWorkflow(workflow: Workflow): void {
+		this.controllerService
+			.executeWorkflow(workflow.name, workflow.name)
+			.then(() => this.toastyService.success(`Workflow ${workflow.name} has been scheduled to execute.`))
+			.catch(e => this.toastyService.error(`Error executing workflow: ${e.message}`));
 	}
 
 	// notifyMe() : void {
