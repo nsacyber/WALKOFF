@@ -34,27 +34,28 @@
 					<div class="form-group">
 						<label for="name">New Password</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" #newPassword="ngModel" name="newPassword">
-					</div>
-					<div *ngIf="((currentPassword && currentPassword.value) || !workingUser.id) && (newPassword.dirty || newPassword.touched) && !newPassword.value" class="alert alert-danger">
-						<div>
+						<div *ngIf="((currentPassword && currentPassword.value) || !workingUser.id) && (newPassword.dirty || newPassword.touched) && !newPassword.value"
+							class="alert alert-danger">
 							Password is required.
 						</div>
 					</div>
 					<div class="form-group">
 						<label for="name">Confirm New Password</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" #confirmNewPassword="ngModel" name="confirmNewPassword">
-					</div>
-					<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && confirmNewPassword.value && newPassword.value !== confirmNewPassword.value" class="alert alert-danger">
-						Passwords do not match.
-					</div>
-					<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && !confirmNewPassword.value" class="alert alert-danger">
-						You must re-enter the new password to confirm.
+						<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && confirmNewPassword.value && newPassword.value !== confirmNewPassword.value"
+							class="alert alert-danger">
+							Passwords do not match.
+						</div>
+						<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && !confirmNewPassword.value" class="alert alert-danger">
+							You must re-enter the new password to confirm.
+						</div>
 					</div>
 				</div>
 			</form>
 		</div>
 	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
-		<button type="button" class="btn btn-primary" [disabled]="!userForm.form.valid" (click)="submit()">{{submitText}}</button>
-	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!userForm.form.valid" (click)="submit()">{{submitText}}</button>
+</div>

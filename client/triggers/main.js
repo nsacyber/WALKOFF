@@ -4,6 +4,7 @@
     var flagsList = [];
     var filtersList = [];
     var triggerEditor = null;
+    var currentTriggerName = null;
     var authKey = localStorage.getItem('authKey');
 
     $("#editformSubmit").prop("disabled",true);
@@ -16,7 +17,7 @@
         'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/flags",
+        'url': "/api/flags",
         'dataType': 'json',
         'success': function (data) {
             flagsList = [];
@@ -32,13 +33,14 @@
         'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/filters",
+        'url': "/api/filters",
         'dataType': 'json',
         'success': function (data) {
             filtersList = [];
             $.each(data.filters, function( key, value ) {
                 filtersList.push(key);
             });
+            console.log(filtersList);
         }
     });
 
@@ -185,6 +187,7 @@
 
     function resetTriggerEditor() {
         triggerEditor.setValue({});
+        currentTriggerName = null;
         $("#editformSubmit").prop("disabled",true);
     }
 
@@ -228,6 +231,7 @@
             index = $("#triggerList option:selected").val();
             $("#editformSubmit").prop("disabled",false);
             trigger = triggerData['triggers'][''+index];
+            currentTriggerName = trigger['name'];
             if($("#triggerList option:selected").attr('value') == 'none'){
             }else{
                 triggerEditor.setValue({
@@ -244,14 +248,16 @@
             if($("#triggerList option:selected").attr('value') == 'none'){
                 $.notify('Please select a trigger.', 'warning');
             }else{
-                var name = $("#triggerList option:selected").text();
 
                 // Transfer the data from the JSON editor to the hidden form.
                 // This makes it easier to serialize.
-                var values = triggerEditor.getValue()
+                var values = triggerEditor.getValue();
 
                 // Only send a name over if the user changed it. If
                 // not, leave it blank since then an error will occur.
+                if (currentTriggerName === values.name)
+                    delete values.name;
+
                 // if (name !== values.name)
                 //     $("#name").val(values.name);
                 // else
@@ -261,7 +267,7 @@
                 // $("#conditions").val(JSON.stringify(values.conditions));
 
                 $.ajax({
-                    url:'/execution/listener/triggers/' + name ,
+                    url:'/execution/listener/triggers/' + currentTriggerName ,
                     data: JSON.stringify(values),
                     contentType: 'application/json',
                     headers:{"Authentication-Token":authKey},

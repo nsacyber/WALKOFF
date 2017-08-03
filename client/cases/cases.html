@@ -1,80 +1,103 @@
 <div id="main">
-	<div id="header">
-		<h1>Case Log</h1>
-	</div>
-	<div class="row">
-		<div class="box-header col-xs-2">
-			<h3 class="box-title">Events</h3>
-		</div>
-		<div class="col-xs-5">
-			<select2 [data]="availableCases" [value]="" [options]="caseSelectConfig" (valueChanged)="caseSelectChange($event)"></select2>
-		</div>
-		<div class="col-xs-5">
-			<div class="form-group row">
-				<label class="col-xs-2 col-form-label">Search Filter</label>
-				<div class="col-xs-10">
-					<input class="form-control" [formControl]="filterQuery" />
-				</div>
-			</div>
-		</div>
-	</div>
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="active"><a href="#events" data-toggle="tab" role="tab">Case Event Log</a></li>
+		<li><a href="#cases" data-toggle="tab" role="tab">Case Management</a></li>
+	</ul>
+	<div class="tab-content">
+		<div id="events" class="tab-pane fade in active">
+			<h1>Case Event Log</h1>
 
-	<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
-		[rows]='displayEvents' [sortType]="'multi'" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
-		<!-- Column Templates -->
-		<ngx-datatable-column name="ID" [flexGrow]="1">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.id}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Timestamp" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.timestamp}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Type" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.type}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Ancestry" [flexGrow]="4">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{getFriendlyArray(row.ancestry)}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Data" [flexGrow]="4">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{getFriendlyObject(row.data)}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Message" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.message}}
-			</ng-template>
-		</ngx-datatable-column>
-	</ngx-datatable>
-
-		<!--
-		<div class="col-xs-9">
-			<div class="box">
-				<div class="box-header">
+			<div class="row">
+				<div class="box-header col-xs-2">
 					<h3 class="box-title">Events</h3>
 				</div>
-				<div class="box-body">
-					<table id="logDataTable" class="table table-bordered table-hover">
-						<thead>
-							<tr>
-								<th data-field="id">Id</th>
-								<th data-field="timestamp">Timestamp</th>
-								<th data-field="type">Type</th>
-								<th data-field="ancestry">Ancestry</th>
-								<th data-field="data">Data</th>
-								<th data-field="message">Message</th>
-							</tr>
-						</thead>
-						<tbody></tbody>
-					</table>
+				<div class="col-xs-5">
+					<select2 [data]="availableCases" [value]="" [options]="caseSelectConfig" (valueChanged)="caseSelectChange($event)"></select2>
+				</div>
+				<div class="col-xs-5">
+					<div class="form-group row">
+						<label class="col-xs-2 col-form-label">Search Filter</label>
+						<div class="col-xs-10">
+							<input class="form-control" [formControl]="eventFilterQuery" />
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>-->
+
+			<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
+				[rows]='displayCaseEvents' [sortType]="'multi'" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
+				<!-- Column Templates -->
+				<ngx-datatable-column name="ID" [flexGrow]="1">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						{{row.id}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Timestamp" [flexGrow]="2">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						{{row.timestamp}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Type" [flexGrow]="2">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						{{row.type}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Ancestry" [flexGrow]="4">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						<!--{{getFriendlyArray(row.ancestry)}}-->
+						{{row.ancestry}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Data" [sortable]="false" [flexGrow]="4">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						<!--{{getFriendlyObject(row.data)}}-->
+						{{row.data}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Message" [flexGrow]="2">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						{{row.message}}
+					</ng-template>
+				</ngx-datatable-column>
+			</ngx-datatable>
+		</div>
+		<div id="cases" class="tab-pane fade">
+			<h1>Case Management</h1>
+
+			<div class="row">
+				<div class="col-xs-6">
+					<button (click)="addCase()" class="btn btn-primary"><span class="fa fa-plus"></span>Add Case</button>
+				</div>
+				<div class="col-xs-6">
+					<div class="form-group row">
+						<label class="col-xs-2 col-form-label">Search Filter</label>
+						<div class="col-xs-10">
+							<input class="form-control" [formControl]="caseFilterQuery" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<ngx-datatable #casesTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
+				[rows]='displayCases' [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
+				<!-- Column Templates -->
+				<ngx-datatable-column name="Name" [flexGrow]="1">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						{{row.name}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Note" [flexGrow]="2">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						{{row.note}}
+					</ng-template>
+				</ngx-datatable-column>
+				<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+					<ng-template let-row="row" ngx-datatable-cell-template>
+						<button (click)="editCase(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit Case</button>
+						<button (click)="deleteCase(row)" class="btn btn-danger"><span class="fa fa-times"></span>Delete Case</button>
+					</ng-template>
+				</ngx-datatable-column>
+			</ngx-datatable>
+		</div>
+	</div>
 </div>

@@ -20,6 +20,7 @@ import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 
 import { DevicesModalComponent } from './devices/devices.modal.component';
+import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 
 @NgModule({
@@ -47,10 +48,12 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		SettingsComponent,
 		//Modals
 		DevicesModalComponent,
+		CasesModalComponent,
 		SettingsUserModalComponent,
 	],
 	entryComponents: [
 		DevicesModalComponent,
+		CasesModalComponent,
 		SettingsUserModalComponent,
 	],
 	bootstrap: [MainComponent]
