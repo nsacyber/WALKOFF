@@ -338,9 +338,11 @@ class Workflow(ExecutionElement):
             The JSON representation of a Step object.
         """
         return {'name': self.name,
-                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00),
+                'steps': {name: step.as_json() for name, step in self.steps.items()},
+                'start': self.start_step,
                 'options': self.options.as_json(),
-                'steps': {name: step.as_json() for name, step in self.steps.items()}}
+                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00)
+                }
 
     def from_json(self, data):
         """Reconstruct a Workflow object based on JSON data.

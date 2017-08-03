@@ -12,11 +12,7 @@
         description: Success
         schema:
           type: object
-          required: [playbooks]
-          properties:
-            playbooks:
-              type: object
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+          description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
   put:
     tags:
       - Playbooks
@@ -39,20 +35,12 @@
         description: Object created
         schema:
           type: object
-          required: [playbooks]
-          properties:
-            playbooks:
-              type: object
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+          description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
       211:
         description: Playbook created with empty template
         schema:
           type: object
-          required: [playbooks]
-          properties:
-            playbooks:
-              type: object
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+          description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
       462:
         description: Playbook already exists.
         schema:
@@ -79,11 +67,7 @@
         description: Success
         schema:
           type: object
-          required: [workflows]
-          properties:
-            workflows:
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-              type: object
+          description: All workflows for the associated playbook. Form of '{playbook_name -> [workflow_name]}'
       461:
         description: Playbook does not exist.
         schema:
@@ -116,11 +100,7 @@
         description: Success
         schema:
           type: object
-          required: [workflows]
-          properties:
-            workflows:
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-              type: object
+          description: All workflows for the specified playbook. Form of '{playbook_name -> [workflow_name]}'
       461:
         description: Object does not exist.
         schema:
@@ -140,13 +120,6 @@
     responses:
       200:
         description: Success
-        schema:
-          type: object
-          required: [workflows]
-          properties:
-            workflows:
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-              type: object
       461:
         description: Playbook does not exist.
         schema:
@@ -170,7 +143,7 @@
         type: string
       - in: body
         name: body
-        description: Playbook name
+        description: New playbook name (defaults to <Current_Name>_Copy)
         required: false
         schema:
           type: object
@@ -183,7 +156,10 @@
       - application/json
     responses:
       201:
-        description: Playbook created.
+        description: Playbook created
+        schema:
+          type: object
+          description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
       461:
         description: Playbook does not exist.
         schema:
@@ -208,18 +184,16 @@
     produces:
       - application/json
     responses:
-      201:
-        description: Workflow created.
+      200:
+        description: Success
         schema:
-          type: object
-          required: [workflows]
-          properties:
-            workflows:
-              description: All the workflows
-              type: array
-              items:
-                type: string
-              example: [workflow_1, HelloWorldWorkflow, ThatOneWorkflow]
+          type: array
+          description: The JSON representation of all the workflows for the playbook
+          items:
+            type: object
+            properties:
+              schema:
+                $ref: '#/definitions/Workflow'
       461:
         description: Playbook does not exist.
         schema:
@@ -249,19 +223,11 @@
       201:
         description: Workflow created.
         schema:
-          type: object
-          required: [workflow]
-          properties:
-            workflow:
-              $ref: '#/definitions/Workflow'
+          $ref: '#/definitions/Workflow'
       211:
         description: Workflow created using default template.
         schema:
-          type: object
-          required: [workflow]
-          properties:
-            workflow:
-              $ref: '#/definitions/Workflow'
+          $ref: '#/definitions/Workflow'
       461:
         description: Playbook does not exist.
         schema:
@@ -352,13 +318,6 @@
     responses:
       200:
         description: Success
-        schema:
-          type: object
-          required: [playbooks]
-          properties:
-            playbooks:
-              description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-              type: object
       461:
         description: Playbook or workflow does not exist.
         schema:
@@ -425,7 +384,7 @@
         description: The new playbook and/or workflow name
         required: false
         schema:
-          $ref: '#/definitions/PlaybookWorkflow'
+          $ref: '#/definitions/CopyWorkflow'
     consumes:
       - application/json
     produces:
@@ -433,6 +392,8 @@
     responses:
       201:
         description: Workflow copied.
+        schema:
+          $ref: '#/definitions/Workflow'
       461:
         description: Playbook or workflow does not exist.
         schema:
