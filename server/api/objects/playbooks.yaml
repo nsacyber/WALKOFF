@@ -235,7 +235,6 @@ Argument:
       type: string
       example: regex
     value:
-      type: string
       example: WALK(.*)
 
 WorkflowFromCytoscape:

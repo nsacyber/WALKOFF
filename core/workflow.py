@@ -353,9 +353,13 @@ class Workflow(ExecutionElement):
         try:
             if 'start' in data and data['start']:
                 self.start_step = data['start']
-            self.steps = {step_json['name']: Step.from_json(step_json, parent_name=self.name, ancestry=self.ancestry, position=step_json['position'])
-                          for step_json in data['steps']}
+            self.steps = {}
+            for step_json in data['steps']:
+                step = Step.from_json(step_json, parent_name=self.name, ancestry=self.ancestry, position=step_json['position'])
+                self.steps[step_json['name']] = step
+            # self.steps = {step_json['name']: Step.from_json(step_json, parent_name=self.name, ancestry=self.ancestry, position=step_json['position'])
+            #               for step_json in data['steps']}
 
-        except (UnknownApp, UnknownAppAction):
+        except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps
             raise
