@@ -284,7 +284,7 @@ class Controller(object):
         logger.debug('Removed playbook {0}'.format(playbook_name))
         return True
 
-    def get_all_workflows(self):
+    def get_all_workflows(self, with_json=False):
         """Gets all of the currently loaded workflows.
         
         Returns:
@@ -294,7 +294,11 @@ class Controller(object):
         for key in self.workflows.keys():
             if key.playbook not in result:
                 result[key.playbook] = []
-            result[key.playbook].append(key.workflow)
+
+            if with_json:
+                result[key.playbook].append(self.get_workflow(key.playbook, key.workflow).as_json())
+            else:
+                result[key.playbook].append(key.workflow)
         return result
 
     def get_all_playbooks(self):

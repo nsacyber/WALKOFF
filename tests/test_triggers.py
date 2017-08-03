@@ -368,10 +368,13 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_triggers_change_playbook_name(self):
-        self.put_with_status_check('/api/playbooks/test_playbook', headers=self.headers,
-                                   status_code=OBJECT_CREATED)
-        self.put_with_status_check('/api/playbooks/test_playbook/workflows/test_workflow',
-                                   headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json')
+        data = {"name": "test_playbook"}
+        self.put_with_status_check('/api/playbooks', headers=self.headers,
+                                   status_code=OBJECT_CREATED, data=json.dumps(data), content_type="application/json")
+        data = {"name": "test_workflow"}
+        self.put_with_status_check('/api/playbooks/test_playbook/workflows',
+                                   headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json',
+                                   data=json.dumps(data))
 
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test_playbook",
@@ -380,8 +383,8 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/' + self.test_trigger_name,
                                    headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
 
-        data = {'new_name': 'test_playbook_new'}
-        self.post_with_status_check('/api/playbooks/test_playbook',
+        data = {'name': 'test_playbook', 'new_name': 'test_playbook_new'}
+        self.post_with_status_check('/api/playbooks',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json')
@@ -390,10 +393,13 @@ class TestTriggers(ServerTestCase):
         self.assertEqual('test_playbook_new', trigger.playbook)
 
     def test_triggers_change_workflow_name(self):
-        self.put_with_status_check('/api/playbooks/test_playbook', headers=self.headers,
-                                   status_code=OBJECT_CREATED)
-        self.put_with_status_check('/api/playbooks/test_playbook/workflows/test_workflow',
-                                   headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json')
+        data = {'name': "test_playbook"}
+        self.put_with_status_check('/api/playbooks', headers=self.headers,
+                                   status_code=OBJECT_CREATED, data=json.dumps(data), content_type="application/json")
+        data = {"name": "test_workflow"}
+        self.put_with_status_check('/api/playbooks/test_playbook/workflows',
+                                   headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json',
+                                   data=json.dumps(data))
 
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test_playbook",
@@ -402,8 +408,8 @@ class TestTriggers(ServerTestCase):
         self.put_with_status_check('/execution/listener/triggers/' + self.test_trigger_name,
                                    headers=self.headers, data=json.dumps(data), status_code=OBJECT_CREATED, content_type='application/json')
 
-        data = {'new_name': 'test_workflow_new'}
-        self.post_with_status_check('/api/playbooks/test_playbook/workflows/test_workflow',
+        data = {'new_name': 'test_workflow_new', 'name': 'test_workflow'}
+        self.post_with_status_check('/api/playbooks/test_playbook/workflows',
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json')
