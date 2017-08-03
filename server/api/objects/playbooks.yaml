@@ -24,8 +24,10 @@ Workflow:
       type: string
       example: HelloWorldWorkflow
     steps:
-      description: The steps defined in this workflow. Form of '{step_name -> step}'
-      type: object
+      description: The steps defined in this workflow.
+      type: array
+      items:
+        $ref: "#/definitions/DisplayStep"
     start:
       description: Name of the starting step
       type: string
@@ -178,6 +180,65 @@ Step:
       type: array
       items:
         $ref: '#/definitions/NextStep'
+
+DisplayStep:
+  type: object
+  description: Encapsulation of executing an action in an app
+  properties:
+    name:
+      description: Name of the step
+      type: string
+      example: step1
+    action:
+      description: The action the step will take
+      type: string
+      example: pause
+    app:
+      description: The app to which the action belongs
+      type: string
+      example: CyberAnalytics
+    device:
+      description: Name of the device to use
+      type: string
+      example: server4
+    risk:
+      description: risk associated with this step failing
+      type: number
+      default: 0
+      example: 20
+    inputs:
+      description: The input arguments to the action
+      type: array
+      items:
+        $ref: '#/definitions/Argument'
+    widgets:
+      description: The widgets to which this app should send its output
+      type: array
+      items:
+        type: object
+        required: [app, name]
+        properties:
+          app:
+            description: Name of the app
+            type: string
+            example: HelloWorld
+          widget:
+            description: Name of the widget
+            type: string
+            example: testWidget
+    position:
+      description:  position of the step onthe workflow editor
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          description: x position
+          type: number
+          example: 443.22
+        y:
+          description: y position
+          type: number
+          example: -12.036
 
 NextStep:
   type: object
