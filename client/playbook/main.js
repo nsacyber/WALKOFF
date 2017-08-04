@@ -118,24 +118,27 @@ $(function(){
         // number of inputs will be displayed in the form.
         function convertInputToSchema(args, inputName) {
             var subSchema = {
-                // type: "object",
-                type: "array",
+                type: "object",
+                // type: "array",
                 title: "Inputs",
-                // required: ['$action'],
+                required: ['$action'],
                 options: {
-                    hidden: args.length === 0
+                    hidden: args.length === 0,
+                    // disable_array_add: true,
+                    // disable_array_delete: true,
+                    // disable_array_reorder: true
                 },
                 //Items populated below
-                items: []
-                // properties: {
-                //     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
-                //         type: "string",
-                //         enum: [inputName],
-                //         options: {
-                //             hidden: true
-                //         }
-                //     }
-                // }
+                // items: []
+                properties: {
+                    $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
+                        type: "string",
+                        enum: [inputName],
+                        options: {
+                            hidden: true
+                        }
+                    }
+                }
             };
 
             _.each(args, function(arg, index) {
@@ -175,11 +178,11 @@ $(function(){
                 //     };
                 // }
 
-                // subSchema.properties[inputName] = {
-                subSchema.items.push({
+                subSchema.properties[inputName] = {
+                // subSchema.items.push({
                     type: "object",
                     title: "Input " + (index+1) + ": " + inputName + (input.required ? ' *' : ''),
-                    // propertyOrder: index,
+                    propertyOrder: index,
                     options: {
                         disable_collapse: true
                     },
@@ -193,10 +196,9 @@ $(function(){
                             }
                         }
                     }
-                });
+                };
             });
 
-            console.log(subSchema);
             return subSchema;
         }
 
@@ -260,7 +262,7 @@ $(function(){
                     title: "Action",
                     enum: [parameters.action]
                 },
-                input: _.cloneDeep(actionInputSchema),
+                inputs: _.cloneDeep(actionInputSchema),
                 next: {
                     options: {
                         hidden: true
@@ -404,10 +406,6 @@ $(function(){
 
         parameters = transformParametersToSchema(parameters);
 
-        //Omit the 'next' parameter, should only be edited when selecting an edge
-        // var next = _.cloneDeep(parameters.next);
-        // parameters = _.omit(parameters, ['next']);
-
         // Initialize the editor with a JSON schema
         var schema = createNodeSchema(parameters);
         JSONEditor.defaults.options.theme = 'bootstrap3';
@@ -442,7 +440,6 @@ $(function(){
             }
             var updatedParameters = editor.getValue();
             updatedParameters = transformParametersFromSchema(updatedParameters);
-            //updatedParameters.next = next;
 
             ele.data('parameters', updatedParameters);
             // ele.data('label', updatedParameters.action);
@@ -539,7 +536,7 @@ $(function(){
                     app: app,
                     device: "",
                     errors: [],
-                    input: inputs,
+                    inputs: inputs,
                     name: id.toString(),
                     next: [],
                 }
@@ -781,27 +778,54 @@ $(function(){
 
     function transformInputsToLoad(workflowData) {
         _.each(workflowData.steps, function (step) {
-            step.data.parameters.input = _.reduce(step.data.parameters.input, function (result, inputValue, inputName) {
-                result[inputName] = {
-                    key: inputName,
-                    value: inputValue,
-                    format: _.find(appData[step.data.parameters.app].actions[step.data.parameters.action].args, function (arg) {
-                        return arg.name === inputName;
-                    }).type
-                };
+            step.inputs = _.reduce(step.inputs, function (result, arg) {
+                result[arg.name] = _.clone(arg);
                 return result;
             }, {});
+
+            _.each(step.next, function (nextStep) {
+                _.each(nextStep.flags, function (flag) {
+                    flag.args = _.reduce(flag.args, function (result, arg) {
+                        result[arg.name] = _.clone(arg);
+                        return result;
+                    }, {});
+                    
+                    _.each(flag.filters, function (filter) {
+                        filter.args = _.reduce(filter.args, function (result, arg) {
+                            result[arg.name] = _.clone(arg);
+                            return result;
+                        }, {});
+                    })
+                })
+            });
         });
     }
 
-    function transformInputsToSave(workflowData) {
-        _.each(workflowData, function (data) {
-            if (data.group === "edges") return;
-
-            data.data.parameters.input = _.reduce(data.data.parameters.input, function (result, inputData, inputName) {
-                result[inputName] = inputData.value;
+    function transformInputsToSave(steps) {
+        _.each(steps, function (step) {
+            step.inputs = _.reduce(step.inputs, function (result, arg) {
+                if (typeof arg !== 'object') return result;
+                result.push({ name: arg.name, value: arg.value });
                 return result;
-            }, {});
+            }, []);
+
+            _.each(step.next, function (nextStep) {
+                _.each(nextStep.flags, function (flag) {
+                    flag.args = _.reduce(flag.args, function (result, arg) {
+                        if (typeof arg !== 'object') return result;
+                        result.push({ name: arg.name, value: arg.value });
+                        return result;
+                    }, []);
+                    
+                    _.each(flag.filters, function (filter) {
+                        filter.args = _.reduce(filter.args, function (result, arg) {
+                            if (typeof arg !== 'object') return result;
+                            result.push({ name: arg.name, value: arg.value });
+                            return result;
+                        }, []);
+                    });
+                })
+            });
         });
     }
 
@@ -813,7 +837,7 @@ $(function(){
             ret.position = _.clone(step.position);
             return ret;
         });
-        // transformInputsToSave(workflowData);
+        transformInputsToSave(steps);
         var data = JSON.stringify({start: startNode, steps: steps });
         $.ajax({
             'async': false,
@@ -1103,6 +1127,8 @@ $(function(){
         //     removeBendMenuItemTitle: "Remove Bend Point"
         // });
 
+        transformInputsToLoad(workflowData);
+
         // Load the data into the graph
         // If a node does not have a label field, set it to
         // the action. The label is what is displayed in the graph.
@@ -1129,8 +1155,6 @@ $(function(){
         });
 
         steps = steps.concat(edges);
-
-        // transformInputsToLoad(workflowData);
 
         cy.add(steps);
 
