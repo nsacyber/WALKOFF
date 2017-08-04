@@ -31,7 +31,7 @@ export class PlaybookComponent {
         }
 
         addLink('client/node_modules/jqueryui/jquery-ui.min.css');
-        addLink('client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css');
+        addLink('client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css');
         addLink('client/node_modules/jstree/dist/themes/default/style.min.css');
         // addLink('client/playbook/playbook.css');
 
