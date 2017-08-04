@@ -5,7 +5,7 @@ import { PlaybookService } from './playbook.service';
 @Component({
 	selector: 'playbook-component',
 	templateUrl: 'client/playbook/playbook.html',
-	styleUrls: ['client/playbook/playbook.css'],
+	// styleUrls: ['client/playbook/playbook.css'],
 	providers: [PlaybookService]
 })
 export class PlaybookComponent {
@@ -33,7 +33,7 @@ export class PlaybookComponent {
         addLink('client/node_modules/jqueryui/jquery-ui.min.css');
         addLink('client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css');
         addLink('client/node_modules/jstree/dist/themes/default/style.min.css');
-        // addLink('client/playbook/playbook.css');
+        addLink('client/playbook/playbook.css');
 
         addScript("client/node_modules/jquery-migrate/dist/jquery-migrate.min.js");
         addScript("client/node_modules/jqueryui/jquery-ui.min.js");

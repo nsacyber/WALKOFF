@@ -118,21 +118,24 @@ $(function(){
         // number of inputs will be displayed in the form.
         function convertInputToSchema(args, inputName) {
             var subSchema = {
-                type: "object",
+                // type: "object",
+                type: "array",
                 title: "Inputs",
-                required: ['$action'],
+                // required: ['$action'],
                 options: {
                     hidden: args.length === 0
                 },
-                properties: {
-                    $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
-                        type: "string",
-                        enum: [inputName],
-                        options: {
-                            hidden: true
-                        }
-                    }
-                }
+                //Items populated below
+                items: []
+                // properties: {
+                //     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
+                //         type: "string",
+                //         enum: [inputName],
+                //         options: {
+                //             hidden: true
+                //         }
+                //     }
+                // }
             };
 
             _.each(args, function(arg, index) {
@@ -172,10 +175,11 @@ $(function(){
                 //     };
                 // }
 
-                subSchema.properties[inputName] = {
+                // subSchema.properties[inputName] = {
+                subSchema.items.push({
                     type: "object",
                     title: "Input " + (index+1) + ": " + inputName + (input.required ? ' *' : ''),
-                    propertyOrder: index,
+                    // propertyOrder: index,
                     options: {
                         disable_collapse: true
                     },
@@ -189,9 +193,10 @@ $(function(){
                             }
                         }
                     }
-                }
+                });
             });
 
+            console.log(subSchema);
             return subSchema;
         }
 
@@ -201,7 +206,7 @@ $(function(){
         var actionInputSchema = convertInputToSchema(appData[parameters.app].actions[parameters.action].args, parameters.action);
 
         // Create the sub-schema for the flags
-        var flags = flagsList;
+        var flags = _.cloneDeep(flagsList);
         var oneOfFlags = [];
         _.each(flags, function(flagProperties, flagName) {
             var args = flagProperties.args;
@@ -213,7 +218,7 @@ $(function(){
         });
 
         // Create the sub-schema for the filters
-        var filters = filtersList;
+        var filters = _.cloneDeep(filtersList);
         var oneOfFilters = [];
         _.each(filters, function(filterProperties, filterName) {
             var args = filterProperties.args;
