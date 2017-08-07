@@ -1,10 +1,8 @@
 import unittest
 
 from core.controller import Controller, _WorkflowKey, initialize_threading, shutdown_pool
-from core.config import paths
 from tests import config
 from apscheduler.schedulers.gevent import GeventScheduler
-from os import sep
 import os
 from core import helpers
 import core.config.config

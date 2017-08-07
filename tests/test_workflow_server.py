@@ -7,6 +7,7 @@ from datetime import datetime
 from server import flaskserver as flask_server
 from core import helpers
 import core.case.subscription
+import core.case.database as case_database
 import os
 import core.config.paths
 from gevent.event import Event
@@ -63,8 +64,11 @@ class TestWorkflowServer(ServerTestCase):
                     'args': {'hours': '*', 'minutes': '*/0.1', 'day': '*',
                              'month': '11-12'}, 'type': 'cron', 'autorun': 'false'}}}
 
+        case_database.initialize()
+
     def tearDown(self):
         flask_server.running_context.controller.workflows = {}
+        case_database.case_db.tear_down()
 
     def test_display_all_playbooks(self):
         response = self.get_with_status_check('/api/playbooks', headers=self.headers)
@@ -729,7 +733,6 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_results(self):
-        server.workflowresults.results.clear()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
@@ -745,7 +748,6 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn('name', result)
 
     def test_read_all_results(self):
-        server.workflowresults.results.clear()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
@@ -756,7 +758,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
         self.assertEqual(len(response), 3)
 
-        for result in response.values():
-            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results'})
+        for result in response:
+            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for step_result in result['results']:
                 self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result'})

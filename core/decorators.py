@@ -16,11 +16,13 @@ def action_result_as_json(self):
         return {"result": str(self.result), "status": self.status}
 ActionResult.as_json = action_result_as_json
 
+
 def format_result(result):
     if not isinstance(result, tuple):
         return ActionResult(result, 'Success')
     else:
         return ActionResult(*result)
+
 
 def tag(func, tag_name):
     setattr(func, tag_name, True)

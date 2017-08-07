@@ -5,6 +5,8 @@ from flask_security import roles_accepted
 from core import helpers
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from core.options import Options
+import core.case.database as case_database
+from core.case.workflowresults import WorkflowResult
 import core.config.config
 import core.config.paths
 from server.return_codes import *
@@ -504,7 +506,10 @@ def add_default_template(playbook_name, workflow_name):
 
 def read_results():
     ret = []
-    for workflow_uuid, result in server.workflowresults.results.items():
+    completed_workflows = [workflow.as_json() for workflow in
+                           case_database.case_db.session.query(WorkflowResult).filter(
+                               WorkflowResult.status == 'completed').all()]
+    for result in completed_workflows:
         if result['status'] == 'completed':
             ret.append({'name': result['name'],
                         'timestamp': result['completed_at'],
@@ -513,4 +518,5 @@ def read_results():
 
 
 def read_all_results():
-    return server.workflowresults.results, SUCCESS
+    return [workflow.as_json() for workflow in
+            case_database.case_db.session.query(WorkflowResult).all()], SUCCESS

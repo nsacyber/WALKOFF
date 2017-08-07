@@ -243,3 +243,31 @@ def create_user():
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers
+
+
+def create_test_data():
+    from server.context import running_context
+    from . import database
+    from server import flaskserver
+
+    running_context.db.create_all()
+
+    if not database.User.query.first():
+        admin_role = running_context.user_datastore.create_role(name='admin',
+                                                                description='administrator',
+                                                                pages=flaskserver.default_urls)
+
+        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        running_context.user_datastore.add_role_to_user(u, admin_role)
+        running_context.db.session.commit()
+
+    apps = set(helpers.list_apps()) - set([_app.name
+                                           for _app in running_context.db.session.query(running_context.App).all()])
+    app.logger.debug('Found apps: {0}'.format(apps))
+    for app_name in apps:
+        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+    running_context.db.session.commit()
+
+    running_context.CaseSubscription.sync_to_subscriptions()
+
+    app.logger.handlers = logging.getLogger('server').handlers

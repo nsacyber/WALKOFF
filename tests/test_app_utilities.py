@@ -18,9 +18,9 @@ class TestAppUtilities(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # reset the app database table for other tests
-        from server.app import create_user
+        from server.app import create_test_data
         with flaskserver.running_context.flask_app.app_context():
-            create_user()
+            create_test_data()
 
     def test_get_all_devices_for_nonexistent_app_empty_db(self):
         self.assertListEqual(App.get_all_devices_for_app('non-existent-app'), [])

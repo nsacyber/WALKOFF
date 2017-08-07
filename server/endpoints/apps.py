@@ -106,7 +106,7 @@ def create_device(app_name, device_name):
             except (OSError, IOError) as e:
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Could not get key from AES key file. '
-                                         'Error: {2}'.format(device_name, app_name, e))
+                                         'Error: {2}'.format(device_name, app_name, helpers.format_exception_message(e)))
                 return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
@@ -215,7 +215,8 @@ def import_devices(app_name):
                 read_file = read_file.replace('\n', '')
                 apps_devices = json.loads(read_file)
         except (OSError, IOError) as e:
-            current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
+            current_app.logger.error('Error importing devices from {0}: '
+                                     '{1}'.format(filename, helpers.format_exception_message(e)))
             return {"error": "Error reading file."}, IO_ERROR
         for app in apps_devices:
             for device in apps_devices[app]:
@@ -255,7 +256,8 @@ def export_devices(app_name):
             with open(filename, 'w') as appdevice_file:
                 appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
         except (OSError, IOError) as e:
-            current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
+            current_app.logger.error('Error importing devices from {0}: '
+                                     '{1}'.format(filename, helpers.format_exception_message(e)))
             return {"error": "Error writing file"}, IO_ERROR
         else:
             current_app.logger.debug('Exported devices to {0}'.format(filename))

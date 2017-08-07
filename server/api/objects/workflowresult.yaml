@@ -23,7 +23,7 @@ CompleteWorkflowResults:
 
 DetailedWorkflowResult:
   type: object
-  required: [name, started_at, status, results]
+  required: [name, started_at, status, results, uid]
   properties:
     name:
       description: The name of the workflow. Contains both playbook and workflow information
@@ -50,6 +50,9 @@ DetailedWorkflowResult:
       type: array
       items:
         $ref: '#/definitions/DetailedStepResult'
+    uid:
+      description: The UID of the workflow
+      type: string
 
 DetailedStepResult:
   type: object

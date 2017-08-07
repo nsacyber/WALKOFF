@@ -17,7 +17,7 @@ from core import workflow as wf
 from core.case import callbacks
 from core.case import subscription
 from core.helpers import (locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name,
-                          UnknownAppAction, UnknownApp, InvalidInput)
+                          UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -81,7 +81,8 @@ def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
     try:
         workflow.execute(**args)
     except Exception as e:
-        logger.error('Caught error while executing workflow {0}. {1}'.format(workflow.name, e))
+        logger.error('Caught error while executing workflow {0}. {1}'.format(workflow.name,
+                                                                             format_exception_message(e)))
     return "done"
 
 
@@ -130,7 +131,7 @@ class Controller(object):
             self.workflows[key] = wf.Workflow(name=name, xml=xml, parent_name=self.name, playbook_name=playbook)
             logger.info('Adding workflow {0} to controller'.format(name))
         except (UnknownApp, UnknownAppAction, InvalidInput) as e:
-            logger.error('Cannot load workflow {0}: Error: {1}'.format(key, str(e)))
+            logger.error('Cannot load workflow {0}: Error: {1}'.format(key, format_exception_message(e)))
 
     def load_workflow_from_file(self, path, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.

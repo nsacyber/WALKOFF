@@ -227,6 +227,13 @@ class TestStep(unittest.TestCase):
         self.basic_json['widgets'] = [{'app': widget[0], 'name': widget[1]} for widget in widgets]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
+    def test_as_json_after_executed(self):
+        step = Step(app='HelloWorld', action='helloWorld')
+        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        step.execute(instance.instance, {})
+        step_json = step.as_json()
+        self.assertDictEqual(step_json['output'], ActionResult({'message': 'HELLO WORLD'}, 'Success').as_json())
+
     def __check_xml(self, step,
                     app='HelloWorld',
                     action='helloWorld',
@@ -566,7 +573,7 @@ class TestStep(unittest.TestCase):
         result = step.execute(instance.instance, {})
         end = time.time()
         self.assertTupleEqual(result, (4, 'Success'))
-        self.assertTrue((end-start) > 0.1)
+        self.assertGreater((end-start), 0.1)
 
     def test_get_next_step_no_next_steps(self):
         step = Step(app='HelloWorld', action='helloWorld')

@@ -9,16 +9,16 @@ from core.config.paths import case_db_path
 import core.config.config
 from core.helpers import format_db_path
 
-_Base = declarative_base()
+Case_Base = declarative_base()
 
 
-class _CaseEventLink(_Base):
+class _CaseEventLink(Case_Base):
     __tablename__ = 'case_event'
     case_id = Column(Integer, ForeignKey('case.id'), primary_key=True)
     event_id = Column(Integer, ForeignKey('event.id'), primary_key=True)
 
 
-class Case(_Base):
+class Case(Case_Base):
     """Case ORM for the events database
     """
     __tablename__ = 'case'
@@ -43,7 +43,7 @@ class Case(_Base):
         return output
 
 
-class Event(_Base):
+class Event(Case_Base):
     """ORM for an Event in the events database
     """
     __tablename__ = 'event'
@@ -123,8 +123,8 @@ class CaseDatabase(object):
         Session.configure(bind=self.engine)
         self.session = scoped_session(Session)
 
-        _Base.metadata.bind = self.engine
-        _Base.metadata.create_all(self.engine)
+        Case_Base.metadata.bind = self.engine
+        Case_Base.metadata.create_all(self.engine)
 
     def tear_down(self):
         """ Tears down the database
@@ -256,8 +256,8 @@ def initialize():
     """ Initializes the case database
     """
 
-    _Base.metadata.drop_all()
-    _Base.metadata.create_all()
+    Case_Base.metadata.drop_all()
+    Case_Base.metadata.create_all()
 
 
 # Teardown Module

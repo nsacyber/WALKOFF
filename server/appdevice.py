@@ -2,9 +2,9 @@ import json
 from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-# from core.api import WalkoffAppDefinition
 from . import database
 import core.config.paths
+from core.helpers import format_exception_message
 import pyaes
 import logging
 
@@ -180,7 +180,7 @@ class Device(database.Base):
                     key = key_file.read()
             except (OSError, IOError) as e:
                 current_app.logger.error('Error loading AES key from from {0}: '
-                                         '{1}'.format(core.config.paths.AES_key_path, e))
+                                         '{1}'.format(core.config.paths.AES_key_path, format_exception_message(e)))
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
                 pw = data['password']

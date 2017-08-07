@@ -1,7 +1,7 @@
 /workflowresults:
   get:
     tags: [Workflows]
-    summary: Gets the results of the last 50 workflows
+    summary: Gets a summary of the results of the workflows
     description: ''
     operationId: server.endpoints.playbooks.read_results
     produces: [application/json]
@@ -16,7 +16,7 @@
 /workflowresults/all:
   get:
     tags: [Workflow]
-    summary: Gets all the results from all teh executed workflows
+    summary: Gets all the results from all the executed workflows
     operationId: server.endpoints.playbooks.read_all_results
     produces: [application/json]
     responses:

@@ -13,7 +13,7 @@ from swagger_spec_validator.validator20 import deref
 
 import core.config.config
 import core.config.paths
-from core.helpers import InvalidInput, get_function_arg_names, InvalidApi
+from core.helpers import InvalidInput, get_function_arg_names, InvalidApi, format_exception_message
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +280,8 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix):
         except ValidationError as exception:
             message = '{0} has invalid input. ' \
                       'Input {1} with type {2} does not conform to ' \
-                      'validators: {3}'.format(message_prefix, value, parameter_type, str(exception))
+                      'validators: {3}'.format(message_prefix, value, parameter_type,
+                                               format_exception_message(exception))
             logger.error(message)
             raise InvalidInput(message)
         return converted_value
@@ -301,7 +302,7 @@ def validate_parameter(value, param, message_prefix):
                         param, format_checker=draft4_format_checker).validate(converted_value)
                 except ValidationError as exception:
                     message = '{0} has invalid input. Input {1} does not conform to ' \
-                              'validators: {2}'.format(message_prefix, value, str(exception))
+                              'validators: {2}'.format(message_prefix, value, format_exception_message(exception))
                     logger.error(message)
                     raise InvalidInput(message)
             else:
@@ -313,7 +314,7 @@ def validate_parameter(value, param, message_prefix):
                     param['schema'], format_checker=draft4_format_checker).validate(converted_value)
             except ValidationError as exception:
                 message = '{0} has invalid input. Input {1} does not conform to ' \
-                          'validators: {2}'.format(message_prefix, value, str(exception))
+                          'validators: {2}'.format(message_prefix, value, format_exception_message(exception))
                 logger.error(message)
                 raise InvalidInput(message)
     elif param.get('required'):
@@ -350,7 +351,7 @@ def validate_parameters(api, inputs, message_prefix):
                 default_param = param_api['default']
                 logger.warning(
                     'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
-                    'Using anyways'.format(message_prefix, param_name, param_api['default'], e.message))
+                    'Using anyways'.format(message_prefix, param_name, param_api['default'], format_exception_message(e)))
 
             converted[param_name] = default_param
             input_set.add(param_name)
