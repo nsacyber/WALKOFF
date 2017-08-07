@@ -44,6 +44,29 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
+	addCase(caseToAdd: Case) : Promise<Case> {
+		return this.http.put('/api/cases', caseToAdd, this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Case)
+			.catch(this.handleError);
+	}
+
+	editCase(caseToEdit: Case) : Promise<Case> {
+		return this.http.post('/api/cases', caseToEdit, this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Case)
+			.catch(this.handleError);
+	}
+
+	deleteCase(id: number) : Promise<void> {
+		return this.http.delete(`/api/cases/${id}`, this.requestOptions)
+			.toPromise()
+			.then(() => null)
+			.catch(this.handleError);
+	}
+
 	private extractData (res: Response) {
 		let body = res.json();
 		return body || {};

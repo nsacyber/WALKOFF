@@ -1,0 +1,37 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+	<div class="container-fluid">
+		<div class="row">
+			<form #caseForm="ngForm" (ngSubmit)="submit()">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" class="form-control" [(ngModel)]="workingCase.name" name="name" #name="ngModel" required>
+						<div *ngIf="name.errors && (name.dirty || name.touched)" class="alert alert-danger">
+							<div [hidden]="!name.errors.required">
+								Name is required.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">Note</label>
+						<input type="textarea" class="form-control" [(ngModel)]="workingCase.note" #note="ngModel" name="note">
+						<!--<div *ngIf="note.errors && (note.dirty || note.touched)" class="alert alert-danger">
+							<div [hidden]="!note.errors.required">
+								The note is required.
+							</div>
+						</div>-->
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!caseForm.form.valid" (click)="submit()">{{submitText}}</button>
+</div>

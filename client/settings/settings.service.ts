@@ -57,7 +57,7 @@ export class SettingsService {
 	}
 
 	deleteUser(id: number) : Promise<void> {
-		return this.http.delete('/api/users/' + id, this.requestOptions)
+		return this.http.delete(`/api/users/${id}`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);

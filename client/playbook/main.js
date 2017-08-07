@@ -37,7 +37,6 @@ $(function(){
     // Reformat the JSON data returned from the /playbook endpoint
     // into a format that jsTree can understand.
     function formatWorkflowJsonDataForJsTree(data) {
-        data = data.playbooks;
         workflowList = data;
         var jstreeData = [];
         _.each(data, function(workflows, playbookName) {
@@ -119,21 +118,24 @@ $(function(){
         // number of inputs will be displayed in the form.
         function convertInputToSchema(args, inputName) {
             var subSchema = {
-                type: "object",
+                // type: "object",
+                type: "array",
                 title: "Inputs",
-                required: ['$action'],
+                // required: ['$action'],
                 options: {
                     hidden: args.length === 0
                 },
-                properties: {
-                    $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
-                        type: "string",
-                        enum: [inputName],
-                        options: {
-                            hidden: true
-                        }
-                    }
-                }
+                //Items populated below
+                items: []
+                // properties: {
+                //     $action: { // We need this to make sure each input is unique, since oneOf requires an exact match.
+                //         type: "string",
+                //         enum: [inputName],
+                //         options: {
+                //             hidden: true
+                //         }
+                //     }
+                // }
             };
 
             _.each(args, function(arg, index) {
@@ -173,33 +175,28 @@ $(function(){
                 //     };
                 // }
 
-                subSchema.properties[inputName] = {
+                // subSchema.properties[inputName] = {
+                subSchema.items.push({
                     type: "object",
                     title: "Input " + (index+1) + ": " + inputName + (input.required ? ' *' : ''),
-                    propertyOrder: index,
+                    // propertyOrder: index,
                     options: {
                         disable_collapse: true
                     },
                     properties: {
                         value: input,
-                        key: { // This is hidden since it should not be modified by user
+                        name: { // This is hidden since it should not be modified by user
                             type: "string",
                             default: inputName,
                             options: {
                                 hidden: true
                             }
-                        },
-                        format: { // This is hidden since it should not be modified by user
-                            type: "string",
-                            default: input.type,
-                            options: {
-                                hidden: true
-                            }
                         }
                     }
-                }
+                });
             });
 
+            console.log(subSchema);
             return subSchema;
         }
 
@@ -209,7 +206,7 @@ $(function(){
         var actionInputSchema = convertInputToSchema(appData[parameters.app].actions[parameters.action].args, parameters.action);
 
         // Create the sub-schema for the flags
-        var flags = flagsList;
+        var flags = _.cloneDeep(flagsList);
         var oneOfFlags = [];
         _.each(flags, function(flagProperties, flagName) {
             var args = flagProperties.args;
@@ -221,7 +218,7 @@ $(function(){
         });
 
         // Create the sub-schema for the filters
-        var filters = filtersList;
+        var filters = _.cloneDeep(filtersList);
         var oneOfFilters = [];
         _.each(filters, function(filterProperties, filterName) {
             var args = filterProperties.args;
@@ -356,7 +353,7 @@ $(function(){
         // so to distinguish the two actions place the action name in
         // in the $action property. This action is hidden and cannot be
         // modified by the user.
-        parameters.input.$action = parameters.action;
+        // parameters.$action = parameters.action;
 
         _.each(parameters.next, function(nextStep) {
             _.each(nextStep.flags, function(flag) {
@@ -377,8 +374,8 @@ $(function(){
     function transformParametersFromSchema(_parameters) {
         var parameters =  _.cloneDeep(_parameters);
 
-        parameters.action = parameters.input.$action;
-        delete parameters.input.$action;
+        // parameters.action = parameters.$action;
+        // delete parameters.input.$action;
 
         _.each(parameters.next, function(nextStep) {
             _.each(nextStep.flags, function(flag) {
@@ -525,8 +522,7 @@ $(function(){
                 defaultValue = 0;
 
             inputs[inputInfo.name] = {
-                format: inputInfo.type,
-                key: inputInfo.name,
+                name: inputInfo.name,
                 value: defaultValue
             };
         });
@@ -640,7 +636,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + oldPlaybookName,
+            'url': "/api/playbooks/" + oldPlaybookName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'data': JSON.stringify({'new_name': newPlaybookName}),
@@ -661,7 +657,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + oldPlaybookName + "/copy",
+            'url': "/api/playbooks/" + oldPlaybookName + "/copy",
             'dataType': 'json',
             'data': {playbook: newPlaybookName},
             'success': function (data) {
@@ -681,7 +677,7 @@ $(function(){
             'type': "DELETE",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName,
+            'url': "/api/playbooks/" + playbookName,
             'success': function (data) {
                 downloadWorkflowList();
 
@@ -703,7 +699,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
+            'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'data': JSON.stringify({'new_name': newWorkflowName}),
@@ -724,7 +720,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
+            'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
             'dataType': 'json',
             'data': {playbook: playbookName, workflow: newWorkflowName},
             'success': function (data) {
@@ -744,7 +740,7 @@ $(function(){
             'type': "DELETE",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName,
+            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
             'success': function (data) {
                 downloadWorkflowList();
 
@@ -766,7 +762,7 @@ $(function(){
             'type': "PUT",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName,
+            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
             'success': function (data) {
                 saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
@@ -810,9 +806,15 @@ $(function(){
     }
 
     function saveWorkflow(playbookName, workflowName, _workflowData) {
-        var workflowData = _.cloneDeep(_workflowData);
-        transformInputsToSave(workflowData);
-        var data = JSON.stringify({start: startNode, cytoscape: JSON.stringify(workflowData)});
+        var workflowData = _.filter(_workflowData, function (data) { return data.group === "nodes"; });
+
+        var steps = _.map(workflowData, function (step) {
+            var ret = _.cloneDeep(step.data.parameters);
+            ret.position = _.clone(step.position);
+            return ret;
+        });
+        // transformInputsToSave(workflowData);
+        var data = JSON.stringify({start: startNode, steps: steps });
         $.ajax({
             'async': false,
             'type': "POST",
@@ -820,7 +822,7 @@ $(function(){
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
+            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
             'data': data,
             'success': function (data) {
                 $.notify('Workflow ' + workflowName + ' saved successfully.', 'success');
@@ -909,7 +911,7 @@ $(function(){
                 'type': "GET",
                 'global': false,
                 'headers':{"Authentication-Token":authKey},
-                'url': "/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
+                'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
                     _.each(data.steps, function (step) {
                         if (step.group === 'nodes') setNodeDisplayProperties(step);
@@ -1104,14 +1106,31 @@ $(function(){
         // Load the data into the graph
         // If a node does not have a label field, set it to
         // the action. The label is what is displayed in the graph.
+        var edges = [];
         var steps = workflowData.steps.map(function(value) {
-            if (!value.data.hasOwnProperty("label")) {
-                value.data.label = value.data.parameters.action;
-            }
-            return value;
+            var ret = { group: "nodes", position: _.clone(value.position) };
+            ret.data = { id: value.name, parameters: _.cloneDeep(value), label: value.action };
+            setNodeDisplayProperties(ret);
+            _.each(value.next, function (nextStep) {
+                edges.push({
+                    group: "edges",
+                    data: {
+                        id: value.name + nextStep.name,
+                        source: value.name,
+                        target: nextStep.name,
+                        parameters: _.clone(nextStep)
+                    }
+                });
+            });
+            // if (!value.data.hasOwnProperty("label")) {
+            //     ret.data.label = value.action;
+            // }
+            return ret;
         });
 
-        transformInputsToLoad(workflowData);
+        steps = steps.concat(edges);
+
+        // transformInputsToLoad(workflowData);
 
         cy.add(steps);
 
@@ -1252,7 +1271,7 @@ $(function(){
             'type': "GET",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/playbooks",
+            'url': "/api/playbooks",
             'success': function (data) {
                 //Destroy the existing tree if necessary
                 if ($("#workflows").jstree(true))
@@ -1503,7 +1522,7 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
+            'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
                 console.log(currentWorkflow + ' is scheduled to execute.', 'success');
                 //Set up event listener for workflow results if possible
@@ -1680,7 +1699,7 @@ $(function(){
         'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/flags",
+        'url': "/api/flags",
         'dataType': 'json',
         'success': function (data) {
             flagsList = data.flags;
@@ -1693,7 +1712,7 @@ $(function(){
         'type': "GET",
         'global': false,
         'headers':{"Authentication-Token":authKey},
-        'url': "/filters",
+        'url': "/api/filters",
         'dataType': 'json',
         'success': function (data) {
             filtersList = data.filters;
