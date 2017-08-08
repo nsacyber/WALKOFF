@@ -57,40 +57,44 @@ h1 {
 	height: 700px;
 	float: left
 }*/
+.tab-content > div{
+    height:80vh;
+}
 #palette{
 	display: inline-block;
 	vertical-align: top;
-	height: 100%;
-	width: 300px;
+	width: 10%
 }
-#graphEditor > div {
-	max-height: 700px;
-}
+
 #workflows{
 	min-height: 200px;
 	max-height: 500px;
 	overflow-y:scroll;
 	width:100%;
 }
+#actionContainer{
+    width:100%;
+}
+#actionsLabel{
+    height:30px;
+}
 #actions{
 	overflow-y:scroll;
-	width:100%;
-	max-height: 700px;
 }
 #playbookEditorTabs{
 	display: inline-block;
 	vertical-align: top;
 	height: 100%;
+	width:100%;
 	position: inherit;
 	background: transparent;
 }
 #cy {
 	display: inline-block;
 	vertical-align: top;
-	height: 700px; /* == 700 minus 49 (where 49 is the height of the tab) */
-	width: 850px;
-	position: relative;
-	left: 0;
+
+	width: 70%;
+
 	/*background-color: white;
 	background-image: url("{{ url_for('static', filename='pages/playbook/img/backgroundGrid.png') }}");*/
 }
@@ -106,13 +110,11 @@ h1 {
 	width: 500px;
 	resize: none;
 }
-#parametersBar{
-	height: 651px; /* == 700 minus 49 (where 49 is the height of the tab) */
-	width: 450px;
+#parameters{
+
+	width: 18%;
 	display: inline-block;
 	vertical-align: top;
-	height: 700px;
-	width: 400px;
 	overflow-y:auto;
 	background-color:#f5f5f5;
 }
