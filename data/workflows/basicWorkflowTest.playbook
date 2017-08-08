@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<workflows>
+	<workflow name="helloWorldWorkflow">
+		<options>
+			<enabled>true</enabled>
+			<scheduler autorun="false" type="cron">
+				<hours>*</hours>
+				<minutes>*/0.1</minutes>
+				<day>*</day>
+				<month>11-12</month>
+			</scheduler>
+		</options>
+		<start>1</start>
+		<steps>
+			<step id="1">
+				<name>1</name>
+				<app>HelloWorld</app>
+				<action>helloWorld</action>
+				<position>
+					<x>-450.0</x>
+					<y>-50.0</y>
+				</position>
+				<next step="2"/>
+			</step>
+			<step id="3">
+				<name>3</name>
+				<app>HelloWorld</app>
+				<action>helloWorld</action>
+				<position>
+					<x>-50.0</x>
+					<y>10.0</y>
+				</position>
+			</step>
+			<step id="2">
+				<name>2</name>
+				<app>HelloWorld</app>
+				<action>helloWorld</action>
+				<position>
+					<x>-230.0</x>
+					<y>-30.0</y>
+				</position>
+				<next step="3"/>
+			</step>
+		</steps>
+	</workflow>
+</workflows>
