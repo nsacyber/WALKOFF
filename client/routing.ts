@@ -2,6 +2,7 @@ import { NgModule }             from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { ControllerComponent }	from './controller/controller.component';
+import { DashboardComponent }	from './dashboard/dashboard.component';
 import { PlaybookComponent }	from './playbook/playbook.component';
 import { DevicesComponent }		from './devices/devices.component';
 import { TriggersComponent }	from './triggers/triggers.component';
@@ -10,8 +11,8 @@ import { SettingsComponent }	from './settings/settings.component';
 //etc
 
 const routes: Routes = [
-	{ path: '', redirectTo: '/controller', pathMatch: 'full' },
-	// { path: 'dashboard', component: DashboardComponent },
+	{ path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+	{ path: 'dashboard', component: DashboardComponent },
 	{ path: 'controller', component: ControllerComponent },
 	{ path: 'playbook', component: PlaybookComponent },
 	{ path: 'devices', component: DevicesComponent },
