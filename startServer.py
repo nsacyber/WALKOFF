@@ -1,7 +1,6 @@
 import logging.config
 from gevent import ssl
 from os.path import isfile
-import json
 from gevent.wsgi import WSGIServer
 from core.config import config, paths
 from apps import *

@@ -18,7 +18,7 @@ import { DevicesComponent } from './devices/devices.component';
 import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
-
+import { DashboardComponent } from './dashboard/dashboard.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
 import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
@@ -42,6 +42,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		//Router module components
 		ControllerComponent,
 		PlaybookComponent,
+		DashboardComponent,
 		DevicesComponent,
 		TriggersComponent,
 		CasesComponent,
