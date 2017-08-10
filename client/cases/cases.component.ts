@@ -31,7 +31,7 @@ export class CasesComponent {
 	eventFilterQuery: FormControl = new FormControl();
 	caseFilterQuery: FormControl = new FormControl();
 
-	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {
@@ -82,7 +82,7 @@ export class CasesComponent {
 			.getCases()
 			.then((cases) => {
 				this.displayCases = this.cases = cases;
-				this.availableCases = [{ id: '', text: ''}].concat(cases.map((c) => { return { id: c.id.toString(), text: c.name } }));
+				this.availableCases = [{ id: '', text: '' }].concat(cases.map((c) => { return { id: c.id.toString(), text: c.name } }));
 			})
 			.catch(e => this.toastyService.error(`Error retrieving cases: ${e.message}`));
 	}
@@ -103,7 +103,7 @@ export class CasesComponent {
 		modalRef.componentInstance.title = 'Add New Case';
 		modalRef.componentInstance.submitText = 'Add Case';
 		modalRef.componentInstance.workingCase = new Case();
-		
+
 		this._handleModalClose(modalRef);
 	}
 
@@ -126,16 +126,17 @@ export class CasesComponent {
 				if (result.isEdit) {
 					let toUpdate = _.find(this.cases, c => c.id === result.case.id);
 					Object.assign(toUpdate, result.case);
-					toUpdate = _.find(this.displayCases, c => c.id === result.case.id);
-					if (toUpdate) 
-						Object.assign(toUpdate, result.case);
+
+					this.filterCases();
 
 					this.toastyService.success(`Case "${result.case.name}" successfully edited.`);
 				}
 				//On add, push the new item
 				else {
 					this.cases.push(result.case);
+
 					this.filterCases();
+
 					this.toastyService.success(`Case "${result.case.name}" successfully added.`);
 				}
 			},
@@ -149,7 +150,8 @@ export class CasesComponent {
 			.deleteCase(caseToDelete.id)
 			.then(() => {
 				this.cases = _.reject(this.cases, c => c.id === caseToDelete.id);
-				this.displayCases = _.reject(this.displayCases, c => c.id === caseToDelete.id);
+
+				this.filterCases();
 
 				this.toastyService.success(`Case "${caseToDelete.name}" successfully deleted.`);
 			})

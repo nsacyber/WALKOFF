@@ -10,10 +10,6 @@ else {
 $(function(){
     "use strict";
 
-    $(".nav-tabs ul li a").each(function() {
-        $(this).attr("href", location.href.toString()+$(this).attr("href"));
-    });
-
     //--------------------
     // Top level variables
     //--------------------
@@ -759,9 +755,11 @@ $(function(){
             'type': "PUT",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
+            'dataType': 'json',
+            'data': JSON.stringify({name: workflowName}),
+            'contentType': 'application/json; charset=utf-8',
+            'url': "/api/playbooks/" + playbookName + "/workflows",
             'success': function (data) {
-                saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
 
                 //If nothing is currently loaded, load our new workflow.
@@ -830,6 +828,10 @@ $(function(){
     }
 
     function saveWorkflow(playbookName, workflowName, _workflowData) {
+        if (!startNode) {
+            $.notify('Workflow cannot be saved without a starting step.', 'warning');
+            return;
+        }
         var workflowData = _.filter(_workflowData, function (data) { return data.group === "nodes"; });
 
         var steps = _.map(workflowData, function (step) {
@@ -937,10 +939,6 @@ $(function(){
                 'headers':{"Authentication-Token":authKey},
                 'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
-                    _.each(data.steps, function (step) {
-                        if (step.group === 'nodes') setNodeDisplayProperties(step);
-                    });
-
                     tmp = data;
                 },
                 'error': function (e) {
@@ -1174,6 +1172,8 @@ $(function(){
 
         $("#cy-json-data").val(JSON.stringify(workflowData, null, 2));
 
+        //Enable our execute button once we load a workflow
+        $("execute-button").removeAttr('disabled');
     }
 
 
@@ -1484,10 +1484,6 @@ $(function(){
         $(this).attr("href", location.href.toString()+$(this).attr("href"));
     });
 
-    $(".nav-tabs a").click(function(){
-        $(this).tab('show');
-    });
-
     // Handle drops onto graph
     $( "#cy" ).droppable( {
         drop: handleDropEvent
@@ -1511,7 +1507,7 @@ $(function(){
 
     // Handle new button press
     $( "#new-button" ).click(function() {
-        $("#workflows-tab").tab('show');
+        // $("#workflows-tab").tab('show');
         showDialog("Create New Workflow",
                    "Playbook Name",
                    "",
@@ -1565,7 +1561,7 @@ $(function(){
         if (cy === null)
             return;
 
-        if ($("#playbookEditorTabs ul li.ui-state-active").index() == 0) {
+        if ($(".nav-tabs .active").text() === "Graphical Editor") {
             // If the graphical editor tab is active
             saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
         } else {
@@ -1747,11 +1743,6 @@ $(function(){
     // Other setup
     //---------------------------------
     showInstruction();
-
-    $("#playbookEditorTabs UL LI A").each(function() {
-        $(this).attr("href", location.href.toString()+$(this).attr("href"));
-    });
-    $("#playbookEditorTabs").tabs();
 
     function getStepTemplate() {
         return {

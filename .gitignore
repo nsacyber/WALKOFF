@@ -19,12 +19,8 @@ build/*
 data/log/*.log
 server/api/composed_api.yaml
 node_modules/
-<<<<<<< HEAD
-.vscode/
-=======
 .vscode/
 client/build/
 .idea/markdown-navigator/profiles_settings.xml
 .idea/markdown-navigator.xml
 .idea/markdown-exported-files.xml
->>>>>>> bdd538282805fd5da70d7e2a3650b114796611c1
