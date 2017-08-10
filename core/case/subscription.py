@@ -185,7 +185,7 @@ class CaseSubscriptions(object):
         """Gets the JSON representation of all the CaseSubscription object.
 
         Args:
-            names (booloptional): Should the names of the controller events be converted to names? Defaults to False
+            names (bool, optional): Should the names of the controller events be converted to names? Defaults to False
 
         Returns:
             The JSON representation of the CaseSubscription object.
@@ -232,6 +232,7 @@ def set_subscriptions(new_subscriptions):
     global subscriptions
     subscriptions = new_subscriptions
     database.case_db.add_cases(new_subscriptions.keys())
+    database.case_db.add_cases(new_subscriptions.keys())
 
 
 def add_cases(cases):
@@ -253,7 +254,7 @@ def delete_cases(cases):
     """ Deletes the cases from  the subscriptions
     
     Args:
-        cases (list[str]): The names of teh cases to remove
+        cases (list[str]): The names of the cases to remove
     """
     valid_cases = []
     for case_name in cases:
@@ -267,7 +268,7 @@ def rename_case(old_case_name, new_case_name):
     """ Renames a case
     
     Args:
-        old_case_name (str): Case name to change
+        old_case_name (str): Old Case name
         new_case_name (str): Case's new name
     """
     if old_case_name in subscriptions:

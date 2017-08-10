@@ -8,7 +8,7 @@ from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
 from tests.apps import App
-import json
+
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
@@ -43,7 +43,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         step = steps[0]
         ancestry = step['ancestry'].split(',')
         self.assertEqual(ancestry[-1], "start")
-        result = json.loads(step['data'])
+        result = step['data']
         self.assertDictEqual(result['result'], {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
@@ -63,7 +63,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             if type(name_result[name]) == dict:
                 self.assertDictEqual(result['result'], name_result[name])
             else:
@@ -86,7 +86,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             self.assertDictEqual(result['result'], name_result[name])
 
     def test_workflow_with_dataflow(self):
@@ -107,7 +107,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             self.assertDictEqual(result['result'], name_result[name])
 
     def test_workflow_with_dataflow_step_not_executed(self):

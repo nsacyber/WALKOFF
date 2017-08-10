@@ -6,10 +6,12 @@ ActionMetricDetails:
       description: Number of times the action has been called
       type: integer
       example: 102
+      readOnly: true
     avg_time:
       description: Average execution time for the action. As a timestamp format
       type: string
       example: '0:00:00.001000'
+      readOnly: true
 ActionMetric:
   type: object
   required: [name]
@@ -18,6 +20,7 @@ ActionMetric:
       description: Action name
       type: string
       example: repeatBackToMe
+      readOnly: true
     success_metrics:
       $ref: '#/definitions/ActionMetricDetails'
     error_metrics:
@@ -30,10 +33,12 @@ AppMetricDetails:
       description: Name of app
       type: string
       example: HelloWorld
+      readOnly: true
     count:
       description: Number of times the app has been used
       type: integer
       example: 42
+      readOnly: true
     actions:
       description: Metrics of the app's actions
       type: array
@@ -57,14 +62,17 @@ WorkflowMetric:
       description: Name of the workflow
       type: string
       example: HelloWorldWorkflow
+      readOnly: true
     count:
       description: Number of times the workflow has been used
       type: integer
       example: 42
+      readOnly: true
     avg_time:
       description: The average run time of this workflow
       type: string
       example: '1 day, 0:01:40.000500'
+      readOnly: true
 WorkflowMetrics:
   type: object
   required: [workflows]

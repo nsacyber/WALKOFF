@@ -100,7 +100,7 @@ class ServerTestCase(unittest.TestCase):
         elif method.lower() == 'delete':
             response = self.app.delete(url, **kwargs)
         else:
-            raise ValueError('method must be either get or post')
+            raise ValueError('method must be either get, put, post, or delete')
         self.assertEqual(response.status_code, status_code)
         response = json.loads(response.get_data(as_text=True))
         if error:

@@ -10,7 +10,7 @@ logger = logging.getLogger('startserver')
 
 
 def get_ssl_context():
-    if config.https.lower() == "true":
+    if config.https:
         # Sets up HTTPS
         if config.tls_version == "1.2":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -23,8 +23,9 @@ def get_ssl_context():
             context.load_cert_chain(paths.certificate_path, paths.private_key_path)
             return context
         else:
-            flaskserver.display_if_file_not_found(paths.certificate_path)
-            flaskserver.display_if_file_not_found(paths.private_key_path)
+            print('Certificates not found')
+            # flaskserver.display_if_file_not_found(paths.certificate_path)
+            # flaskserver.display_if_file_not_found(paths.private_key_path)
     return None
 
 

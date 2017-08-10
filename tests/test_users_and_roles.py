@@ -20,90 +20,113 @@ class TestUsersAndRoles(ServerTestCase):
             # server.database.db.session.commit()
 
             email = self.email
-            u = server.running_context.user_datastore.get_user(email)
-            if u:
-                server.running_context.user_datastore.delete_user(u)
+            user = server.running_context.user_datastore.get_user(email)
+            if user:
+                server.running_context.user_datastore.delete_user(user)
 
-            testu = server.running_context.user_datastore.get_user("test")
-            if testu:
-                server.running_context.user_datastore.delete_user(testu)
+            test_user = server.running_context.user_datastore.get_user("test")
+            if test_user:
+                server.running_context.user_datastore.delete_user(test_user)
 
             server.running_context.Role.query.filter_by(name=self.name).delete()
             server.database.db.session.commit()
 
     def test_add_role(self):
         data = {"name": self.name}
-        self.put_with_status_check('/roles/'+self.name, data=data, headers=self.headers, status_code=OBJECT_CREATED)
-        self.put_with_status_check('/roles/'+self.name, error='Role already exists.', data=data, headers=self.headers,
-                                   status_code=OBJECT_EXISTS_ERROR)
+        self.put_with_status_check('/api/roles', data=json.dumps(data), headers=self.headers,
+                                   status_code=OBJECT_CREATED, content_type='application/json')
+
+    def test_add_role_already_exists(self):
+        data = {"name": self.name}
+        self.app.put('/api/roles', data=json.dumps(data), headers=self.headers, content_type='application/json')
+        self.put_with_status_check('/api/roles', error='Role already exists.', data=json.dumps(data), headers=self.headers,
+                                   status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
 
     def test_display_all_roles(self):
         data = {"name": self.name}
-        self.put_with_status_check('/roles/'+self.name, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.app.put('/api/roles', data=json.dumps(data), headers=self.headers, content_type='application/json')
 
-        response = json.loads(self.app.get('/roles', headers=self.headers).get_data(as_text=True))
-        self.assertEqual(response, ["admin", self.name])
+        response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual([role['name'] for role in response], ["admin", self.name])
 
     def test_edit_role_description(self):
         data = {"name": self.name}
-        self.put_with_status_check('/roles/'+self.name, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.app.put('/api/roles', data=json.dumps(data), headers=self.headers, content_type='application/json')
 
         data = {"name": self.name, "description": self.description}
-        response = json.loads(
-            self.app.post('/roles/'+self.name, data=data, headers=self.headers).get_data(as_text=True))
+        response = self.post_with_status_check('/api/roles', data=json.dumps(data), headers=self.headers,
+                                               status_code=SUCCESS, content_type='application/json')
         self.assertEqual(response["name"], self.name)
         self.assertEqual(response["description"], self.description)
 
     def test_add_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.put_with_status_check('/api/users', data=json.dumps(data), headers=self.headers,
+                                   status_code=OBJECT_CREATED, content_type='application/json')
 
-        self.put_with_status_check('/users/'+self.email, error='User already exists.', data=data, headers=self.headers,
-                                   status_code=OBJECT_EXISTS_ERROR)
+    def test_add_user_already_exists(self):
+        data = {"username": self.email, "password": self.password}
+        self.app.put('/api/users', data=json.dumps(data), headers=self.headers, content_type='application/json')
+
+        self.put_with_status_check('/api/users', data=json.dumps(data), headers=self.headers,
+                                   status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
 
     def test_edit_user_password(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
-
-        data = {"password": self.password}
         response = json.loads(
-            self.app.post('/users/' + self.email, data=data, headers=self.headers).get_data(as_text=True))
-        self.assertEqual(response["username"], self.email)
-
-        data = {"password": "testPassword"}
-        self.app.post('/users/' + self.email, data=data, headers=self.headers)
+            self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
+                         content_type='application/json').get_data(as_text=True))
+        user_id = response['id']
+        data = {"old_password": self.password, "password": "testPassword", "id": user_id}
+        self.post_with_status_check('/api/users', data=json.dumps(data),
+                                    headers=self.headers, content_type='application/json', status_code=SUCCESS)
         with server.app.app_context():
             user = server.database.user_datastore.get_user(self.email)
             self.assertTrue(verify_password("testPassword", user.password))
 
+    def test_edit_user_password_does_not_match(self):
+        data = {"username": self.email, "password": self.password}
+        response = json.loads(
+            self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
+                         content_type='application/json').get_data(as_text=True))
+        user_id = response['id']
+        data = {"old_password": 'supersecretpassword#1!', "password": "testPassword", "id": user_id}
+        self.post_with_status_check('/api/users', data=json.dumps(data),
+                                    headers=self.headers, content_type='application/json', status_code=400)
+        with server.app.app_context():
+            user = server.database.user_datastore.get_user(self.email)
+            self.assertTrue(verify_password(self.password, user.password))
+
     def test_remove_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
-
-        self.delete_with_status_check('/users/{0}'.format(self.email), status_code=SUCCESS, headers=self.headers)
+        response = self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
+                     content_type='application/json').get_data(as_text=True)
+        user_id = json.loads(response)['id']
+        self.delete_with_status_check('/api/users/{0}'.format(user_id), status_code=SUCCESS, headers=self.headers)
 
     def test_add_role_to_user(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
-
+        response = self.app.put('/api/users', data=json.dumps(data), headers=self.headers, content_type='application/json')
+        user_id = json.loads(response.get_data(as_text=True))['id']
         data = {"name": self.name}
-        self.put_with_status_check('/roles/'+self.name, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.app.put('/api/roles', data=json.dumps(data), headers=self.headers, content_type='application/json')
 
-        data = {"role-0": "admin", "role-1": self.name}
-        response = json.loads(self.app.post('/users/' + self.email,
-                                            data=data, headers=self.headers).get_data(as_text=True))
-        roles = [self.name, "admin"]
-        self.assertEqual(len(roles), len(response["roles"]))
+        data = {"roles": [{"name": "admin"}, {"name": self.name}], "id": user_id}
+        response = self.post_with_status_check(
+            '/api/users', data=json.dumps(data), headers=self.headers,
+            status_code=SUCCESS, content_type='application/json')
+        self.assertEqual(len(response["roles"]), 2)
         self.assertEqual(response["roles"][0]["name"], "admin")
         self.assertEqual(response["roles"][1]["name"], self.name)
 
-    def test_add_user(self):
+    def test_get_all_users(self):
         data = {"username": self.email, "password": self.password}
-        self.put_with_status_check('/users/'+self.email, data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.app.put('/api/users', data=json.dumps(data), headers=self.headers, content_type='application/json')
 
         data = {"username": "test", "password": self.password}
-        self.put_with_status_check('/users/' + "test", data=data, headers=self.headers, status_code=OBJECT_CREATED)
+        self.app.put('/api/users', data=json.dumps(data), headers=self.headers, content_type='application/json')
 
-        response = self.app.get('/users').get_data(as_text=True)
-        self.assertIn(self.email, response)
-        self.assertIn("test", response)
+        response = self.get_with_status_check('/api/users', headers=self.headers, status_code=SUCCESS)
+        usernames = [user['username'] for user in response]
+        self.assertIn(self.email, usernames)
+        self.assertIn('test', usernames)

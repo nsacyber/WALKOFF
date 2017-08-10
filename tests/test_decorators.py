@@ -118,7 +118,7 @@ class TestEventDecorator(unittest.TestCase):
         duration = default_timer() - start
         self.assertTupleEqual(result, (test_data, 'Success'))
         self.assertSetEqual(event1.receivers, set())
-        self.assertTrue(duration > 0.1)
+        self.assertGreater(duration, 0.1)
 
     def test_event_execution_with_timeout(self):
         event1 = Event('Event1')

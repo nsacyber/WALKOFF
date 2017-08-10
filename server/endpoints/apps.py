@@ -14,7 +14,7 @@ def read_all_apps():
 
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
-        return {"apps": helpers.list_apps()}, SUCCESS
+        return helpers.list_apps(), SUCCESS
 
     return __func()
 

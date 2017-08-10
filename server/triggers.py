@@ -19,7 +19,7 @@ class Triggers(Base):
     condition = db.Column(db.String(255, convert_unicode=False), nullable=False)
     tag = db.Column(db.String(255), nullable=False)
 
-    def __init__(self, name, playbook, workflow, condition, tag=''):
+    def __init__(self, name, playbook, workflow, conditions, tag=''):
         """
         Constructs a Trigger object
         
@@ -27,45 +27,38 @@ class Triggers(Base):
             name (str): Name of the trigger object
             playbook (str): Playbook of the workflow to be connected to the trigger
             workflow (str): The workflow to be connected to the trigger
-            condition (str): String of the JSON representation of the conditional to be checked by the trigger
+            conditions (str): String of the JSON representation of the conditional to be checked by the trigger
             tag (str): An optional tag (grouping parameter) for the trigger
         """
         self.name = name
         self.playbook = playbook
         self.workflow = workflow
-        self.condition = condition
+        self.condition = json.dumps(conditions)
         self.tag = tag
 
-    def edit_trigger(self, form=None):
+    def edit_trigger(self, data):
         """Edits a trigger
         
         Args:
-            form (form, optional): Wtf-form containing the edited information
+            data (dict): JSON containing the edited information
             
         Returns:
             True on successful edit, False otherwise.
         """
-        if form:
-            if form.name.data:
-                self.name = form.name.data
+        if 'name' in data:
+            self.name = data['name']
 
-            if form.playbook.data:
-                self.playbook = form.playbook.data
+        if 'playbook':
+            self.playbook = data['playbook']
 
-            if form.playbook.data:
-                self.workflow = form.workflow.data
+        if 'workflow':
+            self.workflow = data['workflow']
 
-            if form.conditional.data:
-                try:
-                    json.loads(form.conditional.data)
-                    self.condition = form.conditional.data
-                except ValueError:
-                    return False
+        if 'conditions' in data:
+            self.condition = json.dumps(data['conditions'])
 
-            if form.tag.data:
-                self.tag = form.tag.data
-
-        return True
+        if 'tag' in data:
+            self.tag = data['tag']
 
     @staticmethod
     def update_playbook(old_playbook, new_playbook):
@@ -96,48 +89,49 @@ class Triggers(Base):
                 'tag': self.tag}
 
     @staticmethod
-    def execute(data_in, input_in, trigger_name=None, tags=None):
+    def execute(data, inputs, triggers=None, tags=None):
         """Tries to match the data_in against the conditionals of all the triggers registered in the database.
         
         Args:
-            data_in (str): Data to be used to match against the conditionals
-            input_in (list): The input to the first step of the workflow
-            trigger_name (str): The name of the specific trigger to execute
+            data (str): Data to be used to match against the conditionals
+            inputs (list): The input to the first step of the workflow
+            triggers (list): List of names of the specific trigger to execute
             tags (list): A list of tags to find the specific triggers to execute
             
         Returns:
             Dictionary of {"status": <status string>}
         """
-        triggers = set()
-        if trigger_name:
-            t = Triggers.query.filter_by(name=trigger_name).first()
-            if t:
-                triggers.add(t)
-        if tags:
+        from server.flaskserver import running_context
+        triggers_to_execute = set()
+        if triggers is not None:
+            for trigger in triggers:
+                t = Triggers.query.filter_by(name=trigger).first()
+                if t:
+                    triggers_to_execute.add(t)
+        if tags is not None:
             for tag in tags:
                 if len(Triggers.query.filter_by(tag=tag).all()) > 1:
                     for t in Triggers.query.filter_by(tag=tag):
-                        triggers.add(t)
+                        triggers_to_execute.add(t)
                 elif len(Triggers.query.filter_by(tag=tag).all()) == 1:
-                    triggers.add(Triggers.query.filter_by(tag=tag).first())
-        if not (trigger_name or tags):
-            triggers = Triggers.query.all()
+                    triggers_to_execute.add(Triggers.query.filter_by(tag=tag).first())
+        if not (triggers or tags):
+            triggers_to_execute = Triggers.query.all()
         returned_json = {'executed': [], 'errors': []}
-        from server.flaskserver import running_context
-        for trigger in triggers:
+        for trigger in triggers_to_execute:
             conditionals = json.loads(trigger.condition)
-            if all(Triggers.__execute_trigger(conditional, data_in) for conditional in conditionals):
+            if all(Triggers.__execute_trigger(conditional, data) for conditional in conditionals):
                 workflow_to_be_executed = running_context.controller.get_workflow(trigger.playbook, trigger.workflow)
                 if workflow_to_be_executed:
-                    if input_in:
+                    if inputs:
                         logger.info(
-                            'Workflow {0} executing with input {1}'.format(workflow_to_be_executed.name, input_in))
+                            'Workflow {0} executing with input {1}'.format(workflow_to_be_executed.name, inputs))
                     else:
                         logger.info('Workflow {0} executing with no input'.format(workflow_to_be_executed.name))
                     try:
                         uid = running_context.controller.execute_workflow(playbook_name=trigger.playbook,
                                                                           workflow_name=trigger.workflow,
-                                                                          start_input=input_in)
+                                                                          start_input=inputs)
                         returned_json["executed"].append({'name': trigger.name, 'id': uid})
                     except Exception as e:
                         returned_json["errors"].append(
@@ -153,14 +147,14 @@ class Triggers(Base):
 
     @staticmethod
     def __to_new_input_format(args_json):
-        return {arg['key']: arg['value'] for arg in args_json}
+        return {arg['name']: arg['value'] for arg in args_json}
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
         filters = [Filter(action=filter_element['action'],
                           args=Triggers.__to_new_input_format(filter_element['args']))
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['flag'],
+        return Flag(action=conditional['action'],
                     args=Triggers.__to_new_input_format(conditional['args']),
                     filters=filters)(data_in, {})
 

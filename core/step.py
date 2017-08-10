@@ -124,7 +124,7 @@ class Step(ExecutionElement):
             x_position = position.find('x')
             y_position = position.find('y')
             if x_position is not None and y_position is not None:
-                self.position = {'x': x_position.text, 'y': y_position.text}
+                self.position = {'x': float(x_position.text), 'y': float(y_position.text)}
             else:
                 self.position = {}
 
@@ -298,7 +298,7 @@ class Step(ExecutionElement):
                   "app": str(self.app),
                   "device": str(self.device),
                   "risk": self.risk,
-                  "input": self.input,
+                  "inputs": [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.input.items()],
                   'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
                   "position": self.position}
         if self.output:
@@ -335,9 +335,9 @@ class Step(ExecutionElement):
                     app=json_in['app'],
                     device=device,
                     risk=risk,
-                    inputs=json_in['input'],
+                    inputs={arg['name']: arg['value'] for arg in json_in['inputs']},
                     parent_name=parent_name,
-                    position={key: str(value) for key, value in position.items()},
+                    position={key: value for key, value in position.items()},
                     widgets=widgets,
                     ancestry=ancestry)
         if json_in['next']:

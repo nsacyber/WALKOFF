@@ -35,7 +35,7 @@ class TestStep(unittest.TestCase):
                            'name': '',
                            'next': [],
                            'position': {},
-                           'input': {},
+                           'inputs': [],
                            'widgets': [],
                            'risk': 0}
         self.basic_input_json = {'app': 'HelloWorld',
@@ -43,7 +43,7 @@ class TestStep(unittest.TestCase):
                                  'name': '',
                                  'next': [],
                                  'position': {},
-                                 'input': {}}
+                                 'inputs': []}
 
     @classmethod
     def tearDownClass(cls):
@@ -178,19 +178,19 @@ class TestStep(unittest.TestCase):
     def test_as_json_with_children_with_inputs(self):
         step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'})
         self.basic_json['action'] = 'returnPlusOne'
-        self.basic_json['input'] = {'number': -5.6}
+        self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_inputs(self):
         step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'})
         self.basic_json['action'] = 'returnPlusOne'
-        self.basic_json['input'] = {'number': -5.6}
+        self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_without_children_with_input_routing(self):
         step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '@step1'})
         self.basic_json['action'] = 'returnPlusOne'
-        self.basic_json['input'] = {'number': '@step1'}
+        self.basic_json['inputs'] = [{'name': 'number', 'value': '@step1'}]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_next_steps(self):
@@ -388,7 +388,7 @@ class TestStep(unittest.TestCase):
 
     def test_to_from_xml_with_position(self):
         self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld',
-                                              position={'x': '-12.3', 'y': '485'}))
+                                              position={'x': -12.3, 'y': 485}))
 
     def test_to_from_xml_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
@@ -457,26 +457,30 @@ class TestStep(unittest.TestCase):
 
     def test_from_json_with_inputs(self):
         self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['input'] = {'num1': '-5.6', 'num2': '4.3', 'num3': '-10.265'}
+        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
+                                           {'name': 'num3', 'value': '-10.265'}]
         step = Step.from_json(self.basic_input_json, {})
         self.__compare_init(step, '', '', 'Add Three', 'HelloWorld', '',
                             {'num1': -5.6, 'num2': 4.3, 'num3': -10.265}, [], ['', ''], [])
 
     def test_from_json_with_inputs_invalid_name(self):
         self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['input'] = {'num1': '-5.6', 'invalid': '4.3', 'num3': '-10.265'}
+        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'invalid', 'value': '4.3'},
+                                           {'name': 'num3', 'value': '-10.265'}]
         with self.assertRaises(InvalidInput):
             Step.from_json(self.basic_input_json, {})
 
     def test_from_json_with_inputs_invalid_format(self):
         self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['input'] = {'num1': '-5.6', 'num2': '4.3', 'num3': 'invalid'}
+        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
+                                           {'name': 'num3', 'value': 'invalid'}]
         with self.assertRaises(InvalidInput):
             Step.from_json(self.basic_input_json, {})
 
     def test_from_json_with_step_routing(self):
         self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['input'] = {'num1': '-5.6', 'num2': '@step1', 'num3': '@step2'}
+        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '@step1'},
+                                           {'name': 'num3', 'value': '@step2'}]
         step = Step.from_json(self.basic_input_json, {})
         self.__compare_init(step, '', '', 'Add Three', 'HelloWorld', '',
                             {'num1': -5.6, 'num2': '@step1', 'num3': '@step2'}, [], ['', ''], [])
@@ -484,7 +488,7 @@ class TestStep(unittest.TestCase):
     def test_from_json_with_position(self):
         step = Step.from_json(self.basic_input_json, {'x': 125.3, 'y': 198.7})
         self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '',
-                            {}, [], ['', ''], [], position={'x': '125.3', 'y': '198.7'})
+                            {}, [], ['', ''], [], position={'x': 125.3, 'y': 198.7})
 
     def test_from_json_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
@@ -569,7 +573,7 @@ class TestStep(unittest.TestCase):
         result = step.execute(instance.instance, {})
         end = time.time()
         self.assertTupleEqual(result, (4, 'Success'))
-        self.assertTrue((end-start) > 0.1)
+        self.assertGreater((end-start), 0.1)
 
     def test_get_next_step_no_next_steps(self):
         step = Step(app='HelloWorld', action='helloWorld')

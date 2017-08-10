@@ -9,3 +9,4 @@ Job:
       description: Job ID
       type: string
       example: 12345
+      readOnly: true

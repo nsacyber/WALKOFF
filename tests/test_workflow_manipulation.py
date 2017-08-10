@@ -133,17 +133,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(conditional["flags"])
         self.assertEqual(conditional["name"], "1")
 
-    def test_to_from_cytoscape_data(self):
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path,
-                                                                'multiactionWorkflowTest.playbook'))
-        workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        original_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
-        cytoscape_data = workflow.get_cytoscape_data()
-        workflow.steps = {}
-        workflow.from_cytoscape_data(cytoscape_data)
-        derived_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
-        self.assertDictEqual(derived_steps, original_steps)
-
     def test_name_parent_rename(self):
         workflow = Workflow(parent_name='workflow_parent', name='workflow')
         new_ancestry = ['workflow_parent_update']

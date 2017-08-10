@@ -1,9 +1,6 @@
 from datetime import datetime
 import unittest
-from os import mkdir
-from os.path import isdir
 import json
-from core.config.paths import profile_visualizations_path
 from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from core.case import database
@@ -27,8 +24,6 @@ class TestExecutionRuntime(unittest.TestCase):
 
     def setUp(self):
         database.initialize()
-        if not isdir(profile_visualizations_path):
-            mkdir(profile_visualizations_path)
         self.start = datetime.utcnow()
         initialize_threading()
         self.controller = Controller(workflows_path=config.test_workflows_path)
@@ -61,7 +56,7 @@ class TestExecutionRuntime(unittest.TestCase):
         for step in steps:
             name = step['ancestry'].split(',')[-1]
             self.assertIn(name, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             self.assertDictEqual(result['result'], name_result[name])
 
     """
@@ -92,7 +87,7 @@ class TestExecutionRuntime(unittest.TestCase):
             ancestry = step['ancestry'].split(',')
             name_id = (ancestry[-2], ancestry[-1])
             self.assertIn(name_id, name_result)
-            result = json.loads(step['data'])
+            result = step['data']
             if type(name_result[name_id]) == dict:
                 self.assertDictEqual(result['result'], name_result[name_id])
             else:

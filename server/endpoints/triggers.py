@@ -20,30 +20,18 @@ def listener():
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
-
-        form = forms.IncomingDataForm(request.form)
-        trigger_args = {'data_in': form.data.data,
-                        'input_in': json.loads(form.input.data) if form.input.data else '',
-                        'trigger_name': '',
-                        'tags': []}
-
-        if request.args:
-            if 'name' in request.args:
-                trigger_args['trigger_name'] = request.args['name']
-
-            if 'tags' in request.args:
-                trigger_args['tags'] = request.args.getlist('tags')
-
+        trigger_args = request.get_json()
+        if 'inputs' not in trigger_args:
+            trigger_args['inputs'] = ''
         returned_json = running_context.Triggers.execute(**trigger_args)
-
         if not (returned_json["executed"] or returned_json["errors"]):
             return returned_json, SUCCESS_WITH_WARNING
         elif returned_json["errors"]:
             return returned_json, INVALID_INPUT_ERROR
         else:
             current_app.logger.info(
-                'Executing triggers with conditional info {0} and input info {1}'.format(form.data.data,
-                                                                                         trigger_args['data_in']))
+                'Executing triggers with conditional info {0} and input info {1}'.format(trigger_args['data'],
+                                                                                         trigger_args['inputs']))
             return returned_json, SUCCESS_ASYNC
 
     return __func()
@@ -54,30 +42,21 @@ def create_trigger(trigger_name):
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
-        form = forms.AddNewTriggerForm(request.form)
+        data = request.get_json()
+        if 'conditions' not in data:
+            data['conditions'] = []
+        if 'tag' not in data:
+            data['tag'] = ''
+        data['name'] = trigger_name
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query is None:
-            try:
-                json.loads(form.conditional.data)
-                running_context.db.session.add(
-                    running_context.Triggers(name=trigger_name,
-                                             condition=form.conditional.data,
-                                             playbook=form.playbook.data,
-                                             workflow=form.workflow.data,
-                                             tag=form.tag.data))
+            running_context.db.session.add(
+                running_context.Triggers(**data))
 
-                running_context.db.session.commit()
-                current_app.logger.info('Added trigger: '
-                                        '{0}'.format({"name": trigger_name,
-                                                      "condition": form.conditional.data,
-                                                      "workflow": "{0}-{1}".format(form.playbook.data,
-                                                                                   form.workflow.data),
-                                                      "tag": form.tag.data}))
-                return {}, OBJECT_CREATED
-            except ValueError:
-                current_app.logger.error(
-                    'Cannot create trigger {0}. Invalid JSON in conditional field'.format(trigger_name))
-                return {"error": 'Invalid JSON in conditional field.'}, INVALID_INPUT_ERROR
+            running_context.db.session.commit()
+            current_app.logger.info('Added trigger: '
+                                    '{0}'.format(data))
+            return {}, OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot create trigger {0}. Trigger already exists'.format(trigger_name))
             return {"error": "Trigger already exists."}, OBJECT_EXISTS_ERROR
@@ -105,23 +84,24 @@ def update_trigger(trigger_name):
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
-        form = forms.EditTriggerForm(request.form)
+        data = request.get_json()
+        if 'conditions' not in data:
+            data['conditions'] = []
+        if 'tag' not in data:
+            data['tag'] = ''
         trigger = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if trigger is not None:
             # Ensures new name is unique
-            if form.name.data:
-                if len(running_context.Triggers.query.filter_by(name=form.name.data).all()) > 0:
+            if 'name' in data:
+                if len(running_context.Triggers.query.filter_by(name=data['name']).all()) > 0:
                     return {"error": "Trigger could not be edited."}, OBJECT_EXISTS_ERROR
 
-            result = trigger.edit_trigger(form)
+            trigger.edit_trigger(data)
 
-            if result:
-                running_context.db.session.commit()
-                current_app.logger.info('Edited trigger {0}'.format(trigger))
-                return SUCCESS
-            else:
-                current_app.logger.error('Could not edit trigger {0}. Malformed JSON in conditional'.format(trigger))
-                return {"error": "Invalid json in conditional field"}, INVALID_INPUT_ERROR
+            running_context.db.session.commit()
+            current_app.logger.info('Edited trigger {0}'.format(trigger))
+            return trigger.as_json(), SUCCESS
+
         else:
             current_app.logger.error('Could not edit trigger {0}. Trigger does not exist'.format(trigger))
             return {"error": "Trigger does not exist."}, OBJECT_DNE_ERROR

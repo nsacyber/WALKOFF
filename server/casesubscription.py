@@ -11,10 +11,12 @@ class CaseSubscription(Base):
     """
     __tablename__ = 'case_subscription'
 
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    subscription = db.Column(db.Text())
+    subscriptions = db.Column(db.Text())
+    note = db.Column(db.String)
 
-    def __init__(self, name, subscription='{}'):
+    def __init__(self, name, subscription='{}', note=''):
         """
         Constructs an instance of a CaseSubscription
         
@@ -25,9 +27,11 @@ class CaseSubscription(Base):
         self.name = name
         try:
             json.loads(subscription)
-            self.subscription = subscription
+            self.subscriptions = subscription
         except:
-            self.subscription = '{}'
+            self.subscriptions = '{}'
+        self.note = note
+        core.case.subscription.add_cases({self.name: self.subscriptions})
 
     def as_json(self):
         """ Gets the JSON representation of all the CaseSubscription object.
@@ -35,8 +39,11 @@ class CaseSubscription(Base):
         Returns:
             The JSON representation of the CaseSubscription object.
         """
-        return {"name": self.name,
-                "subscription": json.loads(self.subscription)}
+
+        return {"id": self.id,
+                "name": self.name,
+                "subscriptions": json.loads(self.subscriptions),
+                "note": self.note}
 
     @staticmethod
     def update(case_name):
@@ -46,9 +53,8 @@ class CaseSubscription(Base):
             case_name (str): The name of case to synchronize
         """
         case = CaseSubscription.query.filter_by(name=case_name).first()
-        if case:
-            if case_name in core.case.subscription.subscriptions:
-                case.subscription = json.dumps(core.case.subscription.subscriptions_as_json()[case_name])
+        if case and case_name in core.case.subscription.subscriptions:
+            case.subscriptions = json.dumps(core.case.subscription.subscriptions_as_json()[case_name])
 
     @staticmethod
     def from_json(name, subscription_json):
@@ -68,6 +74,6 @@ class CaseSubscription(Base):
         """Sets the subscription in memory to that loaded into the database
         """
         logging.getLogger(__name__).debug('Syncing cases')
-        subscriptions = {case.name: core.case.subscription.CaseSubscriptions.from_json(json.loads(case.subscription))
+        subscriptions = {case.name: core.case.subscription.CaseSubscriptions.from_json(json.loads(case.subscriptions))
                          for case in CaseSubscription.query.all()}
         core.case.subscription.set_subscriptions(subscriptions)

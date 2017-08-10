@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+from six import string_types
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
@@ -24,7 +24,6 @@ class Case(Case_Base):
     __tablename__ = 'case'
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    note = Column(String)
     events = relationship('Event', secondary='case_event', lazy='dynamic')
 
     def as_json(self, with_events=True):
@@ -37,9 +36,8 @@ class Case(Case_Base):
         Returns:
             The JSON representation of a Case object.
         """
-        output = {'id': str(self.id),
-                  'name': self.name,
-                  'note': self.note}
+        output = {'id': self.id,
+                  'name': self.name}
         if with_events:
             output['events'] = [event.as_json() for event in self.events]
         return output
@@ -68,18 +66,17 @@ class Event(Case_Base):
         Returns:
             The JSON representation of an Event object.
         """
-        output = {'id': str(self.id),
+        output = {'id': self.id,
                   'timestamp': str(self.timestamp),
                   'type': self.type,
                   'ancestry': self.ancestry,
-                  'message': self.message,
-                  'data': self.data,
-                  'note': self.note}
-        if self.data:
+                  'message': self.message if self.message is not None else '',
+                  'note': self.note if self.note is not None else ''}
+        if self.data is not None:
             try:
                 output['data'] = json.loads(self.data)
             except (ValueError, TypeError):
-                output['data'] = self.data
+                output['data'] = str(self.data)
         else:
             output['data'] = ''
         if with_cases:
@@ -96,7 +93,7 @@ class Event(Case_Base):
             timestamp (str): A string representation of a timestamp
             entry_message (str): The message associated with the event
             entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
-            data (str): Extra information to be logged with the event
+            data: Extra information to be logged with the event
             
         Returns:
             An Event object.
@@ -172,19 +169,6 @@ class CaseDatabase(object):
                 case.name = new_case_name
                 self.session.commit()
 
-    def edit_case_note(self, case_name, note):
-        """ Edits the note attached to a case
-        
-        Args:
-            case_name (str): The case to edit
-            note (str): The case's note
-        """
-        if case_name:
-            case = self.session.query(Case).filter(Case.name == case_name).first()
-            if case:
-                case.note = note
-                self.session.commit()
-
     def edit_event_note(self, event_id, note):
         """ Edits the note attached to an event
         
@@ -205,10 +189,13 @@ class CaseDatabase(object):
             event (cls): A core.case.callbacks._EventEntry object to add to the cases
             cases (list[str]): The cases to add the event to
         """
-        try:
-            data = json.dumps(event.data)
-        except:
-            data = str(event.data)
+        if not isinstance(event.data,string_types):
+            try:
+                data = json.dumps(event.data)
+            except:
+                data = str(event.data)
+        else:
+            data = event.data
         event_log = Event(type=event.type,
                           timestamp=event.timestamp,
                           ancestry=','.join(map(str, event.ancestry)),
@@ -232,8 +219,7 @@ class CaseDatabase(object):
         Returns:
             The JSON representation of all Case objects without their events.
         """
-        return {'cases': [case.as_json(with_events=False)
-                          for case in self.session.query(Case).all()]}
+        return [case.as_json(with_events=False) for case in self.session.query(Case).all()]
 
     def event_as_json(self, event_id):
         """Gets the JSON representation of an event in the case database.

@@ -1,0 +1,42 @@
+<div id="main">
+	<div id="header">
+		<h2>Controller Management</h2>
+		<h3>{{currentController}}</h3>
+	</div>
+	<div class="row">
+		<h3 class="col-xs-4">Playbook Management</h3>
+		<h3 class="col-xs-8">Scheduling</h3>
+	</div>
+	<div class="row">
+		<div class="col-xs-4">
+			<div class="controllerCol">
+				<h4>Loaded Workflows</h4>
+				<ul>
+					<!--<li *ngFor="let workflow of loadedWorkflows" [contextMenu]="basicMenu" [contextMenuSubject]="workflow">{{workflow.name}}</li>-->
+					<li *ngFor="let workflow of loadedWorkflows">{{workflow.name}}</li>
+				</ul>
+				<!--<context-menu>
+					<ng-template contextMenuItem (execute)="executeWorkflow(workflow)">Execute Workflow</ng-template>
+				</context-menu>-->
+
+				<div>
+					<h4>Status</h4>
+					<div id="executionResult">
+						<ul id="eventList"></ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-xs-8">
+			<div class="controllerCol">
+				<div id="schedulerStatus">
+					<h4>Scheduler Currently: <span id="status">{{schedulerStatus}}</span></h4>
+				</div>
+				<button *ngIf="canStart()" (click)="changeSchedulerStatus('start')" class="btn btn-primary" id="startSchedulerBtn">Start</button>
+				<button *ngIf="canPause()" (click)="changeSchedulerStatus('pause')" class="btn btn-warning" id="pauseSchedulerBtn">Pause</button>
+				<button *ngIf="canStop()" (click)="changeSchedulerStatus('stop')" class="btn btn-danger" id="stopSchedulerBtn">Stop</button>
+			</div>
+		</div>
+	</div>
+</div>

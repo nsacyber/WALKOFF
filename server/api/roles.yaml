@@ -1,4 +1,4 @@
-/roles:
+/api/roles:
   get:
     tags:
       - Roles
@@ -14,17 +14,7 @@
           description: A list of roles
           type: array
           items:
-            type: string
-          example:
-            - administrative_role
-            - guest
-'/roles/{role_name}':
-  parameters:
-    - name: role_name
-      in: path
-      description: The name that needs to be fetched.
-      required: true
-      type: string
+            $ref: '#/definitions/Role'
   put:
     tags:
       - Roles
@@ -32,7 +22,7 @@
     description: ''
     operationId: server.endpoints.roles.create_role
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
     parameters:
@@ -43,10 +33,41 @@
         schema:
           $ref: '#/definitions/Role'
     responses:
-      '201':
+      201:
         description: Object created.
-      '462':
+      462:
         description: Object exists.
+  post:
+    tags:
+      - Roles
+    summary: Update a role
+    description: ''
+    operationId: server.endpoints.roles.update_role
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Updated fields for the role object
+        required: true
+        schema:
+          $ref: '#/definitions/Role'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Role'
+      461:
+        description: Object does not exist.
+/api/roles/{role_name}:
+  parameters:
+    - name: role_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
   get:
     tags:
       - Roles
@@ -56,33 +77,24 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           $ref: '#/definitions/Role'
-      '461':
+      461:
         description: Object does not exist.
-  post:
-    tags:
-      - Roles
-    summary: Update a role
-    description: ''
-    operationId: server.endpoints.roles.update_role
-    consumes:
-      - multipart/form-data
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: Updated fields for the role object
-        required: true
-        schema:
-          $ref: '#/definitions/EditRole'
-    responses:
-      '200':
-        description: Success
-        schema:
-          $ref: '#/definitions/Role'
-      '461':
-        description: Object does not exist.
+#  delete:
+#    tags:
+#      - Roles
+#    summary: Delete a role
+#    description: ''
+#    operationId: server.endpoints.roles.delete_role
+#    produces:
+#      - application/json
+#    responses:
+#      200:
+#        description: Success
+#        schema:
+#          $ref: '#/definitions/Role'
+#      461:
+#        description: Object does not exist.

@@ -52,8 +52,8 @@ class TestNextStep(unittest.TestCase):
 
     def test_init_with_flags(self):
         flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
-        expected_flag_json = [{'action': 'Top Flag', 'args': {}, 'filters': []},
-                              {'action': 'mod1_flag1', 'args': {}, 'filters': []}]
+        expected_flag_json = [{'action': 'Top Flag', 'args': [], 'filters': []},
+                              {'action': 'mod1_flag1', 'args': [], 'filters': []}]
         next_step = NextStep(name='name', parent_name='parent', flags=flags, ancestry=['a', 'b'])
         self.__compare_init(next_step, 'name', 'parent', expected_flag_json, ['a', 'b', 'name'])
 
@@ -80,8 +80,8 @@ class TestNextStep(unittest.TestCase):
 
     def test_as_json_with_children_full(self):
         flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
-        expected_flag_json = [{'action': 'Top Flag', 'args': {}, 'filters': []},
-                              {'action': 'mod1_flag1', 'args': {}, 'filters': []}]
+        expected_flag_json = [{'action': 'Top Flag', 'args': [], 'filters': []},
+                              {'action': 'mod1_flag1', 'args': [], 'filters': []}]
         self.assertDictEqual(NextStep(name='name1', flags=flags).as_json(),
                              {'name': 'name1', 'status': 'Success', 'flags': expected_flag_json})
 
@@ -117,8 +117,8 @@ class TestNextStep(unittest.TestCase):
         self.__compare_init(next_step, 'name1', 'parent', [], ['a', 'b', 'name1'])
 
     def test_from_json_with_flags(self):
-        flag_json = [{'action': 'Top Flag', 'args': {}, 'filters': []},
-                     {'action': 'mod1_flag1', 'args': {}, 'filters': []}]
+        flag_json = [{'action': 'Top Flag', 'args': [], 'filters': []},
+                     {'action': 'mod1_flag1', 'args': [], 'filters': []}]
         next_step = NextStep.from_json({'name': 'name1', 'flags': flag_json})
         self.__compare_init(next_step, 'name1', '', flag_json, ['', 'name1'])
 
