@@ -1173,7 +1173,8 @@ $(function(){
         $("#cy-json-data").val(JSON.stringify(workflowData, null, 2));
 
         //Enable our execute button once we load a workflow
-        $("execute-button").removeAttr('disabled');
+        $("#execute-button").removeAttr('disabled');
+        $("#clear-execution-highlighting-button").removeAttr('disabled');
     }
 
 
@@ -1520,23 +1521,23 @@ $(function(){
     });
 
     $( "#execute-button" ).click(function() {
-        window.executionDialog = $("#executionModal").clone().removeClass('hidden');
-        executionDialog.dialog({
-            autoOpen: false,
-            modal: false,
-            title: "Execution Results",
-            width: 600,
-            close: function(event, ui){
-                cy.elements().removeClass("good-highlighted bad-highlighted");
-            }
-        });
+        // window.executionDialog = $("#executionModal").clone().removeClass('hidden');
+        // executionDialog.dialog({
+        //     autoOpen: false,
+        //     modal: false,
+        //     title: "Execution Results",
+        //     width: 600,
+        //     close: function(event, ui){
+        //         cy.elements().removeClass("good-highlighted bad-highlighted");
+        //     }
+        // });
 
-        executionDialog.dialog( "open" );
+        // executionDialog.dialog( "open" );
 
-        $(executionDialog).find("button").on("click", function(){
-            cy.elements().removeClass("good-highlighted bad-highlighted");
-            executionDialog.dialog("close");
-        });
+        // $(executionDialog).find("button").on("click", function(){
+        //     cy.elements().removeClass("good-highlighted bad-highlighted");
+        //     executionDialog.dialog("close");
+        // });
         $.ajax({
             'async': true,
             'type': "POST",
@@ -1544,17 +1545,22 @@ $(function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
-                console.log(currentWorkflow + ' is scheduled to execute.', 'success');
+                // $('#clear-execution-highlighting-button').removeAttr('disabled');
+                
+                $.notify(currentWorkflow + ' is scheduled to execute.', 'success');
                 //Set up event listener for workflow results if possible
             },
             'error': function (jqXHR, status, error) {
-                console.log(currentWorkflow + ' has failed to be scheduled.', 'error');
+                $.notify(currentWorkflow + ' is has failed to be executed.', 'error');
                 //$("#eventList").append("<li>" + currentWorkflow + " has failed to be scheduled.</li>");
             }
         });
     });
 
-
+    $("#clear-execution-highlighting-button").click(function () {
+        cy.elements().removeClass("good-highlighted bad-highlighted");
+        // $('#clear-execution-highlighting-button').attr('disabled', 'disabled');
+    });
 
     // Handle save button press
     $( "#save-button" ).click(function() {
@@ -1758,23 +1764,37 @@ $(function(){
         };
     }
 
+    var executionResultsTable = $("#executionResultsTable").DataTable({
+        columns:[
+            { data: "name", title: "ID" },
+            { data: "timestamp", title: "Timestamp" },
+            { data: "type", title: "Type" },
+            { data: "input", title: "Input" },
+            { data: "result", title: "Result" }
+        ],
+        order: [1, 'desc']
+    });
+
     function handleStreamStepsEvent(data){
         var id = data.name;
         var type = data.type;
         var elem = cy.elements('node[id="' + id + '"]');
 
-        var row = executionDialog.find("table").get(0).insertRow(-1);
-        var id_cell = row.insertCell(0);
-        id_cell.innerHTML = data.name;
+        executionResultsTable.row.add(data);
+        executionResultsTable.draw();
 
-        var type_cell = row.insertCell(1);
-        type_cell.innerHTML = data.type;
+        // var row = executionDialog.find("table").get(0).insertRow(-1);
+        // var id_cell = row.insertCell(0);
+        // id_cell.innerHTML = data.name;
 
-        var input_cell = row.insertCell(2);
-        input_cell.innerHTML = data.input;
+        // var type_cell = row.insertCell(1);
+        // type_cell.innerHTML = data.type;
 
-        var result_cell = row.insertCell(3);
-        result_cell.innerHTML = data.result;
+        // var input_cell = row.insertCell(2);
+        // input_cell.innerHTML = data.input;
+
+        // var result_cell = row.insertCell(3);
+        // result_cell.innerHTML = data.result;
 
         if(type === "SUCCESS"){
             elem.addClass('good-highlighted');
@@ -1784,9 +1804,6 @@ $(function(){
         }
 
     }
-
-
-
 
     window.stepResultsSSE.onmessage = function(message) {
         var data = JSON.parse(message.data);

@@ -29,32 +29,19 @@
 				<id>3</id>
 				<app>EthereumBlockchain</app>
 				<action>submit_greeting</action>
-<<<<<<< HEAD:data/workflows/Ethereum_Blockchain.workflow
 				<device/>
-=======
->>>>>>> 03ebfdedc3423e17de7ce00fb73fb413992a2ae0:data/workflows/Ethereum_Blockchain.playbook
 				<position>
 					<x>348.096805232115</x>
 					<y>338.1871205254445</y>
 				</position>
-<<<<<<< HEAD:data/workflows/Ethereum_Blockchain.workflow
-				<input>
-					<greeting format="str">Hello human user!!</greeting>
-				</input>
-=======
 				<inputs>
 					<greeting>Hello human user!!</greeting>
 				</inputs>
->>>>>>> 03ebfdedc3423e17de7ce00fb73fb413992a2ae0:data/workflows/Ethereum_Blockchain.playbook
 			</step>
 			<step id="2">
 				<id>2</id>
 				<app>EthereumBlockchain</app>
 				<action>set_up_network</action>
-<<<<<<< HEAD:data/workflows/Ethereum_Blockchain.workflow
-				<device/>
-=======
->>>>>>> 03ebfdedc3423e17de7ce00fb73fb413992a2ae0:data/workflows/Ethereum_Blockchain.playbook
 				<position>
 					<x>236.6709793476604</x>
 					<y>232.47543955814143</y>

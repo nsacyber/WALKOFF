@@ -33,6 +33,7 @@ export class PlaybookComponent {
         addLink('client/node_modules/jqueryui/jquery-ui.min.css');
         addLink('client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css');
         addLink('client/node_modules/jstree/dist/themes/default/style.min.css');
+        addLink('client/node_modules/datatables/media/css/jquery.dataTables.min.css');
         addLink('client/playbook/playbook.css');
 
         addScript("client/node_modules/jquery-migrate/dist/jquery-migrate.min.js");
@@ -46,6 +47,7 @@ export class PlaybookComponent {
         addScript("client/node_modules/json-editor/dist/jsoneditor.min.js");
         addScript("client/node_modules/jstree/dist/jstree.min.js");
         addScript("client/playbook/plugins/notifyjs/notify.min.js");
+        addScript('client/node_modules/datatables/media/js/jquery.dataTables.min.js');
         addScript("client/playbook/main.js");
 
     };

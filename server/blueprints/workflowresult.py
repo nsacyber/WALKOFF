@@ -50,6 +50,7 @@ def __step_ended_callback(sender, **kwargs):
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
+              'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}
@@ -67,6 +68,7 @@ def __step_error_callback(sender, **kwargs):
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
+              'timestamp': str(datetime.utcnow()),
               'type': "ERROR",
               'input': step_input,
               'result': data}
@@ -85,6 +87,7 @@ def __step_ended_callback(sender, **kwargs):
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
+              'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}
