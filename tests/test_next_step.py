@@ -6,6 +6,8 @@ from tests.config import test_apps_path, function_api_path
 import core.config.config
 from tests.apps import App
 from core.decorators import ActionResult
+import uuid
+
 
 class TestNextStep(unittest.TestCase):
     @classmethod
@@ -17,18 +19,25 @@ class TestNextStep(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
-    def __compare_init(self, elem, name, parent_name, flags, ancestry, status='Success'):
+    def __compare_init(self, elem, name, parent_name, flags, ancestry, status='Success', uid=None):
         self.assertEqual(elem.status, status)
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.parent_name, parent_name)
         self.assertListEqual([flag.action for flag in elem.flags], [flag['action'] for flag in flags])
-        for flag, expected in zip(elem.flags, flags):
-            self.assertDictEqual(flag.as_json(), expected)
         self.assertListEqual(elem.ancestry, ancestry)
+        if uid is None:
+            self.assertIsNotNone(elem.uid)
+        else:
+            self.assertEqual(elem.uid, uid)
 
     def test_init(self):
         next_step = NextStep()
         self.__compare_init(next_step, '', '', [], ['', ''])
+
+    def test_init_wth_uid(self):
+        uid = uuid.uuid4().hex
+        next_step = NextStep(uid=uid)
+        self.__compare_init(next_step, '', '', [], ['', ''], uid=uid)
 
     def test_init_with_name(self):
         next_step = NextStep(name='name')
@@ -58,38 +67,46 @@ class TestNextStep(unittest.TestCase):
         self.__compare_init(next_step, 'name', 'parent', expected_flag_json, ['a', 'b', 'name'])
 
     def test_as_json_with_children(self):
-        self.assertDictEqual(NextStep().as_json(), {'name': '', 'status': 'Success', 'flags': []})
+        uid = uuid.uuid4().hex
+        self.assertDictEqual(NextStep(uid=uid).as_json(), {'name': '', 'status': 'Success', 'flags': [], 'uid': uid})
 
     def test_as_json_without_children(self):
-        self.assertDictEqual(NextStep().as_json(with_children=False), {'name': '', 'status': 'Success', 'flags': []})
+        uid = uuid.uuid4().hex
+        self.assertDictEqual(NextStep(uid=uid).as_json(with_children=False), {'name': '', 'status': 'Success', 'flags': [], 'uid': uid})
 
     def test_as_json_with_children_with_name(self):
-        self.assertDictEqual(NextStep(name='name1').as_json(), {'name': 'name1', 'status': 'Success', 'flags': []})
+        uid = uuid.uuid4().hex
+        self.assertDictEqual(NextStep(name='name1', uid=uid).as_json(), {'name': 'name1', 'status': 'Success', 'flags': [], 'uid': uid})
 
     def test_as_json_without_children_with_name(self):
-        self.assertDictEqual(NextStep(name='name1').as_json(with_children=False),
-                             {'name': 'name1', 'status': 'Success', 'flags': []})
+        uid = uuid.uuid4().hex
+        self.assertDictEqual(NextStep(name='name1', uid=uid).as_json(with_children=False),
+                             {'name': 'name1', 'status': 'Success', 'flags': [], 'uid': uid})
 
     def test_as_json_with_children_with_status(self):
-        self.assertDictEqual(NextStep(status='test_status').as_json(),
-                             {'name': '', 'status': 'test_status', 'flags': []})
+        uid = uuid.uuid4().hex
+        self.assertDictEqual(NextStep(status='test_status', uid=uid).as_json(),
+                             {'name': '', 'status': 'test_status', 'flags': [], 'uid': uid})
 
     def test_as_json_without_children_with_status(self):
-        self.assertDictEqual(NextStep(status='test_status').as_json(with_children=False),
-                             {'name': '', 'status': 'test_status', 'flags': []})
+        uid = uuid.uuid4().hex
+        self.assertDictEqual(NextStep(status='test_status', uid=uid).as_json(with_children=False),
+                             {'name': '', 'status': 'test_status', 'flags': [], 'uid': uid})
 
     def test_as_json_with_children_full(self):
-        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
-        expected_flag_json = [{'action': 'Top Flag', 'args': [], 'filters': []},
-                              {'action': 'mod1_flag1', 'args': [], 'filters': []}]
-        self.assertDictEqual(NextStep(name='name1', flags=flags).as_json(),
-                             {'name': 'name1', 'status': 'Success', 'flags': expected_flag_json})
+        uid = uuid.uuid4().hex
+        flags = [Flag(action='Top Flag', uid=uid), Flag(action='mod1_flag1', uid=uid)]
+        expected_flag_json = [{'action': 'Top Flag', 'args': [], 'filters': [], 'uid': uid},
+                              {'action': 'mod1_flag1', 'args': [], 'filters': [], 'uid': uid}]
+        self.assertDictEqual(NextStep(name='name1', flags=flags, uid=uid).as_json(),
+                             {'name': 'name1', 'status': 'Success', 'flags': expected_flag_json, 'uid': uid})
 
     def test_as_json_without_children_full(self):
+        uid = uuid.uuid4().hex
         flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
         expected_flag_json = ['Top Flag', 'mod1_flag1']
-        self.assertDictEqual(NextStep(name='name1', flags=flags).as_json(with_children=False),
-                             {'name': 'name1', 'status': 'Success', 'flags': expected_flag_json})
+        self.assertDictEqual(NextStep(name='name1', flags=flags, uid=uid).as_json(with_children=False),
+                             {'name': 'name1', 'status': 'Success', 'flags': expected_flag_json, 'uid': uid})
 
     def test_from_json_name_only(self):
         json_in = {'name': 'name1', 'flags': []}
@@ -148,17 +165,21 @@ class TestNextStep(unittest.TestCase):
         self.assertEqual(len(xml.findall('flag')), 2)
 
     def test_to_from_xml_is_convertible(self):
-        flags = [Flag(action='mod1_flag1'), Flag(action='Top Flag')]
-        inputs = [NextStep(),
-                  NextStep(name='name'),
-                  NextStep(status='TestStatus'),
-                  NextStep(name='name', parent_name='parent'),
-                  NextStep(name='name', parent_name='parent', ancestry=['a', 'b']),
-                  NextStep(name='name', parent_name='parent', flags=[], ancestry=['a', 'b']),
-                  NextStep(name='name', parent_name='parent', flags=flags, ancestry=['a', 'b'])]
+        uid = uuid.uuid4().hex
+        flags = [Flag(action='mod1_flag1', uid=uid), Flag(action='Top Flag', uid=uid)]
+        inputs = [NextStep(uid=uid),
+                  NextStep(name='name', uid=uid),
+                  NextStep(status='TestStatus', uid=uid),
+                  NextStep(name='name', parent_name='parent', uid=uid),
+                  NextStep(name='name', parent_name='parent', ancestry=['a', 'b'], uid=uid),
+                  NextStep(name='name', parent_name='parent', flags=[], ancestry=['a', 'b'], uid=uid),
+                  NextStep(name='name', parent_name='parent', flags=flags, ancestry=['a', 'b'], uid=uid)]
         for next_step in inputs:
             original_json = next_step.as_json()
             new_step = NextStep(xml=next_step.to_xml())
+            new_step.uid = uid
+            for flag in new_step.flags:
+                flag.uid = uid
             new_json = new_step.as_json()
             self.assertDictEqual(new_json, original_json)
 

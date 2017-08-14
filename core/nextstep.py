@@ -3,12 +3,13 @@ import logging
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.flag import Flag
+import uuid
 
 logger = logging.getLogger(__name__)
 
 
 class NextStep(ExecutionElement):
-    def __init__(self, xml=None, status='Success', name='', parent_name='', flags=None, ancestry=None):
+    def __init__(self, xml=None, status='Success', name='', parent_name='', flags=None, ancestry=None, uid=None):
         """Initializes a new NextStep object.
         
         Args:
@@ -17,13 +18,16 @@ class NextStep(ExecutionElement):
             name (str, optional): The name of the NextStep object. Defaults to an empty string.
             flags (list[Flag], optional): A list of Flag objects for the NextStep object. Defaults to None.
             ancestry (list[str], optional): The ancestry for the NextStep object. Defaults to None.
+            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
         """
         if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
+            self.uid = uuid.uuid4().hex
         else:
             ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
             self.status = status
             self.flags = flags if flags is not None else []
+            self.uid = uuid.uuid4().hex if uid is None else uid
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         name = xml_element.get('step')
@@ -82,7 +86,8 @@ class NextStep(ExecutionElement):
             return None
 
     def __repr__(self):
-        output = {'flags': [flag.as_json() for flag in self.flags],
+        output = {'uid': self.uid,
+                  'flags': [flag.as_json() for flag in self.flags],
                   'status': self.status,
                   'name': self.name}
         return str(output)
@@ -99,11 +104,13 @@ class NextStep(ExecutionElement):
         """
         name = str(self.name) if self.name else ''
         if with_children:
-            return {"flags": [flag.as_json() for flag in self.flags],
+            return {"uid": self.uid,
+                    "flags": [flag.as_json() for flag in self.flags],
                     "status": self.status,
                     "name": name}
         else:
-            return {"flags": [flag.name for flag in self.flags],
+            return {"uid": self.uid,
+                    "flags": [flag.name for flag in self.flags],
                     "status": self.status,
                     "name": name}
 
@@ -121,7 +128,8 @@ class NextStep(ExecutionElement):
         """
         name = json['name'] if 'name' in json else ''
         status = json['status'] if 'status' in json else 'Success'
-        next_step = NextStep(name=name, status=status, parent_name=parent_name, ancestry=ancestry)
+        uid = json['uid'] if 'uid' in json else uuid.uuid4().hex
+        next_step = NextStep(name=name, status=status, parent_name=parent_name, ancestry=ancestry, uid=uid)
         if json['flags']:
             next_step.flags = [Flag.from_json(flag, parent_name=next_step.parent_name, ancestry=next_step.ancestry)
                                for flag in json['flags']]

@@ -16,7 +16,7 @@ from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
 from core.validator import validate_app_action_parameters
-
+import uuid
 logger = logging.getLogger(__name__)
 
 _Widget = namedtuple('Widget', ['app', 'widget'])
@@ -35,7 +35,8 @@ class Step(ExecutionElement):
                  position=None,
                  ancestry=None,
                  widgets=None,
-                 risk=0):
+                 risk=0,
+                 uid=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
         
         Args:
@@ -55,10 +56,12 @@ class Step(ExecutionElement):
             widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the 
                 corresponding widget. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
+            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
         """
         ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
         if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
+            self.uid = uuid.uuid4().hex
         else:
             if action == '' or app == '':
                 raise InvalidElementConstructed('Either both action and app or xml must be '
@@ -77,6 +80,7 @@ class Step(ExecutionElement):
                             for (widget_app, widget_name) in widgets] if widgets is not None else []
             self.raw_xml = self.to_xml()
             self.templated = False
+            self.uid = uuid.uuid4().hex if uid is None else uid
         self.output = None
         self.next_up = None
 
@@ -269,7 +273,8 @@ class Step(ExecutionElement):
         return step
 
     def __repr__(self):
-        output = {'name': self.name,
+        output = {'uid': self.uid,
+                  'name': self.name,
                   'action': self.action,
                   'app': self.app,
                   'device': self.device,
@@ -293,7 +298,8 @@ class Step(ExecutionElement):
         Returns:
             The JSON representation of a Step object.
         """
-        output = {"name": str(self.name),
+        output = {"uid": self.uid,
+                  "name": str(self.name),
                   "action": str(self.action),
                   "app": str(self.app),
                   "device": str(self.device),
@@ -327,6 +333,7 @@ class Step(ExecutionElement):
                                        and json_in['device'] != 'None') else ''
         risk = json_in['risk'] if 'risk' in json_in else 0
         widgets = []
+        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
         if 'widgets' in json_in:
             widgets = [(widget['app'], widget['name'])
                        for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
@@ -339,7 +346,8 @@ class Step(ExecutionElement):
                     parent_name=parent_name,
                     position={key: value for key, value in position.items()},
                     widgets=widgets,
-                    ancestry=ancestry)
+                    ancestry=ancestry,
+                    uid=uid)
         if json_in['next']:
             step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
                                  for next_step in json_in['next'] if next_step]

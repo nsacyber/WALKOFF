@@ -10,6 +10,7 @@ from tests.config import test_apps_path, function_api_path
 from core.instance import Instance
 from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
                           import_all_filters)
+import uuid
 import gevent
 import gevent.monkey
 try:
@@ -29,6 +30,7 @@ class TestStep(unittest.TestCase):
         gevent.monkey.patch_socket()
 
     def setUp(self):
+        self.uid = uuid.uuid4().hex
         self.basic_json = {'app': 'HelloWorld',
                            'action': 'helloWorld',
                            'device': '',
@@ -37,20 +39,22 @@ class TestStep(unittest.TestCase):
                            'position': {},
                            'inputs': [],
                            'widgets': [],
-                           'risk': 0}
+                           'risk': 0,
+                           'uid': self.uid}
         self.basic_input_json = {'app': 'HelloWorld',
                                  'action': 'helloWorld',
                                  'name': '',
                                  'next': [],
                                  'position': {},
-                                 'inputs': []}
+                                 'inputs': [],
+                                 'uid': self.uid}
 
     @classmethod
     def tearDownClass(cls):
         reload(socket)
 
     def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, ancestry,
-                       widgets, risk=0., position=None):
+                       widgets, risk=0., position=None, uid=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.parent_name, parent_name)
         self.assertEqual(elem.action, action)
@@ -68,10 +72,19 @@ class TestStep(unittest.TestCase):
         self.assertDictEqual(elem.position, position)
         self.assertIsNone(elem.output)
         self.assertFalse(elem.templated)
+        if uid is None:
+            self.assertIsNotNone(elem.uid)
+        else:
+            self.assertEqual(elem.uid, uid)
 
     def test_init_app_and_action_only(self):
         step = Step(app='HelloWorld', action='helloWorld')
         self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [])
+
+    def test_init_with_uid(self):
+        uid = uuid.uuid4().hex
+        step = Step(app='HelloWorld', action='helloWorld', uid=uid)
+        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [], uid=uid)
 
     def test_init_app_and_action_name_different_than_method_name(self):
         step = Step(app='HelloWorld', action='Hello World')
@@ -138,97 +151,97 @@ class TestStep(unittest.TestCase):
                             ['', ''], [])
 
     def test_as_json_with_children(self):
-        step = Step(app='HelloWorld', action='helloWorld')
+        step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children(self):
-        step = Step(app='HelloWorld', action='helloWorld')
+        step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_name(self):
-        step = Step(app='HelloWorld', action='helloWorld', name='name')
+        step = Step(app='HelloWorld', action='helloWorld', name='name', uid=self.uid)
         self.basic_json['name'] = 'name'
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_name(self):
-        step = Step(app='HelloWorld', action='helloWorld', name='name')
+        step = Step(app='HelloWorld', action='helloWorld', name='name', uid=self.uid)
         self.basic_json['name'] = 'name'
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_device(self):
-        step = Step(app='HelloWorld', action='helloWorld', device='device')
+        step = Step(app='HelloWorld', action='helloWorld', device='device', uid=self.uid)
         self.basic_json['device'] = 'device'
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_device(self):
-        step = Step(app='HelloWorld', action='helloWorld', device='device')
+        step = Step(app='HelloWorld', action='helloWorld', device='device', uid=self.uid)
         self.basic_json['device'] = 'device'
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_risk(self):
-        step = Step(app='HelloWorld', action='helloWorld', risk=120.6)
+        step = Step(app='HelloWorld', action='helloWorld', risk=120.6, uid=self.uid)
         self.basic_json['risk'] = 120.6
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_risk(self):
-        step = Step(app='HelloWorld', action='helloWorld', risk=169.5)
+        step = Step(app='HelloWorld', action='helloWorld', risk=169.5, uid=self.uid)
         self.basic_json['risk'] = 169.5
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_inputs(self):
-        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'})
+        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'}, uid=self.uid)
         self.basic_json['action'] = 'returnPlusOne'
         self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_inputs(self):
-        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'})
+        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'}, uid=self.uid)
         self.basic_json['action'] = 'returnPlusOne'
         self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_without_children_with_input_routing(self):
-        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '@step1'})
+        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '@step1'}, uid=self.uid)
         self.basic_json['action'] = 'returnPlusOne'
         self.basic_json['inputs'] = [{'name': 'number', 'value': '@step1'}]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
+        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, uid=self.uid)
         self.basic_json['next'] = [next_step.as_json() for next_step in next_steps]
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
+        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, uid=self.uid)
         self.basic_json['next'] = [next_step.name for next_step in next_steps]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_position(self):
-        step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485})
+        step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485}, uid=self.uid)
         self.basic_json['position'] = {'x': -12.3, 'y': 485}
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_position(self):
-        step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485})
+        step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485}, uid=self.uid)
         self.basic_json['position'] = {'x': -12.3, 'y': 485}
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_with_children_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
-        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets)
+        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets, uid=self.uid)
         self.basic_json['widgets'] = [{'app': widget[0], 'name': widget[1]} for widget in widgets]
         self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
 
     def test_as_json_without_children_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
-        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets)
+        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets, uid=self.uid)
         self.basic_json['widgets'] = [{'app': widget[0], 'name': widget[1]} for widget in widgets]
         self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
 
     def test_as_json_after_executed(self):
-        step = Step(app='HelloWorld', action='helloWorld')
+        step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
         step.execute(instance.instance, {})
         step_json = step.as_json()
@@ -357,49 +370,52 @@ class TestStep(unittest.TestCase):
         original_json = step.as_json()
         original_xml = step.to_xml()
         new_step = Step(xml=original_xml)
+        new_step.uid = original_json['uid']
         self.assertDictEqual(new_step.as_json(), original_json)
 
     def test_to_from_xml(self):
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld'))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', uid=self.uid))
 
     def test_to_from_xml_with_name(self):
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', name='name'))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', name='name', uid=self.uid))
 
     def test_to_from_xml_with_device(self):
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', device='device1'))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', device='device1', uid=self.uid))
 
     def test_to_from_xml_with_device_empty_string(self):
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', device=''))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', device='', uid=self.uid))
 
     def test_to_from_xml_with_inputs(self):
         self.__assert_xml_is_convertible(Step(app='HelloWorld',
                                               action='Add Three',
-                                              inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '-10.265'}))
+                                              inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '-10.265'},
+                                              uid=self.uid))
 
     def test_to_from_xml_with_complex_inputs(self):
         self.__assert_xml_is_convertible(Step(app='HelloWorld',
                                               action='Json Sample',
                                               inputs={'json_in': {'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3},
-                                                                  'c': ['1', '2', '3']}}))
-
-    def test_to_from_xml_with_next_steps(self):
-        next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', next_steps=next_steps))
+                                                                  'c': ['1', '2', '3']}},
+                                              uid=self.uid))
 
     def test_to_from_xml_with_position(self):
         self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld',
-                                              position={'x': -12.3, 'y': 485}))
+                                              position={'x': -12.3, 'y': 485}, uid=self.uid))
 
     def test_to_from_xml_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', widgets=widgets))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', widgets=widgets, uid=self.uid))
 
     def test_to_from_xml_with_risk(self):
-        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', risk=27.6))
+        self.__assert_xml_is_convertible(Step(app='HelloWorld', action='helloWorld', risk=27.6, uid=self.uid))
 
     def test_from_json_app_and_action_only(self):
         step = Step.from_json(self.basic_input_json, {})
         self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [])
+
+    def test_from_json_with_uid(self):
+        step = Step.from_json(self.basic_input_json, {})
+        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [], uid=self.uid)
 
     def test_from_json_invalid_app(self):
         self.basic_input_json['app'] = 'Invalid'

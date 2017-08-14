@@ -141,6 +141,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.put_with_status_check('/api/playbooks/test/workflows',
                                               headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps(data),
                                               content_type="application/json")
+        self.empty_workflow_json['uid'] = response['uid']
         self.assertDictEqual(response, self.empty_workflow_json)
 
         final_workflows = flask_server.running_context.controller.workflows.keys()
@@ -180,6 +181,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.put_with_status_check('/api/playbooks/test/workflows',
                                               data=json.dumps(data), headers=self.headers, status_code=SUCCESS_WITH_WARNING,
                                               content_type="application/json")
+        self.empty_workflow_json['uid'] = response['uid']
         self.assertDictEqual(response, self.empty_workflow_json)
 
         final_workflows = flask_server.running_context.controller.workflows.keys()
@@ -399,8 +401,22 @@ class TestWorkflowServer(ServerTestCase):
 
         # compare the steps in loaded and expected workflow
         self.assertEqual(len(loaded_workflow.steps.keys()), len(list(resulting_workflow.steps.keys())))
+
+        def remove_uids(step):
+            step.uid = ''
+            for next_step in step.conditionals:
+                next_step.uid = ''
+                for flag in next_step.flags:
+                    flag.uid = ''
+                    for filter_ in flag.filters:
+                        filter_.uid = ''
+
+
         for step_name, loaded_step in loaded_workflow.steps.items():
+            import pprint
             self.assertIn(step_name, resulting_workflow.steps.keys())
+            remove_uids(loaded_step)
+            remove_uids(resulting_workflow.steps[step_name])
             self.assertDictEqual(loaded_step.as_json(), resulting_workflow.steps[step_name].as_json())
 
     def test_save_workflow_invalid_app(self):

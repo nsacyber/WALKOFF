@@ -1,4 +1,3 @@
-from copy import deepcopy
 from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
@@ -7,11 +6,13 @@ from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, Inv
                           inputs_to_xml, inputs_xml_to_dict, dereference_step_routing, format_exception_message)
 from core.validator import validate_flag_parameters, validate_parameter
 import logging
+import uuid
+
 logger = logging.getLogger(__name__)
 
 
 class Flag(ExecutionElement):
-    def __init__(self, action=None, xml=None, parent_name='', args=None, filters=None, ancestry=None):
+    def __init__(self, action=None, xml=None, parent_name='', args=None, filters=None, ancestry=None, uid=None):
         """Initializes a new Flag object. 
         
         Args:
@@ -22,9 +23,11 @@ class Flag(ExecutionElement):
                 converted to a dictionary of str:Argument. Defaults to None.
             filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
             ancestry (list[str], optional): The ancestry for the Filter object. Defaults to None.
+            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
         """
         if xml is not None:
             self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
+            self.uid = uuid.uuid4().hex
         else:
             if action is None:
                 raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
@@ -34,6 +37,7 @@ class Flag(ExecutionElement):
             self.args_api, self.data_in_api = get_flag_api(self.action)
             self.args = validate_flag_parameters(self.args_api, args, self.action)
             self.filters = filters if filters is not None else []
+            self.uid = uuid.uuid4().hex if uid is None else uid
 
     def _from_xml(self, xml_element, parent_name='', ancestry=None):
         self.action = xml_element.get('action')
@@ -82,7 +86,8 @@ class Flag(ExecutionElement):
             The JSON representation of a Flag object.
         """
         args = [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.args.items()]
-        out = {"action": self.action,
+        out = {"uid": self.uid,
+               "action": self.action,
                "args": args}
         if with_children:
             out["filters"] = [filter_element.as_json() for filter_element in self.filters]
@@ -103,7 +108,8 @@ class Flag(ExecutionElement):
             The Flag object parsed from the JSON object.
         """
         args = {arg['name']: arg['value'] for arg in json['args']}
-        flag = Flag(action=json['action'], args=args, parent_name=parent_name, ancestry=ancestry)
+        uid = json['uid'] if 'uid' in json else uuid.uuid4().hex
+        flag = Flag(action=json['action'], args=args, parent_name=parent_name, ancestry=ancestry, uid=uid)
         filters = [Filter.from_json(filter_element, parent_name=flag.name, ancestry=flag.ancestry)
                    for filter_element in json['filters']]
         flag.filters = filters
@@ -159,7 +165,8 @@ class Flag(ExecutionElement):
                 return None
 
     def __repr__(self):
-        output = {'action': self.action,
+        output = {'uid': self.uid,
+                  'action': self.action,
                   'args': self.args,
                   'filters': [filter_element.as_json() for filter_element in self.filters]}
         return str(output)

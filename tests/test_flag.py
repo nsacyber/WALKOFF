@@ -5,6 +5,7 @@ import core.config.config
 from core.flag import Flag
 from core.filter import Filter
 from tests.config import function_api_path
+import uuid
 
 
 class TestFlag(unittest.TestCase):
@@ -14,7 +15,7 @@ class TestFlag(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
-    def __compare_init(self, flag, action, parent_name, ancestry, filters, args):
+    def __compare_init(self, flag, action, parent_name, ancestry, filters, args, uid=None):
         self.assertEqual(flag.action, action)
         self.assertEqual(flag.parent_name, parent_name)
         self.assertListEqual(flag.ancestry, ancestry)
@@ -22,10 +23,19 @@ class TestFlag(unittest.TestCase):
         for actual_filter, expected_filter in zip(flag.filters, filters):
             self.assertDictEqual(actual_filter.as_json(), expected_filter.as_json())
         self.assertDictEqual(flag.args, args)
+        if uid is None:
+            self.assertIsNotNone(flag.uid)
+        else:
+            self.assertEqual(flag.uid, uid)
 
     def test_init_no_args_action_only(self):
         flag = Flag(action='Top Flag')
         self.__compare_init(flag, 'Top Flag', '', ['', 'Top Flag'], [], {})
+
+    def test_init_with_uid(self):
+        uid = uuid.uuid4().hex
+        flag = Flag(action='Top Flag', uid=uid)
+        self.__compare_init(flag, 'Top Flag', '', ['', 'Top Flag'], [], {}, uid=uid)
 
     def test_init_no_args_with_parent(self):
         flag = Flag(action='Top Flag', parent_name='test_parent')
@@ -69,41 +79,47 @@ class TestFlag(unittest.TestCase):
             Flag()
 
     def test_as_json_action_only_with_children(self):
-        flag = Flag(action='Top Flag')
-        expected = {'action': 'Top Flag', 'args': [], 'filters': []}
+        uid = uuid.uuid4().hex
+        flag = Flag(action='Top Flag', uid=uid)
+        expected = {'action': 'Top Flag', 'args': [], 'filters': [], 'uid': uid}
         self.assertDictEqual(flag.as_json(), expected)
 
     def test_as_json_action_only_without_children(self):
-        flag = Flag(action='Top Flag')
-        expected = {'action': 'Top Flag', 'args': [], 'filters': []}
+        uid = uuid.uuid4().hex
+        flag = Flag(action='Top Flag', uid=uid)
+        expected = {'action': 'Top Flag', 'args': [], 'filters': [], 'uid': uid}
         self.assertDictEqual(flag.as_json(with_children=False), expected)
 
     def test_as_json_with_args_with_children(self):
-        flag = Flag(action='mod1_flag2', args={'arg1': '11113'})
+        uid = uuid.uuid4().hex
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, uid=uid)
         expected = {'action': 'mod1_flag2', 'args': [{'name': 'arg1', 'value': 11113}],
-                    'filters': []}
+                    'filters': [], 'uid': uid}
         self.assertDictEqual(flag.as_json(), expected)
 
     def test_as_json_with_args_without_children(self):
-        flag = Flag(action='mod1_flag2', args={'arg1': '11113'})
+        uid = uuid.uuid4().hex
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, uid=uid)
         expected = {'action': 'mod1_flag2', 'args': [{'name': 'arg1', 'value': 11113}],
-                    'filters': []}
+                    'filters': [], 'uid': uid}
         self.assertDictEqual(flag.as_json(with_children=False), expected)
 
     def test_as_json_with_args_and_filters_with_children(self):
+        uid = uuid.uuid4().hex
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
-        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters)
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters, uid=uid)
         filters_json = [filter_element.as_json() for filter_element in flag.filters]
         expected = {'action': 'mod1_flag2', 'args': [{'name': 'arg1', 'value': 11113}],
-                    'filters': filters_json}
+                    'filters': filters_json, 'uid': uid}
         self.assertDictEqual(flag.as_json(), expected)
 
     def test_as_json_with_args_and_filters_without_children(self):
+        uid = uuid.uuid4().hex
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
-        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters)
+        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters, uid=uid)
         filters_json = [filter_element.name for filter_element in flag.filters]
         expected = {'action': 'mod1_flag2', 'args': [{'name': 'arg1', 'value': 11113}],
-                    'filters': filters_json}
+                    'filters': filters_json, 'uid': uid}
         self.assertDictEqual(flag.as_json(with_children=False), expected)
 
     def test_to_xml_action_only(self):
@@ -149,25 +165,27 @@ class TestFlag(unittest.TestCase):
 
     def __assert_xml_is_convertible(self, flag):
         original_json = flag.as_json()
+        uid = original_json['uid']
         original_xml = flag.to_xml()
         new_flag = Flag(xml=original_xml)
+        new_flag.uid = uid
         self.assertDictEqual(new_flag.as_json(), original_json)
 
     def test_to_from_xml_is_same_action_only(self):
-        self.__assert_xml_is_convertible(Flag(action='Top Flag'))
+        uid = uuid.uuid4().hex
+        self.__assert_xml_is_convertible(Flag(action='Top Flag', uid=uid))
 
     def test_to_from_xml_is_same_with_args(self):
-        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}))
+        uid = uuid.uuid4().hex
+        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}, uid=uid))
 
     def test_to_from_xml_is_same_with_args_with_routing(self):
-        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '@step1'}))
+        uid = uuid.uuid4().hex
+        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '@step1'}, uid=uid))
 
     def test_to_from_xml_is_same_with_complex_args(self):
-        self.__assert_xml_is_convertible(Flag(action='mod2_flag2', args={'arg1': {'a': '1', 'b': '5'}}))
-
-    def test_to_from_xml_is_same_with_args_and_filters(self):
-        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
-        self.__assert_xml_is_convertible(Flag(action='mod1_flag2', args={'arg1': '5'}, filters=filters))
+        uid = uuid.uuid4().hex
+        self.__assert_xml_is_convertible(Flag(action='mod2_flag2', args={'arg1': {'a': '1', 'b': '5'}}, uid=uid))
 
     def test_call_action_only_no_args_valid_data_no_conversion(self):
         self.assertTrue(Flag(action='Top Flag')(3.4, {}))
@@ -224,6 +242,12 @@ class TestFlag(unittest.TestCase):
         json_in = {'action': 'Top Flag', 'args': [], 'filters': []}
         flag = Flag.from_json(json_in, parent_name='parent', ancestry=['a', 'b'])
         self.__compare_init(flag, 'Top Flag', 'parent', ['a', 'b', 'Top Flag'], [], {})
+
+    def test_from_json_with_uid(self):
+        uid = uuid.uuid4().hex
+        json_in = {'action': 'Top Flag', 'args': [], 'filters': [], 'uid': uid}
+        flag = Flag.from_json(json_in)
+        self.__compare_init(flag, 'Top Flag', '', ['', 'Top Flag'], [], {}, uid=uid)
 
     def test_from_json_with_args(self):
         args = [{'name': 'arg1', 'value': 3}]

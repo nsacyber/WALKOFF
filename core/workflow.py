@@ -12,12 +12,13 @@ from core.helpers import (construct_workflow_name_key, extract_workflow_name, Un
                           format_exception_message)
 from core.instance import Instance
 from core.step import Step
+import uuid
 
 logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', xml=None, children=None, parent_name='', playbook_name=''):
+    def __init__(self, name='', xml=None, children=None, parent_name='', playbook_name='', uid=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
@@ -44,7 +45,7 @@ class Workflow(ExecutionElement):
         self.executor = None
         self.breakpoint_steps = []
         self.accumulator = {}
-        self.uid = None
+        self.uid = uuid.uuid4().hex if uid is None else uid
 
     def reconstruct_ancestry(self, parent_ancestry):
         """Reconstructs the ancestry for a Workflow object. This is needed in case a workflow and/or playbook is renamed.
@@ -329,7 +330,8 @@ class Workflow(ExecutionElement):
                 return None
 
     def __repr__(self):
-        output = {'options': self.options,
+        output = {'uid': self.uid,
+                  'options': self.options,
                   'steps': {step: self.steps[step] for step in self.steps},
                   'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00)}
         return str(output)
@@ -340,7 +342,8 @@ class Workflow(ExecutionElement):
         Returns:
             The JSON representation of a Step object.
         """
-        return {'name': self.name,
+        return {'uid': self.uid,
+                'name': self.name,
                 'steps': [step.as_json() for name, step in self.steps.items()],
                 'start': self.start_step,
                 'options': self.options.as_json(),
@@ -355,15 +358,15 @@ class Workflow(ExecutionElement):
        """
         backup_steps = deepcopy(self.steps)
         self.steps = {}
+        uid = data['uid'] if 'uid' in data else uuid.uuid4().hex
         try:
             if 'start' in data and data['start']:
                 self.start_step = data['start']
             self.steps = {}
+            self.uid = uid
             for step_json in data['steps']:
                 step = Step.from_json(step_json, parent_name=self.name, ancestry=self.ancestry, position=step_json['position'])
                 self.steps[step_json['name']] = step
-            # self.steps = {step_json['name']: Step.from_json(step_json, parent_name=self.name, ancestry=self.ancestry, position=step_json['position'])
-            #               for step_json in data['steps']}
 
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps

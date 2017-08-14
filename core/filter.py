@@ -6,13 +6,13 @@ from core.helpers import (get_filter, get_filter_api, InvalidInput, InvalidEleme
 from core.validator import validate_filter_parameters, validate_parameter
 from copy import deepcopy
 import logging
-
+import uuid
 logger = logging.getLogger(__name__)
 
 
 class Filter(ExecutionElement):
 
-    def __init__(self, action=None, xml=None, parent_name='', args=None, ancestry=None):
+    def __init__(self, action=None, xml=None, parent_name='', args=None, ancestry=None, uid=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
         
         Args:
@@ -22,9 +22,11 @@ class Filter(ExecutionElement):
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             ancestry (list[str], optional): The ancestry for the Filter object. Defaults to None.
+            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
         """
         if xml is not None:
             self._from_xml(xml, parent_name, ancestry)
+            self.uid = uuid.uuid4().hex
         else:
             if action is None:
                 raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
@@ -33,6 +35,7 @@ class Filter(ExecutionElement):
             self.args_api, self.data_in_api = get_filter_api(self.action)
             args = args if args is not None else {}
             self.args = validate_filter_parameters(self.args_api, args, self.action)
+            self.uid = uuid.uuid4().hex if uid is None else uid
 
     def _from_xml(self, xml_element, parent_name=None, ancestry=None):
         self.action = xml_element.get('action')
@@ -76,7 +79,8 @@ class Filter(ExecutionElement):
             The JSON representation of a Filter object.
         """
         args = [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.args.items()]
-        return {"action": self.action,
+        return {"uid": self.uid,
+                "action": self.action,
                 "args": args}
 
     @staticmethod
@@ -91,10 +95,12 @@ class Filter(ExecutionElement):
         Returns:
             The Filter object parsed from the JSON object.
         """
+        uid = json['uid'] if 'uid' in json else uuid.uuid4().hex
         out_filter = Filter(action=json['action'],
                             args={arg['name']: arg['value'] for arg in json['args']},
                             parent_name=parent_name,
-                            ancestry=ancestry)
+                            ancestry=ancestry,
+                            uid=uid)
         return out_filter
 
     def to_xml(self, *args):
@@ -133,6 +139,7 @@ class Filter(ExecutionElement):
         return {}
 
     def __repr__(self):
-        output = {'action': self.action,
+        output = {'uid': self.uid,
+                  'action': self.action,
                   'args': self.args}
         return str(output)
