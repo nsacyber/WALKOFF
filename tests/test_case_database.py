@@ -2,9 +2,7 @@ import unittest
 import json
 
 import core.case.database as case_database
-from core.case.callbacks import _EventEntry
-from core.executionelement import ExecutionElement
-from tests.util.case import *
+from core.case.subscription import *
 from tests.util.assertwrappers import orderless_list_compare
 
 
@@ -13,15 +11,18 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        case_database.case_db.tear_down()
+        case_database.case_db.session.query(case_database.Event).delete()
+        case_database.case_db.session.query(case_database.Case).delete()
+        case_database.case_db.session.commit()
 
     @staticmethod
     def __construct_basic_db():
-        case1, _ = construct_case1()
-        case2, _ = construct_case2()
-        case3, _ = construct_case1()
-        case4, _ = construct_case2()
-        cases = {'case1': case1, 'case2': case2, 'case3': case3, 'case4': case4}
+        cases = {'case1': {'uid1': ['e1', 'e2', 'e3'],
+                           'uid2': ['e1']},
+                 'case2': {'uid1': ['e2', 'e3']},
+                 'case3': {'uid3': ['e', 'b', 'c'],
+                           'uid4': ['d']},
+                 'case4': {'uid1': ['a', 'b']}}
         set_subscriptions(cases)
         return cases
 
@@ -77,20 +78,13 @@ class TestCaseDatabase(unittest.TestCase):
 
     def test_add_event(self):
         TestCaseDatabase.__construct_basic_db()
-
-        elem1 = ExecutionElement(name='b', parent_name='a')
-        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
-        elem3 = ExecutionElement(name='d', parent_name='c')
-        elem4 = ExecutionElement()
-
-        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2')
-        event3 = _EventEntry(elem3, 'STEP', 'message3')
-        event4 = _EventEntry(elem4, 'NEXT', 'message4')
-
+        event1 = case_database.Event(type='SYSTEM', message='message1')
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        event2 = case_database.Event(type='WORKFLOW', message='message2')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        event3 = case_database.Event(type='STEP', message='message3')
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        event4 = case_database.Event(type='NEXT', message='message4')
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         expected_event_messages = {'case1': [('SYSTEM', 'message1'), ('NEXT', 'message4')],
@@ -132,19 +126,13 @@ class TestCaseDatabase(unittest.TestCase):
     def test_edit_note(self):
         TestCaseDatabase.__construct_basic_db()
 
-        elem1 = ExecutionElement(name='b', parent_name='a')
-        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
-        elem3 = ExecutionElement(name='d', parent_name='c')
-        elem4 = ExecutionElement()
-
-        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2')
-        event3 = _EventEntry(elem3, 'STEP', 'message3')
-        event4 = _EventEntry(elem4, 'NEXT', 'message4')
-
+        event1 = case_database.Event(type='SYSTEM', message='message1')
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        event2 = case_database.Event(type='WORKFLOW', message='message2')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        event3 = case_database.Event(type='STEP', message='message3')
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        event4 = case_database.Event(type='NEXT', message='message4')
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
@@ -163,19 +151,13 @@ class TestCaseDatabase(unittest.TestCase):
     def test_edit_note_invalid_id(self):
         TestCaseDatabase.__construct_basic_db()
 
-        elem1 = ExecutionElement(name='b', parent_name='a')
-        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
-        elem3 = ExecutionElement(name='d', parent_name='c')
-        elem4 = ExecutionElement()
-
-        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2')
-        event3 = _EventEntry(elem3, 'STEP', 'message3')
-        event4 = _EventEntry(elem4, 'NEXT', 'message4')
-
+        event1 = case_database.Event(type='SYSTEM', message='message1')
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        event2 = case_database.Event(type='WORKFLOW', message='message2')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        event3 = case_database.Event(type='STEP', message='message3')
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        event4 = case_database.Event(type='NEXT', message='message4')
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
@@ -196,26 +178,19 @@ class TestCaseDatabase(unittest.TestCase):
 
     def test_data_json_field(self):
         TestCaseDatabase.__construct_basic_db()
-
-        elem1 = ExecutionElement(name='b', parent_name='a')
-        elem2 = ExecutionElement(name='c', parent_name='b', ancestry=['a', 'b', 'c'])
-        elem3 = ExecutionElement(name='d', parent_name='c')
-        elem4 = ExecutionElement()
-
         event4_data = {"a": 4, "b": [1, 2, 3], "c": "Some_String"}
-        event1 = _EventEntry(elem1, 'SYSTEM', 'message1')
-        event2 = _EventEntry(elem2, 'WORKFLOW', 'message2', data='some_string')
-        event3 = _EventEntry(elem3, 'STEP', 'message3', data=6)
-        event4 = _EventEntry(elem4, 'NEXT', 'message4', data=json.dumps(event4_data))
-
+        event1 = case_database.Event(type='SYSTEM', message='message1')
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        event2 = case_database.Event(type='WORKFLOW', message='message2', data='some_string')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        event3 = case_database.Event(type='STEP', message='message3', data=6)
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        event4 = case_database.Event(type='NEXT', message='message4', data=json.dumps(event4_data))
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
         event_json_list = [event.as_json() for event in events]
-        input_output = {'message1': None,
+        input_output = {'message1': '',
                         'message2': 'some_string',
                         'message3': 6,
                         'message4': event4_data}

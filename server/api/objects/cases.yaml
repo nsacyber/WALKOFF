@@ -13,7 +13,9 @@ AddCase:
       example: This case does some things I want it to do.
     subscriptions:
       description: The events this case is subscribed to
-      type: object
+      type: array
+      items:
+        $ref: '#/definitions/Subscription'
 Case:
   type: object
   required: [id]
@@ -34,7 +36,26 @@ Case:
       example: This case does some things I want it to do.
     subscriptions:
       description: The events this case is subscribed to
-      type: object
+      type: array
+      items:
+        $ref: '#/definitions/Subscription'
+
+Subscription:
+  type: object
+  required: [uid, events]
+  properties:
+    uid:
+      description: Universal ID for the execution element  or 'controller' for the controller
+      type: string
+    events:
+      description: A list of events subscribed to
+      type: array
+      items:
+        type: string
+      example:
+        - Workflow Execution Start
+        - App Instance Created
+        - Step Execution Success
 
 Event:
   type: object
@@ -84,46 +105,3 @@ Event:
       example: [case1, mycase, thatonecase, thatothercase]
       items:
         $ref: '#/definitions/Case'
-SubscriptionChange:
-    type: object
-    required: [ancestry, events]
-    properties:
-      ancestry:
-        description: The ancestry of the execution element to modify
-        type: array
-        items:
-          type: string
-        example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
-      events:
-        description: The list of events to subscribe to
-        type: array
-        items:
-          type: string
-        example:
-          - Workflow Execution Start
-          - App Instance Created
-          - Step Execution Success
-Subscription:
-  type: object
-  required: [events, subscriptions]
-  properties:
-    events:
-      description: A list of events subscribed to
-      type: array
-      items:
-        type: string
-      example:
-        - Workflow Execution Start
-        - App Instance Created
-        - Step Execution Success
-    subscriptions:
-      description: Subscriptions for this elements sub-elements. Form of '{<sub-element-name> -> subscriptions}'
-      type: object
-
-CaseSubscription:
-  type: object
-  required: [subscriptions]
-  properties:
-    subscriptions:
-      description: The subscriptions in the case Form of '{controllerName -> subscriptions}'
-      type: object

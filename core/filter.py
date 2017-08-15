@@ -12,34 +12,30 @@ logger = logging.getLogger(__name__)
 
 class Filter(ExecutionElement):
 
-    def __init__(self, action=None, xml=None, parent_name='', args=None, ancestry=None, uid=None):
+    def __init__(self, action=None, xml=None, args=None, uid=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
         
         Args:
             xml (cElementTree, optional): The XML element tree object. Defaults to None.
-            parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             action (str, optional): The action name for the filter. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
-            ancestry (list[str], optional): The ancestry for the Filter object. Defaults to None.
             uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
         """
         if xml is not None:
-            self._from_xml(xml, parent_name, ancestry)
-            self.uid = uuid.uuid4().hex
+            self._from_xml(xml)
         else:
             if action is None:
                 raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
-            ExecutionElement.__init__(self, name=action, parent_name=parent_name, ancestry=ancestry)
+            ExecutionElement.__init__(self, action, uid)
             self.action = action
             self.args_api, self.data_in_api = get_filter_api(self.action)
             args = args if args is not None else {}
             self.args = validate_filter_parameters(self.args_api, args, self.action)
-            self.uid = uuid.uuid4().hex if uid is None else uid
 
-    def _from_xml(self, xml_element, parent_name=None, ancestry=None):
+    def _from_xml(self, xml_element, *args):
         self.action = xml_element.get('action')
-        ExecutionElement.__init__(self, name=self.action, parent_name=parent_name, ancestry=ancestry)
+        ExecutionElement.__init__(self, name=self.action)
         self.args_api, self.data_in_api = get_filter_api(self.action)
         args_xml = xml_element.find('args')
         args = (inputs_xml_to_dict(args_xml) or {}) if args_xml is not None else {}
@@ -84,22 +80,18 @@ class Filter(ExecutionElement):
                 "args": args}
 
     @staticmethod
-    def from_json(json, parent_name='', ancestry=None):
+    def from_json(json_in):
         """Forms a Filter object from the provided JSON object.
         
         Args:
-            json (JSON object): The JSON object to convert from.
-            parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
-            ancestry (list[str], optional): The ancestry for the new Filter object. Defaults to None.
+            json_in (JSON object): The JSON object to convert from.
             
         Returns:
             The Filter object parsed from the JSON object.
         """
-        uid = json['uid'] if 'uid' in json else uuid.uuid4().hex
-        out_filter = Filter(action=json['action'],
-                            args={arg['name']: arg['value'] for arg in json['args']},
-                            parent_name=parent_name,
-                            ancestry=ancestry,
+        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        out_filter = Filter(action=json_in['action'],
+                            args={arg['name']: arg['value'] for arg in json_in['args']},
                             uid=uid)
         return out_filter
 
@@ -118,25 +110,6 @@ class Filter(ExecutionElement):
             args = inputs_to_xml(self.args, root='args')
             elem.append(args)
         return elem
-
-    def reconstruct_ancestry(self, parent_ancestry):
-        """Reconstructs the ancestry for a Filter object. This is needed in case a workflow and/or playbook is renamed.
-
-        Args:
-            parent_ancestry(list[str]): The parent ancestry list.
-        """
-        self._construct_ancestry(parent_ancestry)
-
-    def get_children(self, ancestry):
-        """Gets the children Filters of the Flag in JSON format.
-        
-        Args:
-            ancestry (list[str]): The ancestry list for the Filter to be returned.
-            
-        Returns:
-            Empty dictionary {}
-        """
-        return {}
 
     def __repr__(self):
         output = {'uid': self.uid,

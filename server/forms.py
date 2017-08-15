@@ -121,17 +121,3 @@ class ExportCaseForm(Form):
 
 class ImportCaseForm(Form):
     filename = StringField('Filename', [validators.Optional()])
-
-
-class EditSubscriptionForm(Form):
-    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
-    events = FieldList(StringField('events'), [validators.Optional()])
-
-
-class AddSubscriptionForm(Form):
-    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])
-    events = FieldList(StringField('events'), [validators.Optional()])
-
-
-class DeleteSubscriptionForm(Form):
-    ancestry = FieldList(StringField('ancestry'), [validators.Optional()])

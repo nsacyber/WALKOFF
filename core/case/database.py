@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from six import string_types
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
@@ -50,7 +49,7 @@ class Event(Case_Base):
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow())
     type = Column(String)
-    ancestry = Column(String)
+    caller = Column(String)
     message = Column(String)
     note = Column(String)
     data = Column(String)
@@ -69,7 +68,7 @@ class Event(Case_Base):
         output = {'id': self.id,
                   'timestamp': str(self.timestamp),
                   'type': self.type,
-                  'ancestry': self.ancestry,
+                  'caller': self.caller,
                   'message': self.message if self.message is not None else '',
                   'note': self.note if self.note is not None else ''}
         if self.data is not None:
@@ -86,7 +85,7 @@ class Event(Case_Base):
     @staticmethod
     def create(sender, timestamp, entry_message, entry_type, data=''):
         """Factory method to construct an Event object.
-        
+
         Args:
             sender (cls): A boolean to determine whether or not the events of the Case object should be
             included in the output.
@@ -94,13 +93,13 @@ class Event(Case_Base):
             entry_message (str): The message associated with the event
             entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
             data: Extra information to be logged with the event
-            
+
         Returns:
             An Event object.
         """
         return Event(type=entry_type,
                      timestamp=timestamp,
-                     ancestry=','.join(map(str, sender.ancestry)),
+                     caller=','.join(map(str, sender.ancestry)),
                      message=entry_message,
                      data=data)
 
@@ -109,12 +108,8 @@ class CaseDatabase(object):
     """
     Wrapper for the SQLAlchemy Case database object
     """
-    def __init__(self):
-        self.create()
 
-    def create(self):
-        """ Creates the database
-        """
+    def __init__(self):
         self.engine = create_engine(format_db_path(core.config.config.case_db_type, case_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
@@ -139,8 +134,8 @@ class CaseDatabase(object):
         Args:
             case_names (list[str]): A list of case names to add
         """
-        existing_cases = [case.name for case in self.session.query(Case).all()]
-        additions = [Case(name=case_name) for case_name in set(case_names) if case_name not in existing_cases]
+        existing_cases = {x[0] for x in self.session.query(Case).with_entities(Case.name).all()}
+        additions = [Case(name=case_name) for case_name in (set(case_names) - existing_cases)]
         self.session.add_all(additions)
         self.session.commit()
 
@@ -151,9 +146,7 @@ class CaseDatabase(object):
             case_names (list[str]): A list of case names to remove
         """
         if case_names:
-            cases = self.session.query(Case).filter(Case.name.in_(case_names)).all()
-            for case in cases:
-                self.session.delete(case)  # There is a more efficient way to delete all items
+            self.session.query(Case).filter(Case.name.in_(case_names)).delete(synchronize_session=False)
             self.session.commit()
 
     def rename_case(self, old_case_name, new_case_name):
@@ -186,31 +179,19 @@ class CaseDatabase(object):
         """ Adds an event to some cases
         
         Args:
-            event (cls): A core.case.callbacks._EventEntry object to add to the cases
+            event (cls): A core.case.database.Event object to add to the cases
             cases (list[str]): The cases to add the event to
         """
-        if not isinstance(event.data,string_types):
-            try:
-                data = json.dumps(event.data)
-            except:
-                data = str(event.data)
-        else:
-            data = event.data
-        event_log = Event(type=event.type,
-                          timestamp=event.timestamp,
-                          ancestry=','.join(map(str, event.ancestry)),
-                          message=event.message,
-                          data=data)
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
             if case in existing_case_names:
                 for case_elem in existing_cases:
                     if case_elem.name == case:
-                        event_log.cases.append(case_elem)
+                        event.cases.append(case_elem)
             else:
                 print("ERROR: Case is not tracked")
-        self.session.add(event_log)
+        self.session.add(event)
         self.session.commit()
 
     def cases_as_json(self):
@@ -240,13 +221,14 @@ class CaseDatabase(object):
             raise Exception
 
         result = [event.as_json()
-                    for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
+                  for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
         return result
 
 
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""
     return _singleton
+
 
 case_db = get_case_db()
 
@@ -255,7 +237,6 @@ case_db = get_case_db()
 def initialize():
     """ Initializes the case database
     """
-
     Case_Base.metadata.drop_all()
     Case_Base.metadata.create_all()
 
@@ -264,7 +245,8 @@ def initialize():
 def tear_down():
     """ Tears down the case database
     """
-    case_db.session.close()
-    case_db.transaction.rollback()
-    case_db.connection.close()
-    case_db.engine.dispose()
+    pass
+    # case_db.session.close()
+    # case_db.transaction.rollback()
+    # case_db.connection.close()
+    # case_db.engine.dispose()

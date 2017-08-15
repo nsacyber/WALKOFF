@@ -53,16 +53,14 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         reload(socket)
 
-    def __compare_init(self, elem, name, parent_name, action, app, device, inputs, next_steps, ancestry,
+    def __compare_init(self, elem, name, action, app, device, inputs, next_steps,
                        widgets, risk=0., position=None, uid=None):
         self.assertEqual(elem.name, name)
-        self.assertEqual(elem.parent_name, parent_name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device, device)
         self.assertDictEqual({key: input_element for key, input_element in elem.input.items()}, inputs)
         self.assertListEqual([conditional.as_json() for conditional in elem.conditionals], next_steps)
-        self.assertListEqual(elem.ancestry, ancestry)
         self.assertEqual(elem.risk, risk)
         widgets = [_Widget(app, widget) for (app, widget) in widgets]
         self.assertEqual(len(elem.widgets), len(widgets))
@@ -79,16 +77,16 @@ class TestStep(unittest.TestCase):
 
     def test_init_app_and_action_only(self):
         step = Step(app='HelloWorld', action='helloWorld')
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
     def test_init_with_uid(self):
         uid = uuid.uuid4().hex
         step = Step(app='HelloWorld', action='helloWorld', uid=uid)
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [], uid=uid)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], uid=uid)
 
     def test_init_app_and_action_name_different_than_method_name(self):
         step = Step(app='HelloWorld', action='Hello World')
-        self.__compare_init(step, '', '', 'Hello World', 'HelloWorld', '', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'Hello World', 'HelloWorld', '', {}, [], [])
 
     def test_init_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -100,11 +98,11 @@ class TestStep(unittest.TestCase):
 
     def test_init_with_inputs_no_conversion(self):
         step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': -5.6})
-        self.__compare_init(step, '', '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6}, [], ['', ''], [])
+        self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6}, [], [])
 
     def test_init_with_inputs_with_conversion(self):
         step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'})
-        self.__compare_init(step, '', '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6}, [], ['', ''], [])
+        self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6}, [], [])
 
     def test_init_with_invalid_input_name(self):
         with self.assertRaises(InvalidInput):
@@ -116,129 +114,71 @@ class TestStep(unittest.TestCase):
 
     def test_init_with_name(self):
         step = Step(app='HelloWorld', action='helloWorld', name='name')
-        self.__compare_init(step, 'name', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', 'name'], [])
-
-    def test_init_with_name_and_parent_name(self):
-        step = Step(app='HelloWorld', action='helloWorld', name='name', parent_name='parent')
-        self.__compare_init(step, 'name', 'parent', 'helloWorld', 'HelloWorld', '', {}, [], ['parent', 'name'], [])
-
-    def test_init_with_name_and_parent_name_and_ancestry(self):
-        step = Step(app='HelloWorld', action='helloWorld', name='name', parent_name='parent', ancestry=['a', 'b'])
-        self.__compare_init(step, 'name', 'parent', 'helloWorld', 'HelloWorld', '', {}, [], ['a', 'b', 'name'], [])
+        self.__compare_init(step, 'name', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
     def test_init_with_device(self):
         step = Step(app='HelloWorld', action='helloWorld', device='dev')
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', 'dev', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'dev', {}, [], [])
 
     def test_init_with_risk(self):
         step = Step(app='HelloWorld', action='helloWorld', risk=42.3)
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [], risk=42.3)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], risk=42.3)
 
     def test_init_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
         step = Step(app='HelloWorld', action='helloWorld', widgets=widgets)
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], widgets)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], widgets)
 
     def test_init_with_position(self):
         step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [],
-                            position={'x': -12.3, 'y': 485})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], position={'x': -12.3, 'y': 485})
 
     def test_init_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [step.as_json() for step in next_steps],
-                            ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [step.as_json() for step in next_steps], [])
 
-    def test_as_json_with_children(self):
+    def test_as_json(self):
         step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children(self):
-        step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_name(self):
+    def test_as_json_with_name(self):
         step = Step(app='HelloWorld', action='helloWorld', name='name', uid=self.uid)
         self.basic_json['name'] = 'name'
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children_with_name(self):
-        step = Step(app='HelloWorld', action='helloWorld', name='name', uid=self.uid)
-        self.basic_json['name'] = 'name'
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_device(self):
+    def test_as_json_with_device(self):
         step = Step(app='HelloWorld', action='helloWorld', device='device', uid=self.uid)
         self.basic_json['device'] = 'device'
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children_with_device(self):
-        step = Step(app='HelloWorld', action='helloWorld', device='device', uid=self.uid)
-        self.basic_json['device'] = 'device'
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_risk(self):
+    def test_as_json_with_risk(self):
         step = Step(app='HelloWorld', action='helloWorld', risk=120.6, uid=self.uid)
         self.basic_json['risk'] = 120.6
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children_with_risk(self):
-        step = Step(app='HelloWorld', action='helloWorld', risk=169.5, uid=self.uid)
-        self.basic_json['risk'] = 169.5
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_inputs(self):
+    def test_as_json_with_inputs(self):
         step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'}, uid=self.uid)
         self.basic_json['action'] = 'returnPlusOne'
         self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children_with_inputs(self):
-        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'}, uid=self.uid)
-        self.basic_json['action'] = 'returnPlusOne'
-        self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_without_children_with_input_routing(self):
-        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '@step1'}, uid=self.uid)
-        self.basic_json['action'] = 'returnPlusOne'
-        self.basic_json['inputs'] = [{'name': 'number', 'value': '@step1'}]
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_next_steps(self):
+    def test_as_json_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, uid=self.uid)
         self.basic_json['next'] = [next_step.as_json() for next_step in next_steps]
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children_with_next_steps(self):
-        next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, uid=self.uid)
-        self.basic_json['next'] = [next_step.name for next_step in next_steps]
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_position(self):
+    def test_as_json_with_position(self):
         step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485}, uid=self.uid)
         self.basic_json['position'] = {'x': -12.3, 'y': 485}
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
-    def test_as_json_without_children_with_position(self):
-        step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485}, uid=self.uid)
-        self.basic_json['position'] = {'x': -12.3, 'y': 485}
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
-
-    def test_as_json_with_children_with_widgets(self):
+    def test_as_json_with_widgets(self):
         widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
         step = Step(app='HelloWorld', action='helloWorld', widgets=widgets, uid=self.uid)
         self.basic_json['widgets'] = [{'app': widget[0], 'name': widget[1]} for widget in widgets]
-        self.assertDictEqual(step.as_json(with_children=True), self.basic_json)
-
-    def test_as_json_without_children_with_widgets(self):
-        widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
-        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets, uid=self.uid)
-        self.basic_json['widgets'] = [{'app': widget[0], 'name': widget[1]} for widget in widgets]
-        self.assertDictEqual(step.as_json(with_children=False), self.basic_json)
+        self.assertDictEqual(step.as_json(), self.basic_json)
 
     def test_as_json_after_executed(self):
         step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
@@ -411,11 +351,11 @@ class TestStep(unittest.TestCase):
 
     def test_from_json_app_and_action_only(self):
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
     def test_from_json_with_uid(self):
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [], uid=self.uid)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], uid=self.uid)
 
     def test_from_json_invalid_app(self):
         self.basic_input_json['app'] = 'Invalid'
@@ -427,57 +367,45 @@ class TestStep(unittest.TestCase):
         with self.assertRaises(UnknownAppAction):
             Step.from_json(self.basic_input_json, {})
 
-    def test_from_json__with_parent_name(self):
-        step = Step.from_json(self.basic_input_json, {}, parent_name='parent')
-        self.__compare_init(step, '', 'parent', 'helloWorld', 'HelloWorld', '', {}, [], ['parent', ''], [])
-
-    def test_from_json_with_ancestry(self):
-        step = Step.from_json(self.basic_input_json, {}, ancestry=['a', 'b'])
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['a', 'b', ''], [])
-
-    def test_from_json_with_parent_name_and_ancestry(self):
-        step = Step.from_json(self.basic_input_json, {}, parent_name='parent', ancestry=['a', 'b'])
-        self.__compare_init(step, '', 'parent', 'helloWorld', 'HelloWorld', '', {}, [], ['a', 'b', ''], [])
-
     def test_from_json_with_name(self):
         self.basic_input_json['name'] = 'name1'
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, 'name1', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', 'name1'], [])
+        self.__compare_init(step, 'name1', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
     def test_from_json_with_risk(self):
         self.basic_input_json['risk'] = 132.3
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [], risk=132.3)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], risk=132.3)
 
     def test_from_json_with_device(self):
         self.basic_input_json['device'] = 'device1'
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', 'device1', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'device1', {}, [], [])
 
     def test_from_json_with_device_is_none(self):
         self.basic_input_json['device'] = None
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
     def test_from_json_with_device_is_none_string(self):
         self.basic_input_json['device'] = 'None'
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
     def test_from_json_with_widgets(self):
         widget_json = [{'name': 'widget_name', 'app': 'app1'}, {'name': 'w2', 'app': 'app2'}]
         widget_tuples = [('app1', 'widget_name'), ('app2', 'w2')]
         self.basic_input_json['widgets'] = widget_json
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, [], ['', ''], widget_tuples)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], widget_tuples)
 
     def test_from_json_with_inputs(self):
         self.basic_input_json['action'] = 'Add Three'
         self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
                                            {'name': 'num3', 'value': '-10.265'}]
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'Add Three', 'HelloWorld', '',
-                            {'num1': -5.6, 'num2': 4.3, 'num3': -10.265}, [], ['', ''], [])
+        self.__compare_init(step, '', 'Add Three', 'HelloWorld', '',
+                            {'num1': -5.6, 'num2': 4.3, 'num3': -10.265}, [], [])
 
     def test_from_json_with_inputs_invalid_name(self):
         self.basic_input_json['action'] = 'Add Three'
@@ -498,20 +426,19 @@ class TestStep(unittest.TestCase):
         self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '@step1'},
                                            {'name': 'num3', 'value': '@step2'}]
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'Add Three', 'HelloWorld', '',
-                            {'num1': -5.6, 'num2': '@step1', 'num3': '@step2'}, [], ['', ''], [])
+        self.__compare_init(step, '', 'Add Three', 'HelloWorld', '',
+                            {'num1': -5.6, 'num2': '@step1', 'num3': '@step2'}, [], [])
 
     def test_from_json_with_position(self):
         step = Step.from_json(self.basic_input_json, {'x': 125.3, 'y': 198.7})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '',
-                            {}, [], ['', ''], [], position={'x': 125.3, 'y': 198.7})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], position={'x': 125.3, 'y': 198.7})
 
     def test_from_json_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         next_steps_json = [next_step.as_json() for next_step in next_steps]
         self.basic_input_json['next'] = next_steps_json
         step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', '', 'helloWorld', 'HelloWorld', '', {}, next_steps_json, ['', ''], [])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, next_steps_json, [])
 
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')
@@ -604,39 +531,6 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step.get_next_step({}), 'name2')
         step.output = ActionResult(1, 'Success')
         self.assertEqual(step.get_next_step({}), 'name1')
-
-    def test_get_children_no_ancestry(self):
-        step = Step(app='HelloWorld', action='helloWorld')
-        self.assertDictEqual(step.get_children([]), step.as_json(with_children=False))
-
-    def test_get_children_next_not_found(self):
-        next_steps = [NextStep(name='name1'), NextStep(name='name2')]
-        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
-        self.assertIsNone(step.get_children(['invalid']))
-
-    def test_get_children_in_next_step(self):
-        next_steps = [NextStep(name='name1'), NextStep(name='name2')]
-        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
-        self.assertDictEqual(step.get_children(['name1']), next_steps[0].as_json(with_children=False))
-        self.assertDictEqual(step.get_children(['name2']), next_steps[1].as_json(with_children=False))
-
-    def test_name_parent_rename(self):
-        step = Step(app='HelloWorld', action='helloWorld', ancestry=['step_parent'], name='step')
-        new_ancestry = ['step_parent_update']
-        step.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append('step')
-        self.assertListEqual(new_ancestry, step.ancestry)
-
-    def test_name_parent_nextstep_rename(self):
-        step = Step(app='HelloWorld', action='helloWorld', ancestry=['step_parent'], name='step')
-        nextstep = NextStep(name="test_nextstep", ancestry=step.ancestry)
-        step.conditionals = [nextstep]
-
-        new_ancestry = ["step_parent_update"]
-        step.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("step")
-        new_ancestry.append("test_nextstep")
-        self.assertListEqual(new_ancestry, step.conditionals[0].ancestry)
 
     def test_set_input_valid(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})

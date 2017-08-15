@@ -31,9 +31,7 @@ class Step(ExecutionElement):
                  device='',
                  inputs=None,
                  next_steps=None,
-                 parent_name='',
                  position=None,
-                 ancestry=None,
                  widgets=None,
                  risk=0,
                  uid=None):
@@ -49,19 +47,16 @@ class Step(ExecutionElement):
             inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
                 to None.
             next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
-            parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
             position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
                 for UI display purposes. Defaults to None.
-            ancestry (list[str], optional): The ancestry for the Step object. Defaults to None.
-            widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the 
+            widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the
                 corresponding widget. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
         """
-        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+        ExecutionElement.__init__(self, name, uid)
         if xml is not None:
-            self._from_xml(xml, parent_name=parent_name, ancestry=ancestry)
-            self.uid = uuid.uuid4().hex
+            self._from_xml(xml)
         else:
             if action == '' or app == '':
                 raise InvalidElementConstructed('Either both action and app or xml must be '
@@ -80,24 +75,13 @@ class Step(ExecutionElement):
                             for (widget_app, widget_name) in widgets] if widgets is not None else []
             self.raw_xml = self.to_xml()
             self.templated = False
-            self.uid = uuid.uuid4().hex if uid is None else uid
         self.output = None
         self.next_up = None
 
-    def reconstruct_ancestry(self, parent_ancestry):
-        """Reconstructs the ancestry for a Step object. This is needed in case a workflow and/or playbook is renamed.
-        
-        Args:
-            parent_ancestry(list[str]): The parent ancestry list.
-        """
-        self._construct_ancestry(parent_ancestry)
-        for next_step in self.conditionals:
-            next_step.reconstruct_ancestry(self.ancestry)
-
-    def _from_xml(self, step_xml, parent_name='', ancestry=None):
+    def _from_xml(self, step_xml, *args):
         self.raw_xml = step_xml
         name = step_xml.get('id')
-        ExecutionElement.__init__(self, name=name, parent_name=parent_name, ancestry=ancestry)
+        ExecutionElement.__init__(self, name=name)
 
         self.action = step_xml.find('action').text
         self.app = step_xml.find('app').text
@@ -118,8 +102,7 @@ class Step(ExecutionElement):
         self.device = device_field.text if device_field is not None else ''
         risk_field = step_xml.find('risk')
         self.risk = risk_field.text if risk_field is not None else 0
-        self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
-                             for next_step_element in step_xml.findall('next')]
+        self.conditionals = [nextstep.NextStep(xml=next_step_element) for next_step_element in step_xml.findall('next')]
         self.widgets = [_Widget(widget.get('app'), widget.text) for widget in step_xml.findall('widgets/*')]
         position = step_xml.find('position')
         if position is None:
@@ -148,8 +131,7 @@ class Step(ExecutionElement):
                 self.input = inputs
         else:
             self.input = validate_app_action_parameters(self.input_api, {}, self.app, self.action)
-        self.conditionals = [nextstep.NextStep(xml=next_step_element, parent_name=self.name, ancestry=self.ancestry)
-                             for next_step_element in step_xml.findall('next')]
+        self.conditionals = [nextstep.NextStep(xml=next_step_element) for next_step_element in step_xml.findall('next')]
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -180,6 +162,7 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
+        self.execution_uid = uuid.uuid4().hex
         callbacks.StepInputValidated.send(self)
         try:
             args = dereference_step_routing(self.input, accumulator, 'In step {0}'.format(self.name))
@@ -202,7 +185,7 @@ class Step(ExecutionElement):
             self.output = result
             for widget in self.widgets:
                 get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result.as_json()}))
-            logger.debug('Step {0} executed successfully'.format(self.ancestry))
+            logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
 
     def get_next_step(self, accumulator):
@@ -288,12 +271,8 @@ class Step(ExecutionElement):
             output["output"] = self.output.as_json()
         return str(output)
 
-    def as_json(self, with_children=True):
+    def as_json(self):
         """Gets the JSON representation of a Step object.
-        
-        Args:
-            with_children (bool, optional): A boolean to determine whether or not the children elements of the Step
-                object should be included in the output.
                 
         Returns:
             The JSON representation of a Step object.
@@ -306,24 +285,19 @@ class Step(ExecutionElement):
                   "risk": self.risk,
                   "inputs": [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.input.items()],
                   'widgets': [{'app': widget.app, 'name': widget.widget} for widget in self.widgets],
-                  "position": self.position}
+                  "position": self.position,
+                  "next": [next_step.as_json() for next_step in self.conditionals if next_step.name is not None]}
         if self.output:
             output["output"] = self.output.as_json()
-        if with_children:
-            output["next"] = [next_step.as_json() for next_step in self.conditionals if next_step.name is not None]
-        else:
-            output["next"] = [next_step.name for next_step in self.conditionals if next_step.name is not None]
         return output
 
     @staticmethod
-    def from_json(json_in, position, parent_name='', ancestry=None):
+    def from_json(json_in, position):
         """Forms a Step object from the provided JSON object.
         
         Args:
             json_in (dict): The JSON object to convert from.
             position (dict): position of the step node of the form {'x': <x position>, 'y': <y position>}
-            parent_name (str, optional): The name of the parent for ancestry purposes. Defaults to an empty string.
-            ancestry (list[str], optional): The ancestry for the new Step object. Defaults to None.
             
         Returns:
             The Step object parsed from the JSON object.
@@ -343,31 +317,9 @@ class Step(ExecutionElement):
                     device=device,
                     risk=risk,
                     inputs={arg['name']: arg['value'] for arg in json_in['inputs']},
-                    parent_name=parent_name,
                     position={key: value for key, value in position.items()},
                     widgets=widgets,
-                    ancestry=ancestry,
                     uid=uid)
         if json_in['next']:
-            step.conditionals = [NextStep.from_json(next_step, parent_name=step.name, ancestry=step.ancestry)
-                                 for next_step in json_in['next'] if next_step]
+            step.conditionals = [NextStep.from_json(next_step) for next_step in json_in['next'] if next_step]
         return step
-
-    def get_children(self, ancestry):
-        """Gets the children NextSteps of the Step in JSON format.
-        
-        Args:
-            ancestry (list[str]): The ancestry list for the NextStep to be returned.
-            
-        Returns:
-            The NextStep in the ancestry (if provided) as a JSON, otherwise None.
-        """
-        if not ancestry:
-            return self.as_json(with_children=False)
-        else:
-            next_child = ancestry.pop()
-            if next_child in [conditional.name for conditional in self.conditionals]:
-                next_step_index = [conditional.name for conditional in self.conditionals].index(next_child)
-                return self.conditionals[next_step_index].get_children(ancestry)
-            else:
-                return None
