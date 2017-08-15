@@ -29,6 +29,21 @@
 				</div>
 			</form>
 		</div>
+		<!--<div id="caseSubscriptionsTree"></div>-->
+		<div class="row">
+			<div class="col-xs-8">
+				<svg id="caseSubscriptionsTree"></svg>
+			</div>
+			<div class="col-xs-4">
+				<h3>Selected Events for {{selectedNode.name}}</h3>
+				<ul>
+					<li *ngFor="let event of workingEvents">
+						<input type="checkbox" [value]="event.isChecked" [checked]="event.isChecked"
+							(change)="handleEventSelectionChange(event, $event.target.checked)"> {{event.name}}
+					</li>
+				</ul>
+			</div>
+		</div>
 	</div>
 </div>
 <div class="modal-footer">

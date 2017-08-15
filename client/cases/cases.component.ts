@@ -12,6 +12,7 @@ import { CasesModalComponent } from './cases.modal.component';
 
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
+import { AvailableSubscription } from '../models/availableSubscription';
 
 @Component({
 	selector: 'cases-component',
@@ -24,6 +25,7 @@ import { CaseEvent } from '../models/caseEvent';
 export class CasesComponent {
 	cases: Case[] = [];
 	availableCases: Select2OptionData[] = [];
+	availableSubscriptions: AvailableSubscription[] = [];
 	caseSelectConfig: Select2Options;
 	caseEvents: CaseEvent[] = [];
 	displayCases: Case[] = [];
@@ -41,6 +43,7 @@ export class CasesComponent {
 		};
 
 		this.getCases();
+		this.getAvailableSubscriptions();
 
 		this.eventFilterQuery
 			.valueChanges
@@ -97,21 +100,22 @@ export class CasesComponent {
 			.catch(e => this.toastyService.error(`Error retrieving events: ${e.message}`));
 	}
 
-
 	addCase(): void {
-		const modalRef = this.modalService.open(CasesModalComponent);
+		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = 'Add New Case';
 		modalRef.componentInstance.submitText = 'Add Case';
 		modalRef.componentInstance.workingCase = new Case();
+		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
 
 		this._handleModalClose(modalRef);
 	}
 
 	editCase(caseToEdit: Case): void {
-		const modalRef = this.modalService.open(CasesModalComponent);
+		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = `Edit Case: ${caseToEdit.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.workingCase = _.cloneDeep(caseToEdit);
+		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
 
 		this._handleModalClose(modalRef);
 	}
@@ -158,12 +162,12 @@ export class CasesComponent {
 			.catch(e => this.toastyService.error(e.message));
 	}
 
-	// getCaseSubscriptions(): void {
-	// 	this.casesService
-	// 		.getCaseSubscriptions()
-	// 		.then(caseSubscriptions => this.cases = caseSubscriptions)
-	// 		.catch(e => this.toastyService.error(`Error retrieving case subscriptions: ${e.message}`));
-	// }
+	getAvailableSubscriptions(): void {
+		this.casesService
+			.getAvailableSubscriptions()
+			.then(availableSubscriptions => this.availableSubscriptions = availableSubscriptions)
+			.catch(e => this.toastyService.error(`Error retrieving case subscriptions: ${e.message}`));
+	}
 
 	getFriendlyArray(input: string[]): string {
 		return input.join(', ');
