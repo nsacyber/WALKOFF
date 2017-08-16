@@ -35,6 +35,16 @@ export class TriggersComponent {
 					indx++;
 				}
 			}
+
+			var headStyleAll = document.head.querySelectorAll("style");
+			for (let indxStr in headStyleAll) {
+				let headStyle = headStyleAll[parseInt(indxStr)];
+				console.log(headStyle);
+				if (headStyle != null && headStyle.innerText.indexOf('palette') > -1) {
+					document.head.removeChild(headStyle);
+					break;
+				}
+			}
 		}
 
 		let addScript = (script: string) => {

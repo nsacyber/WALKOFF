@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 
 import { PlaybookService } from './playbook.service';
 
@@ -6,12 +6,13 @@ import { PlaybookService } from './playbook.service';
 	selector: 'playbook-component',
 	templateUrl: 'client/playbook/playbook.html',
 	styleUrls: [
-        // 'client/node_modules/jstree/dist/themes/default/style.min.css',
-        // 'client/node_modules/datatables/media/css/jquery.dataTables.min.css',
+    'client/node_modules/jstree/dist/themes/default/style.min.css',
+    'client/node_modules/datatables/media/css/jquery.dataTables.min.css',
 		'client/node_modules/jqueryui/jquery-ui.min.css',
 		'client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css',
 		'client/playbook/playbook.css'
     ],
+		encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService]
 })
 export class PlaybookComponent {
@@ -42,12 +43,6 @@ export class PlaybookComponent {
         }
 
         removeScript();
-
-        // addLink('client/node_modules/jqueryui/jquery-ui.min.css');
-        // addLink('client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css');
-        // addLink('client/node_modules/jstree/dist/themes/default/style.min.css');
-        // addLink('client/node_modules/datatables/media/css/jquery.dataTables.min.css');
-        // addLink('client/playbook/playbook.css');
 
         addScript("client/node_modules/jquery-migrate/dist/jquery-migrate.min.js");
         addScript("client/node_modules/jqueryui/jquery-ui.min.js");
