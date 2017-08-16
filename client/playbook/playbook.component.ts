@@ -14,6 +14,18 @@ export class PlaybookComponent {
     }
 
     ngAfterViewInit() {
+				let removeScript = () => {
+					let indx = 0;
+					while (indx < document.body.childNodes.length) {
+						if ('localName' in document.body.childNodes[indx]
+							&& (document.body.childNodes[indx].localName == 'link'
+							|| document.body.childNodes[indx].localName == 'script')) {
+								document.body.removeChild(document.body.childNodes[indx]);
+						} else {
+							indx++;
+						}
+					}
+				}
 
         let addLink = (script: string) => {
             let s = document.createElement("link");
@@ -29,6 +41,8 @@ export class PlaybookComponent {
             s.async = false;
             document.body.appendChild(s);
         }
+
+				removeScript();
 
         addLink('client/node_modules/jqueryui/jquery-ui.min.css');
         addLink('client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css');

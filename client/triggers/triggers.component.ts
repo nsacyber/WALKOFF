@@ -15,6 +15,7 @@ import { Trigger } from '../models/trigger';
 	selector: 'triggers-component',
 	templateUrl: 'client/triggers/triggers.html',
 	styleUrls: [
+		'client/node_modules/jqueryui/jquery-ui.min.css',
 		'client/triggers/triggers.css',
 	],
 	providers: [TriggersService]
@@ -24,11 +25,17 @@ export class TriggersComponent {
 	constructor() {}
 
 	ngAfterViewInit() {
-		let addLink = (script: string) => {
-			let s = document.createElement("link");
-			s.rel = "stylesheet";
-			s.href = script;
-			document.body.appendChild(s);
+		let removeScript = () => {
+			let indx = 0;
+			while (indx < document.body.childNodes.length) {
+				if ('localName' in document.body.childNodes[indx]
+					&& (document.body.childNodes[indx].localName == 'link'
+					|| document.body.childNodes[indx].localName == 'script')) {
+						document.body.removeChild(document.body.childNodes[indx]);
+				} else {
+					indx++;
+				}
+			}
 		}
 
 		let addScript = (script: string) => {
@@ -39,8 +46,7 @@ export class TriggersComponent {
 			document.body.appendChild(s);
 		}
 
-		addLink('client/node_modules/jqueryui/jquery-ui.min.css');
-		// addLink('client/triggers/triggers.css');
+		removeScript();
 
 		addScript("client/node_modules/jquery-migrate/dist/jquery-migrate.min.js");
 		addScript("client/node_modules/jqueryui/jquery-ui.min.js");
@@ -75,7 +81,7 @@ export class TriggersComponent {
 	// 		.getTriggers()
 	// 		.then(triggers => this.displayTriggers = this.triggers = triggers)
 	// 		.catch(e => this.toastyService.error(`Error retrieving triggers: ${e.message}`));
-			
+
 	// }
 
 	// addTrigger(): void {
