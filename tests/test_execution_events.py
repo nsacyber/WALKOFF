@@ -2,17 +2,13 @@ import unittest
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.controller import Controller, shutdown_pool, initialize_threading
-from core.case.subscription import Subscription
-from core.helpers import construct_workflow_name_key, import_all_flags, import_all_filters, import_all_apps
+from core.helpers import import_all_flags, import_all_filters, import_all_apps
 from tests import config
 import core.config.config
 from tests.apps import App
 
 
 class TestExecutionEvents(unittest.TestCase):
-    """
-            Tests execution Events at the Workflow Level
-    """
     @classmethod
     def setUpClass(cls):
         App.registry = {}
@@ -23,142 +19,68 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
 
     def setUp(self):
-        case_database.initialize()
         initialize_threading()
-        pass
+        case_database.initialize()
 
     def tearDown(self):
-        case_database.tear_down()
+        case_database.case_db.tear_down()
 
-    def test_workflowExecutionEvents(self):
-        workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
-        c = Controller(name="testExecutionEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "multiactionWorkflowTest.playbook")
-
-        subs = {'testExecutionEventsController':
-                    Subscription(subscriptions=
-                                 {workflow_name:
-                                      Subscription(events=["App Instance Created", "Step Execution Success",
-                                                           "Next Step Found", "Workflow Shutdown"])})}
-
-        case_subscription.set_subscriptions(
-            {'testExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
-
+    def test_workflow_execution_events(self):
+        c = Controller()
+        c.load_workflows_from_file(path=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
+        workflow_uid = c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
+        subs = {'case1': {workflow_uid: ['App Instance Created', 'Step Execution Success',
+                                         'Next Step Found', 'Workflow Shutdown']}}
+        case_subscription.set_subscriptions(subs)
         c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         shutdown_pool()
-
-        execution_events_case = case_database.case_db.session.query(case_database.Case) \
-            .filter(case_database.Case.name == 'testExecutionEvents').first()
-        execution_event_history = execution_events_case.events.all()
-        self.assertEqual(len(execution_event_history), 6,
+        execution_events = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'case1').first().events.all()
+        self.assertEqual(len(execution_events), 6,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(6, len(execution_event_history)))
+                         'Expected {0}, got {1}'.format(6, len(execution_events)))
 
-    """
-        Tests execution events at the Step Level
-    """
-
-    def test_stepExecutionEvents(self):
-        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        c = Controller(name="testStepExecutionEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.playbook")
-
-        subs = {'testStepExecutionEventsController':
-            Subscription(subscriptions=
-            {workflow_name:
-                Subscription(subscriptions=
-                {'start':
-                    Subscription(
-                        events=["Function Execution Success", "Input Validated",
-                                "Conditionals Executed"])})})}
-
-        case_subscription.set_subscriptions(
-            {'testStepExecutionEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
+    def test_step_execution_events(self):
+        c = Controller()
+        c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        workflow = c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        step_uids = [step.uid for step in workflow.steps.values()]
+        step_events = ['Function Execution Success', 'Input Validated', 'Conditionals Executed']
+        subs = {'case1': {step_uid: step_events for step_uid in step_uids}}
+        case_subscription.set_subscriptions(subs)
 
         c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         shutdown_pool()
 
-        step_execution_events_case = case_database.case_db.session.query(case_database.Case) \
-            .filter(case_database.Case.name == 'testStepExecutionEvents').first()
-        step_execution_event_history = step_execution_events_case.events.all()
-        self.assertEqual(len(step_execution_event_history), 3,
+        execution_events = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'case1').first().events.all()
+        self.assertEqual(len(execution_events), 3,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(3, len(step_execution_event_history)))
+                         'Expected {0}, got {1}'.format(3, len(execution_events)))
 
-    def test_ffkExecutionEvents(self):
-        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        c = Controller(name="testStepFFKEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.playbook")
+    def test_flag_filters_execution_events(self):
+        c = Controller()
+        c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        workflow = c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        step = workflow.steps['start']
+        subs = {step.uid: ['Function Execution Success', 'Input Validated', 'Conditionals Executed']}
+        next_step = next(conditional for conditional in step.conditionals if conditional.name == '1')
+        subs[next_step.uid] = ['Next Step Taken', 'Next Step Not Taken']
+        flag = next(flag for flag in next_step.flags if flag.action == 'regMatch')
+        subs[flag.uid] = ['Flag Success', 'Flag Error']
+        filter_ = next(filter_elem for filter_elem in flag.filters if filter_elem.action == 'length')
+        subs[filter_.uid] = ['Filter Success', 'Filter Error']
 
-        filter_sub = Subscription(events=['Filter Success', 'Filter Error'])
-        flag_sub = Subscription(events=['Flag Success', 'Flag Error'], subscriptions={'length': filter_sub})
-        next_sub = Subscription(events=['Next Step Taken', 'Next Step Not Taken'], subscriptions={'regMatch': flag_sub})
-        step_sub = Subscription(events=["Function Execution Success", "Input Validated", "Conditionals Executed"],
-                                subscriptions={'1': next_sub})
-        subs = {'testStepFFKEventsController':
-                    Subscription(subscriptions=
-                                 {workflow_name:
-                                      Subscription(subscriptions=
-                                                   {'start': step_sub})})}
-
-        case_subscription.set_subscriptions(
-            {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs)})
+        case_subscription.set_subscriptions({'case1': subs})
 
         c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         shutdown_pool()
 
-        step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
-            .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
-        step_ffk_event_history = step_ffk_events_case.events.all()
-        self.assertEqual(len(step_ffk_event_history), 6,
+        events = case_database.case_db.session.query(case_database.Case) \
+            .filter(case_database.Case.name == 'case1').first().events.all()
+        self.assertEqual(len(events), 6,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(6, len(step_ffk_event_history)))
-
-    def test_ffkExecutionEventsCase(self):
-        c = Controller(name="testStepFFKEventsController")
-        c.load_workflows_from_file(path=config.test_workflows_path + "basicWorkflowTest.playbook")
-        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        filter_sub = Subscription(events=['Filter Error'])
-        flag_sub = Subscription(events=['Flag Success', 'Flag Error'], subscriptions={'length': filter_sub})
-        next_sub = Subscription(events=['Next Step Taken',
-                                        'Next Step Not Taken'],
-                                subscriptions={'regMatch': flag_sub})
-        step_sub = Subscription(events=['Function Execution Success',
-                                        'Input Validated',
-                                        'Conditionals Executed'], subscriptions={'1': next_sub})
-        subs = {'testStepFFKEventsController':
-                    Subscription(subscriptions=
-                                 {workflow_name:
-                                      Subscription(subscriptions=
-                                                   {'start': step_sub})})}
-        global_subs = case_subscription.GlobalSubscriptions(step=['Function Execution Success',
-                                                                  'Input Validated',
-                                                                  'Conditionals Executed'],
-                                                            next_step=['Next Step Taken',
-                                                                       'Next Step Not Taken'],
-                                                            flag=['Flag Success',
-                                                                  'Flag Error'],
-                                                            filter=['Filter Error'])
-        case_subscription.set_subscriptions(
-            {'testStepFFKEventsEvents': case_subscription.CaseSubscriptions(subscriptions=subs,
-                                                                            global_subscriptions=global_subs)})
-
-        c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-
-        shutdown_pool()
-
-        step_ffk_events_case = case_database.case_db.session.query(case_database.Case) \
-            .filter(case_database.Case.name == 'testStepFFKEventsEvents').first()
-        step_ffk_event_history = step_ffk_events_case.events.all()
-        self.assertEqual(len(step_ffk_event_history), 5,
-                         'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(5, len(step_ffk_event_history)))
-        step_json = [step.as_json() for step in step_ffk_event_history if step.as_json()['message'] == 'STEP']
-        for step in step_json:
-            if step['type'] == 'Function executed successfully':
-                self.assertDictEqual(step['data'], {'result': 'REPEATING: Hello World'})
-            else:
-                self.assertEqual(step['data'], '')
+                         'Expected {0}, got {1}'.format(6, len(events)))

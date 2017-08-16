@@ -21,25 +21,25 @@ class TestController(unittest.TestCase):
         initialize_threading()
 
     def setUp(self):
-        self.controller = Controller(name="testController")
+        self.controller = Controller()
 
     @classmethod
     def tearDownClass(cls):
         shutdown_pool()
 
     def test_create_controller(self):
-        self.assertEqual(self.controller.name, "testController")
+        self.assertEqual(self.controller.uid, "controller")
         self.assertEqual(self.controller.instances, {})
         self.assertIsNone(self.controller.tree)
         self.assertIsInstance(self.controller.scheduler, GeventScheduler)
-        self.assertEqual(self.controller.ancestry, ["testController"])
 
     def test_load_workflow_from_file(self):
         path = '{0}{1}.playbook'.format(config.test_workflows_path_with_generated, "test")
         playbook_name = "testPlaybook"
         workflow_name = "helloWorldWorkflow"
         key = _WorkflowKey(playbook_name, workflow_name)
-        ret = self.controller.load_workflow_from_file(path=path, workflow_name=workflow_name, playbook_override=playbook_name)
+        ret = self.controller.load_workflow_from_file(path=path, workflow_name=workflow_name,
+                                                      playbook_override=playbook_name)
         self.assertTrue(ret)
         self.assertTrue(key in self.controller.workflows)
 

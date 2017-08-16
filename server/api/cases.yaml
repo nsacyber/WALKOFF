@@ -39,8 +39,7 @@
       201:
         description: Object created
         schema:
-          type: object
-          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
+          $ref: '#/definitions/Case'
       462:
         description: Case already exists.
         schema:
@@ -60,21 +59,7 @@
         name: body
         required: true
         schema:
-          type: object
-          required: [id]
-          properties:
-            id:
-              type: integer
-              description: ID of the Case object
-              example: 1234
-            name:
-              type: string
-              description: New name of the case
-              example: Case_One
-            note:
-              type: string
-              description: Note to add to the case
-              example: Case_One
+          $ref: '#/definitions/Case'
     responses:
       200:
         description: Success
@@ -123,6 +108,7 @@
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
+
 /api/cases/import:
   get:
     tags:
@@ -186,162 +172,5 @@
         description: Success
       515:
         description: Could not write to file.
-        schema:
-          $ref: '#/definitions/Error'
-
-/cases/subscriptions:
-  get:
-    tags:
-      - Subscriptions
-    summary: Read all subscriptions for all cases
-    description: ''
-    operationId: server.endpoints.cases.read_all_subscriptions
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-
-/cases/{case}/events:
-  get:
-    tags:
-      - Cases
-    summary: Read all case events
-    description: ''
-    operationId: server.endpoints.cases.read_all_events
-    parameters:
-      - name: case
-        in: path
-        description: The name of the case
-        required: true
-        type: string
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/Event'
-      461:
-        description: Case does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-
-
-/cases/{case}/subscriptions:
-  parameters:
-    - name: case
-      in: path
-      description: The name of the case
-      required: true
-      type: string
-  put:
-    tags:
-      - Subscriptions
-    summary: Create a subscription
-    description: ''
-    operationId: server.endpoints.cases.create_subscription
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: element
-        description: Created subscription object
-        required: true
-        schema:
-          $ref: '#/definitions/SubscriptionChange'
-    responses:
-      201:
-        description: Object created
-        schema:
-          type: object
-          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-      461:
-        description: Case does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-  get:
-    tags:
-      - Subscriptions
-    summary: Read a subscription
-    description: ''
-    operationId: server.endpoints.cases.read_subscription
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          description: The subscriptions of the case
-          $ref: '#definitions/CaseSubscription'
-      461:
-        description: Case does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-  post:
-    tags:
-      - Subscriptions
-    summary: Update a subscription
-    description: ''
-    operationId: server.endpoints.cases.update_subscription
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: element
-        description: Edited subscription object
-        required: true
-        schema:
-          $ref: '#/definitions/SubscriptionChange'
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-      461:
-        description: Case or element does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-  delete:
-    tags:
-      - Subscriptions
-    summary: Delete a subscription
-    description: ''
-    operationId: server.endpoints.cases.delete_subscription
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: ancestry
-        description: Ancestry of execution element
-        required: true
-        schema:
-          type: object
-          required:
-            - ancestry
-          properties:
-            ancestry:
-              description: The ancestry of execution element whose subscription is to be deleted
-              type: array
-              items:
-                type: string
-              example: [defaultController, myplaybook, step3]
-    responses:
-      200:
-        description: Success
-      461:
-        description: Case or element does not exist.
         schema:
           $ref: '#/definitions/Error'

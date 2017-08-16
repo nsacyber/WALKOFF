@@ -4,11 +4,10 @@ from flask import request, current_app
 from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.case.subscription import CaseSubscriptions, add_cases, delete_cases, \
-    rename_case
+from core.case.subscription import delete_cases, rename_case, modify_subscription
 import core.config.config
 import core.config.paths
-from core.helpers import construct_workflow_name_key, format_exception_message
+from core.helpers import format_exception_message
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from server.return_codes import *
@@ -34,11 +33,9 @@ def create_case():
         case_name = data['name']
         case_obj = running_context.CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
-
             case = running_context.CaseSubscription(**data)
             running_context.db.session.add(case)
             running_context.db.session.commit()
-
             current_app.logger.debug('Case added: {0}'.format(case_name))
             return case.as_json(), OBJECT_CREATED
         else:
@@ -73,16 +70,22 @@ def update_case():
         case_obj = running_context.CaseSubscription.query.filter_by(id=data['id']).first()
         if case_obj:
             original_name = case_obj.name
+            case_name = data['name'] if 'name' in data else original_name
+
             if 'note' in data and data['note']:
                 case_obj.note = data['note']
             if 'name' in data and data['name']:
-                rename_case(case_obj.name, data['name'])
+                case_subscription.rename_case(case_obj.name, data['name'])
                 case_obj.name = data['name']
                 running_context.db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
-            if 'subscription' in data:
+            if 'subscriptions' in data:
                 case_obj.subscriptions = json.dumps(data['subscriptions'])
-                # TODO: edit it in the actual subscriptions
+                subscriptions = {subscription['uid']: subscription['events'] for subscription in data['subscriptions']}
+                if 'controller' in subscriptions:
+                    subscriptions['controller'] = convert_to_event_names(subscriptions['controller'])
+                for uid, events in subscriptions.items():
+                    case_subscription.modify_subscription(case_name, uid, events)
             running_context.db.session.commit()
             return case_obj.as_json(), SUCCESS
         else:
@@ -130,7 +133,7 @@ def import_cases():
                     running_context.db.session.add(running_context.CaseSubscription(name=case))
                     running_context.CaseSubscription.update(case)
                 running_context.db.session.commit()
-                return {"cases": case_subscription.subscriptions_as_json()}, SUCCESS
+                return {"cases": case_subscription.subscriptions}, SUCCESS
             except (OSError, IOError) as e:
                 current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, format_exception_message(e)))
                 return {"error": "Error reading file."}, IO_ERROR
@@ -153,22 +156,12 @@ def export_cases():
         filename = data['filename'] if (data is not None and 'filename' in data and data['filename']) else core.config.paths.default_case_export_path
         try:
             with open(filename, 'w') as cases_file:
-                cases_file.write(json.dumps(case_subscription.subscriptions_as_json()))
+                cases_file.write(json.dumps(case_subscription.subscriptions))
             current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
             return SUCCESS
         except (OSError, IOError) as e:
             current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, format_exception_message(e)))
             return {"error": "Could not write to file."}, IO_ERROR
-    return __func()
-
-
-def read_all_subscriptions():
-    from server.flaskserver import running_context
-
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
-        return case_subscription.subscriptions_as_json(), SUCCESS
     return __func()
 
 
@@ -187,51 +180,6 @@ def read_all_events(case):
         return result, SUCCESS
     return __func()
 
-
-def create_subscription(case, element):
-    from server.flaskserver import running_context
-
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
-        events = element['events']
-        if len(element['ancestry']) == 1 and events:
-            events = convert_scheduler_events(events)
-        converted_ancestry = convert_ancestry(element['ancestry'])
-        result = case_subscription.add_subscription(case, converted_ancestry, events)
-        if result:
-            running_context.CaseSubscription.update(case)
-            running_context.db.session.commit()
-            current_app.logger.debug('Subscription added for {0} to {1}'.format(converted_ancestry, events))
-            return case_subscription.subscriptions_as_json(), OBJECT_CREATED
-        else:
-            current_app.logger.error("Cannot create subscription for case {0}. Case does not exist".format(case))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
-    return __func()
-
-
-def read_subscription(case):
-    from server.flaskserver import running_context
-
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
-        if case in core.case.subscription.subscriptions:
-            try:
-                result = core.case.subscription.subscriptions[case].as_json(names=True)
-                return result, SUCCESS
-            except KeyError:
-                current_app.logger.error("Cannot get subscriptions for case {0}. Case does not exist".format(case))
-                return {"error": "case does not exist"}, OBJECT_DNE_ERROR
-    return __func()
-
-
-def convert_ancestry(ancestry):
-    if len(ancestry) >= 3:
-        ancestry[1] = construct_workflow_name_key(ancestry[1], ancestry[2])
-        del ancestry[2]
-    return ancestry
-
 __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
                                 'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
                                 'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
@@ -240,56 +188,3 @@ __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
                                 'Job Removed': EVENT_JOB_REMOVED,
                                 'Job Executed': EVENT_JOB_EXECUTED,
                                 'Job Error': EVENT_JOB_ERROR}
-
-
-def convert_scheduler_events(events):
-    return [__scheduler_event_conversion[event] for event in events if event in __scheduler_event_conversion]
-
-
-def convert_to_event_names(events):
-    result = []
-    for event in events:
-        for key in __scheduler_event_conversion:
-            if __scheduler_event_conversion[key] == event:
-                result.append(key)
-    return result
-
-
-def update_subscription(case, element):
-    from server.flaskserver import running_context
-
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/cases'])
-    def __func(element):
-        ancestry = convert_ancestry(element['ancestry'])
-        if len(ancestry) == 1 and element['events']:
-            element['events'] = convert_scheduler_events(element['events'])
-        success = case_subscription.edit_subscription(case, ancestry, element['events'])
-        running_context.CaseSubscription.update(case)
-        running_context.db.session.commit()
-        if success:
-            current_app.logger.info('Edited subscription {0} to {1}'.format(ancestry, element['events']))
-            return case_subscription.subscriptions_as_json(), SUCCESS
-        else:
-            current_app.logger.error('Error occurred while editing subscription '
-                                     '{0} to {1}'.format(ancestry, element['events']))
-            return {"error": "Case or element does not exist."}, OBJECT_DNE_ERROR
-    return __func(element)
-
-
-def delete_subscription(case, ancestry):
-    from server.flaskserver import running_context
-
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
-        converted_ancestry = convert_ancestry(ancestry['ancestry'])
-        result = case_subscription.remove_subscription_node(case, converted_ancestry)
-        if result:
-            running_context.CaseSubscription.update(case)
-            running_context.db.session.commit()
-            current_app.logger.debug('Deleted subscription {0}'.format(converted_ancestry))
-            return case_subscription.subscriptions_as_json()
-        else:
-            return {'error': 'Case or element does not exist.'}, OBJECT_DNE_ERROR
-    return __func()
