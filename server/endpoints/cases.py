@@ -4,7 +4,7 @@ from flask import request, current_app
 from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.case.subscription import delete_cases, rename_case, modify_subscription
+from core.case.subscription import delete_cases, rename_case, modify_subscription, convert_to_event_names
 import core.config.config
 import core.config.paths
 from core.helpers import format_exception_message

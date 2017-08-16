@@ -76,8 +76,8 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	getPlayBooks() : Promise<any> {
-		return this.http.get('/api/playbooks', this.requestOptions)
+	getPlaybooks() : Promise<any> {
+		return this.http.get('/api/playbooks?full=true', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

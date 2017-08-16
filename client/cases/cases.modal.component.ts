@@ -22,6 +22,7 @@ export class CasesModalComponent {
 	@Input() title: string;
 	@Input() submitText: string;
 	@Input() availableSubscriptions: AvailableSubscription[] = [];
+	@Input() subscriptionTree: any;
 	@Input() workingEvents: { name: string, isChecked: boolean }[] = [];
 
 	selectedNode: { name: string, uid: string } = { name: '', uid: '' };
@@ -33,28 +34,28 @@ export class CasesModalComponent {
 	ngOnInit(): void {
 		let self = this;
 
-		let treeData =
-			{
-				"name": "Top Level",
-				"type": "controller",
-				"uid": "12345",
-				"children": [
-					{
-						"name": "Level 2: A",
-						"type": "workflow",
-						"uid": "12346",
-						"children": [
-							{ "name": "Son of A" },
-							{ "name": "Daughter of A" }
-						]
-					},
-					{ 
-						"name": "Level 2: B",
-						"type": "workflow",
-						"uid": "12347"
-					}
-				]
-			};
+		// let treeData =
+		// 	{
+		// 		"name": "Top Level",
+		// 		"type": "controller",
+		// 		"uid": "12345",
+		// 		"children": [
+		// 			{
+		// 				"name": "Level 2: A",
+		// 				"type": "workflow",
+		// 				"uid": "12346",
+		// 				"children": [
+		// 					{ "name": "Son of A" },
+		// 					{ "name": "Daughter of A" }
+		// 				]
+		// 			},
+		// 			{ 
+		// 				"name": "Level 2: B",
+		// 				"type": "workflow",
+		// 				"uid": "12347"
+		// 			}
+		// 		]
+		// 	};
 
 		// Set the dimensions and margins of the diagram
 		let margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -78,7 +79,7 @@ export class CasesModalComponent {
 		let treemap = d3.tree().size([height, width]);
 
 		// Assigns parent, children, height, depth
-		root = d3.hierarchy(treeData);
+		root = d3.hierarchy(self.subscriptionTree);
 		root.x0 = height / 2;
 		root.y0 = 0;
 
@@ -224,8 +225,9 @@ export class CasesModalComponent {
 				return path;
 			}
 
-			// Toggle children on click.
-			function click(d: any) {
+			// Toggle children on double click.
+			// function click(d: any) {
+			function dblclick(d:any) {
 				if (d.children) {
 					d._children = d.children;
 					d.children = null;
@@ -236,7 +238,9 @@ export class CasesModalComponent {
 				update(d);
 			}
 
-			function dblclick(d: any) {
+			//Select our node on click
+			// function dblclick(d: any) {
+			function click(d: any) {
 				if (!d.data.type) return;
 
 				self.selectedNode = { name: d.data.name, uid: d.data.uid };
@@ -286,8 +290,14 @@ export class CasesModalComponent {
 			return we.name;
 		});
 
-		console.log(self.workingEvents, self.workingCase);
-		console.log(event, isChecked);
+		//If no more events are checked under this subscription, remove it.
+		if (!matchingSubscription.events.length) {
+			let indexToDelete = self.workingCase.subscriptions.indexOf(matchingSubscription);
+			self.workingCase.subscriptions.splice(indexToDelete, 1);
+		}
+
+		console.log(self.workingCase);
+		console.log(event);
 	}
 
 	submit(): void {

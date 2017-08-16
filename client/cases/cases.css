@@ -1,4 +1,4 @@
- #main {
+#main {
 	padding: 10px 15px;
 }
 h1 {
@@ -32,19 +32,22 @@ th {
 input.form-control.input-sm {
 	margin-left: 10px;
 }
-.casesModal {
+.casesModal > .modal-dialog {
 	width: 90%;
 }
-.node circle {
+::ng-deep .node circle {
 	fill: #fff;
 	stroke: steelblue;
 	stroke-width: 3px;
 }
-.node text {
+::ng-deep .node text {
 	font: 12px sans-serif;
 }
-.link {
+::ng-deep .link {
 	fill: none;
 	stroke: #ccc;
 	stroke-width: 2px;
+}
+body > main-component > div > div > section > div > ngb-modal-window > div > div > case-modal > div.modal-body > div > div:nth-child(1) > form > div:nth-child(1) > div > label {
+	color: red;
 }

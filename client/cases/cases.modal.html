@@ -32,7 +32,7 @@
 		<!--<div id="caseSubscriptionsTree"></div>-->
 		<div class="row">
 			<div class="col-xs-8">
-				<svg id="caseSubscriptionsTree"></svg>
+				<svg overflow="scroll" id="caseSubscriptionsTree"></svg>
 			</div>
 			<div class="col-xs-4">
 				<h3>Selected Events for {{selectedNode.name}}</h3>
@@ -50,3 +50,21 @@
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
 	<button type="button" class="btn btn-primary" [disabled]="!caseForm.form.valid" (click)="submit()">{{submitText}}</button>
 </div>
+<style>
+	.casesModal > .modal-dialog {
+		width: 90%;
+	}
+	.node circle {
+		fill: #fff;
+		stroke: steelblue;
+		stroke-width: 3px;
+	}
+	.node text {
+		font: 12px sans-serif;
+	}
+	.link {
+		fill: none;
+		stroke: #ccc;
+		stroke-width: 2px;
+	}
+</style>

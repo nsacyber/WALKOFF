@@ -14,6 +14,9 @@ import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
 
+const types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
+const childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
+
 @Component({
 	selector: 'cases-component',
 	templateUrl: 'client/cases/cases.html',
@@ -32,6 +35,7 @@ export class CasesComponent {
 	displayCaseEvents: CaseEvent[] = [];
 	eventFilterQuery: FormControl = new FormControl();
 	caseFilterQuery: FormControl = new FormControl();
+	subscriptionTree: any;
 
 	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
@@ -44,6 +48,7 @@ export class CasesComponent {
 
 		this.getCases();
 		this.getAvailableSubscriptions();
+		this.getPlaybooks();
 
 		this.eventFilterQuery
 			.valueChanges
@@ -106,6 +111,7 @@ export class CasesComponent {
 		modalRef.componentInstance.submitText = 'Add Case';
 		modalRef.componentInstance.workingCase = new Case();
 		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
+		modalRef.componentInstance.subscriptionTree = this.subscriptionTree;
 
 		this._handleModalClose(modalRef);
 	}
@@ -115,7 +121,10 @@ export class CasesComponent {
 		modalRef.componentInstance.title = `Edit Case: ${caseToEdit.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.workingCase = _.cloneDeep(caseToEdit);
+		delete modalRef.componentInstance.workingCase.$$index;
 		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
+		modalRef.componentInstance.subscriptionTree = this.subscriptionTree;
+		console.log(modalRef.componentInstance.workingCase);
 
 		this._handleModalClose(modalRef);
 	}
@@ -167,6 +176,65 @@ export class CasesComponent {
 			.getAvailableSubscriptions()
 			.then(availableSubscriptions => this.availableSubscriptions = availableSubscriptions)
 			.catch(e => this.toastyService.error(`Error retrieving case subscriptions: ${e.message}`));
+	}
+
+	getPlaybooks(): void {
+		this.casesService
+			.getPlaybooks()
+			.then(playbooks => this.subscriptionTree = this.convertPlaybooksToSubscriptionTree(playbooks))
+			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
+	}
+
+	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
+		let self = this;
+		//Top level controller data
+		let tree = { name: 'Controller', uid: 'controller', type: 'controller', children: <Object[]>[] };
+
+		playbooks.forEach(function (p) {
+			tree.children.push(self.getNodeRecursive(p, 0));
+			// let node = { name: p.name, uid: '', type: 'playbook', children: <any>[] }
+
+			// p.workflows.forEach(function (w: any) {
+			// 	let node = { name: w.name, uid: w.uid, type: 'workflow', chilren: <any>[] };
+
+
+
+			// 	p.children.push(node);
+			// })
+
+			// tree.children.push(node);
+		});
+		console.log(tree);
+		return tree;
+	}
+
+	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
+		let self = this;
+		// types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
+		// childrenTypes = ['workflows', 'steps', 'nextsteps', 'flags', 'filters'];
+
+		let node = { 
+			name: prefix ? prefix + ': ' + target.name : target.name, 
+			uid: target.uid ? target.uid : '', 
+			type: types[typeIndex], 
+			children: <Object[]>[]
+		};
+
+		let childType = childrenTypes[typeIndex];
+		if (childType) {
+			let prefix: string;
+
+			if (childType === 'steps') prefix = 'Step';
+			else if (childType === 'nextsteps') prefix = 'Next Step';
+
+			target[childType].forEach(function (sub: any) {
+				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, prefix));
+			});
+		}
+
+		if (!node.children.length) delete node.children;
+
+		return node;
 	}
 
 	getFriendlyArray(input: string[]): string {
