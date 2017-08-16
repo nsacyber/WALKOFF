@@ -29,8 +29,7 @@ export class TriggersComponent {
 			let indx = 0;
 			while (indx < document.body.childNodes.length) {
 				if ('localName' in document.body.childNodes[indx]
-					&& (document.body.childNodes[indx].localName == 'link'
-					|| document.body.childNodes[indx].localName == 'script')) {
+					&& document.body.childNodes[indx].localName == 'script') {
 						document.body.removeChild(document.body.childNodes[indx]);
 				} else {
 					indx++;

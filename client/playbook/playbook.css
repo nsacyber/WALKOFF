@@ -1,3 +1,6 @@
+@import '/client/node_modules/jstree/dist/themes/default/style.min.css';
+@import '/client/node_modules/datatables/media/css/jquery.dataTables.min.css';
+
 h3{
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
 	font-weight: bold;
@@ -126,10 +129,6 @@ h1 {
 	background-color:#f5f5f5;
 }
 button, input, select, textarea {
-	color: #fff;
-	/*margin-top: 20px;*/
-	font-weight: bold;
-	font-size: 20px;
 	border: none;
 	border-radius:5px;
 }
