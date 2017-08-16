@@ -4,6 +4,7 @@ from gevent.event import Event, AsyncResult
 from gevent import sleep
 from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError
 from datetime import datetime
+import server.workflowresults  # do not delete needed to register callbacks
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 

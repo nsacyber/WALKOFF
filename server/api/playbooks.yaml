@@ -7,6 +7,11 @@
     operationId: server.endpoints.playbooks.get_playbooks
     produces:
       - application/json
+    parameters:
+      - in: query
+        name: full
+        type: boolean
+        required: false
     responses:
       200:
         description: Success
