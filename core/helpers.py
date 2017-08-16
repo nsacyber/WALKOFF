@@ -203,38 +203,6 @@ def get_workflow_names_from_file(filename):
         return [workflow.get('name') for workflow in tree.iter(tag="workflow")]
 
 
-__workflow_key_separator = '-'
-
-
-def construct_workflow_name_key(playbook, workflow):
-    """Constructs a key for the workflow given the playbook name and workflow name.
-    
-    Args:
-        playbook (str): The playbook under which the workflow is located.
-        workflow (str): The name of the workflow.
-        
-    Returns:
-        The key for the workflow given the playbook name and workflow name.
-    """
-    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_separator), __workflow_key_separator, workflow)
-
-
-def extract_workflow_name(workflow_key, playbook_name=''):
-    """Extracts a workflow name from a given key.
-    
-    Args:
-        workflow_key (str): The constructed key of the workflow from the playbook name and workflow name.
-        playbook_name (str, optional): The playbook under which the workflow is located.
-        
-    Returns:
-        The extracted workflow name.
-    """
-    if playbook_name and workflow_key.startswith(playbook_name):
-        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_separator)):]
-    else:
-        return __workflow_key_separator.join(workflow_key.split(__workflow_key_separator)[1:])
-
-
 def combine_dicts(x, y):
     """Combines two dictionaries into one.
     

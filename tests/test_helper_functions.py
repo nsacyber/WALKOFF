@@ -80,28 +80,6 @@ class TestHelperFunctions(unittest.TestCase):
         orderless_list_compare(self, list_widgets('HelloWorld'), ['testWidget', 'testWidget2'])
         self.assertListEqual(list_widgets('JunkApp'), [])
 
-    def test_construct_workflow_name_key(self):
-        input_output = {('', ''): '-',
-                        ('', 'test_workflow'): '-test_workflow',
-                        ('test_playbook', 'test_workflow'): 'test_playbook-test_workflow',
-                        ('-test_playbook', 'test_workflow'): 'test_playbook-test_workflow'}
-        for (playbook, workflow), expected_result in input_output.items():
-            self.assertEqual(construct_workflow_name_key(playbook, workflow), expected_result)
-
-    def test_extract_workflow_name(self):
-        wx = construct_workflow_name_key('www', 'xxx')
-        xy = construct_workflow_name_key('xxx', 'yyy')
-        yz = construct_workflow_name_key('yyy', 'zzz')
-        xyyz = construct_workflow_name_key(xy, yz)
-        input_output = {(wx, ''): 'xxx',
-                        (wx, 'www'): 'xxx',
-                        (wx, 'xxx'): 'xxx',
-                        (xyyz, ''): '{0}'.format(construct_workflow_name_key('yyy', yz)),
-                        (xyyz, 'xxx'): '{0}'.format(construct_workflow_name_key('yyy', yz)),
-                        (xyyz, xy): yz}
-        for (workflow_key, playbook_name), expected_workflow in input_output.items():
-            self.assertEqual(extract_workflow_name(workflow_key, playbook_name=playbook_name), expected_workflow)
-
     def test_import_py_file(self):
         module_name = 'tests.apps.HelloWorld'
         imported_module = import_py_file(module_name,

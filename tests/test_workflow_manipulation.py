@@ -1,7 +1,6 @@
 import ast
 import unittest
 import socket
-from datetime import datetime
 import gevent
 from gevent.event import Event
 from os import path
@@ -13,11 +12,10 @@ import core.config.config
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
-from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
 from timeit import default_timer
 
@@ -47,7 +45,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.load_workflows_from_file(
             path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
-        self.workflow_name = construct_workflow_name_key(*self.id_tuple)
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
         self.testWorkflow.execution_uid = 'some_uid'
         case_database.initialize()

@@ -8,9 +8,7 @@ from core import options
 from core.case import callbacks
 from core.config import paths
 from core.executionelement import ExecutionElement
-from core.helpers import (construct_workflow_name_key, extract_workflow_name, UnknownAppAction, UnknownApp,
-                          InvalidInput,
-                          format_exception_message)
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 from core.instance import Instance
 from core.step import Step
 import uuid
@@ -65,7 +63,7 @@ class Workflow(ExecutionElement):
                 # TODO: Make this work with child workflows
 
     def _from_xml(self, xml_element, *args):
-        self.options = options.Options(xml=xml_element.find('.//options'), playbook_name=self.playbook_name)
+        self.options = options.Options(xml=xml_element.find('.//options'))
         start_step = xml_element.find('start')
         self.start_step = start_step.text if start_step is not None else 'start'
         self.steps = {}
@@ -124,7 +122,7 @@ class Workflow(ExecutionElement):
             The XML representation of the Workflow object.
         """
         workflow_element = ElementTree.Element('workflow')
-        workflow_element.set('name', extract_workflow_name(self.name))
+        workflow_element.set('name', self.name)
 
         workflow_element.append(self.options.to_xml())
 
@@ -274,7 +272,6 @@ class Workflow(ExecutionElement):
         params = tiered_step_str.split(':')
         if len(params) == 3:
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
-            child_name = construct_workflow_name_key(self.playbook_name, child_name)
             if (child_name in self.options.children
                 and type(self.options.children[child_name]).__name__ == 'Workflow'):
                 logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.name))

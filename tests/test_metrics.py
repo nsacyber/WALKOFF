@@ -3,7 +3,6 @@ from server import flaskserver as server
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 import server.metrics as metrics
-from core.helpers import construct_workflow_name_key
 
 
 class MetricsTest(ServerTestCase):
@@ -49,10 +48,10 @@ class MetricsTest(ServerTestCase):
                                                                         'tieredWorkflow.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
-        error_key = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
-        tiered_parent_key = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
-        tiered_child_key = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
-        multiaction_key = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
+        error_key = 'multiactionErrorWorkflow'
+        tiered_parent_key = 'parentWorkflow'
+        tiered_child_key = 'childWorkflow'
+        multiaction_key = 'multiactionWorkflow'
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')

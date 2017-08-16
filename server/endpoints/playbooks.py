@@ -10,15 +10,17 @@ from core.case.workflowresults import WorkflowResult
 import core.config.config
 import core.config.paths
 from server.return_codes import *
-import server.workflowresults
+import server.workflowresults  # do not delete needed to register callbacks
 
-
-def get_playbooks():
+def get_playbooks(full=None):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
-        return running_context.controller.get_all_workflows(), SUCCESS
+        if full:
+            return running_context.controller.get_all_workflows(with_json=True), SUCCESS
+        else:
+            return running_context.controller.get_all_workflows(with_json=False), SUCCESS
 
     return __func()
 
