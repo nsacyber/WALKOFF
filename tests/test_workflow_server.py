@@ -13,7 +13,6 @@ import core.config.paths
 from gevent.event import Event
 from core.case.callbacks import WorkflowShutdown
 from server.return_codes import *
-import server.workflowresults
 from core.step import Step
 
 
@@ -22,47 +21,47 @@ class TestWorkflowServer(ServerTestCase):
         # This looks awful, I know
         self.empty_workflow_json = \
             {'steps': [],
-                          'name': 'test-test_name',
-                          'options': {'children': {},
-                                      'enabled': 'True',
-                                      'scheduler': {'args': {'interval': '0.1',
-                                                             'eDT': '2016-3-15 12:00:00',
-                                                             'sDT': '2016-1-1 12:00:00'},
-                                                    'autorun': 'false',
-                                                    'type': 'cron'}},
-                          'start': 'start',
-                          'accumulated_risk': '0.00'}
+             'name': 'test_name',
+             'options': {'children': {},
+                         'enabled': 'True',
+                         'scheduler': {'args': {'interval': '0.1',
+                                                'eDT': '2016-3-15 12:00:00',
+                                                'sDT': '2016-1-1 12:00:00'},
+                                       'autorun': 'false',
+                                       'type': 'cron'}},
+             'start': 'start',
+             'accumulated_risk': '0.00'}
         self.hello_world_json = {
-                'start': 'start',
-                'steps': [{'group': 'nodes', 'data': {'id': 'start',
-                                                      'parameters': {
-                                                          'errors': [{
-                                                              'flags': [],
-                                                              'name': '1'}],
-                                                          'name': 'start',
-                                                          'app': 'HelloWorld',
-                                                          'next': [{
-                                                              'flags': [
-                                                                  {
-                                                                      'action': 'regMatch',
-                                                                      'args': [{
-                                                                              'value': '(.*)',
-                                                                              'name': 'regex'}],
-                                                                      'filters': [
-                                                                          {
-                                                                              'action': 'length',
-                                                                              'args': []}]}],
-                                                              'name': '1'}],
-                                                          'device': 'hwTest',
-                                                          'action': 'repeatBackToMe',
-                                                          'input': {
-                                                              'call': 'Hello World'},
-                                                          'widgets': [],
-                                                          'risk': 0}},
-                           'position': {}}], 'name': 'test_name',
-                'options': {'enabled': 'True', 'children': {}, 'scheduler': {
-                    'args': {'hours': '*', 'minutes': '*/0.1', 'day': '*',
-                             'month': '11-12'}, 'type': 'cron', 'autorun': 'false'}}}
+            'start': 'start',
+            'steps': [{'group': 'nodes', 'data': {'id': 'start',
+                                                  'parameters': {
+                                                      'errors': [{
+                                                          'flags': [],
+                                                          'name': '1'}],
+                                                      'name': 'start',
+                                                      'app': 'HelloWorld',
+                                                      'next': [{
+                                                          'flags': [
+                                                              {
+                                                                  'action': 'regMatch',
+                                                                  'args': [{
+                                                                      'value': '(.*)',
+                                                                      'name': 'regex'}],
+                                                                  'filters': [
+                                                                      {
+                                                                          'action': 'length',
+                                                                          'args': []}]}],
+                                                          'name': '1'}],
+                                                      'device': 'hwTest',
+                                                      'action': 'repeatBackToMe',
+                                                      'input': {
+                                                          'call': 'Hello World'},
+                                                      'widgets': [],
+                                                      'risk': 0}},
+                       'position': {}}], 'name': 'test_name',
+            'options': {'enabled': 'True', 'children': {}, 'scheduler': {
+                'args': {'hours': '*', 'minutes': '*/0.1', 'day': '*',
+                         'month': '11-12'}, 'type': 'cron', 'autorun': 'false'}}}
 
         case_database.initialize()
 
@@ -257,7 +256,7 @@ class TestWorkflowServer(ServerTestCase):
                                                headers=self.headers,
                                                content_type='application/json')
 
-        expected_json['name'] = 'test-' + workflow_name
+        expected_json['name'] = workflow_name
 
         self.assertDictEqual(response, expected_json)
 
@@ -265,8 +264,6 @@ class TestWorkflowServer(ServerTestCase):
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
         self.assertFalse(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-
-        workflow = flask_server.running_context.controller.get_workflow('test', 'test_name')
 
     def test_edit_workflow_empty_name(self):
         expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').as_json()
@@ -328,7 +325,7 @@ class TestWorkflowServer(ServerTestCase):
                                                headers=self.headers,
                                                content_type='application/json')
 
-        expected_json['name'] = 'test-' + workflow_name
+        expected_json['name'] = workflow_name
         expected_json['options'] = {'enabled': 'true',
                                     'children': {},
                                     'scheduler': {'args': {'arg1': 'val1',
@@ -538,12 +535,11 @@ class TestWorkflowServer(ServerTestCase):
         orderless_list_compare(self, final_playbook_files, initial_playbook_files)
 
     def test_delete_playbook_invalid_name(self):
-        initial_playbooks = flask_server.running_context.controller.get_all_workflows()
         initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
                                   helpers.locate_workflows_in_directory()]
-        response = self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist.',
-                                                 headers=self.headers,
-                                                 status_code=OBJECT_DNE_ERROR)
+        self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist.',
+                                      headers=self.headers,
+                                      status_code=OBJECT_DNE_ERROR)
         self.assertFalse(flask_server.running_context.controller.is_playbook_registered('junkPlaybookName'))
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
                                 helpers.locate_workflows_in_directory()]
@@ -568,9 +564,9 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_delete_workflow_invalid(self):
         workflow_name = 'junkworkflowname'
-        response = self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name),
-                                                 error='Playbook or workflow does not exist.',
-                                                 headers=self.headers, status_code=OBJECT_DNE_ERROR)
+        self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name),
+                                      error='Playbook or workflow does not exist.',
+                                      headers=self.headers, status_code=OBJECT_DNE_ERROR)
         self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', workflow_name))
 
     def test_invalid_operation_on_playbook_crud(self):
@@ -594,7 +590,7 @@ class TestWorkflowServer(ServerTestCase):
 
         workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_copy = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow_Copy')
-        new_workflow_name = helpers.construct_workflow_name_key('test', 'helloWorldWorkflow_Copy')
+        new_workflow_name = 'helloWorldWorkflow_Copy'
         self.assertEqual(workflow_copy.name, new_workflow_name)
         copy_workflow_json = workflow_copy.as_json()
         original_workflow_json = workflow_original.as_json()
@@ -631,7 +627,7 @@ class TestWorkflowServer(ServerTestCase):
 
         workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_copy = flask_server.running_context.controller.get_workflow('new_playbook', 'helloWorldWorkflow_Copy')
-        new_workflow_name = helpers.construct_workflow_name_key('new_playbook', 'helloWorldWorkflow_Copy')
+        new_workflow_name = 'helloWorldWorkflow_Copy'
         self.assertEqual(workflow_copy.name, new_workflow_name)
         copy_workflow_json = workflow_copy.as_json()
         original_workflow_json = workflow_original.as_json()

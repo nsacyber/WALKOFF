@@ -4,7 +4,6 @@ from concurrent import futures
 from copy import deepcopy
 from os import sep
 from xml.etree import ElementTree
-import uuid
 import logging
 from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
                                 EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
@@ -16,7 +15,7 @@ import core.config.paths
 from core import workflow as wf
 from core.case import callbacks
 from core.case import subscription
-from core.helpers import (locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name,
+from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
 import uuid
 
@@ -144,9 +143,8 @@ class Controller(object):
             if current_workflow_name == workflow_name:
                 if name_override:
                     workflow_name = name_override
-                name = construct_workflow_name_key(playbook_name, workflow_name)
                 key = _WorkflowKey(playbook_name, workflow_name)
-                self.__add_workflow(key, name, workflow, playbook_name)
+                self.__add_workflow(key, workflow_name, workflow, playbook_name)
                 break
         else:
             logger.warning('Workflow {0} not found in playbook {0}. Cannot load.'.format(workflow_name, playbook_name))
@@ -168,9 +166,8 @@ class Controller(object):
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
         for workflow in self.tree.iter(tag='workflow'):
             workflow_name = name_override if name_override else workflow.get('name')
-            name = construct_workflow_name_key(playbook_name, workflow_name)
             key = _WorkflowKey(playbook_name, workflow_name)
-            self.__add_workflow(key, name, workflow, playbook_name)
+            self.__add_workflow(key, workflow_name, workflow, playbook_name)
 
         self.add_child_workflows()
         self.add_workflow_scheduled_jobs()
@@ -191,10 +188,10 @@ class Controller(object):
             playbook_name = workflow.playbook
             children = self.workflows[workflow].options.children
             for child in children:
-                workflow_key = _WorkflowKey(playbook_name, extract_workflow_name(child, playbook_name=playbook_name))
+                workflow_key = _WorkflowKey(playbook_name, child)
                 if workflow_key in self.workflows:
-                    logger.info('Adding child workflow {0} to workflow {1}'.format(child,
-                                                                                   self.workflows[workflow_key].name))
+                    logger.info('Adding child workflow {0} '
+                                'to workflow {1}'.format(child, self.workflows[workflow_key].name))
                     children[child] = self.workflows[workflow_key]
 
     def add_workflow_scheduled_jobs(self):
@@ -337,7 +334,8 @@ class Controller(object):
         old_key = _WorkflowKey(old_playbook, old_workflow)
         new_key = _WorkflowKey(new_playbook, new_workflow)
         self.workflows[new_key] = self.workflows.pop(old_key)
-        self.workflows[new_key].name = construct_workflow_name_key(new_playbook, new_workflow)
+        self.workflows[new_key].name = new_workflow
+        self.workflows[new_key].playbook_name = new_playbook
         logger.debug('updated workflow name {0} to {1}'.format(old_key, new_key))
 
     def update_playbook_name(self, old_playbook, new_playbook):
@@ -457,7 +455,8 @@ class Controller(object):
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         workflow_copy = deepcopy(workflow)
         workflow_copy.playbook_name = new_playbook_name
-        workflow_copy.name = construct_workflow_name_key(new_playbook_name, new_workflow_name)
+        workflow_copy.name = new_workflow_name
+        workflow_copy.playbook_name = new_playbook_name
 
         key = _WorkflowKey(new_playbook_name, new_workflow_name)
         self.workflows[key] = workflow_copy

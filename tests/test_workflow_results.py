@@ -1,4 +1,3 @@
-from core.helpers import construct_workflow_name_key
 import core.case.database as case_database
 from server import flaskserver
 from core.case.workflowresults import WorkflowResult
@@ -16,7 +15,6 @@ class TestWorkflowResults(ServerTestCase):
     def test_workflow_result_format(self):
         flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
-        construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
             flaskserver.running_context.shutdown_threads()
@@ -40,7 +38,6 @@ class TestWorkflowResults(ServerTestCase):
     def test_workflow_result_multiple_workflows(self):
         flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                              'multiactionWorkflowTest.playbook')
-        construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():

@@ -1,6 +1,6 @@
 from datetime import datetime
 import unittest
-from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from core.case import subscription
 import core.config.config
@@ -46,14 +46,12 @@ class TestExecutionRuntime(unittest.TestCase):
                                         'Expected {0}, got {1}'.format(2, len(steps)))
 
     def test_simple_tiered_workflow(self):
-        workflow_name1 = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
-        workflow_name2 = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
         workflow1 = self.controller.get_workflow('tieredWorkflow', 'parentWorkflow')
         workflow2 = self.controller.get_workflow('tieredWorkflow', 'childWorkflow')
         step_names = ['start', '1']
         step_uids = [step.uid for step in workflow1.steps.values() if step.name in step_names]
         step_uids.extend([step.uid for step in workflow2.steps.values() if step.name in step_names])
-        setup_subscriptions_for_step([workflow_name1, workflow_name2], step_uids)
+        setup_subscriptions_for_step([workflow1.uid, workflow2.uid], step_uids)
         self.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
 
         shutdown_pool()
