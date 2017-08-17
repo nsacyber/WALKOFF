@@ -3,7 +3,7 @@ from server import flaskserver as server
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 import server.metrics as metrics
-from core.helpers import construct_workflow_name_key
+
 
 class MetricsTest(ServerTestCase):
     def setUp(self):
@@ -43,15 +43,15 @@ class MetricsTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
-                                                                       'multistepError.playbook')
+                                                                        'multistepError.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'tieredWorkflow.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
-        error_key = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
-        tiered_parent_key = construct_workflow_name_key('tieredWorkflow', 'parentWorkflow')
-        tiered_child_key = construct_workflow_name_key('tieredWorkflow', 'childWorkflow')
-        multiaction_key = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
+        error_key = 'multiactionErrorWorkflow'
+        tiered_parent_key = 'parentWorkflow'
+        tiered_child_key = 'childWorkflow'
+        multiaction_key = 'multiactionWorkflow'
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
@@ -60,11 +60,11 @@ class MetricsTest(ServerTestCase):
 
         with server.running_context.flask_app.app_context():
             server.running_context.shutdown_threads()
-
         keys = [error_key, tiered_child_key, tiered_parent_key, multiaction_key]
         orderless_list_compare(self,
                                list(metrics.workflow_metrics.keys()),
                                keys)
+
         for key in keys:
             orderless_list_compare(self, metrics.workflow_metrics[key], ['count', 'avg_time'])
 

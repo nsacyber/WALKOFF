@@ -31,7 +31,7 @@ export class SettingsComponent {
 	displayUsers: User[] = [];
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();
@@ -40,11 +40,11 @@ export class SettingsComponent {
 		this.filterQuery
 			.valueChanges
 			.debounceTime(500)
-			.subscribe(event => this.filterUsers(event));
+			.subscribe(event => this.filterUsers());
 	}
 
-	filterUsers(searchFilter: string) {
-		searchFilter = searchFilter.toLocaleLowerCase();
+	filterUsers() {
+		let searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayUsers = this.users.filter((user) => {
 			return user.username.toLocaleLowerCase().includes(searchFilter);
@@ -71,7 +71,7 @@ export class SettingsComponent {
 
 	//TODO: add a better confirm dialog
 	resetConfiguration(): void {
-		if (!confirm("Are you sure you want to reset the configuration? Note that you'll have to save the configuration after reset to update it on the server.")) return; 
+		if (!confirm("Are you sure you want to reset the configuration? Note that you'll have to save the configuration after reset to update it on the server.")) return;
 
 		Object.assign(this.configuration, Configuration.getDefaultConfiguration());
 	}
@@ -91,7 +91,7 @@ export class SettingsComponent {
 		let workingUser = new WorkingUser();
 		workingUser.active = true;
 		modalRef.componentInstance.workingUser = workingUser;
-		
+
 		this._handleModalClose(modalRef);
 	}
 
@@ -115,11 +115,16 @@ export class SettingsComponent {
 					let toUpdate = _.find(this.users, u => u.id === result.user.id);
 					Object.assign(toUpdate, result.user);
 
+					this.filterUsers();
+
 					this.toastyService.success(`User "${result.user.username}" successfully edited.`);
 				}
 				//On add, push the new item
 				else {
 					this.users.push(result.user);
+
+					this.filterUsers();
+
 					this.toastyService.success(`User "${result.user.username}" successfully added.`);
 				}
 			},
@@ -133,6 +138,8 @@ export class SettingsComponent {
 			.deleteUser(userToDelete.id)
 			.then(() => {
 				this.users = _.reject(this.users, user => user.id === userToDelete.id);
+
+				this.filterUsers();
 
 				this.toastyService.success(`User "${userToDelete.username}" successfully deleted.`);
 			})

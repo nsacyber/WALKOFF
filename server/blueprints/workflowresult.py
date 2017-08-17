@@ -4,6 +4,7 @@ from gevent.event import Event, AsyncResult
 from gevent import sleep
 from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError
 from datetime import datetime
+import server.workflowresults  # do not delete needed to register callbacks
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 
@@ -50,6 +51,7 @@ def __step_ended_callback(sender, **kwargs):
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
+              'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}
@@ -67,6 +69,7 @@ def __step_error_callback(sender, **kwargs):
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
+              'timestamp': str(datetime.utcnow()),
               'type': "ERROR",
               'input': step_input,
               'result': data}
@@ -85,6 +88,7 @@ def __step_ended_callback(sender, **kwargs):
         if not isinstance(data, str):
             data = str(data)
     result = {'name': sender.name,
+              'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}

@@ -40,7 +40,6 @@
             $.each(data.filters, function( key, value ) {
                 filtersList.push(key);
             });
-            console.log(filtersList);
         }
     });
 
@@ -61,7 +60,8 @@
                 triggerData = result;
             },
             error: function(e){
-                console.log("ERROR");
+                $.notify('Triggers could not be loaded.', 'error');
+                console.log(e);
             }
         });
     };

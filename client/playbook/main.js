@@ -10,10 +10,6 @@ else {
 $(function(){
     "use strict";
 
-    $(".nav-tabs ul li a").each(function() {
-        $(this).attr("href", location.href.toString()+$(this).attr("href"));
-    });
-
     //--------------------
     // Top level variables
     //--------------------
@@ -759,9 +755,11 @@ $(function(){
             'type': "PUT",
             'global': false,
             'headers':{"Authentication-Token":authKey},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
+            'dataType': 'json',
+            'data': JSON.stringify({name: workflowName}),
+            'contentType': 'application/json; charset=utf-8',
+            'url': "/api/playbooks/" + playbookName + "/workflows",
             'success': function (data) {
-                saveWorkflow(playbookName, workflowName, []);
                 downloadWorkflowList();
 
                 //If nothing is currently loaded, load our new workflow.
@@ -830,6 +828,10 @@ $(function(){
     }
 
     function saveWorkflow(playbookName, workflowName, _workflowData) {
+        if (!startNode) {
+            $.notify('Workflow cannot be saved without a starting step.', 'warning');
+            return;
+        }
         var workflowData = _.filter(_workflowData, function (data) { return data.group === "nodes"; });
 
         var steps = _.map(workflowData, function (step) {
@@ -937,10 +939,6 @@ $(function(){
                 'headers':{"Authentication-Token":authKey},
                 'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
-                    _.each(data.steps, function (step) {
-                        if (step.group === 'nodes') setNodeDisplayProperties(step);
-                    });
-
                     tmp = data;
                 },
                 'error': function (e) {
@@ -1174,6 +1172,9 @@ $(function(){
 
         $("#cy-json-data").val(JSON.stringify(workflowData, null, 2));
 
+        //Enable our execute button once we load a workflow
+        $("#execute-button").removeAttr('disabled');
+        $("#clear-execution-highlighting-button").removeAttr('disabled');
     }
 
 
@@ -1484,10 +1485,6 @@ $(function(){
         $(this).attr("href", location.href.toString()+$(this).attr("href"));
     });
 
-    $(".nav-tabs a").click(function(){
-        $(this).tab('show');
-    });
-
     // Handle drops onto graph
     $( "#cy" ).droppable( {
         drop: handleDropEvent
@@ -1511,7 +1508,7 @@ $(function(){
 
     // Handle new button press
     $( "#new-button" ).click(function() {
-        $("#workflows-tab").tab('show');
+        // $("#workflows-tab").tab('show');
         showDialog("Create New Workflow",
                    "Playbook Name",
                    "",
@@ -1524,23 +1521,23 @@ $(function(){
     });
 
     $( "#execute-button" ).click(function() {
-        window.executionDialog = $("#executionModal").clone().removeClass('hidden');
-        executionDialog.dialog({
-            autoOpen: false,
-            modal: false,
-            title: "Execution Results",
-            width: 600,
-            close: function(event, ui){
-                cy.elements().removeClass("good-highlighted bad-highlighted");
-            }
-        });
+        // window.executionDialog = $("#executionModal").clone().removeClass('hidden');
+        // executionDialog.dialog({
+        //     autoOpen: false,
+        //     modal: false,
+        //     title: "Execution Results",
+        //     width: 600,
+        //     close: function(event, ui){
+        //         cy.elements().removeClass("good-highlighted bad-highlighted");
+        //     }
+        // });
 
-        executionDialog.dialog( "open" );
+        // executionDialog.dialog( "open" );
 
-        $(executionDialog).find("button").on("click", function(){
-            cy.elements().removeClass("good-highlighted bad-highlighted");
-            executionDialog.dialog("close");
-        });
+        // $(executionDialog).find("button").on("click", function(){
+        //     cy.elements().removeClass("good-highlighted bad-highlighted");
+        //     executionDialog.dialog("close");
+        // });
         $.ajax({
             'async': true,
             'type': "POST",
@@ -1548,24 +1545,29 @@ $(function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
-                console.log(currentWorkflow + ' is scheduled to execute.', 'success');
+                // $('#clear-execution-highlighting-button').removeAttr('disabled');
+                
+                $.notify(currentWorkflow + ' is scheduled to execute.', 'success');
                 //Set up event listener for workflow results if possible
             },
             'error': function (jqXHR, status, error) {
-                console.log(currentWorkflow + ' has failed to be scheduled.', 'error');
+                $.notify(currentWorkflow + ' is has failed to be executed.', 'error');
                 //$("#eventList").append("<li>" + currentWorkflow + " has failed to be scheduled.</li>");
             }
         });
     });
 
-
+    $("#clear-execution-highlighting-button").click(function () {
+        cy.elements().removeClass("good-highlighted bad-highlighted");
+        // $('#clear-execution-highlighting-button').attr('disabled', 'disabled');
+    });
 
     // Handle save button press
     $( "#save-button" ).click(function() {
         if (cy === null)
             return;
 
-        if ($("#playbookEditorTabs ul li.ui-state-active").index() == 0) {
+        if ($(".nav-tabs .active").text() === "Graphical Editor") {
             // If the graphical editor tab is active
             saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
         } else {
@@ -1748,11 +1750,6 @@ $(function(){
     //---------------------------------
     showInstruction();
 
-    $("#playbookEditorTabs UL LI A").each(function() {
-        $(this).attr("href", location.href.toString()+$(this).attr("href"));
-    });
-    $("#playbookEditorTabs").tabs();
-
     function getStepTemplate() {
         return {
             "classes": "",
@@ -1767,23 +1764,37 @@ $(function(){
         };
     }
 
+    var executionResultsTable = $("#executionResultsTable").DataTable({
+        columns:[
+            { data: "name", title: "ID" },
+            { data: "timestamp", title: "Timestamp" },
+            { data: "type", title: "Type" },
+            { data: "input", title: "Input" },
+            { data: "result", title: "Result" }
+        ],
+        order: [1, 'desc']
+    });
+
     function handleStreamStepsEvent(data){
         var id = data.name;
         var type = data.type;
         var elem = cy.elements('node[id="' + id + '"]');
 
-        var row = executionDialog.find("table").get(0).insertRow(-1);
-        var id_cell = row.insertCell(0);
-        id_cell.innerHTML = data.name;
+        executionResultsTable.row.add(data);
+        executionResultsTable.draw();
 
-        var type_cell = row.insertCell(1);
-        type_cell.innerHTML = data.type;
+        // var row = executionDialog.find("table").get(0).insertRow(-1);
+        // var id_cell = row.insertCell(0);
+        // id_cell.innerHTML = data.name;
 
-        var input_cell = row.insertCell(2);
-        input_cell.innerHTML = data.input;
+        // var type_cell = row.insertCell(1);
+        // type_cell.innerHTML = data.type;
 
-        var result_cell = row.insertCell(3);
-        result_cell.innerHTML = data.result;
+        // var input_cell = row.insertCell(2);
+        // input_cell.innerHTML = data.input;
+
+        // var result_cell = row.insertCell(3);
+        // result_cell.innerHTML = data.result;
 
         if(type === "SUCCESS"){
             elem.addClass('good-highlighted');
@@ -1793,9 +1804,6 @@ $(function(){
         }
 
     }
-
-
-
 
     window.stepResultsSSE.onmessage = function(message) {
         var data = JSON.parse(message.data);

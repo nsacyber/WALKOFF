@@ -4,7 +4,6 @@ from concurrent import futures
 from copy import deepcopy
 from os import sep
 from xml.etree import ElementTree
-import uuid
 import logging
 from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
                                 EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
@@ -16,8 +15,9 @@ import core.config.paths
 from core import workflow as wf
 from core.case import callbacks
 from core.case import subscription
-from core.helpers import (locate_workflows_in_directory, construct_workflow_name_key, extract_workflow_name,
+from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
+import uuid
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -62,12 +62,12 @@ def shutdown_pool():
     logger.debug('Controller thread pool shutdown')
 
 
-def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
+def execute_workflow_worker(workflow, subs, execution_uid, start=None, start_input=None):
     """Executes the workflow in a multi-threaded fashion.
     
     Args:
         workflow (Workflow): The workflow to be executed.
-        uid (str): The unique identifier of the workflow
+        execution_uid (str): The unique identifier of the workflow
         start (str, optional): Name of the first step to be executed in the workflow.
         subs (Subscription): The current subscriptions. This is necessary for resetting the subscriptions.
         start_input (dict, optional): The input to the starting step of the workflow
@@ -75,9 +75,9 @@ def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
     Returns:
         "Done" when the workflow has finished execution.
     """
-    args = {'start': start, 'start_input': start_input}
+    args = {'start': start, 'start_input': start_input, 'execution_uid': execution_uid}
     subscription.set_subscriptions(subs)
-    workflow.uid = uid
+    workflow.execution_uid = execution_uid
     try:
         workflow.execute(**args)
     except Exception as e:
@@ -87,14 +87,13 @@ def execute_workflow_worker(workflow, subs, uid, start=None, start_input=None):
 
 
 class Controller(object):
-    def __init__(self, name='defaultController', workflows_path=core.config.paths.workflows_path):
+    def __init__(self, workflows_path=core.config.paths.workflows_path):
         """Initializes a Controller object.
         
         Args:
-            name (str, optional): Name for the controller.
             workflows_path (str, optional): Path to the workflows.
         """
-        self.name = name
+        self.uid = 'controller'
         self.workflows = {}
         self.workflow_status = {}
         self.load_all_workflows_from_directory(path=workflows_path)
@@ -107,7 +106,6 @@ class Controller(object):
                                     | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-        self.ancestry = [self.name]
 
         def workflow_completed_callback(sender, **kwargs):
             self.__workflow_completed_callback(sender, **kwargs)
@@ -116,19 +114,12 @@ class Controller(object):
 
     # TODO: Turns out this doesn't work at all
     def __workflow_completed_callback(self, workflow, **kwargs):
-        print('COMPLETED')
         if workflow.uuid in self.workflow_status:
             self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
-    def reconstruct_ancestry(self):
-        """Reconstructs the ancestry list field of a workflow in case it changes.
-        """
-        for key in self.workflows:
-            self.workflows[key].reconstruct_ancestry(self.ancestry)
-
     def __add_workflow(self, key, name, xml, playbook):
         try:
-            self.workflows[key] = wf.Workflow(name=name, xml=xml, parent_name=self.name, playbook_name=playbook)
+            self.workflows[key] = wf.Workflow(name=name, xml=xml, playbook_name=playbook)
             logger.info('Adding workflow {0} to controller'.format(name))
         except (UnknownApp, UnknownAppAction, InvalidInput) as e:
             logger.error('Cannot load workflow {0}: Error: {1}'.format(key, format_exception_message(e)))
@@ -152,9 +143,8 @@ class Controller(object):
             if current_workflow_name == workflow_name:
                 if name_override:
                     workflow_name = name_override
-                name = construct_workflow_name_key(playbook_name, workflow_name)
                 key = _WorkflowKey(playbook_name, workflow_name)
-                self.__add_workflow(key, name, workflow, playbook_name)
+                self.__add_workflow(key, workflow_name, workflow, playbook_name)
                 break
         else:
             logger.warning('Workflow {0} not found in playbook {0}. Cannot load.'.format(workflow_name, playbook_name))
@@ -176,9 +166,8 @@ class Controller(object):
         playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
         for workflow in self.tree.iter(tag='workflow'):
             workflow_name = name_override if name_override else workflow.get('name')
-            name = construct_workflow_name_key(playbook_name, workflow_name)
             key = _WorkflowKey(playbook_name, workflow_name)
-            self.__add_workflow(key, name, workflow, playbook_name)
+            self.__add_workflow(key, workflow_name, workflow, playbook_name)
 
         self.add_child_workflows()
         self.add_workflow_scheduled_jobs()
@@ -199,10 +188,10 @@ class Controller(object):
             playbook_name = workflow.playbook
             children = self.workflows[workflow].options.children
             for child in children:
-                workflow_key = _WorkflowKey(playbook_name, extract_workflow_name(child, playbook_name=playbook_name))
+                workflow_key = _WorkflowKey(playbook_name, child)
                 if workflow_key in self.workflows:
-                    logger.info('Adding child workflow {0} to workflow {1}'.format(child,
-                                                                                   self.workflows[workflow_key].name))
+                    logger.info('Adding child workflow {0} '
+                                'to workflow {1}'.format(child, self.workflows[workflow_key].name))
                     children[child] = self.workflows[workflow_key]
 
     def add_workflow_scheduled_jobs(self):
@@ -300,6 +289,8 @@ class Controller(object):
                 result[key.playbook].append(self.get_workflow(key.playbook, key.workflow).as_json())
             else:
                 result[key.playbook].append(key.workflow)
+        if with_json:
+            return [{'name': name, 'workflows': workflows} for name, workflows in result.items()]
         return result
 
     def get_all_playbooks(self):
@@ -345,8 +336,8 @@ class Controller(object):
         old_key = _WorkflowKey(old_playbook, old_workflow)
         new_key = _WorkflowKey(new_playbook, new_workflow)
         self.workflows[new_key] = self.workflows.pop(old_key)
-        self.workflows[new_key].name = construct_workflow_name_key(new_playbook, new_workflow)
-        self.workflows[new_key].reconstruct_ancestry([self.name])
+        self.workflows[new_key].name = new_workflow
+        self.workflows[new_key].playbook_name = new_playbook
         logger.debug('updated workflow name {0} to {1}'.format(old_key, new_key))
 
     def update_playbook_name(self, old_playbook, new_playbook):
@@ -394,9 +385,9 @@ class Controller(object):
             if not threading_is_initialized:
                 initialize_threading()
 
-            args = {'start': start, 'start_input': start_input}
+            args = {'start': start, 'start_input': start_input, 'execution_uid': uid}
             logger.info('Executing workflow {0} for step {1} with args{2}'.format(key, start, args))
-            workflows.append(pool.submit(execute_workflow_worker, workflow, subs, uid, **args))
+            workflows.append(pool.submit(execute_workflow_worker, workflow, subs, **args))
             callbacks.SchedulerJobExecuted.send(self)
             # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
             self.workflow_status[uid] = WORKFLOW_RUNNING
@@ -466,11 +457,11 @@ class Controller(object):
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         workflow_copy = deepcopy(workflow)
         workflow_copy.playbook_name = new_playbook_name
-        workflow_copy.name = construct_workflow_name_key(new_playbook_name, new_workflow_name)
+        workflow_copy.name = new_workflow_name
+        workflow_copy.playbook_name = new_playbook_name
 
         key = _WorkflowKey(new_playbook_name, new_workflow_name)
         self.workflows[key] = workflow_copy
-        self.workflows[key].reconstruct_ancestry([self.name])
         logger.info('Workflow copied from {0}-{1} to {2}-{3}'.format(old_playbook_name, old_workflow_name,
                                                                      new_playbook_name, new_workflow_name))
 

@@ -1,9 +1,8 @@
 from xml.etree import cElementTree
-from core.helpers import construct_workflow_name_key
 
 
 class Options(object):
-    def __init__(self, xml=None, scheduler=None, children=None, enabled=False, playbook_name=''):
+    def __init__(self, xml=None, scheduler=None, children=None, enabled=False):
         """Initializes a new Options object.
         
         Args:
@@ -13,22 +12,20 @@ class Options(object):
             children (dict, optional): Dict of children options. Defaults to None.
             enabled (bool, optional): Boolean to determine whether or not the options are enabled or disabled. Defaults
                 to False.
-            playbook_name (str, optional): The name of the playbook to which the options should be applied. Defaults to
-                an empty string.
         """
         if xml is not None:
-            self._from_xml(xml, filename=playbook_name)
+            self._from_xml(xml)
         else:
             self.scheduler = scheduler if scheduler is not None else {}
             self.enabled = enabled
             self.children = children if children is not None else {}
 
-    def _from_xml(self, xml_element, filename=''):
+    def _from_xml(self, xml_element):
         self.scheduler = {'autorun': xml_element.find('.//scheduler').get('autorun'),
                           'type': xml_element.find('.//scheduler').get('type'),
                           'args': {option.tag: option.text for option in xml_element.findall('.//scheduler/*')}}
         self.enabled = bool(xml_element.find('.//enabled').text)
-        self.children = {construct_workflow_name_key(filename, child.text): None
+        self.children = {child.text: None
                          for child in xml_element.findall('.//children/child')}
 
     def to_xml(self):

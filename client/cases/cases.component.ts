@@ -12,6 +12,10 @@ import { CasesModalComponent } from './cases.modal.component';
 
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
+import { AvailableSubscription } from '../models/availableSubscription';
+
+const types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
+const childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
 
 @Component({
 	selector: 'cases-component',
@@ -24,14 +28,16 @@ import { CaseEvent } from '../models/caseEvent';
 export class CasesComponent {
 	cases: Case[] = [];
 	availableCases: Select2OptionData[] = [];
+	availableSubscriptions: AvailableSubscription[] = [];
 	caseSelectConfig: Select2Options;
 	caseEvents: CaseEvent[] = [];
 	displayCases: Case[] = [];
 	displayCaseEvents: CaseEvent[] = [];
 	eventFilterQuery: FormControl = new FormControl();
 	caseFilterQuery: FormControl = new FormControl();
+	subscriptionTree: any;
 
-	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {
@@ -41,6 +47,8 @@ export class CasesComponent {
 		};
 
 		this.getCases();
+		this.getAvailableSubscriptions();
+		this.getPlaybooks();
 
 		this.eventFilterQuery
 			.valueChanges
@@ -82,7 +90,7 @@ export class CasesComponent {
 			.getCases()
 			.then((cases) => {
 				this.displayCases = this.cases = cases;
-				this.availableCases = [{ id: '', text: ''}].concat(cases.map((c) => { return { id: c.id.toString(), text: c.name } }));
+				this.availableCases = [{ id: '', text: '' }].concat(cases.map((c) => { return { id: c.id.toString(), text: c.name } }));
 			})
 			.catch(e => this.toastyService.error(`Error retrieving cases: ${e.message}`));
 	}
@@ -97,21 +105,26 @@ export class CasesComponent {
 			.catch(e => this.toastyService.error(`Error retrieving events: ${e.message}`));
 	}
 
-
 	addCase(): void {
-		const modalRef = this.modalService.open(CasesModalComponent);
+		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = 'Add New Case';
 		modalRef.componentInstance.submitText = 'Add Case';
 		modalRef.componentInstance.workingCase = new Case();
-		
+		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
+		modalRef.componentInstance.subscriptionTree = this.subscriptionTree;
+
 		this._handleModalClose(modalRef);
 	}
 
 	editCase(caseToEdit: Case): void {
-		const modalRef = this.modalService.open(CasesModalComponent);
+		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = `Edit Case: ${caseToEdit.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.workingCase = _.cloneDeep(caseToEdit);
+		delete modalRef.componentInstance.workingCase.$$index;
+		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
+		modalRef.componentInstance.subscriptionTree = this.subscriptionTree;
+		console.log(modalRef.componentInstance.workingCase);
 
 		this._handleModalClose(modalRef);
 	}
@@ -126,16 +139,17 @@ export class CasesComponent {
 				if (result.isEdit) {
 					let toUpdate = _.find(this.cases, c => c.id === result.case.id);
 					Object.assign(toUpdate, result.case);
-					toUpdate = _.find(this.displayCases, c => c.id === result.case.id);
-					if (toUpdate) 
-						Object.assign(toUpdate, result.case);
+
+					this.filterCases();
 
 					this.toastyService.success(`Case "${result.case.name}" successfully edited.`);
 				}
 				//On add, push the new item
 				else {
 					this.cases.push(result.case);
+
 					this.filterCases();
+
 					this.toastyService.success(`Case "${result.case.name}" successfully added.`);
 				}
 			},
@@ -149,19 +163,79 @@ export class CasesComponent {
 			.deleteCase(caseToDelete.id)
 			.then(() => {
 				this.cases = _.reject(this.cases, c => c.id === caseToDelete.id);
-				this.displayCases = _.reject(this.displayCases, c => c.id === caseToDelete.id);
+
+				this.filterCases();
 
 				this.toastyService.success(`Case "${caseToDelete.name}" successfully deleted.`);
 			})
 			.catch(e => this.toastyService.error(e.message));
 	}
 
-	// getCaseSubscriptions(): void {
-	// 	this.casesService
-	// 		.getCaseSubscriptions()
-	// 		.then(caseSubscriptions => this.cases = caseSubscriptions)
-	// 		.catch(e => this.toastyService.error(`Error retrieving case subscriptions: ${e.message}`));
-	// }
+	getAvailableSubscriptions(): void {
+		this.casesService
+			.getAvailableSubscriptions()
+			.then(availableSubscriptions => this.availableSubscriptions = availableSubscriptions)
+			.catch(e => this.toastyService.error(`Error retrieving case subscriptions: ${e.message}`));
+	}
+
+	getPlaybooks(): void {
+		this.casesService
+			.getPlaybooks()
+			.then(playbooks => this.subscriptionTree = this.convertPlaybooksToSubscriptionTree(playbooks))
+			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
+	}
+
+	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
+		let self = this;
+		//Top level controller data
+		let tree = { name: 'Controller', uid: 'controller', type: 'controller', children: <Object[]>[] };
+
+		playbooks.forEach(function (p) {
+			tree.children.push(self.getNodeRecursive(p, 0));
+			// let node = { name: p.name, uid: '', type: 'playbook', children: <any>[] }
+
+			// p.workflows.forEach(function (w: any) {
+			// 	let node = { name: w.name, uid: w.uid, type: 'workflow', chilren: <any>[] };
+
+
+
+			// 	p.children.push(node);
+			// })
+
+			// tree.children.push(node);
+		});
+		console.log(tree);
+		return tree;
+	}
+
+	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
+		let self = this;
+		// types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
+		// childrenTypes = ['workflows', 'steps', 'nextsteps', 'flags', 'filters'];
+
+		let node = { 
+			name: prefix ? prefix + ': ' + target.name : target.name, 
+			uid: target.uid ? target.uid : '', 
+			type: types[typeIndex], 
+			children: <Object[]>[]
+		};
+
+		let childType = childrenTypes[typeIndex];
+		if (childType) {
+			let prefix: string;
+
+			if (childType === 'steps') prefix = 'Step';
+			else if (childType === 'nextsteps') prefix = 'Next Step';
+
+			target[childType].forEach(function (sub: any) {
+				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, prefix));
+			});
+		}
+
+		if (!node.children.length) delete node.children;
+
+		return node;
+	}
 
 	getFriendlyArray(input: string[]): string {
 		return input.join(', ');

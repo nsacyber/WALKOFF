@@ -1,7 +1,6 @@
 import ast
 import unittest
 import socket
-from datetime import datetime
 import gevent
 from gevent.event import Event
 from os import path
@@ -13,13 +12,13 @@ import core.config.config
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
-from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
 from timeit import default_timer
+
 try:
     from importlib import reload
 except ImportError:
@@ -42,38 +41,19 @@ class TestWorkflowManipulation(unittest.TestCase):
         shutdown_pool()
 
     def setUp(self):
-        case_database.initialize()
         self.controller = Controller(workflows_path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
         self.controller.load_workflows_from_file(
             path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
-        self.workflow_name = construct_workflow_name_key(*self.id_tuple)
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
+        self.testWorkflow.execution_uid = 'some_uid'
+        case_database.initialize()
 
     def tearDown(self):
         self.controller.workflows = None
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
         reload(socket)
-
-    def __execution_test(self):
-        step_names = ['start', '1']
-        setup_subscriptions_for_step(self.testWorkflow.name, step_names)
-        start = datetime.utcnow()
-        # Check that the workflow executed correctly post-manipulation
-        self.controller.execute_workflow(*self.id_tuple)
-
-        steps = executed_steps('defaultController', self.testWorkflow.name, start, datetime.utcnow())
-        self.assertEqual(len(steps), 2)
-        names = [step['ancestry'].split(',')[-1] for step in steps]
-        orderless_list_compare(self, names, step_names)
-        name_result = {'start': "REPEATING: Hello World",
-                       '1': "REPEATING: This is a test."}
-        for step in steps:
-            name = step['ancestry'].split(',')[-1]
-            self.assertIn(name, name_result)
-            self.assertEqual(step['data']['result'], name_result[name])
-
     """
         CRUD - Workflow
     """
@@ -133,41 +113,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(conditional["flags"])
         self.assertEqual(conditional["name"], "1")
 
-    def test_name_parent_rename(self):
-        workflow = Workflow(parent_name='workflow_parent', name='workflow')
-        new_ancestry = ['workflow_parent_update']
-        workflow.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append('workflow')
-        self.assertListEqual(new_ancestry, workflow.ancestry)
-
-    def test_name_parent_step_rename(self):
-        workflow = Workflow(parent_name='workflow_parent', name='workflow')
-        step = Step(name="test_step", action='helloWorld', app='HelloWorld', ancestry=workflow.ancestry)
-        workflow.steps["test_step"] = step
-
-        new_ancestry = ["workflow_parent_update"]
-        workflow.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("workflow")
-        new_ancestry.append("test_step")
-        self.assertListEqual(new_ancestry, workflow.steps["test_step"].ancestry)
-
-    def test_name_parent_multiple_step_rename(self):
-        workflow = Workflow(parent_name='workflow_parent', name='workflow')
-        step_one = Step(name="test_step_one", action='helloWorld', app='HelloWorld', ancestry=workflow.ancestry)
-        step_two = Step(name="test_step_two", action='helloWorld', app='HelloWorld', ancestry=workflow.ancestry)
-        workflow.steps["test_step_one"] = step_one
-        workflow.steps["test_step_two"] = step_two
-
-        new_ancestry = ["workflow_parent_update"]
-        workflow.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("workflow")
-        new_ancestry.append("test_step_one")
-        self.assertListEqual(new_ancestry, workflow.steps["test_step_one"].ancestry)
-
-        new_ancestry.remove("test_step_one")
-        new_ancestry.append("test_step_two")
-        self.assertListEqual(new_ancestry, workflow.steps["test_step_two"].ancestry)
-
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')
         workflow.create_step(name="stepOne", action='helloWorld', app='HelloWorld', risk=1)
@@ -178,6 +123,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_accumulated_risk_with_error(self):
         workflow = Workflow(name='workflow')
+        workflow.execution_uid = 'some_uid'
         step1 = Step(name="step_one", app='HelloWorld', action='Buggy', risk=1)
         step2 = Step(name="step_two", app='HelloWorld', action='Buggy', risk=2)
         step3 = Step(name="step_three", app='HelloWorld', action='Buggy', risk=3.5)
@@ -196,7 +142,8 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_pause_and_resume_workflow(self):
         from gevent import monkey
         monkey.patch_all()
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.load_workflows_from_file(
+            path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         waiter = Event()
         uid = None
@@ -226,7 +173,8 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_pause_and_resume_workflow_breakpoint(self):
         from gevent import monkey
         monkey.patch_all()
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.load_workflows_from_file(
+            path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         waiter = Event()
 
@@ -265,7 +213,6 @@ class TestWorkflowManipulation(unittest.TestCase):
             result['value'] = kwargs['data']
 
         FunctionExecutionSuccess.connect(step_finished_listener)
-
-        self.testWorkflow.execute(start_input=input_arg)
+        self.testWorkflow.execute(start_input=input_arg, execution_uid='some_uid')
         self.assertDictEqual(json.loads(result['value']),
                              {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})

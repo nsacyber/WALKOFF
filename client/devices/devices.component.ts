@@ -106,11 +106,16 @@ export class DevicesComponent {
 					let toUpdate = _.find(this.devices, d => d.id === result.device.id);
 					Object.assign(toUpdate, result.device);
 
+					this.filterDevices();
+
 					this.toastyService.success(`Device "${result.device.name}" successfully edited.`);
 				}
 				//On add, push the new item
 				else {
 					this.devices.push(result.device);
+
+					this.filterDevices();
+
 					this.toastyService.success(`Device "${result.device.name}" successfully added.`);
 				}
 			},
@@ -124,6 +129,8 @@ export class DevicesComponent {
 			.deleteDevice(deviceToDelete.id)
 			.then(() => {
 				this.devices = _.reject(this.devices, device => device.id === deviceToDelete.id);
+
+				this.filterDevices();
 
 				this.toastyService.success(`Device "${deviceToDelete.name}" successfully deleted.`);
 			})

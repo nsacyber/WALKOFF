@@ -7,6 +7,7 @@ import 'rxjs/add/operator/toPromise';
 
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
+import { AvailableSubscription } from '../models/availableSubscription';
 
 @Injectable()
 export class CasesService {
@@ -28,13 +29,13 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	getCaseSubscriptions() : Promise<Case[]> {
-		return this.http.get('/api/cases/subscriptions', this.requestOptions)
-			.toPromise()
-			.then(this.extractData)
-			.then(data => data as Case[])
-			.catch(this.handleError);
-	}
+	// getCaseSubscriptions() : Promise<Case[]> {
+	// 	return this.http.get('/api/cases/subscriptions', this.requestOptions)
+	// 		.toPromise()
+	// 		.then(this.extractData)
+	// 		.then(data => data as Case[])
+	// 		.catch(this.handleError);
+	// }
 
 	getEventsForCase(name: string) : Promise<CaseEvent[]> {
 		return this.http.get(`/cases/${name}/events`, this.requestOptions)
@@ -64,6 +65,21 @@ export class CasesService {
 		return this.http.delete(`/api/cases/${id}`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
+			.catch(this.handleError);
+	}
+
+	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
+		return this.http.get('/api/availablesubscriptions', this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as AvailableSubscription[])
+			.catch(this.handleError);
+	}
+
+	getPlaybooks() : Promise<any> {
+		return this.http.get('/api/playbooks?full=true', this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
 			.catch(this.handleError);
 	}
 

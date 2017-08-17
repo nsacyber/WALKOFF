@@ -18,7 +18,7 @@ def __case_event_stream():
 
 def __push_to_case_stream(sender, **kwargs):
     out = {'name': sender.name,
-           'ancestry': sender.ancestry}
+           'uid': sender.uid}
     if 'data' in kwargs:
         out['data'] = kwargs['data']
     __case_event_json.set(json.dumps(out))
