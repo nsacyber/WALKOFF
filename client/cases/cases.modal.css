@@ -18,9 +18,14 @@ svg#caseSubscriptionsTree {
 		fill: #fff;
 		stroke: steelblue;
 		stroke-width: 3px;
+		cursor: pointer;
+	}
+	svg#caseSubscriptionsTree .node.highlighted circle {
+		stroke: red;
 	}
 	svg#caseSubscriptionsTree .node text {
 		font: 12px sans-serif;
+		cursor: pointer;
 	}
 	svg#caseSubscriptionsTree .link {
 		fill: none;

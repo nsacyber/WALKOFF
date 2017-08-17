@@ -11,20 +11,10 @@ h3 {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	font-weight: bold;
 }
-/*h3#currentWorkflowText {
-	font-size: 18px;
-}*/
 .box-title {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	font-weight: bold;
 }
-/*#caseSelect li {
-	cursor: pointer;
-}*/
-/*th {
-	color: #367fa9;
-	background-color: #eaf2f6;
-}*/
 .box-header>.fa, .box-header>.glyphicon, .box-header>.ion, .box-header .box-title {
 	font-size: 24px;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

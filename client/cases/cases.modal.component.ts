@@ -35,29 +35,6 @@ export class CasesModalComponent {
 	ngOnInit(): void {
 		let self = this;
 
-		// let treeData =
-		// 	{
-		// 		"name": "Top Level",
-		// 		"type": "controller",
-		// 		"uid": "12345",
-		// 		"children": [
-		// 			{
-		// 				"name": "Level 2: A",
-		// 				"type": "workflow",
-		// 				"uid": "12346",
-		// 				"children": [
-		// 					{ "name": "Son of A" },
-		// 					{ "name": "Daughter of A" }
-		// 				]
-		// 			},
-		// 			{ 
-		// 				"name": "Level 2: B",
-		// 				"type": "workflow",
-		// 				"uid": "12347"
-		// 			}
-		// 		]
-		// 	};
-
 		// Set the dimensions and margins of the diagram
 		let margin = { top: 20, right: 90, bottom: 30, left: 90 },
 			width = 1350 - margin.left - margin.right,
@@ -159,9 +136,7 @@ export class CasesModalComponent {
 				.attr('r', 10)
 				.style("fill", function (d: any) {
 					return d._children ? "lightsteelblue" : "#fff";
-				})
-				.attr('cursor', 'pointer');
-
+				});
 
 			// Remove any exiting nodes
 			var nodeExit = node.exit().transition()
@@ -254,16 +229,24 @@ export class CasesModalComponent {
 					return d.data.uid === s.uid;
 				});
 
-				let specifiedEvents = subscription ? subscription.events : [];
+				let subscriptionEvents = subscription ? subscription.events : [];
 
-				let workingEvents: { name: string, isChecked: boolean }[] = self.workingEvents = [];
+				self.workingEvents = [];
 
 				availableEvents.forEach(function (event) {
-					workingEvents.push({
+					self.workingEvents.push({
 						name: event,
-						isChecked: specifiedEvents.indexOf(event) > -1
+						isChecked: subscriptionEvents.indexOf(event) > -1
 					});
 				});
+
+				//Clear highlighting on other highlighted node(s)
+				svg.selectAll('g.node.highlighted')
+					.attr('class', 'node');
+
+				//Highlight this node now.
+				d3.select(this)
+					.attr('class', 'node highlighted');
 			}
 		}
 	}
