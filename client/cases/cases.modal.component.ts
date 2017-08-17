@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 import * as d3 from 'd3';
@@ -10,10 +10,11 @@ import { AvailableSubscription } from '../models/availableSubscription';
 import { Subscription } from '../models/subscription';
 
 @Component({
+	encapsulation: ViewEncapsulation.None,
 	selector: 'case-modal',
 	templateUrl: 'client/cases/cases.modal.html',
 	styleUrls: [
-		'client/cases/cases.css'
+		'client/cases/cases.modal.css'
 	],
 	providers: [CasesService]
 })
@@ -25,7 +26,7 @@ export class CasesModalComponent {
 	@Input() subscriptionTree: any;
 	@Input() workingEvents: { name: string, isChecked: boolean }[] = [];
 
-	selectedNode: { name: string, uid: string } = { name: '', uid: '' };
+	selectedNode: { name: string, uid: string, type: string } = { name: '', uid: '', type: '' };
 
 	constructor(private casesService: CasesService, private activeModal: NgbActiveModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
@@ -59,13 +60,13 @@ export class CasesModalComponent {
 
 		// Set the dimensions and margins of the diagram
 		let margin = { top: 20, right: 90, bottom: 30, left: 90 },
-			width = 960 - margin.left - margin.right,
+			width = 1350 - margin.left - margin.right,
 			height = 500 - margin.top - margin.bottom;
 
 		// append the svg object to the body of the page
 		// appends a 'group' element to 'svg'
 		// moves the 'group' element to the top left margin
-		let svg = d3.select("svg")//.append("svg")
+		let svg = d3.select("svg#caseSubscriptionsTree")//.append("svg")
 			.attr("width", width + margin.right + margin.left)
 			.attr("height", height + margin.top + margin.bottom)
 			.append("g")
@@ -128,18 +129,18 @@ export class CasesModalComponent {
 			nodeEnter.append('circle')
 				.attr('class', 'node')
 				.attr('r', 1e-6)
-				.style("fill", function (d) {
-					return d.children ? "lightsteelblue" : "#fff";
+				.style("fill", function (d: any) {
+					return d._children ? "lightsteelblue" : "#fff";
 				});
 
 			// Add labels for the nodes
 			nodeEnter.append('text')
 				.attr("dy", ".35em")
-				.attr("x", function (d) {
-					return d.children || d.children ? -13 : 13;
+				.attr("x", function (d: any) {
+					return d.children || d._children ? -13 : 13;
 				})
-				.attr("text-anchor", function (d) {
-					return d.children || d.children ? "end" : "start";
+				.attr("text-anchor", function (d: any) {
+					return d.children || d._children ? "end" : "start";
 				})
 				.text(function (d: any) { return d.data.name; });
 
@@ -156,8 +157,8 @@ export class CasesModalComponent {
 			// Update the node attributes and style
 			nodeUpdate.select('circle.node')
 				.attr('r', 10)
-				.style("fill", function (d) {
-					return d.children ? "lightsteelblue" : "#fff";
+				.style("fill", function (d: any) {
+					return d._children ? "lightsteelblue" : "#fff";
 				})
 				.attr('cursor', 'pointer');
 
@@ -243,7 +244,7 @@ export class CasesModalComponent {
 			function click(d: any) {
 				if (!d.data.type) return;
 
-				self.selectedNode = { name: d.data.name, uid: d.data.uid };
+				self.selectedNode = { name: d.data.name, uid: d.data.uid, type: d.data.type };
 
 				let availableEvents = self.availableSubscriptions.find(function (a) {
 					return d.data.type === a.type;
@@ -269,6 +270,11 @@ export class CasesModalComponent {
 
 	handleEventSelectionChange(event: any, isChecked: boolean): void {
 		let self = this;
+
+		if (!self.selectedNode.name) {
+			console.log('Attempted to select events without a node selected.');
+			return;
+		}
 
 		event.isChecked = isChecked;
 

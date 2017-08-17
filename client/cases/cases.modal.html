@@ -5,7 +5,7 @@
 	<div class="container-fluid">
 		<div class="row">
 			<form #caseForm="ngForm" (ngSubmit)="submit()">
-				<div class="col-xs-6">
+				<div class="col-xs-3">
 					<div class="form-group">
 						<label for="name">Name</label>
 						<input type="text" class="form-control" [(ngModel)]="workingCase.name" name="name" #name="ngModel" required>
@@ -16,7 +16,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-xs-6">
+				<div class="col-xs-9">
 					<div class="form-group">
 						<label for="name">Note</label>
 						<input type="textarea" class="form-control" [(ngModel)]="workingCase.note" #note="ngModel" name="note">
@@ -29,17 +29,19 @@
 				</div>
 			</form>
 		</div>
-		<!--<div id="caseSubscriptionsTree"></div>-->
 		<div class="row">
-			<div class="col-xs-8">
+			<div class="col-xs-10 caseSubscriptionCol">
 				<svg overflow="scroll" id="caseSubscriptionsTree"></svg>
 			</div>
-			<div class="col-xs-4">
-				<h3>Selected Events for {{selectedNode.name}}</h3>
-				<ul>
+			<div class="col-xs-2 caseSubscriptionCol">
+				<h3 [hidden]="!selectedNode.name">Selected events for {{selectedNode.type}} node "{{selectedNode.name}}"</h3>
+				<ul class="eventsList">
 					<li *ngFor="let event of workingEvents">
 						<input type="checkbox" [value]="event.isChecked" [checked]="event.isChecked"
 							(change)="handleEventSelectionChange(event, $event.target.checked)"> {{event.name}}
+					</li>
+					<li *ngIf="selectedNode.name && !workingEvents.length">
+						<i>No events available for this node.</i>
 					</li>
 				</ul>
 			</div>
