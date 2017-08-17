@@ -1,12 +1,8 @@
 import json
 import logging
 from copy import deepcopy
-from os.path import join, isfile
-from xml.etree import ElementTree
-
-from core import options
 from core.case import callbacks
-from core.config import paths
+from core.options import Options
 from core.executionelement import ExecutionElement
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 from core.instance import Instance
@@ -17,13 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', xml=None, children=None, playbook_name='', uid=None):
+    def __init__(self, name='', children=None, playbook_name='', uid=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
-            xml (cElementTree, optional): The XML element tree object. Defaults to None.
             children (dict, optional): A dict of children. Defaults to None.
             playbook_name (str, optional): The name of the playbook under which the workflow is located. Defaults
                 to an empty string.
@@ -31,10 +26,7 @@ class Workflow(ExecutionElement):
         ExecutionElement.__init__(self, name=name)
         self.playbook_name = playbook_name
         self.steps = {}
-        if xml is not None:
-            self._from_xml(xml)
-        else:
-            self.start_step = 'start'
+        self.start_step = 'start'
         self.children = children if (children is not None) else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
@@ -45,36 +37,10 @@ class Workflow(ExecutionElement):
         self.accumulator = {}
         self.uid = uuid.uuid4().hex if uid is None else uid
 
-    @staticmethod
-    def get_workflow(workflow_name):
-        """Retrieve a workflow from the name of the workflow.
-        
-        Args:
-            workflow_name: The name of the Workflow object to be retrieved.
-            
-        Returns:
-            The Workflow object from the provided workflow name.
-        """
-        if isfile(join(paths.templates_path, workflow_name)):
-            tree = ElementTree.ElementTree(file=join(paths.templates_path, workflow_name))
-            for workflow in tree.iter(tag='workflow'):
-                name = workflow.get('name')
-                return Workflow(name=name, xml=workflow)
-                # TODO: Make this work with child workflows
-
-    def _from_xml(self, xml_element, *args):
-        self.options = options.Options(xml=xml_element.find('.//options'))
-        start_step = xml_element.find('start')
-        self.start_step = start_step.text if start_step is not None else 'start'
-        self.steps = {}
-        for step_xml in xml_element.findall('.//steps/*'):
-            step = Step(xml=step_xml)
-            self.steps[step.name] = step
-
     def assign_child(self, name='', workflow=None):
         self.children[name] = workflow
 
-    def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, errors=None, risk=0):
+    def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
         
         Args:
@@ -86,7 +52,6 @@ class Workflow(ExecutionElement):
             arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
             to None.
             next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
-            errors (list[NextStep], optional): A list of NextStep error objects for the Step object. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             
         """
@@ -114,25 +79,6 @@ class Workflow(ExecutionElement):
             return True
         logger.warning('Could not remove step {0} from workflow {1}. Step does not exist'.format(name, self.name))
         return False
-
-    def to_xml(self, *args):
-        """Converts the Workflow object to XML format.
-        
-        Returns:
-            The XML representation of the Workflow object.
-        """
-        workflow_element = ElementTree.Element('workflow')
-        workflow_element.set('name', self.name)
-
-        workflow_element.append(self.options.to_xml())
-
-        start = ElementTree.SubElement(workflow_element, 'start')
-        start.text = self.start_step
-
-        steps = ElementTree.SubElement(workflow_element, 'steps')
-        for step_name, step in self.steps.items():
-            steps.append(step.to_xml())
-        return workflow_element
 
     def __go_to_next_step(self, current='', next_up=''):
         if next_up not in self.steps:
@@ -204,7 +150,6 @@ class Workflow(ExecutionElement):
                     callbacks.AppInstanceCreated.send(self)
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
-
                 if first:
                     first = False
                     if start_input:
@@ -301,11 +246,10 @@ class Workflow(ExecutionElement):
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self.accumulator))
 
     def __repr__(self):
-        output = {'uid': self.uid,
-                  'options': self.options,
-                  'steps': {step: self.steps[step] for step in self.steps},
-                  'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00)}
-        return str(output)
+        return str({'uid': self.uid,
+                    'options': self.options,
+                    'steps': {step: self.steps[step] for step in self.steps},
+                    'accumulated_risk': round(self.accumulated_risk, 4)})
 
     def as_json(self):
         """Gets the JSON representation of a Step object.
@@ -313,13 +257,14 @@ class Workflow(ExecutionElement):
         Returns:
             The JSON representation of a Step object.
         """
-        return {'uid': self.uid,
+        out = {'uid': self.uid,
                 'name': self.name,
                 'steps': [step.as_json() for name, step in self.steps.items()],
                 'start': self.start_step,
-                'options': self.options.as_json(),
-                'accumulated_risk': "{0:.2f}".format(self.accumulated_risk * 100.00)
-                }
+                'accumulated_risk': round(self.accumulated_risk, 4)}
+        if self.options is not None:
+            out['options'] = self.options.as_json()
+        return out
 
     def from_json(self, data):
         """Reconstruct a Workflow object based on JSON data.
@@ -329,6 +274,8 @@ class Workflow(ExecutionElement):
        """
         backup_steps = deepcopy(self.steps)
         self.steps = {}
+        if 'name' in data:
+            self.name = data['name']
         uid = data['uid'] if 'uid' in data else uuid.uuid4().hex
         try:
             if 'start' in data and data['start']:
@@ -338,7 +285,10 @@ class Workflow(ExecutionElement):
             for step_json in data['steps']:
                 step = Step.from_json(step_json, position=step_json['position'])
                 self.steps[step_json['name']] = step
-
+            if 'options' in data:
+                self.options = Options.from_json(data['options'])
+            else:
+                self.options = None
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps
             raise

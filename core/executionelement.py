@@ -1,5 +1,6 @@
 import uuid
 
+
 class ExecutionElement(object):
     def __init__(self, name='', uid=None):
         """Initializes a new ExecutionElement object. This is the parent class.
@@ -10,12 +11,6 @@ class ExecutionElement(object):
         """
         self.name = name
         self.uid = uuid.uuid4().hex if uid is None else uid
-
-    def _from_xml(self, xml_element, *args):
-        raise NotImplementedError('from_xml(xml_element) has not been implemented')
-
-    def to_xml(self, xml_element):
-        raise NotImplementedError('to_xml(xml_element) has not been implemented')
 
     def as_json(self):
         raise NotImplementedError('as_json has not been implemented')

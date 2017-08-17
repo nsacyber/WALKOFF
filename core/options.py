@@ -21,9 +21,9 @@ class Options(object):
             self.children = children if children is not None else {}
 
     def _from_xml(self, xml_element):
-        self.scheduler = {'autorun': xml_element.find('.//scheduler').get('autorun'),
-                          'type': xml_element.find('.//scheduler').get('type'),
-                          'args': {option.tag: option.text for option in xml_element.findall('.//scheduler/*')}}
+        self.scheduler = {"autorun": xml_element.find('.//scheduler').get('autorun'),
+                          "type": xml_element.find('.//scheduler').get('type'),
+                          "args": {option.tag: option.text for option in xml_element.findall('.//scheduler/*')}}
         self.enabled = bool(xml_element.find('.//enabled').text)
         self.children = {child.text: None
                          for child in xml_element.findall('.//children/child')}
@@ -55,12 +55,17 @@ class Options(object):
         Returns:
             The JSON representation of an Options object.
         """
-        return {'scheduler': self.scheduler,
-                'enabled': str(self.enabled),
-                'children': self.children}
+        return {"scheduler": self.scheduler,
+                "enabled": self.enabled,
+                "children": [child.name for child in self.children.values()]}
+
+    @staticmethod
+    def from_json(json_in):
+        return Options(scheduler=json_in['scheduler'],
+                       enabled=json_in['enabled'],
+                       children={name: None for name in json_in['children']})
 
     def __repr__(self):
-        result = {'scheduler': str(self.scheduler),
-                  'enabled': str(self.enabled),
-                  'children': str(self.children)}
-        return str(result)
+        return str({'scheduler': self.scheduler,
+                    'enabled': self.enabled,
+                    'children': self.children})

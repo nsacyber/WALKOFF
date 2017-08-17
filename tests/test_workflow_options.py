@@ -23,7 +23,7 @@ class TestWorkflowOptions(unittest.TestCase):
                      'autorun': 'true',
                      'args': expected_args}
         options = Options(enabled=True, scheduler=scheduler)
-        expected_json = {'enabled': 'True',
-                         'children': {},
+        expected_json = {'enabled': True,
+                         'children': [],
                          'scheduler': scheduler}
         self.assertDictEqual(options.as_json(), expected_json)

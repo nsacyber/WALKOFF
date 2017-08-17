@@ -62,7 +62,8 @@ class TestNextStep(unittest.TestCase):
 
     def test_as_json_with_name(self):
         uid = uuid.uuid4().hex
-        self.assertDictEqual(NextStep(name='name1', uid=uid).as_json(), {'name': 'name1', 'status': 'Success', 'flags': [], 'uid': uid})
+        self.assertDictEqual(NextStep(name='name1', uid=uid).as_json(),
+                             {'name': 'name1', 'status': 'Success', 'flags': [], 'uid': uid})
 
     def test_as_json_with_status(self):
         uid = uuid.uuid4().hex
@@ -92,53 +93,6 @@ class TestNextStep(unittest.TestCase):
                      {'action': 'mod1_flag1', 'args': [], 'filters': []}]
         next_step = NextStep.from_json({'name': 'name1', 'flags': flag_json})
         self.__compare_init(next_step, 'name1', flag_json)
-
-    def test_to_xml_no_flags(self):
-        next_step = NextStep(name='name')
-        xml = next_step.to_xml()
-        self.assertEqual(xml.tag, 'next')
-        self.assertEqual(xml.get('step'), 'name')
-        self.assertEqual(len(xml.findall('flag')), 0)
-
-    def test_to_xml_with_status(self):
-        next_step = NextStep(name='name', status='test_status')
-        xml = next_step.to_xml()
-        self.assertEqual(xml.tag, 'next')
-        self.assertEqual(xml.get('step'), 'name')
-        status_xml = xml.findall('status')
-        self.assertEqual(len(status_xml), 1)
-        self.assertEqual(status_xml[0].text, 'test_status')
-        self.assertEqual(len(xml.findall('flag')), 0)
-
-    def test_to_xml(self):
-        flags = [Flag(action='Top Flag'), Flag(action='mod1_flag1')]
-        next_step = NextStep(name='name', flags=flags)
-        xml = next_step.to_xml()
-        self.assertEqual(xml.tag, 'next')
-        self.assertEqual(xml.get('step'), 'name')
-        self.assertEqual(len(xml.findall('flag')), 2)
-
-    def test_to_from_xml_is_convertible(self):
-        uid = uuid.uuid4().hex
-        flags = [Flag(action='mod1_flag1', uid=uid), Flag(action='Top Flag', uid=uid)]
-        inputs = [NextStep(uid=uid),
-                  NextStep(name='name', uid=uid),
-                  NextStep(status='TestStatus', uid=uid),
-                  NextStep(name='name', flags=[], uid=uid),
-                  NextStep(name='name', flags=flags, uid=uid)]
-        for next_step in inputs:
-            original_json = next_step.as_json()
-            new_step = NextStep(xml=next_step.to_xml())
-            new_step.uid = uid
-            for flag in new_step.flags:
-                flag.uid = uid
-            new_json = new_step.as_json()
-            self.assertDictEqual(new_json, original_json)
-
-    def test_to_xml_none(self):
-        next_step = NextStep()
-        next_step.name = None
-        self.assertIsNone(next_step.to_xml())
 
     def test_eq(self):
         flags = [Flag(action='mod1_flag1'), Flag(action='Top Flag')]

@@ -1,31 +1,49 @@
-<?xml version="1.0"?>
-<workflow name="DailyQuoteWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hours>*</hours>
-            <minutes>*/0.1</minutes>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>getQuote</action>
-            <app>DailyQuote</app>
-            <device>hwTest</device>
-            <next step="1">
-                <flag action="regMatch">
-                    <args>
-                        <regex>(.*)</regex>
-                    </args>
-                    <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
-                    </filters>
-                </flag>
-            </next>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "DailyQuote",
+    "workflows": [
+        {
+            "name": "DailyQuoteWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "getQuote",
+                    "app": "DailyQuote",
+                    "device": "hwTest",
+                    "inputs": [],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "c6c6f6f99c734674b224e9196f644277"
+                                        }
+                                    ],
+                                    "uid": "b9453b66e2e34b0b843b8e43e375d4e4"
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "b5e0e28a180d408c98be09055e38b8f6"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "ffd28bd2913242949069b8579fa148fd",
+                    "widgets": []
+                }
+            ],
+            "uid": "07ddf567fb304933bde7c91abcba00b8"
+        }
+    ]
+}

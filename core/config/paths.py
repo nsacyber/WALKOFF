@@ -1,4 +1,4 @@
-from os.path import join, sep
+from os.path import join
 
 apps_path = join('.', 'apps')
 workflows_path = join('.', 'data', 'workflows')

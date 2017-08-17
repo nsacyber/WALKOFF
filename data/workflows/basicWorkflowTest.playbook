@@ -1,46 +1,75 @@
-<?xml version="1.0" ?>
-<workflows>
-	<workflow name="helloWorldWorkflow">
-		<options>
-			<enabled>true</enabled>
-			<scheduler autorun="false" type="cron">
-				<hours>*</hours>
-				<minutes>*/0.1</minutes>
-				<day>*</day>
-				<month>11-12</month>
-			</scheduler>
-		</options>
-		<start>1</start>
-		<steps>
-			<step id="1">
-				<name>1</name>
-				<app>HelloWorld</app>
-				<action>helloWorld</action>
-				<position>
-					<x>-450.0</x>
-					<y>-50.0</y>
-				</position>
-				<next step="2"/>
-			</step>
-			<step id="3">
-				<name>3</name>
-				<app>HelloWorld</app>
-				<action>helloWorld</action>
-				<position>
-					<x>-50.0</x>
-					<y>10.0</y>
-				</position>
-			</step>
-			<step id="2">
-				<name>2</name>
-				<app>HelloWorld</app>
-				<action>helloWorld</action>
-				<position>
-					<x>-230.0</x>
-					<y>-30.0</y>
-				</position>
-				<next step="3"/>
-			</step>
-		</steps>
-	</workflow>
-</workflows>
+{
+    "name": "basicWorkflowTest",
+    "workflows": [
+        {
+            "name": "helloWorldWorkflow",
+            "start": "1",
+            "steps": [
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "inputs": [],
+                    "name": "1",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "55541eee50774accbf70a8d7df17a027"
+                        }
+                    ],
+                    "position": {
+						"x": -450.0,
+						"y": -50.0
+					},
+                    "risk": 0,
+                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
+                    "widgets": []
+                },
+				{
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "inputs": [],
+                    "name": "2",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "3",
+                            "status": "Success",
+                            "uid": "55541eee50774accbf70a8d7df17a027"
+                        }
+                    ],
+                    "position": {
+						"x": -230.0,
+						"y": -30.0
+					},
+                    "risk": 0,
+                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
+                    "widgets": []
+                },
+				{
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "inputs": [],
+                    "name": "3",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "55541eee50774accbf70a8d7df17a027"
+                        }
+                    ],
+                    "position": {
+						"x": -50.0,
+						"y": 10.0
+					},
+                    "risk": 0,
+                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
+                    "widgets": []
+                }
+            ],
+            "uid": "3c7f67c8ea6e481eb5d37b488a7b15b3"
+        }
+    ]
+}

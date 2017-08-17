@@ -1,37 +1,72 @@
-<?xml version="1.0"?>
-<workflow name="pauseWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hour>*</hour>
-            <minute>*/0.1</minute>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>helloWorld</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <next step="1"></next>
-        </step>
-        <step id="1">
-            <action>pause</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <seconds>1</seconds>
-            </inputs>
-            <next step="2"></next>
-        </step>
-        <step id="2">
-            <action>pause</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <seconds>1</seconds>
-            </inputs>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "pauseWorkflowTest",
+    "workflows": [
+        {
+            "name": "pauseWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "pause",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "seconds",
+                            "value": 1.0
+                        }
+                    ],
+                    "name": "1",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "a124b4b7648d48aa9ebc5113a5ec7d47"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "6c52b6a75406452a9d85967d80d71bf8",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "ac08f9b8fee2430595ce94af71e17a6f"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "e2131c32efe44a83913396a0fbb9f34d",
+                    "widgets": []
+                },
+                {
+                    "action": "pause",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "seconds",
+                            "value": 1.0
+                        }
+                    ],
+                    "name": "2",
+                    "next": [],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "b7725c22c881484ebe2901027f1acd7f",
+                    "widgets": []
+                }
+            ],
+            "uid": "f160b324ab6e422b82e0aae54cc34f08"
+        }
+    ]
+}

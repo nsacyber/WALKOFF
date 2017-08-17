@@ -12,7 +12,7 @@ def action_result_as_json(self):
     try:
         json.dumps(self.result)
         return {"result": self.result, "status": self.status}
-    except:
+    except TypeError:
         return {"result": str(self.result), "status": self.status}
 ActionResult.as_json = action_result_as_json
 

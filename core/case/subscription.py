@@ -123,13 +123,13 @@ def remove_subscription_node(case, caller_uid):
 
 
 scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
-                                'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
-                                'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
-                                'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
-                                'Job Added': EVENT_JOB_ADDED,
-                                'Job Removed': EVENT_JOB_REMOVED,
-                                'Job Executed': EVENT_JOB_EXECUTED,
-                                'Job Error': EVENT_JOB_ERROR}
+                              'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
+                              'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
+                              'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
+                              'Job Added': EVENT_JOB_ADDED,
+                              'Job Removed': EVENT_JOB_REMOVED,
+                              'Job Executed': EVENT_JOB_EXECUTED,
+                              'Job Error': EVENT_JOB_ERROR}
 
 
 def convert_from_event_names(events):
@@ -153,6 +153,6 @@ def convert_to_event_names(events):
             for key in scheduler_event_conversion:
                 if scheduler_event_conversion[key] == code:
                     result.append(key)
-        except:
+        except (TypeError, ValueError, KeyError):
             result.append(event)
     return result

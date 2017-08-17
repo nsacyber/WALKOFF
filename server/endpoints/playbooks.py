@@ -157,7 +157,6 @@ def copy_playbook(playbook_name):
                 new_playbook_name = data['playbook']
             else:
                 new_playbook_name = playbook_name + "_Copy"
-
             if running_context.controller.is_playbook_registered(new_playbook_name):
                 current_app.logger.error('Cannot copy playbook {0} to {1}. '
                                          'Name already exists'.format(playbook_name, new_playbook_name))

@@ -65,8 +65,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(len(self.controller.workflows), 3)
         self.assertEqual(self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').steps, {})
 
-        xml = self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').to_xml()
-        self.assertEqual(len(xml.findall(".//steps/*")), 0)
+        json = self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').as_json()
+        self.assertEqual(len(json['steps']), 0)
 
     def test_remove_workflow(self):
         initial_workflows = list(self.controller.workflows.keys())
@@ -91,27 +91,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_display_workflow(self):
         workflow = ast.literal_eval(self.testWorkflow.__repr__())
         self.assertEqual(len(workflow["steps"]), 1)
-        self.assertTrue(workflow["options"])
-
-    """
-        CRUD - Next
-    """
-
-    def test_update_next(self):
-        step = self.testWorkflow.steps["start"]
-        self.assertEqual(step.conditionals[0].name, "1")
-        step.conditionals[0].name = "2"
-        self.assertEqual(step.conditionals[0].name, "2")
-
-        xml = self.testWorkflow.to_xml()
-
-        # Check XML
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next").get("step"), "2")
-
-    def test_display_next(self):
-        conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].__repr__())
-        self.assertTrue(conditional["flags"])
-        self.assertEqual(conditional["name"], "1")
+        self.assertIsNone(workflow["options"])
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')

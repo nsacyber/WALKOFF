@@ -75,57 +75,6 @@ class TestFilter(unittest.TestCase):
         expected = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': '@step1'}], 'uid': uid}
         self.assertDictEqual(filter_elem.as_json(), expected)
 
-    def test_to_xml_no_args(self):
-        xml = Filter(action='Top Filter').to_xml()
-        self.assertEqual(xml.tag, 'filter')
-        self.assertEqual(xml.get('action'), 'Top Filter')
-        self.assertListEqual(xml.findall('args/*'), [])
-
-    def test_to_xml_with_args(self):
-        xml = Filter(action='mod1_filter2', args={'arg1': '5.4'}).to_xml()
-        self.assertEqual(xml.tag, 'filter')
-        self.assertEqual(xml.get('action'), 'mod1_filter2')
-        arg_xml = xml.findall('args/*')
-        self.assertEqual(len(arg_xml), 1)
-        self.assertEqual(arg_xml[0].tag, 'arg1')
-        self.assertEqual(arg_xml[0].text, '5.4')
-
-    def test_to_xml_with_args_with_routing(self):
-        xml = Filter(action='mod1_filter2', args={'arg1': '@step1'}).to_xml()
-        self.assertEqual(xml.tag, 'filter')
-        self.assertEqual(xml.get('action'), 'mod1_filter2')
-        arg_xml = xml.findall('args/*')
-        self.assertEqual(len(arg_xml), 1)
-        self.assertEqual(arg_xml[0].tag, 'arg1')
-        self.assertEqual(arg_xml[0].text, '@step1')
-
-    def __assert_xml_is_convertible(self, filter_elem):
-        original_json = filter_elem.as_json()
-        uid = original_json['uid']
-        original_xml = filter_elem.to_xml()
-        new_filter = Filter(xml=original_xml)
-        new_filter.uid = uid
-        self.assertDictEqual(new_filter.as_json(), original_json)
-
-    def test_to_from_xml_are_same_no_args(self):
-        uid = uuid.uuid4().hex
-        original_filter = Filter(action='Top Filter', uid=uid)
-        self.__assert_xml_is_convertible(original_filter)
-
-    def test_to_from_xml_are_same_with_args(self):
-        uid = uuid.uuid4().hex
-        original_filter = Filter(action='mod1_filter2', args={'arg1': '5.4'}, uid=uid)
-        self.__assert_xml_is_convertible(original_filter)
-
-    def test_to_from_xml_are_same_with_args_with_routing(self):
-        uid = uuid.uuid4().hex
-        original_filter = Filter(action='mod1_filter2', args={'arg1': '@step1'}, uid=uid)
-        self.__assert_xml_is_convertible(original_filter)
-
-    def test_to_from_xml_are_same_with_complex_args(self):
-        original_filter = Filter(action='sub1_filter1', args={'arg1': {'a': '5.4', 'b': 'string_in'}})
-        self.__assert_xml_is_convertible(original_filter)
-
     def test_from_json_no_args(self):
         json_in = {'action': 'Top Filter', 'args': []}
         filter_elem = Filter.from_json(json_in)

@@ -1,40 +1,67 @@
-<?xml version="1.0"?>
-<workflow name="templatedWorkflow" >
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hour>*</hour>
-            <minute>*/0.1</minute>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>helloWorld</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <next step="1">
-                <flag action="regMatch">
-                    <args>
-                        <regex>(.*)</regex>
-                    </args>
-                    <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
-                    </filters>
-                </flag>
-            </next>
-        </step>
-        <step id="1">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <templated>true</templated>
-            <inputs>
-                <call>{{outputFrom(steps, -1)}}</call>
-            </inputs>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "templatedWorkflowTest",
+    "workflows": [
+        {
+            "name": "templatedWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "repeatBackToMe",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "call",
+                            "value": "{{ outputFrom(steps, -1) }}"
+                        }
+                    ],
+                    "name": "1",
+                    "next": [],
+                    "position": {},
+                    "risk": 0,
+                    "templated": true,
+                    "uid": "cd178e70ba734022b3ee1715255e9fd2",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "2e371b8c5cee4a40850f334defcf28f2"
+                                        }
+                                    ],
+                                    "uid": "9975455237b9471d8f5f1ba967739fc8"
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "de6dda564ec344499f641d82b9625bcb"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "403e56dee3b74c5fad931d5e821fe2b9",
+                    "widgets": []
+                }
+            ],
+            "uid": "3c144dc81686489cb98766bdbbdf180a"
+        }
+    ]
+}

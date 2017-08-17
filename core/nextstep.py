@@ -1,4 +1,3 @@
-from xml.etree import ElementTree
 import logging
 from core.case import callbacks
 from core.executionelement import ExecutionElement
@@ -9,50 +8,18 @@ logger = logging.getLogger(__name__)
 
 
 class NextStep(ExecutionElement):
-    def __init__(self, xml=None, status='Success', name='', flags=None, uid=None):
+    def __init__(self, status='Success', name='', flags=None, uid=None):
         """Initializes a new NextStep object.
         
         Args:
-            xml (cElementTree, optional): The XML element tree object. Defaults to None.
             name (str, optional): The name of the NextStep object. Defaults to an empty string.
             flags (list[Flag], optional): A list of Flag objects for the NextStep object. Defaults to None.
-            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
+            uid (str, optional): A universally unique identifier for this object.
+            Created from uuid.uuid4().hex in Python
         """
-        if xml is not None:
-            self._from_xml(xml)
-        else:
-            ExecutionElement.__init__(self, name, uid)
-            self.status = status
-            self.flags = flags if flags is not None else []
-
-    def _from_xml(self, xml_element, *args):
-        name = xml_element.get('step')
-        status_field = xml_element.find('status')
-        self.status = status_field.text if status_field is not None else 'Success'
-
-        ExecutionElement.__init__(self, name=name)
-        self.flags = [Flag(xml=flag_element) for flag_element in xml_element.findall('flag')]
-
-    def to_xml(self, *args):
-        """Converts the NextStep object to XML format.
-        
-        Returns:
-            The XML representation of the NextStep object.
-        """
-        if self.name is not None:
-            elem = ElementTree.Element('next')
-            name = self.name if self.name else ''
-            elem.set('step', name)
-
-            if self.status.lower() != 'success':
-                status = ElementTree.Element('status')
-                status.text = self.status
-                elem.append(status)
-
-            if self.flags:
-                for flag in self.flags:
-                    elem.append(flag.to_xml())
-            return elem
+        ExecutionElement.__init__(self, name, uid)
+        self.status = status
+        self.flags = flags if flags is not None else []
 
     def __eq__(self, other):
         return self.name == other.name and self.status == other.status and set(self.flags) == set(other.flags)
@@ -62,6 +29,7 @@ class NextStep(ExecutionElement):
             if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
                 callbacks.NextStepTaken.send(self)
                 logger.debug('NextStep is valid for input {0}'.format(data_in))
+
                 return self.name
             else:
                 logger.debug('NextStep is not valid for input {0}'.format(data_in))

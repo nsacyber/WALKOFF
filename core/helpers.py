@@ -2,12 +2,11 @@ import importlib
 import sys
 import os
 from six import string_types
-from xml.etree import ElementTree
 import pkgutil
 import logging
 import core.config.paths
 import core.config.config
-from dicttoxml import dicttoxml
+import json
 
 try:
     from importlib import reload as reload_module
@@ -95,7 +94,7 @@ def import_app_main(app_name, path=None, reload=False):
     Args:
         app_name (str): The name of the App from which to import the main function.
         path (str, optional): The path to the apps module. Defaults to core.config.paths.apps_path
-
+        reload (bool, optional): Reload the module if already imported. Defaults to True
     Returns:
         The module object that was imported.
     """
@@ -199,8 +198,11 @@ def get_workflow_names_from_file(filename):
         A list of workflow names from the specified file, if the file exists.
     """
     if os.path.isfile(filename):
-        tree = ElementTree.ElementTree(file=filename)
-        return [workflow.get('name') for workflow in tree.iter(tag="workflow")]
+        with open(filename, 'r') as playbook_file:
+            playbook = playbook_file.read()
+            playbook = json.loads(playbook)
+            return [workflow['name'] for workflow in playbook['workflows']]
+    return []
 
 
 def combine_dicts(x, y):
@@ -413,26 +415,6 @@ def import_all_flags(package='core.flags'):
 
 def import_all_filters(package='core.filters'):
     return import_and_find_tags(package, 'filter')
-
-
-def inputs_xml_to_dict(xml):
-    accumulator = {}
-    children = xml.findall('*')
-    if children:
-        for child in children:
-            grandchildren = child.findall('*')
-            if child.findall('*') and all(grandchild.tag == 'item' for grandchild in grandchildren):
-                accumulator[child.tag] = [inputs_xml_to_dict(grandchild) for grandchild in grandchildren]
-            else:
-                accumulator[child.tag] = inputs_xml_to_dict(child)
-        return accumulator
-    else:
-        return xml.text
-
-
-def inputs_to_xml(inputs, root='inputs'):
-    xml_str = dicttoxml(inputs, custom_root=root, attr_type=False)
-    return ElementTree.fromstring(xml_str)
 
 
 def __get_step_from_reference(reference, accumulator, message_prefix):
