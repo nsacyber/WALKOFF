@@ -34,6 +34,8 @@ export class CasesModalComponent {
 
 	ngOnInit(): void {
 		let self = this;
+		let uids = self.workingCase.subscriptions.map(s => s.uid);
+		console.log(uids);
 
 		// Set the dimensions and margins of the diagram
 		let margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -50,7 +52,7 @@ export class CasesModalComponent {
 			.attr("transform", `translate(${margin.left},${margin.top})`);
 
 		let i = 0,
-			duration = 750,
+			duration = 400,
 			root: any;
 
 		// declares a tree layout and assigns the size
@@ -61,22 +63,35 @@ export class CasesModalComponent {
 		root.x0 = height / 2;
 		root.y0 = 0;
 
+		//Mark our controller as included if necessary
+		if (uids.indexOf('controller') >= 0) root.data._included = true;
+
 		// Collapse after the second level
-		root.children.forEach(collapse);
+		root.children.forEach(checkInclusionAndCheckChildrenForExpansion);
 
 		update(root);
-
+		
 		// Collapse the node and all it's children
-		function collapse(d: any) {
+		function checkInclusionAndCheckChildrenForExpansion(d: any): boolean {
+			if (uids.indexOf(d.data.uid) >= 0) d.data._included = true;
+			let expanded = false;
+
 			if (d.children) {
+				d.children.forEach(function (child: any) {
+					expanded = checkInclusionAndCheckChildrenForExpansion(child) || expanded;
+				});
+			}
+
+			if (!expanded && d.children) {
 				d._children = d.children;
-				d._children.forEach(collapse);
 				d.children = null;
 			}
+			
+			return d.data._included;
 		}
 
 		function update(source: any) {
-
+			console.log(self.workingCase);
 			// Assigns the x and y position for the nodes
 			var treeData = treemap(root);
 
@@ -91,20 +106,24 @@ export class CasesModalComponent {
 
 			// Update the nodes...
 			var node = svg.selectAll('g.node')
-				.data(nodes, function (d: any) { return d.id || (d.id = ++i); });
+				.data(nodes, function (d: any) { return d.id || (d.id = ++i); })
 
 			// Enter any new modes at the parent's previous position.
 			var nodeEnter = node.enter().append('g')
-				.attr('class', 'node')
+				.classed('node', true)
+				.classed('included', function (d: any) {
+					return d.data._included;
+				})
 				.attr("transform", function (d) {
 					return "translate(" + source.y0 + "," + source.x0 + ")";
 				})
+				.attr('id', function (d: any) { return `uid-${d.data.uid}`; })
 				.on('click', click)
 				.on('dblclick', dblclick);
 
 			// Add Circle for the nodes
 			nodeEnter.append('circle')
-				.attr('class', 'node')
+				.classed('node', true)
 				.attr('r', 1e-6)
 				.style("fill", function (d: any) {
 					return d._children ? "lightsteelblue" : "#fff";
@@ -162,7 +181,7 @@ export class CasesModalComponent {
 
 			// Enter any new links at the parent's previous position.
 			var linkEnter = link.enter().insert('path', "g")
-				.attr("class", "link")
+				.classed('link', true)
 				.attr('d', function (d) {
 					var o = { x: source.x0, y: source.y0 }
 					return diagonal(o, o)
@@ -219,6 +238,8 @@ export class CasesModalComponent {
 			function click(d: any) {
 				if (!d.data.type) return;
 
+				console.log(d.data);
+
 				self.selectedNode = { name: d.data.name, uid: d.data.uid, type: d.data.type };
 
 				let availableEvents = self.availableSubscriptions.find(function (a) {
@@ -241,12 +262,12 @@ export class CasesModalComponent {
 				});
 
 				//Clear highlighting on other highlighted node(s)
-				svg.selectAll('g.node.highlighted')
-					.attr('class', 'node');
+				d3.selectAll('g.node.highlighted')
+					.classed('highlighted', false);
 
 				//Highlight this node now.
 				d3.select(this)
-					.attr('class', 'node highlighted');
+					.classed('highlighted', true);
 			}
 		}
 	}
@@ -270,6 +291,15 @@ export class CasesModalComponent {
 			matchingSubscription = new Subscription();
 			matchingSubscription.uid = self.selectedNode.uid;
 			self.workingCase.subscriptions.push(matchingSubscription);
+
+			//style the node in d3 as well
+			// let data = d3.select("svg#caseSubscriptionsTree").select(`g.node#${self.selectedNode.uid}`)
+			d3.select("svg#caseSubscriptionsTree").select(`g.node#uid-${self.selectedNode.uid}`)
+				.classed('included', true)
+				.datum(function (d: any) {
+					d.data._included = true;
+					return d;
+				});
 		}
 
 		//Recalculate our events on this subscription
@@ -283,10 +313,15 @@ export class CasesModalComponent {
 		if (!matchingSubscription.events.length) {
 			let indexToDelete = self.workingCase.subscriptions.indexOf(matchingSubscription);
 			self.workingCase.subscriptions.splice(indexToDelete, 1);
-		}
 
-		console.log(self.workingCase);
-		console.log(event);
+			//style the node in d3 as well
+			d3.select("svg#caseSubscriptionsTree").select(`g.node#uid-${self.selectedNode.uid}`)
+				.classed('included', false)
+				.datum(function (d: any) {
+					d.data._included = false;
+					return d;
+				});
+		}
 	}
 
 	submit(): void {
