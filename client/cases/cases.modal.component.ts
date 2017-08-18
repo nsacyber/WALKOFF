@@ -35,7 +35,6 @@ export class CasesModalComponent {
 	ngOnInit(): void {
 		let self = this;
 		let uids = self.workingCase.subscriptions.map(s => s.uid);
-		console.log(uids);
 
 		// Set the dimensions and margins of the diagram
 		let margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -66,12 +65,12 @@ export class CasesModalComponent {
 		//Mark our controller as included if necessary
 		if (uids.indexOf('controller') >= 0) root.data._included = true;
 
-		// Collapse after the second level
+		// Check for collapse after the second level
 		root.children.forEach(checkInclusionAndCheckChildrenForExpansion);
 
 		update(root);
 		
-		// Collapse the node and all it's children
+		// This function recursively checks if each node should be included or expanded
 		function checkInclusionAndCheckChildrenForExpansion(d: any): boolean {
 			if (uids.indexOf(d.data.uid) >= 0) d.data._included = true;
 			let expanded = false;
@@ -91,7 +90,6 @@ export class CasesModalComponent {
 		}
 
 		function update(source: any) {
-			console.log(self.workingCase);
 			// Assigns the x and y position for the nodes
 			var treeData = treemap(root);
 
@@ -237,8 +235,6 @@ export class CasesModalComponent {
 			// function dblclick(d: any) {
 			function click(d: any) {
 				if (!d.data.type) return;
-
-				console.log(d.data);
 
 				self.selectedNode = { name: d.data.name, uid: d.data.uid, type: d.data.type };
 
