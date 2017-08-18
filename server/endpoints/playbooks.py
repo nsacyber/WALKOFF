@@ -9,8 +9,9 @@ import core.case.database as case_database
 from core.case.workflowresults import WorkflowResult
 import core.config.config
 import core.config.paths
-from server.return_codes import *
+from server.returncodes import *
 import server.workflowresults  # do not delete needed to register callbacks
+
 
 def get_playbooks(full=None):
     from server.context import running_context
@@ -282,7 +283,8 @@ def update_workflow(playbook_name):
         if running_context.controller.is_workflow_registered(playbook_name, wf_name):
             if 'scheduler' in data:
                 enabled = data['scheduler']['enabled'] if 'enabled' in data['scheduler'] else False
-                scheduler = {'type': data['scheduler']['scheduler_type'] if 'scheduler_type' in data['scheduler'] else 'cron',
+                scheduler = {'type': (data['scheduler']['scheduler_type']
+                                      if 'scheduler_type' in data['scheduler'] else 'cron'),
                              'autorun': (str(data['scheduler']['autorun']).lower()
                                          if 'autorun' in data['scheduler'] else 'false'),
                              'args': json.loads(data['scheduler']['args']) if 'args' in data['scheduler'] else {}}
@@ -302,8 +304,7 @@ def update_workflow(playbook_name):
                     wf_name = data['new_name']
             workflow = running_context.controller.get_workflow(playbook_name, wf_name)
             if workflow:
-                current_app.logger.info('Updated workflow {0}-{1}'.format(playbook_name,
-                                                                                 wf_name))
+                current_app.logger.info('Updated workflow {0}-{1}'.format(playbook_name, wf_name))
                 return workflow.as_json(), SUCCESS
             else:
                 current_app.logger.error('Altered workflow {0}-{1} no longer in controller'.format(playbook_name,

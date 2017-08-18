@@ -1,7 +1,7 @@
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from tests.util.servertestcase import ServerTestCase
 import json
-from server.return_codes import *
+from server.returncodes import *
 
 
 class TestSchedulerActions(ServerTestCase):

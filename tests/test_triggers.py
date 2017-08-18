@@ -3,7 +3,7 @@ import json
 from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 from server.triggers import Triggers
-from server.return_codes import *
+from server.returncodes import *
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests.apps import App
 from tests import config

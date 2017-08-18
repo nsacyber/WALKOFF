@@ -64,6 +64,7 @@ def create_user():
 # def client_app_app_folder(filename):
 #     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
 
+
 # Custom static data
 @app.route('/client/<path:filename>')
 def client_app_folder(filename):
@@ -81,6 +82,7 @@ def client_app_folder(filename):
 #         return render_template("container.html", **args)
 #     else:
 #         return {"status": "Could Not Log In."}
+
 
 @app.route('/')
 @app.route('/controller')
@@ -102,6 +104,7 @@ def default():
 # @app.route('/login', methods=['GET'])
 # def login():
 #     return render_template("login_user.html")
+
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required

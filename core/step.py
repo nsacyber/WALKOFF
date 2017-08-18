@@ -30,7 +30,8 @@ class Step(ExecutionElement):
                  widgets=None,
                  risk=0,
                  uid=None,
-                 templated=False):
+                 templated=False,
+                 raw_json=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
         
         Args:
@@ -47,7 +48,9 @@ class Step(ExecutionElement):
             widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the
                 corresponding widget. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
-            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
+            uid (str, optional): A universally unique identifier for this object.
+                Created from uuid.uuid4().hex in Python
+            raw_json (dict, optional): JSON representation of this object. Used for Jinja templating
         """
         ExecutionElement.__init__(self, name, uid)
         if action == '' or app == '':
@@ -72,6 +75,8 @@ class Step(ExecutionElement):
 
         self.output = None
         self.next_up = None
+        self.raw_json = raw_json if raw_json is not None else {}
+        self.execution_uid = 'default'
 
     def _update_xml(self, updated_json):
         self.action = updated_json['action']
@@ -211,17 +216,18 @@ class Step(ExecutionElement):
         if 'widgets' in json_in:
             widgets = [(widget['app'], widget['name'])
                        for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
-        step = Step(name=json_in['name'],
+        conditionals = []
+        if 'next' in json_in:
+            conditionals = [NextStep.from_json(next_step) for next_step in json_in['next'] if next_step]
+        return Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
                     device=device,
                     risk=risk,
                     inputs={arg['name']: arg['value'] for arg in json_in['inputs']},
+                    next_steps=conditionals,
                     position={key: value for key, value in position.items()},
                     widgets=widgets,
                     uid=uid,
-                    templated=(json_in['templated'] == True) if 'templated' in json_in else False)
-        if json_in['next']:
-            step.conditionals = [NextStep.from_json(next_step) for next_step in json_in['next'] if next_step]
-        step.raw_json = json_in
-        return step
+                    templated=json_in['templated'] if 'templated' in json_in else False,
+                    raw_json=json_in)

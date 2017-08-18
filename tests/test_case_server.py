@@ -9,7 +9,7 @@ from os.path import join
 from tests.util.servertestcase import ServerTestCase
 from tests.util.assertwrappers import orderless_list_compare
 import server.flaskserver as server
-from server.return_codes import *
+from server.returncodes import *
 from collections import OrderedDict
 
 

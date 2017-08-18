@@ -1,6 +1,6 @@
 from flask_security import roles_accepted
 import server.metrics as metrics
-from server.return_codes import *
+from server.returncodes import *
 
 
 def read_app_metrics():

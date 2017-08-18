@@ -1,6 +1,6 @@
 from flask import current_app
 from flask_security import roles_accepted
-from server.return_codes import *
+from server.returncodes import *
 
 
 def get_scheduler_status():

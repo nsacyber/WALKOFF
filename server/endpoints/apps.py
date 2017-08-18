@@ -4,7 +4,7 @@ from flask_security import roles_accepted, auth_token_required
 import core.config.config
 import core.config.paths
 from core import helpers
-from server.return_codes import *
+from server.returncodes import *
 from server import forms
 import pyaes
 
@@ -106,7 +106,8 @@ def create_device(app_name, device_name):
             except (OSError, IOError) as e:
                 current_app.logger.error('Could not create device {0} for app {1}. '
                                          'Could not get key from AES key file. '
-                                         'Error: {2}'.format(device_name, app_name, helpers.format_exception_message(e)))
+                                         'Error: {2}'.format(device_name, app_name,
+                                                             helpers.format_exception_message(e)))
                 return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)

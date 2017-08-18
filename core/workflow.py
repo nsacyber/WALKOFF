@@ -36,6 +36,7 @@ class Workflow(ExecutionElement):
         self.breakpoint_steps = []
         self.accumulator = {}
         self.uid = uuid.uuid4().hex if uid is None else uid
+        self.execution_uid = 'default'
 
     def assign_child(self, name='', workflow=None):
         self.children[name] = workflow
@@ -121,6 +122,7 @@ class Workflow(ExecutionElement):
         """Executes a Workflow by executing all Steps in the Workflow list of Step objects.
         
         Args:
+            execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
             start (str, optional): The name of the first Step. Defaults to "start".
             start_input (str, optional): Input into the first Step. Defaults to an empty string.
         """
@@ -218,7 +220,7 @@ class Workflow(ExecutionElement):
         if len(params) == 3:
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
             if (child_name in self.options.children
-                and type(self.options.children[child_name]).__name__ == 'Workflow'):
+                    and type(self.options.children[child_name]).__name__ == 'Workflow'):
                 logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.name))
                 self.options.children[child_name].execution_uid = uuid.uuid4().hex
                 callbacks.WorkflowExecutionStart.send(self.options.children[child_name])
@@ -239,7 +241,7 @@ class Workflow(ExecutionElement):
         for step, step_result in self.accumulator.items():
             try:
                 result_str[step] = json.dumps(step_result)
-            except Exception:
+            except TypeError:
                 logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
                 result_str[step] = 'error: could not convert to JSON'
         callbacks.WorkflowShutdown.send(self, data=self.accumulator)
@@ -258,10 +260,10 @@ class Workflow(ExecutionElement):
             The JSON representation of a Step object.
         """
         out = {'uid': self.uid,
-                'name': self.name,
-                'steps': [step.as_json() for name, step in self.steps.items()],
-                'start': self.start_step,
-                'accumulated_risk': round(self.accumulated_risk, 4)}
+               'name': self.name,
+               'steps': [step.as_json() for name, step in self.steps.items()],
+               'start': self.start_step,
+               'accumulated_risk': round(self.accumulated_risk, 4)}
         if self.options is not None:
             out['options'] = self.options.as_json()
         return out

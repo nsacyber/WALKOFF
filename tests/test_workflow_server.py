@@ -12,7 +12,7 @@ import os
 import core.config.paths
 from gevent.event import Event
 from core.case.callbacks import WorkflowShutdown
-from server.return_codes import *
+from server.returncodes import *
 from core.step import Step
 
 
