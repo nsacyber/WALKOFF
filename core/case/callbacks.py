@@ -18,8 +18,9 @@ def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message
         if not isinstance(data, string_types):
             try:
                 data = json.dumps(data)
-            except:
+            except TypeError:
                 data = str(data)
+
         event = Event(type=event_type,
                       timestamp=datetime.datetime.utcnow(),
                       caller=caller,

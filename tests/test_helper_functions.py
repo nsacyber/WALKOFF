@@ -70,7 +70,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(workflows, ['parentWorkflow', 'childWorkflow'])
 
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
-        self.assertIsNone(workflows)
+        self.assertListEqual(workflows, [])
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
@@ -269,71 +269,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_filter_invalid(self):
         with self.assertRaises(UnknownFilter):
             get_filter('invalid')
-
-    def test_input_xml_to_dict(self):
-        from xml.etree.cElementTree import fromstring
-        xml = """<inputs>
-                <a1>val1</a1>
-                <a3>val3</a3>
-                <a2>val2</a2>
-                <a5>val5</a5>
-                <a4>
-                    <a44>
-                        <a442>
-                            <item>val442-0</item>
-                            <item>val442-1</item>
-                        </a442>
-                        <a441>val441</a441>
-                    </a44>
-                    <a42>val42</a42>
-                    <a43>
-                        <item>
-                            <a432>val432</a432>
-                            <a431>
-                                <item>1</item>
-                                <item>1</item>
-                                <item>2</item>
-                                <item>3</item>
-                            </a431>
-                        </item>
-                        <item>
-                            <a431>
-                                <item>2</item>
-                                <item>2</item>
-                                <item>3</item>
-                                <item>4</item>
-                            </a431>
-                        </item>
-                    </a43>
-                    <a41>val41</a41>
-                </a4>
-            </inputs>"""
-        expected = {'a1': 'val1', 'a2': 'val2', 'a3': 'val3',
-                    'a4': {'a41': 'val41', 'a42': 'val42',
-                           'a43': [{'a431': ['1', '1', '2', '3'], 'a432': 'val432'},
-                                   {'a431': ['2', '2', '3', '4']}],
-                           'a44': {'a441': 'val441', 'a442': ['val442-0', 'val442-1']}},
-                    'a5': 'val5'}
-        xml = fromstring(xml)
-        converted = inputs_xml_to_dict(xml)
-        self.assertDictEqual(converted, expected)
-
-    def test_input_dict_to_from_xml(self):
-        inputs = {
-            'a1': 'val1',
-                  'a2': 'val2',
-                  'a3': 'val3',
-                  'a5': 'val5',
-                  'a4': {'a41': 'val41',
-                         'a42': 'val42',
-                         'a43': [{'a431': ['1', '1', '2', '3'],
-                                  'a432': 'val432'},
-                                 {'a431': ['2', '2', '3', '4']}],
-                         'a44': {'a441': 'val441',
-                                 'a442': ['val442-0', 'val442-1']}}}
-        xml = inputs_to_xml(inputs)
-        converted = inputs_xml_to_dict(xml)
-        self.assertDictEqual(converted, inputs)
 
     def test_dereference_step_routing(self):
         inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}

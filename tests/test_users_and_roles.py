@@ -3,7 +3,7 @@ import json
 from flask_security.utils import verify_password
 from server import flaskserver as server
 from tests.util.servertestcase import ServerTestCase
-from server.return_codes import *
+from server.returncodes import *
 
 
 class TestUsersAndRoles(ServerTestCase):

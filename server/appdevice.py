@@ -134,7 +134,7 @@ class Device(database.Base):
         
         Args:
             name (str, optional): The name of the Device object. Defaults to an empty string.
-            app (str): The ID of the App object to which this Device is associated.
+            app_id (str): The ID of the App object to which this Device is associated.
             username (str, optional): The username for the Device object. Defaults to an empty string.
             password (str, optional): The password for the Device object. Defaults to an empty string.
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
@@ -142,7 +142,8 @@ class Device(database.Base):
             extra_fields (str, optional): The string representation of a dictionary that holds various custom
             extra fields for the Device object. Defaults to an empty string.
         """
-        device = Device(name=name, username=username, app_id=app_id, password=password, ip=ip, port=port, extra_fields=extra_fields)
+        device = Device(name=name, username=username, app_id=app_id, password=password, ip=ip, port=port,
+                        extra_fields=extra_fields)
         db.session.add(device)
         db.session.commit()
         current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))

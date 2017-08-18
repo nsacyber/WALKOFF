@@ -1,0 +1,34 @@
+.casesModal > .modal-dialog {
+	width: 95%;
+}
+.caseSubscriptionCol {
+	overflow: auto;
+}
+.eventsList {
+	list-style: none;
+	padding-left: 0px;
+}
+svg#caseSubscriptionsTree {
+	user-select: none;
+	-webkit-user-select: none;  /* Chrome all / Safari all */
+	-moz-user-select: none;     /* Firefox all */
+	-ms-user-select: none;      /* IE 10+ */
+}
+	svg#caseSubscriptionsTree .node circle {
+		fill: #fff;
+		stroke: steelblue;
+		stroke-width: 3px;
+		cursor: pointer;
+	}
+	svg#caseSubscriptionsTree .node.highlighted circle {
+		stroke: red;
+	}
+	svg#caseSubscriptionsTree .node text {
+		font: 12px sans-serif;
+		cursor: pointer;
+	}
+	svg#caseSubscriptionsTree .link {
+		fill: none;
+		stroke: #ccc;
+		stroke-width: 2px;
+	}

@@ -4,7 +4,7 @@ from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
 from tests.util.servertestcase import ServerTestCase
-from server.return_codes import *
+from server.returncodes import *
 
 
 class TestServer(ServerTestCase):

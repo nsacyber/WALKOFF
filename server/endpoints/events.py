@@ -1,6 +1,6 @@
 from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
-from server.return_codes import *
+from server.returncodes import *
 from flask import request
 
 

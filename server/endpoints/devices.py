@@ -3,7 +3,7 @@ from flask import current_app, request
 from flask_security import roles_accepted, auth_token_required
 import core.config.config
 import core.config.paths
-from server.return_codes import *
+from server.returncodes import *
 import pyaes
 
 
@@ -141,7 +141,7 @@ def create_device():
         except (OSError, IOError) as e:
             current_app.logger.error('Could not create device. '
                                      'Could not get key from AES key file. '
-                                     'Error: {1}'.format(e))
+                                     'Error: {}'.format(e))
             return {"error": "Could not read key from AES key file."}, INVALID_INPUT_ERROR
         else:
             aes = pyaes.AESModeOfOperationCTR(key)
@@ -149,12 +149,12 @@ def create_device():
             enc_pw = aes.encrypt(pw)
 
         dev = running_context.Device.add_device(name=data['name'],
-                                          username=data['username'] if 'username' in data else '',
-                                          password=enc_pw,
-                                          ip=data['ip'] if 'ip' in data else '',
-                                          port=data['port'] if 'port' in data else '',
-                                          extra_fields=data['extraFields'] if 'extraFields' in data else '',
-                                          app_id=data['app'])
+                                                username=data['username'] if 'username' in data else '',
+                                                password=enc_pw,
+                                                ip=data['ip'] if 'ip' in data else '',
+                                                port=data['port'] if 'port' in data else '',
+                                                extra_fields=data['extraFields'] if 'extraFields' in data else '',
+                                                app_id=data['app'])
         return dev.as_json(), OBJECT_CREATED
 
     return __func()

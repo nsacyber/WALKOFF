@@ -4,7 +4,7 @@ from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 import tests.config
 import core.config.paths
-from server.return_codes import *
+from server.returncodes import *
 import pyaes
 
 

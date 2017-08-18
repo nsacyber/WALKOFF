@@ -1,9 +1,8 @@
-from xml.etree import ElementTree
 from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.filter import Filter
 from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
-                          inputs_to_xml, inputs_xml_to_dict, dereference_step_routing, format_exception_message)
+                          dereference_step_routing, format_exception_message)
 from core.validator import validate_flag_parameters, validate_parameter
 import logging
 import uuid
@@ -12,37 +11,25 @@ logger = logging.getLogger(__name__)
 
 
 class Flag(ExecutionElement):
-    def __init__(self, action=None, xml=None, args=None, filters=None, uid=None):
+    def __init__(self, action=None, args=None, filters=None, uid=None):
         """Initializes a new Flag object. 
         
         Args:
-            xml (cElementTree, optional): The XML element tree object. Defaults to None.
             action (str, optional): The action name for the Flag. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
-            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
+            uid (str, optional): A universally unique identifier for this object.
+                Created from uuid.uuid4().hex in Python
         """
-        if xml is not None:
-            self._from_xml(xml)
-        else:
-            if action is None:
-                raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
-            ExecutionElement.__init__(self, action, uid)
-            self.action = action
-            args = args if args is not None else {}
-            self.args_api, self.data_in_api = get_flag_api(self.action)
-            self.args = validate_flag_parameters(self.args_api, args, self.action)
-            self.filters = filters if filters is not None else []
-
-    def _from_xml(self, xml_element, *args):
-        self.action = xml_element.get('action')
-        ExecutionElement.__init__(self, name=self.action)
+        if action is None:
+            raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
+        ExecutionElement.__init__(self, action, uid)
+        self.action = action
+        args = args if args is not None else {}
         self.args_api, self.data_in_api = get_flag_api(self.action)
-        args_xml = xml_element.find('args')
-        args = (inputs_xml_to_dict(args_xml) or {}) if args_xml is not None else {}
         self.args = validate_flag_parameters(self.args_api, args, self.action)
-        self.filters = [Filter(xml=filter_element) for filter_element in xml_element.findall('filters/*')]
+        self.filters = filters if filters is not None else []
 
     def __call__(self, data_in, accumulator):
         data = data_in
@@ -94,26 +81,6 @@ class Flag(ExecutionElement):
         filters = [Filter.from_json(filter_element) for filter_element in json_in['filters']]
         flag = Flag(action=json_in['action'], args=args, filters=filters, uid=uid)
         return flag
-
-    def to_xml(self, *args):
-        """Converts the Flag object to XML format.
-
-        Args:
-            args (list[str], optional): A list of arguments to place in the XML.
-
-        Returns:
-            The XML representation of the Flag object.
-        """
-        elem = ElementTree.Element('flag')
-        elem.set('action', self.action)
-        if self.args:
-            args = inputs_to_xml(self.args, root='args')
-            elem.append(args)
-        if self.filters:
-            filters_element = ElementTree.SubElement(elem, 'filters')
-            for filter_element in self.filters:
-                filters_element.append(filter_element.to_xml())
-        return elem
 
     def __repr__(self):
         output = {'uid': self.uid,

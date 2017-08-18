@@ -64,6 +64,7 @@ def create_user():
 # def client_app_app_folder(filename):
 #     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
 
+
 # Custom static data
 @app.route('/client/<path:filename>')
 def client_app_folder(filename):
@@ -81,6 +82,7 @@ def client_app_folder(filename):
 #         return render_template("container.html", **args)
 #     else:
 #         return {"status": "Could Not Log In."}
+
 
 @app.route('/')
 @app.route('/controller')
@@ -102,6 +104,7 @@ def default():
 # @app.route('/login', methods=['GET'])
 # def login():
 #     return render_template("login_user.html")
+
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required
@@ -166,13 +169,12 @@ def write_playbook_to_file(playbook_name):
         pass
 
     app.logger.debug('Writing playbook {0} to file'.format(playbook_name))
-    write_format = 'w' if sys.version_info[0] == 2 else 'wb'
+    write_format = 'w'
 
     try:
         with open(playbook_filename, write_format) as workflow_out:
-            xml = ElementTree.tostring(running_context.controller.playbook_to_xml(playbook_name))
-            xml_dom = minidom.parseString(xml).toprettyxml(indent='\t')
-            workflow_out.write(xml_dom.encode('utf-8'))
+            playbook_json = running_context.controller.playbook_as_json(playbook_name)
+            workflow_out.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
     except Exception as e:
         logger.error('Could not save playbook to file. Reverting file to original. '
                      'Error: {0}'.format(helpers.format_exception_message(e)))

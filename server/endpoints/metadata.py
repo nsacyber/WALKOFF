@@ -7,7 +7,7 @@ import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-from server.return_codes import SUCCESS, UNAUTHORIZED_ERROR
+from server.returncodes import SUCCESS, UNAUTHORIZED_ERROR
 
 from core.helpers import combine_dicts
 

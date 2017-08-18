@@ -1,46 +1,101 @@
-<?xml version="1.0"?>
-<workflow name="dataflowWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hour>*</hour>
-            <minute>*/0.1</minute>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>Add Three</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <num1>1</num1>
-                <num2>2</num2>
-                <num3>3</num3>
-            </inputs>
-            <next step="1"/>
-        </step>
-        <step id="2">
-            <action>Add Three</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <num1>1</num1>
-                <num2>2</num2>
-                <num3>3</num3>
-            </inputs>
-            <next step="2"/>
-        </step>
-        <step id="1">
-            <action>Add Three</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <num1>@start</num1>
-                <num2>@2</num2>
-                <num3>3</num3>
-            </inputs>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "dataflowTestStepNotExecuted",
+    "workflows": [
+        {
+            "name": "dataflowWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "Add Three",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "num1",
+                            "value": "@start"
+                        },
+                        {
+                            "name": "num2",
+                            "value": "@2"
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "1",
+                    "next": [],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "0ed91d07f1774d16a991d7815814fff1",
+                    "widgets": []
+                },
+                {
+                    "action": "Add Three",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "num1",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "num2",
+                            "value": 2.0
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "3b4fca83078e4eb8881ee5c4e7ac50ed"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "9fd0559779a84bd584c1ecd43b156656",
+                    "widgets": []
+                },
+                {
+                    "action": "Add Three",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "num1",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "num2",
+                            "value": 2.0
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "2",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "3fe50f0066ef4d01b638456f8946cabd"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "de45a29e29864b39998f60743055a452",
+                    "widgets": []
+                }
+            ],
+            "uid": "06e80ec0a9b543d29dcd227f04a9c90e"
+        }
+    ]
+}

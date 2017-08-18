@@ -1,36 +1,54 @@
-<?xml version="1.0" ?>
-<workflows>
-	<workflow name="helloWorldWorkflow">
-		<options>
-			<enabled>true</enabled>
-			<scheduler autorun="false" type="cron">
-				<minute>*/0.1</minute>
-				<day>*</day>
-				<hour>*</hour>
-				<month>11-12</month>
-			</scheduler>
-		</options>
-		<start>start</start>
-		<steps>
-			<step id="start">
-				<id>start</id>
-				<app>HelloWorld</app>
-				<action>repeatBackToMe</action>
-				<device>hwTest</device>
-				<inputs>
-					<call>Hello World</call>
-				</inputs>
-				<next step="1">
-					<flag action="regMatch">
-						<args>
-							<regex>(.*)</regex>
-						</args>
-						<filters>
-							<filter action="length"/>
-						</filters>
-					</flag>
-				</next>
-			</step>
-		</steps>
-	</workflow>
-</workflows>
+{
+    "name": "testExecutionWorkflow",
+    "workflows": [
+        {
+            "name": "helloWorldWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "repeatBackToMe",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "fc367cc11b3749a28407202811b6d78e"
+                                        }
+                                    ],
+                                    "uid": "f424c38c8ec24a48a6a9ffefcb2d38ee"
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "e3dac3f81bc743f18cf7be26a41f5a56"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "643a8985652b4b38bd3d039612aec5ea",
+                    "widgets": []
+                }
+            ],
+            "uid": "af46e96b015d42e7abe04925fe1c43f0"
+        }
+    ]
+}

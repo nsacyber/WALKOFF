@@ -2,7 +2,7 @@ from flask import current_app
 from flask_security import roles_accepted
 import core.config.config
 import core.config.paths
-from server.return_codes import *
+from server.returncodes import *
 
 
 def __get_current_configuration():

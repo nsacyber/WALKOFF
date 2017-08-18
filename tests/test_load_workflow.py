@@ -19,7 +19,7 @@ class TestLoadWorkflow(unittest.TestCase):
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def setUp(self):
-        self.c = controller.Controller()
+        self.c = controller.Controller(workflows_path=config.test_workflows_path)
         self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
         self.workflow_name = _WorkflowKey('basicWorkflowTest', 'helloWorldWorkflow')
         self.testWorkflow = self.c.workflows[self.workflow_name]

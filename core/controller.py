@@ -18,6 +18,7 @@ from core.case import subscription
 from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
 import uuid
+import json
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -117,9 +118,11 @@ class Controller(object):
         if workflow.uuid in self.workflow_status:
             self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
-    def __add_workflow(self, key, name, xml, playbook):
+    def __add_workflow(self, key, name, json_in, playbook):
         try:
-            self.workflows[key] = wf.Workflow(name=name, xml=xml, playbook_name=playbook)
+            workflow = wf.Workflow(playbook_name=playbook)
+            workflow.from_json(json_in)
+            self.workflows[key] = workflow
             logger.info('Adding workflow {0} to controller'.format(name))
         except (UnknownApp, UnknownAppAction, InvalidInput) as e:
             logger.error('Cannot load workflow {0}: Error: {1}'.format(key, format_exception_message(e)))
@@ -136,23 +139,24 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
-        self.tree = ElementTree.ElementTree(file=path)
-        playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
-        for workflow in self.tree.iter(tag='workflow'):
-            current_workflow_name = workflow.get('name')
-            if current_workflow_name == workflow_name:
-                if name_override:
-                    workflow_name = name_override
-                key = _WorkflowKey(playbook_name, workflow_name)
-                self.__add_workflow(key, workflow_name, workflow, playbook_name)
-                break
-        else:
-            logger.warning('Workflow {0} not found in playbook {0}. Cannot load.'.format(workflow_name, playbook_name))
-            return False
+        with open(path, 'r') as workflow_file:
+            workflow_loaded = workflow_file.read()
+            json_in = json.loads(workflow_loaded)
+            playbook_name = playbook_override if playbook_override else json_in['name']
+            for workflow in (workflow_ for workflow_ in json_in['workflows'] if workflow_['name'] == workflow_name):
+                if workflow['name'] == workflow_name:
+                    workflow_name = name_override if name_override else workflow['name']
+                    key = _WorkflowKey(playbook_name, workflow_name)
+                    self.__add_workflow(key, workflow_name, workflow, playbook_name)
+                    break
+            else:
+                logger.warning('Workflow {0} not found in playbook {0}. '
+                               'Cannot load.'.format(workflow_name, playbook_name))
+                return False
+            return True
 
-        self.add_child_workflows()
-        self.add_workflow_scheduled_jobs()
-        return True
+            self.add_child_workflows()
+            self.add_workflow_scheduled_jobs()
 
     def load_workflows_from_file(self, path, name_override=None, playbook_override=None):
         """Loads multiple workloads from a file.
@@ -162,12 +166,14 @@ class Controller(object):
             name_override (str, optional): Name that the workflow should be changed to. 
             playbook_override (str, optional): Name that the playbook should be changed to.
         """
-        self.tree = ElementTree.ElementTree(file=path)
-        playbook_name = playbook_override if playbook_override else os.path.splitext(os.path.basename(path))[0]
-        for workflow in self.tree.iter(tag='workflow'):
-            workflow_name = name_override if name_override else workflow.get('name')
-            key = _WorkflowKey(playbook_name, workflow_name)
-            self.__add_workflow(key, workflow_name, workflow, playbook_name)
+        with open(path, 'r') as workflow_file:
+            workflow_loaded = workflow_file.read()
+            json_in = json.loads(workflow_loaded)
+            playbook_name = playbook_override if playbook_override else json_in['name']
+            for workflow in json_in['workflows']:
+                workflow_name = name_override if name_override else workflow['name']
+                key = _WorkflowKey(playbook_name, workflow_name)
+                self.__add_workflow(key, workflow_name, workflow, playbook_name)
 
         self.add_child_workflows()
         self.add_workflow_scheduled_jobs()
@@ -186,19 +192,20 @@ class Controller(object):
     def add_child_workflows(self):
         for workflow in self.workflows:
             playbook_name = workflow.playbook
-            children = self.workflows[workflow].options.children
-            for child in children:
-                workflow_key = _WorkflowKey(playbook_name, child)
-                if workflow_key in self.workflows:
-                    logger.info('Adding child workflow {0} '
-                                'to workflow {1}'.format(child, self.workflows[workflow_key].name))
-                    children[child] = self.workflows[workflow_key]
+            if self.workflows[workflow].options is not None:
+                children = self.workflows[workflow].options.children
+                for child in children:
+                    workflow_key = _WorkflowKey(playbook_name, child)
+                    if workflow_key in self.workflows:
+                        logger.info('Adding child workflow {0} '
+                                    'to workflow {1}'.format(child, self.workflows[workflow_key].name))
+                        children[child] = self.workflows[workflow_key]
 
     def add_workflow_scheduled_jobs(self):
         """Schedules the workflow to run based on workflow options.
         """
         for workflow in self.workflows:
-            if (self.workflows[workflow].options.enabled
+            if (self.workflows[workflow].options is not None and self.workflows[workflow].options.enabled
                     and self.workflows[workflow].options.scheduler['autorun'] == 'true'):
                 schedule_type = self.workflows[workflow].options.scheduler['type']
                 schedule = self.workflows[workflow].options.scheduler['args']
@@ -426,7 +433,7 @@ class Controller(object):
                 _workflows.append(self.workflows[key].name)
         return _workflows
 
-    def playbook_to_xml(self, playbook_name):
+    def playbook_as_json(self, playbook_name):
         """Returns the XML representation of a playbook.
         
         Args:
@@ -435,14 +442,14 @@ class Controller(object):
         Returns:
             The XML representation of the playbook if the playbook has any workflows under it, else None.
         """
-        all_workflows = [workflow for key, workflow in self.workflows.items() if key.playbook == playbook_name]
+        all_workflows = [workflow.as_json() for key, workflow in self.workflows.items()
+                         if key.playbook == playbook_name]
+
         if all_workflows:
-            xml = ElementTree.Element('workflows')
-            for workflow in all_workflows:
-                xml.append(workflow.to_xml())
-            return xml
+            return {"name": playbook_name,
+                    "workflows": all_workflows}
         else:
-            logger.debug('No workflows are registered in controller to convert to XML')
+            logger.debug('No workflows are registered in controller to convert to JSON')
             return None
 
     def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):

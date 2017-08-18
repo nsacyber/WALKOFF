@@ -13,5 +13,4 @@ APscheduler >= 3.0.0
 gevent >= 1.2 
 connexion
 pyaes == 1.6.0
-dicttoxml
 pyyaml

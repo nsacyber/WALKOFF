@@ -211,10 +211,18 @@ export class CasesComponent {
 	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
 		let self = this;
 		// types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
-		// childrenTypes = ['workflows', 'steps', 'nextsteps', 'flags', 'filters'];
+		// childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
+
+		let nodeName = '';
+		if (prefix) nodeName = prefix + ': ';
+		//For higher level nodes, use the name
+		if (target.name) nodeName += target.name;
+		//For lower level nodes such as flag and filter, use action
+		else if (target.action) nodeName += target.action;
+		else nodeName = '(name unknown)';
 
 		let node = { 
-			name: prefix ? prefix + ': ' + target.name : target.name, 
+			name: nodeName, 
 			uid: target.uid ? target.uid : '', 
 			type: types[typeIndex], 
 			children: <Object[]>[]
@@ -224,8 +232,20 @@ export class CasesComponent {
 		if (childType) {
 			let prefix: string;
 
-			if (childType === 'steps') prefix = 'Step';
-			else if (childType === 'nextsteps') prefix = 'Next Step';
+			switch (childType) {
+				case 'steps':
+					prefix = 'Step';
+					break;
+				case 'next':
+					prefix = 'Next Step';
+					break;
+				case 'flags':
+					prefix = 'Flag';
+					break;
+				case 'filters':
+					prefix = 'Filter';
+					break;
+			}
 
 			target[childType].forEach(function (sub: any) {
 				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, prefix));

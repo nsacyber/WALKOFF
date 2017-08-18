@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_security import roles_accepted
 from server import forms
-from server.return_codes import *
+from server.returncodes import *
 
 
 def read_all_roles():
@@ -76,7 +76,7 @@ def update_role():
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['name'], json_data))
             return role.display(), SUCCESS
         else:
-            current_app.logger.error('Cannot edit role {0}. Role does not exist.'.format(role_name))
+            current_app.logger.error('Cannot edit role. Role does not exist.')
             return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
 
     return __func()

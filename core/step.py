@@ -1,17 +1,13 @@
 import json
-import sys
-from xml.etree import ElementTree
 from collections import namedtuple
 import logging
-from jinja2 import Template, Markup
 from core import contextdecorator
-from core import nextstep
 import core.config.config
 from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelement import ExecutionElement
-from core.helpers import (get_app_action_api, InvalidElementConstructed, inputs_xml_to_dict, inputs_to_xml,
-                          InvalidInput, dereference_step_routing, format_exception_message)
+from core.helpers import (get_app_action_api, InvalidElementConstructed, InvalidInput,
+                          dereference_step_routing, format_exception_message)
 from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
@@ -24,7 +20,6 @@ _Widget = namedtuple('Widget', ['app', 'widget'])
 
 class Step(ExecutionElement):
     def __init__(self,
-                 xml=None,
                  name='',
                  action='',
                  app='',
@@ -34,11 +29,12 @@ class Step(ExecutionElement):
                  position=None,
                  widgets=None,
                  risk=0,
-                 uid=None):
+                 uid=None,
+                 templated=False,
+                 raw_json=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
         
         Args:
-            xml (ElementTree, optional): The XML element tree object. Defaults to None.
             name (str, optional): The name of the Step object. Defaults to an empty string.
             action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
             app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
@@ -52,86 +48,50 @@ class Step(ExecutionElement):
             widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the
                 corresponding widget. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
-            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4().hex in Python
+            uid (str, optional): A universally unique identifier for this object.
+                Created from uuid.uuid4().hex in Python
+            raw_json (dict, optional): JSON representation of this object. Used for Jinja templating
         """
         ExecutionElement.__init__(self, name, uid)
-        if xml is not None:
-            self._from_xml(xml)
-        else:
-            if action == '' or app == '':
-                raise InvalidElementConstructed('Either both action and app or xml must be '
-                                                'specified in step constructor')
-            self.action = action
-            self.app = app
-            self.run, self.input_api = get_app_action_api(self.app, self.action)
-            get_app_action(self.app, self.run)
-            inputs = inputs if inputs is not None else {}
+        if action == '' or app == '':
+            raise InvalidElementConstructed('Either both action and app or xml must be '
+                                            'specified in step constructor')
+        self.action = action
+        self.app = app
+        self.run, self.input_api = get_app_action_api(self.app, self.action)
+        get_app_action(self.app, self.run)
+        inputs = inputs if inputs is not None else {}
+        self.templated = templated
+        if not self.templated:
             self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
-            self.device = device
-            self.risk = risk
-            self.conditionals = next_steps if next_steps is not None else []
-            self.position = position if position is not None else {}
-            self.widgets = [_Widget(widget_app, widget_name)
-                            for (widget_app, widget_name) in widgets] if widgets is not None else []
-            self.raw_xml = self.to_xml()
-            self.templated = False
+        else:
+            self.input = inputs
+        self.device = device
+        self.risk = risk
+        self.conditionals = next_steps if next_steps is not None else []
+        self.position = position if position is not None else {}
+        self.widgets = [_Widget(widget_app, widget_name)
+                        for (widget_app, widget_name) in widgets] if widgets is not None else []
+
         self.output = None
         self.next_up = None
+        self.raw_json = raw_json if raw_json is not None else {}
+        self.execution_uid = 'default'
 
-    def _from_xml(self, step_xml, *args):
-        self.raw_xml = step_xml
-        name = step_xml.get('id')
-        ExecutionElement.__init__(self, name=name)
-
-        self.action = step_xml.find('action').text
-        self.app = step_xml.find('app').text
-        self.run, self.input_api = get_app_action_api(self.app, self.action)
-        is_templated_xml = step_xml.find('templated')
-        self.templated = is_templated_xml is not None and bool(is_templated_xml.text)
-        get_app_action(self.app, self.run)
-        input_xml = step_xml.find('inputs')
-        if input_xml is not None:
-            inputs = inputs_xml_to_dict(input_xml) or {}
+    def _update_xml(self, updated_json):
+        self.action = updated_json['action']
+        self.app = updated_json['app']
+        self.device = updated_json['device'] if 'device' in updated_json else ''
+        self.risk = updated_json['risk'] if 'risk' in updated_json else 0
+        inputs = {arg['name']: arg['value'] for arg in updated_json['inputs']} if 'inputs' in updated_json else {}
+        if inputs is not None:
             if not self.templated:
                 self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
             else:
                 self.input = inputs
         else:
             self.input = validate_app_action_parameters(self.input_api, {}, self.app, self.action)
-        device_field = step_xml.find('device')
-        self.device = device_field.text if device_field is not None else ''
-        risk_field = step_xml.find('risk')
-        self.risk = risk_field.text if risk_field is not None else 0
-        self.conditionals = [nextstep.NextStep(xml=next_step_element) for next_step_element in step_xml.findall('next')]
-        self.widgets = [_Widget(widget.get('app'), widget.text) for widget in step_xml.findall('widgets/*')]
-        position = step_xml.find('position')
-        if position is None:
-            self.position = {}
-        else:
-            x_position = position.find('x')
-            y_position = position.find('y')
-            if x_position is not None and y_position is not None:
-                self.position = {'x': float(x_position.text), 'y': float(y_position.text)}
-            else:
-                self.position = {}
-
-    def _update_xml(self, step_xml):
-        self.action = step_xml.find('action').text
-        self.app = step_xml.find('app').text
-        device_field = step_xml.find('device')
-        self.device = device_field.text if device_field is not None else ''
-        risk_field = step_xml.find('risk')
-        self.risk = risk_field.text if risk_field is not None else 0
-        input_xml = step_xml.find('inputs')
-        if input_xml is not None:
-            inputs = inputs_xml_to_dict(input_xml) or {}
-            if not self.templated:
-                self.input = validate_app_action_parameters(self.input_api, inputs, self.app, self.action)
-            else:
-                self.input = inputs
-        else:
-            self.input = validate_app_action_parameters(self.input_api, {}, self.app, self.action)
-        self.conditionals = [nextstep.NextStep(xml=next_step_element) for next_step_element in step_xml.findall('next')]
+        self.conditionals = [NextStep.from_json(cond_json) for cond_json in updated_json['next']]
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -141,13 +101,9 @@ class Step(ExecutionElement):
             kwargs (dict[str]): Arguments to use in the JINJA templating.
         """
         if self.templated:
-            if sys.version_info[0] > 2:
-                content = ElementTree.tostring(self.raw_xml, encoding='unicode', method='xml')
-            else:
-                content = ElementTree.tostring(self.raw_xml, method='xml')
-            t = Template(Markup(content).unescape(), autoescape=True)
-            xml = t.render(core.config.config.JINJA_GLOBALS, **kwargs)
-            self._update_xml(step_xml=ElementTree.fromstring(xml))
+            from jinja2 import Environment
+            env = Environment().from_string(json.dumps(self.raw_json)).render(core.config.config.JINJA_GLOBALS, **kwargs)
+            self._update_xml(updated_json=json.loads(env))
 
     def set_input(self, new_input):
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
@@ -203,57 +159,6 @@ class Step(ExecutionElement):
                 self.next_up = next_step
                 callbacks.ConditionalsExecuted.send(self)
                 return next_step
-
-    def to_xml(self, *args):
-        """Converts the Step object to XML format.
-        
-        Returns:
-            The XML representation of the Step object.
-        """
-        step = ElementTree.Element('step')
-        step.set("id", self.name)
-
-        element_id = ElementTree.SubElement(step, 'name')
-        element_id.text = self.name
-
-        app = ElementTree.SubElement(step, 'app')
-        app.text = self.app
-
-        action = ElementTree.SubElement(step, 'action')
-        action.text = self.action
-
-        if self.risk:
-            risk = ElementTree.SubElement(step, 'risk')
-            risk.text = self.risk
-
-        if self.device:
-            device = ElementTree.SubElement(step, 'device')
-            device.text = self.device
-
-        if self.position and 'x' in self.position and 'y' in self.position:
-            position = ElementTree.SubElement(step, 'position')
-            x_position = ElementTree.SubElement(position, 'x')
-            x_position.text = str(self.position['x'])
-            y_position = ElementTree.SubElement(position, 'y')
-            y_position.text = str(self.position['y'])
-
-        if self.input:
-            args = inputs_to_xml(self.input)
-            step.append(args)
-
-        if self.widgets:
-            widgets = ElementTree.SubElement(step, 'widgets')
-            for widget in self.widgets:
-                widget_xml = ElementTree.SubElement(widgets, 'widget')
-                widget_xml.text = widget.widget
-                widget_xml.set('app', widget.app)
-
-        for next_step in self.conditionals:
-            next_xml = next_step.to_xml()
-            if next_xml is not None:
-                step.append(next_step.to_xml())
-
-        return step
 
     def __repr__(self):
         output = {'uid': self.uid,
@@ -311,15 +216,18 @@ class Step(ExecutionElement):
         if 'widgets' in json_in:
             widgets = [(widget['app'], widget['name'])
                        for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
-        step = Step(name=json_in['name'],
+        conditionals = []
+        if 'next' in json_in:
+            conditionals = [NextStep.from_json(next_step) for next_step in json_in['next'] if next_step]
+        return Step(name=json_in['name'],
                     action=json_in['action'],
                     app=json_in['app'],
                     device=device,
                     risk=risk,
                     inputs={arg['name']: arg['value'] for arg in json_in['inputs']},
+                    next_steps=conditionals,
                     position={key: value for key, value in position.items()},
                     widgets=widgets,
-                    uid=uid)
-        if json_in['next']:
-            step.conditionals = [NextStep.from_json(next_step) for next_step in json_in['next'] if next_step]
-        return step
+                    uid=uid,
+                    templated=json_in['templated'] if 'templated' in json_in else False,
+                    raw_json=json_in)

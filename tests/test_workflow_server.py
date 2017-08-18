@@ -12,7 +12,7 @@ import os
 import core.config.paths
 from gevent.event import Event
 from core.case.callbacks import WorkflowShutdown
-from server.return_codes import *
+from server.returncodes import *
 from core.step import Step
 
 
@@ -21,47 +21,9 @@ class TestWorkflowServer(ServerTestCase):
         # This looks awful, I know
         self.empty_workflow_json = \
             {'steps': [],
-             'name': 'test_name',
-             'options': {'children': {},
-                         'enabled': 'True',
-                         'scheduler': {'args': {'interval': '0.1',
-                                                'eDT': '2016-3-15 12:00:00',
-                                                'sDT': '2016-1-1 12:00:00'},
-                                       'autorun': 'false',
-                                       'type': 'cron'}},
+             'name': 'emptyWorkflow',
              'start': 'start',
-             'accumulated_risk': '0.00'}
-        self.hello_world_json = {
-            'start': 'start',
-            'steps': [{'group': 'nodes', 'data': {'id': 'start',
-                                                  'parameters': {
-                                                      'errors': [{
-                                                          'flags': [],
-                                                          'name': '1'}],
-                                                      'name': 'start',
-                                                      'app': 'HelloWorld',
-                                                      'next': [{
-                                                          'flags': [
-                                                              {
-                                                                  'action': 'regMatch',
-                                                                  'args': [{
-                                                                      'value': '(.*)',
-                                                                      'name': 'regex'}],
-                                                                  'filters': [
-                                                                      {
-                                                                          'action': 'length',
-                                                                          'args': []}]}],
-                                                          'name': '1'}],
-                                                      'device': 'hwTest',
-                                                      'action': 'repeatBackToMe',
-                                                      'input': {
-                                                          'call': 'Hello World'},
-                                                      'widgets': [],
-                                                      'risk': 0}},
-                       'position': {}}], 'name': 'test_name',
-            'options': {'enabled': 'True', 'children': {}, 'scheduler': {
-                'args': {'hours': '*', 'minutes': '*/0.1', 'day': '*',
-                         'month': '11-12'}, 'type': 'cron', 'autorun': 'false'}}}
+             'accumulated_risk': 0.0}
 
         case_database.initialize()
 
@@ -184,8 +146,8 @@ class TestWorkflowServer(ServerTestCase):
                                               status_code=SUCCESS_WITH_WARNING,
                                               content_type="application/json")
         self.empty_workflow_json['uid'] = response['uid']
+        self.empty_workflow_json['accumulated_risk'] = 0.0
         self.assertDictEqual(response, self.empty_workflow_json)
-
         final_workflows = flask_server.running_context.controller.workflows.keys()
         self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
@@ -294,7 +256,7 @@ class TestWorkflowServer(ServerTestCase):
                                                content_type='application/json')
 
         expected_json['options'] = {'enabled': 'true',
-                                    'children': {},
+                                    'children': [],
                                     'scheduler': {'args': {'arg1': 'val1',
                                                            'arg2': 'val2',
                                                            'agr3': 'val3'},
@@ -327,7 +289,7 @@ class TestWorkflowServer(ServerTestCase):
 
         expected_json['name'] = workflow_name
         expected_json['options'] = {'enabled': 'true',
-                                    'children': {},
+                                    'children': [],
                                     'scheduler': {'args': {'arg1': 'val1',
                                                            'arg2': 'val2',
                                                            'agr3': 'val3'},

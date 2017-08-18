@@ -1,36 +1,68 @@
-<?xml version="1.0" ?>
-<workflows>
-	<workflow name="helloWorldWorkflow">
-		<options>
-			<enabled>true</enabled>
-			<scheduler autorun="false" type="cron">
-				<second>*/4</second>
-				<day>*</day>
-				<hour>*</hour>
-				<month>1-2</month>
-			</scheduler>
-		</options>
-		<start>start</start>
-		<steps>
-			<step id="start">
-				<id>start</id>
-				<app>HelloWorld</app>
-				<action>repeatBackToMe</action>
-				<device>hwTest</device>
-				<inputs>
-					<call>Hello World</call>
-				</inputs>
-				<next step="1">
-					<flag action="regMatch">
-						<args>
-							<regex>(.*)</regex>
-						</args>
-						<filters>
-							<filter action="length"/>
-						</filters>
-					</flag>
-				</next>
-			</step>
-		</steps>
-	</workflow>
-</workflows>
+{
+    "name": "testScheduler",
+    "workflows": [
+        {
+            "name": "helloWorldWorkflow",
+            "options": {
+                "children": [],
+                "enabled": true,
+                "scheduler": {
+                    "args": {
+                        "day": "*",
+                        "hour": "*",
+                        "month": "1-2",
+                        "second": "*/4"
+                    },
+                    "autorun": "false",
+                    "type": "cron"
+                }
+            },
+            "start": "start",
+            "steps": [
+                {
+                    "action": "repeatBackToMe",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "a0bc146e58e04577acfae4ccaf0c56c1"
+                                        }
+                                    ],
+                                    "uid": "9deaaef487ae4e83af5bffef012f8b65"
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "c510f1dbcadf42499d0fa95c9d126d93"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "7aeb492a73c345bbb4e8570bb682c87d",
+                    "widgets": []
+                }
+            ],
+            "uid": "127560fb39eb44ddbdea6af70fb86e26"
+        }
+    ]
+}

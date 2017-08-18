@@ -4,13 +4,13 @@ from flask import request, current_app
 from flask_security import auth_token_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.case.subscription import delete_cases, rename_case, modify_subscription, convert_to_event_names
+from core.case.subscription import delete_cases, convert_to_event_names
 import core.config.config
 import core.config.paths
 from core.helpers import format_exception_message
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-from server.return_codes import *
+from server.returncodes import *
 
 
 def read_all_cases():
@@ -121,7 +121,8 @@ def import_cases():
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         data = request.get_json()
-        filename = data['filename'] if (data is not None and 'filename' in data and data['filename']) else core.config.paths.default_case_export_path
+        filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
+                    else core.config.paths.default_case_export_path)
         if os.path.isfile(filename):
             try:
                 with open(filename, 'r') as cases_file:
@@ -135,10 +136,12 @@ def import_cases():
                 running_context.db.session.commit()
                 return {"cases": case_subscription.subscriptions}, SUCCESS
             except (OSError, IOError) as e:
-                current_app.logger.error('Error importing cases from file {0}: {1}'.format(filename, format_exception_message(e)))
+                current_app.logger.error('Error importing cases from file '
+                                         '{0}: {1}'.format(filename, format_exception_message(e)))
                 return {"error": "Error reading file."}, IO_ERROR
             except ValueError as e:
-                current_app.logger.error('Error importing cases from file {0}: Invalid JSON {1}'.format(filename, format_exception_message(e)))
+                current_app.logger.error('Error importing cases from file {0}: '
+                                         'Invalid JSON {1}'.format(filename, format_exception_message(e)))
                 return {"error": "Invalid JSON file."}, INVALID_INPUT_ERROR
         else:
             current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
@@ -153,7 +156,8 @@ def export_cases():
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         data = request.get_json()
-        filename = data['filename'] if (data is not None and 'filename' in data and data['filename']) else core.config.paths.default_case_export_path
+        filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
+                    else core.config.paths.default_case_export_path)
         try:
             with open(filename, 'w') as cases_file:
                 cases_file.write(json.dumps(case_subscription.subscriptions))
