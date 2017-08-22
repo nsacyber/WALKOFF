@@ -1,9 +1,9 @@
 from flask import request, current_app
-from server.security import roles_accepted, auth_token_required
+from flask_security import roles_accepted
 from server import forms
 from server.returncodes import *
 
-@auth_token_required
+
 def read_all_roles():
     from server.context import running_context
 
@@ -16,8 +16,8 @@ def read_all_roles():
 
     return __func()
 
-@auth_token_required
-def create_role(body):
+
+def create_role():
     from server.context import running_context
     from server.flaskserver import default_urls
     from server.database import add_to_user_roles
@@ -43,7 +43,7 @@ def create_role(body):
 
     return __func()
 
-@auth_token_required
+
 def read_role(role_name):
     from server.context import running_context
 
@@ -58,8 +58,8 @@ def read_role(role_name):
 
     return __func()
 
-@auth_token_required
-def update_role(body):
+
+def update_role():
     from server.context import running_context
     from server.database import add_to_user_roles
 
