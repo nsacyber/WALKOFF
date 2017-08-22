@@ -160,6 +160,10 @@
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
+      462:
+        description: Scheduled task name already exists
+        schema:
+          $ref: '#/definitions/Error'
 
 /api/scheduledtasks/{scheduled_task_id}:
   parameters:

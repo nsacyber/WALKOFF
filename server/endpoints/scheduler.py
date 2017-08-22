@@ -80,15 +80,10 @@ def create_scheduled_task():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
         if task is None:
-            try:
-                task = running_context.ScheduledTask(**data)
-                print(type(task))
-                running_context.db.session.add(task)
-                running_context.db.session.commit()
-                print(task.as_json())
-                return task.as_json(), OBJECT_CREATED
-            except Exception as e:
-                print(e)
+            task = running_context.ScheduledTask(**data)
+            running_context.db.session.add(task)
+            running_context.db.session.commit()
+            return task.as_json(), OBJECT_CREATED
         else:
             return {'error': 'Could not create object. Object with given name already exists'}, OBJECT_EXISTS_ERROR
     return __func()
@@ -114,11 +109,13 @@ def update_scheduled_task():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(id=data['id']).first()
         if task is not None:
-            task.update(**data)
+            if 'name' in data and running_context.ScheduledTask.query.filter_by(name=data['name']).first() is not None:
+                return {'error': 'Task with that name already exists.'}, OBJECT_EXISTS_ERROR
+            task.update(data)
             running_context.db.session.commit()
             return task.as_json(), SUCCESS
         else:
-            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+            return {'error': 'Could not read object. Object does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
 

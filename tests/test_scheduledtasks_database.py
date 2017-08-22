@@ -10,6 +10,9 @@ class TestScheduledTask(unittest.TestCase):
     def setUpClass(cls):
         db.create_all()
 
+    def setUp(self):
+        self.date_scheduler = {'type': 'date', 'args': {'date': '2017-01-25 10:00:00'}}
+
     def tearDown(self):
         tasks = ScheduledTask.query.all()
         if tasks:
@@ -22,9 +25,9 @@ class TestScheduledTask(unittest.TestCase):
         self.assertEqual(task.enabled, enabled)
         self.assertEqual(task.scheduler_type, scheduler_type)
         if workflows is not None:
-            self.assertListEqual([workflow.uid for workflow in task.workflows], workflows)
+            self.assertSetEqual({workflow.uid for workflow in task.workflows}, workflows)
         else:
-            self.assertEqual(task.workflows, [])
+            self.assertSetEqual({workflow.uid for workflow in task.workflows}, set())
         if scheduler_args is not None:
             self.assertDictEqual(json.loads(task.scheduler_args), scheduler_args)
         else:
@@ -44,11 +47,11 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_init_with_workflows(self):
         task = ScheduledTask(name='test', workflows=['uid1', 'uid2', 'uid3', 'uid4'])
-        self.__compare_init(task, 'test', workflows=['uid1', 'uid2', 'uid3', 'uid4'])
+        self.__compare_init(task, 'test', workflows={'uid1', 'uid2', 'uid3', 'uid4'})
 
     def test_init_with_scheduler(self):
-        task = ScheduledTask(name='test', scheduler={'type': 'DateScheduler', 'args': {'day': 1, 'month': 4}})
-        self.__compare_init(task, 'test', scheduler_type='DateScheduler', scheduler_args={'day': 1, 'month': 4})
+        task = ScheduledTask(name='test', scheduler=self.date_scheduler)
+        self.__compare_init(task, 'test', scheduler_type='date', scheduler_args={'date': '2017-01-25 10:00:00'})
 
     def test_update_name_desc_only(self):
         task = ScheduledTask(name='test')
@@ -67,10 +70,10 @@ class TestScheduledTask(unittest.TestCase):
         task = ScheduledTask(name='test', workflows=['b', 'c', 'd'])
         update = {'workflows': ['a', 'b', 'c']}
         task.update(update)
-        self.assertListEqual([workflow.uid for workflow in task.workflows], ['a', 'b', 'c'])
+        self.assertSetEqual({workflow.uid for workflow in task.workflows}, {'a', 'b', 'c'})
 
     def test_update_scheduler(self):
-        task = ScheduledTask(name='test', scheduler={'type': 'DateScheduler', 'args': {'day': 1, 'month': 4}})
+        task = ScheduledTask(name='test', scheduler=self.date_scheduler)
         update = {'scheduler': {'type': 'IntervalScheduler', 'args': {'hour': 1, 'month': 4}}}
         task.update(update)
         self.assertEqual(task.scheduler_type, 'IntervalScheduler')
@@ -96,16 +99,22 @@ class TestScheduledTask(unittest.TestCase):
         task.disable()
         self.assertFalse(task.enabled)
 
+    def assertJsonIsCorrect(self, task, expected):
+        actual_json = task.as_json()
+        actual_json['workflows'] = set(actual_json['workflows'])
+        self.assertDictEqual(actual_json, expected)
+        pass
+
     def test_as_json_name_desc_only(self):
         task = ScheduledTask(name='test', description='desc')
         expected = {'id': None,
                     'name': 'test',
                     'description': 'desc',
                     'enabled': False,
-                    'workflows': [],
+                    'workflows': set(),
                     'scheduler': {'type': 'unspecified',
                                   'args': {}}}
-        self.assertDictEqual(task.as_json(), expected)
+        self.assertJsonIsCorrect(task, expected)
 
     def test_as_json_with_workflows(self):
         task = ScheduledTask(name='test', workflows=['b', 'c', 'd'])
@@ -113,21 +122,31 @@ class TestScheduledTask(unittest.TestCase):
                     'name': 'test',
                     'description': '',
                     'enabled': False,
-                    'workflows': ['b', 'c', 'd'],
+                    'workflows': {'b', 'c', 'd'},
                     'scheduler': {'type': 'unspecified',
                                   'args': {}}}
-        self.assertDictEqual(task.as_json(), expected)
+        self.assertJsonIsCorrect(task, expected)
 
-    def test_as_json_with_scheduler(self):
-        task = ScheduledTask(name='test', scheduler={'type': 'DateScheduler', 'args': {'day': 1, 'month': 4}})
+    def test_as_json_with_workflows_with_duplicates(self):
+        task = ScheduledTask(name='test', workflows=['b', 'c', 'd', 'd', 'c', 'b'])
         expected = {'id': None,
                     'name': 'test',
                     'description': '',
                     'enabled': False,
-                    'workflows': [],
-                    'scheduler': {'type': 'DateScheduler',
-                                  'args': {'day': 1, 'month': 4}}}
-        self.assertDictEqual(task.as_json(), expected)
+                    'workflows': {'b', 'c', 'd'},
+                    'scheduler': {'type': 'unspecified',
+                                  'args': {}}}
+        self.assertJsonIsCorrect(task, expected)
+
+    def test_as_json_with_scheduler(self):
+        task = ScheduledTask(name='test', scheduler=self.date_scheduler)
+        expected = {'id': None,
+                    'name': 'test',
+                    'description': '',
+                    'enabled': False,
+                    'workflows': set(),
+                    'scheduler': self.date_scheduler}
+        self.assertJsonIsCorrect(task, expected)
 
     def test_as_json_enabled(self):
         task = ScheduledTask(name='test', enabled=True)
@@ -135,7 +154,7 @@ class TestScheduledTask(unittest.TestCase):
                     'name': 'test',
                     'description': '',
                     'enabled': True,
-                    'workflows': [],
+                    'workflows': set(),
                     'scheduler': {'type': 'unspecified',
                                   'args': {}}}
-        self.assertDictEqual(task.as_json(), expected)
+        self.assertJsonIsCorrect(task, expected)

@@ -9,21 +9,21 @@ SCHEDULERTYPES = ('date', 'interval', 'cron', 'unspecified')
 
 class ScheduledWorkflow(Base):
     __tablename__ = 'scheduled_workflow'
-    uid = db.Column(db.String(50), nullable=False, unique=True)
+    uid = db.Column(db.String(50), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id'))
 
 
 class ScheduledTask(Base):
-    tasks_workflows = db.Table('tasks_workflows',
-                               db.Column('task_id', db.Integer(), db.ForeignKey('scheduled_task.id')),
-                               db.Column('workflows_id', db.Integer(), db.ForeignKey('scheduled_workflow.id')))
 
     __tablename__ = 'scheduled_task'
-    name = db.Column(db.String(255), nullable=False, unique=True)
+    name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     enabled = db.Column(db.Boolean())
     workflows = db.relationship('ScheduledWorkflow',
-                                secondary=tasks_workflows,
-                                backref=db.backref('scheduled_tasks', lazy='dynamic'))
+                                # secondary=tasks_workflows,
+                                cascade="all, delete-orphan",
+                                backref='post',
+                                lazy='dynamic')
     scheduler_type = db.Column(db.Enum(*SCHEDULERTYPES))
     scheduler_args = db.Column(db.String(255))
 
@@ -33,7 +33,7 @@ class ScheduledTask(Base):
         self.enabled = enabled
         # TODO: If enabled, add in controller
         if workflows is not None:
-            for workflow in workflows:
+            for workflow in set(workflows):
                 self.workflows.append(ScheduledWorkflow(uid=workflow))
         if scheduler is not None:
             self.scheduler_type = scheduler['type']
@@ -51,7 +51,8 @@ class ScheduledTask(Base):
             self.enabled = json_in['enabled']
             # TODO: If enabled, add in controller
         if 'workflows' in json_in and json_in['workflows']:
-            self.workflows = []
+            for workflow in self.workflows:
+                self.workflows.remove(workflow)
             for workflow in json_in['workflows']:
                 self.workflows.append(ScheduledWorkflow(uid=workflow))
         if 'scheduler' in json_in and json_in['scheduler']:
