@@ -3,6 +3,7 @@ import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { Select2OptionData } from 'ng2-select2';
 import "rxjs/add/operator/debounceTime";
 
 import { SchedulerModalComponent } from './scheduler.modal.component';
@@ -27,15 +28,14 @@ export class SchedulerComponent {
 	schedulerStatus: string;
 	scheduledTasks: ScheduledTask[] = [];
 	displayScheduledTasks: ScheduledTask[] = [];
-	workflowNames: string[] = [];
+	availableWorkflows: Select2OptionData[] = [];
 
 	filterQuery: FormControl = new FormControl();
 
 	constructor(private schedulerService: SchedulerService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.currentController = "Default Controller";
+		this.toastyConfig.theme = 'bootstrap';
 
-		// this.getAvailableSubscriptions();
-		// this.getCases();
 		this.getSchedulerStatus();
 		this.getWorkflowNames();
 		this.getScheduledTasks();
@@ -91,7 +91,7 @@ export class SchedulerComponent {
 		const modalRef = this.modalService.open(SchedulerModalComponent);
 		modalRef.componentInstance.title = 'Schedule a New Task';
 		modalRef.componentInstance.submitText = 'Add Scheduled Task';
-		modalRef.componentInstance.workflowNames = this.workflowNames;
+		modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
 
 		this._handleModalClose(modalRef);
 	}
@@ -100,7 +100,7 @@ export class SchedulerComponent {
 		const modalRef = this.modalService.open(SchedulerModalComponent);
 		modalRef.componentInstance.title = `Edit Task ${task.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
-		modalRef.componentInstance.workflowNames = this.workflowNames;
+		modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
 
 		modalRef.componentInstance.workingScheduledTask = _.cloneDeep(task);
 
@@ -168,21 +168,31 @@ export class SchedulerComponent {
 		this.schedulerService
 			.getPlaybooks()
 			.then((playbooks) => {
-				playbooks = _.map(playbooks, function (workflows: any, playbook) {
-					workflows = _.map(workflows, function (w: string) {
-						return [playbook, w];
+				//[ { name: <name>, workflows: [ { name: <name>, uid: <uid> } ] }, ... ]
+				playbooks.forEach(function (pb: any) {
+					pb.workflows.forEach(function (w: any) {
+						this.availableWorkflows.push({
+							id: w.uid,
+							text: `${pb.name} - ${w.name}`
+						});
 					});
+				})
 
-					return workflows;
-				});
+				// playbooks = _.map(playbooks, function (workflows: any, playbook) {
+				// 	workflows = _.map(workflows, function (w: string) {
+				// 		return [playbook, w];
+				// 	});
 
-				playbooks = _.flatten(playbooks);
+				// 	return workflows;
+				// });
 
-				this.workflowNames = _.map(playbooks, function (pb: string[]) {
-					return `${pb[0]} - ${pb[1]}`;
-				});
+				// playbooks = _.flatten(playbooks);
 
-				console.log(this.workflowNames);
+				// this.workflowNames = _.map(playbooks, function (pb: string[]) {
+				// 	return `${pb[0]} - ${pb[1]}`;
+				// });
+
+				console.log(this.availableWorkflows);
 			});
 	}
 }

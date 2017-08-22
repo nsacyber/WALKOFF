@@ -69,20 +69,6 @@ def create_user():
 def client_app_folder(filename):
     return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
 
-# @app.route('/')
-# @login_required
-# def default():
-#     if current_user.is_authenticated:
-#         default_page_name = 'dashboard'
-#         args = {"apps": running_context.get_apps(),
-#                 "authKey": current_user.get_auth_token(),
-#                 "currentUser": current_user.email,
-#                 "default_page": default_page_name}
-#         return render_template("container.html", **args)
-#     else:
-#         return {"status": "Could Not Log In."}
-
-
 @app.route('/')
 @app.route('/playbook')
 @app.route('/scheduler')
@@ -91,19 +77,11 @@ def client_app_folder(filename):
 @app.route('/cases')
 @app.route('/settings')
 def default():
-    if current_user.is_authenticated:
-        args = {"apps": running_context.get_apps(),
-                "authKey": current_user.get_auth_token(),
-                "currentUser": current_user.email,
-                "default_page": 'controller'}
-        return render_template("index.html", **args)
-    else:
-        return redirect(url_for('login'))
-
-# @app.route('/login', methods=['GET'])
-# def login():
-#     return render_template("login_user.html")
-
+    args = {"apps": running_context.get_apps(),
+            "authKey": current_user.get_auth_token(),
+            "currentUser": current_user.email,
+            "default_page": 'controller'}
+    return render_template("index.html", **args)
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required

@@ -52,7 +52,7 @@ export class SchedulerService {
 	}
 
 	getScheduledTasks() : Promise<ScheduledTask[]> {
-		return this.http.get('/api/scheduledtask', this.requestOptions)
+		return this.http.get('/api/scheduledtasks', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(scheduledTasks => scheduledTasks as ScheduledTask[])
@@ -60,7 +60,7 @@ export class SchedulerService {
 	}
 
 	addScheduledTask(scheduledTask: ScheduledTask) : Promise<ScheduledTask> {
-		return this.http.put('/api/scheduledtask', scheduledTask, this.requestOptions)
+		return this.http.put('/api/scheduledtasks', scheduledTask, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(scheduledTask => scheduledTask as ScheduledTask)
@@ -68,7 +68,7 @@ export class SchedulerService {
 	}
 
 	editScheduledTask(scheduledTask: ScheduledTask) : Promise<ScheduledTask> {
-		return this.http.post('/api/scheduledtask', scheduledTask, this.requestOptions)
+		return this.http.post('/api/scheduledtasks', scheduledTask, this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(scheduledTask => scheduledTask as ScheduledTask)
@@ -76,21 +76,21 @@ export class SchedulerService {
 	}
 
 	deleteScheduledTask(scheduledTaskId: number) : Promise<void> {
-		return this.http.delete(`/api/scheduledtask/${scheduledTaskId}`, this.requestOptions)
+		return this.http.delete(`/api/scheduledtasks/${scheduledTaskId}`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
 	enableScheduledTask(scheduledTaskId: number): Promise<void> {
-		return this.http.get(`/api/scheduledtask/${scheduledTaskId}/enable`, this.requestOptions)
+		return this.http.get(`/api/scheduledtasks/${scheduledTaskId}/enable`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
 	disableScheduledTask(scheduledTaskId: number): Promise<void> {
-		return this.http.get(`/api/scheduledtask/${scheduledTaskId}/disable`, this.requestOptions)
+		return this.http.get(`/api/scheduledtasks/${scheduledTaskId}/disable`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);

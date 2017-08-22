@@ -3,39 +3,157 @@
 </div>
 <div class="modal-body">
 	<div class="container-fluid">
-		<!--<div class="row">
+		<div class="row">
 			<div class="col-xs-6">
 				<div class="form-group">
 					<label for="name">Name</label>
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.name" name="name" required tabindex="1">
+					<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.name" name="name" required tabindex="1">
 				</div>
 				<div class="form-group">
-					<label for="name">IP Address</label>
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.ip" name="ip" required tabindex="3">
+					<label for="name">Workflow(s)</label>
+					<select2 [data]="scheduledItemTriggerTypes" [(ngModel)]="workingScheduledTask.workflows" [options]="workflowSelectConfig"
+						tabindex="2"></select2>
 				</div>
 				<div class="form-group">
-					<label for="name">Username</label>
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.username" name="username" required tabindex="5">
+					<label for="name">Trigger Type</label>
+					<select class="form-control" [(ngModel)]="workingScheduledTask.type" name="type" tabindex="4">
+						<option value=""></option>
+						<option *ngFor="let i of scheduledItemTriggerTypes" [value]="i" [label]="i"></option>
+					</select>
 				</div>
 			</div>
 			<div class="col-xs-6">
 				<div class="form-group">
-					<label for="name">Associated App</label>
-					<select class="form-control" [(ngModel)]="workingDevice.app" name="app" tabindex="2">
-						<option value=""></option>
-						<option *ngFor="let i of appNames" [value]="i" [label]="i"></option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="name">Port</label>
-					<input type="number" min="1" max="65535" class="form-control" [(ngModel)]="workingDevice.port" name="port" required tabindex="4">
-				</div>
-				<div class="form-group">
-					<label for="name">Password</label>
-					<input type="password" class="form-control" [(ngModel)]="workingDevice.password" name="newPassword" required tabindex="6">
+					<label for="name">Description</label>
+					<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.description" name="port" required tabindex="2">
 				</div>
 			</div>
-		</div>-->
+		</div>
+
+		<div class="row" *ngIf="workingScheduledTask.type === 'date'">
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label for="name">Run Datetime</label>
+					<input class="form-control" [value]="momentValue | date: 'short'" [(ngModel)]="workingScheduledTask.args.run_date" name="run_date"
+						dateTimePicker required />
+				</div>
+			</div>
+		</div>
+
+		<div *ngIf="workingScheduledTask.type === 'interval'">
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">Start Datetime</label>
+						<input class="form-control" [value]="momentValue | date: 'short'" [(ngModel)]="workingScheduledTask.args.start_date" name="start_date"
+							dateTimePicker required />
+					</div>
+				</div>
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">End Datetime</label>
+						<input class="form-control" [value]="momentValue | date: 'short'" [(ngModel)]="workingScheduledTask.args.end_date" name="end_date"
+							dateTimePicker />
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-2">
+					<h3>Occur every...</h3>
+				</div>
+				<div class="col-xs-2">
+					<div class="form-group">
+						<label for="name">Weeks</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.weeks" name="name" required>
+					</div>
+				</div>
+				<div class="col-xs-2">
+					<div class="form-group">
+						<label for="name">Days</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.days" name="name" required>
+					</div>
+				</div>
+				<div class="col-xs-2">
+					<div class="form-group">
+						<label for="name">Hours</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.hours" name="name" required>
+					</div>
+				</div>
+				<div class="col-xs-2">
+					<div class="form-group">
+						<label for="name">Minutes</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.minutes" name="name" required>
+					</div>
+				</div>
+				<div class="col-xs-2">
+					<div class="form-group">
+						<label for="name">Seconds</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.seconds" name="name" required>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div *ngIf="workingScheduledTask.type === 'cron'">
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">Start Datetime</label>
+						<input class="form-control" [value]="momentValue | date: 'short'" [(ngModel)]="workingScheduledTask.args.start_date" name="start_date"
+							dateTimePicker required />
+					</div>
+				</div>
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">End Datetime</label>
+						<input class="form-control" [value]="momentValue | date: 'short'" [(ngModel)]="workingScheduledTask.args.end_date" name="end_date"
+							dateTimePicker />
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-3">
+					<div class="form-group">
+						<label for="name">Year</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.args.year" name="name">
+					</div>
+					<div class="form-group">
+						<label for="name">Day</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.day" name="name">
+					</div>
+				</div>
+				<div class="col-xs-3">
+					<div class="form-group">
+						<label for="name">Month</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.month" name="name">
+					</div>
+					<div class="form-group">
+						<label for="name">Hour</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.hour" name="name">
+					</div>
+				</div>
+				<div class="col-xs-3">
+					<div class="form-group">
+						<label for="name">Week</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.week" name="name">
+					</div>
+					<div class="form-group">
+						<label for="name">Minute</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.minute" name="name">
+					</div>
+				</div>
+				<div class="col-xs-3">
+					<div class="form-group">
+						<label for="name">Day of Week</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.day_of_week" name="name">
+					</div>
+					<div class="form-group">
+						<label for="name">Second</label>
+						<input type="number" class="form-control" [(ngModel)]="workingScheduledTask.args.second" name="name">
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 <div class="modal-footer">

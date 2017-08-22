@@ -1,5 +1,5 @@
 <div id="main">
-	<h1>Case Management</h1>
+	<h1>Scheduler</h1>
 
 	<div class="row">
 		<div class="col-xs-2">
@@ -12,10 +12,10 @@
 			</div>
 			<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary"
 				id="startSchedulerBtn">Start</button>
-				<button *ngIf="schedulerStatus && schedulerStatus !== 'stopped'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning"
-					id="pauseSchedulerBtn">Pause</button>
-					<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
-						id="stopSchedulerBtn">Stop</button>
+			<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning"
+				id="pauseSchedulerBtn">Pause</button>
+			<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
+				id="stopSchedulerBtn">Stop</button>
 		</div>
 
 		<div class="col-xs-6">

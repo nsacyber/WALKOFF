@@ -38,6 +38,8 @@
     "json-editor": "~0.7.28",
     "jstree": "~3.3.4",
     "lodash": "~4.17.4",
+    "moment": "~2.18.1",
+    "ng-pick-datetime": "~4.3.2",
     "ng2-select2": "~1.0.0-beta.10",
     "ng2-toasty": "~4.0.3",
     "ngx-contextmenu": "~1.3.4",
