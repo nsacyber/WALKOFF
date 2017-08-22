@@ -72,7 +72,6 @@ export class DevicesComponent {
 			.getDevices()
 			.then(devices => this.displayDevices = this.devices = devices)
 			.catch(e => this.toastyService.error(`Error retrieving devices: ${e.message}`));
-			
 	}
 
 	addDevice(): void {

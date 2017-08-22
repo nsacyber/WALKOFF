@@ -21,7 +21,6 @@
 			<div class="col-xs-6">
 				<div class="form-group">
 					<label for="name">Associated App</label>
-					<!--TODO: get list of apps, add as select-->
 					<select class="form-control" [(ngModel)]="workingDevice.app" name="app" tabindex="2">
 						<option value=""></option>
 						<option *ngFor="let i of appNames" [value]="i" [label]="i"></option>
@@ -37,6 +36,7 @@
 				</div>
 			</div>
 		</div>
+	</div>
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>

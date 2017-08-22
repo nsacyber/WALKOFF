@@ -31,7 +31,6 @@ urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/l
 default_urls = urls
 database.initialize_user_roles(urls)
 
-
 # Creates Test Data
 @app.before_first_request
 def create_user():
@@ -85,8 +84,8 @@ def client_app_folder(filename):
 
 
 @app.route('/')
-@app.route('/controller')
 @app.route('/playbook')
+@app.route('/scheduler')
 @app.route('/devices')
 @app.route('/triggers')
 @app.route('/cases')

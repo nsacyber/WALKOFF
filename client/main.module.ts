@@ -12,7 +12,7 @@ import { Select2Module } from 'ng2-select2';
 // Custom routing module
 import { RoutingModule } from './routing';
 import { MainComponent } from './main/main.component';
-import { ControllerComponent } from './controller/controller.component';
+import { SchedulerComponent } from './scheduler/scheduler.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
 import { TriggersComponent } from './triggers/triggers.component';
@@ -40,8 +40,8 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		//Main component
 		MainComponent,
 		//Router module components
-		ControllerComponent,
 		PlaybookComponent,
+		SchedulerComponent,
 		DevicesComponent,
 		TriggersComponent,
 		CasesComponent,
