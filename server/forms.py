@@ -1,6 +1,5 @@
 from wtforms import Form, BooleanField, StringField, PasswordField, validators, FieldList, DateTimeField, \
     IntegerField, FormField, SelectField, SubmitField, TextAreaField
-from flask_security.forms import Required, EqualTo
 
 
 class AddWorkflowForm(Form):

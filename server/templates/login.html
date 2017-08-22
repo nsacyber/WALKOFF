@@ -1,31 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
     <meta charset="UTF-8">
-    <title> WALKOFF - Automation for Everyone. Login </title>
+    <style>
+        body{
+            font-family: "Roboto", sans-serif;
+        }
+        #logo{
+            height:300px;
+            width:400px;
+        }
+        .form{
+            text-align:center;
+        }
+        .row{
+            padding-bottom:10px;
+        }
+    </style>
 
-    <!-- 1. Load libraries -->
-    <!-- Polyfill(s) for older browsers -->
-    <script src="client/node_modules/core-js/client/shim.min.js"></script>
-    <script src="client/node_modules/zone.js/dist/zone.js"></script>
-    <script src="client/node_modules/rxjs/bundles/Rx.js"></script>
-    <script src="client/node_modules/@angular/core/bundles/core.umd.js"></script>
-    <script src="client/node_modules/@angular/common/bundles/common.umd.js"></script>
-    <script src="client/node_modules/@angular/compiler/bundles/compiler.umd.js"></script>
-    <script src="client/node_modules/@angular/platform-browser/bundles/platform-browser.umd.js"></script>
-    <script src="client/node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js"></script>
-    <script src="client/node_modules/systemjs/dist/system.js"></script>
-    <script src="client/node_modules/typescript/lib/typescript.js"></script>
-    <!-- jQuery 2.2.3 -->
-    <!--<script src="client/plugins/jQuery/jquery-2.2.3.min.js"></script>-->
 
-        <!-- 2. Configure SystemJS -->
-    <script src="client/systemjs.config.js"></script>
-    <script>
-        SystemJS.import('login').catch(function(err){ console.error(err); });
-    </script>
+
 </head>
 <body>
-    <login-component></login-component>
+    <div class="form">
+        <div class="formHeader">
+            <img id="logo" src="client/login/img/walkoffLogo.png" height="150" width="250" style="padding-left:20px; text-align:center;"/>
+            <h2>WALKOFF Login</h2>
+        </div>
+
+        <div id="message">
+
+        </div>
+        <div class="row">
+            <label class="col-4-xs">Username:</label>
+            <input id="username" type="text" class="col-8-xs">
+        </div>
+        <div class="row">
+            <label class="col-4-xs">Password:</label>
+            <input id="password" type="password" class="col-8-xs">
+        </div>
+        <div class="row">
+            <button id="login" class="btn btn-primary">Login</button>
+        </div>
+
+    </div>
+    <script>
+        $("#login").on("click", function(){
+            var username = $("#username").val();
+            var password = $("#password").val();
+
+            $.ajax({
+                url:'/login-process',
+                contentType:'application/json',
+                data:JSON.stringify({"username":username, "password": password}),
+                type:"POST",
+                success: function(e){
+                    console.log(e);
+                    window.location.replace("/");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
+

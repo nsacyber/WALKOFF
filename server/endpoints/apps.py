@@ -1,6 +1,6 @@
 import json
 from flask import current_app, request
-from flask_security import roles_accepted, auth_token_required
+from server.security import roles_accepted, auth_token_required
 import core.config.config
 import core.config.paths
 from core import helpers
@@ -8,7 +8,7 @@ from server.returncodes import *
 from server import forms
 import pyaes
 
-
+@auth_token_required
 def read_all_apps():
     from server.context import running_context
 
@@ -37,7 +37,7 @@ def __format_all_app_actions(app_api):
     return {action_name: __format_app_action_api(action_api)
             for action_name, action_api in app_api['actions'].items()}
 
-
+@auth_token_required
 def read_all_app_actions():
     from server.context import running_context
 
@@ -48,11 +48,10 @@ def read_all_app_actions():
 
     return __func()
 
-
+@auth_token_required
 def list_app_actions(app_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         try:
@@ -65,11 +64,10 @@ def list_app_actions(app_name):
 
     return __func()
 
-
+@auth_token_required
 def read_all_devices(app_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         if app_name in core.config.config.app_apis.keys():
@@ -86,11 +84,10 @@ def read_all_devices(app_name):
 
     return __func()
 
-
+@auth_token_required
 def create_device(app_name, device_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.AddNewDeviceForm(request.form)
@@ -125,11 +122,10 @@ def create_device(app_name, device_name):
 
     return __func()
 
-
+@auth_token_required
 def read_device(app_name, device_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         if app_name in core.config.config.app_apis.keys():
@@ -147,11 +143,10 @@ def read_device(app_name, device_name):
 
     return __func()
 
-
+@auth_token_required
 def update_device(app_name, device_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.EditDeviceForm(request.form)
@@ -176,11 +171,10 @@ def update_device(app_name, device_name):
 
     return __func()
 
-
+@auth_token_required
 def delete_device(app_name, device_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         if app_name in core.config.config.app_apis.keys():
@@ -201,11 +195,10 @@ def delete_device(app_name, device_name):
 
     return __func()
 
-
+@auth_token_required
 def import_devices(app_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.ExportImportAppDevices(request.form)
@@ -234,11 +227,10 @@ def import_devices(app_name):
 
     return __func()
 
-
+@auth_token_required
 def export_devices(app_name):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         form = forms.ExportImportAppDevices(request.form)

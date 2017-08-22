@@ -2,18 +2,15 @@ import json
 from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-from . import database
 import core.config.paths
 from core.helpers import format_exception_message
 import pyaes
 import logging
-
-db = database.db
+from server.database import Base, db
 
 logger = logging.getLogger(__name__)
 
-
-class App(database.Base, object):
+class App(Base, object):
     __tablename__ = 'app'
 
     id = db.Column(Integer, primary_key=True)
@@ -91,7 +88,7 @@ class App(database.Base, object):
         pass
 
 
-class Device(database.Base):
+class Device(Base):
     __tablename__ = 'device'
 
     id = db.Column(Integer, primary_key=True)

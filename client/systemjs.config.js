@@ -2,7 +2,7 @@
 
 	// map tells the System loader where to look for things
 	var map = {
-		// 'login': 'client/modules/login',
+//		'login': 'client/build',
 		'main': 'client/build',
 		// 'npm:' : 'client/node_modules/',
 		'models': 'client/models',
@@ -25,7 +25,7 @@
 
 	// packages tells the System loader how to load when no filename and/or no extension
 	var packages = {
-		// 'login': { main: 'login',  defaultExtension: 'ts' },
+//		'login': { main: 'login',  defaultExtension: 'js' },
 		'main': { main: 'main', defaultExtension: 'js' },
 		'models': { defaultExtension: 'ts' },
 		'rxjs': { defaultExtension: 'js' },

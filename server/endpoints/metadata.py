@@ -1,7 +1,7 @@
 import json
 import os
 from flask import render_template, current_app, send_file
-from flask_security import login_required, current_user, roles_accepted
+from server.security import current_user, roles_accepted, auth_token_required
 import core.config.config
 import core.config.paths
 import core.filters
@@ -11,7 +11,7 @@ from server.returncodes import SUCCESS, UNAUTHORIZED_ERROR
 
 from core.helpers import combine_dicts
 
-
+@auth_token_required
 def read_all_possible_subscriptions():
     from server.context import running_context
 
@@ -21,7 +21,7 @@ def read_all_possible_subscriptions():
 
     return __func()
 
-
+@auth_token_required
 def read_all_filters():
     from server.context import running_context
 
@@ -48,7 +48,7 @@ def read_all_filters():
 
     return __func()
 
-
+@auth_token_required
 def read_all_flags():
     from server.context import running_context
 
@@ -75,7 +75,7 @@ def read_all_flags():
 
     return __func()
 
-
+@auth_token_required
 def sys_pages(interface_name):
     from server.context import running_context
     from server import interface
@@ -94,7 +94,6 @@ def sys_pages(interface_name):
 
 
 def login_info():
-    @login_required
     def __func():
         if current_user.is_authenticated:
             return json.dumps({"auth_token": current_user.get_auth_token()}), SUCCESS

@@ -11,9 +11,9 @@ export class DashboardService {
 	requestOptions : RequestOptions;
 
 	constructor (private http: Http) {
-		let authKey = localStorage.getItem('authKey');
+//		let authKey = localStorage.getItem('authKey');
 		let headers = new Headers({ 'Accept': 'application/json' });
-		headers.append('Authentication-Token', authKey);
+//		headers.append('Authentication-Token', authKey);
 
 		this.requestOptions = new RequestOptions({ headers: headers });
 	}
