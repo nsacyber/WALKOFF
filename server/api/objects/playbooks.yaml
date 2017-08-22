@@ -6,6 +6,38 @@ Playbook:
         type: string
       playbook_template:
         type: string
+
+AllPlaybooksOverview:
+  type: array
+  items:
+    $ref: '#/definitions/PlaybookOverview'
+
+PlaybookOverview:
+  type: object
+  description: Stripped-down view of a playbook
+  required: [name, workflows]
+  properties:
+    name:
+      type: string
+      description: name of the playbook
+    workflows:
+      description: workflows inside of this playbook
+      type: array
+      items:
+        $ref: '#/definitions/WorkflowDescription'
+
+
+WorkflowDescription:
+  type: object
+  required: [name, uid]
+  properties:
+    name:
+      type: string
+      description: name of the workflow
+    uid:
+      type: string
+      description: UID of the workflow
+
 UpdatePlaybook:
     type: object
     required: [name]

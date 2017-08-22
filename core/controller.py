@@ -295,10 +295,9 @@ class Controller(object):
             if with_json:
                 result[key.playbook].append(self.get_workflow(key.playbook, key.workflow).as_json())
             else:
-                result[key.playbook].append(key.workflow)
-        if with_json:
-            return [{'name': name, 'workflows': workflows} for name, workflows in result.items()]
-        return result
+                workflow = self.get_workflow(key.playbook, key.workflow)
+                result[key.playbook].append({'name': workflow.name, 'uid': workflow.uid})
+        return [{'name': name, 'workflows': workflows} for name, workflows in result.items()]
 
     def get_all_playbooks(self):
         """Gets a list of all playbooks.
