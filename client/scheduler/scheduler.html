@@ -1,0 +1,68 @@
+<div id="main">
+	<h1>Case Management</h1>
+
+	<div class="row">
+		<div class="col-xs-2">
+			<button (click)="addScheduledTask()" class="btn btn-primary"><span class="fa fa-plus"></span>Add To Schedule</button>
+		</div>
+
+		<div class="col-xs-4">
+			<div id="schedulerStatus">
+				<h4>Scheduler Currently: <span id="status">{{schedulerStatus}}</span></h4>
+			</div>
+			<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary"
+				id="startSchedulerBtn">Start</button>
+				<button *ngIf="schedulerStatus && schedulerStatus !== 'stopped'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning"
+					id="pauseSchedulerBtn">Pause</button>
+					<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
+						id="stopSchedulerBtn">Stop</button>
+		</div>
+
+		<div class="col-xs-6">
+			<div class="form-group row">
+				<label class="col-xs-2 col-form-label">Search Filter</label>
+				<div class="col-xs-10">
+					<input class="form-control" [formControl]="filterQuery" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<ngx-datatable #scheduleTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
+		[rows]='displayScheduledTask' [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
+		<!-- Column Templates -->
+		<ngx-datatable-column name="Name" [flexGrow]="2">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.name}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Description" [flexGrow]="4">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.description}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Enabled" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{getFriendlyBool(row.enabled)}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Type" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.type}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Rule" [sortable]="false" [flexGrow]="3">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{getRule(row.args)}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="3">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<button *ngIf="row.enabled" (click)="disableScheduledTask(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Disable</button>
+				<button *ngIf="!row.enabled" (click)="enableScheduledTask(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Enable</button>
+				<button (click)="editScheduledTask(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit</button>
+				<button (click)="deleteScheduledTask(row)" class="btn btn-danger"><span class="fa fa-times"></span>Delete</button>
+			</ng-template>
+		</ngx-datatable-column>
+	</ngx-datatable>
+</div>
