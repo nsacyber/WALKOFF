@@ -5,7 +5,7 @@ import os
 import core.config.config
 import core.config.paths
 import tests.config
-import server.flaskserver
+
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
 
@@ -55,6 +55,7 @@ class ServerTestCase(unittest.TestCase):
                 shutil.rmtree(tests.config.test_data_path)
 
     def setUp(self):
+        import server.flaskserver
         core.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
         core.config.paths.apps_path = tests.config.test_apps_path
         core.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
@@ -66,12 +67,19 @@ class ServerTestCase(unittest.TestCase):
 
         self.app = server.flaskserver.app.test_client(self)
         self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        response = self.app.post('/key', data=dict(email='admin', password='admin'),
-                                 follow_redirects=True).get_data(as_text=True)
+        self.app.use_cookies = True
 
-        key = json.loads(response)["auth_token"]
-        self.headers = {"Authentication-Token": key}
+        self.context = server.flaskserver.app.test_request_context()
+        self.context.push()
+
+        from server.database import db
+        server.flaskserver.running_context.db = db
+
+        post = self.app.post('/login-process', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        self.headers = post.headers
+
+        # key = json.loads(response)["auth_token"]
+        # self.headers = {"Authentication-Token": key}
 
         server.flaskserver.running_context.controller.workflows = {}
         server.flaskserver.running_context.controller.load_all_workflows_from_directory()
@@ -101,6 +109,7 @@ class ServerTestCase(unittest.TestCase):
             response = self.app.delete(url, **kwargs)
         else:
             raise ValueError('method must be either get, put, post, or delete')
+        print(response)
         self.assertEqual(response.status_code, status_code)
         response = json.loads(response.get_data(as_text=True))
         if error:

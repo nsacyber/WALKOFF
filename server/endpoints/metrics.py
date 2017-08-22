@@ -1,8 +1,8 @@
-from flask_security import roles_accepted
+from server.security import roles_accepted, auth_token_required
 import server.metrics as metrics
 from server.returncodes import *
 
-
+@auth_token_required
 def read_app_metrics():
     from server.context import running_context
 
@@ -12,7 +12,7 @@ def read_app_metrics():
 
     return __func()
 
-
+@auth_token_required
 def read_workflow_metrics():
     from server.context import running_context
 

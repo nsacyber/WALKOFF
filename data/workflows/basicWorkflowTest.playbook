@@ -2,12 +2,14 @@
     "name": "basicWorkflowTest",
     "workflows": [
         {
+            "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
             "start": "1",
             "steps": [
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "device": "",
                     "inputs": [],
                     "name": "1",
                     "next": [
@@ -19,16 +21,17 @@
                         }
                     ],
                     "position": {
-						"x": -450.0,
-						"y": -50.0
-					},
+                        "x": -450.0,
+                        "y": -50.0
+                    },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
                     "widgets": []
                 },
-				{
+                {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "device": "",
                     "inputs": [],
                     "name": "2",
                     "next": [
@@ -40,16 +43,17 @@
                         }
                     ],
                     "position": {
-						"x": -230.0,
-						"y": -30.0
-					},
+                        "x": -230.0,
+                        "y": -30.0
+                    },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
                     "widgets": []
                 },
-				{
+                {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "device": "",
                     "inputs": [],
                     "name": "3",
                     "next": [
@@ -61,9 +65,9 @@
                         }
                     ],
                     "position": {
-						"x": -50.0,
-						"y": 10.0
-					},
+                        "x": -50.0,
+                        "y": 10.0
+                    },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
                     "widgets": []

@@ -7,13 +7,17 @@ from tests.util.assertwrappers import orderless_list_compare
 class TestAppUtilities(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.context = flaskserver.running_context.flask_app.test_request_context()
+        self.context.push()
+        from server.database import db
+        flaskserver.running_context.db = db
 
     def tearDown(self):
-        with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.Device.query.delete()
-            flaskserver.running_context.App.query.delete()
-            flaskserver.database.db.session.commit()
+        flaskserver.running_context.Device.query.delete()
+        flaskserver.running_context.App.query.delete()
+        flaskserver.database.db.session.commit()
+        self.context.pop()
+
 
     @classmethod
     def tearDownClass(cls):
