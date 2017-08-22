@@ -3,21 +3,21 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { PlaybookService } from './playbook.service';
 
 @Component({
-    selector: 'playbook-component',
-    templateUrl: 'client/playbook/playbook.html',
-    styleUrls: [
-        'client/node_modules/jstree/dist/themes/default/style.min.css',
-        'client/node_modules/datatables/media/css/jquery.dataTables.min.css',
-        'client/node_modules/jqueryui/jquery-ui.min.css',
-        'client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css',
-        'client/playbook/playbook.css'
+	selector: 'playbook-component',
+	templateUrl: 'client/playbook/playbook.html',
+	styleUrls: [
+    'client/node_modules/jstree/dist/themes/default/style.min.css',
+    'client/node_modules/datatables/media/css/jquery.dataTables.min.css',
+		'client/node_modules/jqueryui/jquery-ui.min.css',
+		'client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css',
+		'client/playbook/playbook.css'
     ],
-    encapsulation: ViewEncapsulation.None,
-    providers: [PlaybookService]
+		encapsulation: ViewEncapsulation.None,
+	providers: [PlaybookService]
 })
 export class PlaybookComponent {
 
-    constructor(private playbookService: PlaybookService) {
+	constructor(private playbookService: PlaybookService) {
     }
 
     ngAfterViewInit() {
@@ -26,8 +26,8 @@ export class PlaybookComponent {
             while (indx < document.body.childNodes.length) {
                 if ('localName' in document.body.childNodes[indx]
                     && (document.body.childNodes[indx].localName == 'link'
-                        || document.body.childNodes[indx].localName == 'script')) {
-                    document.body.removeChild(document.body.childNodes[indx]);
+                    || document.body.childNodes[indx].localName == 'script')) {
+                        document.body.removeChild(document.body.childNodes[indx]);
                 } else {
                     indx++;
                 }
