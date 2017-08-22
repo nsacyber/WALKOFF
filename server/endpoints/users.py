@@ -1,9 +1,9 @@
 from flask import request, current_app
-from server.security import roles_accepted, auth_token_required
-from server.security import encrypt_password, verify_password
+from flask_security import roles_accepted
+from flask_security.utils import encrypt_password, verify_password
 from server.returncodes import *
 
-@auth_token_required
+
 def read_all_users():
     from server.context import running_context
 
@@ -14,8 +14,8 @@ def read_all_users():
         return result, SUCCESS
     return __func()
 
-@auth_token_required
-def create_user(body):
+
+def create_user():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/users'])
@@ -27,10 +27,10 @@ def create_user(body):
 
             # Creates User
             if 'active' in data:
-                user = running_context.user_datastore.create_user(email=username, password=password, active=data['active'])
+                user = running_context.user_datastore.create_user(
+                    email=username, password=password, active=data['active'])
             else:
                 user = running_context.user_datastore.create_user(email=username, password=password)
-
             if 'roles' in data:
                 user.set_roles(data['roles'])
 
@@ -50,13 +50,13 @@ def create_user(body):
             return {"error": "User {0} already exists.".format(username)}, OBJECT_EXISTS_ERROR
     return __func()
 
-@auth_token_required
+
 def read_user(user_id):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        user = running_context.user_datastore.get_user(id=user_id)
+        user = running_context.user_datastore.get_user(user_id)
         if user:
             return user.display(), SUCCESS
         else:
@@ -64,19 +64,20 @@ def read_user(user_id):
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
     return __func()
 
-@auth_token_required
-def update_user(body):
+
+def update_user():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         data = request.get_json()
-        user = running_context.user_datastore.get_user(id=data['id'])
+
+        user = running_context.user_datastore.get_user(data['id'])
         if user:
             current_username = user.email
 
             if 'old_password' in data and 'password' in data:
-                if verify_password(user.password, data['old_password']):
+                if verify_password(data['old_password'], user.password):
                     user.password = encrypt_password(data['password'])
                 else:
                     return {"error": "User's current password was entered incorrectly."}, 400
@@ -96,13 +97,13 @@ def update_user(body):
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
     return __func()
 
-@auth_token_required
+
 def delete_user(user_id):
     from server.flaskserver import running_context, current_user
 
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        user = running_context.user_datastore.get_user(id=user_id)
+        user = running_context.user_datastore.get_user(user_id)
         if user:
             if user != current_user:
                 running_context.user_datastore.delete_user(user)
