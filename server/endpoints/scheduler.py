@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, request
 from flask_security import roles_accepted
 from server.returncodes import *
 
@@ -62,4 +62,107 @@ def read_all_jobs():
         for job in running_context.controller.get_scheduled_jobs():
             jobs.append({"name": job.name, "id": job.id})
         return {"jobs": jobs}, SUCCESS
+    return __func()
+
+
+def read_all_scheduled_tasks():
+    from server.context import running_context
+
+    def __func():
+        return [task.as_json() for task in running_context.ScheduledTask.query.all()], SUCCESS
+    return __func()
+
+
+def create_scheduled_task():
+    from server.context import running_context
+
+    def __func():
+        data = request.get_json()
+        task = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
+        if task is None:
+            try:
+                task = running_context.ScheduledTask(**data)
+                print(type(task))
+                running_context.db.session.add(task)
+                running_context.db.session.commit()
+                print(task.as_json())
+                return task.as_json(), OBJECT_CREATED
+            except Exception as e:
+                print(e)
+        else:
+            return {'error': 'Could not create object. Object with given name already exists'}, OBJECT_EXISTS_ERROR
+    return __func()
+
+
+def read_scheduled_task(scheduled_task_id):
+    from server.context import running_context
+
+    def __func():
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            return task.as_json(), SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
+    return __func()
+
+
+def update_scheduled_task():
+    from server.context import running_context
+
+    def __func():
+        data = request.get_json()
+        task = running_context.ScheduledTask.query.filter_by(id=data['id']).first()
+        if task is not None:
+            task.update(**data)
+            running_context.db.session.commit()
+            return task.as_json(), SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
+    return __func()
+
+
+def delete_scheduled_task(scheduled_task_id):
+    from server.context import running_context
+
+    def __func():
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            running_context.db.session.delete(task)
+            running_context.db.session.commit()
+            return {}, SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
+    return __func()
+
+
+def enable_scheduled_task(scheduled_task_id):
+    from server.context import running_context
+
+    def __func():
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            task.enable()
+            running_context.db.session.commit()
+            return {}, SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
+    return __func()
+
+
+def disable_scheduled_task(scheduled_task_id):
+    from server.context import running_context
+
+    def __func():
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            task.disable()
+            running_context.db.session.commit()
+            return {}, SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
     return __func()

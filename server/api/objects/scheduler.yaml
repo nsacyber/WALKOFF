@@ -10,3 +10,278 @@ Job:
       type: string
       example: 12345
       readOnly: true
+
+AddScheduledTask:
+  type: object
+  required: [name]
+  additionalProperties: false
+  properties:
+    workflows:
+      description: List if UIDs of workflows attached to this task
+      type: array
+      items:
+        type: string
+    name:
+      type: string
+      description: Name of this task
+    description:
+      type: string
+      description: description of this task
+    enabled:
+      type: boolean
+      description: Is this task enabled or not
+    scheduler:
+      $ref: '#/definitions/Scheduler'
+
+Scheduler:
+  type: object
+  description: Scheduler to use.
+  required: [args, type]
+  properties:
+    type:
+      description: Type of scheduler to use
+      type: string
+      enum: [date, interval, cron]
+      example: date
+    args:
+      type: object
+      description: Arguments for the scheduler.
+
+ScheduledTask:
+  type: object
+  allOf:
+    - $ref: '#/definitions/ScheduledTaskDetails'
+    - $ref: '#/definitions/TaskScheduler'
+
+AddScheduledTaskDetails:
+  type: object
+  required: [name]
+  additionalProperties: false
+  properties:
+    workflows:
+      description: List if UIDs of workflows attached to this task
+      type: array
+      items:
+        type: string
+    name:
+      type: string
+      description: Name of this task
+    description:
+      type: string
+      description: description of this task
+    enabled:
+      type: boolean
+      description: Is this task enabled or not
+
+ScheduledTaskDetails:
+  type: object
+  required: [id]
+  additionalProperties: false
+  properties:
+    id:
+      type: integer
+      description: ID of the object
+      readOnly: true
+    workflows:
+      description: List if UIDs of workflows attached to this task
+      type: array
+      items:
+        type: string
+    name:
+      type: string
+      description: Name of this task
+    description:
+      type: string
+      description: description of this task
+    enabled:
+      type: boolean
+      description: Is this task enabled or not
+
+TaskScheduler:
+  type: object
+  discriminator: type
+  required: [type, args]
+  properties:
+    type:
+      type: string
+      description: Type of scheduler to use
+      enum: [DateScheduler, IntervalScheduler, CronScheduler]
+    args:
+      type: object
+      description: arguments to the scheduler
+
+DateScheduler:
+  type: object
+  allOf:
+    - $ref: '#/definitions/TaskScheduler'
+    - properties:
+        args:
+          $ref: '#/definitions/Date'
+
+IntervalScheduler:
+  type: object
+  allOf:
+    - $ref: '#/definitions/TaskScheduler'
+    - properties:
+        args:
+          $ref: '#/definitions/IntervalSchedulerArgs'
+
+CronScheduler:
+  type: object
+  allOf:
+    - $ref: '#/definitions/TaskScheduler'
+    - properties:
+        args:
+          $ref: '#/definitions/CronSchedulerArgs'
+
+Date:
+  type: object
+  required: [year, month, day]
+  properties:
+    year:
+      $ref: '#/definitions/Year'
+    month:
+      $ref: '#/definitions/Month'
+    day:
+      $ref: '#/definitions/Day'
+    hour:
+      $ref: '#/definitions/Hour'
+    minute:
+      $ref: '#/definitions/Minute'
+    second:
+      $ref: '#/definitions/Second'
+
+IntervalSchedulerArgs:
+  type: object
+  required: [interval]
+  properties:
+    interval:
+      $ref: '#/definitions/Interval'
+    start_date:
+      $ref: '#/definitions/Date'
+    end_date:
+      $ref: '#/definitions/Date'
+
+Interval:
+  type: object
+  x-nullable: false
+  description: Interval between execution of the workflow. One parameter must be filled in.
+  properties:
+      weeks:
+        type: integer
+        description: Number of weeks to wait between executing the task
+        example: 3
+        minimum: 0
+        default: 0
+      days:
+        type: integer
+        description: Number of days to wait between executing the task
+        example: 3
+        minimum: 0
+        default: 0
+      hours:
+        type: integer
+        description: Number of hours to wait between executing the task
+        example: 3
+        minimum: 0
+        default: 0
+      minutes:
+        type: integer
+        description: Number of minutes to wait between executing the task
+        example: 3
+        minimum: 0
+        default: 0
+      seconds:
+        type: integer
+        description: Number of seconds to wait between executing the task
+        example: 3
+        minimum: 0
+        default: 0
+
+CronSchedulerArgs:
+  type: object
+  description: >
+    A cron-job style scheduler. See documentation for the cron trigger in Python's APScheduler library for information
+    on allowed values.
+  properties:
+    year:
+      description: Year to execute the task. Can either be a Year type or an expression
+      type: [string, integer]
+    month:
+      description: Month to execute the task. Can either be a Month type or an expression
+      type: [string, integer]
+    day:
+      description: Day to execute the task. Can either be a Day type or an expression
+      type: [string, integer]
+    day_of_week:
+      description: Day of week to execute the task. Can either be a DayOfWeek type or an expression
+      type: [string, integer]
+    hour:
+      description: Hour to execute the task. Can either be a Hour type or an expression
+      type: [string, integer]
+    minute:
+      description: Minute to execute the task. Can either be a Minute type or an expression
+      type: [string, integer]
+    second:
+      description: Second to execute the task. Can either be a Second type or an expression
+      type: [string, integer]
+    start_date:
+      $ref: '#/definitions/Date'
+    end_date:
+      $ref: '#/definitions/Date'
+
+Year:
+  type: integer
+  minimum: 2017
+  maximum: 2050
+  example: 2017
+  description: Year to run the task
+  
+Month:
+  type: integer
+  minimum: 1
+  maximum: 12
+  example: 1
+  description: Month to run the task
+
+Week:
+  type: integer
+  minimum: 1
+  maximum: 53
+  example: 1
+  description: Week to run the task
+
+Day:
+  type: integer
+  minimum: 1
+  maximum: 31
+  example: 1
+  description: Day to run the task
+
+DayOfWeek:
+  type: integer
+  minimum: 0
+  maximum: 6
+  example: 3
+  description: Day of the week to run the task (0-6 for Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+
+Hour:
+  type: integer
+  minimum: 0
+  maximum: 23
+  example: 16
+  description: Hour to run the task
+
+Minute:
+  type: integer
+  minimum: 0
+  maximum: 59
+  example: 45
+  description: Minute to run the task
+
+Second:
+  type: integer
+  minimum: 0
+  maximum: 59
+  example: 30
+  description: Second to run the task

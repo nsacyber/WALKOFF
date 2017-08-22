@@ -90,3 +90,155 @@
           properties:
             jobs:
               $ref: '#/definitions/Job'
+
+/api/scheduledtasks:
+  get:
+    tags:
+      - Scheduler
+    summary: Get all the scheduled tasks
+    operationId: server.endpoints.scheduler.read_all_scheduled_tasks
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: A list of Scheduled Task objects
+          type: array
+          items:
+            $ref: '#/definitions/ScheduledTask'
+  put:
+    tags:
+      - Scheduler
+    summary: Create a new Scheduled Task
+    operationId: server.endpoints.scheduler.create_scheduled_task
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The new Scheduled Task object
+        required: true
+        schema:
+          $ref: '#/definitions/AddScheduledTask'
+    responses:
+      201:
+        description: Success
+        schema:
+          description: A list of Scheduled Task objects
+          type: array
+          items:
+            $ref: '#/definitions/ScheduledTask'
+      462:
+        description: Scheduled task already exists
+        schema:
+          $ref: '#/definitions/Error'
+  post:
+    tags:
+      - Scheduler
+    summary: Update a new Scheduled Task
+    operationId: server.endpoints.scheduler.update_scheduled_task
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The updated Scheduled Task object
+        required: true
+        schema:
+          $ref: '#/definitions/ScheduledTask'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/ScheduledTask'
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/scheduledtasks/{scheduled_task_id}:
+  parameters:
+    - name: scheduled_task_id
+      in: path
+      description: The ID of the scheduled task.
+      required: true
+      type: string
+  get:
+    tags:
+      - Scheduler
+    summary: Get the scheduled task
+    operationId: server.endpoints.scheduler.read_scheduled_task
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/ScheduledTask'
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
+  delete:
+    tags:
+      - Scheduler
+    summary: Delete the scheduled task
+    operationId: server.endpoints.scheduler.delete_scheduled_task
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/scheduledtasks/{scheduled_task_id}/enable:
+  put:
+    tags:
+      - Scheduler
+    summary: Enable the scheduled task
+    operationId: server.endpoints.scheduler.enable_scheduled_task
+    produces:
+      - application/json
+    parameters:
+      - name: scheduled_task_id
+        in: path
+        description: The ID of the scheduled task.
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/scheduledtasks/{scheduled_task_id}/disable:
+  put:
+    tags:
+      - Scheduler
+    summary: Disable the scheduled task
+    operationId: server.endpoints.scheduler.disable_scheduled_task
+    produces:
+      - application/json
+    parameters:
+      - name: scheduled_task_id
+        in: path
+        description: The ID of the scheduled task.
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
