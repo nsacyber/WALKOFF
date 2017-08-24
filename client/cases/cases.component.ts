@@ -63,6 +63,7 @@ export class CasesComponent {
 
 	caseSelectChange($event: any): void {
 		if (!$event.value || $event.value === '') return;
+		console.log($event.value);
 		this.getCaseEvents($event.value);
 	}
 
@@ -110,7 +111,7 @@ export class CasesComponent {
 		modalRef.componentInstance.submitText = 'Add Case';
 		modalRef.componentInstance.workingCase = new Case();
 		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
-		modalRef.componentInstance.subscriptionTree = _.cloneDeep(this.subscriptionTree);
+		modalRef.componentInstance.subscriptionTree = this.subscriptionTree;
 
 		this._handleModalClose(modalRef);
 	}
@@ -122,7 +123,8 @@ export class CasesComponent {
 		modalRef.componentInstance.workingCase = _.cloneDeep(caseToEdit);
 		delete modalRef.componentInstance.workingCase.$$index;
 		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
-		modalRef.componentInstance.subscriptionTree = _.cloneDeep(this.subscriptionTree);
+		modalRef.componentInstance.subscriptionTree = this.subscriptionTree;
+		console.log(modalRef.componentInstance.workingCase);
 
 		this._handleModalClose(modalRef);
 	}
@@ -202,6 +204,7 @@ export class CasesComponent {
 
 			// tree.children.push(node);
 		});
+		console.log(tree);
 		return tree;
 	}
 

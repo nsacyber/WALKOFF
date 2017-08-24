@@ -1,8 +1,8 @@
 from flask import current_app
-from server.security import roles_accepted, auth_token_required
+from flask_security import roles_accepted
 from server.returncodes import *
 
-@auth_token_required
+
 def get_scheduler_status():
     from server.context import running_context
 
@@ -11,7 +11,7 @@ def get_scheduler_status():
         return {"status": running_context.controller.scheduler.state}, SUCCESS
     return __func()
 
-@auth_token_required
+
 def update_scheduler_status(status):
     from server.context import running_context
 
@@ -34,7 +34,7 @@ def update_scheduler_status(status):
 
     return __func()
 
-@auth_token_required
+
 def update_job_status(job_id, status):
     from server.context import running_context
 
