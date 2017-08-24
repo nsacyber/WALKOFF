@@ -1,7 +1,7 @@
 from flask import current_app, request
 from flask_security import roles_accepted
 from server.returncodes import *
-from core.scheduler import InvalidSchedulerArgs
+from core.scheduler import InvalidTriggerArgs
 
 
 def get_scheduler_status():
@@ -53,7 +53,7 @@ def create_scheduled_task():
         if task is None:
             try:
                 task = running_context.ScheduledTask(**data)
-            except InvalidSchedulerArgs:
+            except InvalidTriggerArgs:
                 return {'error': 'invalid scheduler arguments'}, 400
             else:
                 running_context.db.session.add(task)
@@ -90,7 +90,7 @@ def update_scheduled_task():
                     return {'error': 'Task with that name already exists.'}, OBJECT_EXISTS_ERROR
             try:
                 task.update(data)
-            except InvalidSchedulerArgs:
+            except InvalidTriggerArgs:
                 return {'error': 'invalid scheduler arguments'}, 400
             else:
                 running_context.db.session.commit()

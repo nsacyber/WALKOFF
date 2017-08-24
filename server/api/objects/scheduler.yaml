@@ -3,7 +3,7 @@ Scheduler:
   required: [status]
   properties:
     status:
-      description: State of scheduler
+      description: State of trigger
       type: string
       example: 0 for stopped, 1 for running, 2 for paused, or a warning string
 
@@ -27,8 +27,8 @@ AddScheduledTask:
       type: string
       description: Status of the task
       enum: [running, stopped]
-    scheduler:
-      $ref: '#/definitions/TaskScheduler'
+    task_trigger:
+      $ref: '#/definitions/TaskTrigger'
 
 ScheduledTask:
   type: object
@@ -54,19 +54,19 @@ ScheduledTask:
       type: string
       description: Status of the task
       enum: [running, stopped]
-    scheduler:
-      $ref: '#/definitions/TaskScheduler'
+    task_trigger:
+      $ref: '#/definitions/TaskTrigger'
 
-TaskScheduler:
+TaskTrigger:
   type: object
   description: Scheduler to use.
   required: [args, type]
   properties:
     type:
-      description: Type of scheduler to use
+      description: Type of scheduler trigger to use for this task
       type: string
       enum: [date, interval, cron]
       example: date
     args:
       type: object
-      description: Arguments for the scheduler.
+      description: Arguments for the trigger.

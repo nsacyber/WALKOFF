@@ -35,25 +35,25 @@ class TestSchedulerUtils(unittest.TestCase):
 
     def test_construct_date_scheduler(self):
         args = {'type': 'date', 'args': {'date': self.datestr1}}
-        trigger = construct_scheduler(args)
+        trigger = construct_trigger(args)
         self.assertIsInstance(trigger, DateTrigger)
         self.assertEqual(trigger.run_date, self.date1)
 
     def test_construct_date_scheduler_invalid_date(self):
         args = {'type': 'date', 'args': {'date': '2017-14-30 12:03:36'}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)
 
     def test_construct_date_scheduler_invalid_arg_structure(self):
         args = {'type': 'date', 'args': {'junk': '2017-11-30 12:03:36'}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)
 
     def test_construct_interval_scheduler(self):
         args = {'type': 'interval', 'args': {'start_date': self.datestr1,
                                              'weeks': 4,
                                              'seconds': 1}}
-        trigger = construct_scheduler(args)
+        trigger = construct_trigger(args)
         self.assertIsInstance(trigger, IntervalTrigger)
         expected_interval = datetime.timedelta(weeks=4, seconds=1)
         self.assertEqual(trigger.interval, expected_interval)
@@ -61,34 +61,34 @@ class TestSchedulerUtils(unittest.TestCase):
 
     def test_construct_interval_scheduler_invalid_interval(self):
         args = {'type': 'interval', 'args': {'date': '2017-14-30 12:03:36'}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)
 
     def test_construct_interval_scheduler_invalid_arg_structure(self):
         args = {'type': 'interval', 'args': {'start_date': '2017-11-30 12:03:36',
                                              'day_of_week': 3}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)
 
     def test_construct_cron_scheduler(self):
         args = {'type': 'cron', 'args': {'start_date': self.datestr1,
                                          'week': '*/4'}}
-        trigger = construct_scheduler(args)
+        trigger = construct_trigger(args)
         self.assertIsInstance(trigger, CronTrigger)
 
     def test_construct_cron_scheduler_invalid_interval(self):
         args = {'type': 'cron', 'args': {'date': '2017-14-30 12:03:36'}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)
 
     def test_construct_cron_scheduler_invalid_arg_structure(self):
         args = {'type': 'cron', 'args': {'start_date': '2017-11-30 12:03:36',
                                          'day_of_week': 'aaaaaaaaa'}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)
 
     def test_construct_scheduler_invalid_type(self):
         args = {'type': 'invalid', 'args': {'start_date': '2017-11-30 12:03:36',
                                             'day_of_week': 3}}
-        with self.assertRaises(InvalidSchedulerArgs):
-            construct_scheduler(args)
+        with self.assertRaises(InvalidTriggerArgs):
+            construct_trigger(args)

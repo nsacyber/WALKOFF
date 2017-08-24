@@ -32,13 +32,13 @@ class TestScheduledTasksServer(ServerTestCase):
         self.assertListEqual(response, expected)
 
     def test_create_scheduled_task(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = self.put_with_status_check('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                               content_type='application/json', status_code=OBJECT_CREATED)
         expected = {'name': 'test',
                     'workflows': {'a', 'b', 'c'},
                     'status': 'stopped',
-                    'scheduler': self.date_scheduler,
+                    'task_trigger': self.date_scheduler,
                     'description': ''}
         response.pop('id')
         response['workflows'] = set(response['workflows'])
@@ -46,7 +46,7 @@ class TestScheduledTasksServer(ServerTestCase):
         self.assertSetEqual({task.name for task in ScheduledTask.query.all()}, {'test'})
 
     def test_create_scheduled_task_already_exists(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                      content_type='application/json')
         self.put_with_status_check('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
@@ -54,7 +54,7 @@ class TestScheduledTasksServer(ServerTestCase):
         self.assertSetEqual({task.name for task in ScheduledTask.query.all()}, {'test'})
 
     def test_read_scheduled_task(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -64,7 +64,7 @@ class TestScheduledTasksServer(ServerTestCase):
                     'name': 'test',
                     'workflows': {'a', 'b', 'c'},
                     'status': 'stopped',
-                    'scheduler': self.date_scheduler,
+                    'task_trigger': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
         self.assertDictEqual(response, expected)
@@ -74,7 +74,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                    content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
     def test_update_scheduled_task_name_desc_only(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -85,13 +85,13 @@ class TestScheduledTasksServer(ServerTestCase):
                     'name': 'renamed',
                     'workflows': {'a', 'b', 'c'},
                     'status': 'stopped',
-                    'scheduler': self.date_scheduler,
+                    'task_trigger': self.date_scheduler,
                     'description': 'desc'}
         response['workflows'] = set(response['workflows'])
         self.assertDictEqual(response, expected)
 
     def test_update_scheduled_task_workflows(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -102,13 +102,13 @@ class TestScheduledTasksServer(ServerTestCase):
                     'name': 'test',
                     'workflows': {'1', '2', '3'},
                     'status': 'stopped',
-                    'scheduler': self.date_scheduler,
+                    'task_trigger': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
         self.assertDictEqual(response, expected)
         
     def test_update_scheduled_task_scheduler(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -119,7 +119,7 @@ class TestScheduledTasksServer(ServerTestCase):
                     'name': 'test',
                     'workflows': {'1', '2', '3'},
                     'status': 'stopped',
-                    'scheduler': self.date_scheduler,
+                    'task_trigger': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
         self.assertDictEqual(response, expected)
@@ -130,7 +130,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                    content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
     def test_update_scheduled_task_name_already_exists_same_id(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -139,10 +139,10 @@ class TestScheduledTasksServer(ServerTestCase):
                                    content_type='application/json', status_code=SUCCESS)
 
     def test_update_scheduled_task_name_already_exists_different_id(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json')
-        data = {"name": 'test2', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test2', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id2 = response['id']
@@ -151,7 +151,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                    content_type='application/json', status_code=OBJECT_EXISTS_ERROR)
 
     def test_delete_scheduled_task(self):
-        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -164,7 +164,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                            content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
     def test_start_from_started(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler, 'status': 'running'}
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler, 'status': 'running'}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -173,7 +173,7 @@ class TestScheduledTasksServer(ServerTestCase):
         self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'running')
 
     def test_start_from_stopped(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -186,7 +186,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                       content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
     def test_stop_from_started(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler, 'status': 'running'}
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler, 'status': 'running'}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
@@ -195,7 +195,7 @@ class TestScheduledTasksServer(ServerTestCase):
         self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'stopped')
 
     def test_stop_from_stopped(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']

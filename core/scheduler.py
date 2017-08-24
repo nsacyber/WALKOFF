@@ -13,26 +13,26 @@ from core.case import callbacks
 logger = logging.getLogger(__name__)
 
 
-class InvalidSchedulerArgs(Exception):
+class InvalidTriggerArgs(Exception):
     def __init__(self, message):
         super(Exception, self).__init__(message)
 
 
-def construct_scheduler(scheduler_args):
-    scheduler_type = scheduler_args['type']
-    scheduler_args = scheduler_args['args']
+def construct_trigger(trigger_args):
+    trigger_type = trigger_args['type']
+    trigger_args = trigger_args['args']
     try:
-        if scheduler_type == 'date':
-            return DateTrigger(**scheduler_args)
-        elif scheduler_type == 'interval':
-            return IntervalTrigger(**scheduler_args)
-        elif scheduler_type == 'cron':
-            return CronTrigger(**scheduler_args)
+        if trigger_type == 'date':
+            return DateTrigger(**trigger_args)
+        elif trigger_type == 'interval':
+            return IntervalTrigger(**trigger_args)
+        elif trigger_type == 'cron':
+            return CronTrigger(**trigger_args)
         else:
-            raise InvalidSchedulerArgs(
-                'Invalid scheduler type {0} with args {1}.'.format(scheduler_type, scheduler_args))
+            raise InvalidTriggerArgs(
+                'Invalid scheduler type {0} with args {1}.'.format(trigger_type, trigger_args))
     except (KeyError, ValueError, TypeError):
-        raise InvalidSchedulerArgs('Invalid scheduler arguments')
+        raise InvalidTriggerArgs('Invalid scheduler arguments')
 
 task_id_separator = '-'
 
