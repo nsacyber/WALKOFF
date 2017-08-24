@@ -37,7 +37,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                               content_type='application/json', status_code=OBJECT_CREATED)
         expected = {'name': 'test',
                     'workflows': {'a', 'b', 'c'},
-                    'enabled': False,
+                    'status': 'stopped',
                     'scheduler': self.date_scheduler,
                     'description': ''}
         response.pop('id')
@@ -63,7 +63,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': {'a', 'b', 'c'},
-                    'enabled': False,
+                    'status': 'stopped',
                     'scheduler': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
@@ -84,7 +84,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'renamed',
                     'workflows': {'a', 'b', 'c'},
-                    'enabled': False,
+                    'status': 'stopped',
                     'scheduler': self.date_scheduler,
                     'description': 'desc'}
         response['workflows'] = set(response['workflows'])
@@ -101,7 +101,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': {'1', '2', '3'},
-                    'enabled': False,
+                    'status': 'stopped',
                     'scheduler': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
@@ -118,7 +118,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': {'1', '2', '3'},
-                    'enabled': False,
+                    'status': 'stopped',
                     'scheduler': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
@@ -154,46 +154,46 @@ class TestScheduledTasksServer(ServerTestCase):
         self.delete_with_status_check('/api/scheduledtasks/404', headers=self.headers,
                                            content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
-    def test_enable_from_enabled(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler, 'enabled': True}
+    def test_start_from_started(self):
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler, 'status': 'running'}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
-        self.put_with_status_check('/api/scheduledtasks/{}/enable'.format(task_id), headers=self.headers,
+        self.put_with_status_check('/api/scheduledtasks/{}/start'.format(task_id), headers=self.headers,
                                       content_type='application/json', status_code=SUCCESS)
-        self.assertTrue(ScheduledTask.query.filter_by(id=task_id).first().enabled)
+        self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'running')
 
-    def test_enable_from_disabled(self):
+    def test_start_from_stopped(self):
         data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
-        self.put_with_status_check('/api/scheduledtasks/{}/enable'.format(task_id), headers=self.headers,
+        self.put_with_status_check('/api/scheduledtasks/{}/start'.format(task_id), headers=self.headers,
                                    content_type='application/json', status_code=SUCCESS)
-        self.assertTrue(ScheduledTask.query.filter_by(id=task_id).first().enabled)
+        self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'running')
 
-    def test_enable_does_not_exist(self):
-        self.put_with_status_check('/api/scheduledtasks/404/enable', headers=self.headers,
+    def test_start_does_not_exist(self):
+        self.put_with_status_check('/api/scheduledtasks/404/start', headers=self.headers,
                                       content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
-    def test_disable_from_enabled(self):
-        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler, 'enabled': True}
+    def test_stop_from_started(self):
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler, 'status': 'running'}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
-        self.put_with_status_check('/api/scheduledtasks/{}/disable'.format(task_id), headers=self.headers,
+        self.put_with_status_check('/api/scheduledtasks/{}/stop'.format(task_id), headers=self.headers,
                                       content_type='application/json', status_code=SUCCESS)
-        self.assertFalse(ScheduledTask.query.filter_by(id=task_id).first().enabled)
+        self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'stopped')
 
-    def test_disable_from_disabled(self):
+    def test_stop_from_stopped(self):
         data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
         response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
-        self.put_with_status_check('/api/scheduledtasks/{}/disable'.format(task_id), headers=self.headers,
+        self.put_with_status_check('/api/scheduledtasks/{}/stop'.format(task_id), headers=self.headers,
                                    content_type='application/json', status_code=SUCCESS)
-        self.assertFalse(ScheduledTask.query.filter_by(id=task_id).first().enabled)
+        self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'stopped')
 
-    def test_disable_does_not_exist(self):
-        self.put_with_status_check('/api/scheduledtasks/404/disable', headers=self.headers,
+    def test_stop_does_not_exist(self):
+        self.put_with_status_check('/api/scheduledtasks/404/stop', headers=self.headers,
                                       content_type='application/json', status_code=OBJECT_DNE_ERROR)

@@ -203,12 +203,12 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/scheduledtasks/{scheduled_task_id}/enable:
+/api/scheduledtasks/{scheduled_task_id}/{action}:
   put:
     tags:
       - Scheduler
     summary: Enable the scheduled task
-    operationId: server.endpoints.scheduler.enable_scheduled_task
+    operationId: server.endpoints.scheduler.control_scheduled_task
     produces:
       - application/json
     parameters:
@@ -217,28 +217,12 @@
         description: The ID of the scheduled task.
         required: true
         type: string
-    responses:
-      200:
-        description: Success
-      461:
-        description: Scheduled task does not exist
-        schema:
-          $ref: '#/definitions/Error'
-
-/api/scheduledtasks/{scheduled_task_id}/disable:
-  put:
-    tags:
-      - Scheduler
-    summary: Disable the scheduled task
-    operationId: server.endpoints.scheduler.disable_scheduled_task
-    produces:
-      - application/json
-    parameters:
-      - name: scheduled_task_id
+      - name: action
         in: path
-        description: The ID of the scheduled task.
+        description: The action to take on the task.
         required: true
         type: string
+        enum: [start, stop]
     responses:
       200:
         description: Success

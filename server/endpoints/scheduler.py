@@ -115,7 +115,7 @@ def update_scheduled_task():
             running_context.db.session.commit()
             return task.as_json(), SUCCESS
         else:
-            return {'error': 'Could not read object. Object does not exist.'}, OBJECT_DNE_ERROR
+            return {'error': 'Could not update object. Object does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -130,35 +130,25 @@ def delete_scheduled_task(scheduled_task_id):
             running_context.db.session.commit()
             return {}, SUCCESS
         else:
-            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+            return {'error': 'Could not delete object. Object does not exist'}, OBJECT_DNE_ERROR
 
     return __func()
 
 
-def enable_scheduled_task(scheduled_task_id):
+def control_scheduled_task(scheduled_task_id, action):
     from server.context import running_context
 
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:
-            task.enable()
-            running_context.db.session.commit()
-            return {}, SUCCESS
-        else:
-            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
-
-    return __func()
-
-
-def disable_scheduled_task(scheduled_task_id):
-    from server.context import running_context
-
-    def __func():
-        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
-        if task is not None:
-            task.disable()
-            running_context.db.session.commit()
-            return {}, SUCCESS
+            if action == 'start':
+                task.start()
+                running_context.db.session.commit()
+                return {}, SUCCESS
+            elif action == 'stop':
+                task.stop()
+                running_context.db.session.commit()
+                return {}, SUCCESS
         else:
             return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
 

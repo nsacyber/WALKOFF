@@ -27,9 +27,10 @@ AddScheduledTask:
     description:
       type: string
       description: description of this task
-    enabled:
-      type: boolean
-      description: Is this task enabled or not
+    status:
+      type: string
+      description: Status of the task
+      enum: [running, stopped]
     scheduler:
       $ref: '#/definitions/Scheduler'
 
@@ -53,9 +54,10 @@ ScheduledTask:
     description:
       type: string
       description: description of this task
-    enabled:
-      type: boolean
-      description: Is this task enabled or not
+    status:
+      type: string
+      description: Status of the task
+      enum: [running, stopped]
     scheduler:
       $ref: '#/definitions/Scheduler'
 
