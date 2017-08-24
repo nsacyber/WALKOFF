@@ -132,8 +132,6 @@ class Controller(object):
                 logger.warning('Workflow {0} not found in playbook {0}. '
                                'Cannot load.'.format(workflow_name, playbook_name))
                 return False
-
-
             self.add_child_workflows()
 
         return True
@@ -182,7 +180,7 @@ class Controller(object):
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
         workflows = [workflow for workflow in self.workflows.values() if workflow.uid in workflow_uids]
-        self.scheduler.schedule_execution(task_id, workflows, trigger)
+        self.scheduler.schedule_workflows(task_id, workflows, trigger)
 
     def create_workflow_from_template(self,
                                       playbook_name,

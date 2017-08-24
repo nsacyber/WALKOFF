@@ -25,9 +25,9 @@ class TestExecutionModes(unittest.TestCase):
                                EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,
                                EVENT_JOB_ERROR]}
         case_subscription.set_subscriptions({'case1': subs})
-        c.start()
+        c.scheduler.start()
         time.sleep(0.1)
-        c.stop(wait=False)
+        c.scheduler.stop(wait=False)
 
         start_stop_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
@@ -44,12 +44,12 @@ class TestExecutionModes(unittest.TestCase):
                                EVENT_JOB_ERROR]}
         case_subscription.set_subscriptions({'pauseResume': subs})
 
-        c.start()
-        c.pause()
+        c.scheduler.start()
+        c.scheduler.pause()
         time.sleep(0.1)
-        c.resume()
+        c.scheduler.resume()
         time.sleep(0.1)
-        c.stop(wait=False)
+        c.scheduler.stop(wait=False)
 
         pause_resume_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'pauseResume').first().events.all()

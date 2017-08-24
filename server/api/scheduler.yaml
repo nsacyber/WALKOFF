@@ -11,12 +11,8 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            status:
-              description: State of scheduler
-              type: string
-              example: 0 for stopped, 1 for running, 2 for paused
+          $ref: '#/definitions/Scheduler'
+
 /api/scheduler/{status}:
   parameters:
     - in: path
@@ -36,60 +32,7 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            status:
-              description: State of scheduler or error message
-              type: string
-              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-/api/scheduler/{job_id}/{status}:
-  parameters:
-    - in: path
-      name: job_id
-      description: The job ID that needs to be fetched
-      type: string
-      required: true
-    - in: path
-      name: status
-      description: Requested status of the job
-      type: string
-      required: true
-  get:
-    tags:
-      - Scheduler
-    summary: Pause a specific job
-    description: ''
-    operationId: server.endpoints.scheduler.update_job_status
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          properties:
-            status:
-              description: State of job
-              type: string
-              example: Job Paused
-/api/scheduler/jobs:
-  get:
-    tags:
-      - Scheduler
-    summary: Read all jobs
-    description: ''
-    operationId: server.endpoints.scheduler.read_all_jobs
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          description: A list of job objects
-          type: object
-          properties:
-            jobs:
-              $ref: '#/definitions/Job'
+          $ref: '#/definitions/Scheduler'
 
 /api/scheduledtasks:
   get:

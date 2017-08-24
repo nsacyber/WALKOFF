@@ -1,15 +1,11 @@
-Job:
+Scheduler:
   type: object
+  required: [status]
   properties:
-    name:
-      description: Job name
+    status:
+      description: State of scheduler
       type: string
-      example: jobOne
-    id:
-      description: Job ID
-      type: string
-      example: 12345
-      readOnly: true
+      example: 0 for stopped, 1 for running, 2 for paused, or a warning string
 
 AddScheduledTask:
   type: object
@@ -32,7 +28,7 @@ AddScheduledTask:
       description: Status of the task
       enum: [running, stopped]
     scheduler:
-      $ref: '#/definitions/Scheduler'
+      $ref: '#/definitions/TaskScheduler'
 
 ScheduledTask:
   type: object
@@ -59,9 +55,9 @@ ScheduledTask:
       description: Status of the task
       enum: [running, stopped]
     scheduler:
-      $ref: '#/definitions/Scheduler'
+      $ref: '#/definitions/TaskScheduler'
 
-Scheduler:
+TaskScheduler:
   type: object
   description: Scheduler to use.
   required: [args, type]

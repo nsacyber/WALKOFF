@@ -130,15 +130,18 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         def step_2_finished_listener(sender, **kwargs):
             if sender.name == '2':
+                print('triggered')
                 waiter.set()
 
         def pause_resume_thread():
+            print('pause res thread')
             self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
             gevent.sleep(1.5)
             self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
 
         def step_1_about_to_begin_listener(sender, **kwargs):
             if sender.name == '1':
+                print('about')
                 gevent.spawn(pause_resume_thread)
 
         FunctionExecutionSuccess.connect(step_2_finished_listener)
@@ -146,8 +149,10 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         start = default_timer()
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        print('waiting')
         waiter.wait(timeout=5)
         duration = default_timer() - start
+        print(duration)
         self.assertTrue(2.5 < duration < 5)
 
     def test_pause_and_resume_workflow_breakpoint(self):

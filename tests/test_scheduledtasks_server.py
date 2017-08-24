@@ -9,7 +9,7 @@ from server.returncodes import *
 class TestScheduledTasksServer(ServerTestCase):
     
     def setUp(self):
-        self.date_scheduler = {'type': 'date', 'args': {'date': '2017-01-25 10:00:00'}}
+        self.date_scheduler = {'type': 'date', 'args': {'run_date': '2017-01-25 10:00:00'}}
     
     def tearDown(self):
         tasks = ScheduledTask.query.all()
@@ -129,7 +129,16 @@ class TestScheduledTasksServer(ServerTestCase):
         self.post_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
                                    content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
-    def test_update_scheduled_task_name_already_exists(self):
+    def test_update_scheduled_task_name_already_exists_same_id(self):
+        data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
+        response = json.loads(self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
+                                           content_type='application/json').get_data(as_text=True))
+        task_id = response['id']
+        update = {'name': 'test1', 'description': 'desc', 'id': task_id}
+        self.post_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
+                                   content_type='application/json', status_code=SUCCESS)
+
+    def test_update_scheduled_task_name_already_exists_different_id(self):
         data = {"name": 'test1', "workflows": ['a', 'b', 'c'], "scheduler": self.date_scheduler}
         self.app.put('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
                                            content_type='application/json')

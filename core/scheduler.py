@@ -23,13 +23,14 @@ def construct_scheduler(scheduler_args):
     scheduler_args = scheduler_args['args']
     try:
         if scheduler_type == 'date':
-            return DateTrigger(run_date=scheduler_args['date'])
+            return DateTrigger(**scheduler_args)
         elif scheduler_type == 'interval':
             return IntervalTrigger(**scheduler_args)
         elif scheduler_type == 'cron':
             return CronTrigger(**scheduler_args)
         else:
-            raise InvalidSchedulerArgs('Invalid scheduler type {}. Types allowed are "date", "interval", "cron"')
+            raise InvalidSchedulerArgs(
+                'Invalid scheduler type {0} with args {1}.'.format(scheduler_type, scheduler_args))
     except (KeyError, ValueError, TypeError):
         raise InvalidSchedulerArgs('Invalid scheduler arguments')
 
@@ -106,7 +107,6 @@ class Scheduler(object):
             return "Scheduler already running."
         return self.scheduler.state
 
-    # Stops active execution
     def stop(self, wait=True):
         """Stops active execution.
 
@@ -125,7 +125,6 @@ class Scheduler(object):
             return "Scheduler already stopped."
         return self.scheduler.state
 
-    # Pauses active execution
     def pause(self):
         """Pauses active execution.
 
@@ -143,7 +142,6 @@ class Scheduler(object):
             return "Scheduler is in STOPPED state and cannot be paused."
         return self.scheduler.state
 
-    # Resumes active execution
     def resume(self):
         """Resumes active execution.
 
@@ -158,7 +156,6 @@ class Scheduler(object):
             return "Scheduler is not in PAUSED state and cannot be resumed."
         return self.scheduler.state
 
-    # Pauses active execution of specific job
     def pause_workflows(self, task_id, workflow_uids):
         for workflow_uid in workflow_uids:
             job_id = construct_task_id(task_id, workflow_uid)
@@ -168,7 +165,6 @@ class Scheduler(object):
             except JobLookupError:
                 logger.warning('Cannot pause scheduled workflow {}. Workflow ID not found'.format(job_id))
 
-    # Resumes active execution of specific job
     def resume_workflows(self, task_id, workflow_uids):
         for workflow_uid in workflow_uids:
             job_id = construct_task_id(task_id, workflow_uid)
