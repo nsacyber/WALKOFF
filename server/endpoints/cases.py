@@ -1,7 +1,7 @@
 import json
 import os
 from flask import request, current_app
-from flask_security import auth_token_required, roles_accepted
+from server.security import auth_token_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.case.subscription import delete_cases, convert_to_event_names
@@ -13,22 +13,22 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
 from server.returncodes import *
 from server.database import db
 
+@auth_token_required
 def read_all_cases():
     from server.flaskserver import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         return [case.as_json() for case in running_context.CaseSubscription.query.all()], SUCCESS
     return __func()
 
 
-def create_case():
+@auth_token_required
+def create_case(body):
     from server.flaskserver import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         case_name = data['name']
         case_obj = running_context.CaseSubscription.query.filter_by(name=case_name).first()
@@ -41,13 +41,12 @@ def create_case():
         else:
             current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
             return {"error": "Case already exists."}, OBJECT_EXISTS_ERROR
-    return __func()
+    return __func(body)
 
-
+@auth_token_required
 def read_case(case_id):
     from server.flaskserver import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         case_obj = case_database.case_db.session.query(case_database.Case) \
@@ -59,13 +58,12 @@ def read_case(case_id):
             return {'error': 'Case does not exist.'}, OBJECT_DNE_ERROR
     return __func()
 
-
-def update_case():
+@auth_token_required
+def update_case(body):
     from server.flaskserver import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         case_obj = running_context.CaseSubscription.query.filter_by(id=data['id']).first()
         if case_obj:
@@ -92,13 +90,13 @@ def update_case():
             current_app.logger.error('Cannot update case {0}. Case does not exist.'.format(data['id']))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
 
-    return __func()
+    return __func(body)
 
-
+@auth_token_required
 def delete_case(case_id):
     from server.flaskserver import running_context
 
-    @auth_token_required
+
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         case_obj = running_context.CaseSubscription.query.filter_by(id=case_id).first()
@@ -113,13 +111,12 @@ def delete_case(case_id):
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
-
-def import_cases():
+@auth_token_required
+def import_cases(body):
     from server.flaskserver import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
                     else core.config.paths.default_case_export_path)
@@ -146,15 +143,15 @@ def import_cases():
         else:
             current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
             return {"error": "File does not exist."}, IO_ERROR
-    return __func()
+    return __func(body)
 
-
-def export_cases():
+@auth_token_required
+def export_cases(body):
     from server.flaskserver import running_context
 
-    @auth_token_required
+
     @roles_accepted(*running_context.user_roles['/cases'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
                     else core.config.paths.default_case_export_path)
@@ -166,13 +163,12 @@ def export_cases():
         except (OSError, IOError) as e:
             current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, format_exception_message(e)))
             return {"error": "Could not write to file."}, IO_ERROR
-    return __func()
+    return __func(body)
 
-
+@auth_token_required
 def read_all_events(case):
     from server.flaskserver import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         try:

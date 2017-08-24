@@ -2,7 +2,7 @@ import os
 import sys
 import importlib
 from flask import Blueprint, render_template, request, g, current_app
-from flask_security import roles_required, auth_token_required
+from server.security import roles_required, auth_token_required
 from server import forms
 
 widgets_page = Blueprint('widgetsPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')

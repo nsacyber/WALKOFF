@@ -1,6 +1,6 @@
 import json
 
-from flask_security.utils import verify_password
+from server.security import verify_password, encrypt_password
 from server import flaskserver as server
 from tests.util.servertestcase import ServerTestCase
 from server.returncodes import *
@@ -24,7 +24,7 @@ class TestUsersAndRoles(ServerTestCase):
             if user:
                 server.running_context.user_datastore.delete_user(user)
 
-            test_user = server.running_context.user_datastore.get_user("test")
+            test_user = server.running_context.user_datastore.get_user(username="test")
             if test_user:
                 server.running_context.user_datastore.delete_user(test_user)
 
@@ -77,12 +77,13 @@ class TestUsersAndRoles(ServerTestCase):
             self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
                          content_type='application/json').get_data(as_text=True))
         user_id = response['id']
+
         data = {"old_password": self.password, "password": "testPassword", "id": user_id}
         self.post_with_status_check('/api/users', data=json.dumps(data),
                                     headers=self.headers, content_type='application/json', status_code=SUCCESS)
         with server.app.app_context():
-            user = server.database.user_datastore.get_user(self.email)
-            self.assertTrue(verify_password("testPassword", user.password))
+            user = server.running_context.user_datastore.get_user(username=self.email)
+            self.assertTrue(verify_password(user.password, "testPassword"))
 
     def test_edit_user_password_does_not_match(self):
         data = {"username": self.email, "password": self.password}
@@ -90,12 +91,13 @@ class TestUsersAndRoles(ServerTestCase):
             self.app.put('/api/users', data=json.dumps(data), headers=self.headers,
                          content_type='application/json').get_data(as_text=True))
         user_id = response['id']
+
         data = {"old_password": 'supersecretpassword#1!', "password": "testPassword", "id": user_id}
         self.post_with_status_check('/api/users', data=json.dumps(data),
                                     headers=self.headers, content_type='application/json', status_code=400)
         with server.app.app_context():
-            user = server.database.user_datastore.get_user(self.email)
-            self.assertTrue(verify_password(self.password, user.password))
+            user = server.running_context.user_datastore.get_user(self.email)
+            self.assertFalse(verify_password(encrypt_password(self.password), user.password))
 
     def test_remove_user(self):
         data = {"username": self.email, "password": self.password}

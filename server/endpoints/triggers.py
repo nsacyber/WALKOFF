@@ -1,9 +1,10 @@
+
 from flask import request, current_app
-from flask_security import roles_accepted
+from server.security import roles_accepted, auth_token_required
 from server.returncodes import *
 from server.database import db
 
-
+@auth_token_required
 def read_all_triggers():
     from server.context import running_context
 
@@ -13,8 +14,8 @@ def read_all_triggers():
 
     return __func()
 
-
-def listener():
+@auth_token_required
+def listener(body):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
@@ -35,8 +36,8 @@ def listener():
 
     return __func()
 
-
-def create_trigger(trigger_name):
+@auth_token_required
+def create_trigger(body, trigger_name):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
@@ -62,7 +63,7 @@ def create_trigger(trigger_name):
 
     return __func()
 
-
+@auth_token_required
 def read_trigger(trigger_name):
     from server.context import running_context
 
@@ -77,8 +78,8 @@ def read_trigger(trigger_name):
 
     return __func()
 
-
-def update_trigger(trigger_name):
+@auth_token_required
+def update_trigger(body, trigger_name):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
@@ -107,7 +108,7 @@ def update_trigger(trigger_name):
 
     return __func()
 
-
+@auth_token_required
 def delete_trigger(trigger_name):
     from server.context import running_context
 
