@@ -5,7 +5,6 @@ from core import helpers
 from core.config import paths
 import core.config.config
 import connexion
-from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
 from gevent import monkey
 
@@ -117,12 +116,14 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
-
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
+
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
+
+
     compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
     _app.config.update(
@@ -134,7 +135,7 @@ def create_app():
         SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
         SECURITY_POST_LOGIN_VIEW='/',
         WTF_CSRF_ENABLED=False,
-        STATIC_FOLDER=os.path.abspath('server/static')
+        STATIC_FOLDER=os.path.abspath('server/static'),
     )
     _app.jinja_options = Flask.jinja_options.copy()
     _app.jinja_options.update(dict(
@@ -145,6 +146,25 @@ def create_app():
     ))
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # _app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+    # Only allow JWT cookies to be sent over https. In production, this
+    # should likely be True
+    # _app.config['JWT_COOKIE_SECURE'] = False
+    # _app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
+
+    # _app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
+    # _app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+    _app.config["JWT_TOKEN_LOCATION"] = 'headers'
+    _app.config['JWT_HEADER_NAME'] = 'Authentication-Token'
+    _app.config['JWT_HEADER_TYPE'] = ""
+
+    from server.database import db
+    db.init_app(_app)
+    from server.security import jwt, principal
+    jwt.init_app(_app)
+    principal.init_app(_app)
+
     connexion_app.add_api('composed_api.yaml')
     register_blueprints(_app)
     core.config.config.initialize()
@@ -164,24 +184,25 @@ def create_user():
     from server.context import running_context
     from . import database
     from server import flaskserver
+    from server.security import encrypt_password
 
-    running_context.db.create_all()
+    database.db.create_all()
 
     if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=flaskserver.default_urls)
+        admin_role = database.Role.create_role(name='admin',
+                                                description='administrator',
+                                                pages=flaskserver.default_urls)
 
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        running_context.user_datastore.add_role_to_user(u, admin_role)
-        running_context.db.session.commit()
+        u = database.User.create_user(email='admin', password=encrypt_password('admin'))
+        database.Role.add_role_to_user(u, admin_role)
+        database.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
+                                           for _app in database.db.session.query(running_context.App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
-    running_context.db.session.commit()
+        database.db.session.add(running_context.App(app=app_name, devices=[]))
+    database.db.session.commit()
 
     running_context.CaseSubscription.sync_to_subscriptions()
 
@@ -192,25 +213,32 @@ def create_test_data():
     from server.context import running_context
     from . import database
     from server import flaskserver
+    from server.security import encrypt_password
 
-    running_context.db.create_all()
+    database.db.create_all()
 
     if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=flaskserver.default_urls)
+        admin_role = database.Role.create_role(name='admin',
+                                               description='administrator',
+                                               pages=flaskserver.default_urls)
 
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        running_context.user_datastore.add_role_to_user(u, admin_role)
-        running_context.db.session.commit()
+        u = database.User.create_user(email='admin', password=encrypt_password('admin'))
+        database.Role.add_role_to_user(u, admin_role)
+        database.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
+                                           for _app in database.db.session.query(running_context.App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
-    running_context.db.session.commit()
+        database.db.session.add(running_context.App(app=app_name, devices=[]))
+    database.db.session.commit()
 
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers
+
+
+
+
+
+

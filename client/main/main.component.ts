@@ -15,6 +15,6 @@ export class MainComponent {
 	currentUser: string;
 
 	constructor() { 
-		this.currentUser = localStorage.getItem('currentUser');
+		this.currentUser = sessionStorage.getItem('currentUser');
 	}
 }

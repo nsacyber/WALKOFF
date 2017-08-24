@@ -1,11 +1,10 @@
 import json
 import os
-import sys
 import logging
-
-from flask import render_template, redirect, url_for, send_from_directory
-from flask_security import login_required, auth_token_required, current_user, roles_accepted
-from flask_security.utils import encrypt_password
+import sys
+from flask import render_template, send_from_directory, request, jsonify, redirect, url_for, Response, make_response
+from server.security import current_user, roles_accepted, verify_password, create_access_token, auth_token_required, create_refresh_token
+from flask_jwt_extended import set_access_cookies, set_refresh_cookies, unset_jwt_cookies, get_jwt_identity, current_user
 from gevent import monkey
 import xml.dom.minidom as minidom
 from xml.etree import ElementTree
@@ -14,7 +13,6 @@ import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-
 from core.helpers import combine_dicts
 from server.context import running_context
 from . import database, interface
@@ -31,59 +29,6 @@ urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/l
 default_urls = urls
 database.initialize_user_roles(urls)
 
-
-# Creates Test Data
-@app.before_first_request
-def create_user():
-    running_context.db.create_all()
-
-    if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=default_urls)
-
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        running_context.user_datastore.add_role_to_user(u, admin_role)
-        running_context.db.session.commit()
-
-    apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
-    app.logger.debug('Found apps: {0}'.format(apps))
-    for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
-    running_context.db.session.commit()
-
-    running_context.CaseSubscription.sync_to_subscriptions()
-
-    app.logger.handlers = logging.getLogger('server').handlers
-
-# This is required by zone.js as it need to access the
-# "main.js" file in the "ClientApp\app" folder which it
-# does by accessing "<your-site-path>/app/main.js"
-# @app.route('/app/<path:filename>')
-# def client_app_app_folder(filename):
-#     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
-
-
-# Custom static data
-@app.route('/client/<path:filename>')
-def client_app_folder(filename):
-    return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
-
-# @app.route('/')
-# @login_required
-# def default():
-#     if current_user.is_authenticated:
-#         default_page_name = 'dashboard'
-#         args = {"apps": running_context.get_apps(),
-#                 "authKey": current_user.get_auth_token(),
-#                 "currentUser": current_user.email,
-#                 "default_page": default_page_name}
-#         return render_template("container.html", **args)
-#     else:
-#         return {"status": "Could Not Log In."}
-
-
 @app.route('/')
 @app.route('/controller')
 @app.route('/playbook')
@@ -92,19 +37,17 @@ def client_app_folder(filename):
 @app.route('/cases')
 @app.route('/settings')
 def default():
-    if current_user.is_authenticated:
-        args = {"apps": running_context.get_apps(),
-                "authKey": current_user.get_auth_token(),
-                "currentUser": current_user.email,
-                "default_page": 'controller'}
-        return render_template("index.html", **args)
-    else:
-        return redirect(url_for('login'))
+    # args = {"apps": running_context.get_apps(),
+    #         "authKey": current_user.get_auth_token(),
+    #         "authKey": "",
+    #         "currentUser": current_user.id,
+    #         "default_page": 'controller'}
+    args = {}
+    return render_template("index.html", **args)
 
-# @app.route('/login', methods=['GET'])
-# def login():
-#     return render_template("login_user.html")
-
+@app.route('/login')
+def login_page():
+    return render_template("login.html")
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @auth_token_required
@@ -141,15 +84,50 @@ def system_pages(name):
 
 
 # Returns the API key for the user
-@app.route('/key', methods=['GET', 'POST'])
-@login_required
+@app.route('/key', methods=['POST'])
+@auth_token_required
 def login_info():
-    if current_user.is_authenticated:
-        return json.dumps({"auth_token": current_user.get_auth_token()})
+    print(get_jwt_identity())
+    #user = database.User.query.filter(database.User.email == username).first()
+    #if user:
+    #     pass
+    # else:
+    #     app.logger.debug('Unsuccessful login attempt')
+    #     return {"status": "Could Not Log In."}
+    return "", 200
+
+# Returns the API key for the user
+@app.route('/login-process', methods=['POST'])
+def login():
+    print(request.data)
+    data = request.get_json()
+    print(data)
+    username = data["username"]
+    password = data["password"]
+    user = database.User.query.filter(database.User.email == username).first()
+    if user:
+        if verify_password(user.password, password):
+            access_token = create_access_token(identity=user)
+            refresh_token = create_refresh_token(identity=user)
+            #resp = jsonify({'login': True})
+            # resp = Response(response=dict(login = True), status=200)
+            # set_access_cookies(resp, access_token)
+            # set_refresh_cookies(resp, refresh_token)
+
+            # resp = Response(response=access_token, headers={"Authentication-Token": access_token}, status=200, is_redirect=True, url=url_for("/"))
+            # resp = app.make_response(redirect(request.url_root, code=301))
+            # resp.headers["Authentication-Token"] =  access_token
+            return jsonify({'login': True, 'authentication-token': access_token})
+        else:
+            app.logger.debug('Unsuccessful login attempt')
+            return jsonify({"login" : False})
     else:
         app.logger.debug('Unsuccessful login attempt')
-        return {"status": "Could Not Log In."}
+        return jsonify({"login" : False})
 
+@app.route('/logout', methods=['GET'])
+def logout():
+    return render_template("logout.html")
 
 @app.route('/widgets', methods=['GET'])
 @auth_token_required
@@ -180,3 +158,45 @@ def write_playbook_to_file(playbook_name):
                      'Error: {0}'.format(helpers.format_exception_message(e)))
         with open(playbook_filename, 'w') as f:
             f.write(backup)
+
+# This is required by zone.js as it need to access the
+# "main.js" file in the "ClientApp\app" folder which it
+# does by accessing "<your-site-path>/app/main.js"
+# @app.route('/app/<path:filename>')
+# def client_app_app_folder(filename):
+#     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
+
+# Creates Test Data
+@app.before_first_request
+def create_user():
+    from server.context import running_context
+    from . import database
+    from server import flaskserver
+    from server.security import encrypt_password
+
+    database.db.create_all()
+
+    if not database.User.query.first():
+        admin_role = database.Role.create_role(name='admin',
+                                               description='administrator',
+                                               pages=flaskserver.default_urls)
+
+        u = database.User.create_user(email='admin', password=encrypt_password('admin'))
+        database.Role.add_role_to_user(u, admin_role)
+        database.db.session.commit()
+
+    apps = set(helpers.list_apps()) - set([_app.name
+                                           for _app in database.db.session.query(running_context.App).all()])
+    app.logger.debug('Found apps: {0}'.format(apps))
+    for app_name in apps:
+        database.db.session.add(running_context.App(app=app_name, devices=[]))
+    database.db.session.commit()
+
+    running_context.CaseSubscription.sync_to_subscriptions()
+
+    app.logger.handlers = logging.getLogger('server').handlers
+
+# Custom static data
+@app.route('/client/<path:filename>')
+def client_app_folder(filename):
+    return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)

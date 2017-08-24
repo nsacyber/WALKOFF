@@ -5,7 +5,7 @@
     var filtersList = [];
     var triggerEditor = null;
     var currentTriggerName = null;
-    var authKey = localStorage.getItem('authKey');
+    var authKey = sessionStorage.getItem('authKey');
 
     $("#editformSubmit").prop("disabled",true);
     $("#editTrigger").prop("disabled",true);

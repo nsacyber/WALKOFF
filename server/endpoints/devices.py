@@ -1,16 +1,16 @@
 import json
 from flask import current_app, request
-from flask_security import roles_accepted, auth_token_required
+from server.security import roles_accepted, auth_token_required
 import core.config.config
 import core.config.paths
 from server.returncodes import *
 import pyaes
+from server.database import db
 
-
+@auth_token_required
 def read_all_devices():
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         query = running_context.Device.query.all()
@@ -22,13 +22,12 @@ def read_all_devices():
 
     return __func()
 
-
-def import_devices():
+@auth_token_required
+def import_devices(body):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         try:
@@ -52,15 +51,14 @@ def import_devices():
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 
-    return __func()
+    return __func(body)
 
-
-def export_devices():
+@auth_token_required
+def export_devices(body):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         returned_json = {}
@@ -83,13 +81,12 @@ def export_devices():
             current_app.logger.debug('Exported devices to {0}'.format(filename))
             return {}, SUCCESS
 
-    return __func()
+    return __func(body)
 
-
+@auth_token_required
 def read_device(device_id):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
@@ -102,18 +99,17 @@ def read_device(device_id):
 
     return __func()
 
-
+@auth_token_required
 def delete_device(device_id):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
         if dev is not None:
-            running_context.db.session.delete(dev)
+            db.session.delete(dev)
             current_app.logger.info('Device removed {0}'.format(device_id))
-            running_context.db.session.commit()
+            db.session.commit()
             return {}, SUCCESS
         else:
             current_app.logger.error('Could not delete device {0}. '
@@ -122,13 +118,12 @@ def delete_device(device_id):
 
     return __func()
 
-
-def create_device():
+@auth_token_required
+def create_device(body):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         if len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
             current_app.logger.error('Could not create device {0}. '
@@ -157,20 +152,19 @@ def create_device():
                                                 app_id=data['app'])
         return dev.as_json(), OBJECT_CREATED
 
-    return __func()
+    return __func(body)
 
-
-def update_device():
+@auth_token_required
+def update_device(body):
     from server.context import running_context
 
-    @auth_token_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func():
+    def __func(body):
         data = request.get_json()
         dev = running_context.Device.query.filter_by(id=data['id']).first()
         if dev is not None:
             dev.edit_device(data)
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
                                                                            dev.name,
                                                                            dev.as_json(with_apps=False)))
@@ -181,4 +175,4 @@ def update_device():
                                      'Device does not exist'.format(data['id']))
             return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
 
-    return __func()
+    return __func(body)

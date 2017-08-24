@@ -24,7 +24,7 @@ $(function(){
     var filtersList = [];
     var startNode = null;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
-    var authKey = localStorage.getItem('authKey');
+    var authKey = sessionStorage.getItem('authKey');
 
     //--------------------
     // Top level functions

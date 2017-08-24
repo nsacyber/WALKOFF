@@ -44,9 +44,9 @@ Tested on Windows and Linux
 *Requirements for apps may differ* 
 
 ## Installation Instructions
-First, install the dependencies with the following command:
+First, install the dependencies for WALKOFF with the following command:
 
-   `pip install -r requirements.txt`
+   `python make.py`
    
 To install the dependencies for each individual app, run:
 
@@ -55,15 +55,6 @@ To install the dependencies for each individual app, run:
 Or to just install the dependencies for specific apps:
 
    `python installDependencies -a AppOne,AppTwo,AppThree`
-
-Next, navigate to /client and install the client dependencies with the following commands:
-
-   `npm install`
-   `npm install gulp-cli -g` (If you need to install gulp)
-
-Next, use gulp to build the client:
-
-   `gulp ts`
 
 That's it! To start up the server, just navigate back to the walkoff root and run:
 
