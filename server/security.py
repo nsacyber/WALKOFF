@@ -42,9 +42,9 @@ def user_loader_callback(identity):
 def _get_unauthorized_response(text="UNAUTHORIZED.", headers=None):
     text = text or ""
     headers = headers or {}
-    print("ERROR: ", text)
-    return redirect(url_for("login_page"))
-    # return Response(text, 401, headers)
+    print("ERROR: ", text, request)
+    return Response(text, 401, headers)
+
 
 
 def roles_accepted(*roles):

@@ -21,8 +21,8 @@
                         }
                     ],
                     "position": {
-                        "x": -450.0,
-                        "y": -50.0
+                        "x": -450,
+                        "y": -50
                     },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
@@ -43,8 +43,8 @@
                         }
                     ],
                     "position": {
-                        "x": -230.0,
-                        "y": -30.0
+                        "x": -230,
+                        "y": -30
                     },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
@@ -56,24 +56,17 @@
                     "device": "",
                     "inputs": [],
                     "name": "3",
-                    "next": [
-                        {
-                            "flags": [],
-                            "name": "2",
-                            "status": "Success",
-                            "uid": "55541eee50774accbf70a8d7df17a027"
-                        }
-                    ],
+                    "next": [],
                     "position": {
-                        "x": -50.0,
-                        "y": 10.0
+                        "x": -50,
+                        "y": 10
                     },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
                     "widgets": []
                 }
             ],
-            "uid": "3c7f67c8ea6e481eb5d37b488a7b15b3"
+            "uid": "1f25ef58b5c14c8292e00eeb2c5f2916"
         }
     ]
 }

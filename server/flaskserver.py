@@ -30,19 +30,19 @@ default_urls = urls
 database.initialize_user_roles(urls)
 
 @app.route('/')
-
 @app.route('/controller')
 @app.route('/playbook')
 @app.route('/devices')
 @app.route('/triggers')
 @app.route('/cases')
 @app.route('/settings')
-@auth_token_required
 def default():
-    args = {"apps": running_context.get_apps(),
-            "authKey":"",
-            "currentUser": current_user.id,
-            "default_page": 'controller'}
+    # args = {"apps": running_context.get_apps(),
+    #         "authKey": current_user.get_auth_token(),
+    #         "authKey": "",
+    #         "currentUser": current_user.id,
+    #         "default_page": 'controller'}
+    args = {}
     return render_template("index.html", **args)
 
 @app.route('/login')
@@ -99,9 +99,9 @@ def login_info():
 # Returns the API key for the user
 @app.route('/login-process', methods=['POST'])
 def login():
-    print(request.json)
+    print(request.data)
     data = request.get_json()
-
+    print(data)
     username = data["username"]
     password = data["password"]
     user = database.User.query.filter(database.User.email == username).first()
@@ -110,23 +110,24 @@ def login():
             access_token = create_access_token(identity=user)
             refresh_token = create_refresh_token(identity=user)
             #resp = jsonify({'login': True})
-            resp = Response(response=dict(login = True), status=200)
-            set_access_cookies(resp, access_token)
-            set_refresh_cookies(resp, refresh_token)
-            return resp
+            # resp = Response(response=dict(login = True), status=200)
+            # set_access_cookies(resp, access_token)
+            # set_refresh_cookies(resp, refresh_token)
+
+            # resp = Response(response=access_token, headers={"Authentication-Token": access_token}, status=200, is_redirect=True, url=url_for("/"))
+            # resp = app.make_response(redirect(request.url_root, code=301))
+            # resp.headers["Authentication-Token"] =  access_token
+            return jsonify({'login': True, 'authentication-token': access_token})
         else:
             app.logger.debug('Unsuccessful login attempt')
-            return jsonify({"login":False})
+            return jsonify({"login" : False})
     else:
         app.logger.debug('Unsuccessful login attempt')
-        return {"status": "Could Not Log In."}
+        return jsonify({"login" : False})
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    rd = redirect('/login')
-    resp = app.make_response(rd)
-    unset_jwt_cookies(resp)
-    return resp
+    return render_template("logout.html")
 
 @app.route('/widgets', methods=['GET'])
 @auth_token_required
@@ -157,6 +158,13 @@ def write_playbook_to_file(playbook_name):
                      'Error: {0}'.format(helpers.format_exception_message(e)))
         with open(playbook_filename, 'w') as f:
             f.write(backup)
+
+# This is required by zone.js as it need to access the
+# "main.js" file in the "ClientApp\app" folder which it
+# does by accessing "<your-site-path>/app/main.js"
+# @app.route('/app/<path:filename>')
+# def client_app_app_folder(filename):
+#     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
 
 # Creates Test Data
 @app.before_first_request

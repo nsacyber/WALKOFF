@@ -29,35 +29,45 @@
             <h2>WALKOFF Login</h2>
         </div>
 
-        <div id="message">
+        <div id="message"></div>
+        <form id="loginForm" action="/login-process" method="POST">
+            <div class="row">
+                <label class="col-4-xs">Username:</label>
+                <input id="username" type="text" class="col-8-xs" />
+            </div>
+            <div class="row">
+                <label class="col-4-xs">Password:</label>
+                <input id="password" type="password" class="col-8-xs" />
+            </div>
+            <div class="row">
+                <input type="submit" id="login" class="btn btn-primary" value="Login" />
+            </div>
 
-        </div>
-        <div class="row">
-            <label class="col-4-xs">Username:</label>
-            <input id="username" type="text" class="col-8-xs">
-        </div>
-        <div class="row">
-            <label class="col-4-xs">Password:</label>
-            <input id="password" type="password" class="col-8-xs">
-        </div>
-        <div class="row">
-            <button id="login" class="btn btn-primary">Login</button>
-        </div>
+        </form>
 
     </div>
     <script>
-        $("#login").on("click", function(){
+        $("#loginForm").on("submit", function(e){
+            e.preventDefault();
             var username = $("#username").val();
             var password = $("#password").val();
-
             $.ajax({
                 url:'/login-process',
                 contentType:'application/json',
                 data:JSON.stringify({"username":username, "password": password}),
                 type:"POST",
-                success: function(e){
-                    console.log(e);
-                    window.location.replace("/");
+                async: false,
+                success: function(  data){
+
+                    if(data["login"] == true){
+
+                        window.sessionStorage.setItem("authKey", data["authentication-token"]);
+                        window.sessionStorage.setItem("currentUser", username);
+                        location.href = "/";
+                    }
+                    else{
+                        $("#message").text("Invalid Login");
+                    }
                 }
             });
         });

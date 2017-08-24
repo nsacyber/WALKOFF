@@ -5,7 +5,7 @@ import os
 import core.config.config
 import core.config.paths
 import tests.config
-
+import base64
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
 
@@ -67,7 +67,7 @@ class ServerTestCase(unittest.TestCase):
 
         self.app = server.flaskserver.app.test_client(self)
         self.app.testing = True
-        self.app.use_cookies = True
+        # self.app.use_cookies = True
 
         self.context = server.flaskserver.app.test_request_context()
         self.context.push()
@@ -76,7 +76,8 @@ class ServerTestCase(unittest.TestCase):
         server.flaskserver.running_context.db = db
 
         post = self.app.post('/login-process', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
-        self.headers = post.headers
+        key = json.loads(post.data.decode("ascii"))
+        self.headers = {"Authentication-Token": key["authentication-token"]}
 
         # key = json.loads(response)["auth_token"]
         # self.headers = {"Authentication-Token": key}

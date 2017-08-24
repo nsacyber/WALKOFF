@@ -5,7 +5,7 @@ import core.config.config
 import core.config.paths
 from server.returncodes import *
 import pyaes
-
+from server.database import db
 
 @auth_token_required
 def read_all_devices():
@@ -107,9 +107,9 @@ def delete_device(device_id):
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
         if dev is not None:
-            running_context.db.session.delete(dev)
+            db.session.delete(dev)
             current_app.logger.info('Device removed {0}'.format(device_id))
-            running_context.db.session.commit()
+            db.session.commit()
             return {}, SUCCESS
         else:
             current_app.logger.error('Could not delete device {0}. '
@@ -164,7 +164,7 @@ def update_device(body):
         dev = running_context.Device.query.filter_by(id=data['id']).first()
         if dev is not None:
             dev.edit_device(data)
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
                                                                            dev.name,
                                                                            dev.as_json(with_apps=False)))

@@ -2,6 +2,7 @@
 from flask import request, current_app
 from server.security import roles_accepted, auth_token_required
 from server.returncodes import *
+from server.database import db
 
 @auth_token_required
 def read_all_triggers():
@@ -49,10 +50,10 @@ def create_trigger(body, trigger_name):
         data['name'] = trigger_name
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query is None:
-            running_context.db.session.add(
+            db.session.add(
                 running_context.Triggers(**data))
 
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Added trigger: '
                                     '{0}'.format(data))
             return {}, OBJECT_CREATED
@@ -97,7 +98,7 @@ def update_trigger(body, trigger_name):
 
             trigger.edit_trigger(data)
 
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Edited trigger {0}'.format(trigger))
             return trigger.as_json(), SUCCESS
 
@@ -116,7 +117,7 @@ def delete_trigger(trigger_name):
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:
             running_context.Triggers.query.filter_by(name=trigger_name).delete()
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Deleted trigger {0}'.format(trigger_name))
             return SUCCESS
         else:

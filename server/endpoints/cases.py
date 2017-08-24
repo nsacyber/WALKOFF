@@ -11,7 +11,7 @@ from core.helpers import format_exception_message
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
     EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from server.returncodes import *
-
+from server.database import db
 
 @auth_token_required
 def read_all_cases():
@@ -34,8 +34,8 @@ def create_case(body):
         case_obj = running_context.CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
             case = running_context.CaseSubscription(**data)
-            running_context.db.session.add(case)
-            running_context.db.session.commit()
+            db.session.add(case)
+            db.session.commit()
             current_app.logger.debug('Case added: {0}'.format(case_name))
             return case.as_json(), OBJECT_CREATED
         else:
@@ -75,7 +75,7 @@ def update_case(body):
             if 'name' in data and data['name']:
                 case_subscription.rename_case(case_obj.name, data['name'])
                 case_obj.name = data['name']
-                running_context.db.session.commit()
+                db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
             if 'subscriptions' in data:
                 case_obj.subscriptions = json.dumps(data['subscriptions'])
@@ -84,7 +84,7 @@ def update_case(body):
                     subscriptions['controller'] = convert_to_event_names(subscriptions['controller'])
                 for uid, events in subscriptions.items():
                     case_subscription.modify_subscription(case_name, uid, events)
-            running_context.db.session.commit()
+            db.session.commit()
             return case_obj.as_json(), SUCCESS
         else:
             current_app.logger.error('Cannot update case {0}. Case does not exist.'.format(data['id']))
@@ -102,8 +102,8 @@ def delete_case(case_id):
         case_obj = running_context.CaseSubscription.query.filter_by(id=case_id).first()
         if case_obj:
             delete_cases([case_obj.name])
-            running_context.db.session.delete(case_obj)
-            running_context.db.session.commit()
+            db.session.delete(case_obj)
+            db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
             return {}, SUCCESS
         else:
@@ -128,9 +128,9 @@ def import_cases(body):
                     cases = json.loads(cases_file)
                 case_subscription.add_cases(cases)
                 for case in cases:
-                    running_context.db.session.add(running_context.CaseSubscription(name=case))
+                    db.session.add(running_context.CaseSubscription(name=case))
                     running_context.CaseSubscription.update(case)
-                running_context.db.session.commit()
+                db.session.commit()
                 return {"cases": case_subscription.subscriptions}, SUCCESS
             except (OSError, IOError) as e:
                 current_app.logger.error('Error importing cases from file '

@@ -147,14 +147,17 @@ def create_app():
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    _app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+    # _app.config['JWT_TOKEN_LOCATION'] = ['cookies']
     # Only allow JWT cookies to be sent over https. In production, this
     # should likely be True
-    _app.config['JWT_COOKIE_SECURE'] = False
+    # _app.config['JWT_COOKIE_SECURE'] = False
     # _app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 
     # _app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
-    _app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+    # _app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+    _app.config["JWT_TOKEN_LOCATION"] = 'headers'
+    _app.config['JWT_HEADER_NAME'] = 'Authentication-Token'
+    _app.config['JWT_HEADER_TYPE'] = ""
 
     from server.database import db
     db.init_app(_app)
@@ -166,7 +169,6 @@ def create_app():
     register_blueprints(_app)
     core.config.config.initialize()
     setup_case_stream()
-
     monkey.patch_all()
     return _app
 
@@ -237,11 +239,6 @@ def create_test_data():
 
 
 
-# This is required by zone.js as it need to access the
-# "main.js" file in the "ClientApp\app" folder which it
-# does by accessing "<your-site-path>/app/main.js"
-# @app.route('/app/<path:filename>')
-# def client_app_app_folder(filename):
-#     return send_from_directory(os.path.join(core.config.paths.client_path, "app"), filename)
+
 
 

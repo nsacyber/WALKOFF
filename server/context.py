@@ -24,7 +24,6 @@ class Context(object):
         self.CaseSubscription = CaseSubscription
         self.flask_app = app
         self.user_roles = userRoles
-        self.db = None
         self.user_datastore = UserDataStore()
         self.controller = Controller()
 
