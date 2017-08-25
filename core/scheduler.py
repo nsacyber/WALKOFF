@@ -57,9 +57,9 @@ class Scheduler(object):
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.uid = 'controller'
 
-    def schedule_workflows(self, task_id, workflows, trigger):
+    def schedule_workflows(self, task_id, executable, workflows, trigger):
         for workflow in workflows:
-            self.scheduler.add_job(workflow.execute, id=construct_task_id(task_id, workflow.uid),
+            self.scheduler.add_job(executable, args=(workflow, ), id=construct_task_id(task_id, workflow.uid),
                                    trigger=trigger, replace_existing=True)
 
     def get_all_scheduled_workflows(self):

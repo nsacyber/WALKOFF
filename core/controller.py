@@ -12,6 +12,7 @@ from core.case import callbacks
 from core.case import subscription
 from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
+from functools import partial
 import uuid
 import json
 
@@ -80,6 +81,22 @@ def execute_workflow_worker(workflow, subs, execution_uid, start=None, start_inp
         logger.error('Caught error while executing workflow {0}. {1}'.format(workflow.name,
                                                                              format_exception_message(e)))
     return "done"
+
+
+def push_workflow_execution(workflow, uid=None, start=None, start_input=None):
+    subs = deepcopy(subscription.subscriptions)
+
+    uid = uid if uid is not None else uuid.uuid4().hex
+
+    # If threading has not been initialized, initialize it.
+    if not threading_is_initialized:
+        initialize_threading()
+
+    args = {'start': start, 'start_input': start_input, 'execution_uid': uid}
+    logger.info('Executing workflow {0} for step {1} with args{2}'.format(workflow.name, start, args))
+    workflows.append(pool.submit(execute_workflow_worker, workflow, subs, **args))
+    # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
+    return uid
 
 
 class Controller(object):
@@ -183,7 +200,7 @@ class Controller(object):
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
         workflows = [workflow for workflow in self.workflows.values() if workflow.uid in workflow_uids]
-        self.scheduler.schedule_workflows(task_id, workflows, trigger)
+        self.scheduler.schedule_workflows(task_id, push_workflow_execution, workflows, trigger)
 
     def create_workflow_from_template(self,
                                       playbook_name,
@@ -354,18 +371,10 @@ class Controller(object):
         global threading_is_initialized
         key = _WorkflowKey(playbook_name, workflow_name)
         if key in self.workflows:
-
             workflow = self.workflows[key]
-            subs = deepcopy(subscription.subscriptions)
             uid = uuid.uuid4().hex
 
-            # If threading has not been initialized, initialize it.
-            if not threading_is_initialized:
-                initialize_threading()
-
-            args = {'start': start, 'start_input': start_input, 'execution_uid': uid}
-            logger.info('Executing workflow {0} for step {1} with args{2}'.format(key, start, args))
-            workflows.append(pool.submit(execute_workflow_worker, workflow, subs, **args))
+            push_workflow_execution(workflow, uid, start=start, start_input=start_input)
             callbacks.SchedulerJobExecuted.send(self)
             # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
             return uid

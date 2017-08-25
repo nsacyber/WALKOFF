@@ -37,7 +37,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                               content_type='application/json', status_code=OBJECT_CREATED)
         expected = {'name': 'test',
                     'workflows': {'a', 'b', 'c'},
-                    'status': 'stopped',
+                    'status': 'running',
                     'task_trigger': self.date_scheduler,
                     'description': ''}
         response.pop('id')
@@ -63,7 +63,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': {'a', 'b', 'c'},
-                    'status': 'stopped',
+                    'status': 'running',
                     'task_trigger': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
@@ -84,7 +84,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'renamed',
                     'workflows': {'a', 'b', 'c'},
-                    'status': 'stopped',
+                    'status': 'running',
                     'task_trigger': self.date_scheduler,
                     'description': 'desc'}
         response['workflows'] = set(response['workflows'])
@@ -101,7 +101,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': {'1', '2', '3'},
-                    'status': 'stopped',
+                    'status': 'running',
                     'task_trigger': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])
@@ -118,7 +118,7 @@ class TestScheduledTasksServer(ServerTestCase):
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': {'1', '2', '3'},
-                    'status': 'stopped',
+                    'status': 'running',
                     'task_trigger': self.date_scheduler,
                     'description': ''}
         response['workflows'] = set(response['workflows'])

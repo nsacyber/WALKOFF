@@ -2,6 +2,7 @@ import unittest
 from core.scheduler import *
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.base import STATE_STOPPED, STATE_RUNNING, STATE_PAUSED
+from functools import partial
 
 
 class MockWorkflow(object):
@@ -13,6 +14,10 @@ class MockWorkflow(object):
         pass
 
 
+def execute(workflow):
+    workflow.execute()
+
+
 class TestScheduler(unittest.TestCase):
 
     def setUp(self):
@@ -22,7 +27,6 @@ class TestScheduler(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual(self.scheduler.uid, 'controller')
-        print(self.scheduler.scheduler.state)
 
     def assertSchedulerHasJobs(self, expected_jobs):
         self.assertSetEqual({job.id for job in self.scheduler.scheduler.get_jobs()}, expected_jobs)
@@ -32,7 +36,7 @@ class TestScheduler(unittest.TestCase):
 
     def add_tasks(self, task_id, workflow_ids, trigger):
         workflows = [MockWorkflow(uid) for uid in workflow_ids]
-        self.scheduler.schedule_workflows(task_id, workflows, trigger)
+        self.scheduler.schedule_workflows(task_id, execute, workflows, trigger)
 
     def add_task_set_one(self):
         task_id = 'task'
