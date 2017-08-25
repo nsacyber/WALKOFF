@@ -9,7 +9,7 @@ def get_scheduler_status():
 
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
-        return {"status": running_context.controller.scheduler.state}, SUCCESS
+        return {"status": running_context.controller.scheduler.scheduler.state}, SUCCESS
     return __func()
 
 
