@@ -33,7 +33,7 @@ class TestScheduledTask(unittest.TestCase):
         actual_json['workflows'] = set(actual_json['workflows'])
         self.assertDictEqual(actual_json, expected)
 
-    def assertStructureIsCorrect(self, task, name, description='', status='stopped', workflows=None,
+    def assertStructureIsCorrect(self, task, name, description='', status='running', workflows=None,
                                  trigger_type='unspecified', trigger_args=None, expected_running_workflows=None):
         self.assertEqual(task.name, name)
         self.assertEqual(task.description, description)
@@ -75,6 +75,10 @@ class TestScheduledTask(unittest.TestCase):
         with self.assertRaises(InvalidTriggerArgs):
             ScheduledTask(name='test', task_trigger=trigger)
 
+    def test_init_stopped(self):
+        task = ScheduledTask(name='test', status='stopped')
+        self.assertStructureIsCorrect(task, 'test', status='stopped')
+
     def test_init_with_status_with_trigger_with_workflows(self):
         workflows = ['uid1', 'uid2', 'uid3', 'uid4']
         server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
@@ -105,7 +109,7 @@ class TestScheduledTask(unittest.TestCase):
         self.assertEqual(task.description, 'desc')
 
     def test_update_workflows_none_existing_stopped(self):
-        task = ScheduledTask(name='test')
+        task = ScheduledTask(name='test', status='stopped')
         update = {'workflows': ['a', 'b', 'c']}
         task.update(update)
         self.assertListEqual([workflow.uid for workflow in task.workflows], ['a', 'b', 'c'])
@@ -214,7 +218,7 @@ class TestScheduledTask(unittest.TestCase):
         expected = {'id': None,
                     'name': 'test',
                     'description': 'desc',
-                    'status': 'stopped',
+                    'status': 'running',
                     'workflows': set(),
                     'task_trigger': {'type': 'unspecified',
                                      'args': {}}}
@@ -225,7 +229,7 @@ class TestScheduledTask(unittest.TestCase):
         expected = {'id': None,
                     'name': 'test',
                     'description': '',
-                    'status': 'stopped',
+                    'status': 'running',
                     'workflows': {'b', 'c', 'd'},
                     'task_trigger': {'type': 'unspecified',
                                      'args': {}}}
@@ -236,7 +240,7 @@ class TestScheduledTask(unittest.TestCase):
         expected = {'id': None,
                     'name': 'test',
                     'description': '',
-                    'status': 'stopped',
+                    'status': 'running',
                     'workflows': {'b', 'c', 'd'},
                     'task_trigger': {'type': 'unspecified',
                                      'args': {}}}
@@ -247,17 +251,17 @@ class TestScheduledTask(unittest.TestCase):
         expected = {'id': None,
                     'name': 'test',
                     'description': '',
-                    'status': 'stopped',
+                    'status': 'running',
                     'workflows': set(),
                     'task_trigger': self.date_trigger}
         self.assertJsonIsCorrect(task, expected)
 
     def test_as_json_running(self):
-        task = ScheduledTask(name='test', status='running')
+        task = ScheduledTask(name='test', status='stopped')
         expected = {'id': None,
                     'name': 'test',
                     'description': '',
-                    'status': 'running',
+                    'status': 'stopped',
                     'workflows': set(),
                     'task_trigger': {'type': 'unspecified',
                                      'args': {}}}

@@ -25,7 +25,7 @@ class ScheduledTask(Base):
     trigger_type = db.Column(db.Enum('date', 'interval', 'cron', 'unspecified'))
     trigger_args = db.Column(db.String(255))
 
-    def __init__(self, name, description='', status='stopped', workflows=None, task_trigger=None):
+    def __init__(self, name, description='', status='running', workflows=None, task_trigger=None):
         self.name = name
         self.description = description
         if workflows is not None:
@@ -38,7 +38,7 @@ class ScheduledTask(Base):
         else:
             self.trigger_type = 'unspecified'
             self.trigger_args = '{}'
-        self.status = status if status in ('running', 'stopped') else 'stopped'
+        self.status = status if status in ('running', 'stopped') else 'running'
         if self.status == 'running' and self.trigger_type != 'unspecified':
             self._start_workflows()
 
