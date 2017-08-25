@@ -7,3 +7,7 @@
 #schedulerStatus {
 	display: inline-block;
 }
+
+ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+	white-space: initial;
+}

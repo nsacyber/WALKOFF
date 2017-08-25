@@ -74,7 +74,15 @@ export class SchedulerModalComponent {
 	}
 
 	validate(): string {
+		if (!this.workingScheduledTask.name) return 'A name is required.';
+		if (!this.workingScheduledTask.workflows || !this.workingScheduledTask.workflows.length)
+			return 'Please specify at least one workflow to be run.';
+
 		let args: any = this.workingScheduledTask.task_trigger.args;
+
+		if (!args) return 'Please select a type and fill out the trigger parameters.';
+
+		if (!(args.start_date || args.run_date)) return 'A start date is required.';
 
 		if (this.workingScheduledTask.task_trigger.type === 'interval' || this.workingScheduledTask.task_trigger.type === 'cron') {
 			let startDate = +args.start_date;
@@ -115,11 +123,16 @@ export class SchedulerModalComponent {
 		console.log(this.workingScheduledTask);
 	}
 
+	workflowsSelectChanged(e: any): void {
+		this.workingScheduledTask.workflows = e.value;
+	}
+
 	getToday(): string {
 		return moment().format('YYYY-MM-DD');
 	}
 
 	convertStringsToInt(args: any): void {
+		if (typeof(args) !== 'object') return;
 		for (let [key, value] of Object.entries(args)) {
 			let newVal = +value;
 			if (typeof(value) !== 'string') return;

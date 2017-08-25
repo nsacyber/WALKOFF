@@ -5,8 +5,9 @@
 	<div class="container-fluid">
 		<div class="form-group">
 			<label for="name">Workflow(s)</label>
-			<select2 ngDefaultControl [data]="availableWorkflows" [(ngModel)]="workingScheduledTask.workflows" [options]="workflowSelectConfig"
-				name="workflows" tabindex="2"></select2>
+			<!--No two-way binding available - ng-select2 package has it but requires transpiling-->
+			<select2 [data]="availableWorkflows" [value]="workingScheduledTask.workflows" [options]="workflowSelectConfig"
+				name="workflows" tabindex="2" (valueChanged)="workflowsSelectChanged($event)"></select2>
 		</div>
 		<div class="row">
 			<div class="col-xs-6">

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -21,6 +21,7 @@ import { ScheduledTask } from '../models/scheduledTask';
 	styleUrls: [
 		'client/scheduler/scheduler.css',
 	],
+	encapsulation: ViewEncapsulation.None,
 	providers: [SchedulerService]
 })
 export class SchedulerComponent {
@@ -226,8 +227,21 @@ export class SchedulerComponent {
 	}
 
 	getRule(scheduledTask: ScheduledTask): string {
-		console.log(scheduledTask);
-		//stringify only the truthy args (aka those specified)
-		return JSON.stringify(_.pick(scheduledTask.task_trigger.args, _.identity), null, 2);
+		//stringify only the truthy args (aka those specified) [seems that the server only returns args that are specified]
+		// let out = _.pick(scheduledTask.task_trigger.args, function(value: any) {
+		// 	return value;
+		// });
+
+		return JSON.stringify(scheduledTask.task_trigger.args, null, 2);
+	}
+
+	getFriendlyWorkflows(scheduledTask: ScheduledTask): string {
+		if (!this.availableWorkflows || !scheduledTask.workflows || !scheduledTask.workflows.length) return '';
+
+		return this.availableWorkflows.filter(function (workflow) {
+			return scheduledTask.workflows.indexOf(workflow.id) >= 0;
+		}).map(function (workflow) {
+			return workflow.text;
+		}).join(', ');
 	}
 }
