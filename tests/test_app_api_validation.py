@@ -1,7 +1,7 @@
 import unittest
 
 import yaml
-from jsonschema.exceptions import RefResolutionError
+from jsonschema.exceptions import RefResolutionError, ValidationError
 
 from core.config.paths import walkoff_schema_path
 from core.helpers import import_all_apps
@@ -253,3 +253,52 @@ class TestAppApiValidation(unittest.TestCase):
         return_codes = ['UnhandledException', 'B', 'Success']
         with self.assertRaises(InvalidApi):
             validate_app_action_return_codes(return_codes, 'app', 'action')
+
+    def test_single_device(self):
+        device = {'dev1': {'description': 'something',
+                           'fields': [{'name': 'param1', 'type': 'string', 'required': True},
+                                      {'name': 'param2', 'type': 'boolean'}]}}
+        self.basicapi['devices'] = device
+        self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_single_device_invalid(self):
+        device = {'dev1': {'description': 'something',
+                           'fields': [{'name': 'param1', 'type': 'string', 'required': True},
+                                      {'name': 'param2', 'type': 'boolean', 'invalid': 'aaaaaaa'}]}}
+        self.basicapi['devices'] = device
+        with self.assertRaises(ValidationError):
+            self.__generate_resolver_dereferencer(self.basicapi, expected_success=False)
+
+    def test_single_device_with_limitations(self):
+        device = {'dev1': {'description': 'something',
+                           'fields': [{'name': 'param1', 'type': 'string'},
+                                      {'name': 'param2', 'type': 'boolean', 'default': False},
+                                      {'name': 'param3', 'type': 'integer', 'minimum': 100}]}}
+        self.basicapi['devices'] = device
+        self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_single_device_with_encrypted(self):
+        device = {'dev1': {'description': 'something',
+                           'fields': [{'name': 'param1', 'type': 'string', 'encrypted': True},
+                                      {'name': 'param2', 'type': 'boolean'}]}}
+        self.basicapi['devices'] = device
+        self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_multiple_devices(self):
+        devices = {'dev1': {'description': 'something',
+                            'fields': [{'name': 'param1', 'type': 'string', 'encrypted': True},
+                                       {'name': 'param2', 'type': 'boolean'}]},
+                   'dev2': {'description': 'something',
+                            'fields': [{'name': 'param1', 'type': 'string'}, {'name': 'param2', 'type': 'boolean'}]}}
+        self.basicapi['devices'] = devices
+        self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_multiple_devices_with_required(self):
+        devices = {'dev1': {'description': 'something',
+                            'fields': [{'name': 'param1', 'type': 'string', 'encrypted': True},
+                                       {'name': 'param2', 'type': 'boolean'}]},
+                   'dev2': {'description': 'something',
+                            'required': True,
+                            'fields': [{'name': 'param1', 'type': 'string'}, {'name': 'param2', 'type': 'boolean'}]}}
+        self.basicapi['devices'] = devices
+        self.__generate_resolver_dereferencer(self.basicapi)
