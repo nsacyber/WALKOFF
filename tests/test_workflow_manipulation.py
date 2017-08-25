@@ -1,4 +1,3 @@
-import ast
 import unittest
 import socket
 import gevent
@@ -89,9 +88,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertIn(new_key, self.controller.workflows)
 
     def test_display_workflow(self):
-        workflow = ast.literal_eval(self.testWorkflow.__repr__())
+        workflow = self.testWorkflow.as_json()
         self.assertEqual(len(workflow["steps"]), 1)
-        self.assertIsNone(workflow["options"])
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')

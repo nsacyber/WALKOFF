@@ -169,14 +169,17 @@ class Controller(object):
     def add_child_workflows(self):
         for workflow in self.workflows:
             playbook_name = workflow.playbook
-            if self.workflows[workflow].options is not None:
-                children = self.workflows[workflow].options.children
+            if self.workflows[workflow].children:
+                children = self.workflows[workflow].children
                 for child in children:
                     workflow_key = _WorkflowKey(playbook_name, child)
                     if workflow_key in self.workflows:
                         logger.info('Adding child workflow {0} '
                                     'to workflow {1}'.format(child, self.workflows[workflow_key].name))
                         children[child] = self.workflows[workflow_key]
+                    else:
+                        logger.warning('Could not find child workflow {0} '
+                                       'for workflow {1}'.format(child, self.workflows[workflow_key].name))
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
         workflows = [workflow for workflow in self.workflows.values() if workflow.uid in workflow_uids]

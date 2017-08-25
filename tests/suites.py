@@ -23,7 +23,7 @@ __execution_tests = [test_execution_runtime, test_execution_element, test_execut
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_load_workflow, test_simple_workflow, test_workflow_manipulation, test_workflow_options]
+__workflow_tests = [test_load_workflow, test_simple_workflow, test_workflow_manipulation]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 

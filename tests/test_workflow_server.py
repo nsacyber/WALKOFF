@@ -71,7 +71,7 @@ class TestWorkflowServer(ServerTestCase):
                 playbook['name'] = 'emptyWorkflow'
             for workflow in playbook['workflows']:
                 workflow.pop('uid')
-        response = next(playbook for playbook in response if playbook['name']=='test_playbook')['workflows']
+        response = next(playbook for playbook in response if playbook['name'] == 'test_playbook')['workflows']
         for workflow in response:
             workflow.pop('uid')
         self.assertListEqual(response, [{u'name': u'emptyWorkflow'}])
@@ -252,67 +252,18 @@ class TestWorkflowServer(ServerTestCase):
         self.assertTrue(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
 
-    def test_edit_workflow_options_only(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').as_json()
-        expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
-        data = {"scheduler": {"enabled": "true",
-                              "scheduler_type": "test_scheduler",
-                              "autorun": 'true',
-                              "args": expected_args},
-                "name": "helloWorldWorkflow"}
-        response = self.post_with_status_check('/api/playbooks/test/workflows',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-
-        expected_json['options'] = {'enabled': 'true',
-                                    'children': [],
-                                    'scheduler': {'args': {'arg1': 'val1',
-                                                           'arg2': 'val2',
-                                                           'agr3': 'val3'},
-                                                  'type': 'test_scheduler',
-                                                  'autorun': 'true'}}
-        self.assertDictEqual(response, expected_json)
-
-        options = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').options
-        self.assertTrue(options.enabled)
-        self.assertEqual(options.scheduler['type'], 'test_scheduler')
-        self.assertEqual(options.scheduler['autorun'], 'true')
-        self.assertEqual(options.scheduler['args'], json.loads(expected_args))
-        self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-
     def test_edit_workflow_(self):
         expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').as_json()
-        expected_args = json.dumps({"arg1": "val1", "arg2": "val2", "agr3": "val3"})
         workflow_name = "test_name"
-        data = {"new_name": workflow_name,
-                "scheduler": {"enabled": "true",
-                              "scheduler_type": "test_scheduler",
-                              "autorun": 'true',
-                              "args": expected_args},
-                "name": "helloWorldWorkflow"}
+        data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
                                                data=json.dumps(data),
                                                headers=self.headers,
                                                content_type='application/json')
 
         expected_json['name'] = workflow_name
-        expected_json['options'] = {'enabled': 'true',
-                                    'children': [],
-                                    'scheduler': {'args': {'arg1': 'val1',
-                                                           'arg2': 'val2',
-                                                           'agr3': 'val3'},
-                                                  'type': 'test_scheduler',
-                                                  'autorun': 'true'}}
         self.assertDictEqual(response, expected_json)
 
-        options = flask_server.running_context.controller.get_workflow('test', workflow_name).options
-        self.assertTrue(options.enabled)
-        self.assertEqual(options.scheduler['type'], 'test_scheduler')
-        self.assertEqual(options.scheduler['autorun'], 'true')
-        self.assertEqual(options.scheduler['args'], json.loads(expected_args))
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
         self.assertFalse(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
 
@@ -492,7 +443,6 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(playbooks), 0)
 
     def test_delete_playbook_no_file(self):
-        initial_playbooks = flask_server.running_context.controller.get_all_workflows()
         initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
                                   helpers.locate_workflows_in_directory()]
         data = {"name": "test_playbook"}

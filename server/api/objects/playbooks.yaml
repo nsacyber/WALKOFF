@@ -65,8 +65,6 @@ Workflow:
       type: string
       default: start
       example: step1
-    options:
-      $ref: '#/definitions/WorkflowOptions'
     accumulated_risk:
       description: The risk which has been accumulated as this workflow has been executed
       type: number
@@ -82,6 +80,7 @@ AddWorkflow:
         type: string
       playbook_template:
         type: string
+
 WorkflowUpdate:
     type: object
     required: [name]
@@ -90,17 +89,7 @@ WorkflowUpdate:
         type: string
       new_name:
         type: string
-      scheduler:
-        type: object
-        properties:
-          enabled:
-            type: string
-          scheduler_type:
-            type: string
-          autorun:
-            type: string
-          args:
-            type: string
+
 CopyWorkflow:
     type: object
     properties:
@@ -108,33 +97,7 @@ CopyWorkflow:
         type: string
       workflow:
         type: string
-WorkflowOptions:
-  type: object
-  description: Options attached to a workflow such as child workflows and schedulers
-  properties:
-    scheduler:
-      type: object
-      required: [autorun, type]
-      properties:
-        autorun:
-          description: Should this workflow be run automatically?
-          type: boolean
-          example: true
-        type:
-          description: Type of scheduler
-          type: string
-          enum: [cron]
-          example: cron
-        args:
-          description: additional arguments
-          type: object
-    enabled:
-      description: determines if these options are enabled or disabled
-      type: boolean
-      example: true
-    children:
-      description: List of child workflows. Form of {workflow_name -> Workflow}
-      type: object
+
 WorkflowId:
   type: object
   required: [id]

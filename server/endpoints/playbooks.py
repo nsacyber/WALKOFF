@@ -4,7 +4,6 @@ from flask import request, current_app
 from flask_security import roles_accepted
 from core import helpers
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
-from core.options import Options
 import core.case.database as case_database
 from core.case.workflowresults import WorkflowResult
 import core.config.config
@@ -282,15 +281,6 @@ def update_workflow(playbook_name):
         data = request.get_json()
         wf_name = data['name']
         if running_context.controller.is_workflow_registered(playbook_name, wf_name):
-            if 'scheduler' in data:
-                enabled = data['scheduler']['enabled'] if 'enabled' in data['scheduler'] else False
-                scheduler = {'type': (data['scheduler']['scheduler_type']
-                                      if 'scheduler_type' in data['scheduler'] else 'cron'),
-                             'autorun': (str(data['scheduler']['autorun']).lower()
-                                         if 'autorun' in data['scheduler'] else 'false'),
-                             'args': json.loads(data['scheduler']['args']) if 'args' in data['scheduler'] else {}}
-                running_context.controller.get_workflow(playbook_name, wf_name).options = \
-                    Options(scheduler=scheduler, enabled=enabled)
             if 'new_name' in data and data['new_name']:
                 if running_context.controller.is_workflow_registered(playbook_name, data['new_name']):
                     current_app.logger.warning(
