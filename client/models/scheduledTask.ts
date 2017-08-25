@@ -1,11 +1,10 @@
-import { IScheduledTaskTrigger } from './ischeduledTaskTrigger';
+import { ScheduledTaskTrigger } from './scheduledTaskTrigger';
 
 export class ScheduledTask {
 	id: number;
 	name: string;
 	description: string;
-	type: string; //['date', 'interval', 'cron']
-	enabled: boolean;
-	args: IScheduledTaskTrigger;
+	status: string; //['running', 'paused', 'stopped']
 	workflows: string[];
+	scheduler: ScheduledTaskTrigger = new ScheduledTaskTrigger();
 }

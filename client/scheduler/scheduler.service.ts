@@ -82,19 +82,19 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	enableScheduledTask(scheduledTaskId: number): Promise<void> {
-		return this.http.get(`/api/scheduledtasks/${scheduledTaskId}/enable`, this.requestOptions)
+	changeScheduledTaskStatus(scheduledTaskId: number, action: string): Promise<void> {
+		return this.http.get(`/api/scheduledtasks/${scheduledTaskId}/${action}`, this.requestOptions)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	disableScheduledTask(scheduledTaskId: number): Promise<void> {
-		return this.http.get(`/api/scheduledtasks/${scheduledTaskId}/disable`, this.requestOptions)
-			.toPromise()
-			.then(() => null)
-			.catch(this.handleError);
-	}
+	// disableScheduledTask(scheduledTaskId: number): Promise<void> {
+	// 	return this.http.get(`/api/scheduledtasks/${scheduledTaskId}/disable`, this.requestOptions)
+	// 		.toPromise()
+	// 		.then(() => null)
+	// 		.catch(this.handleError);
+	// }
 
 	getPlaybooks() : Promise<any> {
 		return this.http.get('/api/playbooks', this.requestOptions)

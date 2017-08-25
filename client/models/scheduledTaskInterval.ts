@@ -1,6 +1,6 @@
-import { IScheduledTaskTrigger } from './ischeduledTaskTrigger';
+import { IScheduledTaskArgs } from './ischeduledTaskArgs';
 
-export class ScheduledTaskInterval implements IScheduledTaskTrigger {
+export class ScheduledTaskInterval implements IScheduledTaskArgs {
 	//One of these is required
 	weeks: number;
 	days: number;

@@ -88,7 +88,7 @@ export class SchedulerComponent {
 	}
 
 	addScheduledTask(): void {
-		const modalRef = this.modalService.open(SchedulerModalComponent);
+		const modalRef = this.modalService.open(SchedulerModalComponent, { size: 'lg' });
 		modalRef.componentInstance.title = 'Schedule a New Task';
 		modalRef.componentInstance.submitText = 'Add Scheduled Task';
 		modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
@@ -97,12 +97,13 @@ export class SchedulerComponent {
 	}
 
 	editScheduledTask(task: ScheduledTask): void {
-		const modalRef = this.modalService.open(SchedulerModalComponent);
+		const modalRef = this.modalService.open(SchedulerModalComponent, { size: 'lg' });
 		modalRef.componentInstance.title = `Edit Task ${task.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
 
 		modalRef.componentInstance.workingScheduledTask = _.cloneDeep(task);
+		delete modalRef.componentInstance.workingScheduledTask.$$index;
 
 		this._handleModalClose(modalRef);
 
@@ -150,28 +151,58 @@ export class SchedulerComponent {
 			.catch(e => this.toastyService.error(`Error deleting task: ${e.message}`));
 	}
 
-	enableScheduledTask(task: ScheduledTask): void {
+	changeScheduledTaskStatus(task: ScheduledTask, action: string): void {
+		let newStatus: string;
+
+		switch (action) {
+			case 'start':
+				newStatus = 'running';
+				break;
+			case 'pause':
+				newStatus = 'paused';
+				break;
+			case 'stop':
+				newStatus = 'stopped';
+				break;
+			default:
+				this.toastyService.error(`Attempted to set an unknown status ${action}`);
+				break;
+		}
+
+		if (!newStatus) return;
+
 		this.schedulerService
-			.enableScheduledTask(task.id)
-			.then(() => task.enabled = true)
-			.catch(e => this.toastyService.error(`Error enabling task: ${e.message}`));
+			.changeScheduledTaskStatus(task.id, action)
+			.then(() => {
+				this.schedulerStatus = newStatus;
+			})
+			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
 	}
 
-	disableScheduledTask(task: ScheduledTask): void {
-		this.schedulerService
-			.disableScheduledTask(task.id)
-			.then(() => task.enabled = false)
-			.catch(e => this.toastyService.error(`Error disabling task: ${e.message}`));
-	}
+	// enableScheduledTask(task: ScheduledTask): void {
+	// 	this.schedulerService
+	// 		.enableScheduledTask(task.id)
+	// 		.then(() => task.status = 'enabled')
+	// 		.catch(e => this.toastyService.error(`Error enabling task: ${e.message}`));
+	// }
+
+	// disableScheduledTask(task: ScheduledTask): void {
+	// 	this.schedulerService
+	// 		.disableScheduledTask(task.id)
+	// 		.then(() => task.status = 'disabled')
+	// 		.catch(e => this.toastyService.error(`Error disabling task: ${e.message}`));
+	// }
 
 	getWorkflowNames(): void {
+		let self = this;
+
 		this.schedulerService
 			.getPlaybooks()
 			.then((playbooks) => {
 				//[ { name: <name>, workflows: [ { name: <name>, uid: <uid> } ] }, ... ]
 				playbooks.forEach(function (pb: any) {
 					pb.workflows.forEach(function (w: any) {
-						this.availableWorkflows.push({
+						self.availableWorkflows.push({
 							id: w.uid,
 							text: `${pb.name} - ${w.name}`
 						});
@@ -191,8 +222,12 @@ export class SchedulerComponent {
 				// this.workflowNames = _.map(playbooks, function (pb: string[]) {
 				// 	return `${pb[0]} - ${pb[1]}`;
 				// });
-
-				console.log(this.availableWorkflows);
 			});
+	}
+
+	getRule(scheduledTask: ScheduledTask): string {
+		console.log(scheduledTask);
+		//stringify only the truthy args (aka those specified)
+		return JSON.stringify(_.pick(scheduledTask.scheduler.args, _.identity), null, 2);
 	}
 }

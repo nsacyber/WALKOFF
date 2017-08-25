@@ -1,6 +1,6 @@
-import { IScheduledTaskTrigger } from './ischeduledTaskTrigger';
+import { IScheduledTaskArgs } from './ischeduledTaskArgs';
 
-export class ScheduledTaskDate implements IScheduledTaskTrigger {
+export class ScheduledTaskDate implements IScheduledTaskArgs {
 	run_time: Date;
 	//Timezone will most likely never be used
 	timezone: string;

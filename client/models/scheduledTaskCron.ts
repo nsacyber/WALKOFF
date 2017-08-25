@@ -1,6 +1,6 @@
-import { IScheduledTaskTrigger } from './ischeduledTaskTrigger';
+import { IScheduledTaskArgs } from './ischeduledTaskArgs';
 
-export class ScheduledTaskCron implements IScheduledTaskTrigger {
+export class ScheduledTaskCron implements IScheduledTaskArgs {
 	//One of these is required
 	//If specified as a string, use expression syntax described at http://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html
 	year: number|string; //4-digit year YYYY

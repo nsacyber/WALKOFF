@@ -1,3 +1,5 @@
+@import '/client/node_modules/ng-pick-datetime/styles/picker.min.css';
+
 #main {
 	padding: 10px 15px;
 }
