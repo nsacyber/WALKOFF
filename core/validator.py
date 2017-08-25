@@ -383,3 +383,8 @@ def validate_flag_parameters(api, inputs, flag):
 
 def validate_filter_parameters(api, inputs, filter_name):
     return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
+
+
+def validate_device(api, device_in):
+    Draft4Validator(
+        api, format_checker=draft4_format_checker).validate(device_in)

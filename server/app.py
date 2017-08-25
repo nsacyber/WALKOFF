@@ -117,6 +117,8 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
+key = "SHORTSTOPKEYTEST"
+
 
 def create_app():
     from .blueprints.events import setup_case_stream
@@ -127,7 +129,7 @@ def create_app():
     _app.jinja_loader = FileSystemLoader(['server/templates'])
     _app.config.update(
         # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-        SECRET_KEY="SHORTSTOPKEYTEST",
+        SECRET_KEY=key,
         SQLALCHEMY_DATABASE_URI=format_db_path(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
         SECURITY_PASSWORD_HASH='pbkdf2_sha512',
         SECURITY_TRACKABLE=False,

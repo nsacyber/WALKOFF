@@ -1,230 +1,194 @@
-import json
-from abc import abstractmethod
 from flask import current_app
 from sqlalchemy import Integer, String
-from . import database
-import core.config.paths
-from core.helpers import format_exception_message
+from sqlalchemy.ext.declarative import declared_attr
 import pyaes
 import logging
-
-db = database.db
+from server.database import Base, db
+from sqlalchemy.ext.hybrid import hybrid_property
+from core.validator import convert_primitive_type
+from server.app import key
 
 logger = logging.getLogger(__name__)
 
 
-class App(database.Base, object):
+class UnknownDeviceField(Exception):
+    pass
+
+
+class App(Base):
     __tablename__ = 'app'
-
     id = db.Column(Integer, primary_key=True)
-    name = db.Column(String)
-    devices = db.relationship("Device", back_populates="app")
+    name = db.Column(String(25), nullable=False, unique=True)
+    devices = db.relationship('Device',
+                              cascade='all, delete-orphan',
+                              backref='post',
+                              lazy='dynamic')
 
-    def as_json(self, with_devices=False):
-        """Gets the JSON representation of an App object.
-        
-        Returns:
-            The JSON representation of an App object.
-        """
-        output = {'name': self.name}
-        if with_devices:
-            output['devices'] = [device.as_json() for device in self.devices]
-        return output
-
-    def __init__(self, app=None, devices=None):
-        """Initializes an App object.
-        
-        Args:
-            app (str, optional): The name of the app. Defaults to None.
-            devices (list[str], optional): The list of device names to be associated with the App object. There is a
-                one to many mapping from Apps to Devices.
-        """
-        self.name = app
-        self.devices = [Device(name=device_name, app_id=app) for device_name in devices]
-
-    def initialize(self):
-        # self.api = WalkoffAppDefinition(self.name, self)
-        pass
-
-    @staticmethod
-    def get_all_devices_for_app(app_name):
-        """ Gets all the devices associated with an app
-
-        Args:
-            app_name (str): The name of the app
-        Returns:
-            (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
-        """
-        app = App.query.filter_by(name=app_name).first()
-        if app is not None:
-            return app.devices
-        else:
-            logger.warning('Cannot get devices for app {0}. App does not exist'.format(app_name))
-            return []
-
-    @staticmethod
-    def get_device(app_name, device_name):
-        """ Gets the device associated with an app
-
-        Args:
-            app_name (str): The name of the app
-            device_name (str): The name of the device
-        Returns:
-            (Device): The desired device. Returns None if app or device not found.
-        """
-        app = App.query.filter_by(name=app_name).first()
-        if app is not None:
-            # efficient generator to get first instance of device with matching name. returns None if not found
-            device = next((device for device in app.devices if device.name == device_name), None)
-            if device is not None:
-                return device
-            else:
-                logger.warning('Cannot get device {0} for app {1}. '
-                               'Device does not exist for app'.format(device_name, app_name))
-                return None
-        else:
-            logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
-            return None
-
-    @abstractmethod
-    def shutdown(self):
-        pass
-
-
-class Device(database.Base):
-    __tablename__ = 'device'
-
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String)
-    username = db.Column(db.String(80))
-    password = db.Column(db.LargeBinary())
-    ip = db.Column(db.String(15))
-    port = db.Column(db.Integer())
-    extra_fields = db.Column(db.String)
-    app_id = db.Column(db.String, db.ForeignKey('app.name'))
-    app = db.relationship(App, back_populates="devices")
-
-    def __init__(self, name, app_id, username="", password=None, ip="0.0.0.0", port=0, extra_fields=""):
-        """Initializes a new Device object, which will be associated with an App object.
-        
-        Args:
-            name (str, optional): The name of the Device object. Defaults to an empty string.
-            username (str, optional): The username for the Device object. Defaults to an empty string.
-            password (str, optional): The password for the Device object. Defaults to an empty string.
-            ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
-            port (int, optional): The port for the Device object. Defaults to 0.
-            extra_fields (str, optional): The string representation of a dictionary that holds various custom
-                extra fields for the Device object. Defaults to an empty string.
-            app_id (str): The ID of the App object to which this Device is associated.
-        """
+    def __init__(self, name, devices_json=None):
         self.name = name
-        self.app_id = app_id
-        self.username = username
-        self.password = password
-        self.ip = ip
-        self.port = port
-        if self.extra_fields != "":
-            self.extra_fields = extra_fields.replace("\'", "\"")
+        if devices_json is not None:
+            for device in devices_json:
+                self.devices.append(Device.from_json(device))
+
+    def get_device(self, name):
+        device = next((device for device in self.devices if device.name == name), None)
+        if device is not None:
+            return device
         else:
-            self.extra_fields = extra_fields
+            logger.warning('Cannot get device {0} for app {1}. '
+                           'Device does not exist for app'.format(name, self.name))
+            return None
+
+    def as_json(self):
+        return {"name": self.name,
+                "devices": [device.as_json() for device in self.devices]}
 
     @staticmethod
-    def add_device(name, app_id, username, password, ip, port, extra_fields):
-        """Adds a new Device object.
-        
-        Args:
-            name (str, optional): The name of the Device object. Defaults to an empty string.
-            app_id (str): The ID of the App object to which this Device is associated.
-            username (str, optional): The username for the Device object. Defaults to an empty string.
-            password (str, optional): The password for the Device object. Defaults to an empty string.
-            ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
-            port (int, optional): The port for the Device object. Defaults to 0.
-            extra_fields (str, optional): The string representation of a dictionary that holds various custom
-            extra fields for the Device object. Defaults to an empty string.
-        """
-        device = Device(name=name, username=username, app_id=app_id, password=password, ip=ip, port=port,
-                        extra_fields=extra_fields)
-        db.session.add(device)
-        db.session.commit()
-        current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
-        return device
+    def from_json(data):
+        devices = data['devices'] if 'devices' in data else None
+        return App(data['name'], devices)
 
-    def get_password(self):
-        try:
-            with open(core.config.paths.AES_key_path, 'rb') as key_file:
-                key = key_file.read()
-        except (OSError, IOError):
-            current_app.logger.error('No AES key found')
-            return None
-        else:
-            aes = pyaes.AESModeOfOperationCTR(key)
-            return aes.decrypt(self.password)
 
-    def edit_device(self, data):
-        """Edits various fields of the Device object. 
-        
-        Args:
-            data (dict): The data object containing the fields that the user wishes to change.
-        """
-        if 'name' in data and data['name']:
-            self.name = data['name']
+def get_all_devices_for_app(app_name):
+    """ Gets all the devices associated with an app
 
-        if 'app' in data and data['app']:
-            self.app_id = data['app']
+    Args:
+        app_name (str): The name of the app
+    Returns:
+        (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
+    """
+    app = App.query.filter_by(name=app_name).first()
+    if app is not None:
+        return app.devices
+    else:
+        logger.warning('Cannot get devices for app {0}. App does not exist'.format(app_name))
+        return []
 
-        if 'username' in data and data['username']:
-            self.username = data['username']
 
-        if 'password' in data and data['password']:
-            try:
-                with open(core.config.paths.AES_key_path, 'rb') as key_file:
-                    key = key_file.read()
-            except (OSError, IOError) as e:
-                current_app.logger.error('Error loading AES key from from {0}: '
-                                         '{1}'.format(core.config.paths.AES_key_path, format_exception_message(e)))
+def get_device(app_name, device_name):
+    """ Gets the device associated with an app
+
+    Args:
+        app_name (str): The name of the app
+        device_name (str): The name of the device
+    Returns:
+        (Device): The desired device. Returns None if app or device not found.
+    """
+    app = App.query.filter_by(name=app_name).first()
+    if app is not None:
+        return app.get_device(device_name)
+    else:
+        logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
+        return None
+
+
+class Device(Base):
+    __tablename__ = 'device'
+    id = db.Column(Integer, primary_key=True)
+    name = db.Column(String(25), nullable=False, unique=True)
+    plaintext_fields = db.relationship('DeviceField',
+                                       cascade='all, delete-orphan',
+                                       backref='post',
+                                       lazy='dynamic')
+    encrypted_fields = db.relationship('EncryptedDeviceField',
+                                       cascade='all, delete-orphan',
+                                       backref='post',
+                                       lazy='dynamic')
+    app_id = db.Column(db.Integer, db.ForeignKey('app.id'))
+
+    def __init__(self, name, fields_json):
+        self.name = name
+        for field in fields_json:
+            if not field['encrypted']:
+                self.plaintext_fields.append(DeviceField.from_json(field))
             else:
-                aes = pyaes.AESModeOfOperationCTR(key)
-                pw = data['password']
-                self.password = aes.encrypt(pw)
+                self.encrypted_fields.append(EncryptedDeviceField.from_json(field))
 
-        if 'ip' in data and data['ip']:
-            self.ip = data['ip']
+    def get_plaintext_fields(self):
+        return {field.name: field.value for field in self.plaintext_fields}
 
-        if 'port' in data and data['port']:
-            self.port = data['port']
-
-        if 'extraFields' in data and data['extraFields']:
-            fields_dict = json.loads(data['extraFields'].replace("\'", "\""))
-            if self.extra_fields == "":
-                self.extra_fields = data['extraFields']
-            else:
-                extra_fields = json.loads(self.extra_fields)
-                for field in fields_dict:
-                    extra_fields[field] = fields_dict[field]
-                self.extra_fields = json.dumps(extra_fields)
-
-    def as_json(self, with_apps=False):
-        """Gets the JSON representation of a Device object.
-        
-        Args:
-            with_apps (bool, optional): A boolean to determine whether or not to include the App to which the Device
-                is associated in the JSON output. Defaults to True.
-                
-        Returns:
-            The JSON representation of a Device object.
-        """
-        output = {'id': self.id, 'name': self.name, 'username': self.username, 'ip': self.ip,
-                  'port': self.port}
-        if with_apps:
-            output['app'] = self.app.as_json()
+    def get_encrypted_field(self, field_name):
+        field = next((field for field in self.encrypted_fields if field.name == field_name), None)
+        if field is not None:
+            return field.value
         else:
-            output['app'] = self.app.name
-        if self.extra_fields:
-            extra_fields = json.loads(self.extra_fields)
-            for field in extra_fields:
-                output[field] = extra_fields[field]
-        return output
+            raise UnknownDeviceField
 
-    def __repr__(self):
-        return str({"name": self.name, "username": self.username, "password": self.password,
-                    "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})
+    def as_json(self):
+        fields_json = [field.as_json() for field in self.plaintext_fields]
+        fields_json.extend([field.as_json() for field in self.encrypted_fields])
+        return {"name": self.name,
+                "fields": fields_json}
+
+    @staticmethod
+    def from_json(data):
+        return Device(data['name'], data['fields'])
+
+
+allowed_device_field_types = ('string', 'number', 'boolean', 'integer')
+
+
+class DeviceFieldMixin(object):
+    id = db.Column(Integer, primary_key=True)
+    name = db.Column(String(25), nullable=False, unique=True)
+    type = db.Column(db.Enum(*allowed_device_field_types))
+
+    @declared_attr
+    def device_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('device.id'))
+
+
+class DeviceField(DeviceFieldMixin, Base):
+    __tablename__ = 'plaintext_device_field'
+
+    _value = db.Column('value', db.String(), nullable=False)
+
+    def __init__(self, name, field_type, value):
+        self.name = name
+        self.type = field_type if field_type in allowed_device_field_types else 'string'
+        self._value = str(value)
+
+    @hybrid_property
+    def value(self):
+        return convert_primitive_type(self._value, self.type)
+
+    @value.setter
+    def value(self, value):
+        self._value = str(value)
+
+    def as_json(self):
+        return {"name": self.name, "value": self.value, "type": self.type, "encrypted": False}
+
+    @staticmethod
+    def from_json(data):
+        type_ = data['type'] if data['type'] in allowed_device_field_types else 'string'
+        return DeviceField(data['name'], type_, data['value'])
+
+
+class EncryptedDeviceField(DeviceFieldMixin, Base):
+    __tablename__ = 'encrypted_device_field'
+    _value = db.Column('value', db.LargeBinary(), nullable=False)
+
+    def __init__(self, name, field_type, value):
+        self.name = name
+        self.type = field_type if field_type in allowed_device_field_types else 'string'
+        aes = pyaes.AESModeOfOperationCTR(key)
+        self._value = aes.encrypt(str(value))
+
+    @hybrid_property
+    def value(self):
+        aes = pyaes.AESModeOfOperationCTR(key)
+        return convert_primitive_type(aes.decrypt(self._value), self.type)
+
+    @value.setter
+    def value(self, new_value):
+        aes = pyaes.AESModeOfOperationCTR(key)
+        self._value = aes.encrypt(str(new_value))
+
+    def as_json(self):
+        return {"name": self.name, "type": self.type, "encrypted": True}
+
+    @staticmethod
+    def from_json(data):
+        type_ = data['type'] if data['type'] in allowed_device_field_types else 'string'
+        return EncryptedDeviceField(data['name'], type_, data['value'])
