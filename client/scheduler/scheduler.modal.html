@@ -16,7 +16,7 @@
 				</div>
 				<div class="form-group">
 					<label for="name">Trigger Type</label>
-					<select class="form-control" [(ngModel)]="workingScheduledTask.scheduler.type" name="type" tabindex="4" (change)="changeType($event.target.value)">
+					<select class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.type" name="type" tabindex="4" (change)="changeType($event.target.value)">
 						<option value=""></option>
 						<option *ngFor="let i of scheduledItemTriggerTypes" [value]="i" [label]="i"></option>
 					</select>
@@ -30,29 +30,29 @@
 			</div>
 		</div>
 
-		<div class="row" *ngIf="workingScheduledTask.scheduler.type === 'date'">
+		<div class="row" *ngIf="workingScheduledTask.task_trigger.type === 'date'">
 			<div class="col-xs-12">
 				<div class="form-group">
 					<label for="name">Run Datetime</label>
-					<input class="form-control" [value]="workingScheduledTask.scheduler.args.run_date | date: 'short'" [(ngModel)]="workingScheduledTask.scheduler.args.run_date"
+					<input class="form-control" [value]="workingScheduledTask.task_trigger.args.run_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.run_date"
 						name="run_date" [minMoment]="getToday()" dateTimePicker required />
 				</div>
 			</div>
 		</div>
 
-		<div *ngIf="workingScheduledTask.scheduler.type === 'interval'">
+		<div *ngIf="workingScheduledTask.task_trigger.type === 'interval'">
 			<div class="row">
 				<div class="col-xs-6">
 					<div class="form-group">
 						<label for="name">Start Datetime</label>
-						<input class="form-control" [value]="workingScheduledTask.scheduler.args.start_date | date: 'short'" [(ngModel)]="workingScheduledTask.scheduler.args.start_date"
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.start_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.start_date"
 							name="start_date" [minMoment]="getToday()" dateTimePicker required />
 					</div>
 				</div>
 				<div class="col-xs-6">
 					<div class="form-group">
 						<label for="name">End Datetime</label>
-						<input class="form-control" [value]="workingScheduledTask.scheduler.args.end_date | date: 'short'" [(ngModel)]="workingScheduledTask.scheduler.args.end_date"
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.end_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.end_date"
 							name="end_date" [minMoment]="getToday()" dateTimePicker />
 					</div>
 				</div>
@@ -64,49 +64,51 @@
 				<div class="col-xs-2">
 					<div class="form-group">
 						<label for="name">Weeks</label>
-						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.weeks" name="weeks" required>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.weeks" name="weeks" required>
 					</div>
 				</div>
 				<div class="col-xs-2">
 					<div class="form-group">
 						<label for="name">Days</label>
-						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.days" name="days" required>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.days" name="days" required>
 					</div>
 				</div>
 				<div class="col-xs-2">
 					<div class="form-group">
 						<label for="name">Hours</label>
-						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.hours" name="hours" required>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.hours" name="hours" required>
 					</div>
 				</div>
 				<div class="col-xs-2">
 					<div class="form-group">
 						<label for="name">Minutes</label>
-						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.minutes" name="minutes" required>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.minutes" name="minutes"
+							required>
 					</div>
 				</div>
 				<div class="col-xs-2">
 					<div class="form-group">
 						<label for="name">Seconds</label>
-						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.seconds" name="seconds" required>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.seconds" name="seconds"
+							required>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div *ngIf="workingScheduledTask.scheduler.type === 'cron'">
+		<div *ngIf="workingScheduledTask.task_trigger.type === 'cron'">
 			<div class="row">
 				<div class="col-xs-6">
 					<div class="form-group">
 						<label for="name">Start Datetime</label>
-						<input class="form-control" [value]="workingScheduledTask.scheduler.args.start_date | date: 'short'" [(ngModel)]="workingScheduledTask.scheduler.args.start_date"
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.start_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.start_date"
 							name="start_date" [minMoment]="getToday()" dateTimePicker required />
 					</div>
 				</div>
 				<div class="col-xs-6">
 					<div class="form-group">
 						<label for="name">End Datetime</label>
-						<input class="form-control" [value]="workingScheduledTask.scheduler.args.end_date | date: 'short'" [(ngModel)]="workingScheduledTask.scheduler.args.end_date"
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.end_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.end_date"
 							name="end_date" [minMoment]="getToday()" dateTimePicker />
 					</div>
 				</div>
@@ -115,41 +117,41 @@
 				<div class="col-xs-3">
 					<div class="form-group">
 						<label for="name">Year</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.year" name="year">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.year" name="year">
 					</div>
 					<div class="form-group">
 						<label for="name">Day</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.day" name="day">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.day" name="day">
 					</div>
 				</div>
 				<div class="col-xs-3">
 					<div class="form-group">
 						<label for="name">Month</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.month" name="month">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.month" name="month">
 					</div>
 					<div class="form-group">
 						<label for="name">Hour</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.hour" name="hour">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.hour" name="hour">
 					</div>
 				</div>
 				<div class="col-xs-3">
 					<div class="form-group">
 						<label for="name">Week</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.week" name="week">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.week" name="week">
 					</div>
 					<div class="form-group">
 						<label for="name">Minute</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.minute" name="minute">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.minute" name="minute">
 					</div>
 				</div>
 				<div class="col-xs-3">
 					<div class="form-group">
 						<label for="name">Day of Week</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.day_of_week" name="day_of_week">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.day_of_week" name="day_of_week">
 					</div>
 					<div class="form-group">
 						<label for="name">Second</label>
-						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.scheduler.args.second" name="second">
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.second" name="second">
 					</div>
 				</div>
 			</div>

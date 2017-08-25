@@ -228,6 +228,6 @@ export class SchedulerComponent {
 	getRule(scheduledTask: ScheduledTask): string {
 		console.log(scheduledTask);
 		//stringify only the truthy args (aka those specified)
-		return JSON.stringify(_.pick(scheduledTask.scheduler.args, _.identity), null, 2);
+		return JSON.stringify(_.pick(scheduledTask.task_trigger.args, _.identity), null, 2);
 	}
 }

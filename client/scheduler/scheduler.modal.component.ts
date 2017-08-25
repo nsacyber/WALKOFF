@@ -50,7 +50,7 @@ export class SchedulerModalComponent {
 			return;
 		}
 
-		this.convertStringsToInt(this.workingScheduledTask.scheduler.args);
+		this.convertStringsToInt(this.workingScheduledTask.task_trigger.args);
 
 		//If device has an ID, device already exists, call update
 		if (this.workingScheduledTask.id) {
@@ -74,21 +74,21 @@ export class SchedulerModalComponent {
 	}
 
 	validate(): string {
-		let args: any = this.workingScheduledTask.scheduler.args;
+		let args: any = this.workingScheduledTask.task_trigger.args;
 
-		if (this.workingScheduledTask.scheduler.type === 'interval' || this.workingScheduledTask.scheduler.type === 'cron') {
+		if (this.workingScheduledTask.task_trigger.type === 'interval' || this.workingScheduledTask.task_trigger.type === 'cron') {
 			let startDate = +args.start_date;
 			let endDate = +args.end_date;
 
 			if (startDate > endDate) return 'The end date cannot be before the start date.';
 		}
 
-		if (this.workingScheduledTask.scheduler.type === 'interval') {
+		if (this.workingScheduledTask.task_trigger.type === 'interval') {
 			if (!args.weeks && !args.days && !args.hours && !args.minutes && !args.seconds)
 				return 'You must specify some interval of time for the actions to occur.';
 		}
 
-		if (this.workingScheduledTask.scheduler.type === 'cron') {
+		if (this.workingScheduledTask.task_trigger.type === 'cron') {
 			if (!args.year && !args.month && !args.day && !args.week && !args.day_of_week && !args.hour && !args.minute && !args.second)
 				return 'You must specify some cron parameters for the actions to occur.';
 		}
@@ -99,16 +99,16 @@ export class SchedulerModalComponent {
 	changeType(e: string): void {
 		switch (e) {
 			case 'cron':
-				this.workingScheduledTask.scheduler.args = this.cron;
+				this.workingScheduledTask.task_trigger.args = this.cron;
 				break;
 			case 'interval':
-				this.workingScheduledTask.scheduler.args = this.interval;
+				this.workingScheduledTask.task_trigger.args = this.interval;
 				break;
 			case 'date':
-				this.workingScheduledTask.scheduler.args = this.date;
+				this.workingScheduledTask.task_trigger.args = this.date;
 				break;
 			default:
-				this.workingScheduledTask.scheduler.args = null;
+				this.workingScheduledTask.task_trigger.args = null;
 				break;
 		}
 

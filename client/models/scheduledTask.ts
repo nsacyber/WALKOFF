@@ -6,5 +6,5 @@ export class ScheduledTask {
 	description: string;
 	status: string; //['running', 'paused', 'stopped']
 	workflows: string[];
-	scheduler: ScheduledTaskTrigger = new ScheduledTaskTrigger();
+	task_trigger: ScheduledTaskTrigger = new ScheduledTaskTrigger();
 }
