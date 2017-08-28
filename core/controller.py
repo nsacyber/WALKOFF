@@ -3,13 +3,8 @@ from collections import namedtuple
 from concurrent import futures
 from copy import deepcopy
 from os import sep
-from xml.etree import ElementTree
 import logging
-from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
-                                EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
-                                EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED)
-from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
-from apscheduler.schedulers.gevent import GeventScheduler
+from core.scheduler import Scheduler
 import core.config.config
 import core.config.paths
 from core import workflow as wf
@@ -17,6 +12,7 @@ from core.case import callbacks
 from core.case import subscription
 from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
+from functools import partial
 import uuid
 import json
 
@@ -87,6 +83,22 @@ def execute_workflow_worker(workflow, subs, execution_uid, start=None, start_inp
     return "done"
 
 
+def push_workflow_execution(workflow, uid=None, start=None, start_input=None):
+    subs = deepcopy(subscription.subscriptions)
+
+    uid = uid if uid is not None else uuid.uuid4().hex
+
+    # If threading has not been initialized, initialize it.
+    if not threading_is_initialized:
+        initialize_threading()
+
+    args = {'start': start, 'start_input': start_input, 'execution_uid': uid}
+    logger.info('Executing workflow {0} for step {1} with args{2}'.format(workflow.name, start, args))
+    workflows.append(pool.submit(execute_workflow_worker, workflow, subs, **args))
+    # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
+    return uid
+
+
 class Controller(object):
     def __init__(self, workflows_path=core.config.paths.workflows_path):
         """Initializes a Controller object.
@@ -100,23 +112,7 @@ class Controller(object):
         self.load_all_workflows_from_directory(path=workflows_path)
         self.instances = {}
         self.tree = None
-
-        self.scheduler = GeventScheduler()
-        self.scheduler.add_listener(self.__scheduler_listener(),
-                                    EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
-                                    | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
-                                    | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
-                                    | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-
-        def workflow_completed_callback(sender, **kwargs):
-            self.__workflow_completed_callback(sender, **kwargs)
-
-        callbacks.WorkflowShutdown.connect(workflow_completed_callback)
-
-    # TODO: Turns out this doesn't work at all
-    def __workflow_completed_callback(self, workflow, **kwargs):
-        if workflow.uuid in self.workflow_status:
-            self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
+        self.scheduler = Scheduler()
 
     def __add_workflow(self, key, name, json_in, playbook):
         try:
@@ -153,10 +149,9 @@ class Controller(object):
                 logger.warning('Workflow {0} not found in playbook {0}. '
                                'Cannot load.'.format(workflow_name, playbook_name))
                 return False
-            return True
-
             self.add_child_workflows()
-            self.add_workflow_scheduled_jobs()
+
+        return True
 
     def load_workflows_from_file(self, path, name_override=None, playbook_override=None):
         """Loads multiple workloads from a file.
@@ -176,7 +171,6 @@ class Controller(object):
                 self.__add_workflow(key, workflow_name, workflow, playbook_name)
 
         self.add_child_workflows()
-        self.add_workflow_scheduled_jobs()
 
     def load_all_workflows_from_directory(self, path=None):
         """Loads all workflows from a directory.
@@ -192,26 +186,21 @@ class Controller(object):
     def add_child_workflows(self):
         for workflow in self.workflows:
             playbook_name = workflow.playbook
-            if self.workflows[workflow].options is not None:
-                children = self.workflows[workflow].options.children
+            if self.workflows[workflow].children:
+                children = self.workflows[workflow].children
                 for child in children:
                     workflow_key = _WorkflowKey(playbook_name, child)
                     if workflow_key in self.workflows:
                         logger.info('Adding child workflow {0} '
                                     'to workflow {1}'.format(child, self.workflows[workflow_key].name))
                         children[child] = self.workflows[workflow_key]
+                    else:
+                        logger.warning('Could not find child workflow {0} '
+                                       'for workflow {1}'.format(child, self.workflows[workflow_key].name))
 
-    def add_workflow_scheduled_jobs(self):
-        """Schedules the workflow to run based on workflow options.
-        """
-        for workflow in self.workflows:
-            if (self.workflows[workflow].options is not None and self.workflows[workflow].options.enabled
-                    and self.workflows[workflow].options.scheduler['autorun'] == 'true'):
-                schedule_type = self.workflows[workflow].options.scheduler['type']
-                schedule = self.workflows[workflow].options.scheduler['args']
-                self.scheduler.add_job(self.workflows[workflow].execute, trigger=schedule_type, replace_existing=True,
-                                       **schedule)
-                logger.info('Added scheduled job for workflow {0}'.format(self.workflows[workflow].name))
+    def schedule_workflows(self, task_id, workflow_uids, trigger):
+        workflows = [workflow for workflow in self.workflows.values() if workflow.uid in workflow_uids]
+        self.scheduler.schedule_workflows(task_id, push_workflow_execution, workflows, trigger)
 
     def create_workflow_from_template(self,
                                       playbook_name,
@@ -295,10 +284,9 @@ class Controller(object):
             if with_json:
                 result[key.playbook].append(self.get_workflow(key.playbook, key.workflow).as_json())
             else:
-                result[key.playbook].append(key.workflow)
-        if with_json:
-            return [{'name': name, 'workflows': workflows} for name, workflows in result.items()]
-        return result
+                workflow = self.get_workflow(key.playbook, key.workflow)
+                result[key.playbook].append({'name': workflow.name, 'uid': workflow.uid})
+        return [{'name': name, 'workflows': workflows} for name, workflows in result.items()]
 
     def get_all_playbooks(self):
         """Gets a list of all playbooks.
@@ -383,21 +371,12 @@ class Controller(object):
         global threading_is_initialized
         key = _WorkflowKey(playbook_name, workflow_name)
         if key in self.workflows:
-
             workflow = self.workflows[key]
-            subs = deepcopy(subscription.subscriptions)
             uid = uuid.uuid4().hex
 
-            # If threading has not been initialized, initialize it.
-            if not threading_is_initialized:
-                initialize_threading()
-
-            args = {'start': start, 'start_input': start_input, 'execution_uid': uid}
-            logger.info('Executing workflow {0} for step {1} with args{2}'.format(key, start, args))
-            workflows.append(pool.submit(execute_workflow_worker, workflow, subs, **args))
+            push_workflow_execution(workflow, uid, start=start, start_input=start_input)
             callbacks.SchedulerJobExecuted.send(self)
             # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
-            self.workflow_status[uid] = WORKFLOW_RUNNING
             return uid
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
@@ -531,119 +510,5 @@ class Controller(object):
             logger.debug('Resuming workflow {0} from breakpoint'.format(workflow.name))
             workflow.resume_breakpoint_step()
 
-    # Starts active execution
-    def start(self):
-        """Starts the scheduler for active execution. This function must be called before any workflows are executed.
-        
-        Returns:
-            The state of the scheduler if successful, error message if scheduler is in "stopped" state.
-        """
-        if self.scheduler.state != STATE_RUNNING and self.scheduler.state != STATE_PAUSED:
-            logger.info('Starting scheduler')
-            self.scheduler.start()
-        else:
-            logger.warning('Cannot start scheduler. Scheduler is already running or is paused')
-            return "Scheduler already running."
-        return self.scheduler.state
-
-    # Stops active execution
-    def stop(self, wait=True):
-        """Stops active execution. 
-        
-        Args:
-            wait (bool, optional): Boolean to synchronously or asynchronously wait for the scheduler to shutdown.
-                Default is True.
-                
-        Returns:
-            The state of the scheduler if successful, error message if scheduler is already in "stopped" state.
-        """
-        if self.scheduler.state != STATE_STOPPED:
-            logger.info('Stopping scheduler')
-            self.scheduler.shutdown(wait=wait)
-        else:
-            logger.warning('Cannot stop scheduler. Scheduler is already stopped')
-            return "Scheduler already stopped."
-        return self.scheduler.state
-
-    # Pauses active execution
-    def pause(self):
-        """Pauses active execution.
-        
-        Returns:
-            The state of the scheduler if successful, error message if scheduler is not in the "running" state.
-        """
-        if self.scheduler.state == STATE_RUNNING:
-            logger.info('Pausing scheduler')
-            self.scheduler.pause()
-        elif self.scheduler.state == STATE_PAUSED:
-            logger.warning('Cannot pause scheduler. Scheduler is already paused')
-            return "Scheduler already paused."
-        elif self.scheduler.state == STATE_STOPPED:
-            logger.warning('Cannot pause scheduler. Scheduler is stopped')
-            return "Scheduler is in STOPPED state and cannot be paused."
-        return self.scheduler.state
-
-    # Resumes active execution
-    def resume(self):
-        """Resumes active execution.
-        
-        Returns:
-            The state of the scheduler if successful, error message if scheduler is not in the "paused" state.
-        """
-        if self.scheduler.state == STATE_PAUSED:
-            logger.info('Resuming scheduler')
-            self.scheduler.resume()
-        else:
-            logger.warning("Scheduler is not in PAUSED state and cannot be resumed.")
-            return "Scheduler is not in PAUSED state and cannot be resumed."
-        return self.scheduler.state
-
-    # Pauses active execution of specific job
-    def pause_job(self, job_id):
-        """Pauses active execution of a specific job.
-        
-        Args:
-            job_id (str): ID of the job to pause.
-        """
-        logger.info('Pausing job {0}'.format(job_id))
-        self.scheduler.pause_job(job_id=job_id)
-
-    # Resumes active execution of specific job
-    def resume_job(self, job_id):
-        """Resumes active execution of a specific job.
-        
-        Args:
-            job_id (str): ID of the job to resume.
-        """
-        logger.info('Resuming job {0}'.format(job_id))
-        self.scheduler.resume_job(job_id=job_id)
-
     def get_workflow_status(self, uid):
         return self.workflow_status.get(uid, None)
-
-    # Returns jobs scheduled for active execution
-    def get_scheduled_jobs(self):
-        """Get all actively scheduled jobs.
-        
-        Returns:
-             A list of all actively scheduled jobs.
-        """
-        self.scheduler.get_jobs()
-
-    def __scheduler_listener(self):
-        event_selector_map = {EVENT_SCHEDULER_START: (lambda: callbacks.SchedulerStart.send(self)),
-                              EVENT_SCHEDULER_SHUTDOWN: (lambda: callbacks.SchedulerShutdown.send(self)),
-                              EVENT_SCHEDULER_PAUSED: (lambda: callbacks.SchedulerPaused.send(self)),
-                              EVENT_SCHEDULER_RESUMED: (lambda: callbacks.SchedulerResumed.send(self)),
-                              EVENT_JOB_ADDED: (lambda: callbacks.SchedulerJobAdded.send(self)),
-                              EVENT_JOB_REMOVED: (lambda: callbacks.SchedulerJobRemoved.send(self)),
-                              EVENT_JOB_EXECUTED: (lambda: callbacks.SchedulerJobExecuted.send(self)),
-                              EVENT_JOB_ERROR: (lambda: callbacks.SchedulerJobError.send(self))}
-
-        def event_selector(event):
-            try:
-                event_selector_map[event.code]()
-            except KeyError:
-                print('Error: Unknown event sent!')
-
-        return event_selector

@@ -52,21 +52,3 @@
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
 	<button type="button" class="btn btn-primary" [disabled]="!caseForm.form.valid" (click)="submit()">{{submitText}}</button>
 </div>
-<style>
-	.casesModal > .modal-dialog {
-		width: 90%;
-	}
-	.node circle {
-		fill: #fff;
-		stroke: steelblue;
-		stroke-width: 3px;
-	}
-	.node text {
-		font: 12px sans-serif;
-	}
-	.link {
-		fill: none;
-		stroke: #ccc;
-		stroke-width: 2px;
-	}
-</style>

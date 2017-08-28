@@ -15,6 +15,7 @@ class Context(object):
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
         from core.controller import Controller
+        from server.scheduledtasks import ScheduledTask
 
         self.User = User
         self.Role = Role
@@ -27,6 +28,7 @@ class Context(object):
         self.db = db
         self.user_datastore = user_datastore
         self.controller = Controller()
+        self.ScheduledTask = ScheduledTask
 
     @staticmethod
     def get_apps(path=core.config.paths.apps_path):

@@ -31,7 +31,6 @@ class TestController(unittest.TestCase):
         self.assertEqual(self.controller.uid, "controller")
         self.assertEqual(self.controller.instances, {})
         self.assertIsNone(self.controller.tree)
-        self.assertIsInstance(self.controller.scheduler, GeventScheduler)
 
     def test_load_workflow_from_file(self):
         path = '{0}{1}.playbook'.format(config.test_workflows_path_with_generated, "test")

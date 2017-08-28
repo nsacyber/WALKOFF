@@ -2,7 +2,6 @@ import json
 import logging
 from copy import deepcopy
 from core.case import callbacks
-from core.options import Options
 from core.executionelement import ExecutionElement
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 from core.instance import Instance
@@ -27,7 +26,7 @@ class Workflow(ExecutionElement):
         self.playbook_name = playbook_name
         self.steps = {}
         self.start_step = 'start'
-        self.children = children if (children is not None) else {}
+        self.children = children if children is not None else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
         self.total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
@@ -178,7 +177,7 @@ class Workflow(ExecutionElement):
                         if child_step:
                             yield  # needed so outer for-loop is in sync
                             yield child_step
-                        callbacks.WorkflowShutdown.send(self.options.children[child_name])
+                        callbacks.WorkflowShutdown.send(self.children[child_name])
                     next_step = child_next_step
             current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
             current = self.steps[current_name] if current_name is not None else None
@@ -219,12 +218,12 @@ class Workflow(ExecutionElement):
         params = tiered_step_str.split(':')
         if len(params) == 3:
             child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
-            if (child_name in self.options.children
-                    and type(self.options.children[child_name]).__name__ == 'Workflow'):
+            if (child_name in self.children
+                    and type(self.children[child_name]).__name__ == 'Workflow'):
                 logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.name))
-                self.options.children[child_name].execution_uid = uuid.uuid4().hex
-                callbacks.WorkflowExecutionStart.send(self.options.children[child_name])
-                child_step_generator = self.options.children[child_name].__steps(start=child_start)
+                self.children[child_name].execution_uid = uuid.uuid4().hex
+                callbacks.WorkflowExecutionStart.send(self.children[child_name])
+                child_step_generator = self.children[child_name].__steps(start=child_start)
                 return child_step_generator, child_next, child_name
         return None, None
 
@@ -249,9 +248,12 @@ class Workflow(ExecutionElement):
 
     def __repr__(self):
         return str({'uid': self.uid,
-                    'options': self.options,
                     'steps': {step: self.steps[step] for step in self.steps},
                     'accumulated_risk': round(self.accumulated_risk, 4)})
+
+    def set_children(self, workflow_pairs):
+        for name, workflow in workflow_pairs:
+            self.children[name] = workflow
 
     def as_json(self):
         """Gets the JSON representation of a Step object.
@@ -264,8 +266,8 @@ class Workflow(ExecutionElement):
                'steps': [step.as_json() for name, step in self.steps.items()],
                'start': self.start_step,
                'accumulated_risk': round(self.accumulated_risk, 4)}
-        if self.options is not None:
-            out['options'] = self.options.as_json()
+        if self.children:
+            out['children'] = list(self.children.keys())
         return out
 
     def from_json(self, data):
@@ -279,6 +281,7 @@ class Workflow(ExecutionElement):
         if 'name' in data:
             self.name = data['name']
         uid = data['uid'] if 'uid' in data else uuid.uuid4().hex
+        self.children = {name: None for name in data['children']} if 'children' in data else {}
         try:
             if 'start' in data and data['start']:
                 self.start_step = data['start']
@@ -287,10 +290,6 @@ class Workflow(ExecutionElement):
             for step_json in data['steps']:
                 step = Step.from_json(step_json, position=step_json['position'])
                 self.steps[step_json['name']] = step
-            if 'options' in data:
-                self.options = Options.from_json(data['options'])
-            else:
-                self.options = None
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps
             raise

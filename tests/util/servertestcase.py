@@ -45,6 +45,7 @@ class ServerTestCase(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=tests.config.function_api_path)
+        server.flaskserver.running_context.db.create_all()
 
     @classmethod
     def tearDownClass(cls):

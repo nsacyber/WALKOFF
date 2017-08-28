@@ -35,14 +35,14 @@ $(function(){
     function formatWorkflowJsonDataForJsTree(data) {
         workflowList = data;
         var jstreeData = [];
-        _.each(data, function(workflows, playbookName) {
-            var playbook = {};
-            playbook.text = playbookName;
-            playbook.children = [];
-            _.each(workflows.sort(), function(workflowName) {
-                playbook.children.push({text: workflowName, icon: "jstree-file", data: {playbook: playbookName}});
+        _.each(data, function(playbook) {
+            var jsTreePlaybook = {};
+            jsTreePlaybook.text = playbook.name;
+            jsTreePlaybook.children = [];
+            _.each(playbook.workflows, function(workflow) {
+                jsTreePlaybook.children.push({text: workflow.name, icon: "jstree-file", data: {playbook: playbook.name}});
             });
-            jstreeData.push(playbook);
+            jstreeData.push(jsTreePlaybook);
         });
 
         // Sort jstreeData by playbook name
