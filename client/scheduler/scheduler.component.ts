@@ -175,7 +175,7 @@ export class SchedulerComponent {
 		this.schedulerService
 			.changeScheduledTaskStatus(task.id, action)
 			.then(() => {
-				this.schedulerStatus = newStatus;
+				task.status = newStatus;
 			})
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
 	}
