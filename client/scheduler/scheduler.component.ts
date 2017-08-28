@@ -232,9 +232,9 @@ export class SchedulerComponent {
 		// 	return value;
 		// });
 
-		let rule = JSON.stringify(scheduledTask.task_trigger.args);
+		let rule = JSON.stringify(scheduledTask.task_trigger.args, null, 1);
 
-		rule = rule.substr(1, rule.length - 2);
+		rule = rule.substr(1, rule.length - 2).replace(/"/g, '');
 
 		return rule;
 	}
