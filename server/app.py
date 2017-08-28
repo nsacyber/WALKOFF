@@ -141,9 +141,7 @@ def create_app():
     _app.jinja_options = Flask.jinja_options.copy()
     _app.jinja_options.update(dict(
         variable_start_string='<%',
-        variable_end_string='%>',
-        block_start_string='<<%',
-        block_end_string="%>>"
+        variable_end_string='%>'
     ))
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
