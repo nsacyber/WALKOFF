@@ -119,7 +119,7 @@ export class SchedulerComponent {
 				//On edit, find and update the edited item
 				if (result.isEdit) {
 					let toUpdate = _.find(this.scheduledTasks, st => st.id === result.scheduledTask.id);
-					Object.assign(toUpdate, result.scheduledTasks);
+					Object.assign(toUpdate, result.scheduledTask);
 
 					this.filterScheduledTasks();
 

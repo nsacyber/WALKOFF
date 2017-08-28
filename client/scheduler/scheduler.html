@@ -8,7 +8,7 @@
 
 		<div class="col-xs-4">
 			<div id="schedulerStatus">
-				<h4>Scheduler Currently: <span id="status">{{schedulerStatus}}</span></h4>
+				<h4>Scheduler Status: <span id="status">{{schedulerStatus}}</span></h4>
 			</div>
 			<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary"
 				id="startSchedulerBtn" title="Start Scheduler">
