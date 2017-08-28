@@ -9,7 +9,7 @@ from server.returncodes import *
 
 class TestServer(ServerTestCase):
     def test_login(self):
-        response = self.app.post('/login-process', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.assertEqual(response.status_code, SUCCESS)
 
     def test_list_apps(self):

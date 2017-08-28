@@ -11,7 +11,7 @@ class Context(object):
 
         from server.app import app
         from server.appdevice import Device, App
-        from server.database import User, Role, userRoles, UserDataStore
+        from server.database import User, Role, userRoles, db, user_datastore
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
         from core.controller import Controller
@@ -24,7 +24,8 @@ class Context(object):
         self.CaseSubscription = CaseSubscription
         self.flask_app = app
         self.user_roles = userRoles
-        self.user_datastore = UserDataStore()
+        self.db = db
+        self.user_datastore = user_datastore
         self.controller = Controller()
 
     @staticmethod

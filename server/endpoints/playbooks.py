@@ -1,7 +1,7 @@
 import json
 import os
 from flask import request, current_app
-from server.security import roles_accepted, auth_token_required
+from flask_security import roles_accepted
 from core import helpers
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from core.options import Options
@@ -12,7 +12,7 @@ import core.config.paths
 from server.returncodes import *
 import server.workflowresults  # do not delete needed to register callbacks
 
-@auth_token_required
+
 def get_playbooks(full=None):
     from server.context import running_context
 
@@ -25,8 +25,8 @@ def get_playbooks(full=None):
 
     return __func()
 
-@auth_token_required
-def create_playbook(body):
+
+def create_playbook():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
@@ -58,7 +58,7 @@ def create_playbook(body):
 
     return __func()
 
-@auth_token_required
+
 def read_playbook(playbook_name):
     from server.context import running_context
 
@@ -83,8 +83,8 @@ def read_playbook(playbook_name):
 
     return __func()
 
-@auth_token_required
-def update_playbook(body):
+
+def update_playbook():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
@@ -121,7 +121,7 @@ def update_playbook(body):
 
     return __func()
 
-@auth_token_required
+
 def delete_playbook(playbook_name):
     from server.context import running_context
 
@@ -145,8 +145,8 @@ def delete_playbook(playbook_name):
 
     return __func()
 
-@auth_token_required
-def copy_playbook(body, playbook_name):
+
+def copy_playbook(playbook_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
@@ -174,7 +174,7 @@ def copy_playbook(body, playbook_name):
 
     return __func()
 
-@auth_token_required
+
 def get_workflows(playbook_name):
     from server.context import running_context
 
@@ -192,8 +192,8 @@ def get_workflows(playbook_name):
 
     return __func()
 
-@auth_token_required
-def create_workflow(body, playbook_name):
+
+def create_workflow(playbook_name):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
@@ -256,7 +256,7 @@ def create_workflow(body, playbook_name):
 
     return __func()
 
-@auth_token_required
+
 def read_workflow(playbook_name, workflow_name):
     from server.context import running_context
 
@@ -272,8 +272,8 @@ def read_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
-def update_workflow(body, playbook_name):
+
+def update_workflow(playbook_name):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/playbooks'])
@@ -318,7 +318,7 @@ def update_workflow(body, playbook_name):
 
     return __func()
 
-@auth_token_required
+
 def delete_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
@@ -349,7 +349,7 @@ def delete_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
+
 def read_workflow_risk(playbook_name, workflow_name):
     from server.context import running_context
 
@@ -369,8 +369,8 @@ def read_workflow_risk(playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
-def copy_workflow(body, playbook_name, workflow_name):
+
+def copy_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
@@ -409,7 +409,7 @@ def copy_workflow(body, playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
+
 def execute_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
@@ -429,7 +429,7 @@ def execute_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
+
 def pause_workflow(playbook_name, workflow_name):
     from server.context import running_context
 
@@ -446,7 +446,7 @@ def pause_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
+
 def resume_workflow(playbook_name, workflow_name):
     from server.context import running_context
 
@@ -466,8 +466,8 @@ def resume_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@auth_token_required
-def save_workflow(body, playbook_name, workflow_name):
+
+def save_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 

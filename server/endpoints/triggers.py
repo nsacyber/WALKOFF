@@ -1,10 +1,8 @@
-
 from flask import request, current_app
-from server.security import roles_accepted, auth_token_required
+from flask_security import roles_accepted
 from server.returncodes import *
-from server.database import db
 
-@auth_token_required
+
 def read_all_triggers():
     from server.context import running_context
 
@@ -14,8 +12,8 @@ def read_all_triggers():
 
     return __func()
 
-@auth_token_required
-def listener(body):
+
+def listener():
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
@@ -36,8 +34,8 @@ def listener(body):
 
     return __func()
 
-@auth_token_required
-def create_trigger(body, trigger_name):
+
+def create_trigger(trigger_name):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
@@ -50,10 +48,10 @@ def create_trigger(body, trigger_name):
         data['name'] = trigger_name
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query is None:
-            db.session.add(
+            running_context.db.session.add(
                 running_context.Triggers(**data))
 
-            db.session.commit()
+            running_context.db.session.commit()
             current_app.logger.info('Added trigger: '
                                     '{0}'.format(data))
             return {}, OBJECT_CREATED
@@ -63,7 +61,7 @@ def create_trigger(body, trigger_name):
 
     return __func()
 
-@auth_token_required
+
 def read_trigger(trigger_name):
     from server.context import running_context
 
@@ -78,8 +76,8 @@ def read_trigger(trigger_name):
 
     return __func()
 
-@auth_token_required
-def update_trigger(body, trigger_name):
+
+def update_trigger(trigger_name):
     from server.context import running_context
 
     @roles_accepted(*running_context.user_roles['/execution/listener'])
@@ -98,7 +96,7 @@ def update_trigger(body, trigger_name):
 
             trigger.edit_trigger(data)
 
-            db.session.commit()
+            running_context.db.session.commit()
             current_app.logger.info('Edited trigger {0}'.format(trigger))
             return trigger.as_json(), SUCCESS
 
@@ -108,7 +106,7 @@ def update_trigger(body, trigger_name):
 
     return __func()
 
-@auth_token_required
+
 def delete_trigger(trigger_name):
     from server.context import running_context
 
@@ -117,7 +115,7 @@ def delete_trigger(trigger_name):
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:
             running_context.Triggers.query.filter_by(name=trigger_name).delete()
-            db.session.commit()
+            running_context.db.session.commit()
             current_app.logger.info('Deleted trigger {0}'.format(trigger_name))
             return SUCCESS
         else:

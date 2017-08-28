@@ -14,17 +14,15 @@ export class CasesService {
 	requestOptions: RequestOptions;
 
 	constructor (private http: Http) {
-        let authKey = sessionStorage.getItem('authKey');
-        if (authKey === null) {
-          location.href = "/login";
-        }
-        let headers = new Headers({ 'Accept': 'application/json', 'Authentication-Token': authKey.toString()});
-        this.requestOptions = new RequestOptions({ headers: headers });
+		let authKey = localStorage.getItem('authKey');
+		let headers = new Headers({ 'Accept': 'application/json' });
+		headers.append('Authentication-Token', authKey);
+
+		this.requestOptions = new RequestOptions({ headers: headers });
 	}
 
 	getCases() : Promise<Case[]> {
-	    console.log(this.requestOptions);
-		return this.http.get('/api/cases',  this.requestOptions)
+		return this.http.get('/api/cases', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Case[])
@@ -79,7 +77,7 @@ export class CasesService {
 	}
 
 	getPlaybooks() : Promise<any> {
-		return this.http.get('/api/playbooks?full=true',  this.requestOptions)
+		return this.http.get('/api/playbooks?full=true', this.requestOptions)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
