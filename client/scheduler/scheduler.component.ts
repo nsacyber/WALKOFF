@@ -232,7 +232,11 @@ export class SchedulerComponent {
 		// 	return value;
 		// });
 
-		return JSON.stringify(scheduledTask.task_trigger.args, null, 2);
+		let rule = JSON.stringify(scheduledTask.task_trigger.args);
+
+		rule = rule.substr(1, rule.length - 2);
+
+		return rule;
 	}
 
 	getFriendlyWorkflows(scheduledTask: ScheduledTask): string {
