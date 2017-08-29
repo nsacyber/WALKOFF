@@ -48,14 +48,18 @@ class TestAppsRegistration(unittest.TestCase):
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
         instance = hello_world_main_class()
-        self.assertTupleEqual(getattr(hello_world_main_class, 'helloWorld')(instance), ({'message': 'HELLO WORLD'}, 'Success'))
+
+        action_result = getattr(hello_world_main_class, 'helloWorld')(instance)
+        expected_action_result = ActionResult({'message': 'HELLO WORLD'}, 'Success')
+        self.assertEqual(action_result.result, expected_action_result.result)
+        self.assertEqual(action_result.status, expected_action_result.status)
 
     def test_get_app_action_valid(self):
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
         actions = {'pause', 'helloWorld', 'returnPlusOne', 'repeatBackToMe', 'addThree'}
         for action_name in actions:
-            self.assertEquals(get_app_action('HelloWorld', action_name), getattr(hello_world_main_class, action_name))
+            self.assertEqual(get_app_action('HelloWorld', action_name), getattr(hello_world_main_class, action_name))
 
     def test_get_app_action_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -68,7 +72,7 @@ class TestAppsRegistration(unittest.TestCase):
     def test_get_app_display(self):
         hello_world_display = importlib.import_module('tests.apps.HelloWorld.display')
         display_func = getattr(hello_world_display, 'load')
-        self.assertEquals(get_app_display('HelloWorld'), display_func)
+        self.assertEqual(get_app_display('HelloWorld'), display_func)
 
     def test_get_app_display_invalid_app(self):
         with self.assertRaises(UnknownApp):

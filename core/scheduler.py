@@ -58,8 +58,9 @@ class Scheduler(object):
         self.uid = 'controller'
 
     def schedule_workflows(self, task_id, executable, workflows, trigger):
-        for workflow in workflows:
-            self.scheduler.add_job(executable, args=(workflow, ), id=construct_task_id(task_id, workflow.uid),
+        for playbook_name, workflow_name, uid in workflows:
+            self.scheduler.add_job(executable, args=(playbook_name, workflow_name),
+                                   id=construct_task_id(task_id, uid),
                                    trigger=trigger, replace_existing=True)
 
     def get_all_scheduled_workflows(self):

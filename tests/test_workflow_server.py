@@ -10,7 +10,7 @@ import core.case.subscription
 import core.case.database as case_database
 import os
 import core.config.paths
-from gevent.event import Event
+from threading import Event
 from core.case.callbacks import WorkflowShutdown
 from server.returncodes import *
 from core.step import Step
@@ -28,7 +28,8 @@ class TestWorkflowServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        flask_server.running_context.controller.workflows = {}
+        flask_server.running_context.controller.shutdown_pool(0)
+        core.controller.workflows = {}
         case_database.case_db.tear_down()
 
     def test_display_all_playbooks(self):
@@ -596,12 +597,14 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_execute_workflow(self):
+        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
         setup_subscriptions_for_step(workflow.uid, step_uids)
         start = datetime.utcnow()
 
+        @WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
             sync.set()
 
@@ -610,6 +613,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
+        flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
         steps = []
@@ -622,11 +626,13 @@ class TestWorkflowServer(ServerTestCase):
 
     # TODO: FIX THIS TEST
     def test_execute_workflow_in_memory(self):
+        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         data = {"playbook_template": 'basicWorkflow',
                 "workflow_template": 'helloWorldWorkflow',
                 "name": "test_name"}
 
+        @WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
             sync.set()
 
@@ -643,6 +649,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.post_with_status_check('/api/playbooks/basicWorkflow/workflows/test_name/execute',
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
+        flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
         steps = []
@@ -654,12 +661,13 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_results(self):
+        flask_server.running_context.controller.initialize_threading()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
 
         with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.shutdown_threads()
+            flask_server.running_context.controller.shutdown_pool(3)
 
         response = self.get_with_status_check('/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
@@ -669,12 +677,13 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn('name', result)
 
     def test_read_all_results(self):
+        flask_server.running_context.controller.initialize_threading()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
 
         with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.shutdown_threads()
+            flask_server.running_context.controller.shutdown_pool(3)
 
         response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
         self.assertEqual(len(response), 3)

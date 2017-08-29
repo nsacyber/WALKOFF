@@ -28,16 +28,16 @@
   },
   "loggers": {
     "server": {
-      "level": "INFO",
+      "level": "DEBUG",
       "handlers": ["file_handler", "console"],
       "propagate": 0
     },
     "core": {
-      "level": "WARNING",
+      "level": "DEBUG",
       "handlers": ["file_handler"]
     },
     "apps": {
-      "level": "WARNING",
+      "level": "DEBUG",
       "handlers": ["file_handler"]
     },
     "connexion": {

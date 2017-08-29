@@ -24,7 +24,11 @@ class TestServer(ServerTestCase):
         response = self.app.get('/widgets', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected)
+        self.assertEqual(2, len(response))
+        self.assertIn('HelloWorld', response)
+        self.assertIn('DailyQuote', response)
+        self.assertEqual(0, len(response['DailyQuote']))
+        orderless_list_compare(self, expected['HelloWorld'], response['HelloWorld'])
 
     def test_read_filters(self):
         response = self.get_with_status_check('/api/filters', headers=self.headers)

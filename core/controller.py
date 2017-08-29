@@ -1,26 +1,24 @@
 import os
 from collections import namedtuple
-from concurrent import futures
+import gevent
 from copy import deepcopy
 from os import sep
+import signal
 import logging
 from core.scheduler import Scheduler
 import core.config.config
 import core.config.paths
 from core import workflow as wf
 from core.case import callbacks
-from core.case import subscription
 from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
-from functools import partial
 import uuid
 import json
+import multiprocessing
+import threading
+from core import load_balancer
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
-
-pool = None
-workflows = None
-threading_is_initialized = False
 
 logger = logging.getLogger(__name__)
 
@@ -28,75 +26,7 @@ WORKFLOW_RUNNING = 1
 WORKFLOW_PAUSED = 2
 WORKFLOW_COMPLETED = 4
 
-
-def initialize_threading():
-    """Initializes the threadpool.
-    """
-    global pool
-    global workflows
-    global threading_is_initialized
-
-    workflows = []
-
-    pool = futures.ThreadPoolExecutor(max_workers=core.config.config.num_threads)
-    threading_is_initialized = True
-    logger.debug('Controller threading initialized')
-
-
-def shutdown_pool():
-    """Shuts down the threadpool.
-    """
-    global pool
-    global workflows
-    global threading_is_initialized
-
-    for future in futures.as_completed(workflows):
-        future.result(timeout=core.config.config.threadpool_shutdown_timeout_sec)
-    pool.shutdown(wait=False)
-
-    workflows = []
-    threading_is_initialized = False
-    logger.debug('Controller thread pool shutdown')
-
-
-def execute_workflow_worker(workflow, subs, execution_uid, start=None, start_input=None):
-    """Executes the workflow in a multi-threaded fashion.
-    
-    Args:
-        workflow (Workflow): The workflow to be executed.
-        execution_uid (str): The unique identifier of the workflow
-        start (str, optional): Name of the first step to be executed in the workflow.
-        subs (Subscription): The current subscriptions. This is necessary for resetting the subscriptions.
-        start_input (dict, optional): The input to the starting step of the workflow
-        
-    Returns:
-        "Done" when the workflow has finished execution.
-    """
-    args = {'start': start, 'start_input': start_input, 'execution_uid': execution_uid}
-    subscription.set_subscriptions(subs)
-    workflow.execution_uid = execution_uid
-    try:
-        workflow.execute(**args)
-    except Exception as e:
-        logger.error('Caught error while executing workflow {0}. {1}'.format(workflow.name,
-                                                                             format_exception_message(e)))
-    return "done"
-
-
-def push_workflow_execution(workflow, uid=None, start=None, start_input=None):
-    subs = deepcopy(subscription.subscriptions)
-
-    uid = uid if uid is not None else uuid.uuid4().hex
-
-    # If threading has not been initialized, initialize it.
-    if not threading_is_initialized:
-        initialize_threading()
-
-    args = {'start': start, 'start_input': start_input, 'execution_uid': uid}
-    logger.info('Executing workflow {0} for step {1} with args{2}'.format(workflow.name, start, args))
-    workflows.append(pool.submit(execute_workflow_worker, workflow, subs, **args))
-    # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
-    return uid
+NUM_PROCESSES = core.config.config.num_processes
 
 
 class Controller(object):
@@ -113,6 +43,80 @@ class Controller(object):
         self.instances = {}
         self.tree = None
         self.scheduler = Scheduler()
+
+        @callbacks.WorkflowShutdown.connect
+        def workflow_completed_callback(sender, **kwargs):
+            self.__workflow_completed_callback(sender, **kwargs)
+
+        self.pids = []
+        self.receiver_thread = None
+        self.manager_thread = None
+        self.workflows_executed = 0
+        self.threading_is_initialized = False
+        self.load_balancer = None
+        self.receiver = None
+
+    def __workflow_completed_callback(self, workflow, **kwargs):
+        self.workflows_executed += 1
+        if workflow.uuid in self.workflow_status:
+            self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
+
+    def initialize_threading(self):
+        for i in range(NUM_PROCESSES):
+            pid = multiprocessing.Process(target=load_balancer.Worker, args=(i,))
+            pid.start()
+            self.pids.append(pid)
+
+        self.receiver = load_balancer.Receiver()
+        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
+        self.receiver_thread.start()
+
+        self.load_balancer = load_balancer.LoadBalancer()
+        self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
+        self.manager_thread.start()
+
+        self.threading_is_initialized = True
+        logger.debug('Controller threading initialized')
+        gevent.sleep(0)
+
+    def shutdown_pool(self, num_workflows=0):
+        """Shuts down the threadpool.
+        """
+        gevent.sleep(0)
+
+        while True:
+            if (num_workflows == 0) or \
+                    (num_workflows != 0 and self.receiver is not None and num_workflows == self.receiver.workflows_executed):
+                if self.manager_thread:
+                    self.load_balancer.thread_exit = True
+                    self.manager_thread.join()
+                if len(self.pids) > 0:
+                    for p in self.pids:
+                        if p.is_alive():
+                            os.kill(p.pid, signal.SIGQUIT)
+                            p.join(timeout=3)
+                            try:
+                                os.kill(p.pid, 9)
+                            except OSError:
+                                pass
+                if self.receiver_thread:
+                    self.receiver.thread_exit = True
+                    self.receiver_thread.join()
+                self.threading_is_initialized = False
+                logger.debug('Controller thread pool shutdown')
+                break
+            gevent.sleep(0.1)
+        self.cleanup_threading()
+        return
+
+    def cleanup_threading(self):
+        self.pids = []
+        self.receiver_thread = None
+        self.manager_thread = None
+        self.workflows_executed = 0
+        self.threading_is_initialized = False
+        self.load_balancer = None
+        self.receiver = None
 
     def __add_workflow(self, key, name, json_in, playbook):
         try:
@@ -144,14 +148,13 @@ class Controller(object):
                     workflow_name = name_override if name_override else workflow['name']
                     key = _WorkflowKey(playbook_name, workflow_name)
                     self.__add_workflow(key, workflow_name, workflow, playbook_name)
+                    self.add_child_workflows()
                     break
             else:
                 logger.warning('Workflow {0} not found in playbook {0}. '
                                'Cannot load.'.format(workflow_name, playbook_name))
                 return False
-            self.add_child_workflows()
-
-        return True
+            return True
 
     def load_workflows_from_file(self, path, name_override=None, playbook_override=None):
         """Loads multiple workloads from a file.
@@ -199,8 +202,9 @@ class Controller(object):
                                        'for workflow {1}'.format(child, self.workflows[workflow_key].name))
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
-        workflows = [workflow for workflow in self.workflows.values() if workflow.uid in workflow_uids]
-        self.scheduler.schedule_workflows(task_id, push_workflow_execution, workflows, trigger)
+        workflows = [(key.playbook, key.workflow, workflow.uid) for key, workflow in self.workflows.items()
+                     if workflow.uid in workflow_uids]
+        self.scheduler.schedule_workflows(task_id, self.execute_workflow, workflows, trigger)
 
     def create_workflow_from_template(self,
                                       playbook_name,
@@ -359,22 +363,38 @@ class Controller(object):
 
     def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
         """Executes a workflow.
-        
+
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first step. Defaults to "start".
             start_input (dict, optional): The input to the starting step of the workflow
         """
-        global pool
-        global workflows
-        global threading_is_initialized
         key = _WorkflowKey(playbook_name, workflow_name)
         if key in self.workflows:
             workflow = self.workflows[key]
             uid = uuid.uuid4().hex
 
-            push_workflow_execution(workflow, uid, start=start, start_input=start_input)
+            if not self.threading_is_initialized:
+                self.initialize_threading()
+
+            if start is not None:
+                logger.info('Executing workflow {0} for step {1}'.format(key, start))
+            else:
+                logger.info('Executing workflow {0} with default starting step'.format(key, start))
+            self.workflow_status[uid] = WORKFLOW_RUNNING
+
+            wf_json = workflow.as_json()
+            if start:
+                wf_json['start'] = start
+            if start_input:
+                wf_json['start_input'] = start_input
+            wf_json['execution_uid'] = uid
+            if workflow.breakpoint_steps:
+                wf_json['breakpoint_steps'] = workflow.breakpoint_steps
+
+            self.load_balancer.pending_workflows.put(wf_json)
+
             callbacks.SchedulerJobExecuted.send(self)
             # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
             return uid
@@ -472,6 +492,8 @@ class Controller(object):
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow and uid in self.workflow_status and self.workflow_status[uid] == WORKFLOW_RUNNING:
             logger.info('Pausing workflow {0}'.format(workflow.name))
+            if uid in self.load_balancer.workflow_comms:
+                self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[uid], b'', b'Pause'])
             workflow.pause()
             self.workflow_status[uid] = WORKFLOW_PAUSED
 
@@ -491,6 +513,8 @@ class Controller(object):
         if workflow:
             if validate_uuid in self.workflow_status and self.workflow_status[validate_uuid] == WORKFLOW_PAUSED:
                 logger.info('Resuming workflow {0}'.format(workflow.name))
+                if validate_uuid in self.load_balancer.workflow_comms:
+                    self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[validate_uuid], b'', b'resume'])
                 workflow.resume()
                 self.workflow_status[validate_uuid] = WORKFLOW_RUNNING
                 return True
@@ -498,7 +522,7 @@ class Controller(object):
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
                 return False
 
-    def resume_breakpoint_step(self, playbook_name, workflow_name):
+    def resume_breakpoint_step(self, playbook_name, workflow_name, uid):
         """Resumes a step that has been specified as a breakpoint.
         
         Args:
@@ -506,9 +530,13 @@ class Controller(object):
             workflow_name (str): The name of the workflow.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow:
-            logger.debug('Resuming workflow {0} from breakpoint'.format(workflow.name))
+        if workflow and uid in self.workflow_status:
+            logger.info('Resuming workflow {0} from breakpoint'.format(workflow.name))
+            if uid in self.load_balancer.workflow_comms:
+                self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[uid], b'', b'Resume breakpoint'])
             workflow.resume_breakpoint_step()
 
     def get_workflow_status(self, uid):
         return self.workflow_status.get(uid, None)
+
+controller = Controller()

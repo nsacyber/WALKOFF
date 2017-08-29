@@ -12,7 +12,10 @@ from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_A
 
 
 def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message_name):
-    caller = sender.uid
+    if isinstance(sender, dict):
+        caller = sender['uid']
+    else:
+        caller = sender.uid
     cases_to_add = case_subscription.get_cases_subscribed(caller, message_name)
     if cases_to_add:
         if not isinstance(data, string_types):
@@ -95,6 +98,14 @@ WorkflowInputValidated, __workflow_input_validated = __construct_logging_signal(
 WorkflowInputInvalid, __workflow_input_invalidated = __construct_logging_signal('Workflow',
                                                                                 'Workflow Input Invalid',
                                                                                 'Workflow input invalid')
+
+WorkflowPaused, __workflow_paused = __construct_logging_signal('Workflow',
+                                                               'Workflow Paused',
+                                                               'Workflow paused')
+
+WorkflowResumed, __workflow_resumed = __construct_logging_signal('Workflow',
+                                                                 'Workflow Resumed',
+                                                                 'Workflow resumed')
 
 # Step callbacks
 

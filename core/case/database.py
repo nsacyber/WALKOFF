@@ -138,6 +138,8 @@ class CaseDatabase(object):
         additions = [Case(name=case_name) for case_name in (set(case_names) - existing_cases)]
         self.session.add_all(additions)
         self.session.commit()
+        existing_cases = self.session.query(Case).all()
+        existing_case_names = [case.name for case in existing_cases]
 
     def delete_cases(self, case_names):
         """ Removes cases to the database
@@ -228,7 +230,6 @@ class CaseDatabase(object):
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""
     return _singleton
-
 
 case_db = get_case_db()
 

@@ -7,7 +7,7 @@ import core.config.config
 import connexion
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
-from gevent import monkey
+
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,7 @@ def read_and_indent(filename, indent):
     indent = '  ' * indent
     with open(filename, 'r') as file_open:
         return ['{0}{1}'.format(indent, line) for line in file_open]
+
 
 def compose_yamls():
     with open(os.path.join(paths.api_path, 'api.yaml'), 'r') as api_yaml:
@@ -121,6 +122,7 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
+    import core.config
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
     compose_yamls()
@@ -146,8 +148,10 @@ def create_app():
     connexion_app.add_api('composed_api.yaml')
     register_blueprints(_app)
     core.config.config.initialize()
+
+    import core.controller
+    core.controller.controller.load_all_workflows_from_directory()
     setup_case_stream()
-    monkey.patch_all()
     return _app
 
 

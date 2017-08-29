@@ -14,8 +14,8 @@ class MockWorkflow(object):
         pass
 
 
-def execute(workflow):
-    workflow.execute()
+def execute(playbook_name, workflow_name):
+    pass
 
 
 class TestScheduler(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(self.scheduler.scheduler.state, state)
 
     def add_tasks(self, task_id, workflow_ids, trigger):
-        workflows = [MockWorkflow(uid) for uid in workflow_ids]
+        workflows = [(i, i+1, uid) for i, uid in enumerate(workflow_ids)]
         self.scheduler.schedule_workflows(task_id, execute, workflows, trigger)
 
     def add_task_set_one(self):

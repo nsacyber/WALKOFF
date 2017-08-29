@@ -1,6 +1,6 @@
 import unittest
 
-from core.controller import Controller, _WorkflowKey, initialize_threading, shutdown_pool
+from core.controller import Controller, _WorkflowKey
 from tests import config
 from apscheduler.schedulers.gevent import GeventScheduler
 import os
@@ -18,14 +18,9 @@ class TestController(unittest.TestCase):
         core.config.config.flags = helpers.import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = helpers.import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        initialize_threading()
 
     def setUp(self):
         self.controller = Controller()
-
-    @classmethod
-    def tearDownClass(cls):
-        shutdown_pool()
 
     def test_create_controller(self):
         self.assertEqual(self.controller.uid, "controller")

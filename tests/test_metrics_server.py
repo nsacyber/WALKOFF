@@ -68,7 +68,6 @@ class MetricsServerTest(ServerTestCase):
         for action_metric in expected_app2_metrics['actions']:
             self.assertIn(action_metric, app2_metrics['actions'])
 
-
     def test_convert_workflow_time_average(self):
         test1 = {'workflow1': {'count': 0,
                                'avg_time': timedelta(100, 0, 1)},
@@ -98,10 +97,12 @@ class MetricsServerTest(ServerTestCase):
             self.assertIn(workflow, converted['workflows'])
 
     def test_action_metrics(self):
+        server.running_context.controller.initialize_threading()
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multistepError.playbook')
 
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
+        server.running_context.controller.shutdown_pool(1)
 
         response = self.app.get('/metrics/apps', headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -109,6 +110,7 @@ class MetricsServerTest(ServerTestCase):
         self.assertDictEqual(response, _convert_action_time_averages())
 
     def test_workflow_metrics(self):
+        server.running_context.controller.initialize_threading()
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multistepError.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
@@ -120,6 +122,8 @@ class MetricsServerTest(ServerTestCase):
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        server.running_context.controller.shutdown_pool(5)
+
         response = self.app.get('/metrics/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))

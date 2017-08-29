@@ -1,13 +1,15 @@
 import unittest
 import shutil
-import json
-import os
 import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
+from tests.util.thread_control import *
+import core.load_balancer
+import os
+import json
 
 
 class ServerTestCase(unittest.TestCase):
@@ -45,6 +47,9 @@ class ServerTestCase(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=tests.config.function_api_path)
+        core.config.config.num_processes = 2
+
+        core.load_balancer.Worker.setup_worker_env = modified_setup_worker_env
         server.flaskserver.running_context.db.create_all()
 
     @classmethod

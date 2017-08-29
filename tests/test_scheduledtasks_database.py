@@ -5,6 +5,7 @@ from server.database import db
 import json
 import server.flaskserver as server
 from tests.test_scheduler import MockWorkflow
+from core.controller import _WorkflowKey
 
 
 class TestScheduledTask(unittest.TestCase):
@@ -49,6 +50,10 @@ class TestScheduledTask(unittest.TestCase):
             self.assertEqual(task.trigger_args, '{}')
         self.assertSchedulerWorkflowsRunningEqual(expected_running_workflows)
 
+    def patch_controller_workflows(self, workflow_uids):
+        server.running_context.controller.workflows = {_WorkflowKey(i, i + 1): MockWorkflow(workflow_uids[i])
+                                                       for i, uid in enumerate(workflow_uids)}
+
     def test_init_default(self):
         task = ScheduledTask(name='test')
         self.assertStructureIsCorrect(task, 'test')
@@ -81,7 +86,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_init_with_status_with_trigger_with_workflows(self):
         workflows = ['uid1', 'uid2', 'uid3', 'uid4']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running', workflows=workflows)
         self.assertStructureIsCorrect(task, 'test', trigger_type='date',
                                       trigger_args={'run_date': '2017-01-25 10:00:00'},
@@ -89,7 +94,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_init_with_status_with_trigger_without_workflows(self):
         workflows = ['uid1', 'uid2', 'uid3', 'uid4']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running')
         self.assertStructureIsCorrect(task, 'test', trigger_type='date',
                                       trigger_args={'run_date': '2017-01-25 10:00:00'},
@@ -97,7 +102,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_init_with_status_trigger_unspecified(self):
         workflows = ['uid1', 'uid2', 'uid3', 'uid4']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', status='running', workflows=['uid1', 'uid2', 'uid3', 'uid4'])
         self.assertStructureIsCorrect(task, 'test', status='running', workflows=set(workflows))
 
@@ -117,7 +122,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_update_workflows_none_existing_running(self):
         workflows = ['a', 'b', 'c', 'd']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running')
         update = {'workflows': ['a', 'b', 'c']}
         task.update(update)
@@ -133,7 +138,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_update_workflows_with_existing_workflows_running_new_only(self):
         workflows = ['a', 'b', 'c', 'd']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'], status='running')
         update = {'workflows': workflows}
         task.update(update)
@@ -142,7 +147,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_update_workflows_with_existing_workflows_running_remove_only(self):
         workflows = ['a', 'b', 'c', 'd']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=workflows, status='running')
         update = {'workflows': ['b', 'c']}
         task.update(update)
@@ -151,7 +156,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_update_workflows_with_existing_workflows_running_add_and_remove(self):
         workflows = ['a', 'b', 'c', 'd']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'], status='running')
         update = {'workflows': ['a', 'b']}
         task.update(update)
@@ -188,7 +193,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_start_from_stopped_with_trigger(self):
         workflows = ['a', 'b', 'c', 'd']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'])
         task.start()
         self.assertEqual(task.status, 'running')
@@ -202,7 +207,7 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_stop_from_running_with_workflows(self):
         workflows = ['a', 'b', 'c', 'd']
-        server.running_context.controller.workflows = {i: MockWorkflow(workflows[i]) for i in range(len(workflows))}
+        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'])
         task.stop()
         self.assertEqual(task.status, 'stopped')

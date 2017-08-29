@@ -14,7 +14,7 @@ class Context(object):
         from server.database import User, Role, userRoles, db, user_datastore
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
-        from core.controller import Controller
+        import core.controller
         from server.scheduledtasks import ScheduledTask
 
         self.User = User
@@ -27,7 +27,7 @@ class Context(object):
         self.user_roles = userRoles
         self.db = db
         self.user_datastore = user_datastore
-        self.controller = Controller()
+        self.controller = core.controller.controller
         self.ScheduledTask = ScheduledTask
 
     @staticmethod
@@ -66,19 +66,5 @@ class Context(object):
             value (any): The value of the attribute to set.
         """
         setattr(self, key, value)
-
-    @staticmethod
-    def init_threads():
-        """Initializes the thread pool.
-        """
-        from core.controller import initialize_threading
-        initialize_threading()
-
-    @staticmethod
-    def shutdown_threads():
-        """Shuts down the threadpool.
-        """
-        from core.controller import shutdown_pool
-        shutdown_pool()
 
 running_context = Context()

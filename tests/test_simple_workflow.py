@@ -2,11 +2,13 @@ import unittest
 import core.config.config
 from core.case import database
 from core.case import subscription
-from core.controller import Controller, initialize_threading, shutdown_pool
+import core.controller
+import core.load_balancer
 from core.helpers import import_all_flags, import_all_filters, import_all_apps
 from tests import config
 from tests.util.case_db_help import *
 from tests.apps import App
+from tests.util.thread_control import *
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -18,11 +20,16 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.config.config.num_processes = 2
+        core.load_balancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
-        self.controller = Controller(workflows_path=config.test_workflows_path)
+        self.controller = core.controller.controller
+        self.controller.workflows = {}
+        self.controller.load_all_workflows_from_directory(path=config.test_workflows_path)
         self.start = datetime.utcnow()
-        initialize_threading()
+
+        self.controller.initialize_threading()
         database.initialize()
 
     def tearDown(self):
@@ -35,7 +42,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
         steps = []
         for uid in step_uids:
@@ -53,7 +60,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
         steps = []
         for uid in step_uids:
             steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
@@ -71,7 +78,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
         steps = []
         for uid in step_uids:
@@ -90,7 +97,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
         steps = []
         for uid in step_uids:
@@ -109,7 +116,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
         steps = []
         for uid in step_uids:
