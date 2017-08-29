@@ -146,6 +146,7 @@ class Controller(object):
             for workflow in (workflow_ for workflow_ in json_in['workflows'] if workflow_['name'] == workflow_name):
                 if workflow['name'] == workflow_name:
                     workflow_name = name_override if name_override else workflow['name']
+                    workflow['name'] = workflow_name
                     key = _WorkflowKey(playbook_name, workflow_name)
                     self.__add_workflow(key, workflow_name, workflow, playbook_name)
                     self.add_child_workflows()
