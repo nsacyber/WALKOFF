@@ -86,8 +86,10 @@ class TestWorkflowServer(ServerTestCase):
         for playbook in response:
             for workflow in playbook['workflows']:
                 workflow.pop('uid')
-        self.assertListEqual(response, [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
-                                        {u'name': u'test_playbook', u'workflows': [{u'name': u'helloWorldWorkflow'}]}])
+        expected = [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
+                             {u'name': u'test_playbook', u'workflows': [{u'name': u'helloWorldWorkflow'}]}]
+        for workflow in response:
+            self.assertIn(workflow, expected)
         self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
 
     def test_add_playbook_template_invalid_name(self):
@@ -99,8 +101,10 @@ class TestWorkflowServer(ServerTestCase):
         for playbook in response:
             for workflow in playbook['workflows']:
                 workflow.pop('uid')
-        self.assertListEqual(response, [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
-                                        {u'name': u'test_playbook', u'workflows': [{u'name': u'emptyWorkflow'}]}])
+        expected = [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
+                                        {u'name': u'test_playbook', u'workflows': [{u'name': u'emptyWorkflow'}]}]
+        for workflow in response:
+            self.assertIn(workflow, expected)
         self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
 
     def test_add_playbook_already_exists(self):
