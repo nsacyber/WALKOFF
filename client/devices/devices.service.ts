@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 
-import { Device } from '../models/device'
+import { Device } from '../models/device';
+import { DeviceType } from '../models/deviceType';
 
 @Injectable()
 export class DevicesService {
@@ -68,13 +69,21 @@ export class DevicesService {
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
+
+	getDeviceTypes() : Promise<DeviceType[]> {
+		return this.http.get(`api/devicetypes`, this.requestOptions)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as DeviceType[])
+			.catch(this.handleError);
+	}
 	
 	private extractData (res: Response) {
 		let body = res.json();
 		return body || {};
 	}
 
-	private handleError (error: Response | any) {
+	private handleError (error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {

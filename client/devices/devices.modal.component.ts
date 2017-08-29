@@ -5,6 +5,7 @@ import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty
 import { DevicesService } from './devices.service';
 
 import { Device } from '../models/device';
+import { DeviceType } from '../models/deviceType';
  
 @Component({
 	selector: 'device-modal',
@@ -19,6 +20,7 @@ export class DevicesModalComponent {
 	@Input() title: string;
 	@Input() submitText: string;
 	@Input() appNames: string[] = [];
+	@Input() deviceTypes: DeviceType[] = [];
 
 	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';

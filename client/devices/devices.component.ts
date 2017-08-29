@@ -10,6 +10,7 @@ import { DevicesModalComponent } from './devices.modal.component';
 import { DevicesService } from './devices.service';
 
 import { Device } from '../models/device';
+import { DeviceType } from '../models/deviceType';
 
 @Component({
 	selector: 'devices-component',
@@ -27,6 +28,7 @@ export class DevicesComponent {
 	appNames: string[] = [];
 	availableApps: Select2OptionData[] = [];
 	appSelectConfig: Select2Options;
+	deviceTypes: DeviceType[] = [];
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
 
@@ -43,6 +45,7 @@ export class DevicesComponent {
 
 		this.getDevices();
 		this.getApps();
+		this.getDeviceTypes();
 
 		this.filterQuery
 			.valueChanges
@@ -80,6 +83,7 @@ export class DevicesComponent {
 		modalRef.componentInstance.title = 'Add New Device';
 		modalRef.componentInstance.submitText = 'Add Device';
 		modalRef.componentInstance.appNames = this.appNames;
+		modalRef.componentInstance.deviceTypes = this.deviceTypes;
 
 		this._handleModalClose(modalRef);
 	}
@@ -89,6 +93,7 @@ export class DevicesComponent {
 		modalRef.componentInstance.title = `Edit Device ${device.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.appNames = this.appNames;
+		modalRef.componentInstance.deviceTypes = this.deviceTypes;
 
 		modalRef.componentInstance.workingDevice = _.cloneDeep(device);
 
@@ -145,6 +150,13 @@ export class DevicesComponent {
 				this.appNames = appNames;
 				this.availableApps = appNames.map((appName) => { return { id: appName, text: appName } });
 			})
-			.catch(e => this.toastyService.error(`Error retrieving apps: ${e.message}`))
+			.catch(e => this.toastyService.error(`Error retrieving apps: ${e.message}`));
+	}
+
+	getDeviceTypes(): void {
+		this.devicesService
+			.getDeviceTypes()
+			.then(deviceTypes => this.deviceTypes = deviceTypes)
+			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
 	}
 }
