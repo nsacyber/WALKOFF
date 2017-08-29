@@ -16,4 +16,3 @@ pyaes == 1.6.0
 pyyaml
 uwsgi > 1.4
 pyzmq
-gevent
