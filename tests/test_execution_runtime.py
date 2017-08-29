@@ -8,7 +8,7 @@ import core.case.database as case_database
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.thread_control import *
 import core.controller
-import core.load_balancer
+import core.loadbalancer
 from tests.apps import App
 
 
@@ -21,7 +21,7 @@ class TestExecutionRuntime(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.load_balancer.Worker.setup_worker_env = modified_setup_worker_env
+        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.start = datetime.utcnow()

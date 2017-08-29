@@ -21,7 +21,7 @@ class TestWorkflowServer(ServerTestCase):
         # This looks awful, I know
         self.empty_workflow_json = \
             {'steps': [],
-             'name': 'emptyWorkflow',
+             'name': 'test_name',
              'start': 'start',
              'accumulated_risk': 0.0}
 

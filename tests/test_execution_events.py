@@ -7,7 +7,7 @@ import core.config.config
 from tests.apps import App
 import core.controller
 from tests.util.thread_control import *
-import core.load_balancer
+import core.loadbalancer
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.load_balancer.Worker.setup_worker_env = modified_setup_worker_env
+        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.c = core.controller.controller

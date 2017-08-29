@@ -16,7 +16,7 @@ from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
 from core.controller import _WorkflowKey
 from tests.util.thread_control import *
-import core.load_balancer
+import core.loadbalancer
 import threading
 
 try:
@@ -35,7 +35,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
-        core.load_balancer.Worker.setup_worker_env = modified_setup_worker_env
+        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.controller = core.controller.controller

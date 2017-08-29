@@ -16,7 +16,7 @@ import uuid
 import json
 import multiprocessing
 import threading
-from core import load_balancer
+from core import loadbalancer
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -63,15 +63,15 @@ class Controller(object):
 
     def initialize_threading(self):
         for i in range(NUM_PROCESSES):
-            pid = multiprocessing.Process(target=load_balancer.Worker, args=(i,))
+            pid = multiprocessing.Process(target=loadbalancer.Worker, args=(i,))
             pid.start()
             self.pids.append(pid)
 
-        self.receiver = load_balancer.Receiver()
+        self.receiver = loadbalancer.Receiver()
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
 
-        self.load_balancer = load_balancer.LoadBalancer()
+        self.load_balancer = loadbalancer.LoadBalancer()
         self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
         self.manager_thread.start()
 

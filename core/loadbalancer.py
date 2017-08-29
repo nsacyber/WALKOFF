@@ -134,6 +134,27 @@ class Worker:
 
 
 class Receiver:
+    callback_lookup = {
+        'Workflow Execution Start': (callbacks.WorkflowExecutionStart, True),
+        'Next Step Found': (callbacks.NextStepFound, True),
+        'App Instance Created': (callbacks.AppInstanceCreated, True),
+        'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
+        'Workflow Input Validated': (callbacks.WorkflowInputInvalid, True),
+        'Workflow Paused': (callbacks.WorkflowPaused, True),
+        'Workflow Resumed': (callbacks.WorkflowResumed, True),
+        'Step Execution Success': (callbacks.StepExecutionSuccess, True),
+        'Step Execution Error': (callbacks.StepExecutionError, True),
+        'Step Input Validated': (callbacks.StepInputValidated, True),
+        'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
+        'Step Input Invalid': (callbacks.StepInputInvalid, True),
+        'Conditionals Executed': (callbacks.ConditionalsExecuted, True),
+        'Next Step Taken': (callbacks.NextStepTaken, False),
+        'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
+        'Flag Success': (callbacks.FlagSuccess, False),
+        'Flag Error': (callbacks.FlagError, False),
+        'Filter Success': (callbacks.FilterSuccess, False),
+        'Filter Error': (callbacks.FilterError, False)}
+
     def __init__(self):
         self.thread_exit = False
         self.workflows_executed = 0
@@ -142,7 +163,8 @@ class Receiver:
         self.results_sock = self.ctx.socket(zmq.PULL)
         self.results_sock.bind(RESULTS_ADDR)
 
-    def send_callback(self, callback, sender, data):
+    @staticmethod
+    def send_callback(callback, sender, data):
         if 'data' in data:
             callback.send(sender, data=data['data'])
         else:
@@ -158,51 +180,18 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            callback = message['callback_name']
+            callback_name = message['callback_name']
             sender = message['sender']
             data = message
-
-            if callback == "Workflow Execution Start":
-                self.send_callback(callbacks.WorkflowExecutionStart, sender, data)
-            elif callback == "Next Step Found":
-                self.send_callback(callbacks.NextStepFound, sender, data)
-            elif callback == "App Instance Created":
-                self.send_callback(callbacks.AppInstanceCreated, sender, data)
-            elif callback == "Workflow Shutdown":
-                self.send_callback(callbacks.WorkflowShutdown, sender, data)
-                self.workflows_executed += 1
-            elif callback == "Workflow Input Validated":
-                self.send_callback(callbacks.WorkflowInputValidated, sender, data)
-            elif callback == "Workflow Input Invalid":
-                self.send_callback(callbacks.WorkflowInputInvalid, sender, data)
-            elif callback == "Workflow Paused":
-                self.send_callback(callbacks.WorkflowPaused, sender, data)
-            elif callback == "Workflow Resumed":
-                self.send_callback(callbacks.WorkflowResumed, sender, data)
-            elif callback == "Step Execution Success":
-                self.send_callback(callbacks.StepExecutionSuccess, sender, data)
-            elif callback == "Step Execution Error":
-                self.send_callback(callbacks.StepExecutionError, sender, data)
-            elif callback == "Step Input Validated":
-                self.send_callback(callbacks.StepInputValidated, sender, data)
-            elif callback == "Function Execution Success":
-                self.send_callback(callbacks.FunctionExecutionSuccess, sender, data)
-            elif callback == "Step Input Invalid":
-                self.send_callback(callbacks.StepInputInvalid, sender, data)
-            elif callback == "Conditionals Executed":
-                self.send_callback(callbacks.ConditionalsExecuted, sender, data)
-            elif callback == "Next Step Taken":
-                self.send_callback(callbacks.NextStepTaken, sender, {})
-            elif callback == "Next Step Not Taken":
-                self.send_callback(callbacks.NextStepNotTaken, sender, {})
-            elif callback == "Flag Success":
-                self.send_callback(callbacks.FlagSuccess, sender, {})
-            elif callback == "Flag Error":
-                self.send_callback(callbacks.FlagError, sender, {})
-            elif callback == "Filter Success":
-                self.send_callback(callbacks.FilterSuccess, sender, {})
-            elif callback == "Filter Error":
-                self.send_callback(callbacks.FilterError, sender, {})
+            try:
+                callback = self.callback_lookup[callback_name]
+                data = data if callback[1] else {}
+                Receiver.send_callback(callback[0], sender, data)
+            except KeyError:
+                logger.error('Unknown callabck sent {}'.format(callback_name))
+            else:
+                if callback_name == 'Workflow Shutdown':
+                    self.workflows_executed += 1
 
         self.results_sock.close()
         self.ctx.destroy()

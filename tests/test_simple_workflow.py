@@ -3,7 +3,7 @@ import core.config.config
 from core.case import database
 from core.case import subscription
 import core.controller
-import core.load_balancer
+import core.loadbalancer
 from core.helpers import import_all_flags, import_all_filters, import_all_apps
 from tests import config
 from tests.util.case_db_help import *
@@ -21,7 +21,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
-        core.load_balancer.Worker.setup_worker_env = modified_setup_worker_env
+        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.controller = core.controller.controller
