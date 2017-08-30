@@ -50,7 +50,7 @@ def receive(pull_sock):
         elif callback == "Step Execution Error":
             send_callback(callbacks.StepExecutionError, sender, data)
         elif callback == "Step Input Validated":
-            send_callback(callbacks.StepInputValidated, sender, data)
+            send_callback(callbacks.StepStarted, sender, data)
         elif callback == "Function Execution Success":
             send_callback(callbacks.FunctionExecutionSuccess, sender, data)
         elif callback == "Step Input Invalid":

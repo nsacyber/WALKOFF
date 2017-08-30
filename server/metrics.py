@@ -1,5 +1,5 @@
 from datetime import datetime
-from core.case.callbacks import StepInputValidated, FunctionExecutionSuccess, StepExecutionError, \
+from core.case.callbacks import StepStarted, FunctionExecutionSuccess, StepExecutionError, \
     WorkflowShutdown, WorkflowExecutionStart
 
 app_metrics = {}
@@ -19,7 +19,7 @@ __action_tmp = {}
 __workflow_tmp = {}
 
 
-@StepInputValidated.connect
+@StepStarted.connect
 def __action_started_callback(sender, **kwargs):
     # TODO: This identifier should be replaced by step id when that happens
     __action_tmp[sender['execution_uid']] = datetime.utcnow()

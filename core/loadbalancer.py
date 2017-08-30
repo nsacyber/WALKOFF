@@ -144,7 +144,7 @@ class Receiver:
         'Workflow Resumed': (callbacks.WorkflowResumed, True),
         'Step Execution Success': (callbacks.StepExecutionSuccess, True),
         'Step Execution Error': (callbacks.StepExecutionError, True),
-        'Step Input Validated': (callbacks.StepInputValidated, True),
+        'Step Started': (callbacks.StepStarted, True),
         'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
         'Step Input Invalid': (callbacks.StepInputInvalid, True),
         'Conditionals Executed': (callbacks.ConditionalsExecuted, True),

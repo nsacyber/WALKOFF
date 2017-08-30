@@ -133,7 +133,7 @@ class Step(ExecutionElement):
             The result of the executed function.
         """
         self.execution_uid = uuid.uuid4().hex
-        self.send_callback('Step Input Validated')
+        self.send_callback('Step Started')
         try:
             args = dereference_step_routing(self.input, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self.input_api, args, self.app, self.action)

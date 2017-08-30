@@ -49,7 +49,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values()]
-        step_events = ['Function Execution Success', 'Input Validated', 'Conditionals Executed']
+        step_events = ['Function Execution Success', 'Step Started', 'Conditionals Executed']
         subs = {'case1': {step_uid: step_events for step_uid in step_uids}}
         case_subscription.set_subscriptions(subs)
 
@@ -67,7 +67,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step = workflow.steps['start']
-        subs = {step.uid: ['Function Execution Success', 'Input Validated', 'Conditionals Executed']}
+        subs = {step.uid: ['Function Execution Success', 'Step Started', 'Conditionals Executed']}
         next_step = next(conditional for conditional in step.conditionals if conditional.name == '1')
         subs[next_step.uid] = ['Next Step Taken', 'Next Step Not Taken']
         flag = next(flag for flag in next_step.flags if flag.action == 'regMatch')

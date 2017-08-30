@@ -118,9 +118,9 @@ StepExecutionSuccess, __step_execution_success_callback = __construct_logging_si
 StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Step',
                                                                                  'Step Execution Error',
                                                                                  'Step executed with error')
-StepInputValidated, __step_input_validated_callback = __construct_logging_signal('Step',
-                                                                                 'Input Validated',
-                                                                                 'Input successfully validated')
+StepStarted, __step_started_callback = __construct_logging_signal('Step',
+                                                                  'Step Started',
+                                                                  'Step execution started')
 StepInputInvalid, __step_input_invalid_callback = __construct_logging_signal('Step',
                                                                              'Input Invalid',
                                                                              'Input is invalid')
