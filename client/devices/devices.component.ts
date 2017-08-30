@@ -95,7 +95,7 @@ export class DevicesComponent {
 		modalRef.componentInstance.appNames = this.appNames;
 		modalRef.componentInstance.deviceTypes = this.deviceTypes;
 
-		modalRef.componentInstance.workingDevice = _.cloneDeep(device);
+		modalRef.componentInstance.workingDevice = device.toWorkingDevice();
 
 		this._handleModalClose(modalRef);
 	}

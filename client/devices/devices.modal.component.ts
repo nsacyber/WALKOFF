@@ -4,7 +4,7 @@ import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty
 
 import { DevicesService } from './devices.service';
 
-import { Device } from '../models/device';
+import { WorkingDevice } from '../models/device';
 import { DeviceType } from '../models/deviceType';
  
 @Component({
@@ -16,7 +16,7 @@ import { DeviceType } from '../models/deviceType';
 	providers: [DevicesService]
 })
 export class DevicesModalComponent {
-	@Input() workingDevice: Device = new Device();
+	@Input() workingDevice: WorkingDevice = new WorkingDevice();
 	@Input() title: string;
 	@Input() submitText: string;
 	@Input() appNames: string[] = [];
@@ -28,11 +28,13 @@ export class DevicesModalComponent {
 
 	submit(): void {
 		if (!this.validate()) return;
+		
+		let toSubmit = this.workingDevice.toDevice();
 
 		//If device has an ID, device already exists, call update
 		if (this.workingDevice.id) {
 			this.devicesService
-				.editDevice(this.workingDevice)
+				.editDevice(toSubmit)
 				.then(device => this.activeModal.close({
 					device: device,
 					isEdit: true
@@ -41,7 +43,7 @@ export class DevicesModalComponent {
 		}
 		else {
 			this.devicesService
-				.addDevice(this.workingDevice)
+				.addDevice(toSubmit)
 				.then(device => this.activeModal.close({
 					device: device,
 					isEdit: false
