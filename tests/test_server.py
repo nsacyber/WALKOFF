@@ -127,7 +127,8 @@ class TestConfiguration(ServerTestCase):
                     'case_db_type': core.config.config.case_db_type,
                     'https': bool(core.config.config.https),
                     'tls_version': core.config.config.tls_version,
-                    'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup)}
+                    'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
+                    'number_processes': int(core.config.config.num_processes)}
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 
