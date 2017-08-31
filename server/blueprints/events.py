@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, Response
-from server.security import auth_token_required, roles_accepted
+from server.security import jwt_required, roles_accepted
 from gevent.event import Event, AsyncResult
 
 events_page = Blueprint('events_page', __name__)
@@ -37,7 +37,7 @@ def setup_case_stream():
 
 
 @events_page.route('/', methods=['GET'])
-@auth_token_required
+@jwt_required
 def stream_case_events():
     from server.flaskserver import running_context
 

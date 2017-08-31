@@ -4,6 +4,7 @@ from gevent.event import Event, AsyncResult
 from gevent import sleep
 from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError
 from datetime import datetime
+from server.security import jwt_required
 import server.workflowresults  # do not delete needed to register callbacks
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
@@ -111,11 +112,13 @@ def __step_error_callback(sender, **kwargs):
     sleep(0)
 
 
+@jwt_required
 @workflowresults_page.route('/stream', methods=['GET'])
 def stream_workflow_success_events():
     return Response(__workflow_shutdown_event_stream(), mimetype='text/event-stream')
 
 
+@jwt_required
 @workflowresults_page.route('/stream-steps', methods=['GET'])
 # @auth_token_required
 # @roles_accepted(*running_context.user_roles['/playbooks'])

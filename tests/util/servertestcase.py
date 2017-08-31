@@ -67,7 +67,6 @@ class ServerTestCase(unittest.TestCase):
 
         self.app = server.flaskserver.app.test_client(self)
         self.app.testing = True
-        # self.app.use_cookies = True
 
         self.context = server.flaskserver.app.test_request_context()
         self.context.push()
@@ -75,12 +74,9 @@ class ServerTestCase(unittest.TestCase):
         from server.database import db
         server.flaskserver.running_context.db = db
 
-        post = self.app.post('/login-process', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
-        key = json.loads(post.data.decode("ascii"))
-        self.headers = {"Authentication-Token": key["authentication-token"]}
-
-        # key = json.loads(response)["auth_token"]
-        # self.headers = {"Authentication-Token": key}
+        post = self.app.post('/api/auth', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        key = json.loads(post.get_data(as_text=True))
+        self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
         server.flaskserver.running_context.controller.workflows = {}
         server.flaskserver.running_context.controller.load_all_workflows_from_directory()
@@ -110,7 +106,6 @@ class ServerTestCase(unittest.TestCase):
             response = self.app.delete(url, **kwargs)
         else:
             raise ValueError('method must be either get, put, post, or delete')
-        print(response)
         self.assertEqual(response.status_code, status_code)
         response = json.loads(response.get_data(as_text=True))
         if error:

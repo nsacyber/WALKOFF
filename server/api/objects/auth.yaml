@@ -1,0 +1,20 @@
+Authentication:
+  type: object
+  required: [username, password]
+  additionalProperties: false
+  properties:
+    username:
+      type: string
+    password:
+      type: string
+
+Token:
+  type: object
+  required: [access_token]
+  properties:
+    access_token:
+      type: string
+      description: Short-lived JWT used to provide access
+    refresh_token:
+      type: string
+      description: Long-lived JWT used to refresh a token

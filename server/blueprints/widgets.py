@@ -2,7 +2,7 @@ import os
 import sys
 import importlib
 from flask import Blueprint, render_template, request, g, current_app
-from server.security import roles_required, auth_token_required
+from server.security import roles_accepted, jwt_required
 from server import forms
 
 widgets_page = Blueprint('widgetsPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
@@ -16,8 +16,8 @@ def static_request_handler(endpoint, values):
 
 
 @widgets_page.route('', methods=['POST'])
-@auth_token_required
-@roles_required('admin')
+@jwt_required
+@roles_accepted('admin')
 def display_app():
     form = forms.RenderArgsForm(request.form)
     path = '{0}/widgets/{1}/templates/{2}'.format(g.app, g.widget, form.page.data)

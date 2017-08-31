@@ -140,30 +140,17 @@ def create_app():
     _app.jinja_options = Flask.jinja_options.copy()
     _app.jinja_options.update(dict(
         variable_start_string='<%',
-        variable_end_string='%>',
-        block_start_string='<<%',
-        block_end_string="%>>"
+        variable_end_string='%>'
     ))
     _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # _app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-    # Only allow JWT cookies to be sent over https. In production, this
-    # should likely be True
-    # _app.config['JWT_COOKIE_SECURE'] = False
-    # _app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
-
-    # _app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
-    # _app.config['JWT_COOKIE_CSRF_PROTECT'] = False
-    _app.config["JWT_TOKEN_LOCATION"] = 'headers'
-    _app.config['JWT_HEADER_NAME'] = 'Authentication-Token'
-    _app.config['JWT_HEADER_TYPE'] = ""
+    _app.config['JWT_TOKEN_LOCATION'] = 'headers'
 
     from server.database import db
     db.init_app(_app)
-    from server.security import jwt, principal
+    from server.security import jwt
     jwt.init_app(_app)
-    principal.init_app(_app)
 
     connexion_app.add_api('composed_api.yaml')
     register_blueprints(_app)

@@ -1,10 +1,10 @@
 
 from flask import request, current_app
-from server.security import roles_accepted, auth_token_required
+from server.security import roles_accepted, jwt_required
 from server.returncodes import *
 from server.database import db
 
-@auth_token_required
+@jwt_required
 def read_all_triggers():
     from server.context import running_context
 
@@ -14,7 +14,7 @@ def read_all_triggers():
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def listener(body):
     from server.context import running_context
 
@@ -36,7 +36,7 @@ def listener(body):
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def create_trigger(body, trigger_name):
     from server.context import running_context
 
@@ -63,7 +63,7 @@ def create_trigger(body, trigger_name):
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def read_trigger(trigger_name):
     from server.context import running_context
 
@@ -78,7 +78,7 @@ def read_trigger(trigger_name):
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def update_trigger(body, trigger_name):
     from server.context import running_context
 
@@ -108,7 +108,7 @@ def update_trigger(body, trigger_name):
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def delete_trigger(trigger_name):
     from server.context import running_context
 

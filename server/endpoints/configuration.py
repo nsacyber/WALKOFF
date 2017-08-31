@@ -1,5 +1,5 @@
 from flask import current_app
-from server.security import roles_accepted, auth_token_required
+from server.security import roles_accepted, jwt_required
 import core.config.config
 import core.config.paths
 from server.returncodes import *
@@ -19,7 +19,7 @@ def __get_current_configuration():
             'tls_version': core.config.config.tls_version,
             'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup)}
 
-@auth_token_required
+@jwt_required
 def read_config_values():
     from server.context import running_context
     from server.flaskserver import current_user
@@ -29,7 +29,7 @@ def read_config_values():
         return __get_current_configuration(), SUCCESS
     return __func()
 
-@auth_token_required
+@jwt_required
 def update_configuration(configuration):
     from server.context import running_context
     from server.flaskserver import current_user, write_playbook_to_file

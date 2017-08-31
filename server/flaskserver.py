@@ -3,7 +3,7 @@ import os
 import logging
 import sys
 from flask import render_template, send_from_directory, request, jsonify, redirect, url_for, Response, make_response
-from server.security import current_user, roles_accepted, verify_password, create_access_token, auth_token_required, create_refresh_token
+from server.security import current_user, roles_accepted, verify_password, create_access_token, jwt_required, create_refresh_token
 from flask_jwt_extended import set_access_cookies, set_refresh_cookies, unset_jwt_cookies, get_jwt_identity, current_user
 from gevent import monkey
 import xml.dom.minidom as minidom
@@ -50,7 +50,7 @@ def login_page():
     return render_template("login.html")
 
 @app.route('/availablesubscriptions', methods=['GET'])
-@auth_token_required
+@jwt_required
 @roles_accepted(*running_context.user_roles['/cases'])
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
@@ -58,7 +58,7 @@ def display_possible_subscriptions():
 
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>', methods=['GET'])
-@auth_token_required
+@jwt_required
 @roles_accepted(*running_context.user_roles['/interface'])
 def sys_pages(name):
     if current_user.is_authenticated and name:
@@ -72,7 +72,7 @@ def sys_pages(name):
 
 # TODO: DELETE
 @app.route('/interface/<string:name>/display', methods=['POST'])
-@auth_token_required
+@jwt_required
 @roles_accepted(*running_context.user_roles['/interface'])
 def system_pages(name):
     if current_user.is_authenticated and name:
@@ -85,9 +85,8 @@ def system_pages(name):
 
 # Returns the API key for the user
 @app.route('/key', methods=['POST'])
-@auth_token_required
+@jwt_required
 def login_info():
-    print(get_jwt_identity())
     #user = database.User.query.filter(database.User.email == username).first()
     #if user:
     #     pass
@@ -99,9 +98,7 @@ def login_info():
 # Returns the API key for the user
 @app.route('/login-process', methods=['POST'])
 def login():
-    print(request.data)
     data = request.get_json()
-    print(data)
     username = data["username"]
     password = data["password"]
     user = database.User.query.filter(database.User.email == username).first()
@@ -130,7 +127,7 @@ def logout():
     return render_template("logout.html")
 
 @app.route('/widgets', methods=['GET'])
-@auth_token_required
+@jwt_required
 @roles_accepted(*running_context.user_roles['/apps'])
 def list_all_widgets():
     return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})

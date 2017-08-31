@@ -1,9 +1,10 @@
 from flask import request, current_app
-from server.security import roles_accepted, auth_token_required
+from server.security import roles_accepted, jwt_required
 from server.security import encrypt_password, verify_password
 from server.returncodes import *
 
-@auth_token_required
+
+@jwt_required
 def read_all_users():
     from server.context import running_context
 
@@ -14,7 +15,8 @@ def read_all_users():
         return result, SUCCESS
     return __func()
 
-@auth_token_required
+
+@jwt_required
 def create_user(body):
     from server.context import running_context
 
@@ -50,7 +52,8 @@ def create_user(body):
             return {"error": "User {0} already exists.".format(username)}, OBJECT_EXISTS_ERROR
     return __func()
 
-@auth_token_required
+
+@jwt_required
 def read_user(user_id):
     from server.context import running_context
 
@@ -64,7 +67,8 @@ def read_user(user_id):
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
     return __func()
 
-@auth_token_required
+
+@jwt_required
 def update_user(body):
     from server.context import running_context
 
@@ -96,7 +100,8 @@ def update_user(body):
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
     return __func()
 
-@auth_token_required
+
+@jwt_required
 def delete_user(user_id):
     from server.flaskserver import running_context, current_user
 

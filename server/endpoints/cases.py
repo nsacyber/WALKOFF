@@ -1,7 +1,7 @@
 import json
 import os
 from flask import request, current_app
-from server.security import auth_token_required, roles_accepted
+from server.security import jwt_required, roles_accepted
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.case.subscription import delete_cases, convert_to_event_names
@@ -13,17 +13,19 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
 from server.returncodes import *
 from server.database import db
 
-@auth_token_required
+
+@jwt_required
 def read_all_cases():
     from server.flaskserver import running_context
 
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         return [case.as_json() for case in running_context.CaseSubscription.query.all()], SUCCESS
+
     return __func()
 
 
-@auth_token_required
+@jwt_required
 def create_case(body):
     from server.flaskserver import running_context
 
@@ -41,9 +43,11 @@ def create_case(body):
         else:
             current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
             return {"error": "Case already exists."}, OBJECT_EXISTS_ERROR
+
     return __func(body)
 
-@auth_token_required
+
+@jwt_required
 def read_case(case_id):
     from server.flaskserver import running_context
 
@@ -56,9 +60,11 @@ def read_case(case_id):
         else:
             current_app.logger.error('Cannot read case {0}. Case does not exist.'.format(case_id))
             return {'error': 'Case does not exist.'}, OBJECT_DNE_ERROR
+
     return __func()
 
-@auth_token_required
+
+@jwt_required
 def update_case(body):
     from server.flaskserver import running_context
 
@@ -92,10 +98,10 @@ def update_case(body):
 
     return __func(body)
 
-@auth_token_required
+
+@jwt_required
 def delete_case(case_id):
     from server.flaskserver import running_context
-
 
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
@@ -109,9 +115,11 @@ def delete_case(case_id):
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+
     return __func()
 
-@auth_token_required
+
+@jwt_required
 def import_cases(body):
     from server.flaskserver import running_context
 
@@ -143,12 +151,13 @@ def import_cases(body):
         else:
             current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
             return {"error": "File does not exist."}, IO_ERROR
+
     return __func(body)
 
-@auth_token_required
+
+@jwt_required
 def export_cases(body):
     from server.flaskserver import running_context
-
 
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func(body):
@@ -163,9 +172,11 @@ def export_cases(body):
         except (OSError, IOError) as e:
             current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, format_exception_message(e)))
             return {"error": "Could not write to file."}, IO_ERROR
+
     return __func(body)
 
-@auth_token_required
+
+@jwt_required
 def read_all_events(case):
     from server.flaskserver import running_context
 
@@ -178,7 +189,9 @@ def read_all_events(case):
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
 
         return result, SUCCESS
+
     return __func()
+
 
 __scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
                                 'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,

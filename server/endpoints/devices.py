@@ -1,13 +1,13 @@
 import json
 from flask import current_app, request
-from server.security import roles_accepted, auth_token_required
+from server.security import roles_accepted, jwt_required
 import core.config.config
 import core.config.paths
 from server.returncodes import *
 import pyaes
 from server.database import db
 
-@auth_token_required
+@jwt_required
 def read_all_devices():
     from server.context import running_context
 
@@ -22,7 +22,7 @@ def read_all_devices():
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def import_devices(body):
     from server.context import running_context
 
@@ -53,7 +53,7 @@ def import_devices(body):
 
     return __func(body)
 
-@auth_token_required
+@jwt_required
 def export_devices(body):
     from server.context import running_context
 
@@ -83,7 +83,7 @@ def export_devices(body):
 
     return __func(body)
 
-@auth_token_required
+@jwt_required
 def read_device(device_id):
     from server.context import running_context
 
@@ -99,7 +99,7 @@ def read_device(device_id):
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def delete_device(device_id):
     from server.context import running_context
 
@@ -118,7 +118,7 @@ def delete_device(device_id):
 
     return __func()
 
-@auth_token_required
+@jwt_required
 def create_device(body):
     from server.context import running_context
 
@@ -154,7 +154,7 @@ def create_device(body):
 
     return __func(body)
 
-@auth_token_required
+@jwt_required
 def update_device(body):
     from server.context import running_context
 

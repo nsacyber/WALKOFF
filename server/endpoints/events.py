@@ -1,10 +1,10 @@
-from server.security import auth_token_required, roles_accepted
+from server.security import jwt_required, roles_accepted
 import core.case.database as case_database
 from server.returncodes import *
 from flask import request
 
 
-@auth_token_required
+@jwt_required
 def update_event_note():
     from server.context import running_context
 
@@ -21,7 +21,7 @@ def update_event_note():
             return {"error": "Event does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
-@auth_token_required
+@jwt_required
 def read_event(event_id):
     from server.context import running_context
 
