@@ -99,7 +99,7 @@ class Controller(object):
                 if len(self.pids) > 0:
                     for p in self.pids:
                         if p.is_alive():
-                            os.kill(p.pid, signal.SIGQUIT)
+                            os.kill(p.pid, signal.SIGABRT)
                             p.join(timeout=3)
                             try:
                                 os.kill(p.pid, 9)
