@@ -3,6 +3,7 @@ from collections import namedtuple
 import gevent
 from copy import deepcopy
 from os import sep
+import sys
 import signal
 import logging
 from core.scheduler import Scheduler
@@ -62,6 +63,11 @@ class Controller(object):
             self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
     def initialize_threading(self):
+        if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
+                    os.path.exists(core.config.paths.zmq_private_keys_path)):
+            logging.error("Certificates are missing - run generate_certificates.py script first.")
+            sys.exit(0)
+
         for i in range(NUM_PROCESSES):
             pid = multiprocessing.Process(target=loadbalancer.Worker, args=(i,))
             pid.start()
