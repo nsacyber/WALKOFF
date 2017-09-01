@@ -3,6 +3,8 @@ from datetime import datetime
 from flask import current_app
 
 
+number_of_operations = 0
+
 class BlacklistedToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False)
@@ -32,6 +34,7 @@ def revoke_token(decoded_token):
         expires=expires
     )
     db.session.add(db_token)
+    prune_if_necessary()
     db.session.commit()
 
 
@@ -54,7 +57,15 @@ def unrevoke_token(token_id, user):
     token = BlacklistedToken.query.filter_by(id=token_id, user_identity=user).first()
     if token is not None:
         db.session.remove(token)
+        prune_if_necessary()
         db.session.commit()
+
+
+def prune_if_necessary():
+    global number_of_operations
+    number_of_operations += 1
+    if number_of_operations >= 1000:
+        prune_database()
 
 
 def prune_database():
