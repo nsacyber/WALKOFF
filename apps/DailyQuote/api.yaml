@@ -1,8 +1,8 @@
 walkoff: '0.1'
 info:
   version: 1.0.0
-  title: ARDroneApp
-  description: An app to control an AR Drone.
+  title: DailyQuote
+  description: A sample walkoff app specification
   contact:
     name: Walkoff Team
   license:
@@ -10,58 +10,43 @@ info:
 actions:
   quoteIntro:
     run: quoteIntro
-    description: Returns the intro message
+    description: Prints an introductry string
     returns:
       Success:
-        description: Success
+        description: introductory message
         schema:
-          type: object
-          properties:
-            message:
-              description: The intro message
-              type: string
+          type: string
   repeatBackToMe:
     run: repeatBackToMe
-    description: Repeats back the input message
+    description: Repeats the call argument
     parameters:
         - name: call
-          description: The message to be repeated
+          description: message to repeat
           required: true
           type: string
     returns:
       Success:
-        description: Success
+        description: repeated method
         schema:
           type: string
   forismaticQuote:
     run: forismaticQuote
-    description: Uses argument passed to function to make an API request to get the text
+    description: Gets a quote
     parameters:
         - name: url
-          description: The URL for the request
+          description: url to get quote from
           required: true
           type: string
     returns:
       Success:
-        description: Success
+        description: the quote
         schema:
-          type: object
-          properties:
-            success:
-              description: Whether or not the call was successful
-              type: string
-            text:
-              description: The text of the quote
-              type: string
+          type: integer
   getQuote:
     run: getQuote
-    description: Gets a quote from the URL specified on app initialization
+    description: gets a quote
     returns:
       Success:
-        description: Success
+        description: a quote
         schema:
-          type: object
-          properties:
-            text:
-              description: The text of the quote
-              type: string
+          type: integer

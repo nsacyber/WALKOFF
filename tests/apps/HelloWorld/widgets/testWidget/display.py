@@ -1,4 +1,4 @@
-import gevent, random
+import time, random
 
 def load(*args, **kwargs):
     return {}
@@ -9,16 +9,14 @@ def stream_generator(stream_name):
     def counter():
         count = 0
         while True:
-            gevent.sleep(2)
+            time.sleep(2)
             yield 'data: %s\n\n' % count
             count += 1
 
     def random_number():
         while True:
-            gevent.sleep(1)
+            time.sleep(1)
             yield 'data: %s\n\n' % random.random()
-
-
 
     if stream_name == 'counter':
         return counter, 'text/event-stream'

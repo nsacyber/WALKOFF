@@ -1,12 +1,8 @@
 import unittest
 from core.decorators import *
 from apps import Event
-import socket
-try:
-    from importlib import reload
-except ImportError:
-    from imp import reload
-from gevent import monkey, sleep, spawn
+import threading
+import time
 from timeit import default_timer
 
 
@@ -32,14 +28,14 @@ class TestDecorators(unittest.TestCase):
         def add_three(a, b, c):
             return a + b + c
 
-        self.assertTupleEqual(add_three(1, 2, 3), ActionResult(6, 'Success'))
+        self.assertEqual(add_three(1, 2, 3), ActionResult(6, 'Success'))
 
     def test_action_wraps_execution_return_specified(self):
         @action
         def add_three(a, b, c):
             return a + b + c, 'Custom'
 
-        self.assertTupleEqual(add_three(1, 2, 3), ActionResult(6, 'Custom'))
+        self.assertEqual(add_three(1, 2, 3), ActionResult(6, 'Custom'))
 
     def test_flag_decorator_is_tagged(self):
 
@@ -60,14 +56,6 @@ class TestDecorators(unittest.TestCase):
 
 
 class TestEventDecorator(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        monkey.patch_socket()
-
-    @classmethod
-    def tearDownClass(cls):
-        reload(socket)
 
     def test_event_is_tagged_as_action(self):
         event1 = Event()
@@ -109,16 +97,17 @@ class TestEventDecorator(unittest.TestCase):
         test_data = {1: 2}
 
         def sender():
-            sleep(0.1)
+            time.sleep(0.1)
             event1.trigger(test_data)
-
+        thread = threading.Thread(target=sender)
         start = default_timer()
-        spawn(sender)
+        thread.start()
         result = b.ev()
         duration = default_timer() - start
-        self.assertTupleEqual(result, (test_data, 'Success'))
+        thread.join()
+        self.assertEqual(result, ActionResult(test_data, 'Success'))
         self.assertSetEqual(event1.receivers, set())
-        self.assertAlmostEqual(duration, 0.1, places=1)
+        self.assertGreater(duration, 0.1)
 
     def test_event_execution_with_timeout(self):
         event1 = Event('Event1')
@@ -132,10 +121,12 @@ class TestEventDecorator(unittest.TestCase):
         test_data = {1: 2}
 
         def sender():
-            sleep(0.1)
+            time.sleep(0.1)
             event1.trigger(test_data)
 
-        spawn(sender)
+        thread = threading.Thread(target=sender)
+        thread.start()
         result = b.ev()
-        self.assertEqual(result, ('Getting event Event1 timed out at 0 seconds', 'EventTimedOut'))
+        thread.join()
+        self.assertEqual(result, ActionResult('Getting event Event1 timed out at 0 seconds', 'EventTimedOut'))
         self.assertSetEqual(event1.receivers, set())

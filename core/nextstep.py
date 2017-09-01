@@ -1,5 +1,4 @@
 import logging
-from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.flag import Flag
 import uuid
@@ -20,20 +19,33 @@ class NextStep(ExecutionElement):
         ExecutionElement.__init__(self, name, uid)
         self.status = status
         self.flags = flags if flags is not None else []
+        self.results_sock = None
+
+    def send_callback(self, callback_name):
+        data = dict()
+        data['callback_name'] = callback_name
+        data['sender'] = {}
+        data['sender']['name'] = self.name
+        data['sender']['id'] = self.name
+        data['sender']['uid'] = self.uid
+        if self.results_sock:
+            self.results_sock.send_json(data)
 
     def __eq__(self, other):
         return self.name == other.name and self.status == other.status and set(self.flags) == set(other.flags)
 
     def __call__(self, data_in, accumulator):
+        for flag in self.flags:
+            flag.results_sock = self.results_sock
         if data_in is not None and data_in.status == self.status:
             if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
-                callbacks.NextStepTaken.send(self)
+                self.send_callback("Next Step Taken")
                 logger.debug('NextStep is valid for input {0}'.format(data_in))
 
                 return self.name
             else:
                 logger.debug('NextStep is not valid for input {0}'.format(data_in))
-                callbacks.NextStepNotTaken.send(self)
+                self.send_callback("Next Step Not Taken")
                 return None
         else:
             return None

@@ -1,12 +1,72 @@
-Job:
+Scheduler:
   type: object
+  required: [status]
   properties:
+    status:
+      description: State of trigger
+      type: string
+      example: 0 for stopped, 1 for running, 2 for paused, or a warning string
+
+AddScheduledTask:
+  type: object
+  required: [name]
+  additionalProperties: false
+  properties:
+    workflows:
+      description: List if UIDs of workflows attached to this task
+      type: array
+      items:
+        type: string
     name:
-      description: Job name
       type: string
-      example: jobOne
+      description: Name of this task
+    description:
+      type: string
+      description: description of this task
+    status:
+      type: string
+      description: Status of the task
+      enum: [running, stopped]
+    task_trigger:
+      $ref: '#/definitions/TaskTrigger'
+
+ScheduledTask:
+  type: object
+  required: [id]
+  additionalProperties: false
+  properties:
     id:
-      description: Job ID
-      type: string
-      example: 12345
+      type: integer
+      description: ID of the object
       readOnly: true
+    workflows:
+      description: List if UIDs of workflows attached to this task
+      type: array
+      items:
+        type: string
+    name:
+      type: string
+      description: Name of this task
+    description:
+      type: string
+      description: description of this task
+    status:
+      type: string
+      description: Status of the task
+      enum: [running, stopped]
+    task_trigger:
+      $ref: '#/definitions/TaskTrigger'
+
+TaskTrigger:
+  type: object
+  description: Scheduler to use.
+  required: [args, type]
+  properties:
+    type:
+      description: Type of scheduler trigger to use for this task
+      type: string
+      enum: [date, interval, cron]
+      example: date
+    args:
+      type: object
+      description: Arguments for the trigger.

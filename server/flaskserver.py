@@ -4,20 +4,18 @@ import logging
 from flask import render_template, send_from_directory
 from server.security import roles_accepted
 from flask_jwt_extended import current_user, jwt_required, jwt_refresh_token_required, get_raw_jwt
-from gevent import monkey
 import core.config.config
 import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
+
 from core.helpers import combine_dicts
 from server.context import running_context
 from . import database, interface
 from server import app
 
 logger = logging.getLogger(__name__)
-
-monkey.patch_all()
 
 urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
         '/execution/listener/triggers', '/metrics',
@@ -26,17 +24,20 @@ urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/l
 default_urls = urls
 database.initialize_user_roles(urls)
 
+# Custom static data
+@app.route('/client/<path:filename>')
+def client_app_folder(filename):
+    return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
 
 @app.route('/')
-@app.route('/controller')
 @app.route('/playbook')
+@app.route('/scheduler')
 @app.route('/devices')
 @app.route('/triggers')
 @app.route('/cases')
 @app.route('/settings')
 def default():
-    args = {}
-    return render_template("index.html", **args)
+    return render_template("index.html")
 
 
 @app.route('/login')
@@ -79,6 +80,7 @@ def logout():
     return render_template("logout.html")
 
 
+
 @app.route('/widgets', methods=['GET'])
 @jwt_required
 @roles_accepted(*running_context.user_roles['/apps'])
@@ -110,7 +112,3 @@ def write_playbook_to_file(playbook_name):
             f.write(backup)
 
 
-# Custom static data
-@app.route('/client/<path:filename>')
-def client_app_folder(filename):
-    return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)

@@ -5,8 +5,9 @@ from core import helpers
 from core.config import paths
 import core.config.config
 import connexion
+from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
-from gevent import monkey
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ def read_and_indent(filename, indent):
     indent = '  ' * indent
     with open(filename, 'r') as file_open:
         return ['{0}{1}'.format(indent, line) for line in file_open]
+
 
 def compose_yamls():
     with open(os.path.join(paths.api_path, 'api.yaml'), 'r') as api_yaml:
@@ -116,14 +118,13 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
+
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
-
+    import core.config
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
-
-
     compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
     _app.config.update(
@@ -157,8 +158,10 @@ def create_app():
     connexion_app.add_api('composed_api.yaml')
     register_blueprints(_app)
     core.config.config.initialize()
+
+    import core.controller
+    core.controller.controller.load_all_workflows_from_directory()
     setup_case_stream()
-    monkey.patch_all()
     return _app
 
 
@@ -173,25 +176,24 @@ def create_user():
     from server.context import running_context
     from . import database
     from server import flaskserver
-    from server.security import encrypt_password
 
-    database.db.create_all()
+    running_context.db.create_all()
 
     if not database.User.query.first():
-        admin_role = database.Role.create_role(name='admin',
-                                                description='administrator',
-                                                pages=flaskserver.default_urls)
+        admin_role = running_context.user_datastore.create_role(name='admin',
+                                                                description='administrator',
+                                                                pages=flaskserver.default_urls)
 
-        u = database.User.create_user(email='admin', password=encrypt_password('admin'))
-        database.Role.add_role_to_user(u, admin_role)
-        database.db.session.commit()
+        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        running_context.user_datastore.add_role_to_user(u, admin_role)
+        running_context.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in database.db.session.query(running_context.App).all()])
+                                           for _app in running_context.db.session.query(running_context.App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        database.db.session.add(running_context.App(app=app_name, devices=[]))
-    database.db.session.commit()
+        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+    running_context.db.session.commit()
 
     running_context.CaseSubscription.sync_to_subscriptions()
 
@@ -202,32 +204,25 @@ def create_test_data():
     from server.context import running_context
     from . import database
     from server import flaskserver
-    from server.security import encrypt_password
 
-    database.db.create_all()
+    running_context.db.create_all()
 
     if not database.User.query.first():
-        admin_role = database.Role.create_role(name='admin',
-                                               description='administrator',
-                                               pages=flaskserver.default_urls)
+        admin_role = running_context.user_datastore.create_role(name='admin',
+                                                                description='administrator',
+                                                                pages=flaskserver.default_urls)
 
-        u = database.User.create_user(email='admin', password=encrypt_password('admin'))
-        database.Role.add_role_to_user(u, admin_role)
-        database.db.session.commit()
+        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        running_context.user_datastore.add_role_to_user(u, admin_role)
+        running_context.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in database.db.session.query(running_context.App).all()])
+                                           for _app in running_context.db.session.query(running_context.App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        database.db.session.add(running_context.App(app=app_name, devices=[]))
-    database.db.session.commit()
+        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+    running_context.db.session.commit()
 
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers
-
-
-
-
-
-

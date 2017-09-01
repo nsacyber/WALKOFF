@@ -11,12 +11,11 @@ export class DashboardService {
 	requestOptions : RequestOptions;
 
 	constructor (private http: Http) {
-        let authKey = sessionStorage.getItem('authKey');
-        if (authKey === null) {
-          location.href = "/login";
-        }
-        let headers = new Headers({ 'Accept': 'application/json', 'Authentication-Token': authKey.toString()});
-        this.requestOptions = new RequestOptions({ headers: headers });
+		let authKey = localStorage.getItem('authKey');
+		let headers = new Headers({ 'Accept': 'application/json' });
+		headers.append('Authentication-Token', authKey);
+
+		this.requestOptions = new RequestOptions({ headers: headers });
 	}
 
 	private handleError (error: Response | any) {

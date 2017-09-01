@@ -44,4 +44,9 @@ Configuration:
       clear_case_db_on_startup:
         type: boolean
         description: Should the case database be cleared upon a server restart?
+      number_processes:
+        type: integer
+        minimum: 1
+        description: Number of worker processes which can execute workflows
+
 

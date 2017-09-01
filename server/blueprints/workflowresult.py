@@ -36,7 +36,7 @@ def __workflow_ended_callback(sender, **kwargs):
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
               'timestamp': str(datetime.utcnow()),
               'result': data}
     __workflow_shutdown_event_json.set(json.dumps(result))
@@ -46,12 +46,12 @@ def __workflow_ended_callback(sender, **kwargs):
 
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender['inputs'])
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
               'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
@@ -64,17 +64,18 @@ def __step_ended_callback(sender, **kwargs):
 
 def __step_error_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender['inputs'])
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
               'timestamp': str(datetime.utcnow()),
               'type': "ERROR",
               'input': step_input,
               'result': data}
     __workflow_step_event_json.set(json.dumps(result))
+    sleep(0)
     __step_signal.set()
     __step_signal.clear()
     sleep(0)
@@ -83,17 +84,18 @@ def __step_error_callback(sender, **kwargs):
 @FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender['inputs'])
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
               'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}
     __workflow_step_event_json.set(json.dumps(result))
+    sleep(0)
     __step_signal.set()
     __step_signal.clear()
     sleep(0)
@@ -101,12 +103,13 @@ def __step_ended_callback(sender, **kwargs):
 
 @StepExecutionError.connect
 def __step_error_callback(sender, **kwargs):
-    result = {'name': sender.name, 'type': 'ERROR'}
+    result = {'name': sender['name'], 'type': 'ERROR'}
     if 'data' in kwargs:
-        data = json.loads(kwargs['data'])
+        data = kwargs['data']
         result['input'] = data['input']
         result['result'] = data['result']
     __workflow_step_event_json.set(json.dumps(result))
+    sleep(0)
     __step_signal.set()
     __step_signal.clear()
     sleep(0)

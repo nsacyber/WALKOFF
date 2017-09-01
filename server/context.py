@@ -11,10 +11,11 @@ class Context(object):
 
         from server.app import app
         from server.appdevice import Device, App
-        from server.database import User, Role, userRoles, UserDataStore
+        from server.database import User, Role, userRoles, db, UserDataStore
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
-        from core.controller import Controller
+        import core.controller
+        from server.scheduledtasks import ScheduledTask
 
         self.User = User
         self.Role = Role
@@ -24,8 +25,10 @@ class Context(object):
         self.CaseSubscription = CaseSubscription
         self.flask_app = app
         self.user_roles = userRoles
-        self.user_datastore = UserDataStore()
-        self.controller = Controller()
+        self.db = db
+        self.user_datastore = UserDataStore
+        self.controller = core.controller.controller
+        self.ScheduledTask = ScheduledTask
 
     @staticmethod
     def get_apps(path=core.config.paths.apps_path):
@@ -63,19 +66,5 @@ class Context(object):
             value (any): The value of the attribute to set.
         """
         setattr(self, key, value)
-
-    @staticmethod
-    def init_threads():
-        """Initializes the thread pool.
-        """
-        from core.controller import initialize_threading
-        initialize_threading()
-
-    @staticmethod
-    def shutdown_threads():
-        """Shuts down the threadpool.
-        """
-        from core.controller import shutdown_pool
-        shutdown_pool()
 
 running_context = Context()
