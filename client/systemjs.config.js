@@ -21,6 +21,8 @@
 		'ng2-select2': 'client/node_modules/ng2-select2/ng2-select2.bundle.js',
 		'ngx-contextmenu': 'client/node_modules/ngx-contextmenu/lib/ngx-contextmenu.js',
 		'd3': 'client/node_modules/d3/build/d3.node.js',
+		'angular2-jwt': 'client/node_modules/angular2-jwt/angular2-jwt.js',
+		'angular2-jwt-refresh': 'client/node_modules/angular2-jwt-refresh/dist/angular2-jwt-refresh.js',
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension
@@ -28,7 +30,7 @@
 //		'login': { main: 'login',  defaultExtension: 'js' },
 		'main': { main: 'main', defaultExtension: 'js' },
 		'models': { defaultExtension: 'ts' },
-		'rxjs': { defaultExtension: 'js' },
+		'rxjs': { main: 'Rx', defaultExtension: 'js' },
 		'ts': { defaultExtension: 'js' },
 		'lodash': { main: 'index.js', defaultExtension: 'js' },
 		'angular2-datatable': { main: 'index.js', defaultExtension: 'js' },

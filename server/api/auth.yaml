@@ -20,7 +20,7 @@
           $ref: '#/definitions/Error'
 
 /api/auth/refresh:
-  get:
+  post:
     tags:
       - Authorization
     summary: Get a fresh access token

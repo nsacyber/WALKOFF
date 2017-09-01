@@ -52,22 +52,19 @@
             var username = $("#username").val();
             var password = $("#password").val();
             $.ajax({
-                url:'/login-process',
+                url:'/api/auth',
                 contentType:'application/json',
                 data:JSON.stringify({"username":username, "password": password}),
                 type:"POST",
                 async: false,
-                success: function(  data){
-
-                    if(data["login"] == true){
-
-                        window.sessionStorage.setItem("authKey", data["authentication-token"]);
-                        window.sessionStorage.setItem("currentUser", username);
-                        location.href = "/";
-                    }
-                    else{
-                        $("#message").text("Invalid Login");
-                    }
+                success: function(data){
+                    window.localStorage.setItem("access_token", data["access_token"]);
+                    window.localStorage.setItem("refresh_token", data["refresh_token"]);
+                    // window.localStorage.setItem("currentUser", username);
+                    location.href = "/";
+                },
+                error: function (e) {
+                    $("#message").text("Invalid Login");
                 }
             });
         });

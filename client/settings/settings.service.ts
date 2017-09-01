@@ -1,24 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
+import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Configuration } from '../models/configuration'
 import { User } from '../models/user'
 
 @Injectable()
 export class SettingsService {
-	requestOptions: RequestOptions;
-
-	constructor (private http: Http) {
-        let authKey = sessionStorage.getItem('authKey');
-        if (authKey === null) {
-          location.href = "/login";
-        }
-        let headers = new Headers({ 'Accept': 'application/json', 'Authentication-Token': authKey.toString()});
-        this.requestOptions = new RequestOptions({ headers: headers });
+	constructor (private authHttp: JwtHttp) {
 	}
 
 	getConfiguration() : Promise<Configuration> {
-		return this.http.get('/api/configuration', this.requestOptions)
+		return this.authHttp.get('/api/configuration')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -26,7 +19,7 @@ export class SettingsService {
 	};
 
 	updateConfiguration(configuration: Configuration) : Promise<Configuration> {
-		return this.http.post('/api/configuration', configuration, this.requestOptions)
+		return this.authHttp.post('/api/configuration', configuration)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -34,7 +27,7 @@ export class SettingsService {
 	};
 
 	getUsers() : Promise<User[]> {
-		return this.http.get('/api/users', this.requestOptions)
+		return this.authHttp.get('/api/users')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User[])
@@ -42,7 +35,7 @@ export class SettingsService {
 	};
 
 	addUser(user: User) : Promise<User> {
-		return this.http.put('/api/users', user, this.requestOptions)
+		return this.authHttp.put('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -50,7 +43,7 @@ export class SettingsService {
 	}
 
 	editUser(user: User) : Promise<User> {
-		return this.http.post('/api/users', user, this.requestOptions)
+		return this.authHttp.post('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -58,7 +51,7 @@ export class SettingsService {
 	}
 
 	deleteUser(id: number) : Promise<void> {
-		return this.http.delete(`/api/users/${id}`, this.requestOptions)
+		return this.authHttp.delete(`/api/users/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
@@ -69,7 +62,7 @@ export class SettingsService {
 		return body || {};
 	}
 
-	private handleError (error: Response | any) {
+	private handleError (error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {

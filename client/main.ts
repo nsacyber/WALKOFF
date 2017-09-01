@@ -2,4 +2,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { MainModule } from './main.module';
 
-platformBrowserDynamic().bootstrapModule(MainModule);
+if (localStorage.getItem('refresh_token'))
+	platformBrowserDynamic().bootstrapModule(MainModule);
+else
+	location.href = '/login';

@@ -1,19 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
+import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Trigger } from '../models/trigger'
 
 @Injectable()
 export class TriggersService {
-	requestOptions: RequestOptions;
-
-	constructor (private http: Http) {
-        let authKey = sessionStorage.getItem('authKey');
-        if (authKey === null) {
-          location.href = "/login";
-        }
-        let headers = new Headers({ 'Accept': 'application/json', 'Authentication-Token': authKey.toString()});
-        this.requestOptions = new RequestOptions({ headers: headers });
+	constructor (private authHttp: JwtHttp) {
 	}
 	
 	private extractData (res: Response) {
@@ -21,7 +14,7 @@ export class TriggersService {
 		return body || {};
 	}
 
-	private handleError (error: Response | any) {
+	private handleError (error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {
