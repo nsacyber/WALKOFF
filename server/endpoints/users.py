@@ -81,10 +81,10 @@ def update_user():
             current_username = user.email
 
             if 'old_password' in data and 'password' in data:
-                if verify_password(user.password, data['old_password']):
+                if verify_password(data['old_password'], user.password):
                     user.password = encrypt_password(data['password'])
                 else:
-                    return {"error": "User's current password was entered incorrectly."}, 400
+                    return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
 
             if 'active' in data:
                 user.active = data['active']

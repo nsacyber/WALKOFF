@@ -151,7 +151,6 @@ class UserDataStore(object):
         elif kwargs.get("id", None):
             query = User.query.filter_by(id=kwargs.get("id")).first()
         if query:
-            print(query)
             return query
 
     @staticmethod

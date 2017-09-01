@@ -1,6 +1,6 @@
 import json
 
-from flask_security.utils import verify_password
+from server.security import verify_password
 from server import flaskserver as server
 from tests.util.servertestcase import ServerTestCase
 from server.returncodes import *
@@ -81,7 +81,7 @@ class TestUsersAndRoles(ServerTestCase):
         self.post_with_status_check('/api/users', data=json.dumps(data),
                                     headers=self.headers, content_type='application/json', status_code=SUCCESS)
         with server.app.app_context():
-            user = server.database.user_datastore.get_user(self.email)
+            user = server.running_context.user_datastore.get_user(self.email)
             self.assertTrue(verify_password("testPassword", user.password))
 
     def test_edit_user_password_does_not_match(self):
@@ -94,7 +94,7 @@ class TestUsersAndRoles(ServerTestCase):
         self.post_with_status_check('/api/users', data=json.dumps(data),
                                     headers=self.headers, content_type='application/json', status_code=400)
         with server.app.app_context():
-            user = server.database.user_datastore.get_user(self.email)
+            user = server.running_context.user_datastore.get_user(self.email)
             self.assertTrue(verify_password(self.password, user.password))
 
     def test_remove_user(self):
