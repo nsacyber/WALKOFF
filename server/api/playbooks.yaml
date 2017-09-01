@@ -16,8 +16,9 @@
       200:
         description: Success
         schema:
-          type: object
-          description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+          type: array
+          items:
+            $ref: '#/definitions/AllPlaybooksOverview'
   put:
     tags:
       - Playbooks

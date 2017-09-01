@@ -1,8 +1,10 @@
 (function (global) {
-
+	var paths = {
+		'npm:': 'client/node_modules/'
+	};
 	// map tells the System loader where to look for things
 	var map = {
-//		'login': 'client/build',
+		// 'login': 'client/modules/login',
 		'main': 'client/build',
 		// 'npm:' : 'client/node_modules/',
 		'models': 'client/models',
@@ -23,11 +25,13 @@
 		'd3': 'client/node_modules/d3/build/d3.node.js',
 		'angular2-jwt': 'client/node_modules/angular2-jwt/angular2-jwt.js',
 		'angular2-jwt-refresh': 'client/node_modules/angular2-jwt-refresh/dist/angular2-jwt-refresh.js',
+		'ng-pick-datetime': 'npm:ng-pick-datetime',
+		'moment': 'npm:moment',
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension
 	var packages = {
-//		'login': { main: 'login',  defaultExtension: 'js' },
+		// 'login': { main: 'login',  defaultExtension: 'ts' },
 		'main': { main: 'main', defaultExtension: 'js' },
 		'models': { defaultExtension: 'ts' },
 		'rxjs': { main: 'Rx', defaultExtension: 'js' },
@@ -35,6 +39,14 @@
 		'lodash': { main: 'index.js', defaultExtension: 'js' },
 		'angular2-datatable': { main: 'index.js', defaultExtension: 'js' },
 		//'angular2-in-memory-web-api': { defaultExtension: 'js' },
+		'ng-pick-datetime': {
+			main: 'picker.bundle.js',
+			defaultExtension: 'js'
+		},
+		'moment': {
+			main: 'moment.js',
+			defaultExtension: 'js'
+		},
 	};
 
 	var ngPackageNames = [
@@ -98,6 +110,7 @@
 	});
 
 	var config = {
+		paths: paths,
 		map: map,
 		packages: packages,
 		// transpiler: 'ts',

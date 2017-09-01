@@ -1,23 +1,23 @@
-import ast
 import unittest
+import time
 import socket
-import gevent
-from gevent.event import Event
 from os import path
-from core.controller import Controller, initialize_threading, shutdown_pool
+import core.controller
 from core.workflow import Workflow
 from core.step import Step
 from core.instance import Instance
 import core.config.config
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
+from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
 from core.controller import _WorkflowKey
-from timeit import default_timer
+from tests.util.thread_control import *
+import core.loadbalancer
+import threading
 
 try:
     from importlib import reload
@@ -34,14 +34,13 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        initialize_threading()
-
-    @classmethod
-    def tearDownClass(cls):
-        shutdown_pool()
+        core.config.config.num_processes = 2
+        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
-        self.controller = Controller(workflows_path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
+        self.controller = core.controller.controller
+        self.controller.workflows = {}
+        self.controller.load_all_workflows_from_directory(path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
         self.controller.load_workflows_from_file(
             path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
@@ -53,6 +52,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.workflows = None
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
+        self.controller.shutdown_pool(0)
         reload(socket)
     """
         CRUD - Workflow
@@ -89,9 +89,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertIn(new_key, self.controller.workflows)
 
     def test_display_workflow(self):
-        workflow = ast.literal_eval(self.testWorkflow.__repr__())
+        workflow = self.testWorkflow.as_json()
         self.assertEqual(len(workflow["steps"]), 1)
-        self.assertIsNone(workflow["options"])
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')
@@ -120,69 +119,63 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
-        from gevent import monkey
-        monkey.patch_all()
-        self.controller.load_workflows_from_file(
-            path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.initialize_threading()
+        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
-        waiter = Event()
         uid = None
+        result = dict()
+        result['paused'] = False
+        result['resumed'] = False
 
-        def step_2_finished_listener(sender, **kwargs):
-            if sender.name == '2':
-                waiter.set()
+        @WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            result['paused'] = True
+            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+
+        @WorkflowResumed.connect
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
 
         def pause_resume_thread():
             self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
-            gevent.sleep(1.5)
-            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            return
 
+        @WorkflowExecutionStart.connect
         def step_1_about_to_begin_listener(sender, **kwargs):
-            if sender.name == '1':
-                gevent.spawn(pause_resume_thread)
+            threading.Thread(target=pause_resume_thread).start()
+            time.sleep(0)
 
-        FunctionExecutionSuccess.connect(step_2_finished_listener)
-        StepInputValidated.connect(step_1_about_to_begin_listener)
-
-        start = default_timer()
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        waiter.wait(timeout=5)
-        duration = default_timer() - start
-        self.assertTrue(2.5 < duration < 5)
+        self.controller.shutdown_pool(1)
+        self.assertTrue(result['paused'])
+        self.assertTrue(result['resumed'])
 
     def test_pause_and_resume_workflow_breakpoint(self):
-        from gevent import monkey
-        monkey.patch_all()
-        self.controller.load_workflows_from_file(
-            path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.initialize_threading()
+        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
 
-        waiter = Event()
+        uid = None
+        result = dict()
+        result['paused'] = False
+        result['resumed'] = False
 
-        def step_2_finished_listener(sender, **kwargs):
-            if sender.name == '2':
-                waiter.set()
+        @WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            result['paused'] = True
+            self.controller.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow', uid)
 
-        def pause_resume_thread():
-            self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
-            gevent.sleep(1.5)
-            self.controller.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow')
+        @WorkflowResumed.connect
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
 
-        def step_1_about_to_begin_listener(sender, **kwargs):
-            if sender.name == '1':
-                gevent.spawn(pause_resume_thread)
-
-        FunctionExecutionSuccess.connect(step_2_finished_listener)
-        StepInputValidated.connect(step_1_about_to_begin_listener)
-
-        start = default_timer()
-        self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        waiter.wait(timeout=5)
-        duration = default_timer() - start
-        self.assertTrue(2.5 < duration < 5)
+        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        self.controller.shutdown_pool(1)
+        self.assertTrue(result['paused'])
+        self.assertTrue(result['resumed'])
 
     def test_change_step_input(self):
-        import json
-
+        self.controller.initialize_threading()
         input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]
 
         input_arg = {arg['key']: arg['value'] for arg in input_list}
@@ -193,6 +186,8 @@ class TestWorkflowManipulation(unittest.TestCase):
             result['value'] = kwargs['data']
 
         FunctionExecutionSuccess.connect(step_finished_listener)
-        self.testWorkflow.execute(start_input=input_arg, execution_uid='some_uid')
-        self.assertDictEqual(json.loads(result['value']),
+
+        self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow', start_input=input_arg)
+        self.controller.shutdown_pool(1)
+        self.assertDictEqual(result['value'],
                              {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})

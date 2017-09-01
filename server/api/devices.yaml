@@ -25,8 +25,12 @@
         description: Success
       515:
         description: Error reading file
-      '405':
+        schema:
+          $ref: '#/definitions/Error'
+      405:
         description: Validation exception
+        schema:
+          $ref: '#/definitions/Error'
 /api/devices/export:
   post:
     tags:
@@ -52,6 +56,8 @@
         description: Success
       515:
         description: Error writing to file
+        schema:
+          $ref: '#/definitions/Error'
 /api/devices/{device_id}:
   parameters:
     - in: path
@@ -87,6 +93,8 @@
         description: Success
       461:
         description: Device does not exist
+        schema:
+          $ref: '#/definitions/Error'
 /api/devices:
   get:
     tags:
@@ -128,6 +136,9 @@
           $ref: '#/definitions/OutputDevice'
       462:
         description: Device already exists
+        schema:
+          $ref: '#/definitions/Error'
+
   post:
     tags:
       - Devices
@@ -152,3 +163,5 @@
           $ref: '#/definitions/OutputDevice'
       461:
         description: Device does not exist
+        schema:
+          $ref: '#/definitions/Error'

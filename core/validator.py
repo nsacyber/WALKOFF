@@ -209,7 +209,7 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
         seen.add(name)
 
     if hasattr(action_func, '__arg_names'):
-        method_params = action_func.__arg_names
+        method_params = list(action_func.__arg_names)
     else:
         method_params = get_function_arg_names(action_func)
 

@@ -1,5 +1,6 @@
 from flask import request, current_app
-from server.security import roles_accepted, jwt_required
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from server.security import encrypt_password, verify_password
 from server.returncodes import *
 

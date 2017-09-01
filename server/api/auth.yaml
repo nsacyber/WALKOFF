@@ -9,8 +9,15 @@
       - application/json
     produces:
       - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The username and password
+        required: true
+        schema:
+          $ref: '#/definitions/Authentication'
     responses:
-      200:
+      201:
         description: Success
         schema:
           $ref: '#/definitions/Token'

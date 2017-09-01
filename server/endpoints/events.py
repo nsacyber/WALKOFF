@@ -1,4 +1,5 @@
-from server.security import jwt_required, roles_accepted
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 import core.case.database as case_database
 from server.returncodes import *
 from flask import request

@@ -4,8 +4,9 @@
         {
             "name": "parentWorkflow",
             "start": "start",
+            "children": ["childWorkflow"],
             "options": {
-                "children": ["childWorkflow"],
+
                 "enabled": true,
                 "scheduler": {
                     "args": {

@@ -9,7 +9,7 @@ from server.returncodes import *
 
 class TestServer(ServerTestCase):
     def test_login(self):
-        response = self.app.post('/login-process', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
         self.assertEqual(response.status_code, SUCCESS)
 
     def test_list_apps(self):
@@ -24,7 +24,11 @@ class TestServer(ServerTestCase):
         response = self.app.get('/widgets', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected)
+        self.assertEqual(2, len(response))
+        self.assertIn('HelloWorld', response)
+        self.assertIn('DailyQuote', response)
+        self.assertEqual(0, len(response['DailyQuote']))
+        orderless_list_compare(self, expected['HelloWorld'], response['HelloWorld'])
 
     def test_read_filters(self):
         response = self.get_with_status_check('/api/filters', headers=self.headers)
@@ -123,7 +127,8 @@ class TestConfiguration(ServerTestCase):
                     'case_db_type': core.config.config.case_db_type,
                     'https': bool(core.config.config.https),
                     'tls_version': core.config.config.tls_version,
-                    'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup)}
+                    'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
+                    'number_processes': int(core.config.config.num_processes)}
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 

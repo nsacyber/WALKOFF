@@ -1,29 +1,28 @@
-from server.security import jwt_refresh_token_required, verify_password, create_access_token, create_refresh_token, get_jwt_identity
-from flask import current_app, request
+from flask_jwt_extended import (jwt_refresh_token_required, create_access_token, create_refresh_token, get_jwt_identity,
+                                get_raw_jwt)
+from server.security import verify_password
+from flask import request
 from server.returncodes import *
+from server.tokens import revoke_token
+from server.database import User
 
 
 def _authenticate_and_grant_tokens(json_in, with_refresh=False):
-    from server.flaskserver import running_context
+    username = json_in.get('username', None)
+    password = json_in.get('password', None)
+    if not (username and password):
+        return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
 
-    def __func():
-        username = json_in.get('username', None)
-        password = json_in.get('password', None)
-        if not (username and password):
-            return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
-
-        user = running_context.User.query.filter_by(email=username).first()
-        if user is None:
-            return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
-        if verify_password(password, user.password):
-            response = {'access_token': create_access_token(identity=username, fresh=True)}
-            if with_refresh:
-                response['refresh_token'] = create_refresh_token(identity=username)
-            return response, SUCCESS
-        else:
-            return {"error": "Invalid password"}, UNAUTHORIZED_ERROR
-
-    return __func()
+    user = User.query.filter_by(email=username).first()
+    if user is None:
+        return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
+    if verify_password(password, user.password):
+        response = {'access_token': create_access_token(identity=username, fresh=True)}
+        if with_refresh:
+            response['refresh_token'] = create_refresh_token(identity=username)
+        return response, OBJECT_CREATED
+    else:
+        return {"error": "Invalid password"}, UNAUTHORIZED_ERROR
 
 
 def login():
@@ -36,14 +35,10 @@ def fresh_login():
 
 @jwt_refresh_token_required
 def refresh():
-    from server.flaskserver import running_context
-
-    def __func():
-        current_user = get_jwt_identity()
-        user = running_context.User.query.filter_by(email=current_user).first()
-        if user is None:
-            return {"error": "Invalid user"}, UNAUTHORIZED_ERROR
-        else:
-            return {'access_token': create_access_token(identity=current_user, fresh=False)}, SUCCESS
-
-    return __func()
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    if user is None:
+        revoke_token(get_raw_jwt())
+        return {"error": "Invalid user"}, UNAUTHORIZED_ERROR
+    else:
+        return {'access_token': create_access_token(identity=current_user, fresh=False)}, OBJECT_CREATED

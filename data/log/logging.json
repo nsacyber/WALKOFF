@@ -33,18 +33,18 @@
       "propagate": 0
     },
     "core": {
-      "level": "WARNING",
+      "level": "INFO",
       "handlers": ["file_handler"]
     },
     "apps": {
-      "level": "WARNING",
+      "level": "DEBUG",
       "handlers": ["file_handler"]
     },
     "connexion": {
       "level": "ERROR",
       "handlers": ["file_handler"]
     },
-    "dicttoxml": {
+    "passlib": {
       "level": "ERROR",
       "handlers": ["file_handler"]
     }

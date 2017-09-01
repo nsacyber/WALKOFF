@@ -47,8 +47,6 @@ def write_values_to_file(keys=None):
     with open(core.config.paths.config_path, 'w') as config_file:
         config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
-# Database Path
-
 reinitialize_case_db_on_startup = True
 
 tls_version = "1.2"
@@ -75,7 +73,7 @@ execution_settings = {
     "maxJobs": 2
 }
 
-num_threads = 5
+num_processes = 5
 threadpool_shutdown_timeout_sec = 3
 
 # Function Dict Paths/Initialization
@@ -84,7 +82,7 @@ app_apis = {}
 
 
 def load_app_apis(apps_path=None):
-    from core.helpers import list_apps
+    from core.helpers import list_apps, format_exception_message
     global app_apis
     if apps_path is None:
         apps_path = core.config.paths.apps_path
@@ -104,7 +102,7 @@ def load_app_apis(apps_path=None):
                     validate_app_spec(api, app)
                     app_apis[app] = api
             except Exception as e:
-                __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(e)))
+                __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
 
 try:
     with open(core.config.paths.events_path) as f:
@@ -139,6 +137,7 @@ def load_flagfilter_apis(path=None):
 def initialize():
     global filters
     global flags
+
     load_config()
     from core.helpers import import_all_apps, import_all_filters, import_all_flags
     import_all_apps()

@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
     <meta charset="UTF-8">
     <style>
-        body{
+        body {
             font-family: "Roboto", sans-serif;
         }
-        #logo{
-            height:300px;
-            width:400px;
+
+        #logo {
+            height: 300px;
+            width: 400px;
         }
-        .form{
-            text-align:center;
+
+        .form {
+            text-align: center;
         }
-        .row{
-            padding-bottom:10px;
+
+        .row {
+            padding-bottom: 10px;
         }
     </style>
-
-
-
 </head>
+
 <body>
     <div class="form">
         <div class="formHeader">
-            <img id="logo" src="client/login/img/walkoffLogo.png" height="150" width="250" style="padding-left:20px; text-align:center;"/>
+            <img id="logo" src="client/login/img/walkoffLogo.png" height="150" width="250" style="padding-left:20px; text-align:center;"
+            />
             <h2>WALKOFF Login</h2>
         </div>
 
@@ -44,20 +47,19 @@
             </div>
 
         </form>
-
     </div>
     <script>
-        $("#loginForm").on("submit", function(e){
+        $("#loginForm").on("submit", function (e) {
             e.preventDefault();
             var username = $("#username").val();
             var password = $("#password").val();
             $.ajax({
-                url:'/api/auth',
-                contentType:'application/json',
-                data:JSON.stringify({"username":username, "password": password}),
-                type:"POST",
+                url: '/api/auth',
+                contentType: 'application/json',
+                data: JSON.stringify({ "username": username, "password": password }),
+                type: "POST",
                 async: false,
-                success: function(data){
+                success: function (data) {
                     window.localStorage.setItem("access_token", data["access_token"]);
                     window.localStorage.setItem("refresh_token", data["refresh_token"]);
                     // window.localStorage.setItem("currentUser", username);
@@ -70,5 +72,5 @@
         });
     </script>
 </body>
-</html>
 
+</html>

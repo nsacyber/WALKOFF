@@ -1,8 +1,8 @@
-import gevent
+import time
 import random
 from flask import Blueprint, Response
 from apps import AppBlueprint
-from gevent.event import AsyncResult, Event
+from threading import Thread
 
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
@@ -20,33 +20,31 @@ def test_basic_blueprint():
     return 'successfully called basic blueprint'
 
 
-__random_num_event = AsyncResult()
-__sync = Event()
-
-
 def random_number_receiver():
     while True:
-        data = __random_num_event.get()
+        data = yield
         yield 'data: %s\n\n' % data
-        __sync.wait()
+
+
+random_number_stream = random_number_receiver()
+random_number_stream.send(None)
 
 
 def random_number_pusher():
     while True:
-        __random_num_event.set(random.random())
-        gevent.sleep(2)
-        __sync.set()
-        __sync.clear()
+        random_number_stream.send(random.random())
+        time.sleep(2)
 
 
 @blueprint.blueprint.route('/stream/random-number')
 def stream_random_numbers():
     """
-    Example of using gevent and AsyncResults to create an event-driven stream
+    Example of using coroutines to create an event-driven stream
     :return:
     """
-    gevent.spawn(random_number_pusher)
-    return Response(random_number_receiver(), mimetype='text/event-stream')
+    thread = Thread(target=random_number_pusher)
+    thread.start()
+    return Response(random_number_stream, mimetype='text/event-stream')
 
 
 @blueprint.blueprint.route('/stream/counter')
@@ -58,7 +56,7 @@ def stream_counter():
     def counter():
         count = 0
         while True:
-            gevent.sleep(1)
+            time.sleep(1)
             yield 'data: %s\n\n' % count
             count += 1
     return Response(counter(), mimetype='text/event-stream')

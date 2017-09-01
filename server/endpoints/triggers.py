@@ -1,8 +1,9 @@
-
 from flask import request, current_app
-from server.security import roles_accepted, jwt_required
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from server.returncodes import *
 from server.database import db
+
 
 @jwt_required
 def read_all_triggers():
@@ -13,6 +14,7 @@ def read_all_triggers():
         return {"triggers": [trigger.as_json() for trigger in running_context.Triggers.query.all()]}, SUCCESS
 
     return __func()
+
 
 @jwt_required
 def listener(body):
@@ -35,6 +37,7 @@ def listener(body):
             return returned_json, SUCCESS_ASYNC
 
     return __func()
+
 
 @jwt_required
 def create_trigger(body, trigger_name):
@@ -63,6 +66,7 @@ def create_trigger(body, trigger_name):
 
     return __func()
 
+
 @jwt_required
 def read_trigger(trigger_name):
     from server.context import running_context
@@ -77,6 +81,7 @@ def read_trigger(trigger_name):
             return {"error": "Trigger does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
+
 
 @jwt_required
 def update_trigger(body, trigger_name):
@@ -107,6 +112,7 @@ def update_trigger(body, trigger_name):
             return {"error": "Trigger does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
+
 
 @jwt_required
 def delete_trigger(trigger_name):

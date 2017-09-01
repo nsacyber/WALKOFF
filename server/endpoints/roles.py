@@ -1,7 +1,8 @@
 from flask import request, current_app
-from server.security import roles_accepted, jwt_required
-from server import forms
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from server.returncodes import *
+
 
 @jwt_required
 def read_all_roles():
@@ -15,6 +16,7 @@ def read_all_roles():
             return result, SUCCESS
 
     return __func()
+
 
 @jwt_required
 def create_role(body):
@@ -43,6 +45,7 @@ def create_role(body):
 
     return __func()
 
+
 @jwt_required
 def read_role(role_name):
     from server.context import running_context
@@ -58,6 +61,7 @@ def read_role(role_name):
 
     return __func()
 
+
 @jwt_required
 def update_role(body):
     from server.context import running_context
@@ -71,7 +75,6 @@ def update_role(body):
             if 'description' in json_data:
                 role.set_description(json_data['description'])
             if 'pages' in json_data:
-
                 add_to_user_roles(json_data['name'], json_data['pages'])
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['name'], json_data))
             return role.display(), SUCCESS

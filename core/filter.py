@@ -1,4 +1,3 @@
-from core.case import callbacks
 from core.executionelement import ExecutionElement
 from core.helpers import get_filter, get_filter_api, InvalidInput, InvalidElementConstructed, dereference_step_routing
 from core.validator import validate_filter_parameters, validate_parameter
@@ -20,6 +19,7 @@ class Filter(ExecutionElement):
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
         """
+        self.results_sock = None
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
         ExecutionElement.__init__(self, action, uid)
@@ -27,6 +27,16 @@ class Filter(ExecutionElement):
         self.args_api, self.data_in_api = get_filter_api(self.action)
         args = args if args is not None else {}
         self.args = validate_filter_parameters(self.args_api, args, self.action)
+
+    def send_callback(self, callback_name):
+        data = dict()
+        data['callback_name'] = callback_name
+        data['sender'] = {}
+        data['sender']['name'] = self.name
+        data['sender']['id'] = self.name
+        data['sender']['uid'] = self.uid
+        if self.results_sock:
+            self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):
         """
@@ -44,14 +54,14 @@ class Filter(ExecutionElement):
             args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.name))
             args.update({self.data_in_api['name']: data_in})
             result = get_filter(self.action)(**args)
-            callbacks.FilterSuccess.send(self)
+            self.send_callback("Filter Success")
             return result
         except InvalidInput as e:
-            callbacks.FilterError.send(self)
+            self.send_callback("Filter Error")
             logger.error('Filter {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action, original_data_in, str(e)))
         except Exception as e:
-            callbacks.FilterError.send(self)
+            self.send_callback("Filter Error")
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 
