@@ -11,7 +11,7 @@ def read_all_users():
     @jwt_required
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
-        result = [user.display() for user in running_context.User.query.all()]
+        result = [user.as_json() for user in running_context.User.query.all()]
 
         return result, SUCCESS
     return __func()
@@ -46,8 +46,8 @@ def create_user():
                 user.set_roles([r])
 
             running_context.db.session.commit()
-            current_app.logger.info('User added: {0}'.format(user.display()))
-            return user.display(), OBJECT_CREATED
+            current_app.logger.info('User added: {0}'.format(user.as_json()))
+            return user.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Could not create user {0}. User already exists.'.format(username))
             return {"error": "User {0} already exists.".format(username)}, OBJECT_EXISTS_ERROR
@@ -62,7 +62,7 @@ def read_user(user_id):
     def __func():
         user = running_context.user_datastore.get_user(id=user_id)
         if user:
-            return user.display(), SUCCESS
+            return user.as_json(), SUCCESS
         else:
             current_app.logger.error('Could not display user {0}. User does not exist.'.format(user_id))
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
@@ -94,8 +94,8 @@ def update_user():
                 user.email = data['username']
 
             running_context.db.session.commit()
-            current_app.logger.info('Updated user {0}. Updated to: {1}'.format(current_username, user.display()))
-            return user.display(), SUCCESS
+            current_app.logger.info('Updated user {0}. Updated to: {1}'.format(current_username, user.as_json()))
+            return user.as_json(), SUCCESS
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR

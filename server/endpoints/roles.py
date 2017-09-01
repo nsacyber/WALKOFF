@@ -54,7 +54,7 @@ def read_role(role_name):
     def __func():
         role = running_context.Role.query.filter_by(name=role_name).first()
         if role:
-            return role.display(), SUCCESS
+            return role.as_json(), SUCCESS
         else:
             current_app.logger.error('Cannot display role {0}. Role does not exist.'.format(role_name))
             return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
@@ -73,11 +73,11 @@ def update_role():
         role = running_context.Role.query.filter_by(name=json_data['name']).first()
         if role:
             if 'description' in json_data:
-                role.set_description(json_data['description'])
+                role.description = json_data['description']
             if 'pages' in json_data:
                 add_to_user_roles(json_data['name'], json_data['pages'])
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['name'], json_data))
-            return role.display(), SUCCESS
+            return role.as_json(), SUCCESS
         else:
             current_app.logger.error('Cannot edit role. Role does not exist.')
             return {"error": "Role does not exist."}, OBJECT_DNE_ERROR

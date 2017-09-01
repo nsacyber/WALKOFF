@@ -1,7 +1,8 @@
 import flask_sqlalchemy
 import json
 db = flask_sqlalchemy.SQLAlchemy()
-userRoles = {}
+
+user_roles = {}
 
 
 def initialize_user_roles(urls):
@@ -11,7 +12,7 @@ def initialize_user_roles(urls):
         urls (list[str]): The list of all root endpoints.
     """
     for url in urls:
-        userRoles[url] = ["admin"]
+        user_roles[url] = ["admin"]
 
 
 def add_to_user_roles(role_name, urls):
@@ -22,7 +23,7 @@ def add_to_user_roles(role_name, urls):
         urls (list[str]): The list of root endpoints to which to add the role.
     """
     for url in urls:
-        userRoles[url].append(role_name)
+        user_roles[url].append(role_name)
 
 
 # Base Class for Tables
@@ -65,23 +66,7 @@ class Role(Base):
         db.session.add(user)
         db.session.commit()
 
-    def set_description(self, description):
-        """Sets the description of the Role.
-        
-        Args:
-            description (str): The description of the Role.
-        """
-        self.description = description
-
     def as_json(self):
-        """Returns the dictionary representation of the Role object.
-        
-        Returns:
-            The dictionary representation of the Role object.
-        """
-        return {"name": self.name, "description": self.description}
-
-    def display(self):
         """Returns the dictionary representation of the Role object.
         
         Returns:
@@ -89,6 +74,7 @@ class Role(Base):
         """
         return {"name": self.name,
                 "description": self.description}
+
 
 class User(Base):
     # Define Models
@@ -121,7 +107,7 @@ class User(Base):
         db.session.commit()
         return user
 
-    def display(self):
+    def as_json(self):
         """Returns the dictionary representation of a User object.
         
         Returns:
