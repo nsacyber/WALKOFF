@@ -5,7 +5,6 @@ from server.security import roles_accepted
 from flask_jwt_extended import jwt_required
 from core import helpers
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
-from core.options import Options
 import core.case.database as case_database
 from core.case.workflowresults import WorkflowResult
 import core.config.config
@@ -76,9 +75,10 @@ def read_playbook(playbook_name):
             return templates, SUCCESS
         else:
             try:
-                workflows = running_context.controller.get_all_workflows()
-                if playbook_name in workflows:
-                    return workflows[playbook_name], SUCCESS
+                playbooks = running_context.controller.get_all_workflows()
+                playbook = next((playbook for playbook in playbooks if playbook['name'] == playbook_name), None)
+                if playbook is not None:
+                    return playbook['workflows'], SUCCESS
                 else:
                     current_app.logger.error('Playbook {0} was not found'.format(playbook_name))
                     return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
@@ -115,15 +115,15 @@ def update_playbook():
                               os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(new_name)))
                 current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
 
-                workflows = running_context.controller.get_all_workflows()
-                return workflows[new_name], SUCCESS
+                workflow = next(playbook for playbook in running_context.controller.get_all_workflows()
+                                 if playbook['name'] == new_name)['workflows']
+                return workflow, SUCCESS
             else:
                 current_app.logger.error('No new name provided to update playbook')
                 return {"error": 'No new name provided to update playbook.'}, INVALID_INPUT_ERROR
         else:
             current_app.logger.error('Could not edit playbook {0}. Playbook does not exist.'.format(playbook_name))
             return {"error": 'Playbook does not exist.'.format(playbook_name)}, OBJECT_DNE_ERROR
-
     return __func()
 
 
@@ -292,15 +292,6 @@ def update_workflow(playbook_name):
         data = request.get_json()
         wf_name = data['name']
         if running_context.controller.is_workflow_registered(playbook_name, wf_name):
-            if 'scheduler' in data:
-                enabled = data['scheduler']['enabled'] if 'enabled' in data['scheduler'] else False
-                scheduler = {'type': (data['scheduler']['scheduler_type']
-                                      if 'scheduler_type' in data['scheduler'] else 'cron'),
-                             'autorun': (str(data['scheduler']['autorun']).lower()
-                                         if 'autorun' in data['scheduler'] else 'false'),
-                             'args': json.loads(data['scheduler']['args']) if 'args' in data['scheduler'] else {}}
-                running_context.controller.get_workflow(playbook_name, wf_name).options = \
-                    Options(scheduler=scheduler, enabled=enabled)
             if 'new_name' in data and data['new_name']:
                 if running_context.controller.is_workflow_registered(playbook_name, data['new_name']):
                     current_app.logger.warning(

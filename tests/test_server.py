@@ -8,9 +8,6 @@ from server.returncodes import *
 
 
 class TestServer(ServerTestCase):
-    def test_login(self):
-        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.assertEqual(response.status_code, SUCCESS)
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
