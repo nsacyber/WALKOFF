@@ -65,11 +65,6 @@
     <script type="application/javascript">
         SystemJS.import('main').catch(function(err){ console.error(err); });
 
-        localStorage.setItem('authKey', '<% authKey | safe %>');
-        // var default_page = '{{default_page | safe}}';
-        // var apps = {{apps | safe}};
-        localStorage.setItem('currentUser', '<%currentUser%>');
-
         document.addEventListener("DOMContentLoaded", function(e){
             if (Notification.permission !== "granted"){
                 Notification.requestPermission();

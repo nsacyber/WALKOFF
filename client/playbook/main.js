@@ -6,6 +6,7 @@ else {
     console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
 }
 
+var refreshInterval;
 
 $(function(){
     "use strict";
@@ -24,11 +25,35 @@ $(function(){
     var filtersList = [];
     var startNode = null;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
-    var authKey = localStorage.getItem('authKey');
+    var authToken = localStorage.getItem('access_token');
+
+    refreshAuthToken();
+    refreshInterval = setInterval(refreshAuthToken, 1000 * 600);
 
     //--------------------
     // Top level functions
     //--------------------
+
+    function refreshAuthToken() {
+        var refreshToken = localStorage.getItem('refresh_token');
+
+        if (!refreshToken) location.href = '/login';
+
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers': { "Authorization": 'Bearer ' + refreshToken },
+            'url': "/api/auth/refresh",
+            'success': function (data) {
+                localStorage.setItem('access_token', data['access_token']);
+                authToken = data['access_token'];
+            },
+            'error': function (e) {
+                console.log(e);
+            }
+        });
+    }
 
     // Reformat the JSON data returned from the /playbook endpoint
     // into a format that jsTree can understand.
@@ -628,7 +653,7 @@ $(function(){
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + oldPlaybookName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
@@ -649,7 +674,7 @@ $(function(){
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + oldPlaybookName + "/copy",
             'dataType': 'json',
             'data': {playbook: newPlaybookName},
@@ -669,7 +694,7 @@ $(function(){
             'async': false,
             'type': "DELETE",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName,
             'success': function (data) {
                 downloadWorkflowList();
@@ -691,7 +716,7 @@ $(function(){
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
@@ -712,7 +737,7 @@ $(function(){
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
             'dataType': 'json',
             'data': {playbook: playbookName, workflow: newWorkflowName},
@@ -732,7 +757,7 @@ $(function(){
             'async': false,
             'type': "DELETE",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
             'success': function (data) {
                 downloadWorkflowList();
@@ -754,7 +779,7 @@ $(function(){
             'async': false,
             'type': "PUT",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'dataType': 'json',
             'data': JSON.stringify({name: workflowName}),
             'contentType': 'application/json; charset=utf-8',
@@ -847,7 +872,7 @@ $(function(){
             'global': false,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
             'data': data,
             'success': function (data) {
@@ -936,7 +961,7 @@ $(function(){
                 'async': false,
                 'type': "GET",
                 'global': false,
-                'headers':{"Authentication-Token":authKey},
+                'headers':{"Authorization": 'Bearer ' + authToken},
                 'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
                     tmp = data;
@@ -1295,7 +1320,7 @@ $(function(){
             'async': true,
             'type': "GET",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks",
             'success': function (data) {
                 //Destroy the existing tree if necessary
@@ -1542,7 +1567,7 @@ $(function(){
             'async': true,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
                 // $('#clear-execution-highlighting-button').removeAttr('disabled');
@@ -1654,7 +1679,7 @@ $(function(){
         'async': true,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/apps/actions",
         'success': function (data) {
             $('#actions').jstree({
@@ -1703,7 +1728,7 @@ $(function(){
                     'async': false,
                     'type': "GET",
                     'global': false,
-                    'headers':{"Authentication-Token":authKey},
+                    'headers':{"Authorization": 'Bearer ' + authToken},
                     'url': "/api/apps/" + appName + "/devices",
                     'dataType': 'json',
                     'contentType': 'application/json; charset=utf-8',
@@ -1724,7 +1749,7 @@ $(function(){
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/flags",
         'dataType': 'json',
         'success': function (data) {
@@ -1737,7 +1762,7 @@ $(function(){
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/filters",
         'dataType': 'json',
         'success': function (data) {

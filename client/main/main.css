@@ -25,6 +25,10 @@
   color: #f6f6f6;
 }
 
+.navbar-custom a .navLink {
+  margin-left: 5px;
+}
+
 .navbar-custom .dropdown-item {
   color: #333333;
 }

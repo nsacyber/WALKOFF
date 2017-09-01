@@ -1,3 +1,5 @@
+var refreshInterval;
+
 (function () {
     triggerData = [];
     params = {};
@@ -5,7 +7,31 @@
     var filtersList = [];
     var triggerEditor = null;
     var currentTriggerName = null;
-    var authKey = localStorage.getItem('authKey');
+    var authKey = localStorage.getItem('access_token');
+
+    refreshAuthToken();
+    refreshInterval = setInterval(refreshAuthToken, 1000 * 600);
+
+    function refreshAuthToken() {
+        var refreshToken = localStorage.getItem('refresh_token');
+
+        if (!refreshToken) location.href = '/login';
+
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers': { "Authorization": 'Bearer ' + refreshToken },
+            'url': "/api/auth/refresh",
+            'success': function (data) {
+                localStorage.setItem('access_token', data['access_token']);
+                authToken = data['access_token'];
+            },
+            'error': function (e) {
+                console.log(e);
+            }
+        });
+    }
 
     $("#editformSubmit").prop("disabled",true);
     $("#editTrigger").prop("disabled",true);
@@ -16,7 +42,7 @@
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authKey},
         'url': "/api/flags",
         'dataType': 'json',
         'success': function (data) {
@@ -32,7 +58,7 @@
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authKey},
         'url': "/api/filters",
         'dataType': 'json',
         'success': function (data) {
@@ -47,7 +73,7 @@
     function getTriggerList(){
         $.ajax({
             url:'/execution/listener/triggers',
-            headers:{"Authentication-Token":authKey},
+            headers:{"Authorization": 'Bearer ' + authKey},
             type:"GET",
             success:function(data){
                 result = data;
@@ -211,7 +237,7 @@
                 url: '/execution/listener/triggers/' + values.name,
                 data: JSON.stringify(values),
                 contentType: 'application/json',
-                headers: {"Authentication-Token": authKey},
+                headers: {"Authorization": 'Bearer ' + authKey},
                 type: "PUT",
                 success: function (data) {
                     $.notify('Trigger ' + values.name + ' added successfully.', 'success');
@@ -270,7 +296,7 @@
                     url:'/execution/listener/triggers/' + currentTriggerName ,
                     data: JSON.stringify(values),
                     contentType: 'application/json',
-                    headers:{"Authentication-Token":authKey},
+                    headers:{"Authorization": 'Bearer ' + authKey},
                     type:"POST",
                     success:function(e){
                         $.notify('Trigger ' + name + ' edited successfully.', 'success');
@@ -295,7 +321,7 @@
                  $.ajax({
                 url:'/execution/listener/triggers/'+ name,
                 data:{},
-                headers:{"Authentication-Token":authKey},
+                headers:{"Authorization": 'Bearer ' + authKey},
                 type:"DELETE",
                 success:function(e){
                     $.notify('Trigger ' + name + ' removed successfully.', 'success');

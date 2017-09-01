@@ -38,6 +38,8 @@ export class CasesComponent {
 	subscriptionTree: any;
 
 	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
+		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {

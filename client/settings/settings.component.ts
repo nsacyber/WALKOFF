@@ -32,6 +32,8 @@ export class SettingsComponent {
 	filterQuery: FormControl = new FormControl();
 
 	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
+		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();

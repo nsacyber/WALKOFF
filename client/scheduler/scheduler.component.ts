@@ -34,6 +34,8 @@ export class SchedulerComponent {
 	filterQuery: FormControl = new FormControl();
 
 	constructor(private schedulerService: SchedulerService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+		if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
+		
 		this.currentController = "Default Controller";
 		this.toastyConfig.theme = 'bootstrap';
 

@@ -6,11 +6,7 @@ import { PlaybookService } from './playbook.service';
 	selector: 'playbook-component',
 	templateUrl: 'client/playbook/playbook.html',
 	styleUrls: [
-    'client/node_modules/jstree/dist/themes/default/style.min.css',
-    'client/node_modules/datatables/media/css/jquery.dataTables.min.css',
-		'client/node_modules/jqueryui/jquery-ui.min.css',
-		'client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css',
-		'client/playbook/playbook.css'
+        'client/playbook/playbook.css'
     ],
 		encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService]
@@ -18,6 +14,7 @@ import { PlaybookService } from './playbook.service';
 export class PlaybookComponent {
 
 	constructor(private playbookService: PlaybookService) {
+        if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
     }
 
     ngAfterViewInit() {
@@ -42,7 +39,19 @@ export class PlaybookComponent {
             document.body.appendChild(s);
         }
 
+        let addLink = (script: string) => {
+            let s = document.createElement("link");
+            s.rel = "stylesheet";
+            s.href = script;
+            document.body.appendChild(s);
+        }
+
         removeScript();
+
+        addLink('client/node_modules/jstree/dist/themes/default/style.min.css');
+        addLink('client/node_modules/datatables/media/css/jquery.dataTables.min.css');
+        addLink('client/node_modules/jqueryui/jquery-ui.min.css');
+        addLink('client/playbook/plugins/cytoscape/cytoscape.js-panzoom.css');
 
         addScript("client/node_modules/jquery-migrate/dist/jquery-migrate.min.js");
         addScript("client/node_modules/jqueryui/jquery-ui.min.js");
