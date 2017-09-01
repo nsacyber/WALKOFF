@@ -16,8 +16,8 @@ export class AuthService {
 			.catch(this.handleError);
 	}
 
-	getKey(): Promise<string> {
-		return this.authHttp.get('/api/auth/key')
+	getToken(): Promise<string> {
+		return this.authHttp.get('/api/auth/token')
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
