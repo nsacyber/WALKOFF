@@ -8,7 +8,6 @@ import connexion
 from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -119,6 +118,7 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
 
+
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
@@ -149,6 +149,7 @@ def create_app():
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'
+
 
     from server.database import db
     db.init_app(_app)

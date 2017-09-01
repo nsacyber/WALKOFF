@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 from server.returncodes import *
+from datetime import timedelta
 
 
 def __get_current_configuration():
@@ -19,7 +20,9 @@ def __get_current_configuration():
             'https': bool(core.config.config.https),
             'tls_version': core.config.config.tls_version,
             'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
-            'number_processes': int(core.config.config.num_processes)}
+            'number_processes': int(core.config.config.num_processes),
+            'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
+            'refresh_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].days)}
 
 
 def read_config_values():
@@ -47,11 +50,16 @@ def update_configuration(configuration):
                     current_app.logger.error('Could not commit old playbook {0} to file. '
                                              'Losing uncommitted changes!'.format(playbook))
             running_context.controller.load_all_workflows_from_directory()
+        if not _reset_token_durations(access_token_duration=configuration.get('access_token_duration', None),
+                                      refresh_token_duration=configuration.get('refresh_token_duration', None)):
+            return {'error': 'Invalid token durations.'}, BAD_REQUEST
+
         for config, config_value in configuration.items():
             if hasattr(core.config.paths, config):
                 setattr(core.config.paths, config, config_value)
             elif hasattr(core.config.config, config):
                 setattr(core.config.config, config, config_value)
+
         current_app.logger.info('Changed configuration')
         try:
             core.config.config.write_values_to_file()
@@ -60,3 +68,15 @@ def update_configuration(configuration):
             current_app.logger.error('Could not write changes to configuration to file')
             return {"error": 'Could not write to file.'}, IO_ERROR
     return __func()
+
+
+def _reset_token_durations(access_token_duration=None, refresh_token_duration=None):
+    access_token_duration = (timedelta(minutes=access_token_duration) if access_token_duration is not None
+                             else current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+    refresh_token_duration = (timedelta(days=refresh_token_duration) if refresh_token_duration is not None
+                              else current_app.config['JWT_REFRESH_TOKEN_EXPIRES'])
+    if access_token_duration < refresh_token_duration:
+        current_app.config['JWT_ACCESS_TOKEN_EXPIRES'] = access_token_duration
+        current_app.config['JWT_REFRESH_TOKEN_EXPIRES'] = refresh_token_duration
+        return True
+    return False

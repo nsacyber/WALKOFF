@@ -142,7 +142,6 @@ class UserDataStore(object):
     def __init__(self):
         pass
 
-
     @staticmethod
     def get_user(*args, **kwargs):
         if args:
@@ -154,8 +153,6 @@ class UserDataStore(object):
         if query:
             print(query)
             return query
-
-
 
     @staticmethod
     def delete_user(username):
