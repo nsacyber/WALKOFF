@@ -37,10 +37,36 @@
       - application/json
     responses:
       200:
-        description: Successp
+        description: Success
         schema:
           $ref: '#/definitions/Token'
       401:
         description: Unauthorized
         schema:
           $ref: '#/definitions/Error'
+
+/api/auth/logout:
+  post:
+    tags:
+      - Authorization
+    summary: Logout of walkoff
+    operationId: server.endpoints.auth.logout
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The refresh token to be revoked
+        required: true
+        schema:
+          type: object
+          required: [refresh_token]
+          properties:
+            refresh_token:
+              type: string
+              description: the refresh token to be revoked
+    responses:
+      200:
+        description: Success

@@ -120,5 +120,46 @@ class TestAuthorization(unittest.TestCase):
         response = json.loads(refresh.get_data(as_text=True))
         self.assertDictEqual(response, {'error': 'Token is revoked'})
 
+    def test_logout_no_refresh_token(self):
+        response = self.app.post('/api/auth', content_type="application/json",
+                                 data=json.dumps(dict(username='admin', password='admin')))
+        key = json.loads(response.get_data(as_text=True))
+        headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
+        response = self.app.post('/api/auth/logout', headers=headers)
+        self.assertEqual(response.status_code, BAD_REQUEST)
+        self.assertEqual(len(BlacklistedToken.query.all()), 0)
 
+    def test_logout_mismatched_tokens(self):
+        response = self.app.post('/api/auth', content_type="application/json",
+                                 data=json.dumps(dict(username='admin', password='admin')))
+        key = json.loads(response.get_data(as_text=True))
+        headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
+        running_context.user_datastore.create_user(email='test', password=encrypt_password('test'))
+
+        from server.database import db
+        db.session.commit()
+        response = self.app.post('/api/auth', content_type="application/json",
+                                 data=json.dumps(dict(username='test', password='test')))
+        key = json.loads(response.get_data(as_text=True))
+        token = key['refresh_token']
+
+        response = self.app.post('/api/auth/logout', headers=headers, content_type="application/json",
+                                 data=json.dumps(dict(refresh_token=token)))
+        self.assertEqual(response.status_code, BAD_REQUEST)
+        self.assertEqual(len(BlacklistedToken.query.all()), 0)
+
+    def test_logout(self):
+        response = self.app.post('/api/auth', content_type="application/json",
+                                 data=json.dumps(dict(username='admin', password='admin')))
+        key = json.loads(response.get_data(as_text=True))
+        access_token = key['access_token']
+        refresh_token = key['refresh_token']
+        headers = {'Authorization': 'Bearer {}'.format(access_token)}
+        response = self.app.post('/api/auth/logout', headers=headers, content_type="application/json",
+                                 data=json.dumps(dict(refresh_token=refresh_token)))
+        refresh_token = decode_token(refresh_token)
+        refresh_token_jti = refresh_token['jti']
+        self.assertEqual(response.status_code, 200)
+        tokens = BlacklistedToken.query.filter_by(jti=refresh_token_jti).all()
+        self.assertEqual(len(tokens), 1)

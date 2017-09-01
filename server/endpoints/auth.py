@@ -1,7 +1,7 @@
 from flask_jwt_extended import (jwt_refresh_token_required, create_access_token, create_refresh_token, get_jwt_identity,
-                                get_raw_jwt)
+                                get_raw_jwt, jwt_required, decode_token)
 from server.security import verify_password
-from flask import request
+from flask import request, current_app
 from server.returncodes import *
 from server.tokens import revoke_token
 from server.database import User
@@ -42,3 +42,21 @@ def refresh():
         return {"error": "Invalid user"}, UNAUTHORIZED_ERROR
     else:
         return {'access_token': create_access_token(identity=current_user, fresh=False)}, OBJECT_CREATED
+
+
+def logout():
+    from server.tokens import revoke_token
+
+    @jwt_required
+    def __func():
+        refresh_token = request.get_json().get('refresh_token', None)
+        if refresh_token is None:
+            return {'error': 'refresh token is required to logout'}, BAD_REQUEST
+        decoded_refresh_token = decode_token(refresh_token)
+        refresh_token_identity = decoded_refresh_token[current_app.config['JWT_IDENTITY_CLAIM']]
+        if get_jwt_identity() == refresh_token_identity:
+            revoke_token(decode_token(refresh_token))
+            return {}, SUCCESS
+        else:
+            return {'error': 'identity of refresh token does not match identity of auth token'}, BAD_REQUEST
+    return __func()

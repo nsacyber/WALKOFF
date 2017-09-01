@@ -72,14 +72,6 @@ def system_pages(name):
     return render_template("pages/" + name + "/index.html", **args)
 
 
-@app.route('/logout', methods=['GET'])
-@jwt_refresh_token_required
-def logout():
-    from server.tokens import revoke_token
-    revoke_token(get_raw_jwt())
-    return render_template("logout.html")
-
-
 
 @app.route('/widgets', methods=['GET'])
 @jwt_required
