@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers, RequestOptions } from '@angular/http';
+import { Http, Response, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
-import { Device } from '../models/device'
+import { Device } from '../models/device';
 
 @Injectable()
 export class DevicesService {

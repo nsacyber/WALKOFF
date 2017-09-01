@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { JwtHelper } from 'angular2-jwt';
+
+import { AuthService } from '../auth/auth.service';
 
 @Component({
 	selector: 'main-component',
@@ -13,8 +16,26 @@ import { Component } from '@angular/core';
 })
 export class MainComponent {
 	currentUser: string;
+	jwtHelper: JwtHelper = new JwtHelper();
 
-	constructor() { 
-		this.currentUser = localStorage.getItem('currentUser');
+	constructor(private authService: AuthService) {
+		this.updateUserInfo();
+	}
+
+	updateUserInfo(): void {
+		let refreshToken = localStorage.getItem('refresh_token');
+		
+		let decoded = this.jwtHelper.decodeToken(refreshToken);
+
+		this.currentUser = decoded.identity;
+	}
+
+	logout(): void {
+		this.authService.logout()
+			.then(() => location.href = '/login');
+	}
+
+	getKey(): void {
+		window.open('/api/auth/token', 'targetWindow', 'width=925, height=150');
 	}
 }
