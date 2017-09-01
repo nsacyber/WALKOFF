@@ -1,4 +1,3 @@
-import json
 import os
 from flask import render_template, current_app, send_file
 from server.security import roles_accepted
@@ -12,20 +11,22 @@ from server.returncodes import SUCCESS, UNAUTHORIZED_ERROR
 
 from core.helpers import combine_dicts
 
-@jwt_required
+
 def read_all_possible_subscriptions():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         return core.config.config.possible_events, SUCCESS
 
     return __func()
 
-@jwt_required
+
 def read_all_filters():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         filter_api = core.config.config.function_apis['filters']
@@ -49,10 +50,11 @@ def read_all_filters():
 
     return __func()
 
-@jwt_required
+
 def read_all_flags():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         flag_api = core.config.config.function_apis['flags']
@@ -76,11 +78,12 @@ def read_all_flags():
 
     return __func()
 
-@jwt_required
+
 def sys_pages(interface_name):
     from server.context import running_context
     from server import interface
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/interface'])
     def __func():
         if current_user.is_authenticated and interface_name:
@@ -94,20 +97,10 @@ def sys_pages(interface_name):
     return __func()
 
 
-def login_info():
-    def __func():
-        if current_user.is_authenticated:
-            return json.dumps({"auth_token": current_user.get_auth_token()}), SUCCESS
-        else:
-            current_app.logger.debug('Unsuccessful login attempt')
-            return {"error": "Could not log in."}, UNAUTHORIZED_ERROR
-
-    return __func()
-
-
 def read_all_widgets():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         return {_app: helpers.list_widgets(_app) for _app in helpers.list_apps()}

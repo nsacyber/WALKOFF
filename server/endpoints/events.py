@@ -5,11 +5,10 @@ from server.returncodes import *
 from flask import request
 
 
-@jwt_required
 def update_event_note():
     from server.context import running_context
 
-
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         data = request.get_json()
@@ -22,11 +21,11 @@ def update_event_note():
             return {"error": "Event does not exist."}, OBJECT_DNE_ERROR
     return __func()
 
-@jwt_required
+
 def read_event(event_id):
     from server.context import running_context
 
-
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/cases'])
     def __func():
         valid_event_id = case_database.case_db.session.query(case_database.Event) \

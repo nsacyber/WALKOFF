@@ -5,10 +5,10 @@ from server.returncodes import *
 from server.database import db
 
 
-@jwt_required
 def read_all_triggers():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         return {"triggers": [trigger.as_json() for trigger in running_context.Triggers.query.all()]}, SUCCESS
@@ -16,10 +16,10 @@ def read_all_triggers():
     return __func()
 
 
-@jwt_required
-def listener(body):
+def listener():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         trigger_args = request.get_json()
@@ -39,10 +39,10 @@ def listener(body):
     return __func()
 
 
-@jwt_required
-def create_trigger(body, trigger_name):
+def create_trigger(trigger_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         data = request.get_json()
@@ -67,10 +67,10 @@ def create_trigger(body, trigger_name):
     return __func()
 
 
-@jwt_required
 def read_trigger(trigger_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
@@ -83,10 +83,10 @@ def read_trigger(trigger_name):
     return __func()
 
 
-@jwt_required
-def update_trigger(body, trigger_name):
+def update_trigger(trigger_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         data = request.get_json()
@@ -114,10 +114,10 @@ def update_trigger(body, trigger_name):
     return __func()
 
 
-@jwt_required
 def delete_trigger(trigger_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/listener'])
     def __func():
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()

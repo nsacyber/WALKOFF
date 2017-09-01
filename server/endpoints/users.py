@@ -5,10 +5,10 @@ from server.security import encrypt_password, verify_password
 from server.returncodes import *
 
 
-@jwt_required
 def read_all_users():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         result = [user.display() for user in running_context.User.query.all()]
@@ -17,10 +17,10 @@ def read_all_users():
     return __func()
 
 
-@jwt_required
-def create_user(body):
+def create_user():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         data = request.get_json()
@@ -54,10 +54,10 @@ def create_user(body):
     return __func()
 
 
-@jwt_required
 def read_user(user_id):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         user = running_context.user_datastore.get_user(id=user_id)
@@ -69,10 +69,10 @@ def read_user(user_id):
     return __func()
 
 
-@jwt_required
-def update_user(body):
+def update_user():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         data = request.get_json()
@@ -102,10 +102,10 @@ def update_user(body):
     return __func()
 
 
-@jwt_required
 def delete_user(user_id):
     from server.flaskserver import running_context, current_user
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/users'])
     def __func():
         user = running_context.user_datastore.get_user(id=user_id)

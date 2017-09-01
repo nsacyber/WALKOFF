@@ -46,11 +46,6 @@ def expired_token_callback():
     return {'error': 'Token expired'}, UNAUTHORIZED_ERROR
 
 
-@jwt.unauthorized_loader
-def unauthorized_callback():
-    return {'error': 'Unauthorized access'}, UNAUTHORIZED_ERROR
-
-
 def encrypt_password(password):
     return pbkdf2_sha512.hash(password)
 

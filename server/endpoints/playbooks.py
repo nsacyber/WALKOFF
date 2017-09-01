@@ -13,10 +13,11 @@ import core.config.paths
 from server.returncodes import *
 import server.workflowresults  # do not delete needed to register callbacks
 
-@jwt_required
+
 def get_playbooks(full=None):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if full:
@@ -26,10 +27,11 @@ def get_playbooks(full=None):
 
     return __func()
 
-@jwt_required
-def create_playbook(body):
+
+def create_playbook():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         data = request.get_json()
@@ -59,10 +61,11 @@ def create_playbook(body):
 
     return __func()
 
-@jwt_required
+
 def read_playbook(playbook_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if playbook_name == "templates":
@@ -84,10 +87,11 @@ def read_playbook(playbook_name):
 
     return __func()
 
-@jwt_required
-def update_playbook(body):
+
+def update_playbook():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         data = request.get_json()
@@ -122,10 +126,11 @@ def update_playbook(body):
 
     return __func()
 
-@jwt_required
+
 def delete_playbook(playbook_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_playbook_registered(playbook_name):
@@ -146,11 +151,12 @@ def delete_playbook(playbook_name):
 
     return __func()
 
-@jwt_required
-def copy_playbook(body, playbook_name):
+
+def copy_playbook(playbook_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_playbook_registered(playbook_name):
@@ -175,10 +181,11 @@ def copy_playbook(body, playbook_name):
 
     return __func()
 
-@jwt_required
+
 def get_workflows(playbook_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         try:
@@ -193,10 +200,11 @@ def get_workflows(playbook_name):
 
     return __func()
 
-@jwt_required
-def create_workflow(body, playbook_name):
+
+def create_workflow(playbook_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         data = request.get_json()
@@ -257,10 +265,11 @@ def create_workflow(body, playbook_name):
 
     return __func()
 
-@jwt_required
+
 def read_workflow(playbook_name, workflow_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
@@ -273,10 +282,11 @@ def read_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
-def update_workflow(body, playbook_name):
+
+def update_workflow(playbook_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         data = request.get_json()
@@ -319,11 +329,12 @@ def update_workflow(body, playbook_name):
 
     return __func()
 
-@jwt_required
+
 def delete_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
@@ -350,10 +361,11 @@ def delete_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
+
 def read_workflow_risk(playbook_name, workflow_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
@@ -370,11 +382,12 @@ def read_workflow_risk(playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
-def copy_workflow(body, playbook_name, workflow_name):
+
+def copy_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         data = request.get_json()
@@ -410,11 +423,12 @@ def copy_workflow(body, playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
+
 def execute_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
@@ -430,10 +444,11 @@ def execute_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
+
 def pause_workflow(playbook_name, workflow_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
@@ -447,10 +462,11 @@ def pause_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
+
 def resume_workflow(playbook_name, workflow_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         data = request.get_json()
@@ -467,11 +483,12 @@ def resume_workflow(playbook_name, workflow_name):
 
     return __func()
 
-@jwt_required
-def save_workflow(body, playbook_name, workflow_name):
+
+def save_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/playbooks'])
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
@@ -507,6 +524,7 @@ def add_default_template(playbook_name, workflow_name):
                                                              workflow_name=workflow_name)
 
 
+@jwt_required
 def read_results():
     ret = []
     completed_workflows = [workflow.as_json() for workflow in
@@ -520,6 +538,7 @@ def read_results():
     return ret, SUCCESS
 
 
+@jwt_required
 def read_all_results():
     return [workflow.as_json() for workflow in
             case_database.case_db.session.query(WorkflowResult).all()], SUCCESS

@@ -3,20 +3,22 @@ from flask_jwt_extended import jwt_required
 import server.metrics as metrics
 from server.returncodes import *
 
-@jwt_required
+
 def read_app_metrics():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
         return _convert_action_time_averages(), SUCCESS
 
     return __func()
 
-@jwt_required
+
 def read_workflow_metrics():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/metrics'])
     def __func():
         return _convert_workflow_time_averages(), SUCCESS

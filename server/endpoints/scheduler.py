@@ -5,20 +5,20 @@ from server.returncodes import *
 from core.scheduler import InvalidTriggerArgs
 
 
-@jwt_required
 def get_scheduler_status():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         return {"status": running_context.controller.scheduler.scheduler.state}, SUCCESS
     return __func()
 
 
-@jwt_required
 def update_scheduler_status(status):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         updated_status = running_context.controller.scheduler.scheduler.state
@@ -39,19 +39,19 @@ def update_scheduler_status(status):
     return __func()
 
 
-@jwt_required
 def read_all_scheduled_tasks():
     from server.context import running_context
 
+    @jwt_required
     def __func():
         return [task.as_json() for task in running_context.ScheduledTask.query.all()], SUCCESS
     return __func()
 
 
-@jwt_required
 def create_scheduled_task():
     from server.context import running_context
 
+    @jwt_required
     def __func():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
@@ -69,10 +69,10 @@ def create_scheduled_task():
     return __func()
 
 
-@jwt_required
 def read_scheduled_task(scheduled_task_id):
     from server.context import running_context
 
+    @jwt_required
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:
@@ -83,10 +83,10 @@ def read_scheduled_task(scheduled_task_id):
     return __func()
 
 
-@jwt_required
 def update_scheduled_task():
     from server.context import running_context
 
+    @jwt_required
     def __func():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(id=data['id']).first()
@@ -108,10 +108,10 @@ def update_scheduled_task():
     return __func()
 
 
-@jwt_required
 def delete_scheduled_task(scheduled_task_id):
     from server.context import running_context
 
+    @jwt_required
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:
@@ -124,10 +124,10 @@ def delete_scheduled_task(scheduled_task_id):
     return __func()
 
 
-@jwt_required
 def control_scheduled_task(scheduled_task_id, action):
     from server.context import running_context
 
+    @jwt_required
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:

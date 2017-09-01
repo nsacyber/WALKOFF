@@ -20,21 +20,22 @@ def __get_current_configuration():
             'tls_version': core.config.config.tls_version,
             'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup)}
 
-@jwt_required
+
 def read_config_values():
     from server.context import running_context
-    from server.flaskserver import current_user
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/configuration'])
     def __func():
         return __get_current_configuration(), SUCCESS
     return __func()
 
-@jwt_required
+
 def update_configuration(configuration):
     from server.context import running_context
-    from server.flaskserver import current_user, write_playbook_to_file
+    from server.flaskserver import write_playbook_to_file
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/configuration'])
     def __func():
         if 'workflows_path' in configuration:

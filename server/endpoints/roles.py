@@ -4,10 +4,10 @@ from flask_jwt_extended import jwt_required
 from server.returncodes import *
 
 
-@jwt_required
 def read_all_roles():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/roles'])
     def __func():
         roles = running_context.Role.query.all()
@@ -18,12 +18,12 @@ def read_all_roles():
     return __func()
 
 
-@jwt_required
-def create_role(body):
+def create_role():
     from server.context import running_context
     from server.flaskserver import default_urls
     from server.database import add_to_user_roles
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/roles'])
     def __func():
         json_data = request.get_json()
@@ -46,10 +46,10 @@ def create_role(body):
     return __func()
 
 
-@jwt_required
 def read_role(role_name):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/roles'])
     def __func():
         role = running_context.Role.query.filter_by(name=role_name).first()
@@ -62,11 +62,11 @@ def read_role(role_name):
     return __func()
 
 
-@jwt_required
-def update_role(body):
+def update_role():
     from server.context import running_context
     from server.database import add_to_user_roles
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/roles'])
     def __func():
         json_data = request.get_json()

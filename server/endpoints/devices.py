@@ -8,10 +8,11 @@ from server.returncodes import *
 import pyaes
 from server.database import db
 
-@jwt_required
+
 def read_all_devices():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         query = running_context.Device.query.all()
@@ -23,12 +24,13 @@ def read_all_devices():
 
     return __func()
 
-@jwt_required
-def import_devices(body):
+
+def import_devices():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func(body):
+    def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         try:
@@ -52,14 +54,15 @@ def import_devices(body):
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 
-    return __func(body)
+    return __func()
 
-@jwt_required
-def export_devices(body):
+
+def export_devices():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func(body):
+    def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         returned_json = {}
@@ -82,12 +85,13 @@ def export_devices(body):
             current_app.logger.debug('Exported devices to {0}'.format(filename))
             return {}, SUCCESS
 
-    return __func(body)
+    return __func()
 
-@jwt_required
+
 def read_device(device_id):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
@@ -100,10 +104,11 @@ def read_device(device_id):
 
     return __func()
 
-@jwt_required
+
 def delete_device(device_id):
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
@@ -119,12 +124,13 @@ def delete_device(device_id):
 
     return __func()
 
-@jwt_required
-def create_device(body):
+
+def create_device():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func(body):
+    def __func():
         data = request.get_json()
         if len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
             current_app.logger.error('Could not create device {0}. '
@@ -153,14 +159,15 @@ def create_device(body):
                                                 app_id=data['app'])
         return dev.as_json(), OBJECT_CREATED
 
-    return __func(body)
+    return __func()
 
-@jwt_required
-def update_device(body):
+
+def update_device():
     from server.context import running_context
 
+    @jwt_required
     @roles_accepted(*running_context.user_roles['/apps'])
-    def __func(body):
+    def __func():
         data = request.get_json()
         dev = running_context.Device.query.filter_by(id=data['id']).first()
         if dev is not None:
@@ -176,4 +183,4 @@ def update_device(body):
                                      'Device does not exist'.format(data['id']))
             return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
 
-    return __func(body)
+    return __func()

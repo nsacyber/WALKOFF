@@ -84,30 +84,6 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/key:
-  get:
-    tags:
-      - System
-    summary: Read api key
-    description: ''
-    operationId: server.endpoints.metadata.login_info
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          required: [auth_token]
-          properties:
-            auth_token:
-              description: API Authentication Token
-              type: string
-      401:
-        description: User is unauthorized
-        schema:
-          $ref: '#/definitions/Error'
-
 /api/widgets:
   get:
     tags:
