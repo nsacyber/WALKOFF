@@ -136,6 +136,8 @@ def create_app():
         SECURITY_POST_LOGIN_VIEW='/',
         WTF_CSRF_ENABLED=False,
         STATIC_FOLDER=os.path.abspath('server/static'),
+        JWT_BLACKLIST_ENABLED=True,
+        JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
     _app.jinja_options = Flask.jinja_options.copy()
     _app.jinja_options.update(dict(

@@ -1,7 +1,8 @@
 import json
 import os
 from flask import request, current_app
-from server.security import jwt_required, roles_accepted
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core.case.subscription import delete_cases, convert_to_event_names

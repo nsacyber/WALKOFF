@@ -1,4 +1,5 @@
-from server.security import roles_accepted, jwt_required
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 import server.metrics as metrics
 from server.returncodes import *
 

@@ -1,6 +1,7 @@
 import json
 from flask import Blueprint, Response
-from server.security import jwt_required, roles_accepted
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from gevent.event import Event, AsyncResult
 
 events_page = Blueprint('events_page', __name__)

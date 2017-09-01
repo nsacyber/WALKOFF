@@ -9,8 +9,15 @@
       - application/json
     produces:
       - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The username and password
+        required: true
+        schema:
+          $ref: '#/definitions/Authentication'
     responses:
-      200:
+      201:
         description: Success
         schema:
           $ref: '#/definitions/Token'
@@ -20,7 +27,7 @@
           $ref: '#/definitions/Error'
 
 /api/auth/refresh:
-  get:
+  post:
     tags:
       - Authorization
     summary: Get a fresh access token

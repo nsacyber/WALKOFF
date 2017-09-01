@@ -1,7 +1,8 @@
 import json
 import os
 from flask import render_template, current_app, send_file
-from server.security import current_user, roles_accepted, jwt_required
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required, current_user
 import core.config.config
 import core.config.paths
 import core.filters

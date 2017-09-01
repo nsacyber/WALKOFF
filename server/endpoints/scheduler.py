@@ -1,6 +1,8 @@
 from flask import current_app
-from server.security import roles_accepted, jwt_required
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from server.returncodes import *
+
 
 @jwt_required
 def get_scheduler_status():
@@ -9,7 +11,9 @@ def get_scheduler_status():
     @roles_accepted(*running_context.user_roles['/execution/scheduler'])
     def __func():
         return {"status": running_context.controller.scheduler.state}, SUCCESS
+
     return __func()
+
 
 @jwt_required
 def update_scheduler_status(status):
@@ -34,6 +38,7 @@ def update_scheduler_status(status):
 
     return __func()
 
+
 @jwt_required
 def update_job_status(job_id, status):
     from server.context import running_context
@@ -50,6 +55,7 @@ def update_job_status(job_id, status):
             current_app.logger.info('Scheduler resumed job {0}'.format(job_id))
             updated_status = "Job Resumed"
         return {"status": updated_status}, SUCCESS
+
     return __func()
 
 
@@ -62,4 +68,5 @@ def read_all_jobs():
         for job in running_context.controller.get_scheduled_jobs():
             jobs.append({"name": job.name, "id": job.id})
         return {"jobs": jobs}, SUCCESS
+
     return __func()

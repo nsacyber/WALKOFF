@@ -2,7 +2,8 @@ import os
 import sys
 import importlib
 from flask import Blueprint, render_template, request, g, current_app
-from server.security import roles_accepted, jwt_required
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from server import forms
 
 widget_page = Blueprint('widgetPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')
