@@ -336,6 +336,5 @@ class Workflow(ExecutionElement):
                 step = Step.from_json(step_json, position=step_json['position'])
                 self.steps[step_json['name']] = step
         except (UnknownApp, UnknownAppAction, InvalidInput):
-            # self.steps = backup_steps
-            self.send_callback('Workflow Shutdown', {})
+            self.steps = backup_steps
             raise

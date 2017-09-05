@@ -1,6 +1,3 @@
-# import tests.util.case as imported_alias
-
-
 class ClassA(object):
     staticfield1 = 'a'
     staticfield2 = 2
