@@ -13,7 +13,7 @@ def read_all_devices():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         query = running_context.Device.query.all()
         output = []
@@ -29,7 +29,7 @@ def import_devices():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
@@ -61,7 +61,7 @@ def export_devices():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
@@ -92,7 +92,7 @@ def read_device(device_id):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
         if dev is not None:
@@ -109,7 +109,7 @@ def delete_device(device_id):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
         if dev is not None:
@@ -129,7 +129,7 @@ def create_device():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         data = request.get_json()
         if len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
@@ -166,7 +166,7 @@ def update_device():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @roles_accepted(*running_context.page_roles['/apps'])
     def __func():
         data = request.get_json()
         dev = running_context.Device.query.filter_by(id=data['id']).first()

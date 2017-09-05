@@ -31,10 +31,12 @@
         description: The role object to be created
         required: true
         schema:
-          $ref: '#/definitions/Role'
+          $ref: '#/definitions/AddRole'
     responses:
       201:
         description: Object created.
+        schema:
+          $ref: '#/definitions/Role'
       462:
         description: Object exists.
   post:
@@ -61,9 +63,9 @@
           $ref: '#/definitions/Role'
       461:
         description: Object does not exist.
-/api/roles/{role_name}:
+/api/roles/{role_id}:
   parameters:
-    - name: role_name
+    - name: role_id
       in: path
       description: The name that needs to be fetched.
       required: true
@@ -83,18 +85,16 @@
           $ref: '#/definitions/Role'
       461:
         description: Object does not exist.
-#  delete:
-#    tags:
-#      - Roles
-#    summary: Delete a role
-#    description: ''
-#    operationId: server.endpoints.roles.delete_role
-#    produces:
-#      - application/json
-#    responses:
-#      200:
-#        description: Success
-#        schema:
-#          $ref: '#/definitions/Role'
-#      461:
-#        description: Object does not exist.
+  delete:
+    tags:
+      - Roles
+    summary: Delete a role
+    description: ''
+    operationId: server.endpoints.roles.delete_role
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: Object does not exist.

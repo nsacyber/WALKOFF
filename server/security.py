@@ -17,7 +17,7 @@ def is_token_blacklisted(decoded_token):
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(username):
-    user = User.query.filter_by(email=username).first()
+    user = User.query.filter_by(username=username).first()
     return {'roles': [role.name for role in user.roles]} if user is not None else {}
 
 
@@ -44,11 +44,3 @@ def roles_accepted(*roles):
 @jwt.expired_token_loader
 def expired_token_callback():
     return {'error': 'Token expired'}, UNAUTHORIZED_ERROR
-
-
-def encrypt_password(password):
-    return pbkdf2_sha512.hash(password)
-
-
-def verify_password(password, hashed_password):
-    return pbkdf2_sha512.verify(password, hashed_password)

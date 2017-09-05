@@ -1,11 +1,12 @@
 import os
 import logging
 from jinja2 import Environment, FileSystemLoader
+
+import server.database
 from core import helpers
 from core.config import paths
 import core.config.config
 import connexion
-from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,6 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
 
-
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
@@ -150,7 +150,6 @@ def create_app():
 
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'
 
-
     from server.database import db
     db.init_app(_app)
     from server.security import jwt
@@ -175,19 +174,17 @@ app = create_app()
 @app.before_first_request
 def create_user():
     from server.context import running_context
-    from . import database
-    from server import flaskserver
+    from server.database import add_user, User, Page, Role, initialize_page_roles_from_database
 
     running_context.db.create_all()
-
-    if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=flaskserver.default_urls)
-
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        running_context.user_datastore.add_role_to_user(u, admin_role)
+    if not User.query.all():
+        admin_role = running_context.Role(name='admin', description='administrator', pages=server.database.default_urls)
+        running_context.db.session.add(admin_role)
+        admin_user = add_user(username='admin', password='admin')
+        admin_user.roles.append(admin_role)
         running_context.db.session.commit()
+    if Role.query.all() or Page.query.all():
+        initialize_page_roles_from_database()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in running_context.db.session.query(running_context.App).all()])
@@ -204,16 +201,15 @@ def create_user():
 def create_test_data():
     from server.context import running_context
     from . import database
-    from server import flaskserver
 
     running_context.db.create_all()
 
     if not database.User.query.first():
         admin_role = running_context.user_datastore.create_role(name='admin',
                                                                 description='administrator',
-                                                                pages=flaskserver.default_urls)
+                                                                pages=server.database.default_urls)
 
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        u = running_context.User.add_user(username='admin', password='admin')
         running_context.user_datastore.add_role_to_user(u, admin_role)
         running_context.db.session.commit()
 

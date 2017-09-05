@@ -1,28 +1,24 @@
 import json
-import os
 import logging
+import os
+
 from flask import render_template, send_from_directory
-from server.security import roles_accepted
-from flask_jwt_extended import current_user, jwt_required, jwt_refresh_token_required, get_raw_jwt
+from flask_jwt_extended import current_user, jwt_required
+
 import core.config.config
 import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-
 from core.helpers import combine_dicts
-from server.context import running_context
-from . import database, interface
 from server import app
+from server.context import running_context
+from server.security import roles_accepted
+from . import database, interface
 
 logger = logging.getLogger(__name__)
 
-urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
-        '/execution/listener/triggers', '/metrics',
-        '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
-
-default_urls = urls
-database.initialize_user_roles(urls)
+database.initialize_page_roles_from_cleared_database()
 
 # Custom static data
 @app.route('/client/<path:filename>')
@@ -47,7 +43,7 @@ def login_page():
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.user_roles['/cases'])
+@roles_accepted(*running_context.page_roles['/cases'])
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
@@ -55,7 +51,7 @@ def display_possible_subscriptions():
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.user_roles['/interface'])
+@roles_accepted(*running_context.page_roles['/interface'])
 def sys_pages(name):
     args = getattr(interface, name)()
     combine_dicts(args, {"authKey": current_user.get_auth_token()})
@@ -65,7 +61,7 @@ def sys_pages(name):
 # TODO: DELETE
 @app.route('/interface/<string:name>/display', methods=['POST'])
 @jwt_required
-@roles_accepted(*running_context.user_roles['/interface'])
+@roles_accepted(*running_context.page_roles['/interface'])
 def system_pages(name):
     args = getattr(interface, name)()
     combine_dicts(args, {"authKey": current_user.get_auth_token()})
@@ -75,7 +71,7 @@ def system_pages(name):
 
 @app.route('/widgets', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.user_roles['/apps'])
+@roles_accepted(*running_context.page_roles['/apps'])
 def list_all_widgets():
     return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})
 

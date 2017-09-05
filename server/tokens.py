@@ -4,6 +4,8 @@ from flask import current_app
 
 
 number_of_operations = 0
+prune_frequency = 1000
+
 
 class BlacklistedToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,9 +52,9 @@ def is_token_revoked(decoded_token):
     return token is not None
 
 
-def unrevoke_token(token_id, user):
+def approve_token(token_id, user):
     """
-    Unrevokes the given token.
+    Approves the given token.
     """
     token = BlacklistedToken.query.filter_by(id=token_id, user_identity=user).first()
     if token is not None:
@@ -64,7 +66,7 @@ def unrevoke_token(token_id, user):
 def prune_if_necessary():
     global number_of_operations
     number_of_operations += 1
-    if number_of_operations >= 1000:
+    if number_of_operations >= prune_frequency:
         prune_database()
 
 

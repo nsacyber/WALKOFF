@@ -8,7 +8,7 @@ def read_app_metrics():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/metrics'])
+    @roles_accepted(*running_context.page_roles['/metrics'])
     def __func():
         return _convert_action_time_averages(), SUCCESS
 
@@ -19,7 +19,7 @@ def read_workflow_metrics():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/metrics'])
+    @roles_accepted(*running_context.page_roles['/metrics'])
     def __func():
         return _convert_workflow_time_averages(), SUCCESS
 

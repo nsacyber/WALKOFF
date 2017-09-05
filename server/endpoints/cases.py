@@ -19,7 +19,7 @@ def read_all_cases():
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         return [case.as_json() for case in running_context.CaseSubscription.query.all()], SUCCESS
 
@@ -30,7 +30,7 @@ def create_case():
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         data = request.get_json()
         case_name = data['name']
@@ -52,7 +52,7 @@ def read_case(case_id):
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         case_obj = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.id == case_id).first()
@@ -69,7 +69,7 @@ def update_case():
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         data = request.get_json()
         case_obj = running_context.CaseSubscription.query.filter_by(id=data['id']).first()
@@ -104,7 +104,7 @@ def delete_case(case_id):
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         case_obj = running_context.CaseSubscription.query.filter_by(id=case_id).first()
         if case_obj:
@@ -124,7 +124,7 @@ def import_cases():
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         data = request.get_json()
         filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
@@ -160,7 +160,7 @@ def export_cases():
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         data = request.get_json()
         filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
@@ -181,7 +181,7 @@ def read_all_events(case):
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.page_roles['/cases'])
     def __func():
         try:
             result = case_database.case_db.case_events_as_json(case)

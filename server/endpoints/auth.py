@@ -1,10 +1,9 @@
 from flask_jwt_extended import (jwt_refresh_token_required, create_access_token, create_refresh_token, get_jwt_identity,
                                 get_raw_jwt, jwt_required, decode_token)
-from server.security import verify_password
 from flask import request, current_app
 from server.returncodes import *
 from server.tokens import revoke_token
-from server.database import User
+from server.database import User, db
 
 
 def _authenticate_and_grant_tokens(json_in, with_refresh=False):
@@ -13,12 +12,18 @@ def _authenticate_and_grant_tokens(json_in, with_refresh=False):
     if not (username and password):
         return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
 
-    user = User.query.filter_by(email=username).first()
+    user = User.query.filter_by(username=username).first()
     if user is None:
         return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
-    if verify_password(password, user.password):
+    try:
+        password = password.encode('utf-8')
+    except UnicodeEncodeError:
+        return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
+    if user.verify_password(password):
         response = {'access_token': create_access_token(identity=username, fresh=True)}
         if with_refresh:
+            user.login(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+            db.session.commit()
             response['refresh_token'] = create_refresh_token(identity=username)
         return response, OBJECT_CREATED
     else:
@@ -36,7 +41,7 @@ def fresh_login():
 @jwt_refresh_token_required
 def refresh():
     current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
     if user is None:
         revoke_token(get_raw_jwt())
         return {"error": "Invalid user"}, UNAUTHORIZED_ERROR
@@ -54,7 +59,11 @@ def logout():
             return {'error': 'refresh token is required to logout'}, BAD_REQUEST
         decoded_refresh_token = decode_token(refresh_token)
         refresh_token_identity = decoded_refresh_token[current_app.config['JWT_IDENTITY_CLAIM']]
-        if get_jwt_identity() == refresh_token_identity:
+        username = get_jwt_identity()
+        if username == refresh_token_identity:
+            user = User.query.filter_by(username=username).first()
+            if user is not None:
+                user.logout()
             revoke_token(decode_token(refresh_token))
             return {}, SUCCESS
         else:
