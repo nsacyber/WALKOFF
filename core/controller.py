@@ -103,7 +103,7 @@ class Controller(object):
                             p.join(timeout=3)
                             try:
                                 os.kill(p.pid, signal.SIGKILL)
-                            except OSError:
+                            except (OSError, AttributeError):
                                 pass
                 if self.receiver_thread:
                     self.receiver.thread_exit = True
