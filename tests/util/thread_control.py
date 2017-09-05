@@ -1,5 +1,5 @@
 
-def modified_setup_worker_env():
+def modified_setup_worker_env(self):
     from core.helpers import import_all_apps, import_all_filters, import_all_flags
     import tests.config
     import core.config.config

@@ -120,7 +120,7 @@ class Worker:
         self.comm_sock.connect(COMM_ADDR)
 
         if not worker_env == None:
-            self.setup_worker_env = worker_env
+            Worker.setup_worker_env = worker_env
 
         self.setup_worker_env()
         self.execute_workflow_worker()
