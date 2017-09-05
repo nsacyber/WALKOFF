@@ -1,4 +1,4 @@
-import tests.util.case as imported_alias
+# import tests.util.case as imported_alias
 
 
 class ClassA(object):

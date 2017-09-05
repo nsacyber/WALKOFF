@@ -30,3 +30,5 @@ client/build/
 .idea/markdown-navigator.xml
 >>>>>>> development
 .idea/markdown-exported-files.xml
+*.key
+*.key_secret

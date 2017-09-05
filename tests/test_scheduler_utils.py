@@ -34,7 +34,7 @@ class TestSchedulerUtils(unittest.TestCase):
         self.assertListEqual(split_task_id(task_id), ['task', 'a'])
 
     def test_construct_date_scheduler(self):
-        args = {'type': 'date', 'args': {'date': self.datestr1}}
+        args = {'type': 'date', 'args': {'run_date': self.datestr1}}
         trigger = construct_trigger(args)
         self.assertIsInstance(trigger, DateTrigger)
         self.assertEqual(trigger.run_date, self.date1)

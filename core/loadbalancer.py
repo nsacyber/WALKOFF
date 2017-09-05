@@ -14,6 +14,7 @@ try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+import platform
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
 RESULTS_ADDR = 'tcp://127.0.0.1:5556'
@@ -68,7 +69,7 @@ class LoadBalancer:
                     worker, empty, ready = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
                     if ready == b"Ready" or ready == b"Done":
                         self.available_workers.append(worker)
-                except zmq.ZMQError:
+                except zmq.ZMQError as z:
                     gevent.sleep(0.1)
                     continue
         self.request_socket.close()
@@ -79,9 +80,12 @@ class LoadBalancer:
 
 
 class Worker:
-    def __init__(self, id_):
-        signal.signal(signal.SIGINT, self.exit_handler)
-        signal.signal(signal.SIGQUIT, self.exit_handler)
+    def __init__(self, id_, worker_env=None):
+        # signal.signal(signal.SIGINT, self.exit_handler)
+        if platform.system() == "Windows":
+            signal.signal(signal.SIGINT, self.exit_handler)
+        else:
+            signal.signal(signal.SIGQUIT, self.exit_handler)
 
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
@@ -114,6 +118,9 @@ class Worker:
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
         self.comm_sock.connect(COMM_ADDR)
+
+        if not worker_env == None:
+            self.setup_worker_env = worker_env
 
         self.setup_worker_env()
         self.execute_workflow_worker()
@@ -156,19 +163,23 @@ class Worker:
             if 'start_input' in workflow_json:
                 start_input = workflow_json['start_input']
                 del workflow_json['start_input']
-
-            workflow = wf.Workflow()
-            workflow.from_json(workflow_json)
-            workflow.uid = uid
-            workflow.execution_uid = execution_uid
-            workflow.start = start
-            workflow.results_sock = self.results_sock
-            workflow.comm_sock = self.comm_sock
-            if 'breakpoint_steps' in workflow_json:
-                workflow.breakpoint_steps = workflow_json['breakpoint_steps']
-
-            workflow.execute(execution_uid=execution_uid, start=start, start_input=start_input)
-            self.request_sock.send(b"Done")
+            try:
+                workflow = wf.Workflow()
+                workflow.results_sock = self.results_sock
+                workflow.comm_sock = self.comm_sock
+                workflow.from_json(workflow_json)
+                workflow.uid = uid
+                workflow.execution_uid = execution_uid
+                workflow.start = start
+                if 'breakpoint_steps' in workflow_json:
+                    workflow.breakpoint_steps = workflow_json['breakpoint_steps']
+            except Exception as e:
+                print(e)
+                self.request_sock.send(b"Done")
+                continue
+            else:
+                workflow.execute(execution_uid=execution_uid, start=start, start_input=start_input)
+                self.request_sock.send(b"Done")
 
 
 class Receiver:
@@ -222,7 +233,7 @@ class Receiver:
                 break
             try:
                 message = self.results_sock.recv_json(zmq.NOBLOCK)
-            except zmq.ZMQError:
+            except zmq.ZMQError as z:
                 gevent.sleep(0.1)
                 continue
 

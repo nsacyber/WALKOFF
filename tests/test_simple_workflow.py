@@ -21,7 +21,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
-        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
+        # core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -29,7 +29,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.controller.load_all_workflows_from_directory(path=config.test_workflows_path)
         self.start = datetime.utcnow()
 
-        self.controller.initialize_threading()
+        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
         database.initialize()
 
     def tearDown(self):
