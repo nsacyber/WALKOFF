@@ -4,10 +4,10 @@ import logging
 import json
 import zmq.green as zmq
 import zmq.auth
-from zmq.auth.thread import ThreadAuthenticator
 from zmq.utils.strtypes import asbytes, cast_unicode
 from core import workflow as wf
 from core.case import callbacks
+from core.threadauthenticator import ThreadAuthenticator
 import signal
 import core.config.paths
 try:
