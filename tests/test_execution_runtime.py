@@ -21,7 +21,6 @@ class TestExecutionRuntime(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.start = datetime.utcnow()
@@ -29,7 +28,7 @@ class TestExecutionRuntime(unittest.TestCase):
         self.controller = core.controller.controller
         self.controller.workflows = {}
         self.controller.load_all_workflows_from_directory(path=config.test_workflows_path)
-        self.controller.initialize_threading()
+        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
 
     def tearDown(self):
         subscription.clear_subscriptions()

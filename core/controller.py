@@ -62,14 +62,18 @@ class Controller(object):
         if workflow.uuid in self.workflow_status:
             self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
-    def initialize_threading(self):
+    def initialize_threading(self, worker_env=None):
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
                     os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
 
         for i in range(NUM_PROCESSES):
-            pid = multiprocessing.Process(target=loadbalancer.Worker, args=(i,))
+            args = (i,)
+            if worker_env:
+                args = (i, worker_env,)
+
+            pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
             pid.start()
             self.pids.append(pid)
 

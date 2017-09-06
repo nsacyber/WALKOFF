@@ -64,14 +64,14 @@ class TestSchemaDereferencer(unittest.TestCase):
         }
         with self.assertRaises(InvalidApi):
             dereference('#/b/c', schema, {'#/a', '#/b/c'}, '')
-
-    def test_flatten_to_primitive(self):
-        schema = {
-            'a': 4,
-            'b': {'$ref': '#/a'}
-        }
-        flatten()
-        self.assertEqual(flatten({'$ref': '#/a'}, schema), 4)
+    #
+    # def test_flatten_to_primitive(self):
+    #     schema = {
+    #         'a': 4,
+    #         'b': {'$ref': '#/a'}
+    #     }
+    #     flatten()
+    #     self.assertEqual(flatten({'$ref': '#/a'}, schema), 4)
     #
     # def test_flatten_to_dict(self):
     #     spec = {

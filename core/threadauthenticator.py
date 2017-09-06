@@ -62,8 +62,11 @@ class AuthenticationThread(Thread):
         """
         Handle a message from the ZAP socket.
         """
-        msg = self.authenticator.zap_socket.recv_multipart()
-        if not msg: return
+        try:
+            msg = self.authenticator.zap_socket.recv_multipart()
+            if not msg: return
+        except:
+            return
         self.authenticator.handle_zap_message(msg)
 
     def _handle_pipe(self):
@@ -73,9 +76,13 @@ class AuthenticationThread(Thread):
         terminate = False
 
         # Get the whole message off the pipe in one go
-        msg = self.pipe.recv_multipart()
+        try:
+            msg = self.pipe.recv_multipart()
 
-        if msg is None:
+            if msg is None:
+                terminate = True
+                return terminate
+        except:
             terminate = True
             return terminate
 

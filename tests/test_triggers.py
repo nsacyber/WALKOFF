@@ -8,7 +8,7 @@ from tests import config
 import core.config.config
 from core.case.callbacks import FunctionExecutionSuccess
 import json
-
+from tests.util.thread_control import modified_setup_worker_env
 
 class TestTriggers(ServerTestCase):
     def setUp(self):
@@ -22,6 +22,7 @@ class TestTriggers(ServerTestCase):
         self.test_trigger_workflow = "helloWorldWorkflow"
 
     def tearDown(self):
+        print("HERE")
         with server.running_context.flask_app.app_context():
             Triggers.query.filter_by(name=self.test_trigger_name).delete()
             Triggers.query.filter_by(name="execute_me").delete()
@@ -120,7 +121,7 @@ class TestTriggers(ServerTestCase):
                                     headers=self.headers, data=json.dumps(edited_data), content_type='application/json')
 
     def test_trigger_execute(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
@@ -166,7 +167,7 @@ class TestTriggers(ServerTestCase):
 
 
     def test_trigger_execute_change_input(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
@@ -198,7 +199,7 @@ class TestTriggers(ServerTestCase):
                      {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
 
     def test_trigger_with_change_input_invalid_input(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
@@ -221,7 +222,7 @@ class TestTriggers(ServerTestCase):
         self.assertListEqual(response['errors'], [])
 
     def test_trigger_execute_one(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
@@ -268,7 +269,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_tag(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
@@ -305,7 +306,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_multiple_tags(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
@@ -345,7 +346,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_multiple_tags_with_name(self):
-        server.running_context.controller.initialize_threading()
+        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,

@@ -79,7 +79,7 @@ class LoadBalancer:
 
 
 class Worker:
-    def __init__(self, id_):
+    def __init__(self, id_, worker_env=None):
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
@@ -114,6 +114,9 @@ class Worker:
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
         self.comm_sock.connect(COMM_ADDR)
+
+        if not worker_env == None:
+            Worker.setup_worker_env = worker_env
 
         self.setup_worker_env()
         self.execute_workflow_worker()
