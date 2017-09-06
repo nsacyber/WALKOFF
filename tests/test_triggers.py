@@ -22,7 +22,6 @@ class TestTriggers(ServerTestCase):
         self.test_trigger_workflow = "helloWorldWorkflow"
 
     def tearDown(self):
-        print("HERE")
         with server.running_context.flask_app.app_context():
             Triggers.query.filter_by(name=self.test_trigger_name).delete()
             Triggers.query.filter_by(name="execute_me").delete()

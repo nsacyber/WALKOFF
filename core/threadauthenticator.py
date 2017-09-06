@@ -63,6 +63,7 @@ class AuthenticationThread(Thread):
         Handle a message from the ZAP socket.
         """
         try:
+            # Try/except needed for Windows "support"
             msg = self.authenticator.zap_socket.recv_multipart()
             if not msg: return
         except:
@@ -77,6 +78,7 @@ class AuthenticationThread(Thread):
 
         # Get the whole message off the pipe in one go
         try:
+            # Try/except needed for Windows "support"
             msg = self.pipe.recv_multipart()
 
             if msg is None:
