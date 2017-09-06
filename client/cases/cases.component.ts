@@ -37,9 +37,7 @@ export class CasesComponent {
 	caseFilterQuery: FormControl = new FormControl();
 	subscriptionTree: any;
 
-	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
-		if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
-		
+	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {

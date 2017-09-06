@@ -8,7 +8,7 @@ export class AuthService {
 	}
 
 	logout(): Promise<void> {
-		return this.authHttp.post(`/api/auth/logout`, { refresh_token: localStorage.getItem('refresh_token') })
+		return this.authHttp.post('/api/auth/logout', { refresh_token: localStorage.getItem('refresh_token') })
 			.toPromise()
 			.then(() => {
 				location.href = '/login';

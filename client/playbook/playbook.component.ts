@@ -8,13 +8,12 @@ import { PlaybookService } from './playbook.service';
 	styleUrls: [
         'client/playbook/playbook.css'
     ],
-		encapsulation: ViewEncapsulation.None,
+	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService]
 })
 export class PlaybookComponent {
 
 	constructor(private playbookService: PlaybookService) {
-        if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
     }
 
     ngAfterViewInit() {

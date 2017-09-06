@@ -13,6 +13,7 @@ import { AuthService } from '../auth/auth.service';
 		// 'client/node_modules/bootstrap/dist/css/bootstrap.min.css',
 		// 'client/node_modules/font-awesome/css/font-awesome.min.css',
 	],
+	providers: [AuthService]
 })
 export class MainComponent {
 	currentUser: string;
@@ -20,6 +21,9 @@ export class MainComponent {
 
 	constructor(private authService: AuthService) {
 		this.updateUserInfo();
+
+		//TODO: remove once we fully convert playbook / triggers to angular
+		(<any>window).JwtHelper = this.jwtHelper;
 	}
 
 	updateUserInfo(): void {
@@ -32,10 +36,7 @@ export class MainComponent {
 
 	logout(): void {
 		this.authService.logout()
-			.then(() => location.href = '/login');
-	}
-
-	getKey(): void {
-		window.open('/api/auth/token', 'targetWindow', 'width=925, height=150');
+			.then(() => location.href = '/login')
+			.catch(e => console.log(e));
 	}
 }

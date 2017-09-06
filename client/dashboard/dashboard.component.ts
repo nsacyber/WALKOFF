@@ -16,8 +16,6 @@ export class DashboardComponent {
 	currentDashboard: string;
 
 	constructor(private dashboardService: DashboardService, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
-		if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
-
 		this.currentDashboard = "Default Dashboard";
 	}
 	ngAfterViewInit() {

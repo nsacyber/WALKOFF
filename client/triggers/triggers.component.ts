@@ -21,9 +21,7 @@ import { Trigger } from '../models/trigger';
 })
 export class TriggersComponent {
 	//TODO: Component simply loads old main.js (with plugins and some tweaks). Will update or remove later.
-	constructor() {
-		if ((<any>window).refreshInterval) clearInterval((<any>window).refreshInterval);
-	}
+	constructor() {	}
 
 	ngAfterViewInit() {
 		let removeScript = () => {

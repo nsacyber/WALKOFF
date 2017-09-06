@@ -6,8 +6,6 @@ else {
     console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
 }
 
-var refreshInterval;
-
 $(function(){
     "use strict";
 
@@ -27,14 +25,16 @@ $(function(){
     var currentNodeInParametersEditor = null; // node being displayed in json editor
     var authToken = localStorage.getItem('access_token');
 
-    refreshAuthToken();
-    refreshInterval = setInterval(refreshAuthToken, 1000 * 600);
-
     //--------------------
     // Top level functions
     //--------------------
 
-    function refreshAuthToken() {
+    function refreshJwtAjax(request) {
+        if (!window.JwtHelper.isTokenExpired(authToken, 300)) {
+            $.ajax(request);
+            return;
+        }
+
         var refreshToken = localStorage.getItem('refresh_token');
 
         if (!refreshToken) location.href = '/login';
@@ -48,6 +48,7 @@ $(function(){
             'success': function (data) {
                 localStorage.setItem('access_token', data['access_token']);
                 authToken = data['access_token'];
+                $.ajax(request);
             },
             'error': function (e) {
                 console.log(e);
@@ -649,7 +650,7 @@ $(function(){
     }
 
     function renamePlaybook(oldPlaybookName, newPlaybookName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
@@ -670,7 +671,7 @@ $(function(){
     }
 
     function duplicatePlaybook(oldPlaybookName, newPlaybookName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
@@ -690,7 +691,7 @@ $(function(){
     }
 
     function deletePlaybook(playbookName, workflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "DELETE",
             'global': false,
@@ -712,7 +713,7 @@ $(function(){
     }
 
     function renameWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
@@ -733,7 +734,7 @@ $(function(){
     }
 
     function duplicateWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
@@ -753,7 +754,7 @@ $(function(){
     }
 
     function deleteWorkflow(playbookName, workflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "DELETE",
             'global': false,
@@ -775,7 +776,7 @@ $(function(){
     }
 
     function newWorkflow(playbookName, workflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "PUT",
             'global': false,
@@ -866,7 +867,7 @@ $(function(){
         });
         transformInputsToSave(steps);
         var data = JSON.stringify({start: startNode, steps: steps });
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
@@ -957,7 +958,7 @@ $(function(){
 
         var workflowData = function () {
             var tmp = null;
-            $.ajax({
+            refreshJwtAjax({
                 'async': false,
                 'type': "GET",
                 'global': false,
@@ -1316,7 +1317,7 @@ $(function(){
             }
         }
 
-        $.ajax({
+        refreshJwtAjax({
             'async': true,
             'type': "GET",
             'global': false,
@@ -1563,7 +1564,7 @@ $(function(){
         //     cy.elements().removeClass("good-highlighted bad-highlighted");
         //     executionDialog.dialog("close");
         // });
-        $.ajax({
+        refreshJwtAjax({
             'async': true,
             'type': "POST",
             'global': false,
@@ -1675,7 +1676,7 @@ $(function(){
     downloadWorkflowList();
 
     // Download all actions in all apps for display in the Actions tree
-    $.ajax({
+    refreshJwtAjax({
         'async': true,
         'type': "GET",
         'global': false,
@@ -1724,7 +1725,7 @@ $(function(){
 
             // Now is a good time to download all devices for all apps
             _.each(appData, function(actions, appName) {
-                $.ajax({
+                refreshJwtAjax({
                     'async': false,
                     'type': "GET",
                     'global': false,
@@ -1745,7 +1746,7 @@ $(function(){
     });
 
     // Download list of all flags
-    $.ajax({
+    refreshJwtAjax({
         'async': false,
         'type': "GET",
         'global': false,
@@ -1758,7 +1759,7 @@ $(function(){
     });
 
     // Download list of all filters
-    $.ajax({
+    refreshJwtAjax({
         'async': false,
         'type': "GET",
         'global': false,
