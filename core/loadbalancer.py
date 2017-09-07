@@ -181,6 +181,7 @@ class Receiver:
         'App Instance Created': (callbacks.AppInstanceCreated, True),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
         'Workflow Input Validated': (callbacks.WorkflowInputInvalid, True),
+        'Workflow Input Invalid': (callbacks.WorkflowInputInvalid, True),
         'Workflow Paused': (callbacks.WorkflowPaused, True),
         'Workflow Resumed': (callbacks.WorkflowResumed, True),
         'Step Execution Success': (callbacks.StepExecutionSuccess, True),
@@ -237,7 +238,7 @@ class Receiver:
                 data = data if callback[1] else {}
                 Receiver.send_callback(callback[0], sender, data)
             except KeyError:
-                logger.error('Unknown callabck sent {}'.format(callback_name))
+                logger.error('Unknown callback sent {}'.format(callback_name))
             else:
                 if callback_name == 'Workflow Shutdown':
                     self.workflows_executed += 1

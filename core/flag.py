@@ -39,6 +39,9 @@ class Flag(ExecutionElement):
         data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
         if self.results_sock:
+            print("Flag sending {}".format(callback_name))
+            import sys
+            sys.stdout.flush()
             self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):

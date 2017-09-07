@@ -6,8 +6,8 @@ import tests.config
 import server.flaskserver
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
-from tests.util.thread_control import *
-import core.loadbalancer
+from tests.util.mock_objects import *
+import core.controller
 import os
 import json
 
@@ -49,7 +49,8 @@ class ServerTestCase(unittest.TestCase):
         core.config.config.load_flagfilter_apis(path=tests.config.function_api_path)
         core.config.config.num_processes = 2
 
-        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
         server.flaskserver.running_context.db.create_all()
 
     @classmethod

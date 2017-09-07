@@ -503,7 +503,9 @@ class Controller(object):
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow and uid in self.workflow_status and self.workflow_status[uid] == WORKFLOW_RUNNING:
             logger.info('Pausing workflow {0}'.format(workflow.name))
+            print(self.load_balancer.workflow_comms)
             if uid in self.load_balancer.workflow_comms:
+                print("Sending pause message")
                 self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[uid], b'', b'Pause'])
             workflow.pause()
             self.workflow_status[uid] = WORKFLOW_PAUSED

@@ -29,6 +29,9 @@ class NextStep(ExecutionElement):
         data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
         if self.results_sock:
+            print("NextStep sending {}".format(callback_name))
+            import sys
+            sys.stdout.flush()
             self.results_sock.send_json(data)
 
     def __eq__(self, other):

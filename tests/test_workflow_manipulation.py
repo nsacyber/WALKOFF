@@ -15,7 +15,7 @@ from tests import config
 from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
 from core.controller import _WorkflowKey
-from tests.util.thread_control import *
+from tests.util.mock_objects import *
 import core.loadbalancer
 import threading
 
@@ -35,6 +35,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -118,7 +120,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
@@ -150,7 +152,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(result['resumed'])
 
     def test_pause_and_resume_workflow_breakpoint(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
         self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
 
@@ -174,7 +176,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(result['resumed'])
 
     def test_change_step_input(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]
 
         input_arg = {arg['key']: arg['value'] for arg in input_list}

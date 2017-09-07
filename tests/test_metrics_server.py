@@ -97,7 +97,7 @@ class MetricsServerTest(ServerTestCase):
             self.assertIn(workflow, converted['workflows'])
 
     def test_action_metrics(self):
-        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        server.running_context.controller.initialize_threading()
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multistepError.playbook')
 
@@ -110,7 +110,7 @@ class MetricsServerTest(ServerTestCase):
         self.assertDictEqual(response, _convert_action_time_averages())
 
     def test_workflow_metrics(self):
-        server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        server.running_context.controller.initialize_threading()
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
                                                                         'multistepError.playbook')
         server.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +

@@ -120,6 +120,9 @@ class Step(ExecutionElement):
         data['sender']['execution_uid'] = self.execution_uid
         data['sender']['uid'] = self.uid
         if self.results_sock:
+            print("Step sending {}".format(callback_name))
+            import sys
+            sys.stdout.flush()
             self.results_sock.send_json(data)
 
     def execute(self, instance, accumulator):

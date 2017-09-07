@@ -8,7 +8,7 @@ from core.helpers import import_all_flags, import_all_filters, import_all_apps
 from tests import config
 from tests.util.case_db_help import *
 from tests.apps import App
-from tests.util.thread_control import *
+from tests.util.mock_objects import *
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -21,6 +21,8 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -28,7 +30,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.controller.load_all_workflows_from_directory(path=config.test_workflows_path)
         self.start = datetime.utcnow()
 
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         database.initialize()
 
     def tearDown(self):

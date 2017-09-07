@@ -133,6 +133,9 @@ class Workflow(ExecutionElement):
             data['sender']['id'] = self.name
             data['sender']['uid'] = self.uid
         if self.results_sock:
+            print("Workflow sending {0} {1}".format(callback_name, data['sender']))
+            import sys
+            sys.stdout.flush()
             self.results_sock.send_json(data)
 
     def execute(self, execution_uid, start=None, start_input=''):
@@ -161,6 +164,7 @@ class Workflow(ExecutionElement):
                 try:
                     data = self.comm_sock.recv(flags=zmq.NOBLOCK)
                     if data == b'Pause':
+                        print("PAUSED!")
                         self.comm_sock.send(b"Paused")
                         self.send_callback("Workflow Paused")
                         res = self.comm_sock.recv()
