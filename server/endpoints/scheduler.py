@@ -9,7 +9,7 @@ def get_scheduler_status():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/execution/scheduler'])
+    @roles_accepted(*running_context.resource_roles['/execution/scheduler'])
     def __func():
         return {"status": running_context.controller.scheduler.scheduler.state}, SUCCESS
     return __func()
@@ -19,7 +19,7 @@ def update_scheduler_status(status):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/execution/scheduler'])
+    @roles_accepted(*running_context.resource_roles['/execution/scheduler'])
     def __func():
         updated_status = running_context.controller.scheduler.scheduler.state
         if status == "start":

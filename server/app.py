@@ -174,17 +174,17 @@ app = create_app()
 @app.before_first_request
 def create_user():
     from server.context import running_context
-    from server.database import add_user, User, Page, Role, initialize_page_roles_from_database
+    from server.database import add_user, User, ResourcePermission, Role, initialize_resource_roles_from_database
 
     running_context.db.create_all()
     if not User.query.all():
-        admin_role = running_context.Role(name='admin', description='administrator', pages=server.database.default_urls)
+        admin_role = running_context.Role(name='admin', description='administrator', resources=server.database.default_resources)
         running_context.db.session.add(admin_role)
         admin_user = add_user(username='admin', password='admin')
         admin_user.roles.append(admin_role)
         running_context.db.session.commit()
-    if Role.query.all() or Page.query.all():
-        initialize_page_roles_from_database()
+    if Role.query.all() or ResourcePermission.query.all():
+        initialize_resource_roles_from_database()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in running_context.db.session.query(running_context.App).all()])
@@ -207,7 +207,7 @@ def create_test_data():
     if not database.User.query.first():
         admin_role = running_context.user_datastore.create_role(name='admin',
                                                                 description='administrator',
-                                                                pages=server.database.default_urls)
+                                                                pages=server.database.default_resources)
 
         u = running_context.User.add_user(username='admin', password='admin')
         running_context.user_datastore.add_role_to_user(u, admin_role)

@@ -8,42 +8,38 @@ logger = logging.getLogger(__name__)
 
 db = flask_sqlalchemy.SQLAlchemy()
 
-urls = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
+default_resources = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
         '/execution/listener/triggers', '/metrics',
         '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
-default_urls = urls
 
-page_roles = {}
+resource_roles = {}
 
 
-def initialize_page_roles_from_cleared_database():
-    """Initializes the roles dictionary, used in determining which role can access which page(s).
-    
-    Args:
-        urls (list[str]): The list of all root endpoints.
+def initialize_resource_roles_from_cleared_database():
+    """Initializes the roles dictionary, used in determining which role can access which resource(s).
     """
-    for url in default_urls:
-        page_roles[url] = {"admin"}
+    for resource in default_resources:
+        resource_roles[resource] = {"admin"}
 
 
-def initialize_page_roles_from_database():
-    for page in Page.query.all():
-        page_roles[page.url] = {role.name for role in page.roles}
+def initialize_resource_roles_from_database():
+    for resource in ResourcePermission.query.all():
+        resource_roles[resource.resource] = {role.name for role in resource.roles}
 
 
-def set_urls_for_role(role_name, urls):
-    for url, roles in page_roles.items():
-        if url in urls:
+def set_resources_for_role(role_name, resources):
+    for resource, roles in resource_roles.items():
+        if resource in resources:
             roles.add(role_name)
-        elif role_name in roles and url not in urls:
+        elif role_name in roles and resource not in resources:
             roles.remove(role_name)
-    new_urls = set(urls) - set(page_roles.keys())
-    for new_url in new_urls:
-        page_roles[new_url] = {role_name}
+    new_resources = set(resources) - set(resource_roles.keys())
+    for new_resource in new_resources:
+        resource_roles[new_resource] = {role_name}
 
 
-def clear_urls_for_role(role_name):
-    for url, roles in page_roles.items():
+def clear_resources_for_role(role_name):
+    for resource, roles in resource_roles.items():
         if role_name in roles:
             roles.remove(role_name)
 
@@ -51,9 +47,9 @@ user_roles_association = db.Table('user_roles_association',
                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
 
-roles_pages_association = db.Table('roles_pages_association',
-                                   db.Column('page_id', db.Integer, db.ForeignKey('page.id')),
-                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')))
+roles_resources_association = db.Table('roles_resources_association',
+                                       db.Column('resource_permission_id', db.Integer, db.ForeignKey('resource_permission.id')),
+                                       db.Column('role_id', db.Integer, db.ForeignKey('role.id')))
 
 
 class TrackModificationsMixIn(object):
@@ -145,36 +141,37 @@ class Role(db.Model, TrackModificationsMixIn):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255))
-    pages = db.relationship('Page', secondary=roles_pages_association,
-                            backref=db.backref('roles', lazy='dynamic'))
+    resources = db.relationship('ResourcePermission', secondary=roles_resources_association,
+                                backref=db.backref('roles', lazy='dynamic'))
 
-    def __init__(self, name, description='', pages=None):
+    def __init__(self, name, description='', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
             permissions.
 
         Args:
             name (str): The name of the Role.
             description (str, optional): A description of the role.
-            pages (list[str]): The list of root endpoints that a user with this Role can access.
+            resources (list[str]): The list of root endpoints that a user with this Role can access.
         """
         self.name = name
         self.description = description
-        if pages is not None:
-            self.set_pages(pages)
+        if resources is not None:
+            self.set_resources(resources)
 
-    def set_pages(self, new_pages):
+    def set_resources(self, new_resources):
         """Adds the given list of roles to the User object.
 
         Args:
-            new_pages (list|set[str]): A list of Page urls with which the Role will be associated.
+            new_resources (list|set[str]): A list of resource names with which the Role will be associated.
         """
-        self.pages[:] = []
-        new_page_urls = set(new_pages)
-        new_pages = Page.query.filter(Page.url.in_(new_page_urls)).all() if new_page_urls else []
-        self.pages.extend(new_pages)
+        self.resources[:] = []
+        new_resource_names = set(new_resources)
+        new_resources = (ResourcePermission.query.filter(ResourcePermission.resource.in_(new_resource_names)).all()
+                         if new_resource_names else [])
+        self.resources.extend(new_resources)
 
-        pages_not_added = new_page_urls - {page.url for page in new_pages}
-        self.pages.extend([Page(url) for url in pages_not_added])
+        resources_not_added = new_resource_names - {resource.resource for resource in new_resources}
+        self.resources.extend([ResourcePermission(resource) for resource in resources_not_added])
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
@@ -185,22 +182,22 @@ class Role(db.Model, TrackModificationsMixIn):
         out = {"id": self.id,
                 "name": self.name,
                 "description": self.description,
-                "pages": [page.url for page in self.pages]}
+                "resources": [resource.resource for resource in self.resources]}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
 
 
-class Page(db.Model):
-    __tablename__ = 'page'
+class ResourcePermission(db.Model):
+    __tablename__ = 'resource_permission'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    url = db.Column(db.String(255), unique=True, nullable=False)
+    resource = db.Column(db.String(255), unique=True, nullable=False)
 
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, resource):
+        self.resource = resource
 
     def as_json(self, with_roles=False):
-        out = {'url': self.url}
+        out = {'resource': self.resource}
         if with_roles:
             out["roles"] = [role.name for role in self.roles]
         return out

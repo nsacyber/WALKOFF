@@ -48,7 +48,7 @@ def setup_case_stream():
 def stream_case_events():
     from server.flaskserver import running_context
 
-    @roles_accepted(*running_context.page_roles['/cases'])
+    @roles_accepted(*running_context.resource_roles['/cases'])
     def inner():
         return Response(__case_event_generator(), mimetype='text/event-stream')
     return inner()

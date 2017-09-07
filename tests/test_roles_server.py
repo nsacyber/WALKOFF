@@ -1,4 +1,4 @@
-from server.database import Role, db, initialize_page_roles_from_cleared_database, default_urls
+from server.database import Role, db, initialize_resource_roles_from_cleared_database
 import server.database
 from tests.util import servertestcase
 from server.returncodes import *
@@ -9,7 +9,7 @@ import json
 class TestRolesServer(servertestcase.ServerTestCase):
 
     def setUp(self):
-        server.database.page_roles = {}
+        server.database.resource_roles = {}
 
     def tearDown(self):
         db.session.rollback()
@@ -19,7 +19,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        initialize_page_roles_from_cleared_database()
+        initialize_resource_roles_from_cleared_database()
 
     def test_read_all_roles_no_added_roles(self):
         response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)
@@ -35,30 +35,30 @@ class TestRolesServer(servertestcase.ServerTestCase):
         self.assertEqual(role['id'], expected['id'])
         self.assertEqual(role['name'], expected['name'])
         self.assertEqual(role['description'], expected['description'])
-        self.assertSetEqual(set(role['pages']), set(expected['pages']))
+        self.assertSetEqual(set(role['resources']), set(expected['resources']))
 
     def test_create_role(self):
-        pages = ['page1', 'page2', 'page3']
-        data = {"name": 'role1', "description": 'desc', "pages": pages}
+        resources = ['resource1', 'resource2', 'resource3']
+        data = {"name": 'role1', "description": 'desc', "resources": resources}
         response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_CREATED,
                                               content_type='application/json', data=json.dumps(data))
         self.assertIn('id', response)
-        for page in pages:
-            self.assertSetEqual(set(server.database.page_roles[page]), {'role1'})
+        for resource in resources:
+            self.assertSetEqual(set(server.database.resource_roles[resource]), {'role1'})
         data['id'] = response['id']
         self.assertRoleJsonIsEqual(response, data)
 
     def test_create_role_with_roles_in_urls(self):
-        pages = ['page1', 'page2', 'page3', '/roles']
-        data = {"name": 'role1', "description": 'desc', "pages": pages}
+        resources = ['resource1', 'resource2', 'resource3', '/roles']
+        data = {"name": 'role1', "description": 'desc', "resources": resources}
         response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_CREATED,
                                               content_type='application/json', data=json.dumps(data))
         self.assertIn('id', response)
-        reduced_pages = ['page1', 'page2', 'page3']
-        for page in reduced_pages:
-            self.assertSetEqual(set(server.database.page_roles[page]), {'role1'})
+        reduced_resources = ['resource1', 'resource2', 'resource3']
+        for resource in reduced_resources:
+            self.assertSetEqual(set(server.database.resource_roles[resource]), {'role1'})
         data['id'] = response['id']
-        data['pages'] = reduced_pages
+        data['resources'] = reduced_resources
         self.assertRoleJsonIsEqual(response, data)
 
     def test_create_role_name_already_exists(self):
@@ -68,7 +68,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
                                    content_type='application/json', data=json.dumps(data))
 
     def test_read_role(self):
-        data = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+        data = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data)).get_data(as_text=True))
         role_id = response['id']
@@ -80,7 +80,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
         self.get_with_status_check('/api/roles/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_update_role_name_only(self):
-        data_init = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+        data_init = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
@@ -93,11 +93,11 @@ class TestRolesServer(servertestcase.ServerTestCase):
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_name_only_already_exists(self):
-        data_init = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+        data_init = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        data2_init = {"name": 'role2', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+        data2_init = {"name": 'role2', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         self.app.put('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data2_init))
         data = {'id': role_id, 'name': 'role2'}
         response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
@@ -107,7 +107,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_description_only(self):
-        data_init = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+        data_init = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
@@ -119,54 +119,54 @@ class TestRolesServer(servertestcase.ServerTestCase):
         expected['id'] = role_id
         self.assertRoleJsonIsEqual(response, expected)
 
-    def test_update_role_with_pages(self):
-        data_init = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+    def test_update_role_with_resources(self):
+        data_init = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        data = {'id': role_id, 'description': 'new_desc', 'pages': ['page4', 'page5']}
+        data = {'id': role_id, 'description': 'new_desc', 'resources': ['resource4', 'resource5']}
         response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
         expected['id'] = role_id
-        expected['pages'] = ['page4', 'page5']
+        expected['resources'] = ['resource4', 'resource5']
         self.assertRoleJsonIsEqual(response, expected)
 
-    def test_update_role_with_roles_endpoint_in_pages(self):
-        data_init = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+    def test_update_role_with_roles_endpoint_in_resources(self):
+        data_init = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        data = {'id': role_id, 'description': 'new_desc', 'pages': ['page4', 'page5', '/roles']}
+        data = {'id': role_id, 'description': 'new_desc', 'resources': ['resource4', 'resource5', '/roles']}
         response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
         expected['id'] = role_id
-        expected['pages'] = ['page4', 'page5']
+        expected['resources'] = ['resource4', 'resource5']
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_with_invalid_id(self):
-        data = {'id': 404, 'description': 'new_desc', 'pages': ['page4', 'page5', '/roles']}
+        data = {'id': 404, 'description': 'new_desc', 'resources': ['resource4', 'resource5', '/roles']}
         self.post_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_DNE_ERROR,
                                                content_type='application/json', data=json.dumps(data))
 
-    def test_update_role_with_pages_updates_page_roles(self):
-        pages = ['page1', 'page2', 'page3']
-        data_init = {"name": 'role1', "description": 'desc', "pages": pages}
+    def test_update_role_with_resources_updates_resource_roles(self):
+        resources = ['resource1', 'resource2', 'resource3']
+        data_init = {"name": 'role1', "description": 'desc', "resources": resources}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        data = {'id': role_id, 'description': 'new_desc', 'pages': ['page4', 'page5', '/roles']}
+        data = {'id': role_id, 'description': 'new_desc', 'resources': ['resource4', 'resource5', '/roles']}
         self.app.post('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
-        for page in pages:
-            self.assertNotIn('role1', server.database.page_roles[page])
-        for page in ['page4', 'page5']:
-            self.assertIn('role1', server.database.page_roles[page])
+        for resource in resources:
+            self.assertNotIn('role1', server.database.resource_roles[resource])
+        for resource in ['resource4', 'resource5']:
+            self.assertIn('role1', server.database.resource_roles[resource])
 
     def test_delete_role(self):
-        data_init = {"name": 'role1', "description": 'desc', "pages": ['page1', 'page2', 'page3']}
+        data_init = {"name": 'role1', "description": 'desc', "resources": ['resource1', 'resource2', 'resource3']}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
@@ -175,12 +175,12 @@ class TestRolesServer(servertestcase.ServerTestCase):
     def test_delete_role_does_not_exist(self):
         self.delete_with_status_check('/api/roles/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
-    def test_delete_role_updates_page_roles(self):
-        pages = ['page1', 'page2', 'page3']
-        data_init = {"name": 'role1', "description": 'desc', "pages": pages}
+    def test_delete_role_updates_resource_roles(self):
+        resources = ['resource1', 'resource2', 'resource3']
+        data_init = {"name": 'role1', "description": 'desc', "resources": resources}
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
-        for page in pages:
-            self.assertNotIn('role1', server.database.page_roles[page])
+        for resource in resources:
+            self.assertNotIn('role1', server.database.resource_roles[resource])

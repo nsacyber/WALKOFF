@@ -9,7 +9,7 @@ def update_event_note():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/cases'])
+    @roles_accepted(*running_context.resource_roles['/cases'])
     def __func():
         data = request.get_json()
         valid_event_id = case_database.case_db.session.query(case_database.Event) \
@@ -26,7 +26,7 @@ def read_event(event_id):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/cases'])
+    @roles_accepted(*running_context.resource_roles['/cases'])
     def __func():
         valid_event_id = case_database.case_db.session.query(case_database.Event) \
             .filter(case_database.Event.id == event_id).all()

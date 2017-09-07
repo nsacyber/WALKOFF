@@ -16,7 +16,7 @@ def read_all_possible_subscriptions():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/cases'])
+    @roles_accepted(*running_context.resource_roles['/cases'])
     def __func():
         return core.config.config.possible_events, SUCCESS
 
@@ -27,7 +27,7 @@ def read_all_filters():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/playbooks'])
+    @roles_accepted(*running_context.resource_roles['/playbooks'])
     def __func():
         filter_api = core.config.config.function_apis['filters']
         filters = {}
@@ -55,7 +55,7 @@ def read_all_flags():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/playbooks'])
+    @roles_accepted(*running_context.resource_roles['/playbooks'])
     def __func():
         flag_api = core.config.config.function_apis['flags']
         flags = {}
@@ -84,7 +84,7 @@ def sys_pages(interface_name):
     from server import interface
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/interface'])
+    @roles_accepted(*running_context.resource_roles['/interface'])
     def __func():
         if current_user.is_authenticated and interface_name:
             args = getattr(interface, interface_name)()
@@ -101,7 +101,7 @@ def read_all_widgets():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/apps'])
+    @roles_accepted(*running_context.resource_roles['/apps'])
     def __func():
         return {_app: helpers.list_widgets(_app) for _app in helpers.list_apps()}
 

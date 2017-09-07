@@ -2,14 +2,14 @@ from flask import request, current_app
 from server.security import roles_accepted
 from flask_jwt_extended import jwt_required
 from server.returncodes import *
-from server.database import set_urls_for_role, clear_urls_for_role
+from server.database import set_resources_for_role, clear_resources_for_role
 
 
 def read_all_roles():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.page_roles['/roles'])
+    @roles_accepted(*running_context.resource_roles['/roles'])
     def __func():
         return [role.as_json() for role in running_context.Role.query.all()], SUCCESS
 
@@ -24,16 +24,16 @@ def create_role():
     def __func():
         json_data = request.get_json()
         if not running_context.Role.query.filter_by(name=json_data['name']).first():
-            pages = json_data['pages'] if 'pages' in json_data else []
-            if '/roles' in pages:
-                pages.remove('/roles')
+            resources = json_data['resources'] if 'resources' in json_data else []
+            if '/roles' in resources:
+                resources.remove('/roles')
             role_params = {'name': json_data['name'],
                            'description': json_data['description'] if 'description' in json_data else '',
-                           'pages': pages}
+                           'resources': resources}
             new_role = running_context.Role(**role_params)
             running_context.db.session.add(new_role)
             running_context.db.session.commit()
-            set_urls_for_role(json_data['name'], pages)
+            set_resources_for_role(json_data['name'], resources)
             current_app.logger.info('Role added: {0}'.format(role_params))
             return new_role.as_json(), OBJECT_CREATED
         else:
@@ -75,12 +75,12 @@ def update_role():
                     role.name = new_name
             if 'description' in json_data:
                 role.description = json_data['description']
-            if 'pages' in json_data:
-                pages = json_data['pages']
-                if '/roles' in pages:
-                    pages.remove('/roles')
-                role.set_pages(pages)
-                set_urls_for_role(role.name, pages)
+            if 'resources' in json_data:
+                resources = json_data['resources']
+                if '/roles' in resources:
+                    resources.remove('/roles')
+                role.set_resources(resources)
+                set_resources_for_role(role.name, resources)
             running_context.db.session.commit()
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
             return role.as_json(), SUCCESS
@@ -99,7 +99,7 @@ def delete_role(role_id):
     def __func():
         role = running_context.Role.query.filter_by(id=role_id).first()
         if role:
-            clear_urls_for_role(role.name)
+            clear_resources_for_role(role.name)
             running_context.db.session.delete(role)
             return {}, SUCCESS
         else:

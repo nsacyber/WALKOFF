@@ -18,7 +18,7 @@ from . import database, interface
 
 logger = logging.getLogger(__name__)
 
-database.initialize_page_roles_from_cleared_database()
+database.initialize_resource_roles_from_cleared_database()
 
 # Custom static data
 @app.route('/client/<path:filename>')
@@ -43,7 +43,7 @@ def login_page():
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.page_roles['/cases'])
+@roles_accepted(*running_context.resource_roles['/cases'])
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
@@ -51,7 +51,7 @@ def display_possible_subscriptions():
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.page_roles['/interface'])
+@roles_accepted(*running_context.resource_roles['/interface'])
 def sys_pages(name):
     args = getattr(interface, name)()
     combine_dicts(args, {"authKey": current_user.get_auth_token()})
@@ -61,7 +61,7 @@ def sys_pages(name):
 # TODO: DELETE
 @app.route('/interface/<string:name>/display', methods=['POST'])
 @jwt_required
-@roles_accepted(*running_context.page_roles['/interface'])
+@roles_accepted(*running_context.resource_roles['/interface'])
 def system_pages(name):
     args = getattr(interface, name)()
     combine_dicts(args, {"authKey": current_user.get_auth_token()})
@@ -71,7 +71,7 @@ def system_pages(name):
 
 @app.route('/widgets', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.page_roles['/apps'])
+@roles_accepted(*running_context.resource_roles['/apps'])
 def list_all_widgets():
     return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})
 

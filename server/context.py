@@ -11,7 +11,7 @@ class Context(object):
 
         from server.app import app
         from server.appdevice import Device, App
-        from server.database import User, Role, page_roles, db
+        from server.database import User, Role, resource_roles, db
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
         import core.controller
@@ -24,7 +24,7 @@ class Context(object):
         self.Triggers = Triggers
         self.CaseSubscription = CaseSubscription
         self.flask_app = app
-        self.page_roles = page_roles
+        self.resource_roles = resource_roles
         self.db = db
         self.controller = core.controller.controller
         self.ScheduledTask = ScheduledTask

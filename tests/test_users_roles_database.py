@@ -232,13 +232,13 @@ class TestUserRolesDatabase(unittest.TestCase):
         user_json = user.as_json()
         expected = {"id": 1,
                     "username": 'username',
-                    "roles": [{'name': role, 'description': '', 'pages': []} for role in ['role1', 'role2', 'role3']]}
+                    "roles": [{'name': role, 'description': '', 'resources': []} for role in ['role1', 'role2', 'role3']]}
         self.assertSetEqual(set(user_json.keys()), set(expected.keys()))
         self.assertEqual(user_json['username'], 'username')
         for role in user_json['roles']:
             self.assertIn('id', role)
             self.assertIn(role['name'], ['role1', 'role2', 'role3'])
-            self.assertListEqual(role['pages'], [])
+            self.assertListEqual(role['resources'], [])
             self.assertEqual(role['description'], '')
 
     def test_as_json_with_user_history(self):
@@ -253,7 +253,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         user_json = user.as_json(with_user_history=True)
         expected = {"id": 1,
                     "username": 'username',
-                    "roles": [{'name': role, 'description': '', 'pages': []} for role in ['role1', 'role2', 'role3']],
+                    "roles": [{'name': role, 'description': '', 'resources': []} for role in ['role1', 'role2', 'role3']],
                     "active": True,
                     "last_login_at": first_login_timestamp,
                     "current_login_at": second_login_timestamp,
@@ -269,7 +269,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         for role in user_json['roles']:
             self.assertIn('id', role)
             self.assertIn(role['name'], ['role1', 'role2', 'role3'])
-            self.assertListEqual(role['pages'], [])
+            self.assertListEqual(role['resources'], [])
             self.assertEqual(role['description'], '')
 
     def test_roles_as_json_with_users_one_user(self):
@@ -278,7 +278,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         user = User('username', 'password')
         db.session.add(user)
         user.set_roles(['role1'])
-        expected = {'name': 'role1', 'description': '', 'pages': [], 'users': ['username']}
+        expected = {'name': 'role1', 'description': '', 'resources': [], 'users': ['username']}
         role_json = role.as_json(with_users=True)
         role_json.pop('id')
         self.assertDictEqual(role_json, expected)
@@ -292,7 +292,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         db.session.add(user2)
         user.set_roles(['role1'])
         user2.set_roles(['role1'])
-        expected = {'name': 'role1', 'description': '', 'pages': [], 'users': ['username', 'user2']}
+        expected = {'name': 'role1', 'description': '', 'resources': [], 'users': ['username', 'user2']}
         role_json = role.as_json(with_users=True)
         role_json.pop('id')
         self.assertDictEqual(role_json, expected)
