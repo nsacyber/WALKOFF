@@ -198,11 +198,6 @@
           "type": "string",
           "description": "A brief description of the parameter. This could contain examples of use.  GitHub Flavored Markdown is allowed."
         },
-        "required": {
-          "type": "boolean",
-          "default": true,
-          "description": "Determines whether or not this parameter is required or optional."
-        },
         "fields": {
           "type": "array",
           "description": "Device used by this app",

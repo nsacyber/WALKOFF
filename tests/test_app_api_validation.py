@@ -292,13 +292,3 @@ class TestAppApiValidation(unittest.TestCase):
                             'fields': [{'name': 'param1', 'type': 'string'}, {'name': 'param2', 'type': 'boolean'}]}}
         self.basicapi['devices'] = devices
         self.__generate_resolver_dereferencer(self.basicapi)
-
-    def test_multiple_devices_with_required(self):
-        devices = {'dev1': {'description': 'something',
-                            'fields': [{'name': 'param1', 'type': 'string', 'encrypted': True},
-                                       {'name': 'param2', 'type': 'boolean'}]},
-                   'dev2': {'description': 'something',
-                            'required': True,
-                            'fields': [{'name': 'param1', 'type': 'string'}, {'name': 'param2', 'type': 'boolean'}]}}
-        self.basicapi['devices'] = devices
-        self.__generate_resolver_dereferencer(self.basicapi)

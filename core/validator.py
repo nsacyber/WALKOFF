@@ -115,6 +115,41 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     validate_definitions(definitions, dereference)
 
 
+def validate_device(devices_api, device_json):
+    device_type = device_json['type']
+    if device_type in devices_api:
+        message_prefix = 'Device type {0} for app {1}'.format(device_type, device_json['app'])
+        validate_device_fields(devices_api[device_type]['fields'], device_json['fields'], message_prefix)
+    else:
+        message = 'Device type {0} for found for app {1}'.format(device_type, device_json['app'])
+        raise InvalidInput(message)
+
+
+def validate_device_fields(device_fields_api, device_fields, message_prefix):
+    required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
+    field_names = set(device_fields)
+    if required_in_api - field_names:
+        message = '{0} requires {1} field but only got {2}'.format(message_prefix,
+                                                                   list(required_in_api), list(field_names))
+        logger.error(message)
+        raise InvalidInput(message)
+
+    device_fields_api_dict = {field['name']: field for field in device_fields_api}
+    for field, value in device_fields.items():
+        if field in device_fields_api_dict:
+            field_type = device_fields_api_dict[field]['type']
+            field_api = deepcopy(device_fields_api_dict[field])
+            if 'required' in field_api:
+                field_api.pop('required')
+            if 'encrypted' in field_api:
+                field_api.pop('encrypted')
+            validate_primitive_parameter(value, field_api, field_type, message_prefix)
+        else:
+            message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field['name'])
+            logger.warning(message)
+            raise InvalidInput(message)
+
+
 def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,
@@ -274,7 +309,7 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix):
     else:
         param = deepcopy(param)
         if 'required' in param:
-            del param['required']
+            param.pop('required')
         try:
             Draft4Validator(
                 param, format_checker=draft4_format_checker).validate(converted_value)
@@ -384,7 +419,3 @@ def validate_flag_parameters(api, inputs, flag):
 def validate_filter_parameters(api, inputs, filter_name):
     return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
 
-
-def validate_device(api, device_in):
-    Draft4Validator(
-        api, format_checker=draft4_format_checker).validate(device_in)
