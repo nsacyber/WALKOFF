@@ -4,7 +4,7 @@ export class Device {
 	description: string;
 	type: string;
 	app: string;
-	fields: { name: string; value: any }[];
+	fields: { name: string; value: any }[] = [];
 	//Below should be removed
 	username: string;
 	password: string;
@@ -34,7 +34,7 @@ export class WorkingDevice {
 	description: string;
 	app: string;
 	type: string;
-	fields: { [key: string]: any };
+	fields: { [key: string]: any } = {};
 
 	toDevice(): Device {
 		let out = new Device();

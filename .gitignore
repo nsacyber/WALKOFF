@@ -24,3 +24,5 @@ client/build/
 .idea/markdown-navigator/profiles_settings.xml
 .idea/markdown-navigator.xml
 .idea/markdown-exported-files.xml
+private_keys/
+public_keys/

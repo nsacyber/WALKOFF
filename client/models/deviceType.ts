@@ -2,12 +2,11 @@ export class DeviceType {
 	name: string;
 	description: string;
 	app: string;
-	fields: IDeviceTypeField[];
+	fields: IDeviceTypeField[] = [];
 }
 
 export interface IDeviceTypeField {
 	name: string;
 	type: string;
-	required: boolean;
-	encrypted: string;
+	[key: string]: string | number | boolean;
 }
