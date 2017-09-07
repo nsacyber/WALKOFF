@@ -2,17 +2,18 @@ import json
 import logging
 from core.filter import Filter
 from core.flag import Flag
-from .database import db, Base
+from .database import db, TrackModificationsMixIn
 from core.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 
 
-class Triggers(Base):
+class Triggers(db.Model, ):
     """
     ORM for the triggers in the Walkoff database
     """
     __tablename__ = "triggers"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     playbook = db.Column(db.String(255), nullable=False)
     workflow = db.Column(db.String(255), nullable=False)

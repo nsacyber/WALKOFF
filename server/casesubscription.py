@@ -1,18 +1,18 @@
 import json
 import logging
 
-from .database import db, Base
+from .database import db, TrackModificationsMixIn
 import core.case.subscription
 from core.case.subscription import convert_from_event_names, convert_to_event_names
 
 
-class CaseSubscription(Base):
+class CaseSubscription(db.Model, TrackModificationsMixIn):
     """
     The ORM for the case subscriptions configuration
     """
     __tablename__ = 'case_subscription'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     subscriptions = db.Column(db.Text())
     note = db.Column(db.String)

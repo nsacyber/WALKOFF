@@ -47,14 +47,6 @@ def clear_urls_for_role(role_name):
         if role_name in roles:
             roles.remove(role_name)
 
-
-class Base(db.Model):
-    __abstract__ = True
-    id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    modified_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
-
-
 user_roles_association = db.Table('user_roles_association',
                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
@@ -86,8 +78,6 @@ class User(db.Model, TrackModificationsMixIn):
     def __init__(self, name, password):
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
-        self.active = False
-        self.login_count = 0
 
     @hybrid_property
     def password(self):
@@ -199,6 +189,7 @@ class Role(db.Model, TrackModificationsMixIn):
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
+
 
 class Page(db.Model):
     __tablename__ = 'page'

@@ -13,10 +13,10 @@ db = database.db
 logger = logging.getLogger(__name__)
 
 
-class App(database.Base, object):
+class App(db.Model, database.TrackModificationsMixIn):
     __tablename__ = 'app'
 
-    id = db.Column(Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(String)
     devices = db.relationship("Device", back_populates="app")
 
@@ -91,10 +91,10 @@ class App(database.Base, object):
         pass
 
 
-class Device(database.Base):
+class Device(db.Model, database.TrackModificationsMixIn):
     __tablename__ = 'device'
 
-    id = db.Column(Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(String)
     username = db.Column(db.String(80))
     password = db.Column(db.LargeBinary())

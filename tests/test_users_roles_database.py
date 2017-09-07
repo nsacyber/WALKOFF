@@ -56,9 +56,10 @@ class TestUserRolesDatabase(unittest.TestCase):
         self.assertUserRolesEqual(user, set())
         self.assertUserTimestamps(user)
         self.assertUserIps(user)
-        self.assertLoginCountAndActivity(user, 0, False)
         db.session.add(user)
         db.session.commit()
+        self.assertLoginCountAndActivity(user, 0, False)
+
 
     def test_verify_valid_password(self):
         user = User('username', 'password')
