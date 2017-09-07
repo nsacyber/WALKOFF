@@ -33,18 +33,18 @@ class TestAuthorization(unittest.TestCase):
                              {'id': None, 'jti': 'some_jti', 'user': 'user', 'expires': timedelta(minutes=5)})
 
     def test_login_authorization_has_correct_return_code(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username='admin', password='admin')))
         self.assertEqual(response.status_code, OBJECT_CREATED)
 
     def test_login_authorization_has_correct_structure(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         self.assertSetEqual(set(key.keys()), {'access_token', 'refresh_token'})
 
     def test_login_authorization_has_valid_access_token(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['access_token'])
@@ -54,7 +54,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertTrue(token['fresh'])
 
     def test_login_authorization_has_valid_refresh_token(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['refresh_token'])
@@ -63,23 +63,23 @@ class TestAuthorization(unittest.TestCase):
 
     def test_login_updates_user(self):
         user = add_user(username='testlogin', password='test')
-        self.app.post('/api/auth/token', content_type="application/json",
+        self.app.post('/api/auth', content_type="application/json",
                       data=json.dumps(dict(username='testlogin', password='test')))
         self.assertEqual(user.login_count, 1)
         self.assertTrue(user.active)
 
     def test_login_authorization_invalid_username(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username='invalid', password='admin')))
         self.assertEqual(response.status_code, UNAUTHORIZED_ERROR)
 
     def test_login_authorization_invalid_password(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='invalid')))
         self.assertEqual(response.status_code, UNAUTHORIZED_ERROR)
 
     def test_refresh_valid_token_yields_access_token(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
 
@@ -99,7 +99,7 @@ class TestAuthorization(unittest.TestCase):
 
         from server.database import db
         db.session.commit()
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))
         token = key['refresh_token']
@@ -119,7 +119,7 @@ class TestAuthorization(unittest.TestCase):
 
         from server.database import db
         db.session.commit()
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))
         token = key['refresh_token']
@@ -133,7 +133,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertDictEqual(response, {'error': 'Token is revoked'})
 
     def test_logout_no_refresh_token(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
@@ -142,7 +142,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertEqual(len(BlacklistedToken.query.all()), 0)
 
     def test_logout_mismatched_tokens(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
@@ -151,7 +151,7 @@ class TestAuthorization(unittest.TestCase):
 
         from server.database import db
         db.session.commit()
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))
         token = key['refresh_token']
@@ -162,7 +162,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertEqual(len(BlacklistedToken.query.all()), 0)
 
     def test_logout(self):
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
@@ -178,7 +178,7 @@ class TestAuthorization(unittest.TestCase):
 
     def test_logout_updates_user(self):
         user = add_user('testlogout', 'test')
-        response = self.app.post('/api/auth/token', content_type="application/json",
+        response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='testlogout', password='test')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']

@@ -82,7 +82,8 @@ class ServerTestCase(unittest.TestCase):
         from server.database import db
         server.flaskserver.running_context.db = db
 
-        post = self.app.post('/api/auth/token', content_type="application/json", data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        post = self.app.post('/api/auth', content_type="application/json",
+                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
