@@ -3,7 +3,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { MainModule } from './main.module';
 
-if (localStorage.getItem('refresh_token')) {
+if (sessionStorage.getItem('refresh_token')) {
 	platformBrowserDynamic().bootstrapModule(MainModule);
 
 	// Enable production mode unless running locally

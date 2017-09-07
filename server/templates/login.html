@@ -60,9 +60,8 @@
                 type: "POST",
                 async: false,
                 success: function (data) {
-                    window.localStorage.setItem("access_token", data["access_token"]);
-                    window.localStorage.setItem("refresh_token", data["refresh_token"]);
-                    // window.localStorage.setItem("currentUser", username);
+                    sessionStorage.setItem("access_token", data["access_token"]);
+                    sessionStorage.setItem("refresh_token", data["refresh_token"]);
                     location.href = "/";
                 },
                 error: function (e) {

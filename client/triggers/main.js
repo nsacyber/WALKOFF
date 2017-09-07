@@ -5,7 +5,7 @@
     var filtersList = [];
     var triggerEditor = null;
     var currentTriggerName = null;
-    var authToken = localStorage.getItem('access_token');
+    var authToken = sessionStorage.getItem('access_token');
 
     function refreshJwtAjax(request) {
         if (!window.JwtHelper.isTokenExpired(authToken, 300)) {
@@ -13,7 +13,7 @@
             return;
         }
 
-        var refreshToken = localStorage.getItem('refresh_token');
+        var refreshToken = sessionStorage.getItem('refresh_token');
 
         if (!refreshToken) location.href = '/login';
 
@@ -24,7 +24,7 @@
             'headers': { "Authorization": 'Bearer ' + refreshToken },
             'url': "/api/auth/refresh",
             'success': function (data) {
-                localStorage.setItem('access_token', data['access_token']);
+                sessionStorage.setItem('access_token', data['access_token']);
                 authToken = data['access_token'];
                 $.ajax(request);
             },

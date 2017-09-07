@@ -78,7 +78,7 @@ export function getJwtHttp(http: Http, options: RequestOptions) {
 		beforeSeconds: 300, // refresh token before 5 min
 		tokenName: 'refresh_token',
 		refreshTokenGetter: (() => {
-			let token = localStorage.getItem('refresh_token');
+			let token = sessionStorage.getItem('refresh_token');
 
 			if (token && tokenNotExpired(null, token)) return token;
 
@@ -90,15 +90,15 @@ export function getJwtHttp(http: Http, options: RequestOptions) {
 			res = res.json();
 
 			if (!(<any>res)['access_token']) {
-				localStorage.removeItem('access_token');
-				localStorage.removeItem('refresh_token');
+				sessionStorage.removeItem('access_token');
+				sessionStorage.removeItem('refresh_token');
 				//TODO: figure out a better way of handling this... maybe incorporate login into the main component somehow
 				location.href = '/login';
 				return false;
 			}
 
-			localStorage.setItem('access_token', (<any>res)['access_token']);
-			// localStorage.setItem('refresh_token', (<any>res)['refresh_token']);
+			sessionStorage.setItem('access_token', (<any>res)['access_token']);
+			// sessionStorage.setItem('refresh_token', (<any>res)['refresh_token']);
 
 			return true;
 		})
@@ -108,7 +108,7 @@ export function getJwtHttp(http: Http, options: RequestOptions) {
 		noJwtError: true,
 		// globalHeaders: [{ 'Accept': 'application/json' }],
 		tokenName: 'access_token',
-		tokenGetter: (() => localStorage.getItem('access_token')),
+		tokenGetter: (() => sessionStorage.getItem('access_token')),
 	});
 
 	return new JwtHttp(

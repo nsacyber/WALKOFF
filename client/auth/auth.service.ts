@@ -8,7 +8,7 @@ export class AuthService {
 	}
 
 	logout(): Promise<void> {
-		return this.authHttp.post('/api/auth/logout', { refresh_token: localStorage.getItem('refresh_token') })
+		return this.authHttp.post('/api/auth/logout', { refresh_token: sessionStorage.getItem('refresh_token') })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();
@@ -25,8 +25,8 @@ export class AuthService {
 	}
 
 	clearTokens(): void {
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('refresh_token');
+		sessionStorage.removeItem('access_token');
+		sessionStorage.removeItem('refresh_token');
 	}
 
 	private extractData(res: Response) {

@@ -27,7 +27,7 @@ export class MainComponent {
 	}
 
 	updateUserInfo(): void {
-		let refreshToken = localStorage.getItem('refresh_token');
+		let refreshToken = sessionStorage.getItem('refresh_token');
 		
 		let decoded = this.jwtHelper.decodeToken(refreshToken);
 
