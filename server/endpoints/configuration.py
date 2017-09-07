@@ -22,7 +22,7 @@ def __get_current_configuration():
             'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
             'number_processes': int(core.config.config.num_processes),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
-            'refresh_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].days)}
+            'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days)}
 
 
 def read_config_values():
