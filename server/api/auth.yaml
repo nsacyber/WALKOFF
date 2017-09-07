@@ -1,4 +1,4 @@
-/api/auth/token:
+/api/auth:
   post:
     tags:
       - Authorization

@@ -11,6 +11,7 @@ export class AuthService {
 		return this.authHttp.post('/api/auth/logout', { refresh_token: localStorage.getItem('refresh_token') })
 			.toPromise()
 			.then(() => {
+				this.clearTokens();
 				location.href = '/login';
 			})
 			.catch(this.handleError);
@@ -21,6 +22,11 @@ export class AuthService {
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
+	}
+
+	clearTokens(): void {
+		localStorage.removeItem('access_token');
+		localStorage.removeItem('refresh_token');
 	}
 
 	private extractData(res: Response) {
