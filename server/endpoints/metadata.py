@@ -1,6 +1,6 @@
 import os
 from flask import render_template, current_app, send_file
-from server.security import roles_accepted
+from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required, current_user
 import core.config.config
 import core.config.paths
@@ -13,10 +13,9 @@ from core.helpers import combine_dicts
 
 
 def read_all_possible_subscriptions():
-    from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/cases'])
+    @roles_accepted_for_resources('cases')
     def __func():
         return core.config.config.possible_events, SUCCESS
 
@@ -24,10 +23,9 @@ def read_all_possible_subscriptions():
 
 
 def read_all_filters():
-    from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/playbooks'])
+    @roles_accepted_for_resources('playbooks')
     def __func():
         filter_api = core.config.config.function_apis['filters']
         filters = {}
@@ -52,10 +50,9 @@ def read_all_filters():
 
 
 def read_all_flags():
-    from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/playbooks'])
+    @roles_accepted_for_resources('playbooks')
     def __func():
         flag_api = core.config.config.function_apis['flags']
         flags = {}
@@ -80,11 +77,10 @@ def read_all_flags():
 
 
 def sys_pages(interface_name):
-    from server.context import running_context
     from server import interface
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/interface'])
+    @roles_accepted_for_resources('interface')
     def __func():
         if current_user.is_authenticated and interface_name:
             args = getattr(interface, interface_name)()
@@ -98,10 +94,9 @@ def sys_pages(interface_name):
 
 
 def read_all_widgets():
-    from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         return {_app: helpers.list_widgets(_app) for _app in helpers.list_apps()}
 

@@ -9,7 +9,7 @@ def read_all_roles():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/roles'])
+    @roles_accepted('admin')
     def __func():
         return [role.as_json() for role in running_context.Role.query.all()], SUCCESS
 

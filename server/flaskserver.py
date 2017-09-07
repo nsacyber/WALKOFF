@@ -13,17 +13,19 @@ from core import helpers
 from core.helpers import combine_dicts
 from server import app
 from server.context import running_context
-from server.security import roles_accepted
+from server.security import roles_accepted_for_resources
 from . import database, interface
 
 logger = logging.getLogger(__name__)
 
 database.initialize_resource_roles_from_cleared_database()
 
+
 # Custom static data
 @app.route('/client/<path:filename>')
 def client_app_folder(filename):
     return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
+
 
 @app.route('/')
 @app.route('/playbook')
@@ -43,7 +45,7 @@ def login_page():
 
 @app.route('/availablesubscriptions', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.resource_roles['/cases'])
+@roles_accepted_for_resources('cases')
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
@@ -51,7 +53,7 @@ def display_possible_subscriptions():
 # Returns System-Level Interface Pages
 @app.route('/interface/<string:name>', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.resource_roles['/interface'])
+@roles_accepted_for_resources('interface')
 def sys_pages(name):
     args = getattr(interface, name)()
     combine_dicts(args, {"authKey": current_user.get_auth_token()})
@@ -61,17 +63,16 @@ def sys_pages(name):
 # TODO: DELETE
 @app.route('/interface/<string:name>/display', methods=['POST'])
 @jwt_required
-@roles_accepted(*running_context.resource_roles['/interface'])
+@roles_accepted_for_resources('interface')
 def system_pages(name):
     args = getattr(interface, name)()
     combine_dicts(args, {"authKey": current_user.get_auth_token()})
     return render_template("pages/" + name + "/index.html", **args)
 
 
-
 @app.route('/widgets', methods=['GET'])
 @jwt_required
-@roles_accepted(*running_context.resource_roles['/apps'])
+@roles_accepted_for_resources('apps')
 def list_all_widgets():
     return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})
 
@@ -98,5 +99,3 @@ def write_playbook_to_file(playbook_name):
                      'Error: {0}'.format(helpers.format_exception_message(e)))
         with open(playbook_filename, 'w') as f:
             f.write(backup)
-
-

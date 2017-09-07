@@ -1,5 +1,5 @@
 from flask import request, current_app
-from server.security import roles_accepted
+from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
 from server.returncodes import *
 from server.database import db
@@ -9,7 +9,7 @@ def read_all_triggers():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/execution/listener'])
+    @roles_accepted_for_resources('trigger')
     def __func():
         return {"triggers": [trigger.as_json() for trigger in running_context.Triggers.query.all()]}, SUCCESS
 
@@ -20,7 +20,7 @@ def listener():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/execution/listener'])
+    @roles_accepted_for_resources('trigger')
     def __func():
         trigger_args = request.get_json()
         if 'inputs' not in trigger_args:
@@ -43,7 +43,7 @@ def create_trigger(trigger_name):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/execution/listener'])
+    @roles_accepted_for_resources('trigger')
     def __func():
         data = request.get_json()
         if 'conditions' not in data:
@@ -71,7 +71,7 @@ def read_trigger(trigger_name):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/execution/listener'])
+    @roles_accepted_for_resources('trigger')
     def __func():
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:
@@ -87,7 +87,7 @@ def update_trigger(trigger_name):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/execution/listener'])
+    @roles_accepted_for_resources('trigger')
     def __func():
         data = request.get_json()
         if 'conditions' not in data:
@@ -118,7 +118,7 @@ def delete_trigger(trigger_name):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/execution/listener'])
+    @roles_accepted_for_resources('trigger')
     def __func():
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:

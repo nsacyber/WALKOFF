@@ -1,11 +1,14 @@
-from passlib.hash import pbkdf2_sha512
 from functools import wraps
 from flask_jwt_extended import get_jwt_claims
 from flask_jwt_extended.jwt_manager import JWTManager
 from server.database import User
+import server.database
 from server.returncodes import UNAUTHORIZED_ERROR
 from server.tokens import is_token_revoked
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 jwt = JWTManager()
 
@@ -27,11 +30,35 @@ def token_is_revoked_loader():
 
 
 def roles_accepted(*roles):
+    _roles = set(roles)
+
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
             claims = get_jwt_claims()
-            if 'roles' in claims and (set(roles) & set(claims['roles'])):
+            if 'roles' in claims and (_roles & set(claims['roles'])):
+                return fn(*args, **kwargs)
+            else:
+                return "Unauthorized View", 403
+
+        return decorated_view
+
+    return wrapper
+
+
+def roles_accepted_for_resources(*resources):
+    _roles_accepted = set()
+    for resource in resources:
+        try:
+            _roles_accepted |= server.database.resource_roles[resource]
+        except KeyError:
+            logger.error('Unknown resource {}'.format(resource))
+
+    def wrapper(fn):
+        @wraps(fn)
+        def decorated_view(*args, **kwargs):
+            claims = get_jwt_claims()
+            if 'roles' in claims and (_roles_accepted & set(claims['roles'])):
                 return fn(*args, **kwargs)
             else:
                 return "Unauthorized View", 403

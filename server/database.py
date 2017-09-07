@@ -8,9 +8,8 @@ logger = logging.getLogger(__name__)
 
 db = flask_sqlalchemy.SQLAlchemy()
 
-default_resources = ['/', '/key', '/playbooks', '/configuration', '/interface', '/execution/listener',
-        '/execution/listener/triggers', '/metrics',
-        '/roles', '/users', '/configuration', '/cases', '/apps', '/execution/scheduler']
+default_resources = ['/', 'playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
+                     'scheduler']
 
 resource_roles = {}
 

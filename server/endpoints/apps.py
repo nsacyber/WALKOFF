@@ -1,6 +1,6 @@
 import json
 from flask import current_app, request
-from server.security import roles_accepted
+from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
@@ -9,11 +9,11 @@ from server.returncodes import *
 from server import forms
 import pyaes
 
+
 @jwt_required
 def read_all_apps():
-    from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         return helpers.list_apps(), SUCCESS
 
@@ -38,22 +38,22 @@ def __format_all_app_actions(app_api):
     return {action_name: __format_app_action_api(action_api)
             for action_name, action_api in app_api['actions'].items()}
 
+
 @jwt_required
 def read_all_app_actions():
-    from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         return {app_name: __format_all_app_actions(app_api)
                 for app_name, app_api in core.config.config.app_apis.items()},  SUCCESS
 
     return __func()
 
+
 @jwt_required
 def list_app_actions(app_name):
-    from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         try:
             app_api = core.config.config.app_apis[app_name]
@@ -65,11 +65,12 @@ def list_app_actions(app_name):
 
     return __func()
 
+
 @jwt_required
 def read_all_devices(app_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         if app_name in core.config.config.app_apis.keys():
             query = running_context.Device.query.all()
@@ -85,11 +86,12 @@ def read_all_devices(app_name):
 
     return __func()
 
+
 @jwt_required
 def create_device(app_name, device_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         form = forms.AddNewDeviceForm(request.form)
         if app_name in core.config.config.app_apis.keys():
@@ -123,11 +125,12 @@ def create_device(app_name, device_name):
 
     return __func()
 
+
 @jwt_required
 def read_device(app_name, device_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
@@ -144,11 +147,12 @@ def read_device(app_name, device_name):
 
     return __func()
 
+
 @jwt_required
 def update_device(app_name, device_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         form = forms.EditDeviceForm(request.form)
         if app_name in core.config.config.app_apis.keys():
@@ -172,11 +176,12 @@ def update_device(app_name, device_name):
 
     return __func()
 
+
 @jwt_required
 def delete_device(app_name, device_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         if app_name in core.config.config.app_apis.keys():
             dev = running_context.Device.query.filter_by(name=device_name).first()
@@ -196,11 +201,12 @@ def delete_device(app_name, device_name):
 
     return __func()
 
+
 @jwt_required
 def import_devices(app_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         form = forms.ExportImportAppDevices(request.form)
         filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path
@@ -228,11 +234,12 @@ def import_devices(app_name):
 
     return __func()
 
+
 @jwt_required
 def export_devices(app_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.resource_roles['/apps'])
+    @roles_accepted_for_resources('apps')
     def __func():
         form = forms.ExportImportAppDevices(request.form)
         filename = form.filename.data if form.filename.data else core.config.paths.default_appdevice_export_path

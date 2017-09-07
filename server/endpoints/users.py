@@ -1,5 +1,5 @@
 from flask import request, current_app
-from server.security import roles_accepted
+from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
 from server.returncodes import *
 
@@ -8,7 +8,7 @@ def read_all_users():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/users'])
+    @roles_accepted_for_resources('users')
     def __func():
         return [user.as_json() for user in running_context.User.query.all()], SUCCESS
     return __func()
@@ -19,7 +19,7 @@ def create_user():
     from server.database import add_user
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/users'])
+    @roles_accepted_for_resources('users')
     def __func():
         data = request.get_json()
         username = data['username']
@@ -41,7 +41,7 @@ def read_user(user_id):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/users'])
+    @roles_accepted_for_resources('users')
     def __func():
         user = running_context.User.query.filter_by(id=user_id).first()
         if user:
@@ -56,7 +56,7 @@ def update_user():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/users'])
+    @roles_accepted_for_resources('users')
     def __func():
         data = request.get_json()
         user = running_context.User.query.filter_by(id=data['id']).first()
@@ -90,7 +90,7 @@ def delete_user(user_id):
     from server.flaskserver import running_context, current_user
 
     @jwt_required
-    @roles_accepted(*running_context.resource_roles['/users'])
+    @roles_accepted_for_resources('users')
     def __func():
         user = running_context.User.query.filter_by(id=user_id).first()
         if user:
