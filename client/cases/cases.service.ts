@@ -24,7 +24,7 @@ export class CasesService {
 	}
 
 	getEventsForCase(name: string) : Promise<CaseEvent[]> {
-		return this.authHttp.get(`/cases/${name}/events`)
+		return this.authHttp.get(`/api/cases/${name}/events`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as CaseEvent[])

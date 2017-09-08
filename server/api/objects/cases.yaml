@@ -59,7 +59,7 @@ Subscription:
 
 Event:
   type: object
-  required: [timestamp, event_type, ancestry, message, note, data]
+  required: [timestamp, event_type, caller, message, note, data]
   properties:
     id:
       description: Unique identifier for the event
@@ -77,13 +77,9 @@ Event:
       readOnly: true
       enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
       example: Step
-    ancestry:
-      description: An identifier of the event through its trace through the ancestry
-      type: array
-      readOnly: true
-      items:
-        type: string
-      example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
+    caller:
+      description: The UID of the execution element which caused this event
+      type: string
     message:
       description: The message attached to the event
       type: string

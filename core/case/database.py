@@ -212,13 +212,13 @@ class CaseDatabase(object):
         """
         return self.session.query(Event).filter(Event.id == event_id).first().as_json()
 
-    def case_events_as_json(self, case_name):
+    def case_events_as_json(self, case_id):
         """Gets the JSON representation of all the events in the case database.
         
         Returns:
             The JSON representation of all Event objects without their cases.
         """
-        event_id = self.session.query(Case).filter(Case.name == case_name).first().id
+        event_id = self.session.query(Case).filter(Case.id == case_id).first()
         if not event_id:
             raise Exception
 

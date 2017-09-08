@@ -176,13 +176,13 @@ def export_cases():
     return __func()
 
 
-def read_all_events(case):
+def read_all_events(case_id):
 
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():
         try:
-            result = case_database.case_db.case_events_as_json(case)
+            result = case_database.case_db.case_events_as_json(case_id)
         except:
             current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
