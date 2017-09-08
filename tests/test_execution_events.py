@@ -19,11 +19,10 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
     def setUp(self):
         self.c = core.controller.controller
-        self.c.initialize_threading()
+        self.c.initialize_threading(worker_env=modified_setup_worker_env)
         case_database.initialize()
 
     def tearDown(self):

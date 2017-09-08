@@ -47,6 +47,10 @@
     "passlib": {
       "level": "ERROR",
       "handlers": ["file_handler"]
+    },
+    "zmq": {
+      "level": "INFO",
+      "handlers": ["file_handler"]
     }
   },
   "root": {

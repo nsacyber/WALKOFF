@@ -20,10 +20,9 @@ data/log/*.log
 server/api/composed_api.yaml
 node_modules/
 .vscode/
-node_modules/
 .idea/markdown-navigator.xml
 .idea/markdown-navigator/profiles_settings.xml
-client/build/
 .idea/markdown-exported-files.xml
 private_keys
 public_keys
+client/build/
