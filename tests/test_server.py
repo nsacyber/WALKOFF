@@ -1,6 +1,5 @@
 import json
 from tests.util.assertwrappers import orderless_list_compare
-from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
 from tests.util.servertestcase import ServerTestCase
@@ -128,7 +127,7 @@ class TestConfiguration(ServerTestCase):
                     'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
                     'number_processes': int(core.config.config.num_processes),
                     'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
-                    'refresh_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].days)}
+                    'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days)}
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 

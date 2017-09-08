@@ -37,6 +37,9 @@ EditUser:
         description: New password for the user
         type: string
         example: password321
+      active:
+        description: activate/deactive a user
+        type: boolean
       roles:
         description: New list of role objects that this user possesses
         type: array
@@ -58,6 +61,9 @@ DisplayUser:
         description: Username or email of the user
         type: string
         example: administrator
+      active:
+        description: activate/deactive a user
+        type: boolean
       roles:
         description: List of role objects that this user possesses
         type: array

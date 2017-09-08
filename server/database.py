@@ -63,7 +63,7 @@ class User(db.Model, TrackModificationsMixIn):
                             backref=db.backref('users', lazy='dynamic'))
     username = db.Column(db.String(80), unique=True, nullable=False)
     _password = db.Column('password', db.String(255), nullable=False)
-    active = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
     last_login_at = db.Column(db.DateTime)
     current_login_at = db.Column(db.DateTime)
     last_login_ip = db.Column(db.String(45))
@@ -102,10 +102,8 @@ class User(db.Model, TrackModificationsMixIn):
         self.last_login_ip = self.current_login_ip
         self.current_login_ip = ip_address
         self.login_count += 1
-        self.active = True
 
     def logout(self):
-        self.active = False
         if self.login_count > 0:
             self.login_count -= 1
         else:
@@ -123,10 +121,10 @@ class User(db.Model, TrackModificationsMixIn):
         """
         out = {"id": self.id,
                "username": self.username,
-               "roles": [role.as_json() for role in self.roles]}
+               "roles": [role.as_json() for role in self.roles],
+               "active": self.active}
         if with_user_history:
             out.update({
-                "active": self.active,
                 "last_login_at": self.last_login_at,
                 "current_login_at": self.current_login_at,
                 "last_login_ip": self.last_login_ip,

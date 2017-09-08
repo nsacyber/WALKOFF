@@ -1,6 +1,6 @@
 from flask import request, current_app
 from server.security import roles_accepted_for_resources
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 from server.returncodes import *
 
 
@@ -60,26 +60,35 @@ def update_user():
     def __func():
         data = request.get_json()
         user = running_context.User.query.filter_by(id=data['id']).first()
+        current_user = get_jwt_identity()
+        is_admin = 'admin' in get_jwt_claims()['roles']
         if user is not None:
-            original_username = str(user.username)
-            if 'username' in data and data['username']:
-                user_db = running_context.User.query.filter_by(username=data['username']).first()
-                if user_db is None or user_db.id == user.id:
-                    user.username = data['username']
-                else:
-                    return {"error": "Username is taken"}, BAD_REQUEST
-            if 'old_password' in data and 'password' in data:
-                if user.verify_password(data['old_password']):
-                    user.password = data['password']
-                else:
-                    user.username = original_username
-                    return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
-            if 'roles' in data:
-                user.set_roles(data['roles'])
-
-            running_context.db.session.commit()
-            current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
-            return user.as_json(), SUCCESS
+            if user.username == current_user or is_admin:
+                original_username = str(user.username)
+                if 'username' in data and data['username']:
+                    user_db = running_context.User.query.filter_by(username=data['username']).first()
+                    if user_db is None or user_db.id == user.id:
+                        user.username = data['username']
+                    else:
+                        return {"error": "Username is taken"}, BAD_REQUEST
+                if 'old_password' in data and 'password' in data:
+                    if user.verify_password(data['old_password']):
+                        user.password = data['password']
+                    else:
+                        user.username = original_username
+                        return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
+                if 'roles' in data:
+                    user.set_roles(data['roles'])
+                    import server.database
+                if is_admin and 'active' in data:
+                    user.active = data['active']
+                running_context.db.session.commit()
+                current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
+                return user.as_json(), SUCCESS
+            else:
+                current_app.logger.error('User {0} does not have permission to '
+                                         'update user {1}'.format(current_user, user.id))
+                return {"error": 'Insufficient Permissions'}, UNAUTHORIZED_ERROR
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
@@ -87,14 +96,14 @@ def update_user():
 
 
 def delete_user(user_id):
-    from server.flaskserver import running_context, current_user
+    from server.flaskserver import running_context
 
     @jwt_required
     @roles_accepted_for_resources('users')
     def __func():
         user = running_context.User.query.filter_by(id=user_id).first()
         if user:
-            if user != current_user:
+            if user.username != get_jwt_identity():
                 running_context.db.session.delete(user)
                 running_context.db.session.commit()
                 current_app.logger.info('User {0} deleted'.format(user.username))

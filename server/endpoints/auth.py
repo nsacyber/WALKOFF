@@ -19,6 +19,8 @@ def _authenticate_and_grant_tokens(json_in, with_refresh=False):
         password = password.encode('utf-8')
     except UnicodeEncodeError:
         return {"error": "Invalid username or password"}, UNAUTHORIZED_ERROR
+    if not user.active:
+        return {"error": "User is deactivated"}, UNAUTHORIZED_ERROR
     if user.verify_password(password):
         response = {'access_token': create_access_token(identity=username, fresh=True)}
         if with_refresh:
@@ -45,8 +47,11 @@ def refresh():
     if user is None:
         revoke_token(get_raw_jwt())
         return {"error": "Invalid user"}, UNAUTHORIZED_ERROR
-    else:
+    if user.active:
         return {'access_token': create_access_token(identity=current_user, fresh=False)}, OBJECT_CREATED
+    else:
+        return {"error": "User is deactivated"}, UNAUTHORIZED_ERROR
+
 
 
 def logout():

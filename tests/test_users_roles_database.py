@@ -23,12 +23,8 @@ class TestUserRolesDatabase(unittest.TestCase):
     def assertUserRolesEqual(self, user, roles):
         self.assertSetEqual({role.name for role in user.roles}, roles)
 
-    def assertLoginCountAndActivity(self, user, login_count, active):
+    def assertLoginCount(self, user, login_count):
         self.assertEqual(user.login_count, login_count)
-        if active:
-            self.assertTrue(user.active)
-        else:
-            self.assertFalse(user.active)
 
     def assertUserTimestamps(self, user, current_login=None, last_login=None, delta=timedelta(milliseconds=100)):
         if current_login is None:
@@ -58,8 +54,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         self.assertUserIps(user)
         db.session.add(user)
         db.session.commit()
-        self.assertLoginCountAndActivity(user, 0, False)
-
+        self.assertLoginCount(user, 0)
 
     def test_verify_valid_password(self):
         user = User('username', 'password')
@@ -76,7 +71,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         user.login('192.168.0.1')
         self.assertUserTimestamps(user, current_login=datetime.utcnow())
         self.assertUserIps(user, current_ip='192.168.0.1')
-        self.assertLoginCountAndActivity(user, 1, True)
+        self.assertLoginCount(user, 1)
 
     def test_second_login(self):
         user = User('username', 'password')
@@ -87,7 +82,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         user.login('192.168.0.2')
         self.assertUserTimestamps(user, current_login=datetime.utcnow(), last_login=first_login_timestamp)
         self.assertUserIps(user, current_ip='192.168.0.2', last_ip='192.168.0.1')
-        self.assertLoginCountAndActivity(user, 2, True)
+        self.assertLoginCount(user, 2)
 
     def test_logout_from_first_login(self):
         user = User('username', 'password')
@@ -95,7 +90,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         db.session.commit()
         user.login('192.168.0.1')
         user.logout()
-        self.assertLoginCountAndActivity(user, 0, False)
+        self.assertLoginCount(user, 0)
 
     def test_logout_from_second_login(self):
         user = User('username', 'password')
@@ -104,7 +99,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         user.login('192.168.0.1')
         user.login('192.168.0.2')
         user.logout()
-        self.assertLoginCountAndActivity(user, 1, False)
+        self.assertLoginCount(user, 1)
 
     def test_too_many_logouts(self):
         user = User('username', 'password')
@@ -113,7 +108,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         user.login('192.168.0.1')
         user.logout()
         user.logout()
-        self.assertLoginCountAndActivity(user, 0, False)
+        self.assertLoginCount(user, 0)
 
     @staticmethod
     def add_roles_to_db(num_roles):
@@ -232,9 +227,11 @@ class TestUserRolesDatabase(unittest.TestCase):
         user_json = user.as_json()
         expected = {"id": 1,
                     "username": 'username',
+                    "active": True,
                     "roles": [{'name': role, 'description': '', 'resources': []} for role in ['role1', 'role2', 'role3']]}
         self.assertSetEqual(set(user_json.keys()), set(expected.keys()))
         self.assertEqual(user_json['username'], 'username')
+        self.assertEqual(user_json['active'], True)
         for role in user_json['roles']:
             self.assertIn('id', role)
             self.assertIn(role['name'], ['role1', 'role2', 'role3'])

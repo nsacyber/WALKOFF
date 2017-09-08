@@ -78,6 +78,13 @@ class TestAuthorization(unittest.TestCase):
                                  data=json.dumps(dict(username='admin', password='invalid')))
         self.assertEqual(response.status_code, UNAUTHORIZED_ERROR)
 
+    def test_login_inactive_user(self):
+        user = add_user(username='testinactive', password='test')
+        user.active = False
+        response = self.app.post('/api/auth', content_type="application/json",
+                                 data=json.dumps(dict(username='testinactive', password='test')))
+        self.assertEqual(response.status_code, UNAUTHORIZED_ERROR)
+
     def test_refresh_valid_token_yields_access_token(self):
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='admin', password='admin')))
@@ -113,6 +120,20 @@ class TestAuthorization(unittest.TestCase):
 
         tokens = BlacklistedToken.query.filter_by(jti=token['jti']).all()
         self.assertEqual(len(tokens), 1)
+
+    def test_refresh_deactivated_user(self):
+        user = add_user(username='test', password='test')
+
+        from server.database import db
+        db.session.commit()
+        response = self.app.post('/api/auth', content_type="application/json",
+                                 data=json.dumps(dict(username='test', password='test')))
+        key = json.loads(response.get_data(as_text=True))
+        token = key['refresh_token']
+        headers = {'Authorization': 'Bearer {}'.format(token)}
+        user.active = False
+        refresh = self.app.post('/api/auth/refresh', content_type="application/json", headers=headers)
+        self.assertEqual(refresh.status_code, UNAUTHORIZED_ERROR)
 
     def test_refresh_with_blacklisted_token(self):
         user = add_user(username='test', password='test')
@@ -187,4 +208,3 @@ class TestAuthorization(unittest.TestCase):
         self.app.post('/api/auth/logout', headers=headers, content_type="application/json",
                                  data=json.dumps(dict(refresh_token=refresh_token)))
         self.assertEqual(user.login_count, 0)
-        self.assertFalse(user.active)
