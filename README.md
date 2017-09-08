@@ -1,8 +1,13 @@
 [![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF)
+
 # WALKOFF
+##Summary
+WALKOFF is an open source automation platform that enables users to easily integrate, automate and customize their processes enabling their environment to automatically adapt and respond to security threats.   
+
+##Description
 WALKOFF is an automation platform enabling plug and play integration of devices through apps.  By employing an app based architecture, integration capabilities only need to be written once and can be swapped in and out as needed. 
 
-Capabilities within WALKOFF apps can then be tied together to form Workflows.  Workflows are defined in an XML format making them easily sharable across environments and organizations.   
+Capabilities within WALKOFF apps can then be tied together to form Workflows.  Workflows are defined in an XML format making them easily sharable across environments and organizations.  
 
 Apps can also have custom interfaces enabling app developers to uniquely display information.  WALKOFF not only makes it easier for users to automate their work but to also quickly find and visualize information as well.
 
