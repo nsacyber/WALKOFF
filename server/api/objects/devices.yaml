@@ -1,6 +1,7 @@
-CreateDevice:
+AddDevice:
   type: object
-  required: [name, app]
+  required: [name, app, type, fields]
+  description: Object used to create a device
   properties:
     name:
       description: Name of the device
@@ -8,33 +9,27 @@ CreateDevice:
       minLength: 4
       maxLength: 25
       example: Server1
-    username:
-      description: Username for the device
-      type: string
-      maxLength: 50
-      example: alligator9
-    password:
-      description: Password for the device
-      type: string
-      example: password123
-    ip:
-      description: IP address of the device
-      type: string
-      example: 127.0.0.1
-    port:
-      description: Port of the device
-      type: integer
-      minimum: 1
-      maximum: 65535
-      example: 25
     app:
       type: string
       example: HelloWorld
-    extra_fields:
-      description: String representation of JSON to use as extra parameters
-      type: object
-      example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
-EditDevice:
+      description: The name of the app associated with this device
+    type:
+      type: string
+      example: HelloWorldDeviceType1
+      description: The type of device
+      minLength: 4
+      maxLength: 25
+    description:
+      type: string
+      example: This device type configures my app under some circumstances
+      description: A description of your device type
+    fields:
+      description: fields used to configure this device
+      type: array
+      items:
+        $ref: '#/definitions/Argument'
+
+Device:
   type: object
   required: [id]
   properties:
@@ -48,54 +43,22 @@ EditDevice:
       minLength: 4
       maxLength: 25
       example: Server1
-    username:
-      description: Username for the device
-      type: string
-      maxLength: 50
-      example: alligator9
-    password:
-      description: Password for the device
-      type: string
-      example: password123
-    ip:
-      description: IP address of the device
-      type: string
-      example: 127.0.0.1
-    port:
-      description: Port of the device
-      type: integer
-      minimum: 1
-      maximum: 65535
-      example: 25
     app:
       type: string
       example: HelloWorld
-    extra_fields:
-      description: String representation of JSON to use as extra parameters
-      type: object
-      example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
-OutputDevice:
-  type: object
-  properties:
-    id:
-      type: integer
-      example: 1234
-      readOnly: true
-    name:
+      description: The name of the app associated with this device
+    type:
       type: string
-      example: Server1
-    username:
+      example: HelloWorldDeviceType1
+      description: The type of device
+      minLength: 4
+      maxLength: 25
+    description:
       type: string
-      example: alligator9
-    ip:
-      type: string
-      example: 127.0.0.1
-    port:
-      type: integer
-      example: 25
-    app:
-      type: string
-      example: HelloWorld
-    extra_fields:
-      type: object
-      example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
+      example: This device type configures my app under some circumstances
+      description: A description of your device type
+    fields:
+      description: fields used to configure this device
+      type: array
+      items:
+        $ref: '#/definitions/Argument'
