@@ -26,6 +26,7 @@
             'success': function (data) {
                 sessionStorage.setItem('access_token', data['access_token']);
                 authToken = data['access_token'];
+                request['headers']['Authorization'] = 'Bearer ' + authToken;
                 $.ajax(request);
             },
             'error': function (e) {
