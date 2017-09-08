@@ -395,16 +395,16 @@ class Controller(object):
                 logger.info('Executing workflow {0} with default starting step'.format(key, start))
             self.workflow_status[uid] = WORKFLOW_RUNNING
 
-            wf_json = workflow.as_json()
+            workflow_json = workflow.as_json()
             if start:
-                wf_json['start'] = start
+                workflow_json['start'] = start
             if start_input:
-                wf_json['start_input'] = start_input
-            wf_json['execution_uid'] = uid
+                workflow_json['start_input'] = start_input
+            workflow_json['execution_uid'] = uid
             if workflow.breakpoint_steps:
-                wf_json['breakpoint_steps'] = workflow.breakpoint_steps
+                workflow_json['breakpoint_steps'] = workflow.breakpoint_steps
 
-            self.load_balancer.pending_workflows.put(wf_json)
+            self.load_balancer.add_workflow(workflow_json)
 
             callbacks.SchedulerJobExecuted.send(self)
             # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
@@ -492,31 +492,26 @@ class Controller(object):
         for workflow in [workflow.workflow for workflow in self.workflows if workflow.playbook == old_playbook_name]:
             self.copy_workflow(old_playbook_name, new_playbook_name, workflow, workflow)
 
-    def pause_workflow(self, playbook_name, workflow_name, uid):
+    def pause_workflow(self, playbook_name, workflow_name, execution_uid):
         """Pauses a workflow that is currently executing.
         
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
-            uid (str): The uid of the workflow
+            execution_uid (str): The uid of the workflow
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow and uid in self.workflow_status and self.workflow_status[uid] == WORKFLOW_RUNNING:
-            logger.info('Pausing workflow {0}'.format(workflow.name))
-            print(self.load_balancer.workflow_comms)
-            if uid in self.load_balancer.workflow_comms:
-                print("Sending pause message")
-                self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[uid], b'', b'Pause'])
-            workflow.pause()
-            self.workflow_status[uid] = WORKFLOW_PAUSED
+        if workflow and execution_uid in self.workflow_status and self.workflow_status[execution_uid] == WORKFLOW_RUNNING:
+            self.load_balancer.pause_workflow(execution_uid, workflow.name)
+            self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
-    def resume_workflow(self, playbook_name, workflow_name, validate_uuid):
+    def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid):
         """Resumes a workflow that has been paused.
         
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
-            validate_uuid (str): The randomly-generated hexadecimal key that was returned from pause_workflow(). This
+            workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from pause_workflow(). This
             is needed to resume a workflow for security purposes.
             
         Returns:
@@ -524,12 +519,8 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            if validate_uuid in self.workflow_status and self.workflow_status[validate_uuid] == WORKFLOW_PAUSED:
-                logger.info('Resuming workflow {0}'.format(workflow.name))
-                if validate_uuid in self.load_balancer.workflow_comms:
-                    self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[validate_uuid], b'', b'resume'])
-                workflow.resume()
-                self.workflow_status[validate_uuid] = WORKFLOW_RUNNING
+            if workflow_execution_uid in self.workflow_status and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED:
+                self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
                 return True
             else:
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))

@@ -77,6 +77,20 @@ class LoadBalancer:
         self.ctx.destroy()
         return
 
+    def add_workflow(self, workflow_json):
+        self.pending_workflows.put(workflow_json)
+
+    def pause_workflow(self, workflow_execution_uid, workflow_name):
+        logger.info('Pausing workflow {0}'.format(workflow_name))
+        print(self.workflow_comms)
+        if workflow_execution_uid in self.workflow_comms:
+            print("Sending pause message")
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
+
+    def resume_workflow(self, workflow_execution_uid, workflow_name):
+        logger.info('Resuming workflow {0}'.format(workflow_name))
+        if workflow_execution_uid in self.workflow_comms:
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
 
 class Worker:
     def __init__(self, id_, worker_env=None):
