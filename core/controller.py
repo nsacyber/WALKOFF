@@ -520,6 +520,7 @@ class Controller(object):
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
             if workflow_execution_uid in self.workflow_status and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED:
+                self.load_balancer.resume_workflow(workflow_execution_uid, workflow.name)
                 self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
                 return True
             else:
@@ -536,9 +537,11 @@ class Controller(object):
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow and uid in self.workflow_status:
             logger.info('Resuming workflow {0} from breakpoint'.format(workflow.name))
-            if uid in self.load_balancer.workflow_comms:
-                self.load_balancer.comm_socket.send_multipart([self.load_balancer.workflow_comms[uid], b'', b'Resume breakpoint'])
-            workflow.resume_breakpoint_step()
+            self.load_balancer.resume_breakpoint_step(uid, workflow_name)
+            return True
+        else:
+            logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow.name))
+            return False
 
     def get_workflow_status(self, uid):
         return self.workflow_status.get(uid, None)
