@@ -9,3 +9,4 @@ connexion >= 1.1
 pyaes == 1.6.0
 pyyaml >= 3.0
 pyzmq > 14.1.0
+passlib >= 1.7.0
