@@ -14,7 +14,7 @@ from core.helpers import combine_dicts
 from server import app
 from server.context import running_context
 from server.security import roles_accepted_for_resources
-from . import database, interface
+from . import database
 
 logger = logging.getLogger(__name__)
 
@@ -48,26 +48,6 @@ def login_page():
 @roles_accepted_for_resources('cases')
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
-
-
-# Returns System-Level Interface Pages
-@app.route('/interface/<string:name>', methods=['GET'])
-@jwt_required
-@roles_accepted_for_resources('interface')
-def sys_pages(name):
-    args = getattr(interface, name)()
-    combine_dicts(args, {"authKey": current_user.get_auth_token()})
-    return render_template("pages/" + name + "/index.html", **args)
-
-
-# TODO: DELETE
-@app.route('/interface/<string:name>/display', methods=['POST'])
-@jwt_required
-@roles_accepted_for_resources('interface')
-def system_pages(name):
-    args = getattr(interface, name)()
-    combine_dicts(args, {"authKey": current_user.get_auth_token()})
-    return render_template("pages/" + name + "/index.html", **args)
 
 
 @app.route('/widgets', methods=['GET'])
