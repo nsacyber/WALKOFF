@@ -96,9 +96,17 @@ export class DevicesModalComponent {
 		return true;
 	}
 
-	getInputType(type: string) {
-		switch (type) {
-			case ""
-		}
+	getMin(field: any) {
+		if (!field.minimum && !field.exclusiveMinimum) return null;
+
+		if (field.exclusiveMinimum) return field.exclusiveMinimum + 1;
+		if (field.minimum) return field.minimum;
+	}
+
+	getMax(field: any) {
+		if (!field.maximum && !field.exclusiveMaximum) return null;
+
+		if (field.exclusiveMaximum) return field.exclusiveMaximum - 1;
+		if (field.maximum) return field.maximum;
 	}
 }
