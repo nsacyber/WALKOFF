@@ -59,7 +59,7 @@ Subscription:
 
 Event:
   type: object
-  required: [timestamp, event_type, caller, message, note, data]
+  required: [timestamp, event_type, originator, message, note, data]
   properties:
     id:
       description: Unique identifier for the event
@@ -77,7 +77,7 @@ Event:
       readOnly: true
       enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
       example: Step
-    caller:
+    originator:
       description: The UID of the execution element which caused this event
       type: string
     message:

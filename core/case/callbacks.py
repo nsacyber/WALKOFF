@@ -13,10 +13,10 @@ from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_A
 
 def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message_name):
     if isinstance(sender, dict):
-        caller = sender['uid']
+        originator = sender['uid']
     else:
-        caller = sender.uid
-    cases_to_add = case_subscription.get_cases_subscribed(caller, message_name)
+        originator = sender.uid
+    cases_to_add = case_subscription.get_cases_subscribed(originator, message_name)
     if cases_to_add:
         if not isinstance(data, string_types):
             try:
@@ -26,7 +26,7 @@ def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message
 
         event = Event(type=event_type,
                       timestamp=datetime.datetime.utcnow(),
-                      caller=caller,
+                      originator=originator,
                       message=entry_message,
                       data=data)
         database.case_db.add_event(event, cases_to_add)

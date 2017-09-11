@@ -49,7 +49,7 @@ class Event(Case_Base):
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow())
     type = Column(String)
-    caller = Column(String)
+    originator = Column(String)
     message = Column(String)
     note = Column(String)
     data = Column(String)
@@ -68,7 +68,7 @@ class Event(Case_Base):
         output = {'id': self.id,
                   'timestamp': str(self.timestamp),
                   'type': self.type,
-                  'caller': self.caller,
+                  'originator': self.originator,
                   'message': self.message if self.message is not None else '',
                   'note': self.note if self.note is not None else ''}
         if self.data is not None:
@@ -82,26 +82,26 @@ class Event(Case_Base):
             output['cases'] = [case.as_json(with_events=False) for case in self.cases]
         return output
 
-    @staticmethod
-    def create(sender, timestamp, entry_message, entry_type, data=''):
-        """Factory method to construct an Event object.
-
-        Args:
-            sender (cls): A boolean to determine whether or not the events of the Case object should be
-            included in the output.
-            timestamp (str): A string representation of a timestamp
-            entry_message (str): The message associated with the event
-            entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
-            data: Extra information to be logged with the event
-
-        Returns:
-            An Event object.
-        """
-        return Event(type=entry_type,
-                     timestamp=timestamp,
-                     caller=','.join(map(str, sender.ancestry)),
-                     message=entry_message,
-                     data=data)
+    # @staticmethod
+    # def create(sender, timestamp, entry_message, entry_type, data=''):
+    #     """Factory method to construct an Event object.
+    #
+    #     Args:
+    #         sender (cls): A boolean to determine whether or not the events of the Case object should be
+    #         included in the output.
+    #         timestamp (str): A string representation of a timestamp
+    #         entry_message (str): The message associated with the event
+    #         entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
+    #         data: Extra information to be logged with the event
+    #
+    #     Returns:
+    #         An Event object.
+    #     """
+    #     return Event(type=entry_type,
+    #                  timestamp=timestamp,
+    #                  originator=','.join(map(str, sender.)),
+    #                  message=entry_message,
+    #                  data=data)
 
 
 class CaseDatabase(object):
