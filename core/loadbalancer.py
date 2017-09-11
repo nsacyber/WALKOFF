@@ -5,7 +5,7 @@ import json
 import zmq.green as zmq
 import zmq.auth
 from zmq.utils.strtypes import asbytes, cast_unicode
-from core import workflow as wf
+from core.workflow import Workflow
 from core.case import callbacks
 from core.threadauthenticator import ThreadAuthenticator
 import signal
@@ -161,8 +161,7 @@ class Worker:
                 start_input = workflow_json['start_input']
                 del workflow_json['start_input']
 
-            workflow = wf.Workflow()
-            workflow.from_json(workflow_json)
+            workflow = Workflow.from_json(workflow_json)
             workflow.uid = uid
             workflow.execution_uid = execution_uid
             workflow.start = start

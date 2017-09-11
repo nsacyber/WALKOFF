@@ -485,7 +485,7 @@ def save_workflow(playbook_name, workflow_name):
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
             try:
-                workflow.from_json(request.get_json())
+                workflow.update_from_json(request.get_json())
             except UnknownApp as e:
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
             except UnknownAppAction as e:

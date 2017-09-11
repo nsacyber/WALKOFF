@@ -9,7 +9,7 @@ import logging
 from core.scheduler import Scheduler
 import core.config.config
 import core.config.paths
-from core import workflow as wf
+from core.workflow import Workflow
 from core.case import callbacks
 from core.helpers import (locate_workflows_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
@@ -131,10 +131,9 @@ class Controller(object):
         self.load_balancer = None
         self.receiver = None
 
-    def __add_workflow(self, key, name, json_in, playbook):
+    def __add_workflow(self, key, name, json_in):
         try:
-            workflow = wf.Workflow(playbook_name=playbook)
-            workflow.from_json(json_in)
+            workflow = Workflow.from_json(json_in)
             self.workflows[key] = workflow
             logger.info('Adding workflow {0} to controller'.format(name))
         except (UnknownApp, UnknownAppAction, InvalidInput) as e:
@@ -161,7 +160,7 @@ class Controller(object):
                     workflow_name = name_override if name_override else workflow['name']
                     workflow['name'] = workflow_name
                     key = _WorkflowKey(playbook_name, workflow_name)
-                    self.__add_workflow(key, workflow_name, workflow, playbook_name)
+                    self.__add_workflow(key, workflow_name, workflow)
                     self.add_child_workflows()
                     break
             else:
@@ -185,7 +184,7 @@ class Controller(object):
             for workflow in json_in['workflows']:
                 workflow_name = name_override if name_override else workflow['name']
                 key = _WorkflowKey(playbook_name, workflow_name)
-                self.__add_workflow(key, workflow_name, workflow, playbook_name)
+                self.__add_workflow(key, workflow_name, workflow)
 
         self.add_child_workflows()
 
