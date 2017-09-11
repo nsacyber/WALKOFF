@@ -1,4 +1,4 @@
-<div id="main">
+<div id="main" class="casesMain">
 	<ul class="nav nav-tabs" role="tablist">
 		<li class="active"><a href="#events" data-toggle="tab" role="tab">Case Event Log</a></li>
 		<li><a href="#cases" data-toggle="tab" role="tab">Case Management</a></li>
@@ -24,8 +24,8 @@
 				</div>
 			</div>
 
-			<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
-				[rows]='displayCaseEvents' [sortType]="'multi'" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
+			<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [rows]='displayCaseEvents' [sortType]="'multi'"
+			 [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
 				<!-- Column Templates -->
 				<ngx-datatable-column name="ID" [flexGrow]="1">
 					<ng-template let-row="row" ngx-datatable-cell-template>
@@ -42,10 +42,10 @@
 						{{row.type}}
 					</ng-template>
 				</ngx-datatable-column>
-				<ngx-datatable-column name="Ancestry" [flexGrow]="4">
+				<ngx-datatable-column name="Originator" [flexGrow]="2">
 					<ng-template let-row="row" ngx-datatable-cell-template>
 						<!--{{getFriendlyArray(row.ancestry)}}-->
-						{{row.ancestry}}
+						{{row.originator}}
 					</ng-template>
 				</ngx-datatable-column>
 				<ngx-datatable-column name="Data" [sortable]="false" [flexGrow]="4">
@@ -54,7 +54,7 @@
 						{{row.data}}
 					</ng-template>
 				</ngx-datatable-column>
-				<ngx-datatable-column name="Message" [flexGrow]="2">
+				<ngx-datatable-column name="Message" [flexGrow]="3">
 					<ng-template let-row="row" ngx-datatable-cell-template>
 						{{row.message}}
 					</ng-template>
@@ -79,7 +79,7 @@
 			</div>
 
 			<ngx-datatable #casesTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
-				[rows]='displayCases' [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
+			 [rows]='displayCases' [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
 				<!-- Column Templates -->
 				<ngx-datatable-column name="Name" [flexGrow]="1">
 					<ng-template let-row="row" ngx-datatable-cell-template>

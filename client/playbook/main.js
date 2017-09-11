@@ -1,6 +1,5 @@
 if (typeof(EventSource) !== "undefined") {
     stepResultsSSE = new EventSource('workflowresults/stream-steps');
-
 }
 else {
     console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
