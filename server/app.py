@@ -145,7 +145,6 @@ def create_app():
         variable_start_string='<%',
         variable_end_string='%>'
     ))
-    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'
