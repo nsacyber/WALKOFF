@@ -23,13 +23,14 @@ logger = logging.getLogger(__name__)
 
 
 class LoadBalancer:
-    def __init__(self):
+    def __init__(self, ctx):
         self.available_workers = []
         self.workflow_comms = {}
         self.thread_exit = False
         self.pending_workflows = Queue()
 
-        self.ctx = zmq.Context.instance()
+        self.ctx = ctx
+        # self.ctx = zmq.Context.instance()
         self.auth = ThreadAuthenticator(self.ctx)
         self.auth.start()
         self.auth.allow('127.0.0.1')
@@ -74,7 +75,7 @@ class LoadBalancer:
         self.request_socket.close()
         self.comm_socket.close()
         self.auth.stop()
-        self.ctx.destroy()
+        # self.ctx.destroy()
         return
 
 
@@ -89,16 +90,16 @@ class Worker:
         client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
 
         self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
-        self.auth.start()
-        self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+        # self.auth = ThreadAuthenticator(self.ctx)
+        # self.auth.start()
+        # self.auth.allow('127.0.0.1')
+        # self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
 
         self.results_sock = self.ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        self.results_sock.curve_secretkey = server_secret
-        self.results_sock.curve_publickey = server_public
-        self.results_sock.curve_server = True
+        # self.results_sock.curve_secretkey = server_secret
+        # self.results_sock.curve_publickey = server_public
+        # self.results_sock.curve_server = True
         self.results_sock.connect(RESULTS_ADDR)
 
         self.request_sock = self.ctx.socket(zmq.REQ)
@@ -128,8 +129,8 @@ class Worker:
             self.results_sock.close()
         if self.comm_sock:
             self.comm_sock.close()
-        if self.auth:
-            self.auth.stop()
+        # if self.auth:
+        #     self.auth.stop()
         if self.ctx:
             self.ctx.destroy()
         os._exit(0)
@@ -196,20 +197,21 @@ class Receiver:
         'Filter Success': (callbacks.FilterSuccess, False),
         'Filter Error': (callbacks.FilterError, False)}
 
-    def __init__(self):
+    def __init__(self, ctx):
         self.thread_exit = False
         self.workflows_executed = 0
 
-        client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
-        client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
-        server_public_file = os.path.join(core.config.paths.zmq_public_keys_path, "server.key")
-        server_public, _ = zmq.auth.load_certificate(server_public_file)
+        # client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
+        # client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
+        # server_public_file = os.path.join(core.config.paths.zmq_public_keys_path, "server.key")
+        # server_public, _ = zmq.auth.load_certificate(server_public_file)
 
-        self.ctx = zmq.Context()
+        self.ctx = ctx
+        # self.ctx = zmq.Context()
         self.results_sock = self.ctx.socket(zmq.PULL)
-        self.results_sock.curve_secretkey = client_secret
-        self.results_sock.curve_publickey = client_public
-        self.results_sock.curve_serverkey = server_public
+        # self.results_sock.curve_secretkey = client_secret
+        # self.results_sock.curve_publickey = client_public
+        # self.results_sock.curve_serverkey = server_public
         self.results_sock.bind(RESULTS_ADDR)
 
     @staticmethod
@@ -243,5 +245,5 @@ class Receiver:
                     self.workflows_executed += 1
 
         self.results_sock.close()
-        self.ctx.destroy()
+        # self.ctx.destroy()
         return

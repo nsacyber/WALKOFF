@@ -17,6 +17,7 @@ import uuid
 import json
 import multiprocessing
 import threading
+import zmq.green as zmq
 from core import loadbalancer
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
@@ -77,11 +78,13 @@ class Controller(object):
             pid.start()
             self.pids.append(pid)
 
-        self.receiver = loadbalancer.Receiver()
+        ctx = zmq.Context.instance()
+        self.load_balancer = loadbalancer.LoadBalancer(ctx)
+        self.receiver = loadbalancer.Receiver(ctx)
+
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
 
-        self.load_balancer = loadbalancer.LoadBalancer()
         self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
         self.manager_thread.start()
 
