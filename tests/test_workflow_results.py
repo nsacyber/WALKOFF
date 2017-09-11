@@ -14,7 +14,7 @@ class TestWorkflowResults(ServerTestCase):
         case_database.case_db.tear_down()
 
     def test_workflow_result_format(self):
-        flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+        flaskserver.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
@@ -37,7 +37,7 @@ class TestWorkflowResults(ServerTestCase):
                               'result': {"status": "Success", "result": {"message": "HELLO WORLD"}}})
 
     def test_workflow_result_multiple_workflows(self):
-        flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+        flaskserver.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
                                                                              'multiactionWorkflowTest.playbook')
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')

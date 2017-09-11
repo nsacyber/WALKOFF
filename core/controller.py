@@ -11,7 +11,7 @@ import core.config.config
 import core.config.paths
 from core.workflow import Workflow
 from core.case import callbacks
-from core.helpers import (locate_workflows_in_directory,
+from core.helpers import (locate_playbooks_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
 import uuid
 import json
@@ -41,7 +41,7 @@ class Controller(object):
         self.uid = 'controller'
         self.workflows = {}
         self.workflow_status = {}
-        self.load_all_workflows_from_directory(path=workflows_path)
+        self.load_all_playbooks_from_directory(path=workflows_path)
         self.instances = {}
         self.tree = None
         self.scheduler = Scheduler()
@@ -169,7 +169,7 @@ class Controller(object):
                 return False
             return True
 
-    def load_workflows_from_file(self, path, name_override=None, playbook_override=None):
+    def load_playbook_from_file(self, path, name_override=None, playbook_override=None):
         """Loads multiple workloads from a file.
         
         Args:
@@ -188,7 +188,7 @@ class Controller(object):
 
         self.add_child_workflows()
 
-    def load_all_workflows_from_directory(self, path=None):
+    def load_all_playbooks_from_directory(self, path=None):
         """Loads all workflows from a directory.
         
         Args:
@@ -196,8 +196,8 @@ class Controller(object):
         """
         if path is None:
             path = core.config.paths.workflows_path
-        for workflow in locate_workflows_in_directory(path):
-            self.load_workflows_from_file(os.path.join(path, workflow))
+        for workflow in locate_playbooks_in_directory(path):
+            self.load_playbook_from_file(os.path.join(path, workflow))
 
     def add_child_workflows(self):
         for workflow in self.workflows:
@@ -251,7 +251,7 @@ class Controller(object):
         """
         # TODO: Need a handler for returning workflow key and status
         path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
-        self.load_workflows_from_file(path=path, playbook_override=playbook_name)
+        self.load_playbook_from_file(path=path, playbook_override=playbook_name)
 
     def remove_workflow(self, playbook_name, workflow_name):
         """Removes a workflow.

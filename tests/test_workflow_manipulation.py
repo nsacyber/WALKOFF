@@ -39,8 +39,8 @@ class TestWorkflowManipulation(unittest.TestCase):
     def setUp(self):
         self.controller = core.controller.controller
         self.controller.workflows = {}
-        self.controller.load_all_workflows_from_directory(path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
-        self.controller.load_workflows_from_file(
+        self.controller.load_all_playbooks_from_directory(path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
+        self.controller.load_playbook_from_file(
             path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
@@ -119,7 +119,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_pause_and_resume_workflow(self):
         self.controller.initialize_threading(worker_env=modified_setup_worker_env)
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.load_playbook_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
         result = dict()
@@ -151,7 +151,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_pause_and_resume_workflow_breakpoint(self):
         self.controller.initialize_threading(worker_env=modified_setup_worker_env)
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.load_playbook_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
         self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
 
         uid = None

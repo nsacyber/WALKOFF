@@ -57,10 +57,10 @@ class TestHelperFunctions(unittest.TestCase):
                               'testExecutionWorkflow.playbook',
                               'testScheduler.playbook',
                               'tieredWorkflow.playbook']
-        received_workflows = locate_workflows_in_directory(test_workflows_path)
+        received_workflows = locate_playbooks_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 
-        self.assertListEqual(locate_workflows_in_directory('.'), [])
+        self.assertListEqual(locate_playbooks_in_directory('.'), [])
 
     def test_get_workflow_names_from_file(self):
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))

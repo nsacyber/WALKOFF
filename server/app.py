@@ -159,7 +159,7 @@ def create_app():
     core.config.config.initialize()
 
     import core.controller
-    core.controller.controller.load_all_workflows_from_directory()
+    core.controller.controller.load_all_playbooks_from_directory()
     setup_case_stream()
     return _app
 

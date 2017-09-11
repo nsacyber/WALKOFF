@@ -170,7 +170,7 @@ def list_class_functions(class_name):
                                                    and callable(getattr(class_name, field)))]
 
 
-def locate_workflows_in_directory(path=None):
+def locate_playbooks_in_directory(path=None):
     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
     
     Args:
