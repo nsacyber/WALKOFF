@@ -1,7 +1,6 @@
 import json
 from abc import abstractmethod
 from flask import current_app
-from sqlalchemy import Integer, String
 from . import database
 import core.config.paths
 from core.helpers import format_exception_message
@@ -17,7 +16,7 @@ class App(db.Model, database.TrackModificationsMixIn):
     __tablename__ = 'app'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(String)
+    name = db.Column(db.String)
     devices = db.relationship("Device", back_populates="app")
 
     def as_json(self, with_devices=False):
@@ -95,7 +94,7 @@ class Device(db.Model, database.TrackModificationsMixIn):
     __tablename__ = 'device'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(String)
+    name = db.Column(db.String)
     username = db.Column(db.String(80))
     password = db.Column(db.LargeBinary())
     ip = db.Column(db.String(15))
