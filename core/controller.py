@@ -165,21 +165,25 @@ class Controller(object):
         """
         with open(path, 'r') as playbook_file:
             playbook_loaded = playbook_file.read()
-            json_in = json.loads(playbook_loaded)
-            playbook_name = playbook_override if playbook_override else json_in['name']
-            for workflow in (workflow_ for workflow_ in json_in['workflows'] if workflow_['name'] == workflow_name):
-                if workflow['name'] == workflow_name:
-                    workflow_name = name_override if name_override else workflow['name']
-                    workflow['name'] = workflow_name
-                    key = _WorkflowKey(playbook_name, workflow_name)
-                    self.__add_workflow(key, workflow_name, workflow)
-                    self.add_child_workflows()
-                    break
+            try:
+                json_in = json.loads(playbook_loaded)
+            except json.JSONDecodeError:
+                logger.error('Cannot parse {}'.format(path))
             else:
-                logger.warning('Workflow {0} not found in playbook {0}. '
-                               'Cannot load.'.format(workflow_name, playbook_name))
-                return False
-            return True
+                playbook_name = playbook_override if playbook_override else json_in['name']
+                for workflow in (workflow_ for workflow_ in json_in['workflows'] if workflow_['name'] == workflow_name):
+                    if workflow['name'] == workflow_name:
+                        workflow_name = name_override if name_override else workflow['name']
+                        workflow['name'] = workflow_name
+                        key = _WorkflowKey(playbook_name, workflow_name)
+                        self.__add_workflow(key, workflow_name, workflow)
+                        self.add_child_workflows()
+                        break
+                else:
+                    logger.warning('Workflow {0} not found in playbook {0}. '
+                                   'Cannot load.'.format(workflow_name, playbook_name))
+                    return False
+                return True
 
     def load_playbook_from_file(self, path, name_override=None, playbook_override=None):
         """Loads multiple workloads from a file.
@@ -191,12 +195,16 @@ class Controller(object):
         """
         with open(path, 'r') as playbook_file:
             playbook_loaded = playbook_file.read()
-            json_in = json.loads(playbook_loaded)
-            playbook_name = playbook_override if playbook_override else json_in['name']
-            for workflow in json_in['workflows']:
-                workflow_name = name_override if name_override else workflow['name']
-                key = _WorkflowKey(playbook_name, workflow_name)
-                self.__add_workflow(key, workflow_name, workflow)
+            try:
+                json_in = json.loads(playbook_loaded)
+            except json.JSONDecodeError:
+                logger.error('Cannot parse {}'.format(path))
+            else:
+                playbook_name = playbook_override if playbook_override else json_in['name']
+                for workflow in json_in['workflows']:
+                    workflow_name = name_override if name_override else workflow['name']
+                    key = _WorkflowKey(playbook_name, workflow_name)
+                    self.__add_workflow(key, workflow_name, workflow)
 
         self.add_child_workflows()
 
