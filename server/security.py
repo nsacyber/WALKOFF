@@ -1,7 +1,16 @@
 from functools import wraps
 from flask_jwt_extended import get_jwt_claims
 from flask_jwt_extended.jwt_manager import JWTManager
+from flask_jwt_extended.tokens import decode_jwt
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_jwt_extended.view_decorators import _load_user
 from server.database import User
+from flask_jwt_extended.config import config
+from flask import request
+try:
+    from flask import _app_ctx_stack as ctx_stack
+except ImportError:  # pragma: no cover
+    from flask import _request_ctx_stack as ctx_stack
 import server.database
 from server.returncodes import UNAUTHORIZED_ERROR
 from server.tokens import is_token_revoked
@@ -71,3 +80,31 @@ def roles_accepted_for_resources(*resources):
 @jwt.expired_token_loader
 def expired_token_callback():
     return {'error': 'Token expired'}, UNAUTHORIZED_ERROR
+
+
+def jwt_required_in_query(query_name):
+    def wrapped(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            jwt_data = _decode_jwt_from_query_string(query_name)
+            ctx_stack.top.jwt = jwt_data
+            _load_user(jwt_data[config.identity_claim])
+            return fn(*args, **kwargs)
+        return wrapper
+    return wrapped
+
+
+def _decode_jwt_from_query_string(param_name):
+
+    # Verify we have the query string
+    token = request.args.get(param_name, None)
+    if not token:
+        raise NoAuthorizationError("Missing {} query param".format(param_name))
+
+    return decode_jwt(
+        encoded_token=token,
+        secret=config.decode_key,
+        algorithm=config.algorithm,
+        csrf=False,
+        identity_claim=config.identity_claim
+    )
