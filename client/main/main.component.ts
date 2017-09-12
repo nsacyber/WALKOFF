@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { JwtHelper } from 'angular2-jwt';
 
+import { MainService } from './main.service';
 import { AuthService } from '../auth/auth.service';
 
 @Component({
@@ -13,13 +14,17 @@ import { AuthService } from '../auth/auth.service';
 		// 'client/node_modules/bootstrap/dist/css/bootstrap.min.css',
 		// 'client/node_modules/font-awesome/css/font-awesome.min.css',
 	],
-	providers: [AuthService]
+	providers: [MainService, AuthService]
 })
 export class MainComponent {
 	currentUser: string;
+	apps: string[] = [];
 	jwtHelper: JwtHelper = new JwtHelper();
 
-	constructor(private authService: AuthService) {
+	constructor(private mainService: MainService, private authService: AuthService) {
+		this.mainService.getApps()
+			.then(apps => this.apps = apps);
+
 		this.updateUserInfo();
 
 		//TODO: remove once we fully convert playbook / triggers to angular
