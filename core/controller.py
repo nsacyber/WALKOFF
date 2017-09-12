@@ -9,15 +9,17 @@ import logging
 from core.scheduler import Scheduler
 import core.config.config
 import core.config.paths
-from core import workflow as wf
+from core.workflow import Workflow
 from core.case import callbacks
-from core.helpers import (locate_workflows_in_directory,
+from core.helpers import (locate_playbooks_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
 import uuid
 import json
 import multiprocessing
 import threading
+import zmq.green as zmq
 from core import loadbalancer
+from core.threadauthenticator import ThreadAuthenticator
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -40,7 +42,7 @@ class Controller(object):
         self.uid = 'controller'
         self.workflows = {}
         self.workflow_status = {}
-        self.load_all_workflows_from_directory(path=workflows_path)
+        self.load_all_playbooks_from_directory(path=workflows_path)
         self.instances = {}
         self.tree = None
         self.scheduler = Scheduler()
@@ -56,6 +58,8 @@ class Controller(object):
         self.threading_is_initialized = False
         self.load_balancer = None
         self.receiver = None
+        self.ctx = None
+        self.auth = None
 
     def __workflow_completed_callback(self, workflow, **kwargs):
         self.workflows_executed += 1
@@ -77,11 +81,18 @@ class Controller(object):
             pid.start()
             self.pids.append(pid)
 
-        self.receiver = loadbalancer.Receiver()
+        self.ctx = zmq.Context.instance()
+        self.auth = ThreadAuthenticator(self.ctx)
+        self.auth.start()
+        self.auth.allow('127.0.0.1')
+        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+
+        self.load_balancer = loadbalancer.LoadBalancer(self.ctx)
+        self.receiver = loadbalancer.Receiver(self.ctx)
+
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
 
-        self.load_balancer = loadbalancer.LoadBalancer()
         self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
         self.manager_thread.start()
 
@@ -116,6 +127,10 @@ class Controller(object):
                 logger.debug('Controller thread pool shutdown')
                 break
             gevent.sleep(0.1)
+        if self.auth:
+            self.auth.stop()
+        if self.ctx:
+            self.ctx.destroy()
         self.cleanup_threading()
         return
 
@@ -128,10 +143,9 @@ class Controller(object):
         self.load_balancer = None
         self.receiver = None
 
-    def __add_workflow(self, key, name, json_in, playbook):
+    def __add_workflow(self, key, name, json_in):
         try:
-            workflow = wf.Workflow(playbook_name=playbook)
-            workflow.from_json(json_in)
+            workflow = Workflow.from_json(json_in)
             self.workflows[key] = workflow
             logger.info('Adding workflow {0} to controller'.format(name))
         except (UnknownApp, UnknownAppAction, InvalidInput) as e:
@@ -149,16 +163,16 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
-        with open(path, 'r') as workflow_file:
-            workflow_loaded = workflow_file.read()
-            json_in = json.loads(workflow_loaded)
+        with open(path, 'r') as playbook_file:
+            playbook_loaded = playbook_file.read()
+            json_in = json.loads(playbook_loaded)
             playbook_name = playbook_override if playbook_override else json_in['name']
             for workflow in (workflow_ for workflow_ in json_in['workflows'] if workflow_['name'] == workflow_name):
                 if workflow['name'] == workflow_name:
                     workflow_name = name_override if name_override else workflow['name']
                     workflow['name'] = workflow_name
                     key = _WorkflowKey(playbook_name, workflow_name)
-                    self.__add_workflow(key, workflow_name, workflow, playbook_name)
+                    self.__add_workflow(key, workflow_name, workflow)
                     self.add_child_workflows()
                     break
             else:
@@ -167,7 +181,7 @@ class Controller(object):
                 return False
             return True
 
-    def load_workflows_from_file(self, path, name_override=None, playbook_override=None):
+    def load_playbook_from_file(self, path, name_override=None, playbook_override=None):
         """Loads multiple workloads from a file.
         
         Args:
@@ -175,18 +189,18 @@ class Controller(object):
             name_override (str, optional): Name that the workflow should be changed to. 
             playbook_override (str, optional): Name that the playbook should be changed to.
         """
-        with open(path, 'r') as workflow_file:
-            workflow_loaded = workflow_file.read()
-            json_in = json.loads(workflow_loaded)
+        with open(path, 'r') as playbook_file:
+            playbook_loaded = playbook_file.read()
+            json_in = json.loads(playbook_loaded)
             playbook_name = playbook_override if playbook_override else json_in['name']
             for workflow in json_in['workflows']:
                 workflow_name = name_override if name_override else workflow['name']
                 key = _WorkflowKey(playbook_name, workflow_name)
-                self.__add_workflow(key, workflow_name, workflow, playbook_name)
+                self.__add_workflow(key, workflow_name, workflow)
 
         self.add_child_workflows()
 
-    def load_all_workflows_from_directory(self, path=None):
+    def load_all_playbooks_from_directory(self, path=None):
         """Loads all workflows from a directory.
         
         Args:
@@ -194,8 +208,8 @@ class Controller(object):
         """
         if path is None:
             path = core.config.paths.workflows_path
-        for workflow in locate_workflows_in_directory(path):
-            self.load_workflows_from_file(os.path.join(path, workflow))
+        for playbook in locate_playbooks_in_directory(path):
+            self.load_playbook_from_file(os.path.join(path, playbook))
 
     def add_child_workflows(self):
         for workflow in self.workflows:
@@ -249,7 +263,7 @@ class Controller(object):
         """
         # TODO: Need a handler for returning workflow key and status
         path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
-        self.load_workflows_from_file(path=path, playbook_override=playbook_name)
+        self.load_playbook_from_file(path=path, playbook_override=playbook_name)
 
     def remove_workflow(self, playbook_name, workflow_name):
         """Removes a workflow.
@@ -395,16 +409,16 @@ class Controller(object):
                 logger.info('Executing workflow {0} with default starting step'.format(key, start))
             self.workflow_status[uid] = WORKFLOW_RUNNING
 
-            workflow_json = workflow.as_json()
+            wf_json = workflow.as_json()
             if start:
-                workflow_json['start'] = start
+                wf_json['start'] = start
             if start_input:
-                workflow_json['start_input'] = start_input
-            workflow_json['execution_uid'] = uid
+                wf_json['start_input'] = start_input
+            wf_json['execution_uid'] = uid
             if workflow.breakpoint_steps:
-                workflow_json['breakpoint_steps'] = workflow.breakpoint_steps
+                wf_json['breakpoint_steps'] = workflow.breakpoint_steps
 
-            self.load_balancer.add_workflow(workflow_json)
+            self.load_balancer.pending_workflows.put(wf_json)
 
             callbacks.SchedulerJobExecuted.send(self)
             # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
