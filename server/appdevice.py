@@ -1,9 +1,7 @@
-from flask import current_app
-from sqlalchemy import Integer, String
 from sqlalchemy.ext.declarative import declared_attr
 import pyaes
 import logging
-from server.database import Base, db
+from server.database import db, TrackModificationsMixIn
 from sqlalchemy.ext.hybrid import hybrid_property
 from core.validator import convert_primitive_type
 from server.app import key
@@ -15,10 +13,10 @@ class UnknownDeviceField(Exception):
     pass
 
 
-class App(Base):
+class App(db.Model):
     __tablename__ = 'app'
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String(25), nullable=False, unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(25), nullable=False, unique=True)
     devices = db.relationship('Device',
                               cascade='all, delete-orphan',
                               backref='post',
@@ -82,10 +80,10 @@ def get_device(app_name, device_name):
         return None
 
 
-class Device(Base):
+class Device(db.Model, TrackModificationsMixIn):
     __tablename__ = 'device'
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String(25), nullable=False, unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(25), nullable=False, unique=True)
     plaintext_fields = db.relationship('DeviceField',
                                        cascade='all, delete-orphan',
                                        backref='post',
@@ -129,8 +127,8 @@ allowed_device_field_types = ('string', 'number', 'boolean', 'integer')
 
 
 class DeviceFieldMixin(object):
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String(25), nullable=False, unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(25), nullable=False, unique=True)
     type = db.Column(db.Enum(*allowed_device_field_types))
 
     @declared_attr
@@ -138,7 +136,7 @@ class DeviceFieldMixin(object):
         return db.Column(db.Integer, db.ForeignKey('device.id'))
 
 
-class DeviceField(DeviceFieldMixin, Base):
+class DeviceField(db.Model, DeviceFieldMixin):
     __tablename__ = 'plaintext_device_field'
 
     _value = db.Column('value', db.String(), nullable=False)
@@ -165,7 +163,7 @@ class DeviceField(DeviceFieldMixin, Base):
         return DeviceField(data['name'], type_, data['value'])
 
 
-class EncryptedDeviceField(DeviceFieldMixin, Base):
+class EncryptedDeviceField(db.Model, DeviceFieldMixin):
     __tablename__ = 'encrypted_device_field'
     _value = db.Column('value', db.LargeBinary(), nullable=False)
 
