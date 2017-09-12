@@ -11,12 +11,8 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            status:
-              description: State of scheduler
-              type: string
-              example: 0 for stopped, 1 for running, 2 for paused
+          $ref: '#/definitions/Scheduler'
+
 /api/scheduler/{status}:
   parameters:
     - in: path
@@ -36,57 +32,144 @@
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            status:
-              description: State of scheduler or error message
-              type: string
-              example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-/api/scheduler/{job_id}/{status}:
+          $ref: '#/definitions/Scheduler'
+
+/api/scheduledtasks:
+  get:
+    tags:
+      - Scheduler
+    summary: Get all the scheduled tasks
+    operationId: server.endpoints.scheduler.read_all_scheduled_tasks
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: A list of Scheduled Task objects
+          type: array
+          items:
+            $ref: '#/definitions/ScheduledTask'
+  put:
+    tags:
+      - Scheduler
+    summary: Create a new Scheduled Task
+    operationId: server.endpoints.scheduler.create_scheduled_task
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The new Scheduled Task object
+        required: true
+        schema:
+          $ref: '#/definitions/AddScheduledTask'
+    responses:
+      201:
+        description: Success
+        schema:
+          description: A list of Scheduled Task objects
+          type: array
+          items:
+            $ref: '#/definitions/ScheduledTask'
+      462:
+        description: Scheduled task already exists
+        schema:
+          $ref: '#/definitions/Error'
+  post:
+    tags:
+      - Scheduler
+    summary: Update a new Scheduled Task
+    operationId: server.endpoints.scheduler.update_scheduled_task
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The updated Scheduled Task object
+        required: true
+        schema:
+          $ref: '#/definitions/ScheduledTask'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/ScheduledTask'
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Scheduled task name already exists
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/scheduledtasks/{scheduled_task_id}:
   parameters:
-    - in: path
-      name: job_id
-      description: The job ID that needs to be fetched
-      type: string
+    - name: scheduled_task_id
+      in: path
+      description: The ID of the scheduled task.
       required: true
-    - in: path
-      name: status
-      description: Requested status of the job
       type: string
-      required: true
   get:
     tags:
       - Scheduler
-    summary: Pause a specific job
-    description: ''
-    operationId: server.endpoints.scheduler.update_job_status
+    summary: Get the scheduled task
+    operationId: server.endpoints.scheduler.read_scheduled_task
     produces:
       - application/json
     responses:
       200:
         description: Success
         schema:
-          type: object
-          properties:
-            status:
-              description: State of job
-              type: string
-              example: Job Paused
-/api/scheduler/jobs:
-  get:
+          $ref: '#/definitions/ScheduledTask'
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'
+  delete:
     tags:
       - Scheduler
-    summary: Read all jobs
-    description: ''
-    operationId: server.endpoints.scheduler.read_all_jobs
+    summary: Delete the scheduled task
+    operationId: server.endpoints.scheduler.delete_scheduled_task
     produces:
       - application/json
     responses:
       200:
         description: Success
+      461:
+        description: Scheduled task does not exist
         schema:
-          description: A list of job objects
-          type: object
-          properties:
-            jobs:
-              $ref: '#/definitions/Job'
+          $ref: '#/definitions/Error'
+
+/api/scheduledtasks/{scheduled_task_id}/{action}:
+  put:
+    tags:
+      - Scheduler
+    summary: Enable the scheduled task
+    operationId: server.endpoints.scheduler.control_scheduled_task
+    produces:
+      - application/json
+    parameters:
+      - name: scheduled_task_id
+        in: path
+        description: The ID of the scheduled task.
+        required: true
+        type: string
+      - name: action
+        in: path
+        description: The action to take on the task.
+        required: true
+        type: string
+        enum: [start, stop]
+    responses:
+      200:
+        description: Success
+      461:
+        description: Scheduled task does not exist
+        schema:
+          $ref: '#/definitions/Error'

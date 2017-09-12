@@ -44,4 +44,17 @@ Configuration:
       clear_case_db_on_startup:
         type: boolean
         description: Should the case database be cleared upon a server restart?
+      number_processes:
+        type: integer
+        minimum: 1
+        description: Number of worker processes which can execute workflows
+      access_token_duration:
+        type: number
+        minimum: 1
+        description: Time (in minutes) to allow an access token to persist. Should greater than the duration of the refresh token
+      refresh_token_duration:
+        type: number
+        minimum: 1
+        description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
+
 

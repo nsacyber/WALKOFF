@@ -32,7 +32,7 @@ export class DevicesComponent {
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {
@@ -75,7 +75,6 @@ export class DevicesComponent {
 			.getDevices()
 			.then(devices => this.displayDevices = this.devices = devices)
 			.catch(e => this.toastyService.error(`Error retrieving devices: ${e.message}`));
-			
 	}
 
 	addDevice(): void {

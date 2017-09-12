@@ -1,23 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers, RequestOptions } from '@angular/http';
+import { Http, Response, Headers } from '@angular/http';
+import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Device } from '../models/device';
 import { DeviceType } from '../models/deviceType';
 
 @Injectable()
 export class DevicesService {
-	requestOptions: RequestOptions;
-
-	constructor (private http: Http) {
-		let authKey = localStorage.getItem('authKey');
-		let headers = new Headers({ 'Accept': 'application/json' });
-		headers.append('Authentication-Token', authKey);
-
-		this.requestOptions = new RequestOptions({ headers: headers });
+	constructor (private authHttp: JwtHttp) {
 	}
 
 	getDevicesForApp(appName: string) : Promise<Device[]> {
-		return this.http.get(`/api/apps/${appName}`, this.requestOptions)
+		return this.authHttp.get(`/api/apps/${appName}`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device[])
@@ -25,7 +19,7 @@ export class DevicesService {
 	}
 
 	getAppDevice(appName: string, deviceName: string) : Promise<Device> {
-		return this.http.get(`/api/apps/${appName}/devices/${deviceName}`, this.requestOptions)
+		return this.authHttp.get(`/api/apps/${appName}/devices/${deviceName}`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)
@@ -33,7 +27,7 @@ export class DevicesService {
 	}
 
 	getDevices() : Promise<Device[]> {
-		return this.http.get(`/api/devices`, this.requestOptions)
+		return this.authHttp.get(`/api/devices`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device[])
@@ -41,7 +35,7 @@ export class DevicesService {
 	}
 
 	addDevice(device: Device) : Promise<Device> {
-		return this.http.put(`/api/devices`, device, this.requestOptions)
+		return this.authHttp.put(`/api/devices`, device)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)
@@ -49,7 +43,7 @@ export class DevicesService {
 	}
 
 	editDevice(device: Device) : Promise<Device> {
-		return this.http.post(`/api/devices`, device, this.requestOptions)
+		return this.authHttp.post(`/api/devices`, device)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)
@@ -57,21 +51,21 @@ export class DevicesService {
 	}
 
 	deleteDevice(deviceId: number) : Promise<void> {
-		return this.http.delete(`/api/devices/${deviceId}`, this.requestOptions)
+		return this.authHttp.delete(`/api/devices/${deviceId}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
 	getApps() : Promise<string[]> {
-		return this.http.get(`/api/apps`, this.requestOptions)
+		return this.authHttp.get(`/api/apps`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
 	getDeviceTypes() : Promise<DeviceType[]> {
-		return this.http.get(`api/devicetypes`, this.requestOptions)
+		return this.authHttp.get(`api/devicetypes`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as DeviceType[])

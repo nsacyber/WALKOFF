@@ -1,17 +1,19 @@
 import json
 from flask import current_app, request
-from flask_security import roles_accepted, auth_token_required
+from server.security import roles_accepted_for_resources
+from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 from server.returncodes import *
 import pyaes
+from server.database import db
 
 
 def read_all_devices():
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         query = running_context.Device.query.all()
         output = []
@@ -26,8 +28,8 @@ def read_all_devices():
 def import_devices():
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
@@ -58,8 +60,8 @@ def import_devices():
 def export_devices():
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
@@ -89,8 +91,8 @@ def export_devices():
 def read_device(device_id):
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
         if dev is not None:
@@ -106,14 +108,14 @@ def read_device(device_id):
 def delete_device(device_id):
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         dev = running_context.Device.query.filter_by(id=device_id).first()
         if dev is not None:
-            running_context.db.session.delete(dev)
+            db.session.delete(dev)
             current_app.logger.info('Device removed {0}'.format(device_id))
-            running_context.db.session.commit()
+            db.session.commit()
             return {}, SUCCESS
         else:
             current_app.logger.error('Could not delete device {0}. '
@@ -126,8 +128,8 @@ def delete_device(device_id):
 def create_device():
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         data = request.get_json()
         if len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
@@ -163,14 +165,14 @@ def create_device():
 def update_device():
     from server.context import running_context
 
-    @auth_token_required
-    @roles_accepted(*running_context.user_roles['/apps'])
+    @jwt_required
+    @roles_accepted_for_resources('apps')
     def __func():
         data = request.get_json()
         dev = running_context.Device.query.filter_by(id=data['id']).first()
         if dev is not None:
             dev.edit_device(data)
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
                                                                            dev.name,
                                                                            dev.as_json(with_apps=False)))

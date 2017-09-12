@@ -1,10 +1,3 @@
-if (typeof(EventSource) !== "undefined") {
-    stepResultsSSE = new EventSource('workflowresults/stream-steps');
-
-}
-else {
-    console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
-}
 
 
 $(function(){
@@ -24,25 +17,78 @@ $(function(){
     var filtersList = [];
     var startNode = null;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
-    var authKey = localStorage.getItem('authKey');
-
+    var authToken = sessionStorage.getItem('access_token');
+    
     //--------------------
     // Top level functions
     //--------------------
+
+    // TODO: this function only really authorizes on the first call. we should switch to maybe a web socket to handle this route in the future
+    function createWorkflowResultsSSE() {
+        if (!window.JwtHelper.isTokenExpired(authToken)) {
+            window.stepResultsSSE = new EventSource('workflowresults/stream-steps', { headers: { Authorization: 'Bearer ' + authToken } });
+            return;
+        }
+        
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
+            'url': "/api/auth/refresh",
+            'success': function (data) {
+                sessionStorage.setItem('access_token', data['access_token']);
+                authToken = data['access_token'];
+                window.stepResultsSSE = new EventSource('workflowresults/stream-steps', { headers: { Authorization: 'Bearer ' + authToken } });
+            },
+            'error': function (e) {
+                console.log(e);
+            }
+        });
+    }
+    createWorkflowResultsSSE();
+
+    function refreshJwtAjax(request) {
+        if (!window.JwtHelper.isTokenExpired(authToken, 300)) {
+            $.ajax(request);
+            return;
+        }
+
+        var refreshToken = sessionStorage.getItem('refresh_token');
+
+        if (!refreshToken) location.href = '/login';
+
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers': { "Authorization": 'Bearer ' + refreshToken },
+            'url': "/api/auth/refresh",
+            'success': function (data) {
+                sessionStorage.setItem('access_token', data['access_token']);
+                authToken = data['access_token'];
+                request['headers']['Authorization'] = 'Bearer ' + authToken;
+                $.ajax(request);
+            },
+            'error': function (e) {
+                console.log(e);
+            }
+        });
+    }
 
     // Reformat the JSON data returned from the /playbook endpoint
     // into a format that jsTree can understand.
     function formatWorkflowJsonDataForJsTree(data) {
         workflowList = data;
         var jstreeData = [];
-        _.each(data, function(workflows, playbookName) {
-            var playbook = {};
-            playbook.text = playbookName;
-            playbook.children = [];
-            _.each(workflows.sort(), function(workflowName) {
-                playbook.children.push({text: workflowName, icon: "jstree-file", data: {playbook: playbookName}});
+        _.each(data, function(playbook) {
+            var jsTreePlaybook = {};
+            jsTreePlaybook.text = playbook.name;
+            jsTreePlaybook.children = [];
+            _.each(playbook.workflows, function(workflow) {
+                jsTreePlaybook.children.push({text: workflow.name, icon: "jstree-file", data: {playbook: playbook.name}});
             });
-            jstreeData.push(playbook);
+            jstreeData.push(jsTreePlaybook);
         });
 
         // Sort jstreeData by playbook name
@@ -624,11 +670,11 @@ $(function(){
     }
 
     function renamePlaybook(oldPlaybookName, newPlaybookName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + oldPlaybookName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
@@ -645,11 +691,11 @@ $(function(){
     }
 
     function duplicatePlaybook(oldPlaybookName, newPlaybookName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + oldPlaybookName + "/copy",
             'dataType': 'json',
             'data': {playbook: newPlaybookName},
@@ -665,11 +711,11 @@ $(function(){
     }
 
     function deletePlaybook(playbookName, workflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "DELETE",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName,
             'success': function (data) {
                 downloadWorkflowList();
@@ -687,11 +733,11 @@ $(function(){
     }
 
     function renameWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
@@ -708,11 +754,11 @@ $(function(){
     }
 
     function duplicateWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
             'dataType': 'json',
             'data': {playbook: playbookName, workflow: newWorkflowName},
@@ -728,11 +774,11 @@ $(function(){
     }
 
     function deleteWorkflow(playbookName, workflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "DELETE",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
             'success': function (data) {
                 downloadWorkflowList();
@@ -750,11 +796,11 @@ $(function(){
     }
 
     function newWorkflow(playbookName, workflowName) {
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "PUT",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'dataType': 'json',
             'data': JSON.stringify({name: workflowName}),
             'contentType': 'application/json; charset=utf-8',
@@ -841,13 +887,13 @@ $(function(){
         });
         transformInputsToSave(steps);
         var data = JSON.stringify({start: startNode, steps: steps });
-        $.ajax({
+        refreshJwtAjax({
             'async': false,
             'type': "POST",
             'global': false,
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
             'data': data,
             'success': function (data) {
@@ -932,11 +978,11 @@ $(function(){
 
         var workflowData = function () {
             var tmp = null;
-            $.ajax({
+            refreshJwtAjax({
                 'async': false,
                 'type': "GET",
                 'global': false,
-                'headers':{"Authentication-Token":authKey},
+                'headers':{"Authorization": 'Bearer ' + authToken},
                 'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow,
                 'success': function (data) {
                     tmp = data;
@@ -1291,11 +1337,11 @@ $(function(){
             }
         }
 
-        $.ajax({
+        refreshJwtAjax({
             'async': true,
             'type': "GET",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks",
             'success': function (data) {
                 //Destroy the existing tree if necessary
@@ -1538,11 +1584,11 @@ $(function(){
         //     cy.elements().removeClass("good-highlighted bad-highlighted");
         //     executionDialog.dialog("close");
         // });
-        $.ajax({
+        refreshJwtAjax({
             'async': true,
             'type': "POST",
             'global': false,
-            'headers':{"Authentication-Token":authKey},
+            'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
             'success': function (data) {
                 // $('#clear-execution-highlighting-button').removeAttr('disabled');
@@ -1650,11 +1696,11 @@ $(function(){
     downloadWorkflowList();
 
     // Download all actions in all apps for display in the Actions tree
-    $.ajax({
+    refreshJwtAjax({
         'async': true,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/apps/actions",
         'success': function (data) {
             $('#actions').jstree({
@@ -1699,11 +1745,11 @@ $(function(){
 
             // Now is a good time to download all devices for all apps
             _.each(appData, function(actions, appName) {
-                $.ajax({
+                refreshJwtAjax({
                     'async': false,
                     'type': "GET",
                     'global': false,
-                    'headers':{"Authentication-Token":authKey},
+                    'headers':{"Authorization": 'Bearer ' + authToken},
                     'url': "/api/apps/" + appName + "/devices",
                     'dataType': 'json',
                     'contentType': 'application/json; charset=utf-8',
@@ -1720,11 +1766,11 @@ $(function(){
     });
 
     // Download list of all flags
-    $.ajax({
+    refreshJwtAjax({
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/flags",
         'dataType': 'json',
         'success': function (data) {
@@ -1733,11 +1779,11 @@ $(function(){
     });
 
     // Download list of all filters
-    $.ajax({
+    refreshJwtAjax({
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/filters",
         'dataType': 'json',
         'success': function (data) {

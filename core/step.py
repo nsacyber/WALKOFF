@@ -3,7 +3,6 @@ from collections import namedtuple
 import logging
 from core import contextdecorator
 import core.config.config
-from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelement import ExecutionElement
 from core.helpers import (get_app_action_api, InvalidElementConstructed, InvalidInput,
@@ -77,8 +76,10 @@ class Step(ExecutionElement):
         self.next_up = None
         self.raw_json = raw_json if raw_json is not None else {}
         self.execution_uid = 'default'
+        self.results_sock = None
+        self.execution_uid = None
 
-    def _update_xml(self, updated_json):
+    def _update_json(self, updated_json):
         self.action = updated_json['action']
         self.app = updated_json['app']
         self.device = updated_json['device'] if 'device' in updated_json else ''
@@ -103,10 +104,23 @@ class Step(ExecutionElement):
         if self.templated:
             from jinja2 import Environment
             env = Environment().from_string(json.dumps(self.raw_json)).render(core.config.config.JINJA_GLOBALS, **kwargs)
-            self._update_xml(updated_json=json.loads(env))
+            self._update_json(updated_json=json.loads(env))
 
     def set_input(self, new_input):
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
+
+    def send_callback(self, callback_name, data={}):
+        data['sender'] = {}
+        data['sender']['name'] = self.name
+        data['sender']['app'] = self.app
+        data['sender']['action'] = self.action
+        data['sender']['inputs'] = self.input
+        data['callback_name'] = callback_name
+        data['sender']['id'] = self.name
+        data['sender']['execution_uid'] = self.execution_uid
+        data['sender']['uid'] = self.uid
+        if self.results_sock:
+            self.results_sock.send_json(data)
 
     def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
@@ -119,17 +133,18 @@ class Step(ExecutionElement):
             The result of the executed function.
         """
         self.execution_uid = uuid.uuid4().hex
-        callbacks.StepInputValidated.send(self)
+        self.send_callback('Step Started')
         try:
             args = dereference_step_routing(self.input, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self.input_api, args, self.app, self.action)
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
-            callbacks.FunctionExecutionSuccess.send(self, data=json.dumps({"result": result.as_json()}))
+            self.send_callback('Function Execution Success',
+                               {'name': self.name, 'data': {'result': result.as_json()}})
         except InvalidInput as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
-            callbacks.StepInputInvalid.send(self)
+            self.send_callback('Step Input Invalid')
             self.output = ActionResult('error: {0}'.format(formatted_error), 'InvalidInput')
             raise
         except Exception as e:
@@ -153,11 +168,13 @@ class Step(ExecutionElement):
         Returns:
             The NextStep object to be executed.
         """
+
         for next_step in self.conditionals:
+            next_step.results_sock = self.results_sock
             next_step = next_step(self.output, accumulator)
             if next_step is not None:
                 self.next_up = next_step
-                callbacks.ConditionalsExecuted.send(self)
+                self.send_callback('Conditionals Executed')
                 return next_step
 
     def __repr__(self):

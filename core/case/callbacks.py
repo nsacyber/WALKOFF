@@ -12,8 +12,11 @@ from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_A
 
 
 def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message_name):
-    caller = sender.uid
-    cases_to_add = case_subscription.get_cases_subscribed(caller, message_name)
+    if isinstance(sender, dict):
+        originator = sender['uid']
+    else:
+        originator = sender.uid
+    cases_to_add = case_subscription.get_cases_subscribed(originator, message_name)
     if cases_to_add:
         if not isinstance(data, string_types):
             try:
@@ -23,7 +26,7 @@ def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message
 
         event = Event(type=event_type,
                       timestamp=datetime.datetime.utcnow(),
-                      caller=caller,
+                      originator=originator,
                       message=entry_message,
                       data=data)
         database.case_db.add_event(event, cases_to_add)
@@ -96,6 +99,14 @@ WorkflowInputInvalid, __workflow_input_invalidated = __construct_logging_signal(
                                                                                 'Workflow Input Invalid',
                                                                                 'Workflow input invalid')
 
+WorkflowPaused, __workflow_paused = __construct_logging_signal('Workflow',
+                                                               'Workflow Paused',
+                                                               'Workflow paused')
+
+WorkflowResumed, __workflow_resumed = __construct_logging_signal('Workflow',
+                                                                 'Workflow Resumed',
+                                                                 'Workflow resumed')
+
 # Step callbacks
 
 FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Step',
@@ -107,9 +118,9 @@ StepExecutionSuccess, __step_execution_success_callback = __construct_logging_si
 StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Step',
                                                                                  'Step Execution Error',
                                                                                  'Step executed with error')
-StepInputValidated, __step_input_validated_callback = __construct_logging_signal('Step',
-                                                                                 'Input Validated',
-                                                                                 'Input successfully validated')
+StepStarted, __step_started_callback = __construct_logging_signal('Step',
+                                                                  'Step Started',
+                                                                  'Step execution started')
 StepInputInvalid, __step_input_invalid_callback = __construct_logging_signal('Step',
                                                                              'Input Invalid',
                                                                              'Input is invalid')

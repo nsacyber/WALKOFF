@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -20,6 +20,7 @@ const childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
 @Component({
 	selector: 'cases-component',
 	templateUrl: 'client/cases/cases.html',
+	encapsulation: ViewEncapsulation.None,
 	styleUrls: [
 		'client/cases/cases.css',
 	],
@@ -37,13 +38,12 @@ export class CasesComponent {
 	caseFilterQuery: FormControl = new FormControl();
 	subscriptionTree: any;
 
-	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {
 			width: '100%',
 			placeholder: 'Select a Case to view its Events',
-			allowClear: true,
 		};
 
 		this.getCases();

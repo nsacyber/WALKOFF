@@ -16,15 +16,6 @@
     <link rel="stylesheet" href="client/node_modules/ng2-toasty/style-bootstrap.css">
     <!-- Select2 4.0.3 -->
     <link rel="stylesheet" href="client/node_modules/select2/dist/css/select2.min.css"></link>
-    <!-- Ionicons -->
-    <!--<link rel="stylesheet" href="<% url_for('static', filename='plugins/ionicons-2.0.1/css/ionicons.min.css' ) %>">-->
-    <!-- Theme style -->
-    <!--<link rel="stylesheet" href="client/main/AdminLTE.css">-->
-    <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
-            page. However, you can choose any other skin. Make sure you
-            apply the skin class to the body tag so the changes take effect.
-    -->
-    <!--<link rel="stylesheet" href="client/main/skin-blue.min.css">-->
 
     <!-- Polyfill(s) for older browsers -->
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -44,31 +35,14 @@
     <script src="client/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- Select2 4.0.3 -->
     <script src="client/node_modules/select2/dist/js/select2.full.min.js"></script>
-    <!-- JQuery UI -->
-    <!--<script src="<% url_for('static', filename='plugins/jQueryUI/jquery-ui.js') %>"></script>-->
-    <!-- AdminLTE App -->
-    <!--<script src="<% url_for('static', filename='dist/js/app.min.js') %>"></script>-->
-
-    <!--<script src="client/node_modules/rxjs/bundles/Rx.js"></script>
-    <script src="client/node_modules/@angular/core/bundles/core.umd.js"></script>
-    <script src="client/node_modules/@angular/common/bundles/common.umd.js"></script>
-    <script src="client/node_modules/@angular/compiler/bundles/compiler.umd.js"></script>
-    <script src="client/node_modules/@angular/platform-browser/bundles/platform-browser.umd.js"></script>
-    <script src="client/node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js"></script>-->
+    <!-- EventSource polyfill 0.9.0 -->
+    <script src="client/node_modules/event-source-polyfill/eventsource.js"></script>
     <script src="client/node_modules/systemjs/dist/system.js"></script>
-    <!--<script src="client/node_modules/typescript/lib/typescript.js"></script>-->
-    <!-- jQuery 2.2.3 -->
-    <!--<script src="client/plugins/jQuery/jquery-2.2.3.min.js"></script>-->
 
         <!-- 2. Configure SystemJS -->
     <script src="client/systemjs.config.js"></script>
     <script type="application/javascript">
         SystemJS.import('main').catch(function(err){ console.error(err); });
-
-        localStorage.setItem('authKey', '<% authKey | safe %>');
-        // var default_page = '{{default_page | safe}}';
-        // var apps = {{apps | safe}};
-        localStorage.setItem('currentUser', '<%currentUser%>');
 
         document.addEventListener("DOMContentLoaded", function(e){
             if (Notification.permission !== "granted"){
@@ -77,26 +51,6 @@
         });
     </script>
 </head>
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
 <body class="hold-transition skin-blue sidebar-mini">
     <main-component>Loading...</main-component>
 </body>

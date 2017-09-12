@@ -9,9 +9,21 @@ import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core import controller
 from tests import config
+from tests.apps import App
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
+import core.config.config
 
 
 class TestExecutionModes(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        App.registry = {}
+        import_all_apps(path=config.test_apps_path, reload=True)
+        core.config.config.load_app_apis(apps_path=config.test_apps_path)
+        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
+        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
+        core.config.config.load_flagfilter_apis(path=config.function_api_path)
+
     def setUp(self):
         case_database.initialize()
 
@@ -25,9 +37,9 @@ class TestExecutionModes(unittest.TestCase):
                                EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,
                                EVENT_JOB_ERROR]}
         case_subscription.set_subscriptions({'case1': subs})
-        c.start()
+        c.scheduler.start()
         time.sleep(0.1)
-        c.stop(wait=False)
+        c.scheduler.stop(wait=False)
 
         start_stop_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
@@ -44,12 +56,12 @@ class TestExecutionModes(unittest.TestCase):
                                EVENT_JOB_ERROR]}
         case_subscription.set_subscriptions({'pauseResume': subs})
 
-        c.start()
-        c.pause()
+        c.scheduler.start()
+        c.scheduler.pause()
         time.sleep(0.1)
-        c.resume()
+        c.scheduler.resume()
         time.sleep(0.1)
-        c.stop(wait=False)
+        c.scheduler.stop(wait=False)
 
         pause_resume_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'pauseResume').first().events.all()

@@ -1,7 +1,9 @@
 import json
 from flask import Blueprint, Response
-from flask_security import auth_token_required, roles_accepted
+from server.security import roles_accepted
+from flask_jwt_extended import jwt_required
 from gevent.event import Event, AsyncResult
+from gevent import sleep, Timeout
 
 events_page = Blueprint('events_page', __name__)
 
@@ -9,11 +11,14 @@ __case_event_json = AsyncResult()
 __sync_signal = Event()
 
 
-def __case_event_stream():
+def __case_event_generator():
     while True:
-        data = __case_event_json.get()
-        yield 'data: %s\n\n' % data
-        __sync_signal.wait()
+        try:
+            data = __case_event_json.get(timeout=60)
+            yield 'data: %s\n\n' % data
+            __sync_signal.wait()
+        except Timeout:
+            pass
 
 
 def __push_to_case_stream(sender, **kwargs):
@@ -22,6 +27,7 @@ def __push_to_case_stream(sender, **kwargs):
     if 'data' in kwargs:
         out['data'] = kwargs['data']
     __case_event_json.set(json.dumps(out))
+    sleep(0)
     __sync_signal.set()
     __sync_signal.clear()
 
@@ -34,14 +40,16 @@ def setup_case_stream():
                                                                                             NamedSignal))]
     for signal in signals:
         signal.connect(__push_to_case_stream)
+    pass
 
 
 @events_page.route('/', methods=['GET'])
-@auth_token_required
+@jwt_required
 def stream_case_events():
     from server.flaskserver import running_context
 
-    @roles_accepted(*running_context.user_roles['/cases'])
+    @roles_accepted(*running_context.resource_roles['/cases'])
     def inner():
-        return Response(__case_event_stream(), mimetype='text/event-stream')
+        return Response(__case_event_generator(), mimetype='text/event-stream')
     return inner()
+

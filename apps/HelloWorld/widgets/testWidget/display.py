@@ -1,8 +1,8 @@
-import gevent
-from gevent.event import Event, AsyncResult
+import time
 import random
 from flask import Blueprint, Response
 from apps import WidgetBlueprint
+from threading import Thread
 
 blueprint = WidgetBlueprint(blueprint=Blueprint('HelloWorldTestWidgetPage', __name__))
 blueprint2 = WidgetBlueprint(blueprint=Blueprint('HelloWorldTestWidgetPage2', __name__), rule='/<string:action>')
@@ -18,40 +18,38 @@ def test_basic_blueprint():
     # This can be called using the url /apps/HelloWorld/testWidget/test_blueprint
     return 'successfully called basic blueprint'
 
-__random_num_event = AsyncResult()
-__sync = Event()
-
-
 def random_number_receiver():
     while True:
-        data = __random_num_event.get()
+        data = yield
         yield 'data: %s\n\n' % data
-        __sync.wait()
+
+
+random_number_stream = random_number_receiver()
+random_number_stream.send(None)
 
 
 def random_number_pusher():
     while True:
-        __random_num_event.set(random.random())
-        gevent.sleep(2)
-        __sync.set()
-        __sync.clear()
+        random_number_stream.send(random.random())
+        time.sleep(2)
 
 
 @blueprint.blueprint.route('/stream/data-1')
 def stream_random_numbers():
     """
-    Example of using gevent and AsyncResults to create an event-driven stream
+    Example of using coroutines to create an event-driven stream
     :return:
     """
-    gevent.spawn(random_number_pusher)
-    return Response(random_number_receiver(), mimetype='text/event-stream')
+    thread = Thread(target=random_number_pusher)
+    thread.start()
+    return Response(random_number_stream, mimetype='text/event-stream')
 
 
 @blueprint.blueprint.route('/stream/data-2')
 def stream_random_numbers_2():
     def random_generator():
         while True:
-            gevent.sleep(2)
+            time.sleep(2)
             yield 'data: %s\n\n' % random.random()
 
     return Response(random_generator(), mimetype='text/event-stream')
@@ -65,7 +63,7 @@ def stream_counter():
     def counter():
         count = 0
         while True:
-            gevent.sleep(1)
+            time.sleep(1)
             yield 'data: %s\n\n' % count
             count += 1
     return Response(counter(), mimetype='text/event-stream')

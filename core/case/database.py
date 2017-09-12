@@ -49,7 +49,7 @@ class Event(Case_Base):
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow())
     type = Column(String)
-    caller = Column(String)
+    originator = Column(String)
     message = Column(String)
     note = Column(String)
     data = Column(String)
@@ -68,7 +68,7 @@ class Event(Case_Base):
         output = {'id': self.id,
                   'timestamp': str(self.timestamp),
                   'type': self.type,
-                  'caller': self.caller,
+                  'originator': self.originator,
                   'message': self.message if self.message is not None else '',
                   'note': self.note if self.note is not None else ''}
         if self.data is not None:
@@ -82,26 +82,26 @@ class Event(Case_Base):
             output['cases'] = [case.as_json(with_events=False) for case in self.cases]
         return output
 
-    @staticmethod
-    def create(sender, timestamp, entry_message, entry_type, data=''):
-        """Factory method to construct an Event object.
-
-        Args:
-            sender (cls): A boolean to determine whether or not the events of the Case object should be
-            included in the output.
-            timestamp (str): A string representation of a timestamp
-            entry_message (str): The message associated with the event
-            entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
-            data: Extra information to be logged with the event
-
-        Returns:
-            An Event object.
-        """
-        return Event(type=entry_type,
-                     timestamp=timestamp,
-                     caller=','.join(map(str, sender.ancestry)),
-                     message=entry_message,
-                     data=data)
+    # @staticmethod
+    # def create(sender, timestamp, entry_message, entry_type, data=''):
+    #     """Factory method to construct an Event object.
+    #
+    #     Args:
+    #         sender (cls): A boolean to determine whether or not the events of the Case object should be
+    #         included in the output.
+    #         timestamp (str): A string representation of a timestamp
+    #         entry_message (str): The message associated with the event
+    #         entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
+    #         data: Extra information to be logged with the event
+    #
+    #     Returns:
+    #         An Event object.
+    #     """
+    #     return Event(type=entry_type,
+    #                  timestamp=timestamp,
+    #                  originator=','.join(map(str, sender.)),
+    #                  message=entry_message,
+    #                  data=data)
 
 
 class CaseDatabase(object):
@@ -138,6 +138,8 @@ class CaseDatabase(object):
         additions = [Case(name=case_name) for case_name in (set(case_names) - existing_cases)]
         self.session.add_all(additions)
         self.session.commit()
+        existing_cases = self.session.query(Case).all()
+        existing_case_names = [case.name for case in existing_cases]
 
     def delete_cases(self, case_names):
         """ Removes cases to the database
@@ -210,13 +212,13 @@ class CaseDatabase(object):
         """
         return self.session.query(Event).filter(Event.id == event_id).first().as_json()
 
-    def case_events_as_json(self, case_name):
+    def case_events_as_json(self, case_id):
         """Gets the JSON representation of all the events in the case database.
         
         Returns:
             The JSON representation of all Event objects without their cases.
         """
-        event_id = self.session.query(Case).filter(Case.name == case_name).first().id
+        event_id = self.session.query(Case).filter(Case.id == case_id).first()
         if not event_id:
             raise Exception
 
@@ -228,7 +230,6 @@ class CaseDatabase(object):
 def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""
     return _singleton
-
 
 case_db = get_case_db()
 

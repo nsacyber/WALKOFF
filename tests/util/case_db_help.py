@@ -16,7 +16,7 @@ def setup_subscriptions_for_step(workflow_uids, step_uids, step_events=None, wor
 def executed_steps(workflow_uid, start_time, end_time):
     events = [event.as_json()
               for event in case_database.case_db.session.query(case_database.Event). \
-                  filter(case_database.Event.caller == workflow_uid).all()]
+                  filter(case_database.Event.originator == workflow_uid).all()]
     out = []
     for event in events:
         if start_time <= datetime.strptime(event['timestamp'], '%Y-%m-%d %H:%M:%S.%f') <= end_time:

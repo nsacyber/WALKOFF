@@ -15,14 +15,13 @@ import { Trigger } from '../models/trigger';
 	selector: 'triggers-component',
 	templateUrl: 'client/triggers/triggers.html',
 	styleUrls: [
-		'client/node_modules/jqueryui/jquery-ui.min.css',
 		'client/triggers/triggers.css',
 	],
 	providers: [TriggersService]
 })
 export class TriggersComponent {
 	//TODO: Component simply loads old main.js (with plugins and some tweaks). Will update or remove later.
-	constructor() {}
+	constructor() {	}
 
 	ngAfterViewInit() {
 		let removeScript = () => {
@@ -55,7 +54,16 @@ export class TriggersComponent {
 			document.body.appendChild(s);
 		}
 
+		let addLink = (script: string) => {
+			let s = document.createElement("link");
+			s.rel = "stylesheet";
+			s.href = script;
+			document.body.appendChild(s);
+		}
+
 		removeScript();
+
+		addLink('client/node_modules/jqueryui/jquery-ui.min.css');
 
 		addScript("client/node_modules/jquery-migrate/dist/jquery-migrate.min.js");
 		addScript("client/node_modules/jqueryui/jquery-ui.min.js");

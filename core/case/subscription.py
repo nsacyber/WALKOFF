@@ -81,24 +81,24 @@ def clear_subscriptions():
     database.case_db.session.commit()
 
 
-def get_cases_subscribed(caller_uid, message_name):
+def get_cases_subscribed(originator, message_name):
     """ Gets all the cases which are subscribed to an event from an execution element
 
     Args:
-        caller_uid (str): The uid of the caller
+        originator (str): The uid of the element from which the event originated
         message_name (str): The name of the message to check
     """
     global subscriptions
-    return [case for case in subscriptions if (caller_uid in subscriptions[case]
-                                               and message_name in subscriptions[case][caller_uid])]
+    return [case for case in subscriptions if (originator in subscriptions[case]
+                                               and message_name in subscriptions[case][originator])]
 
 
-def modify_subscription(case, caller_uid, events):
+def modify_subscription(case, originator, events):
     """ Edits a subscription by changing the events to which a particular caller is subscribed to
     
     Args:
         case (str): The name of the case to edit
-        caller_uid (str): The uid of the caller
+        originator (str): The uid of the element from which the event originated
         events (list[str,int]): The new events to which it is subscribed to
         
     Returns:
@@ -106,20 +106,20 @@ def modify_subscription(case, caller_uid, events):
     """
     global subscriptions
     if case in subscriptions:
-        subscriptions[case][caller_uid] = events
+        subscriptions[case][originator] = events
 
 
-def remove_subscription_node(case, caller_uid):
+def remove_subscription_node(case, originator):
     """
     Remove a case's subscription to an ancestry
     
     Args:
         case (str): The case to remove a subscription from
-        caller_uid (str): The uid of the caller
+        originator (str): The uid of the element from which the event originated
     """
     global subscriptions
     if case in subscriptions:
-        subscriptions[case].pop(caller_uid, False)
+        subscriptions[case].pop(originator, False)
 
 
 scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,

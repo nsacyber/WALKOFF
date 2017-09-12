@@ -1,12 +1,11 @@
 import unittest
 import sys
-from multiprocessing import freeze_support
 from tests import suites as test_suites
 import logging
+import server.context
 
 
 def run_tests():
-    freeze_support()
     logging.disable(logging.CRITICAL)
     ret = True
     print('Testing Workflows:')
@@ -22,7 +21,10 @@ def run_tests():
 
 if __name__ == '__main__':
     try:
-        successful = not run_tests()
-        sys.exit(successful)
+        successful = run_tests()
     except KeyboardInterrupt:
         print('\nInterrupted! Ending full test')
+        successful = False
+    finally:
+        server.context.running_context.controller.shutdown_pool()
+        sys.exit(not successful)

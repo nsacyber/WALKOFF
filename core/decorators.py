@@ -1,20 +1,23 @@
-from gevent.event import AsyncResult
-from gevent import Timeout
+from threading import Condition
 from core.helpers import get_function_arg_names, InvalidApi
-from collections import namedtuple
 from functools import wraps
 import json
 
-ActionResult = namedtuple('ActionResults', ['result', 'status'])
 
+class ActionResult(object):
+    def __init__(self, result, status):
+        self.result = result
+        self.status = status
 
-def action_result_as_json(self):
-    try:
-        json.dumps(self.result)
-        return {"result": self.result, "status": self.status}
-    except TypeError:
-        return {"result": str(self.result), "status": self.status}
-ActionResult.as_json = action_result_as_json
+    def as_json(self):
+        try:
+            json.dumps(self.result)
+            return {"result": self.result, "status": self.status}
+        except TypeError:
+            return {"result": str(self.result), "status": self.status}
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
 def format_result(result):
@@ -64,22 +67,27 @@ def event(event_, timeout=300):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            result = AsyncResult()
+            result = [('Getting event {0} timed out at {1} seconds'.format(event_.name, timeout), 'EventTimedOut')]
+            await_result_condition = Condition()
 
             @event_.connect
             def send(data):
+                await_result_condition.acquire()
                 if len(kwargs) > 0:
-                    result.set(func(args[0], data, **kwargs))
+                    result.append(func(args[0], data, **kwargs))
                 else:
-                    result.set(func(args[0], data))
+                    result.append(func(args[0], data))
+                await_result_condition.notify()
+                await_result_condition.release()
 
-            try:
-                result = result.get(timeout=timeout)
-            except Timeout:
-                result = 'Getting event {0} timed out at {1} seconds'.format(event_.name, timeout), 'EventTimedOut'
+            await_result_condition.acquire()
+            while not len(result) >= 2:
+                await_result_condition.wait(timeout=timeout)
+                break
+            await_result_condition.release()
 
             event_.disconnect(send)
-            return format_result(result)
+            return format_result(result[-1])
 
         tag(wrapper, 'action')
         wrapper.__arg_names = arg_names

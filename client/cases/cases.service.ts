@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers, RequestOptions } from '@angular/http';
+import { Http, Response, Headers } from '@angular/http';
 
+import { JwtHttp } from 'angular2-jwt-refresh';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
@@ -11,34 +12,19 @@ import { AvailableSubscription } from '../models/availableSubscription';
 
 @Injectable()
 export class CasesService {
-	requestOptions: RequestOptions;
-
-	constructor (private http: Http) {
-		let authKey = localStorage.getItem('authKey');
-		let headers = new Headers({ 'Accept': 'application/json' });
-		headers.append('Authentication-Token', authKey);
-
-		this.requestOptions = new RequestOptions({ headers: headers });
+	constructor (private authHttp: JwtHttp) {
 	}
 
 	getCases() : Promise<Case[]> {
-		return this.http.get('/api/cases', this.requestOptions)
+		return this.authHttp.get('/api/cases')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Case[])
 			.catch(this.handleError);
 	}
 
-	// getCaseSubscriptions() : Promise<Case[]> {
-	// 	return this.http.get('/api/cases/subscriptions', this.requestOptions)
-	// 		.toPromise()
-	// 		.then(this.extractData)
-	// 		.then(data => data as Case[])
-	// 		.catch(this.handleError);
-	// }
-
 	getEventsForCase(name: string) : Promise<CaseEvent[]> {
-		return this.http.get(`/cases/${name}/events`, this.requestOptions)
+		return this.authHttp.get(`/api/cases/${name}/events`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as CaseEvent[])
@@ -46,7 +32,7 @@ export class CasesService {
 	}
 
 	addCase(caseToAdd: Case) : Promise<Case> {
-		return this.http.put('/api/cases', caseToAdd, this.requestOptions)
+		return this.authHttp.put('/api/cases', caseToAdd)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Case)
@@ -54,7 +40,7 @@ export class CasesService {
 	}
 
 	editCase(caseToEdit: Case) : Promise<Case> {
-		return this.http.post('/api/cases', caseToEdit, this.requestOptions)
+		return this.authHttp.post('/api/cases', caseToEdit)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Case)
@@ -62,14 +48,14 @@ export class CasesService {
 	}
 
 	deleteCase(id: number) : Promise<void> {
-		return this.http.delete(`/api/cases/${id}`, this.requestOptions)
+		return this.authHttp.delete(`/api/cases/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
 	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
-		return this.http.get('/api/availablesubscriptions', this.requestOptions)
+		return this.authHttp.get('/api/availablesubscriptions')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AvailableSubscription[])
@@ -77,7 +63,7 @@ export class CasesService {
 	}
 
 	getPlaybooks() : Promise<any> {
-		return this.http.get('/api/playbooks?full=true', this.requestOptions)
+		return this.authHttp.get('/api/playbooks?full=true')
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -88,7 +74,7 @@ export class CasesService {
 		return body || {};
 	}
 
-	private handleError (error: Response | any) {
+	private handleError (error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {

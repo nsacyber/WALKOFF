@@ -5,18 +5,46 @@
     var filtersList = [];
     var triggerEditor = null;
     var currentTriggerName = null;
-    var authKey = localStorage.getItem('authKey');
+    var authToken = sessionStorage.getItem('access_token');
+
+    function refreshJwtAjax(request) {
+        if (!window.JwtHelper.isTokenExpired(authToken, 300)) {
+            $.ajax(request);
+            return;
+        }
+
+        var refreshToken = sessionStorage.getItem('refresh_token');
+
+        if (!refreshToken) location.href = '/login';
+
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers': { "Authorization": 'Bearer ' + refreshToken },
+            'url': "/api/auth/refresh",
+            'success': function (data) {
+                sessionStorage.setItem('access_token', data['access_token']);
+                authToken = data['access_token'];
+                request['headers']['Authorization'] = 'Bearer ' + authToken;
+                $.ajax(request);
+            },
+            'error': function (e) {
+                console.log(e);
+            }
+        });
+    }
 
     $("#editformSubmit").prop("disabled",true);
     $("#editTrigger").prop("disabled",true);
     $(".remove").prop("disabled",true);
 
     //Get List of flags
-    $.ajax({
+    refreshJwtAjax({
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/flags",
         'dataType': 'json',
         'success': function (data) {
@@ -28,11 +56,11 @@
     });
 
     // Get list of all filters
-    $.ajax({
+    refreshJwtAjax({
         'async': false,
         'type': "GET",
         'global': false,
-        'headers':{"Authentication-Token":authKey},
+        'headers':{"Authorization": 'Bearer ' + authToken},
         'url': "/api/filters",
         'dataType': 'json',
         'success': function (data) {
@@ -45,9 +73,9 @@
 
     //Get and display the list of triggers
     function getTriggerList(){
-        $.ajax({
+        refreshJwtAjax({
             url:'/execution/listener/triggers',
-            headers:{"Authentication-Token":authKey},
+            headers:{"Authorization": 'Bearer ' + authToken},
             type:"GET",
             success:function(data){
                 result = data;
@@ -207,11 +235,11 @@
             // $("#workflow").val(values.workflow);
             // $("#conditions").val(JSON.stringify(values.conditions));
 
-            $.ajax({
+            refreshJwtAjax({
                 url: '/execution/listener/triggers/' + values.name,
                 data: JSON.stringify(values),
                 contentType: 'application/json',
-                headers: {"Authentication-Token": authKey},
+                headers: {"Authorization": 'Bearer ' + authToken},
                 type: "PUT",
                 success: function (data) {
                     $.notify('Trigger ' + values.name + ' added successfully.', 'success');
@@ -266,11 +294,11 @@
                 // $("#workflow").val(values.workflow);
                 // $("#conditions").val(JSON.stringify(values.conditions));
 
-                $.ajax({
+                refreshJwtAjax({
                     url:'/execution/listener/triggers/' + currentTriggerName ,
                     data: JSON.stringify(values),
                     contentType: 'application/json',
-                    headers:{"Authentication-Token":authKey},
+                    headers:{"Authorization": 'Bearer ' + authToken},
                     type:"POST",
                     success:function(e){
                         $.notify('Trigger ' + name + ' edited successfully.', 'success');
@@ -292,22 +320,23 @@
                 $.notify('Please select a trigger.', 'warning');
             }else{
                 name = $("#triggerList option:selected").text();
-                 $.ajax({
-                url:'/execution/listener/triggers/'+ name,
-                data:{},
-                headers:{"Authentication-Token":authKey},
-                type:"DELETE",
-                success:function(e){
-                    $.notify('Trigger ' + name + ' removed successfully.', 'success');
-                    // refresh the list of triggers
-                    $("#triggerList option:selected").remove()
-                    getTriggerList();
-                },
-                error: function(e){
-                    $.notify('Trigger ' + name + ' could not be removed.', 'error');
-                    console.log(e);
-                }
-            });
+                
+                refreshJwtAjax({
+                    url:'/execution/listener/triggers/'+ name,
+                    data:{},
+                    headers:{"Authorization": 'Bearer ' + authToken},
+                    type:"DELETE",
+                    success:function(e){
+                        $.notify('Trigger ' + name + ' removed successfully.', 'success');
+                        // refresh the list of triggers
+                        $("#triggerList option:selected").remove();
+                        getTriggerList();
+                    },
+                    error: function(e){
+                        $.notify('Trigger ' + name + ' could not be removed.', 'error');
+                        console.log(e);
+                    }
+                });
             };
         });
     });

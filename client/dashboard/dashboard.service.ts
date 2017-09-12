@@ -1,13 +1,22 @@
+<<<<<<< HEAD
 import { Injectable } 			from '@angular/core';
 import { Http, Headers, Response, RequestOptions } 		from '@angular/http';
 
 import { Observable }     from 'rxjs/Observable';
+=======
+import { Injectable } from '@angular/core';
+import { Http, Headers, Response } from '@angular/http';
+
+import { JwtHttp } from 'angular2-jwt-refresh';
+import { Observable } from 'rxjs/Observable';
+>>>>>>> development
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 
 @Injectable()
 export class DashboardService {
+<<<<<<< HEAD
 	requestOptions : RequestOptions;
 
 	constructor (private http: Http) {
@@ -19,6 +28,12 @@ export class DashboardService {
 	}
 
 	private handleError (error: Response | any) {
+=======
+	constructor (private http: Http) {
+	}
+
+	private handleError (error: Response | any): Promise<any> {
+>>>>>>> development
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {
