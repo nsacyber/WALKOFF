@@ -151,9 +151,10 @@ class Controller(object):
         Returns:
             True on success, False otherwise.
         """
-        with open(path, 'r') as workflow_file:
-            workflow_loaded = workflow_file.read()
-            json_in = json.loads(workflow_loaded)
+        with open(path, 'r') as playbook_file:
+            playbook_loaded = playbook_file.read()
+            print(playbook_loaded)
+            json_in = json.loads(playbook_loaded)
             playbook_name = playbook_override if playbook_override else json_in['name']
             for workflow in (workflow_ for workflow_ in json_in['workflows'] if workflow_['name'] == workflow_name):
                 if workflow['name'] == workflow_name:
@@ -177,9 +178,9 @@ class Controller(object):
             name_override (str, optional): Name that the workflow should be changed to. 
             playbook_override (str, optional): Name that the playbook should be changed to.
         """
-        with open(path, 'r') as workflow_file:
-            workflow_loaded = workflow_file.read()
-            json_in = json.loads(workflow_loaded)
+        with open(path, 'r') as playbook_file:
+            playbook_loaded = playbook_file.read()
+            json_in = json.loads(playbook_loaded)
             playbook_name = playbook_override if playbook_override else json_in['name']
             for workflow in json_in['workflows']:
                 workflow_name = name_override if name_override else workflow['name']
@@ -196,8 +197,8 @@ class Controller(object):
         """
         if path is None:
             path = core.config.paths.workflows_path
-        for workflow in locate_playbooks_in_directory(path):
-            self.load_playbook_from_file(os.path.join(path, workflow))
+        for playbook in locate_playbooks_in_directory(path):
+            self.load_playbook_from_file(os.path.join(path, playbook))
 
     def add_child_workflows(self):
         for workflow in self.workflows:
