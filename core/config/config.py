@@ -8,7 +8,6 @@ import core.config.paths
 from core.config.paths import keywords_path
 from collections import OrderedDict
 import yaml
-
 __logger = logging.getLogger(__name__)
 
 
@@ -103,6 +102,7 @@ def load_app_apis(apps_path=None):
                     app_apis[app] = api
             except Exception as e:
                 __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
+
 
 try:
     with open(core.config.paths.events_path) as f:

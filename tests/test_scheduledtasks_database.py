@@ -1,16 +1,18 @@
 import unittest
 from server.scheduledtasks import ScheduledTask
 from core.scheduler import InvalidTriggerArgs
+from core.playbook import Playbook
 from server.database import db
 import json
 import server.flaskserver as server
 from tests.test_scheduler import MockWorkflow
-from core.controller import _WorkflowKey
 
 
 class TestScheduledTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.context = server.app.test_request_context()
+        cls.context.push()
         db.create_all()
 
     def setUp(self):
@@ -51,7 +53,7 @@ class TestScheduledTask(unittest.TestCase):
         self.assertSchedulerWorkflowsRunningEqual(expected_running_workflows)
 
     def patch_controller_workflows(self, workflow_uids):
-        server.running_context.controller.workflows = {_WorkflowKey(i, i + 1): MockWorkflow(workflow_uids[i])
+        server.running_context.controller.workflows = {i: Playbook(i, [MockWorkflow(workflow_uids[i], i+1)])
                                                        for i, uid in enumerate(workflow_uids)}
 
     def test_init_default(self):

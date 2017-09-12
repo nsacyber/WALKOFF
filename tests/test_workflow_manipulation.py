@@ -13,8 +13,6 @@ from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from tests.apps import App
-from tests.util.assertwrappers import orderless_list_compare
-from core.controller import _WorkflowKey
 from tests.util.thread_control import *
 import core.loadbalancer
 import threading
@@ -53,43 +51,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         case_subscription.clear_subscriptions()
         self.controller.shutdown_pool(0)
         reload(socket)
-    """
-        CRUD - Workflow
-    """
-
-    def test_create_workflow(self):
-        self.assertEqual(len(self.controller.workflows), 2)
-        # Create Empty Workflow
-        self.controller.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
-        self.assertEqual(len(self.controller.workflows), 3)
-        self.assertEqual(self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').steps, {})
-
-        json = self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').as_json()
-        self.assertEqual(len(json['steps']), 0)
-
-    def test_remove_workflow(self):
-        initial_workflows = list(self.controller.workflows.keys())
-        self.controller.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
-        self.assertEqual(len(self.controller.workflows), 3)
-        success = self.controller.remove_workflow('emptyWorkflow', 'emptyWorkflow')
-        self.assertTrue(success)
-        self.assertEqual(len(self.controller.workflows), 2)
-        key = _WorkflowKey('emptyWorkflow', 'emptyWorkflow')
-        self.assertNotIn(key, self.controller.workflows)
-        orderless_list_compare(self, list(self.controller.workflows.keys()), initial_workflows)
-
-    def test_update_workflow(self):
-        self.controller.create_workflow_from_template('emptyWorkflow', 'emptyWorkflow')
-        self.controller.update_workflow_name('emptyWorkflow', 'emptyWorkflow', 'newPlaybookName', 'newWorkflowName')
-        old_key = _WorkflowKey('emptyWorkflow', 'emptyWorkflow')
-        new_key = _WorkflowKey('newPlaybookName', 'newWorkflowName')
-        self.assertEqual(len(self.controller.workflows), 3)
-        self.assertNotIn(old_key, self.controller.workflows)
-        self.assertIn(new_key, self.controller.workflows)
-
-    def test_display_workflow(self):
-        workflow = self.testWorkflow.as_json()
-        self.assertEqual(len(workflow["steps"]), 1)
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')

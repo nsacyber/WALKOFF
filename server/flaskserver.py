@@ -1,16 +1,13 @@
 import json
 import logging
 import os
-
 from flask import render_template, send_from_directory
-from flask_jwt_extended import current_user, jwt_required
-
+from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-from core.helpers import combine_dicts
 from server import app
 from server.context import running_context
 from server.security import roles_accepted_for_resources

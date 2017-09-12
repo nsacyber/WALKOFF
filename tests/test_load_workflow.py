@@ -2,7 +2,6 @@ import unittest
 from core import controller
 from core.config.config import initialize
 from tests import config
-from core.controller import _WorkflowKey
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests.config import test_apps_path, function_api_path
 import core.config.config
@@ -21,12 +20,11 @@ class TestLoadWorkflow(unittest.TestCase):
     def setUp(self):
         self.c = controller.Controller(workflows_path=config.test_workflows_path)
         self.c.load_playbook_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
-        self.workflow_name = _WorkflowKey('basicWorkflowTest', 'helloWorldWorkflow')
-        self.testWorkflow = self.c.workflows[self.workflow_name]
+        self.testWorkflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
     def test_workflow_loaded(self):
         # Tests that helloWorldWorkflow exists
-        self.assertIn(self.workflow_name, self.c.workflows)
+        self.assertTrue(self.c.is_workflow_registered('basicWorkflowTest', 'helloWorldWorkflow'))
 
     def test_base_workflow_attributes(self):
 

@@ -2,13 +2,13 @@ import unittest
 from core.scheduler import *
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.base import STATE_STOPPED, STATE_RUNNING, STATE_PAUSED
-from functools import partial
 
 
 class MockWorkflow(object):
 
-    def __init__(self, uid):
+    def __init__(self, uid, name=''):
         self.uid = uid
+        self.name = name
 
     def execute(self):
         pass
