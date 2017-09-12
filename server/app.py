@@ -1,13 +1,13 @@
 import os
 import logging
 from jinja2 import Environment, FileSystemLoader
+
+import server.database
 from core import helpers
 from core.config import paths
 import core.config.config
 import connexion
-from flask_security.utils import encrypt_password
 from core.helpers import format_db_path
-
 
 logger = logging.getLogger(__name__)
 
@@ -136,21 +136,30 @@ def create_app():
         SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
         SECURITY_POST_LOGIN_VIEW='/',
         WTF_CSRF_ENABLED=False,
-        STATIC_FOLDER=os.path.abspath('server/static')
+        STATIC_FOLDER=os.path.abspath('server/static'),
+        JWT_BLACKLIST_ENABLED=True,
+        JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
     _app.jinja_options = Flask.jinja_options.copy()
     _app.jinja_options.update(dict(
         variable_start_string='<%',
         variable_end_string='%>'
     ))
-    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    _app.config['JWT_TOKEN_LOCATION'] = 'headers'
+
+    from server.database import db
+    db.init_app(_app)
+    from server.security import jwt
+    jwt.init_app(_app)
+
     connexion_app.add_api('composed_api.yaml')
     register_blueprints(_app)
     core.config.config.initialize()
 
     import core.controller
-    core.controller.controller.load_all_workflows_from_directory()
+    core.controller.controller.load_all_playbooks_from_directory()
     setup_case_stream()
     return _app
 
@@ -164,19 +173,17 @@ app = create_app()
 @app.before_first_request
 def create_user():
     from server.context import running_context
-    from . import database
-    from server import flaskserver
+    from server.database import add_user, User, ResourcePermission, Role, initialize_resource_roles_from_database
 
     running_context.db.create_all()
-
-    if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=flaskserver.default_urls)
-
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
-        running_context.user_datastore.add_role_to_user(u, admin_role)
+    if not User.query.all():
+        admin_role = running_context.Role(name='admin', description='administrator', resources=server.database.default_resources)
+        running_context.db.session.add(admin_role)
+        admin_user = add_user(username='admin', password='admin')
+        admin_user.roles.append(admin_role)
         running_context.db.session.commit()
+    if Role.query.all() or ResourcePermission.query.all():
+        initialize_resource_roles_from_database()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in running_context.db.session.query(running_context.App).all()])
@@ -193,16 +200,15 @@ def create_user():
 def create_test_data():
     from server.context import running_context
     from . import database
-    from server import flaskserver
 
     running_context.db.create_all()
 
     if not database.User.query.first():
         admin_role = running_context.user_datastore.create_role(name='admin',
                                                                 description='administrator',
-                                                                pages=flaskserver.default_urls)
+                                                                pages=server.database.default_resources)
 
-        u = running_context.user_datastore.create_user(email='admin', password=encrypt_password('admin'))
+        u = running_context.User.add_user(username='admin', password='admin')
         running_context.user_datastore.add_role_to_user(u, admin_role)
         running_context.db.session.commit()
 

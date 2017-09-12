@@ -315,7 +315,7 @@ class TestWorkflowServer(ServerTestCase):
 
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.load_workflows_from_file(os.path.join(core.config.paths.workflows_path,
+        flask_server.running_context.controller.load_playbook_from_file(os.path.join(core.config.paths.workflows_path,
                                                                                       'test.playbook'))
         orderless_list_compare(self,
                                [key.workflow for key in flask_server.running_context.controller.workflows.keys()],
@@ -444,12 +444,12 @@ class TestWorkflowServer(ServerTestCase):
         self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test'))
 
         playbooks = [os.path.splitext(playbook)[0]
-                     for playbook in helpers.locate_workflows_in_directory(core.config.paths.workflows_path)]
+                     for playbook in helpers.locate_playbooks_in_directory(core.config.paths.workflows_path)]
         self.assertEqual(len(playbooks), 0)
 
     def test_delete_playbook_no_file(self):
         initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                  helpers.locate_workflows_in_directory()]
+                                  helpers.locate_playbooks_in_directory()]
         data = {"name": "test_playbook"}
         self.app.put('/api/playbooks', headers=self.headers, content_type="application/json", data=json.dumps(data))
         self.delete_with_status_check('/api/playbooks/test_playbook', headers=self.headers)
@@ -458,18 +458,18 @@ class TestWorkflowServer(ServerTestCase):
         self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test_playbook'))
 
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                helpers.locate_workflows_in_directory()]
+                                helpers.locate_playbooks_in_directory()]
         orderless_list_compare(self, final_playbook_files, initial_playbook_files)
 
     def test_delete_playbook_invalid_name(self):
         initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                  helpers.locate_workflows_in_directory()]
+                                  helpers.locate_playbooks_in_directory()]
         self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist.',
                                       headers=self.headers,
                                       status_code=OBJECT_DNE_ERROR)
         self.assertFalse(flask_server.running_context.controller.is_playbook_registered('junkPlaybookName'))
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                helpers.locate_workflows_in_directory()]
+                                helpers.locate_playbooks_in_directory()]
         orderless_list_compare(self, final_playbook_files, initial_playbook_files)
 
     def test_delete_workflow(self):

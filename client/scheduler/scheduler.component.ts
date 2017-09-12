@@ -33,7 +33,7 @@ export class SchedulerComponent {
 
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private schedulerService: SchedulerService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private schedulerService: SchedulerService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {		
 		this.currentController = "Default Controller";
 		this.toastyConfig.theme = 'bootstrap';
 

@@ -7,6 +7,7 @@ import server.flaskserver
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
 from tests.util.mock_objects import *
+from tests.util.thread_control import *
 import core.controller
 import os
 import json
@@ -51,6 +52,10 @@ class ServerTestCase(unittest.TestCase):
 
         core.controller.Controller.initialize_threading = mock_initialize_threading
         core.controller.Controller.shutdown_pool = mock_shutdown_pool
+        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
+        cls.context = server.flaskserver.app.test_request_context()
+        cls.context.push()
+
         server.flaskserver.running_context.db.create_all()
 
     @classmethod
@@ -73,15 +78,20 @@ class ServerTestCase(unittest.TestCase):
 
         self.app = server.flaskserver.app.test_client(self)
         self.app.testing = True
-        self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        response = self.app.post('/key', data=dict(email='admin', password='admin'),
-                                 follow_redirects=True).get_data(as_text=True)
 
-        key = json.loads(response)["auth_token"]
-        self.headers = {"Authentication-Token": key}
+        self.context = server.flaskserver.app.test_request_context()
+        self.context.push()
+
+        from server.database import db
+        server.flaskserver.running_context.db = db
+
+        post = self.app.post('/api/auth', content_type="application/json",
+                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        key = json.loads(post.get_data(as_text=True))
+        self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
         server.flaskserver.running_context.controller.workflows = {}
-        server.flaskserver.running_context.controller.load_all_workflows_from_directory()
+        server.flaskserver.running_context.controller.load_all_playbooks_from_directory()
 
     def tearDown(self):
         shutil.rmtree(core.config.paths.workflows_path)

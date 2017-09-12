@@ -1,12 +1,15 @@
 from flask import request, current_app
-from flask_security import roles_accepted
+from server.security import roles_accepted_for_resources
+from flask_jwt_extended import jwt_required
 from server.returncodes import *
+from server.database import db
 
 
 def read_all_triggers():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/listener'])
+    @jwt_required
+    @roles_accepted_for_resources('trigger')
     def __func():
         return {"triggers": [trigger.as_json() for trigger in running_context.Triggers.query.all()]}, SUCCESS
 
@@ -16,7 +19,8 @@ def read_all_triggers():
 def listener():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/listener'])
+    @jwt_required
+    @roles_accepted_for_resources('trigger')
     def __func():
         trigger_args = request.get_json()
         if 'inputs' not in trigger_args:
@@ -38,7 +42,8 @@ def listener():
 def create_trigger(trigger_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/listener'])
+    @jwt_required
+    @roles_accepted_for_resources('trigger')
     def __func():
         data = request.get_json()
         if 'conditions' not in data:
@@ -48,10 +53,10 @@ def create_trigger(trigger_name):
         data['name'] = trigger_name
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query is None:
-            running_context.db.session.add(
+            db.session.add(
                 running_context.Triggers(**data))
 
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Added trigger: '
                                     '{0}'.format(data))
             return {}, OBJECT_CREATED
@@ -65,7 +70,8 @@ def create_trigger(trigger_name):
 def read_trigger(trigger_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/listener'])
+    @jwt_required
+    @roles_accepted_for_resources('trigger')
     def __func():
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:
@@ -80,7 +86,8 @@ def read_trigger(trigger_name):
 def update_trigger(trigger_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/listener'])
+    @jwt_required
+    @roles_accepted_for_resources('trigger')
     def __func():
         data = request.get_json()
         if 'conditions' not in data:
@@ -96,7 +103,7 @@ def update_trigger(trigger_name):
 
             trigger.edit_trigger(data)
 
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Edited trigger {0}'.format(trigger))
             return trigger.as_json(), SUCCESS
 
@@ -110,12 +117,13 @@ def update_trigger(trigger_name):
 def delete_trigger(trigger_name):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/listener'])
+    @jwt_required
+    @roles_accepted_for_resources('trigger')
     def __func():
         query = running_context.Triggers.query.filter_by(name=trigger_name).first()
         if query:
             running_context.Triggers.query.filter_by(name=trigger_name).delete()
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Deleted trigger {0}'.format(trigger_name))
             return SUCCESS
         else:

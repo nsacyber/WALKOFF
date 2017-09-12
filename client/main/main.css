@@ -9,13 +9,13 @@
     height: 0;
 }
 
-.contentContainer iframe {
+/* .contentContainer iframe {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-}
+} */
 
 .navbar-custom {
   background-color: #3c8dbc;
@@ -23,6 +23,10 @@
 
 .navbar-custom a {
   color: #f6f6f6;
+}
+
+.navbar-custom a .navLink {
+  margin-left: 5px;
 }
 
 .navbar-custom .dropdown-item {
@@ -45,6 +49,22 @@
     margin-top: -8px;
     line-height: 10px;
   }
+}
+
+.navbar-nav .dropdown .dropdown-menu {
+  background-color: #3c8dbc;
+}
+
+.navbar-nav .dropdown .dropdown-menu .installedApp {
+  color: white;
+}
+
+.navbar-nav .dropdown .dropdown-menu .installedApp:hover {
+  color: #3c8dbc;
+}
+
+.navbar-nav .dropdown .dropdown-menu .installedApp span {
+  margin-left: 5px;
 }
 
 .footer {

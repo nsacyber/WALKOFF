@@ -14,6 +14,7 @@ from collections import OrderedDict
 
 
 class TestCaseServer(ServerTestCase):
+        
     def setUp(self):
         case_database.initialize()
         self.cases1 = {'case1': {'uid1': ['e1', 'e2', 'e3'],

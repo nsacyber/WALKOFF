@@ -30,7 +30,7 @@ export class DevicesComponent {
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {

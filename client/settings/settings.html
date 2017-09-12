@@ -18,15 +18,6 @@
                             <label for="name">Templates Path</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.templates_path" name="templates_path" required>
                         </div>
-                        <!--<div class="form-group">
-                            <label for="name">Profile Visualizations Path</label>
-                            <input type="text" class="form-control" [(ngModel)]="configuration.profile_visualizations_path" name="profile_visualizations_path"
-                                required>
-                        </div>-->
-                        <!--<div class="form-group">
-                            <label for="name">Keywords Path</label>
-                            <input type="text" class="form-control" [(ngModel)]="configuration.keywords_path" name="keywords_path" required>
-                        </div>-->
                         <div class="form-group">
                             <label for="name">WALKOFF Database Path</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.db_path" name="db_path" required>
@@ -66,26 +57,20 @@
                                 <option *ngFor="let i of tlsVersions" [value]="i" [label]="i"></option>
                             </select>
                         </div>
-                        <!--<div class="form-group">
-                            <label for="name">Certificate Path</label>
-                            <input type="text" class="form-control" [(ngModel)]="configuration.certificate_path" name="certificate_path" required>
+                        <div class="form-group">
+                            <label for="name">JWT Access Token Duration (in minutes)</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration"
+                                required>
                         </div>
                         <div class="form-group">
-                            <label for="name">Private Key Path</label>
-                            <input type="text" class="form-control" [(ngModel)]="configuration.private_key_path" name="private_key_path" required>
-                        </div>-->
+                            <label for="name">JWT Refresh Token Duration (in days)</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.refresh_token_duration" name="refresh_token_duration"
+                                required>
+                        </div>
                     </div>
 
                     <div class="col-md-4">
                         <h3>Interface Configuration</h3>
-                        <!--<div class="form-group">
-                            <label for="name">Debug Mode</label>
-                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.debug" name="debug" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="name">Default Server</label>
-                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.default_server" name="default_server" required>
-                        </div>-->
                         <div class="form-group">
                             <label for="name">Host Address</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.host" name="host" required>
@@ -114,7 +99,7 @@
                     <div class="form-group row">
                         <label class="col-xs-2 col-form-label">Search Filter</label>
                         <div class="col-xs-10">
-                            <input class="form-control" [formControl]="filterQuery"/>
+                            <input class="form-control" [formControl]="filterQuery" />
                         </div>
                     </div>
                 </div>
@@ -145,39 +130,6 @@
                     </ng-template>
                 </ngx-datatable-column>
             </ngx-datatable>
-
-            <!--<table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th style="width: 30%">
-                            User Name
-                        </th>
-                        <th style="width: 40%">
-                            Role(s)
-                        </th>
-                        <th style="width: 10%">
-                            Active?
-                        </th>
-                        <th style="width: 20%">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let user of users">
-                        <td>{{user.username}}</td>
-                        <td>{{getFriendlyRoles(user.roles)}}</td>
-                        <td>{{getFriendlyBool(user.active)}}</td>
-                        <td>
-                            <button (click)="editUser(user)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit User</button>
-                            <button (click)="deleteUser(user)" class="btn btn-danger"><span class="fa fa-times"></span>Delete User</button>
-                        </td>
-                    </tr>
-                    <tr *ngIf="!users || !users.length">
-                        <td colspan="3">No users to display</td>
-                    </tr>
-                </tbody>
-            </table>-->
         </div>
     </div>
 </div>

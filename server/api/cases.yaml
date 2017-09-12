@@ -109,6 +109,33 @@
         schema:
           $ref: '#/definitions/Error'
 
+/api/cases/{case_id}/events:
+  parameters:
+    - name: case_id
+      in: path
+      description: The ID of the case
+      required: true
+      type: integer
+  get:
+    tags:
+      - Cases
+    summary: Read all the events for a case
+    description: ''
+    operationId: server.endpoints.cases.read_all_events
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Event'
+      461:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+
 /api/cases/import:
   get:
     tags:

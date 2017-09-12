@@ -11,15 +11,11 @@ AddUser:
         type: string
         example: password123
       roles:
-        description: A list of role objects that this user possesses
+        description: A list of roles that this user possesses
         type: array
-        description: A list of role objects
+        description: A list of role names
         items:
-          $ref: '#/definitions/Role'
-      active:
-        description: A boolean for whether or not a user is currently active
-        type: boolean
-        example: True
+          type: string
 EditUser:
     type: object
     required: [id]
@@ -42,14 +38,13 @@ EditUser:
         type: string
         example: password321
       active:
-        description: A boolean for whether or not a user is currently active
+        description: activate/deactive a user
         type: boolean
-        example: True
       roles:
         description: New list of role objects that this user possesses
         type: array
         items:
-          $ref: '#/definitions/Role'
+          type: string
         example:
           - /users
           - /cases
@@ -66,12 +61,11 @@ DisplayUser:
         description: Username or email of the user
         type: string
         example: administrator
+      active:
+        description: activate/deactive a user
+        type: boolean
       roles:
         description: List of role objects that this user possesses
         type: array
         items:
-          $ref: '#/definitions/Role'
-      active:
-        description: A boolean displaying whether or not a user is currently active
-        type: boolean
-        example: True
+          type: string

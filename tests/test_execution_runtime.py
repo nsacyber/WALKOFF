@@ -7,6 +7,7 @@ import core.config.config
 import core.case.database as case_database
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.mock_objects import *
+from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
 from tests.apps import App
@@ -29,8 +30,8 @@ class TestExecutionRuntime(unittest.TestCase):
         case_database.initialize()
         self.controller = core.controller.controller
         self.controller.workflows = {}
-        self.controller.load_all_workflows_from_directory(path=config.test_workflows_path)
-        self.controller.initialize_threading()
+        self.controller.load_all_playbooks_from_directory(path=config.test_workflows_path)
+        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
 
     def tearDown(self):
         subscription.clear_subscriptions()

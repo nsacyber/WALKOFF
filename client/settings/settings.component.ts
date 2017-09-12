@@ -31,7 +31,7 @@ export class SettingsComponent {
 	displayUsers: User[] = [];
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();

@@ -1,24 +1,18 @@
-import { Injectable } 			from '@angular/core';
-import { Http, Headers, Response, RequestOptions } 		from '@angular/http';
+import { Injectable } from '@angular/core';
+import { Http, Headers, Response } from '@angular/http';
 
-import { Observable }     from 'rxjs/Observable';
+import { JwtHttp } from 'angular2-jwt-refresh';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 
 @Injectable()
 export class DashboardService {
-	requestOptions : RequestOptions;
-
 	constructor (private http: Http) {
-		let authKey = localStorage.getItem('authKey');
-		let headers = new Headers({ 'Accept': 'application/json' });
-		headers.append('Authentication-Token', authKey);
-
-		this.requestOptions = new RequestOptions({ headers: headers });
 	}
 
-	private handleError (error: Response | any) {
+	private handleError (error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {

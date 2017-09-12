@@ -12,20 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', children=None, playbook_name='', uid=None):
+    def __init__(self, name='', children=None, uid=None, steps=None, start_step=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
             children (dict, optional): A dict of children. Defaults to None.
-            playbook_name (str, optional): The name of the playbook under which the workflow is located. Defaults
-                to an empty string.
         """
         ExecutionElement.__init__(self, name=name)
-        self.playbook_name = playbook_name
-        self.steps = {}
-        self.start_step = 'start'
+        self.steps = steps if steps is not None else {}
+        self.start_step = start_step if start_step is not None else 'start'
         self.children = children if children is not None else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
@@ -202,7 +199,7 @@ class Workflow(ExecutionElement):
     def __steps(self, start):
         initial_step_name = start
         current_name = initial_step_name
-        current = self.steps[current_name]
+        current = self.steps[current_name] if self.steps else None
         while current:
             yield current
             next_step = current.get_next_step(self.accumulator)
@@ -315,24 +312,41 @@ class Workflow(ExecutionElement):
             out['children'] = list(self.children.keys())
         return out
 
-    def from_json(self, data):
+    @staticmethod
+    def from_json(json_in):
         """Reconstruct a Workflow object based on JSON data.
 
        Args:
-           data (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
+           json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
        """
+        name = json_in['name'] if 'name' in json_in else ''
+        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        children = {name: None for name in json_in['children']} if 'children' in json_in else {}
+        start_step = json_in['start_step'] if 'start_step' in json_in else None
+        steps = {}
+        for step_json in json_in['steps']:
+            step = Step.from_json(step_json, position=step_json['position'])
+            steps[step_json['name']] = step
+        return Workflow(name=name, uid=uid, children=children, start_step=start_step, steps=steps)
+
+    def update_from_json(self, json_in):
+        """Reconstruct a Workflow object based on JSON data.
+
+               Args:
+                   json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
+               """
         backup_steps = deepcopy(self.steps)
         self.steps = {}
-        if 'name' in data:
-            self.name = data['name']
-        uid = data['uid'] if 'uid' in data else uuid.uuid4().hex
-        self.children = {name: None for name in data['children']} if 'children' in data else {}
+        if 'name' in json_in:
+            self.name = json_in['name']
+        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        self.children = {name: None for name in json_in['children']} if 'children' in json_in else {}
         try:
-            if 'start' in data and data['start']:
-                self.start_step = data['start']
+            if 'start' in json_in and json_in['start']:
+                self.start_step = json_in['start']
             self.steps = {}
             self.uid = uid
-            for step_json in data['steps']:
+            for step_json in json_in['steps']:
                 step = Step.from_json(step_json, position=step_json['position'])
                 self.steps[step_json['name']] = step
         except (UnknownApp, UnknownAppAction, InvalidInput):

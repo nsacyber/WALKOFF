@@ -22,31 +22,31 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Apps <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#" class="dropdown-item">You have no Shortstop apps installed.</a></li>
-                <!--{% for app in apps %}
-                          <li><a class="installedApp" href="#"><i class="fa fa-gear"></i> {{app}} </a></li>
-                      {% else %}
-                          <li>You have no Shortstop apps installed.</li>
-                    {% endfor %}-->
+                <li *ngFor="let app of apps">
+                  <a class="installedApp" routerLink="/apps/{{app}}"><i class="fa fa-gear"></i><span>{{app}}</span></a>
+                </li>
+                <li *ngIf="!apps || !apps.length">
+                  <span class="dropdown-item">You have no Shortstop apps installed.</span>
+                </li>
               </ul>
             </li>
             <li>
-              <a routerLink="/playbook" routerLinkActive="active"><i class="fa fa-sitemap"></i>Playbook</a>
+              <a routerLink="/playbook" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Playbook</span></a>
             </li>
             <li>
-              <a routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar"></i>Scheduler</a>
+              <a routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar"></i><span class="navLink">Scheduler</span></a>
             </li>
             <li>
-              <a routerLink="/devices" routerLinkActive="active"><i class="fa fa-desktop"></i>Devices</a>
+              <a routerLink="/devices" routerLinkActive="active"><i class="fa fa-desktop"></i><span class="navLink">Devices</span></a>
             </li>
             <li>
-              <a routerLink="/triggers" routerLinkActive="active"><i class="fa fa-flag"></i>Triggers</a>
+              <a routerLink="/triggers" routerLinkActive="active"><i class="fa fa-flag"></i><span class="navLink">Triggers</span></a>
             </li>
             <li>
-              <a routerLink="/cases" routerLinkActive="active"><i class="fa fa-list-alt"></i>Cases</a>
+              <a routerLink="/cases" routerLinkActive="active"><i class="fa fa-list-alt"></i><span class="navLink">Cases</span></a>
             </li>
             <li>
-              <a routerLink="/settings" routerLinkActive="active"><i class="fa fa-wrench"></i>Settings</a>
+              <a routerLink="/settings" routerLinkActive="active"><i class="fa fa-wrench"></i><span class="navLink">Settings</span></a>
             </li>
           </ul>
 
@@ -82,10 +82,7 @@
                   <li class="user-footer">
 
                     <div class="pull-right">
-                      <a href="/logout" class="btn btn-default btn-primary">Sign out</a>
-                    </div>
-                    <div class="pull-left">
-                      <a href="/key" onclick="window.open(this.href, 'targetWindow', 'width=925, height=150'); return false;" class="btn btn-default btn-primary">API Key</a>
+                      <button (click)="logout()" class="btn btn-default btn-primary">Sign out</button>
                     </div>
                   </li>
                 </ul>

@@ -1,5 +1,6 @@
 from flask import current_app, request
-from flask_security import roles_accepted
+from server.security import roles_accepted_for_resources
+from flask_jwt_extended import jwt_required
 from server.returncodes import *
 from core.scheduler import InvalidTriggerArgs
 
@@ -7,7 +8,8 @@ from core.scheduler import InvalidTriggerArgs
 def get_scheduler_status():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         return {"status": running_context.controller.scheduler.scheduler.state}, SUCCESS
     return __func()
@@ -16,7 +18,8 @@ def get_scheduler_status():
 def update_scheduler_status(status):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         updated_status = running_context.controller.scheduler.scheduler.state
         if status == "start":
@@ -39,6 +42,8 @@ def update_scheduler_status(status):
 def read_all_scheduled_tasks():
     from server.context import running_context
 
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         return [task.as_json() for task in running_context.ScheduledTask.query.all()], SUCCESS
     return __func()
@@ -47,6 +52,8 @@ def read_all_scheduled_tasks():
 def create_scheduled_task():
     from server.context import running_context
 
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
@@ -67,6 +74,8 @@ def create_scheduled_task():
 def read_scheduled_task(scheduled_task_id):
     from server.context import running_context
 
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:
@@ -80,6 +89,8 @@ def read_scheduled_task(scheduled_task_id):
 def update_scheduled_task():
     from server.context import running_context
 
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(id=data['id']).first()
@@ -104,6 +115,8 @@ def update_scheduled_task():
 def delete_scheduled_task(scheduled_task_id):
     from server.context import running_context
 
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:
@@ -119,6 +132,8 @@ def delete_scheduled_task(scheduled_task_id):
 def control_scheduled_task(scheduled_task_id, action):
     from server.context import running_context
 
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
         task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
         if task is not None:

@@ -1,4 +1,4 @@
-from .database import db, Base
+from .database import db, TrackModificationsMixIn
 import logging
 import json
 from core.scheduler import construct_trigger
@@ -6,15 +6,17 @@ from core.scheduler import construct_trigger
 logger = logging.getLogger(__name__)
 
 
-class ScheduledWorkflow(Base):
+class ScheduledWorkflow(db.Model):
     __tablename__ = 'scheduled_workflow'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uid = db.Column(db.String(50), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id'))
 
 
-class ScheduledTask(Base):
+class ScheduledTask(db.Model, TrackModificationsMixIn):
 
     __tablename__ = 'scheduled_task'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     status = db.Column(db.Enum('running', 'stopped'))

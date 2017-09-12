@@ -1,16 +1,13 @@
 import json
 from tests.util.assertwrappers import orderless_list_compare
-from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
 from tests.util.servertestcase import ServerTestCase
 from server.returncodes import *
+from flask import current_app
 
 
 class TestServer(ServerTestCase):
-    def test_login(self):
-        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.assertEqual(response.status_code, SUCCESS)
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
@@ -128,7 +125,9 @@ class TestConfiguration(ServerTestCase):
                     'https': bool(core.config.config.https),
                     'tls_version': core.config.config.tls_version,
                     'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
-                    'number_processes': int(core.config.config.num_processes)}
+                    'number_processes': int(core.config.config.num_processes),
+                    'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
+                    'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days)}
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 
@@ -139,8 +138,9 @@ class TestConfiguration(ServerTestCase):
                 "tls_version": '1.1',
                 "https": True,
                 "host": 'host_reset',
-                "port": 1100}
-
+                "port": 1100,
+                "access_token_duration": 20,
+                "refresh_token_duration": 35}
         self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json')
 
@@ -153,3 +153,20 @@ class TestConfiguration(ServerTestCase):
 
         for actual, expected_ in expected.items():
             self.assertEqual(actual, expected_)
+
+        self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, 20*60)
+        self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, 35)
+
+    def test_set_configuration_invalid_token_durations(self):
+        access_token_duration = current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds
+        refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
+        templates_path = core.config.paths.templates_path
+        data = {"templates_path": 'templates_path_reset',
+                "access_token_duration": 60*25,
+                "refresh_token_duration": 1}
+        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+                                    content_type='application/json', status_code=BAD_REQUEST)
+
+        self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)
+        self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, refresh_token_duration)
+        self.assertEqual(core.config.paths.templates_path, templates_path)

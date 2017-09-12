@@ -1,7 +1,6 @@
 import json
 from abc import abstractmethod
 from flask import current_app
-from sqlalchemy import Integer, String
 from . import database
 import core.config.paths
 from core.helpers import format_exception_message
@@ -13,11 +12,11 @@ db = database.db
 logger = logging.getLogger(__name__)
 
 
-class App(database.Base, object):
+class App(db.Model, database.TrackModificationsMixIn):
     __tablename__ = 'app'
 
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String)
     devices = db.relationship("Device", back_populates="app")
 
     def as_json(self, with_devices=False):
@@ -91,11 +90,11 @@ class App(database.Base, object):
         pass
 
 
-class Device(database.Base):
+class Device(db.Model, database.TrackModificationsMixIn):
     __tablename__ = 'device'
 
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String)
     username = db.Column(db.String(80))
     password = db.Column(db.LargeBinary())
     ip = db.Column(db.String(15))

@@ -17,6 +17,8 @@ export class Configuration {
 	// default_server: boolean;
 	host: string;
 	port: number;
+	access_token_duration: number; //in minutes
+	refresh_token_duration: number; //in days
 
 	static getDefaultConfiguration(): Configuration {
 		return {
@@ -37,7 +39,9 @@ export class Configuration {
 			// debug: true,
 			// default_server: true,
 			host: '127.0.0.1',
-			port: 5000
+			port: 5000,
+			access_token_duration: 15,
+			refresh_token_duration: 30,
 		};
 	}
 }
