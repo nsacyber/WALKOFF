@@ -121,8 +121,8 @@ def stream_workflow_success_events():
     return Response(__workflow_shutdown_event_stream(), mimetype='text/event-stream')
 
 
-@jwt_required
 @workflowresults_page.route('/stream-steps', methods=['GET'])
+@jwt_required
 # @roles_accepted(*running_context.user_roles['/playbooks'])
 def stream_workflow_step_events():
     return Response(__workflow_steps_event_stream(), mimetype='text/event-stream')
