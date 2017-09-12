@@ -28,7 +28,6 @@
     "core-js": "~2.4.1",
     "d3": "~4.10.0",
     "datatables": "~1.10.13",
-    "event-source-polyfill": "0.0.9",
     "font-awesome": "~4.7.0",
     "gulp": "~3.9.1",
     "gulp-concat": "~2.6.1",

@@ -26,7 +26,7 @@ $(function(){
     // TODO: this function only really authorizes on the first call. we should switch to maybe a web socket to handle this route in the future
     function createWorkflowResultsSSE() {
         if (!window.JwtHelper.isTokenExpired(authToken)) {
-            window.stepResultsSSE = new EventSource('workflowresults/stream-steps', { headers: { Authorization: 'Bearer ' + authToken } });
+            window.stepResultsSSE = new EventSource('workflowresults/stream-steps?access_token=' + authToken);
             return;
         }
         
@@ -39,7 +39,7 @@ $(function(){
             'success': function (data) {
                 sessionStorage.setItem('access_token', data['access_token']);
                 authToken = data['access_token'];
-                window.stepResultsSSE = new EventSource('workflowresults/stream-steps', { headers: { Authorization: 'Bearer ' + authToken } });
+                window.stepResultsSSE = new EventSource('workflowresults/stream-steps?access_token=' + authToken);
             },
             'error': function (e) {
                 console.log(e);
