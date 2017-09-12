@@ -199,7 +199,7 @@ class Workflow(ExecutionElement):
     def __steps(self, start):
         initial_step_name = start
         current_name = initial_step_name
-        current = self.steps[current_name]
+        current = self.steps[current_name] if self.steps else None
         while current:
             yield current
             next_step = current.get_next_step(self.accumulator)
