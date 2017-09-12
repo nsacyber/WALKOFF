@@ -133,7 +133,7 @@
       201:
         description: Success
         schema:
-          $ref: '#/definitions/OutputDevice'
+          $ref: '#/definitions/Device'
       462:
         description: Device already exists
         schema:

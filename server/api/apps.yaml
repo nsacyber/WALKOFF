@@ -81,7 +81,7 @@
         schema:
           type: array
           items:
-            $ref: '#/definitions/OutputDevice'
+            $ref: '#/definitions/Device'
       461:
         description: App does not exist
         schema:

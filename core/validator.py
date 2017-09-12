@@ -115,17 +115,8 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     validate_definitions(definitions, dereference)
 
 
-def validate_device(devices_api, device_json):
-    device_type = device_json['type']
-    if device_type in devices_api:
-        message_prefix = 'Device type {0} for app {1}'.format(device_type, device_json['app'])
-        validate_device_fields(devices_api[device_type]['fields'], device_json['fields'], message_prefix)
-    else:
-        message = 'Device type {0} for found for app {1}'.format(device_type, device_json['app'])
-        raise InvalidInput(message)
-
-
-def validate_device_fields(device_fields_api, device_fields, message_prefix):
+def validate_device_fields(device_fields_api, device_fields, device_type, app):
+    message_prefix = 'Device type {0} for app {1}'.format(device_type, app)
     required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
     field_names = set(device_fields)
     if required_in_api - field_names:
@@ -142,8 +133,11 @@ def validate_device_fields(device_fields_api, device_fields, message_prefix):
             if 'required' in field_api:
                 field_api.pop('required')
             if 'encrypted' in field_api:
+                hide = True
                 field_api.pop('encrypted')
-            validate_primitive_parameter(value, field_api, field_type, message_prefix)
+            else:
+                hide = False
+            validate_primitive_parameter(value, field_api, field_type, message_prefix, hide_input=hide)
         else:
             message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field['name'])
             logger.warning(message)
@@ -298,7 +292,7 @@ def validate_definitions(definitions, dereferencer):
         validate_definition(definition, dereferencer, definition_name)
 
 
-def validate_primitive_parameter(value, param, parameter_type, message_prefix):
+def validate_primitive_parameter(value, param, parameter_type, message_prefix, hide_input=False):
     try:
         converted_value = convert_primitive_type(value, parameter_type)
     except (ValueError, TypeError):
@@ -314,10 +308,15 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix):
             Draft4Validator(
                 param, format_checker=draft4_format_checker).validate(converted_value)
         except ValidationError as exception:
-            message = '{0} has invalid input. ' \
-                      'Input {1} with type {2} does not conform to ' \
-                      'validators: {3}'.format(message_prefix, value, parameter_type,
-                                               format_exception_message(exception))
+            if not hide_input:
+                message = '{0} has invalid input. ' \
+                          'Input {1} with type {2} does not conform to ' \
+                          'validators: {3}'.format(message_prefix, value, parameter_type,
+                                                   format_exception_message(exception))
+            else:
+                message = '{0} has invalid input. {1} does not conform to ' \
+                          'validators: {2}'.format(message_prefix, parameter_type,
+                                                   format_exception_message(exception))
             logger.error(message)
             raise InvalidInput(message)
         return converted_value

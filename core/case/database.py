@@ -7,8 +7,11 @@ from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 from core.config.paths import case_db_path
 import core.config.config
 from core.helpers import format_db_path
+import logging
 
 Case_Base = declarative_base()
+
+logger = logging.getLogger(__name__)
 
 
 class _CaseEventLink(Case_Base):
@@ -81,27 +84,6 @@ class Event(Case_Base):
         if with_cases:
             output['cases'] = [case.as_json(with_events=False) for case in self.cases]
         return output
-
-    # @staticmethod
-    # def create(sender, timestamp, entry_message, entry_type, data=''):
-    #     """Factory method to construct an Event object.
-    #
-    #     Args:
-    #         sender (cls): A boolean to determine whether or not the events of the Case object should be
-    #         included in the output.
-    #         timestamp (str): A string representation of a timestamp
-    #         entry_message (str): The message associated with the event
-    #         entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
-    #         data: Extra information to be logged with the event
-    #
-    #     Returns:
-    #         An Event object.
-    #     """
-    #     return Event(type=entry_type,
-    #                  timestamp=timestamp,
-    #                  originator=','.join(map(str, sender.)),
-    #                  message=entry_message,
-    #                  data=data)
 
 
 class CaseDatabase(object):
@@ -192,7 +174,7 @@ class CaseDatabase(object):
                     if case_elem.name == case:
                         event.cases.append(case_elem)
             else:
-                print("ERROR: Case is not tracked")
+                logger.error("Case is not tracked")
         self.session.add(event)
         self.session.commit()
 

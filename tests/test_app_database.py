@@ -5,22 +5,11 @@ from server.appdevice import App, Device
 class TestAppDatabase(unittest.TestCase):
 
     def setUp(self):
-        encrypted_fields = [{'name': 'test_name', 'type': 'integer', 'value': 123, 'encrypted': True},
-                            {'name': 'test2', 'type': 'string', 'value': 'something', 'encrypted': True}]
-        plaintext_fields = [{'name': 'test3', 'type': 'boolean', 'value': True, 'encrypted': False},
-                            {'name': 'test4', 'type': 'string', 'value': 'something else', 'encrypted': False}]
-        encrypted_fields_as_json = list(encrypted_fields)
-        for field in encrypted_fields:
-            field.pop('value')
-        both_fields = list(encrypted_fields)
-        both_fields.extend(plaintext_fields)
-        both_fields_as_json = list(encrypted_fields_as_json)
-        both_fields_as_json.extend(plaintext_fields)
-        self.device1_json = {'name': 'test1', 'fields': encrypted_fields}
-        self.device1_as_json = {'name': 'test1', 'fields': encrypted_fields_as_json}
-        self.device2_json = {'name': 'test2', 'fields': plaintext_fields}
-        self.device3_json = {'name': 'test3', 'fields': both_fields}
-        self.device3_as_json = {'name': 'test3', 'fields': both_fields_as_json}
+        self.device1 = Device('test1', [], [], 'type1')
+        self.device2 = Device('test2', [], [], 'type1')
+        self.device3 = Device('test3', [], [], 'type2')
+        self.device4 = Device('test4', [], [], 'type2')
+        self.all_devices = [self.device1, self.device2, self.device3, self.device4]
 
     def assertConstructionIsCorrect(self, app, name, devices):
         self.assertEqual(app.name, name)
@@ -31,18 +20,31 @@ class TestAppDatabase(unittest.TestCase):
         self.assertConstructionIsCorrect(app, 'test', set())
 
     def test_init_with_devices(self):
-        app = App('test', devices_json=[self.device1_json, self.device2_json, self.device3_json])
-        self.assertConstructionIsCorrect(app, 'test', {'test1', 'test2', 'test3'})
+        app = App('test', devices=self.all_devices)
+        self.assertConstructionIsCorrect(app, 'test', {'test1', 'test2', 'test3', 'test4'})
 
     def test_get_device(self):
-        app = App('test', devices_json=[self.device1_json, self.device2_json, self.device3_json])
-        self.assertEqual(app.get_device('test2').as_json(), self.device2_json)
+        app = App('test', devices=self.all_devices)
+        self.assertEqual(app.get_device('test2').as_json(), self.device2.as_json())
 
     def test_get_device_invalid(self):
-        app = App('test', devices_json=[self.device1_json, self.device2_json, self.device3_json])
+        app = App('test', devices=self.all_devices)
         self.assertIsNone(app.get_device('invalid'))
 
     def test_as_json(self):
-        app = App('test', devices_json=[self.device1_json, self.device2_json, self.device3_json])
-        self.assertDictEqual(
-            app.as_json(), {'name': 'test', 'fields': [self.device1_as_json, self.device2_json, self.device3_as_json]})
+        app = App('test', devices=self.all_devices)
+        app_json = app.as_json()
+        self.assertEqual(app_json['name'], 'test')
+        expected_devices_json = [device.as_json() for device in app.devices]
+        for device in app_json['devices']:
+            self.assertIn(device, expected_devices_json)
+
+    def test_add_device(self):
+        app = App('test', devices=[self.device1, self.device2, self.device3])
+        app.add_device(self.device4)
+        self.assertSetEqual({device.name for device in app.devices}, {'test1', 'test2', 'test3', 'test4'})
+
+    def test_add_device_already_exists(self):
+        app = App('test', devices=[self.device1, self.device2, self.device3])
+        app.add_device(self.device3)
+        self.assertSetEqual({device.name for device in app.devices}, {'test1', 'test2', 'test3'})
