@@ -16,6 +16,7 @@ from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
 from core.controller import _WorkflowKey
 from tests.util.mock_objects import *
+from tests.util.thread_control import *
 import core.loadbalancer
 import threading
 
