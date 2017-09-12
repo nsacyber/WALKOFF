@@ -19,6 +19,7 @@ import multiprocessing
 import threading
 import zmq.green as zmq
 from core import loadbalancer
+from core.threadauthenticator import ThreadAuthenticator
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -57,6 +58,8 @@ class Controller(object):
         self.threading_is_initialized = False
         self.load_balancer = None
         self.receiver = None
+        self.ctx = None
+        self.auth = None
 
     def __workflow_completed_callback(self, workflow, **kwargs):
         self.workflows_executed += 1
@@ -78,9 +81,14 @@ class Controller(object):
             pid.start()
             self.pids.append(pid)
 
-        ctx = zmq.Context.instance()
-        self.load_balancer = loadbalancer.LoadBalancer(ctx)
-        self.receiver = loadbalancer.Receiver(ctx)
+        self.ctx = zmq.Context.instance()
+        self.auth = ThreadAuthenticator(self.ctx)
+        self.auth.start()
+        self.auth.allow('127.0.0.1')
+        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+
+        self.load_balancer = loadbalancer.LoadBalancer(self.ctx)
+        self.receiver = loadbalancer.Receiver(self.ctx)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
@@ -119,6 +127,10 @@ class Controller(object):
                 logger.debug('Controller thread pool shutdown')
                 break
             gevent.sleep(0.1)
+        if self.auth:
+            self.auth.stop()
+        if self.ctx:
+            self.ctx.destroy()
         self.cleanup_threading()
         return
 
