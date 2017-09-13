@@ -67,6 +67,11 @@ class Controller(object):
             self.workflow_status[workflow.uuid] = WORKFLOW_COMPLETED
 
     def initialize_threading(self, worker_env=None):
+        """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
+
+        Args:
+            worker_env (function, optional): Optional alternative worker setup environment function.
+        """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
                     os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
@@ -102,6 +107,10 @@ class Controller(object):
 
     def shutdown_pool(self, num_workflows=0):
         """Shuts down the threadpool.
+
+        Args:
+            num_workflows (int, optional): The number of workflows that should be executed before the pool
+                is shutdown.
         """
         gevent.sleep(0)
 
@@ -135,6 +144,8 @@ class Controller(object):
         return
 
     def cleanup_threading(self):
+        """Once the threadpool has been shutdown, clear out all of the data structures used in the pool.
+        """
         self.pids = []
         self.receiver_thread = None
         self.manager_thread = None
@@ -235,6 +246,13 @@ class Controller(object):
                                        'for workflow {1}'.format(child, self.workflows[workflow_key].name))
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
+        """Schedules one or more workflows to be run.
+
+        Args:
+            task_id (str): The task ID for this scheduled execution.
+            workflow_uids (list[str]): A list of workflow UIDs to be executed.
+            trigger (str): The name of the trigger that will trigger the execution of the workflows.
+        """
         workflows = [(key.playbook, key.workflow, workflow.uid) for key, workflow in self.workflows.items()
                      if workflow.uid in workflow_uids]
         self.scheduler.schedule_workflows(task_id, self.execute_workflow, workflows, trigger)
@@ -249,8 +267,8 @@ class Controller(object):
         Args:
             playbook_name (str): The name of the new playbook. 
             workflow_name (str): The name of the new workflow.
-            template_playbook (str): The name of the playbook template to load. Default is "emptyWorkflow".
-            template_name (str): The name of the workflow template to load. Default is "emptyWorkflow".
+            template_playbook (str, optional): The name of the playbook template to load. Default is "emptyWorkflow".
+            template_name (str, optional): The name of the workflow template to load. Default is "emptyWorkflow".
             
         Returns:
             True on success, False if otherwise.
@@ -267,7 +285,7 @@ class Controller(object):
         
         Args:
             playbook_name (str): The name of the new playbook.
-            template_playbook (str): The name of the playbook template to load. Default is "emptyWorkflow".
+            template_playbook (str, optional): The name of the playbook template to load. Default is "emptyWorkflow".
         """
         # TODO: Need a handler for returning workflow key and status
         path = '{0}{1}{2}.playbook'.format(core.config.paths.templates_path, sep, template_playbook)
@@ -309,6 +327,10 @@ class Controller(object):
 
     def get_all_workflows(self, with_json=False):
         """Gets all of the currently loaded workflows.
+
+        Args:
+            with_json (bool, optional): A boolean specifying whether or not to include the JSON representation
+                of all the workflows, or just their names. Defaults to false.
         
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
@@ -400,7 +422,7 @@ class Controller(object):
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
-            start (str, optional): The name of the first step. Defaults to "start".
+            start (str, optional): The name of the first, or starting step. Defaults to "start".
             start_input (dict, optional): The input to the starting step of the workflow
         """
         key = _WorkflowKey(playbook_name, workflow_name)
@@ -466,13 +488,13 @@ class Controller(object):
         return _workflows
 
     def playbook_as_json(self, playbook_name):
-        """Returns the XML representation of a playbook.
+        """Returns the JSON representation of a playbook.
         
         Args:
             playbook_name: The name of the playbook.
             
         Returns:
-            The XML representation of the playbook if the playbook has any workflows under it, else None.
+            The JSON representation of the playbook if the playbook has any workflows under it, else None.
         """
         all_workflows = [workflow.as_json() for key, workflow in self.workflows.items()
                          if key.playbook == playbook_name]
@@ -505,7 +527,7 @@ class Controller(object):
                                                                      new_playbook_name, new_workflow_name))
 
     def copy_playbook(self, old_playbook_name, new_playbook_name):
-        """Copies a playbook
+        """Copies a playbook.
         
         Args:
             old_playbook_name (str): The name of the playbook to be copied.
@@ -520,7 +542,7 @@ class Controller(object):
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
-            execution_uid (str): The uid of the workflow
+            execution_uid (str): The execution uid of the workflow.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow and execution_uid in self.workflow_status and self.workflow_status[execution_uid] == WORKFLOW_RUNNING:
@@ -533,11 +555,11 @@ class Controller(object):
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
-            workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from pause_workflow(). This
-            is needed to resume a workflow for security purposes.
+            workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
+                pause_workflow(). This is needed to resume a workflow for security purposes.
             
         Returns:
-            "Success" if it is successful, or other error messages.
+            True if successful, false otherwise.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
@@ -555,6 +577,7 @@ class Controller(object):
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): The name of the workflow.
+            uid (str): The UID of the workflow that is being executed.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow and uid in self.workflow_status:

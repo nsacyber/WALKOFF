@@ -21,7 +21,7 @@ class NextStep(ExecutionElement):
         self.flags = flags if flags is not None else []
         self.results_sock = None
 
-    def send_callback(self, callback_name):
+    def __send_callback(self, callback_name):
         data = dict()
         data['callback_name'] = callback_name
         data['sender'] = {}
@@ -39,13 +39,13 @@ class NextStep(ExecutionElement):
             flag.results_sock = self.results_sock
         if data_in is not None and data_in.status == self.status:
             if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
-                self.send_callback("Next Step Taken")
+                self.__send_callback("Next Step Taken")
                 logger.debug('NextStep is valid for input {0}'.format(data_in))
 
                 return self.name
             else:
                 logger.debug('NextStep is not valid for input {0}'.format(data_in))
-                self.send_callback("Next Step Not Taken")
+                self.__send_callback("Next Step Not Taken")
                 return None
         else:
             return None

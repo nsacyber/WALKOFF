@@ -22,6 +22,15 @@ logger = logging.getLogger(__name__)
 
 
 def recreate_workflow(workflow_json):
+    """Recreates a workflow from a JSON to prepare for it to be executed.
+
+    Args:
+        workflow_json (JSON dict): The input workflow JSON, with some other fields as well.
+
+    Returns:
+        (Workflow object, start_input): A tuple containing the reconstructed Workflow object, and the input to
+            the start step.
+    """
     uid = workflow_json['uid']
     del workflow_json['uid']
     execution_uid = workflow_json['execution_uid']
@@ -45,6 +54,11 @@ def recreate_workflow(workflow_json):
 
 class LoadBalancer:
     def __init__(self, ctx):
+        """Initialize a LoadBalancer object, which manages workflow execution.
+
+        Args:
+            ctx (Context object): A Context object, shared with the Receiver thread.
+        """
         self.available_workers = []
         self.workflow_comms = {}
         self.thread_exit = False
@@ -69,6 +83,9 @@ class LoadBalancer:
         gevent.sleep(2)
 
     def manage_workflows(self):
+        """Manages the workflows to be executed and the workers. It waits for the server to submit a request to
+        execute a workflow, and then passes the workflow off to an available worker, once one becomes available.
+        """
         while True:
             if self.thread_exit:
                 break
@@ -93,19 +110,43 @@ class LoadBalancer:
         return
 
     def add_workflow(self, workflow_json):
+        """Adds a workflow to the queue to be executed.
+
+        Args:
+            workflow_json (dict): Dict representation of a workflow, along with some additional fields necessary for
+                reconstructing the workflow.
+        """
         self.pending_workflows.put(workflow_json)
 
     def pause_workflow(self, workflow_execution_uid, workflow_name):
+        """Pauses a workflow currently executing.
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_name (str): The name of the workflow.
+        """
         logger.info('Pausing workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
 
     def resume_workflow(self, workflow_execution_uid, workflow_name):
+        """Resumes a workflow that has previously been paused.
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_name (str): The name of the workflow.
+        """
         logger.info('Resuming workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
 
     def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
+        """Resumes a step in a workflow that was listed as a breakpoint step.
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_name (str): The name of the workflow.
+        """
         logger.info('Resuming workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
@@ -113,6 +154,13 @@ class LoadBalancer:
 
 class Worker:
     def __init__(self, id_, worker_env=None):
+        """Initialize a Workflow object, which will be executing workflows.
+
+        Args:
+            id_ (str): The ID of the worker. Needed for ZMQ socket communication.
+            worker_env (function, optional): The optional custom function to setup the worker environment. Defaults
+                to None.
+        """
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
@@ -151,6 +199,8 @@ class Worker:
         self.execute_workflow_worker()
 
     def exit_handler(self, signum, frame):
+        """Clean up upon receiving a SIGINT or SIGABT.
+        """
         if self.request_sock:
             self.request_sock.close()
         if self.results_sock:
@@ -160,11 +210,13 @@ class Worker:
         os._exit(0)
 
     def setup_worker_env(self):
+        """Sets up the worker environment, as the Worker executes in a new process.
+        """
         import core.config.config
         core.config.config.initialize()
 
     def execute_workflow_worker(self):
-        """Executes the workflow in a multi-threaded fashion.
+        """Keep executing workflows as they come in over the ZMQ socket from the manager.
         """
         self.request_sock.send(b"Ready")
         self.comm_sock.send(b"Executing")
@@ -204,6 +256,11 @@ class Receiver:
         'Filter Error': (callbacks.FilterError, False)}
 
     def __init__(self, ctx):
+        """Initialize a Receiver object, which will receive callbacks from the execution elements.
+
+        Args:
+            ctx (Context object): A Context object, shared with the LoadBalancer thread.
+        """
         self.thread_exit = False
         self.workflows_executed = 0
 
@@ -220,12 +277,21 @@ class Receiver:
 
     @staticmethod
     def send_callback(callback, sender, data):
+        """Sends a callback, received from an execution element over a ZMQ socket.
+
+        Args:
+            callback (callback object): The callback object to be sent.
+            sender (dict): The sender information.
+            data (dict): The data associated with the callback.
+        """
         if 'data' in data:
             callback.send(sender, data=data['data'])
         else:
             callback.send(sender)
 
     def receive_results(self):
+        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.
+        """
         while True:
             if self.thread_exit:
                 break

@@ -31,7 +31,7 @@ class Flag(ExecutionElement):
         self.args = validate_flag_parameters(self.args_api, args, self.action)
         self.filters = filters if filters is not None else []
 
-    def send_callback(self, callback_name):
+    def __send_callback(self, callback_name):
         data = dict()
         data['callback_name'] = callback_name
         data['sender'] = {}
@@ -50,20 +50,20 @@ class Flag(ExecutionElement):
         try:
             data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
             args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.name))
-            self.send_callback("Flag Success")
+            self.__send_callback("Flag Success")
             logger.debug('Arguments passed to flag {0} (uid {1}) are valid'.format(self.name, self.uid))
             args.update({self.data_in_api['name']: data})
             return get_flag(self.action)(**args)
         except InvalidInput as e:
             logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
                          'Returning False'.format(self.action, data_in, data, format_exception_message(e)))
-            self.send_callback("Flag Error")
+            self.__send_callback("Flag Error")
             return False
         except Exception as e:
             logger.error('Error encountered executing '
                          'flag {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action, self.args, data, format_exception_message(e)))
-            self.send_callback("Flag Error")
+            self.__send_callback("Flag Error")
             return False
 
     def as_json(self):
