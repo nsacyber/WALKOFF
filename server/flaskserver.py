@@ -25,7 +25,6 @@ database.initialize_resource_roles_from_cleared_database()
 def client_app_folder(filename):
     return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
 
-
 @app.route('/')
 @app.route('/playbook')
 @app.route('/scheduler')
@@ -36,6 +35,9 @@ def client_app_folder(filename):
 def default():
     return render_template("index.html")
 
+@app.route('/apps/<app_name>')
+def app_page(app_name):
+    return render_template("index.html")
 
 @app.route('/login')
 def login_page():

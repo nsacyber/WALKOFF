@@ -14,7 +14,6 @@ def static_request_handler(endpoint, values):
 
 @app_page.route('/', methods=['GET'])
 @jwt_required
-@roles_accepted('admin')
 def read_app():
     path = '{}/interface/templates/index.html'.format(g.app)
     return render_template(path)

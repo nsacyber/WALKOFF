@@ -117,7 +117,6 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
-
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
