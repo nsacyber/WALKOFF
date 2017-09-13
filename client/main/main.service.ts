@@ -7,7 +7,7 @@ export class MainService {
 	constructor (private authHttp: JwtHttp) { }
 
 	getApps() : Promise<string[]> {
-		return this.authHttp.get(`/api/apps`)
+		return this.authHttp.get(`/api/apps?interfaces_only=true`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

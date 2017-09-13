@@ -1,4 +1,4 @@
-import { Component, ComponentRef, Input, OnInit, ViewContainerRef, ElementRef, ViewChild, ComponentFactoryResolver, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
@@ -21,41 +21,19 @@ function makeComponent(selector: string, templateUrl: string)
 })
 export class AppsComponent {
 	@ViewChild('appsMain') main: ElementRef;
-	// @ViewChild('viewChild', {read: ViewContainerRef}) viewChild: ViewContainerRef;
-	// componentRef: ComponentRef<{}>;
 	appName: string;
 	paramsSub: any;
 	activeIFrame: any;
 
-	constructor(private route: ActivatedRoute, private authService: AuthService, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {}
+	constructor(private route: ActivatedRoute, private authService: AuthService, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+		this.toastyConfig.theme = 'bootstrap';
+	}
 
 	ngOnInit() {
 		this.paramsSub = this.route.params.subscribe(params => {
 			this.appName = params['app'];
 			this.getAppInterface();
 		});
-
-		//Resize our iframe as necessary
-		window.addEventListener('DOMContentLoaded', function(e) {
-			let iFrame = this.main.nativeRef.lastChild;
-			iFrame.height = iFrame.contentWindow.document.body.scrollHeight;
-		});
-	}
-
-	loadComponent() {
-		
-		// let childComponent = makeComponent(`${this.appName}-app`, `apps/${this.appName}/interface/index.html`);
-	
-		// let componentFactory = this.componentFactoryResolver.resolveComponentFactory(childComponent);
-
-		// // compile then insert in your location, defined by viewChild
-		// // this.compiler.resolveComponent()
-		// //   .then((compFactory:ComponentFactory) => this.viewChild.createComponent(compFactory) )
-		
-		// // let viewContainerRef = this.appsHost.viewContainerRef;
-		// this.viewChild.clear();
-		
-		// this.componentRef = this.viewChild.createComponent(componentFactory);
 	}
 
 	getAppInterface() {
@@ -64,7 +42,7 @@ export class AppsComponent {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				var xhr= new XMLHttpRequest();
-				xhr.open('GET', `apps/${this.appName}/`, true);
+				xhr.open('GET', `appinterface/${this.appName}/`, true);
 				xhr.onreadystatechange= function() {
 					if (this.readyState!==4) return;
 					if (this.status!==200) return;

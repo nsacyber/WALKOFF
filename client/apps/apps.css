@@ -1,6 +1,17 @@
+#main.appsMain {
+	position: absolute;
+	top: 70px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+}
+
 #main.appsMain iframe {
-	/* padding: 10px 15px; */
+	position: absolute;
 	border: none;
+	top:0;
+	left: 0;
 	width: 100%;
 	height: 100%;
 }
