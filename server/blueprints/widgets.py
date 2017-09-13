@@ -15,7 +15,6 @@ def static_request_handler(endpoint, values):
 
 @widgets_page.route('', methods=['POST'])
 @jwt_required
-@roles_accepted('admin')
 def display_app():
     path = '{0}/widgets/{1}/templates/index.html'.format(g.app, g.widget)
     return render_template(path)

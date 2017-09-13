@@ -232,7 +232,7 @@ class Scheduler(object):
 
     def resume_workflows(self, task_id, workflow_uids):
         """
-        Resumes some workflows associated with a task 
+        Resumes some workflows associated with a task
 
         Args:
             task_id (int|str): The id of the task to pause
