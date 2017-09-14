@@ -2,8 +2,8 @@
   <div class="w3-content">
     <div class="">
       <h1>Develop an app interface</h1>
-        <p>Under the hood WALKOFF runs on the Flask server, a web microframework built on the Werkzeug WSGI and Jinja
-            templating engine. In this example we will be constructing a small custom interface for the HelloWorld app
+        <p>Under the hood WALKOFF runs on the Flask server, a web microframework built on the Werkzeug WSGI middleware
+            and the Jinja templating engine. In this example we will be constructing a small custom interface for the HelloWorld app
             we developed in the last tutorial using the Jinja template engine to populate fields in an HTML</p>
         <h4><b>1. Under the Python package with the name of your app, create three directories called interface, static, and templates.</b></h4>
         <p>The <code>apps</code> directory should look like this:</p>
@@ -23,7 +23,7 @@ WALKOFF
         <p>Inside of your app Python package, we need to create a <code>display.py</code> module. The primary purpose of
             this module is to define a function called <code>load</code> which will return a dictionary of key-value pairs
             which will be used to populate the fields of our HTML. For right now, we just want to define an empty function
-            to stop the server from complainign when you attempt to display your app in the webapp. </p>
+            to stop the server from complaining when you attempt to display your app in the webapp. </p>
 
         <pre><code class="python">
 def load(*args, **kwargs):
@@ -31,7 +31,7 @@ def load(*args, **kwargs):
         </code></pre>
 
         <h4><b>3. Create a simple web page</b></h4>
-        <p>Inside of the templates directory, we create an <code>index.html</code> page. This will be primary landing
+        <p>Inside of the templates directory, we need to create an <code>index.html</code> page. This will be primary landing
             page of the app. Let's create a quick one that just says hello to the user.</p>
         <pre><code class="html">
 &ltdiv id="main" class="container-fluid"&gt

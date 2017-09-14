@@ -2,29 +2,19 @@
     <div class="w3-content">
         <div class="w3-twothird">
             <h1>How to Setup and Install WALKOFF</h1>
-            <h6>0. Ensure Python 2.7+, or Python 3.3+, pip and git are installed.</h6>
+            <h6>0. Ensure Python 2.7+, or Python 3.3+, pip, NodeJS, Node Package Manager (npm), and git are installed.</h6>
             
-            <h6>1. Open a terminal on linux or a command prompt on Windows, and run the command</h6>
+            <h6>1. Open a terminal on Linux or a command prompt on Windows, and run the command</h6>
             <pre><code class="console"> git clone https://github.com/iadgov/WALKOFF.git</code></pre>
 
             <h6>2. Change directories to the WALKOFF directory</h6>
             <pre><code class="console">cd WALKOFF </code></pre>
 
             <h6>3. Run the command</h6>
-                    <pre><code class="console">pip install -r requirements.txt</code></pre>
-                    <p>to install the required libraries. This command must be run as root (i.e. using sudo, or in an
-                    administrative command shell).</p>
-
-            <h6>4. Each app must have a requirements.txt file inside of its main directory. In order to
-                    save the user the effort of manually installing the dependencies for each app, the user can run the
-                    command</h6>
-            <pre><code class="console"> python installDependencies.py -a|--apps AppOne AppTwo ...</code></pre>
-            <p>this command must be run as root
-                (i.e. using sudo, or in an administrative command shell). Simply provide the <code>installDependencies</code> script
-                with the '-a' or '--apps' flag followed by a list of one or more apps, separated by spaces. Alternatively,
-                run the command</p>
-                <pre><code class="console">python installDependencies.py</code></pre>
-                <p>This will install the dependencies for every app in the apps folder.</p>
+                    <pre><code class="console">python make.py</code></pre>
+                    <p>to install the required Python and NodeJS packages for WALKOFF.
+                        This command must be run as root (i.e. using sudo, or in an
+                        administrative command shell).</p>
 
             <h6>5. Run the command </h6>
             <pre><code class="console"> python startServer.py </code></pre>
@@ -38,7 +28,7 @@
             <pre><code class="console"> admin </code></pre>
             <p>The default password is </p>
             <pre><code class="console"> admin </code></pre>
-            <p>These can be changed upon initial login.</p>
+            <p>These can and should be changed upon initial login.</p>
         </div>
     </div>
 </div>

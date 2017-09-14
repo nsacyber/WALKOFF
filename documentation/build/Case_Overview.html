@@ -113,7 +113,7 @@ img.media-object.image{
             <h1>Case Overview</h1>
             <p>WALKOFF contains a flexible, customizable logging system. It's better than your average,
                 fatal/error/warning/info/trace logging system -- it's a database-driven event subscription system which
-                allows you to visualize the workflow execution at any level of detail you feel is useful. You start by
+                allows you to visualize the workflow execution at any level of detail you deem useful. You start by
                 creating and naming one or more "cases" which are collections of execution events you wish to log
                 together, we call these the case's event subscriptions. As a workflow or collection of workflows is
                 executed, the events to which the case is subscribed to are logged. Each level of execution contains
@@ -134,17 +134,24 @@ img.media-object.image{
 
             <h6>Workflow</h6>
             <ul style="list-style-type:circle">
-                <li>New Workflow Created</li>
-                <li>Step Execution Success</li>
+                <li>Workflow Execution Start</li>
+                <li>App Instance Created</li>
                 <li>Next Step Found</li>
-                <li>Workflow shutdown</li>
+                <li>Workflow Shutdown</li>
+                <li>Workflow Input Validated</li>
+                <li>Workflow Input Invalid</li>
+                <li>Workflow Paused <i>(UI integration coming soon)</i></li>
+                <li>Workflow Resumed <i>(UI integration coming soon)</i></li>
             </ul>
 
             <h6>Step</h6>
             <ul style="list-style-type:circle">
-                <li>Function Execution Success</li>
-                <li>Input Validated</li>
+                <li>Function Execution Success</li>,
+                <li>Step Started</li>
+                <li>Input Invalid</li>
                 <li>Conditionals Executed</li>
+                <li>Step Execution Success</li>
+                <li>Step Execution Error</li>
             </ul>
 
             <h6>Next Step</h6>
@@ -156,8 +163,8 @@ img.media-object.image{
 
             <h6>Flag</h6>
             <ul style="list-style-type:circle">
-                <li>Flag Arguments Valid</li>
-                <li>Flag Arguments InValid</li>
+                <li>Flag Success</li>
+                <li>Flag Error</li>
             </ul>
 
             <h6>Filter</h6>
@@ -167,8 +174,7 @@ img.media-object.image{
             </ul>
 
 
-            <p>Each case can be subscribed to multiple controllers which in turn can have multiple workflows which
-                can have multiple steps, and so on.
+            <p>Each case can be subscribed to multiple workflows.
                 Each execution element can have multiple execution elements it manages, and for each execution
                 element instance, a case which can have an
                 individualized set of events it is subscribed to. So if you want one step in one workflow to be log
@@ -182,12 +188,12 @@ img.media-object.image{
                 <dt>Timestamp</dt>
                 <dt>Type</dt>
                 <dd> System, Workflow, Step, Next Step, Flag, Filter</dd>
-                <dt>Ancestry</dt>
-                <dd> A list of execution elements from controller to parent which caused this event</dd>
+                <dt>Originator</dt>
+                <dd> A UUID of the execution elements which caused this event</dd>
                 <dt>Message</dt>
                 <dd> The specific event that happened</dd>
                 <dt>Note</dt>
-                <dd> Field which can be modified to add notes</dd>
+                <dd> Field which can be modified to add annotations</dd>
             </dl>
 
 

@@ -6,7 +6,10 @@
                 A Next Step object combines the name of the next <a href="Step_Overview.html">Step</a> to be executed
                 with a list of <a href="Flags_Overview.html">Flags</a> which must all evaluate to be true for a Step to
                 progress to the step named in the Next Step. If no flags are provided, then the step named will act as a
-                default or catch-all Step, and the step will always progress to the named Step.
+                default or catch-all Step, and the step will always progress to the named Step. A step can result in a
+                variety of status codes. These can be custom created,but the default statuses are "Success",
+                "UnhandledException", and "InvalidInput". These status codes can be used with next steps to control
+                execution flow.
             </p>
         </div>
 
