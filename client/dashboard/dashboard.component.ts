@@ -19,24 +19,6 @@ export class DashboardComponent {
 		this.currentDashboard = "Default Dashboard";
 	}
 	ngAfterViewInit() {
-
-<<<<<<< HEAD
-        let addLink = (script: string) => {
-            let s = document.createElement("link");
-            s.rel = "stylesheet";
-            s.href = script;
-            document.body.appendChild(s);
-        };
-
-        let addScript = (script: string) => {
-            let s = document.createElement("script");
-            s.type = "text/javascript";
-            s.src = script;
-            s.async = false;
-            document.body.appendChild(s);
-        };
-    };
-=======
 		let addLink = (script: string) => {
 			let s = document.createElement("link");
 			s.rel = "stylesheet";
@@ -52,5 +34,4 @@ export class DashboardComponent {
 			document.body.appendChild(s);
 		};
 	};
->>>>>>> development
 }

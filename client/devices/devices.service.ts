@@ -65,6 +65,75 @@ export class DevicesService {
 	}
 
 	getDeviceTypes() : Promise<DeviceType[]> {
+		// return Promise.resolve(<DeviceType[]>[
+		// 	{
+		// 		name: 'Test Device Type',
+		// 		app: 'HelloWorld',
+		// 		fields: [
+		// 			{
+		// 				name: 'Text field',
+		// 				type: 'string',
+		// 				minLength: 5,
+		// 				maxLength: 100,
+		// 				required: true,
+		// 				default: 'default value'
+		// 			},
+		// 			{
+		// 				name: 'Encrypted field',
+		// 				type: 'string',
+		// 				encrypted: true,
+		// 				default: 'asdf'
+		// 			},
+		// 			{
+		// 				name: 'Number field',
+		// 				type: 'integer',
+		// 				minimum: 0,
+		// 				exclusiveMaximum: 25,
+		// 				multipleOf: 5,
+		// 				default: 10
+		// 			},
+		// 			{
+		// 				name: 'Enum field',
+		// 				type: 'string',
+		// 				enum: ['val 1', 'val 2', 'val 3', 'another val'],
+		// 				required: true,
+		// 				default: 'val 3'
+		// 			},
+		// 			{
+		// 				name: 'Boolean field',
+		// 				type: 'boolean'
+		// 			}
+		// 		]
+		// 	},
+		// 	{
+		// 		name: 'Test Type 2',
+		// 		app: 'HelloWorld',
+		// 		fields: [
+		// 			{
+		// 				name: 'Text field',
+		// 				type: 'string',
+		// 				minLength: 5,
+		// 				maxLength: 100,
+		// 				pattern: `^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$`
+		// 			},
+		// 			{
+		// 				name: 'Enum field',
+		// 				type: 'string',
+		// 				enum: ['val 1', 'val 2', 'val 3', 'another val']
+		// 			},
+		// 			{
+		// 				name: 'Encrypted field',
+		// 				type: 'string',
+		// 				encrypted: true
+		// 			},
+		// 			{
+		// 				name: 'Number field',
+		// 				type: 'number',
+		// 				default: 10
+		// 			},
+		// 		]
+		// 	}
+		// ]);
 		return this.authHttp.get(`api/devicetypes`)
 			.toPromise()
 			.then(this.extractData)

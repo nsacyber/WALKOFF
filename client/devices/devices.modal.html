@@ -25,10 +25,10 @@
 				</div>
 				<div class="form-group">
 					<label for="name">Device Type</label>
-					<select class="form-control" [value]="workingDevice.type" (change)="handleDeviceTypeSelection(event, $event.target.checked)"
+					<select class="form-control" [value]="workingDevice.type" (change)="handleDeviceTypeSelection(event, $event.target.value)"
 					 name="type" tabindex="4">
 						<option value=""></option>
-						<option *ngFor="let i of appNames" [value]="i" [label]="i"></option>
+						<option *ngFor="let i of deviceTypesForApp" [value]="i.name" [label]="i.name"></option>
 					</select>
 				</div>
 				<!-- <div class="form-group">
@@ -37,28 +37,30 @@
 				</div> -->
 			</div>
 		</div>
-		<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
-			<label for="name">{{i.name}}</label>
-
-			<!-- Normal string text entries -->
-			<input *ngIf="i.type === 'string' && !i.enum && !i.encrypted" class="form-control" [(ngModel)]="workingDevice.fields[i.name]"
-			 type="text" [attr.minlength]="i.minLength > 0 ? i.minLength : null" [attr.maxlength]="i.maxLength > 0 ? i.maxLength : null"
-			 [attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [attr.placeholder]="i.placeholder">
-
-			<!-- Enum types, make a select box -->
-			<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
-				<option *ngIf="i.required" value=""></option>
-				<option *ngFor="let i of i.enum" [value]="i" [label]="i"></option>
-			</select>
-
-			<!-- For numbers enter number info -->
-			<input *ngIf="i.type === 'number' || i.type === 'integer'" class="form-control" [(ngModel)]="workingDevice.fields[i.name]"
-			 type="number" [attr.min]="getMin(i)" [attr.max]="getMax(i)" [attr.step]="i.multipleOf > 0 ? i.multipleOf : null" [attr.multipleOf]="i.multipleOf > 0 ? i.multipleOf : null"
-			 [attr.required]="i.required" [attr.placeholder]="i.placeholder">
-
-			<!-- Checkbox for boolean values -->
-			<input *ngIf="i.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
-		</div>
+		<ng-container *ngIf="selectedDeviceType">
+			<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
+				<label for="name">{{i.name}}</label>
+	
+				<!-- Normal string text entries -->
+				<input *ngIf="i.type === 'string' && !i.enum" class="form-control" [(ngModel)]="workingDevice.fields[i.name]"
+					[attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.minLength > 0 ? i.minLength : null" [attr.maxlength]="i.maxLength > 0 ? i.maxLength : null"
+					[attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [attr.placeholder]="i.placeholder">
+	
+				<!-- Enum types, make a select box -->
+				<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]" [attr.required]="i.required">
+					<option *ngIf="!i.required" value=""></option>
+					<option *ngFor="let i of i.enum" [value]="i" [label]="i"></option>
+				</select>
+	
+				<!-- For numbers enter number info -->
+				<input *ngIf="i.type === 'number' || i.type === 'integer'" class="form-control" [(ngModel)]="workingDevice.fields[i.name]"
+					type="number" [attr.min]="getMin(i)" [attr.max]="getMax(i)" [attr.step]="i.multipleOf > 0 ? i.multipleOf : null"
+					[attr.required]="i.required" [attr.placeholder]="i.placeholder">
+	
+				<!-- Checkbox for boolean values -->
+				<input *ngIf="i.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
+			</div>
+		</ng-container>
 	</div>
 </div>
 <div class="modal-footer">

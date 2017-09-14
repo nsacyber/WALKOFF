@@ -37,6 +37,7 @@ export class WorkingDevice {
 	fields: { [key: string]: any } = {};
 
 	toDevice(): Device {
+		let self = this;
 		let out = new Device();
 		out.id = this.id;
 		out.name = this.name;
@@ -45,7 +46,7 @@ export class WorkingDevice {
 		out.fields = [];
 
 		Object.keys(this.fields).forEach(function (key) {
-			out.fields.push({ name: key, value: this.fields[key] });
+			out.fields.push({ name: key, value: self.fields[key] });
 		});
 
 		return out;

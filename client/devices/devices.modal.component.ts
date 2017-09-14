@@ -39,16 +39,17 @@ export class DevicesModalComponent {
 	handleAppSelection(event: any, app: string): void {
 		this.workingDevice.app = app;
 		this.deviceTypesForApp = this.deviceTypes.filter(dt => dt.app === app);
-		if (this.selectedDeviceType.app !== app) {
-			this.selectedDeviceType = null;
-			this.workingDevice.type = null;
-			this.workingDevice.fields = null;
-		}
+		if (this.selectedDeviceType && this.selectedDeviceType.app !== app) this._clearDeviceTypeData();
 	}
 
 	handleDeviceTypeSelection(event: any, deviceType: string): void {
+		//If we just cleared our device type selection, clear our device type data from the working device and any temp storage
+		if (!deviceType) {
+			this._clearDeviceTypeData();
+			return;
+		}
 		//Grab the first device type that matches our app and newly selected type
-		this.selectedDeviceType = this.deviceTypes.filter(dt =>  dt.app === this.workingDevice.app && dt.name === deviceType)[0];
+		this.selectedDeviceType = this.deviceTypes.filter(dt => dt.app === this.workingDevice.app && dt.name === deviceType)[0];
 		//Set the type on our working device
 		this.workingDevice.type = deviceType;
 		//Set our fields to whatever's stored or a new object
@@ -64,6 +65,12 @@ export class DevicesModalComponent {
 		});
 
 		return out;
+	}
+
+	_clearDeviceTypeData(): void {
+		this.selectedDeviceType = null;
+		this.workingDevice.type = null;
+		this.workingDevice.fields = null;
 	}
 
 	submit(): void {
@@ -97,16 +104,17 @@ export class DevicesModalComponent {
 	}
 
 	getMin(field: any) {
-		if (!field.minimum && !field.exclusiveMinimum) return null;
+		console.log(field);
+		if (!field.minimum === undefined && !field.exclusiveMinimum === undefined) return null;
 
-		if (field.exclusiveMinimum) return field.exclusiveMinimum + 1;
-		if (field.minimum) return field.minimum;
+		if (field.exclusiveMinimum !== undefined) return field.exclusiveMinimum + 1;
+		if (field.minimum !== undefined) return field.minimum;
 	}
 
 	getMax(field: any) {
-		if (!field.maximum && !field.exclusiveMaximum) return null;
+		if (!field.maximum === undefined && !field.exclusiveMaximum === undefined) return null;
 
-		if (field.exclusiveMaximum) return field.exclusiveMaximum - 1;
-		if (field.maximum) return field.maximum;
+		if (field.exclusiveMaximum !== undefined) return field.exclusiveMaximum - 1;
+		if (field.maximum !== undefined) return field.maximum;
 	}
 }
