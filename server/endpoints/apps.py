@@ -1,13 +1,10 @@
-import json
-from flask import current_app, request
+from flask import current_app
 from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 from core import helpers
 from server.returncodes import *
-from server import forms
-import pyaes
 
 
 def read_all_apps(interfaces_only=None):
