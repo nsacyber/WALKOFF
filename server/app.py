@@ -138,11 +138,7 @@ def create_app():
         JWT_BLACKLIST_ENABLED=True,
         JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
-    _app.jinja_options = Flask.jinja_options.copy()
-    _app.jinja_options.update(dict(
-        variable_start_string='<%',
-        variable_end_string='%>'
-    ))
+
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'

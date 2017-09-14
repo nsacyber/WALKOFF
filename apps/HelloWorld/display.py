@@ -3,11 +3,16 @@ import random
 from flask import Blueprint, Response
 from apps import AppBlueprint
 from threading import Thread
+from gevent.event import Event, AsyncResult
+from gevent import sleep
 
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
 blueprint2 = AppBlueprint(blueprint=Blueprint('HelloWorldPage2', __name__), rule='/<string:action>')
 
+
+__sync_signal = Event()
+random_event_result = AsyncResult()
 
 def load(*args, **kwargs):
     return {}
@@ -22,18 +27,17 @@ def test_basic_blueprint():
 
 def random_number_receiver():
     while True:
-        data = yield
+        data = random_event_result.get()
         yield 'data: %s\n\n' % data
-
-
-random_number_stream = random_number_receiver()
-random_number_stream.send(None)
+        __sync_signal.wait()
 
 
 def random_number_pusher():
     while True:
-        random_number_stream.send(random.random())
-        time.sleep(2)
+        sleep(2)
+        random_event_result.set(random.random())
+        __sync_signal.set()
+        __sync_signal.clear()
 
 
 @blueprint.blueprint.route('/stream/random-number')
@@ -44,7 +48,7 @@ def stream_random_numbers():
     """
     thread = Thread(target=random_number_pusher)
     thread.start()
-    return Response(random_number_stream, mimetype='text/event-stream')
+    return Response(random_number_receiver(), mimetype='text/event-stream')
 
 
 @blueprint.blueprint.route('/stream/counter')
