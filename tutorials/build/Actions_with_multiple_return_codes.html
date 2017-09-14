@@ -124,7 +124,7 @@ img.media-object.image{
             offline or online, meaning it's return a response which contains a JSON with a single field called "status".
             We want the ability to take one step after this action if the resource is online and a different step if the
             resource is offline. We could solve this using a custom flag which, say, takes the value of the "status"
-            field and returns True if the status is "online" and False otehrwise. But it would be much more direct to use
+            field and returns True if the status is "online" and False otherwise. But it would be much more direct to use
             return codes. Our action would look like this:</p>
         <pre><code class="python">
 from apps import App, action

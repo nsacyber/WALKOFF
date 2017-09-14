@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
+<style>
+
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-graduation-cap,.fa-flask{font-size:200px}
+
+#headerDiv{
+    background-image:url("../../files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
+
+.imageList {
+  list-style-type: none;
+}
+
+.topLevelList + h5{
+  display:none;
+}
+
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
+
+td{
+    padding-right:10px;
+    margin-bottom: 25px;
+    margin-top:25px;
+}
+
+.image{
+    text-align:center;
+}
+
+.image img{
+    max-width:100%;
+    max-height:100%;
+}
+
+.functionality_list li{
+    margin-bottom:20px;
+}
+
+.tag{
+    background-color:#edf0f4;
+    text-align:center;
+}
+
+img.media-object.image{
+    width:100%;
+}
+
+.tutorialTable td{
+    border-bottom:1px solid black;
+}
+
+</style>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+    
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    <a href="../../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+    <a href="../../documentation/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+    <a href="../../swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+  </div>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+    <a class="w3-padding-large" href="../../documentation/build/index.html">Documentation</a>
+    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+    <a class="w3-padding-large" href="../../swagger/index.html">API</a>
+    <a class="w3-padding-large" href="index.html">Tutorials</a>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
+  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+</header>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>The Scheduler</h1>
+            <ul type="1" class="media-list imageList">
+                <li class="media">
+                    <div class="media-body">
+                        <h6>Open then Scheduler page. This page will display the scheduled tasks and allow you to run or
+                            stop the scheduler itself or the individual tasks.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Scheduler_home.png">
+                                <img class="media-object image" src="images/scheduler/Scheduler_home.png" alt="...">
+                            </a>
+                        </div>
+                        <h6>You can add a new task by selecting the "+Add To Schedule" button on the top left. On this
+                            window, you can configure a new task. You can add multiple workflows to a scheduled task.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Select_workflows.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Select_workflows.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                        <h6>Give the task a name and a helpful description of what it does.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Filled_out_part_one.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Filled_out_part_one.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                        <h6>You can select either "date", "interval", or "cron" type of schedule trigger. The simplest of the
+                            three is the date trigger.</h6>
+                        <table>
+                            <tr>
+                                <th>Trigger Type</th>
+                                <th>Effect</th>
+                            </tr>
+                            <tr>
+                                <td>date</td>
+                                <td>Executes the workflow(s) once at a given date and time.</td>
+                            </tr>
+                            <tr>
+                                <td>interval</td>
+                                <td>Executes a workflow periodically (ex. every 2 hours 30 seconds). A starting date and time are optional.</td>
+                            </tr>
+                            <tr>
+                                <td>cron</td>
+                                <td>The most complex of the three and similar to a Linux cron-job. You can use this to
+                                    schedule tasks such as "every third wednesday in even-numbered months at 10:30am."
+                                    The parameters are complex. In the backend, we use Python APScheduler. The parameters
+                                    allowed are the same as for the CronTrigger object of this library, and you can
+                                    see their documentation
+                                    <a href="http://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html">here</a>.</td>
+                            </tr>
+                        </table>
+                        <h6>In this example, we use the interval trigger. You can select a start date.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Date_entry.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Date_entry.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                        <h6>And a time</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Time_entry.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Time_entry.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                        <h6>Once you add this task, you'll be able to see it on the main page.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Result.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Result.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                        <h6>By default, a task starts running as soon as it is created. However, the scheduler needs to
+                            be started manually. You can start the scheduler By clicking the play button above the table.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Running_scheduler.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Running_scheduler.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                        <h6>Stopping the scheduler will stop all tasks executing. You can also stop a task by clicking
+                            the stop button on the right hand side of the row.</h6>
+                        <div class="media-left media-middle">
+                            <a href="images/scheduler/Stopped_scheduled_task.png">
+                                <img class="media-object image"
+                                     src="images/scheduler/Stopped_scheduled_task.png"
+                                     alt="...">
+                            </a>
+                        </div>
+                    </div>
+            </ul>
+            <br/>
+        </div>
+    </div>
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+ <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
+
+<script src="../../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+</body>
+</html>
