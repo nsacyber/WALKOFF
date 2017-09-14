@@ -325,7 +325,7 @@ class Workflow(ExecutionElement):
         name = json_in['name'] if 'name' in json_in else ''
         uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
         children = {name: None for name in json_in['children']} if 'children' in json_in else {}
-        start_step = json_in['start_step'] if 'start_step' in json_in else None
+        start_step = json_in['start'] if 'start' in json_in else None
         steps = {}
         for step_json in json_in['steps']:
             step = Step.from_json(step_json, position=step_json['position'])
