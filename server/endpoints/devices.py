@@ -10,16 +10,23 @@ from core.helpers import get_app_device_api, InvalidInput, UnknownDevice, Unknow
 from server.database import db
 
 
+def get_device_json_with_app_name(device):
+    from server.context import running_context
+    device_json = device.as_json()
+    app = running_context.App.query.filter_by(id=device.app_id).first()
+    device_json['app'] = app.name if app is not None else ''
+    return device_json
+
+
 def read_all_devices():
     from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        return [device.as_json() for device in running_context.Device.query.all()], SUCCESS
+        return [get_device_json_with_app_name(device) for device in running_context.Device.query.all()], SUCCESS
 
     return __func()
-
 
 def read_device(device_id):
     from server.context import running_context
@@ -29,7 +36,7 @@ def read_device(device_id):
     def __func():
         device = running_context.Device.query.filter_by(id=device_id).first()
         if device is not None:
-            return device.as_json(), SUCCESS
+            return get_device_json_with_app_name(device), SUCCESS
         else:
             current_app.logger.error('Could not read device {0}. '
                                      'Device does not exist'.format(device_id))
@@ -118,7 +125,7 @@ def create_device():
             app.add_device(device)
             db.session.add(device)
             db.session.commit()
-            device_json = device.as_json()
+            device_json = get_device_json_with_app_name(device)
             remove_configuration_keys_from_device_json(device_json)
             return device_json, OBJECT_CREATED
 
@@ -166,7 +173,7 @@ def update_device():
                 add_configuration_keys_to_device_json(fields, device_fields_api)
             device.update_from_json(update_device_json)
             db.session.commit()
-            device_json = device.as_json()
+            device_json = get_device_json_with_app_name(device)
             remove_configuration_keys_from_device_json(device_json)
             return device_json, SUCCESS
 

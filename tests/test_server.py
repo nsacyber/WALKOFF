@@ -130,6 +130,7 @@ class TestServer(ServerTestCase):
             else:
                 self.fail()
 
+
 class TestConfiguration(ServerTestCase):
 
     def setUp(self):

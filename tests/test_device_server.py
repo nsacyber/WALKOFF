@@ -30,11 +30,16 @@ class TestDevicesServer(ServerTestCase):
     def test_read_all_devices(self):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
-        db.session.add(device1)
-        db.session.add(device2)
+        app = App(name=self.test_app_name, devices=[device1, device2])
+        db.session.add(app)
+        db.session.commit()
         response = self.get_with_status_check('/api/devices', headers=self.headers, status_code=SUCCESS)
-        self.assertIn(device1.as_json(), response)
-        self.assertIn(device2.as_json(), response)
+        expected_device1 = device1.as_json()
+        expected_device1['app'] = 'TestApp'
+        expected_device2 = device2.as_json()
+        expected_device2['app'] = 'TestApp'
+        self.assertIn(expected_device1, response)
+        self.assertIn(expected_device2, response)
 
     def test_read_device(self):
         device1 = Device('test', [], [], 'type')
@@ -44,7 +49,9 @@ class TestDevicesServer(ServerTestCase):
         db.session.commit()
         response = self.get_with_status_check('/api/devices/{}'.format(device1.id), headers=self.headers,
                                               status_code=SUCCESS)
-        self.assertEqual(response, device1.as_json())
+        expected_device1 = device1.as_json()
+        expected_device1['app'] = ''
+        self.assertEqual(response, expected_device1)
 
     def test_read_device_does_not_exist(self):
         self.get_with_status_check('/api/devices/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)
@@ -123,6 +130,7 @@ class TestDevicesServer(ServerTestCase):
         device = Device.query.filter_by(name='test').first()
         self.assertIsNotNone(device)
         expected = device.as_json()
+        expected['app'] = 'TestApp'
         remove_configuration_keys_from_device_json(expected)
         self.assertEqual(response, expected)
 
