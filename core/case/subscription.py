@@ -89,8 +89,8 @@ def get_cases_subscribed(originator, message_name):
         message_name (str): The name of the message to check
     """
     global subscriptions
-    return [case for case in subscriptions if (originator in subscriptions[case]
-                                               and message_name in subscriptions[case][originator])]
+    return [case for case, case_subscriptions in subscriptions.items() if (originator in case_subscriptions
+                                               and message_name in case_subscriptions[originator])]
 
 
 def modify_subscription(case, originator, events):

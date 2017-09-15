@@ -49,7 +49,6 @@ def create_case():
 
 
 def read_case(case_id):
-    from server.flaskserver import running_context
 
     @jwt_required
     @roles_accepted_for_resources('cases')
@@ -183,8 +182,8 @@ def read_all_events(case_id):
     def __func():
         try:
             result = case_database.case_db.case_events_as_json(case_id)
-        except:
-            current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case))
+        except Exception:
+            current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case_id))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
 
         return result, SUCCESS
