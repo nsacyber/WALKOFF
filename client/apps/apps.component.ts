@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-import { Component, ViewEncapsulation } from '@angular/core';
-
-@Component({
-	selector: 'apps-component',
-	// templateUrl: 'client/playbook/playbook.html',
-	// styleUrls: [
-    //     'client/playbook/playbook.css'
-    // ],
-	encapsulation: ViewEncapsulation.None,
-})
-export class AppsComponent {
-	constructor() {
-=======
 import { Component, OnInit, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
@@ -74,6 +60,5 @@ export class AppsComponent {
 				xhr.send();
 			})
 			.catch(e => this.toastyService.error(`Error retrieving app: ${e.message}`));
->>>>>>> development
 	}
 }

@@ -182,7 +182,7 @@ export class DevicesModalComponent {
 
 	getMax(field: any) {
 		if (field.maximum === undefined) return null;
-		if (field.exclusiveMaximum) return field.maximum + 1;
+		if (field.exclusiveMaximum) return field.maximum - 1;
 		return field.maximum;
 	}
 }
