@@ -3,6 +3,7 @@ import os
 import sys
 import signal
 import gevent
+import uuid
 import multiprocessing
 import threading
 import zmq.green as zmq
@@ -10,6 +11,7 @@ from core import loadbalancer
 from core.threadauthenticator import ThreadAuthenticator
 import core.config.config
 import core.config.paths
+from core.case import callbacks
 
 logger = logging.getLogger(__name__)
 
@@ -23,26 +25,26 @@ NUM_PROCESSES = core.config.config.num_processes
 class WorkflowExecutor(object):
     def __init__(self):
         self.threading_is_initialized = False
+        self.uid = "executor"
         self.pids = []
         self.workflow_status = {}
         self.workflows_executed = 0
 
-        self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
+        self.ctx = None
+        self.auth = None
 
-        self.load_balancer = loadbalancer.LoadBalancer(self.ctx)
-        self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
-        self.receiver = loadbalancer.Receiver(self.ctx)
-        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
+        self.load_balancer = None
+        self.manager_thread = None
+        self.receiver = None
+        self.receiver_thread = None
 
     def initialize_threading(self, worker_env=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
-
         Args:
             worker_env (function, optional): Optional alternative worker setup environment function.
         """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
-                os.path.exists(core.config.paths.zmq_private_keys_path)):
+                    os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
 
@@ -55,11 +57,19 @@ class WorkflowExecutor(object):
             pid.start()
             self.pids.append(pid)
 
+        self.ctx = zmq.Context.instance()
+        self.auth = ThreadAuthenticator(self.ctx)
         self.auth.start()
         self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
 
+        self.load_balancer = loadbalancer.LoadBalancer(self.ctx)
+        self.receiver = loadbalancer.Receiver(self.ctx)
+
+        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
+
+        self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
         self.manager_thread.start()
 
         self.threading_is_initialized = True
@@ -115,6 +125,47 @@ class WorkflowExecutor(object):
         self.threading_is_initialized = False
         self.load_balancer = None
         self.receiver = None
+
+    def execute_workflow(self, workflow, playbook_name, workflow_name, start=None, start_input=None):
+        """Executes a workflow.
+
+        Args:
+            playbook_name (str): Playbook name under which the workflow is located.
+            workflow_name (str): Workflow to execute.
+            start (str, optional): The name of the first, or starting step. Defaults to "start".
+            start_input (dict, optional): The input to the starting step of the workflow
+        """
+        # key = _WorkflowKey(playbook_name, workflow_name)
+        # if key in self.workflows:
+        #     workflow = self.workflows[key]
+        uid = uuid.uuid4().hex
+
+        if not self.threading_is_initialized:
+            self.initialize_threading()
+
+        if start is not None:
+            logger.info('Executing workflow {0} for step {1}'.format(workflow_name, start))
+        else:
+            logger.info('Executing workflow {0} with default starting step'.format(workflow_name, start))
+        self.workflow_status[uid] = WORKFLOW_RUNNING
+
+        wf_json = workflow.as_json()
+        if start:
+            wf_json['start'] = start
+        if start_input:
+            wf_json['start_input'] = start_input
+        wf_json['execution_uid'] = uid
+        if workflow.breakpoint_steps:
+            wf_json['breakpoint_steps'] = workflow.breakpoint_steps
+
+        self.load_balancer.pending_workflows.put(wf_json)
+
+        callbacks.SchedulerJobExecuted.send(self)
+        # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
+        return uid
+        # else:
+        #     logger.error('Attempted to execute playbook which does not exist in controller')
+        #     return None, 'Attempted to execute playbook which does not exist in controller'
 
     def pause_workflow(self, playbook_name, workflow_name, execution_uid, workflow):
         """Pauses a workflow that is currently executing.

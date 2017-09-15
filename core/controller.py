@@ -1,26 +1,16 @@
 import os
 from collections import namedtuple
-import gevent
 from copy import deepcopy
 from os import sep
-import sys
-import signal
 import logging
 from core.scheduler import Scheduler
 import core.config.config
 import core.config.paths
 from core.workflow import Workflow
 import core.workflowExecutor
-from core.case import callbacks
 from core.helpers import (locate_playbooks_in_directory,
                           UnknownAppAction, UnknownApp, InvalidInput, format_exception_message)
-import uuid
 import json
-import multiprocessing
-import threading
-import zmq.green as zmq
-from core import loadbalancer
-from core.threadauthenticator import ThreadAuthenticator
 
 _WorkflowKey = namedtuple('WorkflowKey', ['playbook', 'workflow'])
 
@@ -46,12 +36,12 @@ class Controller(object):
         self.instances = {}
         self.tree = None
         self.scheduler = Scheduler()
+        self.executor = core.workflowExecutor.WorkflowExecutor()
 
         # @callbacks.WorkflowShutdown.connect
         # def workflow_completed_callback(sender, **kwargs):
         #     self.__workflow_completed_callback(sender, **kwargs)
 
-        self.executor = core.workflowExecutor.WorkflowExecutor()
 
     # def __workflow_completed_callback(self, workflow, **kwargs):
     #     self.workflows_executed += 1
@@ -370,31 +360,7 @@ class Controller(object):
         key = _WorkflowKey(playbook_name, workflow_name)
         if key in self.workflows:
             workflow = self.workflows[key]
-            uid = uuid.uuid4().hex
-
-            if not self.threading_is_initialized:
-                self.initialize_threading()
-
-            if start is not None:
-                logger.info('Executing workflow {0} for step {1}'.format(key, start))
-            else:
-                logger.info('Executing workflow {0} with default starting step'.format(key, start))
-            self.workflow_status[uid] = WORKFLOW_RUNNING
-
-            wf_json = workflow.as_json()
-            if start:
-                wf_json['start'] = start
-            if start_input:
-                wf_json['start_input'] = start_input
-            wf_json['execution_uid'] = uid
-            if workflow.breakpoint_steps:
-                wf_json['breakpoint_steps'] = workflow.breakpoint_steps
-
-            self.load_balancer.pending_workflows.put(wf_json)
-
-            callbacks.SchedulerJobExecuted.send(self)
-            # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
-            return uid
+            return self.executor.execute_workflow(workflow, playbook_name, workflow_name, start, start_input)
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
             return None, 'Attempted to execute playbook which does not exist in controller'
