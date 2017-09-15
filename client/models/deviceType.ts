@@ -8,5 +8,5 @@ export class DeviceType {
 export interface IDeviceTypeField {
 	name: string;
 	type: string;
-	[key: string]: string | number | boolean;
+	[key: string]: any;
 }

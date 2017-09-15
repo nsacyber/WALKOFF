@@ -1,21 +1,5 @@
-#main {
+#main.devicesMain {
 	padding: 10px 15px;
-}
-.selectColumn{
-	border:solid;
-	height:800px;
-}
-#appList{
-	width: 90%;
-	background-color: #F0F8FF;
-	border: none;
-	margin-left:10px;
-}
-#deviceList{
-	width: 90%;
-	background-color: #F0F8FF;
-	border: none;
-	margin-left:10px;
 }
 
 h1 {
@@ -24,10 +8,17 @@ h1 {
 	font-size: 30px;
 	color: #255876;
 }
+
 h3 {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	font-weight: bold;
 }
-.selectColumn {
-	border: none;
+
+#deviceForm input[type=checkbox].form-control {
+	width: 34px;
+	margin: 0 5px;
+}
+
+#deviceForm .confirmLabel {
+	margin-top: 15px;
 }

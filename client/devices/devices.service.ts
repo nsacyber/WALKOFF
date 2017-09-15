@@ -74,15 +74,15 @@ export class DevicesService {
 		// 				name: 'Text field',
 		// 				type: 'string',
 		// 				minLength: 5,
-		// 				maxLength: 100,
+		// 				maxLength: 20,
 		// 				required: true,
-		// 				default: 'default value'
+		// 				placeholder: 'enter something please'
 		// 			},
 		// 			{
 		// 				name: 'Encrypted field',
 		// 				type: 'string',
 		// 				encrypted: true,
-		// 				default: 'asdf'
+		// 				placeholder: 'shh its a secret'
 		// 			},
 		// 			{
 		// 				name: 'Number field',
@@ -90,14 +90,15 @@ export class DevicesService {
 		// 				minimum: 0,
 		// 				exclusiveMaximum: 25,
 		// 				multipleOf: 5,
-		// 				default: 10
+		// 				placeholder: 'this ones a number',
+		// 				required: true,
 		// 			},
 		// 			{
 		// 				name: 'Enum field',
 		// 				type: 'string',
 		// 				enum: ['val 1', 'val 2', 'val 3', 'another val'],
 		// 				required: true,
-		// 				default: 'val 3'
+		// 				placeholder: 'this ones a dropdown'
 		// 			},
 		// 			{
 		// 				name: 'Boolean field',

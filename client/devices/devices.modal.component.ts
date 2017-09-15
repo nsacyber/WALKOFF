@@ -6,7 +6,7 @@ import { DevicesService } from './devices.service';
 
 import { WorkingDevice } from '../models/device';
 import { DeviceType } from '../models/deviceType';
- 
+
 @Component({
 	selector: 'device-modal',
 	templateUrl: 'client/devices/devices.modal.html',
@@ -25,10 +25,12 @@ export class DevicesModalComponent {
 	deviceTypesForApp: DeviceType[] = [];
 	// save device type fields on saving/loading so we don't clear all progress if we switch device type
 	// e.g. { 'router': { 'ip': '127.0.0.1', ... }, ... }
-	deviceTypeFields: { [key: string]: {}} = {};
+	deviceTypeFields: { [key: string]: {} } = {};
 	selectedDeviceType: DeviceType;
+	validationErrors: { [key: string]: string } = {};
+	encryptedConfirmFields: { [key: string]: string } = {};
 
-	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		//For an existing device, set our available device types and store the known fields for our device type
@@ -54,9 +56,18 @@ export class DevicesModalComponent {
 		this.workingDevice.type = deviceType;
 		//Set our fields to whatever's stored or a new object
 		this.workingDevice.fields = this.deviceTypeFields[deviceType] = this.deviceTypeFields[deviceType] || this._getDefaultValues(this.selectedDeviceType);
+		this._getEncryptedConfirmFields(this.selectedDeviceType);
+		this.validationErrors = {};
 	}
 
-	_getDefaultValues(deviceType: DeviceType): { [key: string]: any } {
+	private _getEncryptedConfirmFields(deviceType: DeviceType): void {
+		this.encryptedConfirmFields = {};
+		deviceType.fields.forEach(field => {
+			if (field.encrypted) this.encryptedConfirmFields[field.name] = '';
+		})
+	}
+
+	private _getDefaultValues(deviceType: DeviceType): { [key: string]: any } {
 		let out: { [key: string]: any } = {};
 
 		deviceType.fields.forEach(field => {
@@ -67,15 +78,17 @@ export class DevicesModalComponent {
 		return out;
 	}
 
-	_clearDeviceTypeData(): void {
+	private _clearDeviceTypeData(): void {
 		this.selectedDeviceType = null;
 		this.workingDevice.type = null;
 		this.workingDevice.fields = null;
+		this.validationErrors = {};
+		this.encryptedConfirmFields = {};
 	}
 
 	submit(): void {
 		if (!this.validate()) return;
-		
+
 		let toSubmit = this.workingDevice.toDevice();
 
 		//If device has an ID, device already exists, call update
@@ -100,11 +113,68 @@ export class DevicesModalComponent {
 	}
 
 	validate(): boolean {
+		this.validationErrors = {};
+		let inputs = this.workingDevice.fields;
+
+		this.selectedDeviceType.fields.forEach(field => {
+			if (field.required) {
+				if (inputs[field.name] == null ||
+					(typeof inputs[field.name] === 'string' && !(inputs[field.name] as string).trim()) ||
+					(typeof inputs[field.name] === 'number' && inputs[field.name] === null)) {
+					this.validationErrors[field.name] = `You must enter a value for ${field.name}.`
+					return;
+				}
+			}
+			switch (field.type) {
+				//For strings, check against min/max length, regex pattern, or enum constraints
+				case 'string':
+					if (inputs[field.name] == null) inputs[field.name] = '';
+					if (field.minLength !== undefined && inputs[field.name].length < field.minLength)
+						this._concatValidationMessage(field.name, `Must be at least ${field.minLength} characters.`);
+					if (field.maxLength !== undefined && inputs[field.name].length > field.maxLength)
+						this._concatValidationMessage(field.name, `Must be at most ${field.minLength} characters.`);
+					if (field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
+						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.pattern}.`);
+					if (field.enum) {
+						let enumArray: string[] = field.enum.slice(0);
+						if (!field.required) enumArray.push('');
+						if (enumArray.indexOf(inputs[field.name]) < 0)
+							this._concatValidationMessage(field.name, `Invalid select input.`);
+					}
+					if (field.encrypted && this.encryptedConfirmFields[field.name] !== inputs[field.name])
+						this._concatValidationMessage(field.name, `The values for ${field.name} do not match.`);
+					break;
+				//For numbers, check against min/max and multipleOf constraints
+				case 'number':
+				case 'integer':
+					let min = this.getMin(field);
+					let max = this.getMax(field);
+					if (inputs[field.name] == null) inputs[field.name] = 0;
+					if (min !== null && inputs[field.name] < min)
+						this._concatValidationMessage(field.name, `The minimum value is ${min}.`);
+					if (max !== null && inputs[field.name] > max)
+						this._concatValidationMessage(field.name, `The maximum value is ${max}.`);
+					if (field.multipleOf !== undefined && inputs[field.name] % field.multipleOf)
+						this._concatValidationMessage(field.name, `The value must be a multiple of ${field.multipleOf}.`);
+					break;
+				//For booleans, just initialize the value to false if it doesn't exist
+				case 'boolean':
+					inputs[field.name] = inputs[field.name] || false;
+					break;
+			}
+		});
+
+		if (Object.keys(this.validationErrors).length) return false;
+
 		return true;
 	}
 
+	private _concatValidationMessage(field: string, message: string) {
+		if (this.validationErrors[field]) this.validationErrors[field] += '\n' + message;
+		else this.validationErrors[field] = message;
+	}
+
 	getMin(field: any) {
-		console.log(field);
 		if (!field.minimum === undefined && !field.exclusiveMinimum === undefined) return null;
 
 		if (field.exclusiveMinimum !== undefined) return field.exclusiveMinimum + 1;
