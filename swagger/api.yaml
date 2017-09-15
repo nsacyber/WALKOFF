@@ -4,7 +4,7 @@ info:
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
     orchestration tools. https://iadgov.github.io/WALKOFF/
-  version: 0.1.2
+  version: 0.3.0
   title: WALKOFF
   contact:
     email: walkoff@nsa.gov
@@ -231,8 +231,7 @@ paths:
           description: Username for the device
           type: string
           required: false
-          minLength: 4
-          maxLength: 25
+          maxLength: 50
         - in: formData
           name: pw
           description: Password for the device
@@ -959,7 +958,7 @@ paths:
       description: ''
       operationId: server.endpoints.playbooks.create_playbook
       consumes:
-        - mutlipart/form-data
+        - multipart/form-data
       produces:
         - application/json
       parameters:
@@ -1144,7 +1143,7 @@ paths:
                 type: array
                 items:
                   type: string
-                example: [workflow_1, HelloWorldWorkflow, ThatOneWorkfow]
+                example: [workflow_1, HelloWorldWorkflow, ThatOneWorkflow]
         461:
           description: Playbook does not exist.
           schema:
@@ -1389,6 +1388,8 @@ paths:
       responses:
         202:
           description: Success asynchronous.
+          schema:
+            $ref: '#/definitions/WorkflowId'
         461:
           description: Playbook or workflow does not exist.
           schema:
@@ -1411,17 +1412,18 @@ paths:
           description: 'The name that needs to be fetched. '
           required: true
           type: string
+        - name: id
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/WorkflowId'
+      consumes:
+        - application/json
       produces:
         - application/json
       responses:
         200:
           description: Success
-          schema:
-            description: The UUID necessary to resume the workflow (for security purposes)
-            type: object
-            properties:
-              uuid:
-                type: string
         461:
           description: Playbook or workflow does not exist.
           schema:
@@ -1444,14 +1446,13 @@ paths:
           description: 'The name that needs to be fetched. '
           required: true
           type: string
-        - in: body
-          name: body
-          description: The UUID for this transaction, returned from pause_workflow
+        - name: id
+          in: body
           required: true
           schema:
-            $ref: '#/definitions/ResumeWorkflow'
+            $ref: '#/definitions/WorkflowId'
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       responses:
@@ -1492,6 +1493,10 @@ paths:
           description: Success
         461:
           description: Playbook or workflow does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        463:
+          description: Invalid action or app in workflow
           schema:
             $ref: '#/definitions/Error'
         515:
@@ -1763,8 +1768,11 @@ paths:
       produces:
         - application/json
       responses:
-        200:
-          description: Success
+        202:
+          description: Success asynchronous.
+          schema:
+              $ref: '#/definitions/TriggerExecutionResponse'
+  
   /execution/listener/triggers/{trigger_name}:
     parameters:
       - name: trigger_name
@@ -2012,9 +2020,9 @@ paths:
   /workflowresults:
     get:
       tags: [Workflows]
-      summary: Gets the results of the last 50 workflows
+      summary: Gets a summary of the results of the workflows
       description: ''
-      operationId: server.endpoints.playbooks.read_all_results
+      operationId: server.endpoints.playbooks.read_results
       produces: [application/json]
       responses:
         200:
@@ -2023,7 +2031,18 @@ paths:
             type: array
             items:
               $ref: '#/definitions/WorkflowResult'
-
+  
+  /workflowresults/all:
+    get:
+      tags: [Workflow]
+      summary: Gets all the results from all the executed workflows
+      operationId: server.endpoints.playbooks.read_all_results
+      produces: [application/json]
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/CompleteWorkflowResults'
 
 securityDefinitions:
   AuthenticationToken:
@@ -2050,6 +2069,11 @@ definitions:
           type: string
         type:
           type: string
+        required:
+          description: is the argument required
+          type: boolean
+        default:
+          description: default value for the argument
     Action:
       type: object
       required: [args]
@@ -2104,8 +2128,6 @@ definitions:
             type: string
           options:
             type: object
-    ResumeWorkflow:
-        type: string
     
     Error:
       type: object
@@ -2193,11 +2215,11 @@ definitions:
           enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
           example: Step
         ancestry:
-          description: An indentifier of the event through its trace through the ancestry
+          description: An identifier of the event through its trace through the ancestry
           type: array
           items:
             type: string
-          example: [defaultController, myplaybook, montiroingworkflow, step1, step3, flag_action1]
+          example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
         message:
           description: The message attached to the event
           type: string
@@ -2225,7 +2247,7 @@ definitions:
             type: array
             items:
               type: string
-            example: [defaultController, myplaybook, montiroingworkflow, step1, step3, flag_action1]
+            example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
           events:
             description: The list of events to subscribe to
             type: array
@@ -2319,7 +2341,7 @@ definitions:
           type: string
           example: HelloWorldWorkflow
         count:
-          description: Number of times the workflwo has been used
+          description: Number of times the workflow has been used
           type: integer
           example: 42
         avg_time:
@@ -2345,7 +2367,7 @@ definitions:
           type: string
           example: HelloWorldWorkflow
         steps:
-          description: The steps definied in this workflow. Form of '{step_name -> step}'
+          description: The steps defined in this workflow. Form of '{step_name -> step}'
           type: object
         accumulated_risk:
           description: The risk which has been accumulated as this workflow has been executed
@@ -2368,7 +2390,7 @@ definitions:
           required: [autorun, type]
           properties:
             autorun:
-              description: Should this workfoow be run automatically?
+              description: Should this workflow be run automatically?
               type: boolean
               example: true
             type:
@@ -2384,7 +2406,7 @@ definitions:
           type: boolean
           example: true
         children:
-          description: List of child workflows. Form of {worklfow_name -> Workflow}
+          description: List of child workflows. Form of {workflow_name -> Workflow}
           type: object
     
     Step:
@@ -2470,6 +2492,10 @@ definitions:
           description: The name of the next step
           type: string
           example: step2
+        status:
+          description: The status return code to use
+          type: string
+          example: Success
         flags:
           description: List of flags to evaluate
           type: array
@@ -2514,7 +2540,7 @@ definitions:
     Argument:
       type: object
       required: [key, value]
-      description: Obejct used for passing an argument into various actions
+      description: Object used for passing an argument into various actions
       properties:
         key:
           type: string
@@ -2524,6 +2550,7 @@ definitions:
           example: WALK(.*)
         format:
           type: string
+          description: Note -- Ignored completely with new version.
           default: str
           example: string
           enum: [str, string, unicode, int]
@@ -2537,7 +2564,14 @@ definitions:
           example: step1
         cytoscape:
           type: object
-
+    
+    WorkflowId:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          description: 32-byte hexidecimal string representing the ID of the workflow
     Role:
         type: object
         required: [name]
@@ -2584,7 +2618,7 @@ definitions:
           conditional:
             description: String representation of a list of Flag objects
             type: string
-            example: '[{"flag": "regMatch", "args": [{"key": "regex", "value": "(.*)"}], "filters": []}]'
+            example: '[{"flag": "regMatch", "args": {"regex", "(.*)"}, "filters": []}]'
           playbook:
             description: The name of the playbook that relates to this trigger
             type: string
@@ -2613,6 +2647,30 @@ definitions:
             description: The name of the workflow that relates to this trigger
             type: string
             example: HelloWorldWorkflow
+    
+    TriggerExecutionResponse:
+        type: object
+        required: [errors, executed]
+        properties:
+            errors:
+                description: The errors executed. Array of the form [{trigger_name -> error message}]
+                type: array
+            executed:
+                description: The executed workflows
+                type: array
+                items:
+                    $ref: '#/definitions/TriggeredWorkflow'
+    
+    TriggeredWorkflow:
+        type: object
+        required: [id, name]
+        properties:
+            id:
+                type: string
+                description: The UID of the workflow executing
+            name:
+                type: string
+                description: The name of the trigger executing
     User:
         type: object
         required: [username, password]
@@ -2685,5 +2743,66 @@ definitions:
         result:
           description: The result of the workflow
           type: string
+    
+    CompleteWorkflowResults:
+      type: object
+      required: [id]
+      properties:
+        id:
+          $ref: '#/definitions/DetailedWorkflowResult'
+    
+    DetailedWorkflowResult:
+      type: object
+      required: [name, started_at, status, results, uid]
+      properties:
+        name:
+          description: The name of the workflow. Contains both playbook and workflow information
+          type: string
+          example: PlaybookName-WorkflowName
+        started_at:
+          description: The timestamp of when the workflow completed
+          type: string
+          example: '2017-05-24 00:42:22.934058'
+        completed_at:
+          description: The timestamp of when the workflow completed
+          type: string
+          example: '2017-05-24 00:43:26.930892'
+        status:
+          description: The status of the workflow
+          type: string
+          enum: [completed, running]
+        results:
+          description: The results of the workflow steps
+          type: array
+          items:
+            $ref: '#/definitions/DetailedStepResult'
+        uid:
+          description: The UID of the workflow
+          type: string
+    
+    DetailedStepResult:
+      type: object
+      required: [name, result, input, type, timestamp]
+      description: A result of a step execution
+      properties:
+        name:
+          description: The name of the step
+          type: string
+          example: 'This One step'
+        result:
+          description: The result of the step
+          type: object
+        type:
+          description: Success or failure of the step
+          type: string
+          example: SUCCESS
+          enum: [SUCCESS, ERROR]
+        timestamp:
+          description: The timestamp of when the step completed
+          type: string
+          example: '2017-05-24 00:43:26.930892'
+        input:
+          description: The input to the step. Of form {input_name -> value}
+          type: object
 
 
