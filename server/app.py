@@ -192,7 +192,7 @@ def create_user():
                                            for _app in running_context.db.session.query(running_context.App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(name=app_name, devices_json=[]))
+        running_context.db.session.add(running_context.App(name=app_name, devices=[]))
     running_context.db.session.commit()
 
     running_context.CaseSubscription.sync_to_subscriptions()

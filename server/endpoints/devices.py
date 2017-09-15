@@ -113,7 +113,7 @@ def create_device():
             if app is None:
                 current_app.logger.error('SEVERE: App defined in api does not have corresponding entry in database. '
                                          'Cannot add device')
-                return {'error': 'Unknown app'}, OBJECT_DNE_ERROR
+                return {'error': 'Unknown app'}, INVALID_INPUT_ERROR
             device = running_context.Device.from_json(add_device_json)
             app.add_device(device)
             db.session.add(device)
@@ -168,7 +168,7 @@ def update_device():
             db.session.commit()
             device_json = device.as_json()
             remove_configuration_keys_from_device_json(device_json)
-            return device_json, OBJECT_CREATED
+            return device_json, SUCCESS
 
     return __func()
 
