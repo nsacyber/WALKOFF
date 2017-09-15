@@ -76,3 +76,18 @@ class TestDeviceValidation(unittest.TestCase):
         device_in = {'param1': 'somevalue', 'param2': True}
         validate_device_fields(device_fields, device_in, '', '')
 
+    def test_device_fields_validation_with_defaults_no_required(self):
+        device_fields = [{'name': 'param1', 'type': 'string', 'encrypted': True},
+                         {'name': 'param2', 'type': 'boolean', 'default': False}]
+        device_in = {'param1': 'somevalue'}
+        validated = validate_device_fields(device_fields, device_in, '', '')
+        device_in['param2'] = False
+        self.assertDictEqual(validated, device_in)
+
+    def test_device_fields_validation_with_defaults_with_required(self):
+        device_fields = [{'name': 'param1', 'type': 'string', 'encrypted': True},
+                         {'name': 'param2', 'type': 'boolean', 'default': False, 'required': True}]
+        device_in = {'param1': 'somevalue'}
+        validated = validate_device_fields(device_fields, device_in, '', '')
+        device_in['param2'] = False
+        self.assertDictEqual(validated, device_in)

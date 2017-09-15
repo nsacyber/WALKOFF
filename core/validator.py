@@ -111,37 +111,10 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     dereferenced_spec = dereference(spec)
     actions = dereference(dereferenced_spec['actions'])
     definitions = dereference(dereferenced_spec.get('definitions', {}))
+    devices = dereference(dereferenced_spec.get('devices', {}))
     validate_actions(actions, dereference, app_name)
     validate_definitions(definitions, dereference)
-
-
-def validate_device_fields(device_fields_api, device_fields, device_type, app):
-    message_prefix = 'Device type {0} for app {1}'.format(device_type, app)
-    required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
-    field_names = set(device_fields)
-    if required_in_api - field_names:
-        message = '{0} requires {1} field but only got {2}'.format(message_prefix,
-                                                                   list(required_in_api), list(field_names))
-        logger.error(message)
-        raise InvalidInput(message)
-
-    device_fields_api_dict = {field['name']: field for field in device_fields_api}
-    for field, value in device_fields.items():
-        if field in device_fields_api_dict:
-            field_type = device_fields_api_dict[field]['type']
-            field_api = deepcopy(device_fields_api_dict[field])
-            if 'required' in field_api:
-                field_api.pop('required')
-            if 'encrypted' in field_api:
-                hide = True
-                field_api.pop('encrypted')
-            else:
-                hide = False
-            validate_primitive_parameter(value, field_api, field_type, message_prefix, hide_input=hide)
-        else:
-            message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field['name'])
-            logger.warning(message)
-            raise InvalidInput(message)
+    validate_devices_api(devices, app_name)
 
 
 def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
@@ -418,3 +391,58 @@ def validate_flag_parameters(api, inputs, flag):
 def validate_filter_parameters(api, inputs, filter_name):
     return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
 
+
+def validate_device_field(field_api, value, message_prefix):
+    field_type = field_api['type']
+    field_api = deepcopy(field_api)
+    if 'required' in field_api:
+        field_api.pop('required')
+    if 'encrypted' in field_api:
+        hide = True
+        field_api.pop('encrypted')
+    else:
+        hide = False
+    validate_primitive_parameter(value, field_api, field_type, message_prefix, hide_input=hide)
+
+
+def validate_devices_api(devices_api, app_name):
+    for device_type, device_type_api in devices_api.items():
+        for field_api in device_type_api['fields']:
+            if 'default' in field_api:
+                message_prefix = 'App {0} device type {1}'.format(app_name, device_type)
+                default_value = field_api['default']
+                try:
+                    validate_device_field(field_api, default_value, message_prefix)
+                except InvalidInput as e:
+                    logger.error(
+                        'For {0}: Default input {1} does not conform to schema. (Error: {2})'
+                        'Using anyways'.format(message_prefix, field_api['name'], format_exception_message(e)))
+                    raise
+
+
+def validate_device_fields(device_fields_api, device_fields, device_type, app):
+    message_prefix = 'Device type {0} for app {1}'.format(device_type, app)
+
+    for field_api in device_fields_api:
+        if field_api['name'] not in device_fields and 'default' in field_api:
+            device_fields[field_api['name']] = field_api['default']
+
+    required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
+    field_names = set(device_fields)
+    if required_in_api - field_names:
+        message = '{0} requires {1} field but only got {2}'.format(message_prefix,
+                                                                   list(required_in_api), list(field_names))
+        logger.error(message)
+        raise InvalidInput(message)
+
+    device_fields_api_dict = {field['name']: field for field in device_fields_api}
+
+    for field, value in device_fields.items():
+        if field in device_fields_api_dict:
+            validate_device_field(device_fields_api_dict[field], value, message_prefix)
+        else:
+            message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field['name'])
+            logger.warning(message)
+            raise InvalidInput(message)
+
+    return device_fields

@@ -1,7 +1,7 @@
 import unittest
 
 import yaml
-from jsonschema.exceptions import RefResolutionError, ValidationError
+from jsonschema.exceptions import RefResolutionError
 
 from core.config.paths import walkoff_schema_path
 from core.helpers import import_all_apps
@@ -298,3 +298,17 @@ class TestAppApiValidation(unittest.TestCase):
                             'fields': [{'name': 'param1', 'type': 'string', 'placeholder': 'some helper text'}]}}
         self.basicapi['devices'] = devices
         self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_device_api_with_default(self):
+        devices = {'dev1': {'description': 'something',
+                            'fields': [{'name': 'param1', 'type': 'integer', 'default': 42}]}}
+        self.basicapi['devices'] = devices
+        self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_device_api_with_invalid_default(self):
+        devices = {'dev1': {'description': 'something',
+                            'fields': [{'name': 'param1', 'type': 'integer', 'default': 'invalid'}]}}
+        self.basicapi['devices'] = devices
+        with self.assertRaises(InvalidInput):
+            validate_devices_api(devices, '')
+
