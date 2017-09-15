@@ -1,4 +1,4 @@
-User:
+AddUser:
     type: object
     required: [username, password]
     properties:
@@ -10,24 +10,38 @@ User:
         description: Password for the user
         type: string
         example: password123
-      role:
-        description: A list of endpoints that this user can access
+      roles:
+        description: A list of roles that this user possesses
         type: array
+        description: A list of role names
         items:
           type: string
-        example:
-          - /users
-          - /cases
-          - /playbooks
 EditUser:
     type: object
+    required: [id]
     properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
+        readOnly: true
+      username:
+        description: New username or email of the user
+        type: string
+        example: administrator
+      old_password:
+        description: Previous password for the user
+        type: string
+        example: password123
       password:
         description: New password for the user
         type: string
-        example: password123
-      role:
-        description: New list of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+        example: password321
+      active:
+        description: activate/deactive a user
+        type: boolean
+      roles:
+        description: New list of role objects that this user possesses
         type: array
         items:
           type: string
@@ -38,20 +52,20 @@ EditUser:
 DisplayUser:
     type: object
     properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
+        readOnly: true
       username:
         description: Username or email of the user
         type: string
         example: administrator
-      role:
-        description: List of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+      active:
+        description: activate/deactive a user
+        type: boolean
+      roles:
+        description: List of role objects that this user possesses
         type: array
         items:
           type: string
-        example:
-          - /users
-          - /cases
-          - /playbooks
-      active:
-        description: A boolean displaying whether or not a user is currently active
-        type: string
-        example: True

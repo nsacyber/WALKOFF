@@ -26,6 +26,7 @@ TYPE_MAP = {
 
 reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
 
+
 def make_type(value, type_literal):
     type_func = TYPE_MAP.get(type_literal)
     if (isinstance(value, dict) or isinstance(value, list)) and type_func == str:
@@ -208,7 +209,7 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
         seen.add(name)
 
     if hasattr(action_func, '__arg_names'):
-        method_params = action_func.__arg_names
+        method_params = list(action_func.__arg_names)
     else:
         method_params = get_function_arg_names(action_func)
 
@@ -351,7 +352,8 @@ def validate_parameters(api, inputs, message_prefix):
                 default_param = param_api['default']
                 logger.warning(
                     'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
-                    'Using anyways'.format(message_prefix, param_name, param_api['default'], format_exception_message(e)))
+                    'Using anyways'.format(message_prefix, param_name, param_api['default'],
+                                           format_exception_message(e)))
 
             converted[param_name] = default_param
             input_set.add(param_name)

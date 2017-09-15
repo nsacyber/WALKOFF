@@ -2,13 +2,14 @@ import unittest
 import core.config.config
 from core.case import database
 from core.case import subscription
-from core.controller import Controller, initialize_threading, shutdown_pool
-from core.helpers import construct_workflow_name_key, import_all_flags, import_all_filters, import_all_apps
+import core.controller
+import core.loadbalancer
+from core.helpers import import_all_flags, import_all_filters, import_all_apps
 from tests import config
-from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import *
 from tests.apps import App
-import json
+from tests.util.mock_objects import *
+
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
@@ -19,106 +20,106 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.config.config.num_processes = 2
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
-        case_database.initialize()
-        self.controller = Controller(workflows_path=config.test_workflows_path)
+        self.controller = core.controller.controller
+        self.controller.workflows = {}
+        self.controller.load_all_playbooks_from_directory(path=config.test_workflows_path)
         self.start = datetime.utcnow()
-        initialize_threading()
+
+        self.controller.initialize_threading()
+        database.initialize()
 
     def tearDown(self):
         database.case_db.tear_down()
         subscription.clear_subscriptions()
 
     def test_simple_workflow_execution(self):
-        workflow_name = construct_workflow_name_key('basicWorkflowTest', 'helloWorldWorkflow')
-        setup_subscriptions_for_step(workflow_name, ['start'])
+        workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
+        setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        steps = []
+        for uid in step_uids:
+            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
 
         self.assertEqual(len(steps), 1)
         step = steps[0]
-        ancestry = step['ancestry'].split(',')
-        self.assertEqual(ancestry[-1], "start")
-        result = json.loads(step['data'])
+        result = step['data']
         self.assertDictEqual(result['result'], {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
-        workflow_name = construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         step_names = ['start', '1']
-        setup_subscriptions_for_step(workflow_name, step_names)
+        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
+        setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
+        steps = []
+        for uid in step_uids:
+            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
 
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
         self.assertEqual(len(steps), 2)
-        names = [step['ancestry'].split(',')[-1] for step in steps]
-        orderless_list_compare(self, names, step_names)
-        name_result = {'start': {'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
-                       '1': {'result': "REPEATING: Hello World", 'status': 'Success'}}
-        for step in steps:
-            name = step['ancestry'].split(',')[-1]
-            self.assertIn(name, name_result)
-            result = json.loads(step['data'])
-            if type(name_result[name]) == dict:
-                self.assertDictEqual(result['result'], name_result[name])
-            else:
-                self.assertEqual(result['result'], name_result[name])
+        expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
+                            {'result': "REPEATING: Hello World", 'status': 'Success'}]
+        for result in [step['data']['result'] for step in steps]:
+            self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
-        workflow_name = construct_workflow_name_key('multistepError', 'multiactionErrorWorkflow')
+        workflow = self.controller.get_workflow('multistepError', 'multiactionErrorWorkflow')
         step_names = ['start', '1', 'error']
-        setup_subscriptions_for_step(workflow_name, step_names)
+        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
+        setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        steps = []
+        for uid in step_uids:
+            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
         self.assertEqual(len(steps), 2)
-        names = [step['ancestry'].split(',')[-1] for step in steps]
-        orderless_list_compare(self, names, ['start', 'error'])
-        name_result = {'start': {'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
-                       'error': {'status': 'Success', 'result': 'REPEATING: Hello World'}}
-        for step in steps:
-            name = step['ancestry'].split(',')[-1]
-            self.assertIn(name, name_result)
-            result = json.loads(step['data'])
-            self.assertDictEqual(result['result'], name_result[name])
+
+        expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
+                            {'status': 'Success', 'result': 'REPEATING: Hello World'}]
+        for result in [step['data']['result'] for step in steps]:
+            self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
-        workflow_name = construct_workflow_name_key('dataflowTest', 'dataflowWorkflow')
+        workflow = self.controller.get_workflow('dataflowTest', 'dataflowWorkflow')
         step_names = ['start', '1', '2']
-        setup_subscriptions_for_step(workflow_name, step_names)
+        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
+        setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        steps = []
+        for uid in step_uids:
+            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
         self.assertEqual(len(steps), 3)
-        names = [step['ancestry'].split(',')[-1] for step in steps]
-        orderless_list_compare(self, names, ['start', '1', '2'])
-        name_result = {'start': {'result': 6, 'status': 'Success'},
-                       '1': {'result': 6, 'status': 'Success'},
-                       '2': {'result': 15, 'status': 'Success'}}
-        for step in steps:
-            name = step['ancestry'].split(',')[-1]
-            self.assertIn(name, name_result)
-            result = json.loads(step['data'])
-            self.assertDictEqual(result['result'], name_result[name])
+        expected_results = [{'result': 6, 'status': 'Success'},
+                            {'result': 6, 'status': 'Success'},
+                            {'result': 15, 'status': 'Success'}]
+        for result in [step['data']['result'] for step in steps]:
+            self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow_step_not_executed(self):
-        workflow_name = construct_workflow_name_key('dataflowTest', 'dataflowWorkflow')
+        workflow = self.controller.get_workflow('dataflowTest', 'dataflowWorkflow')
         step_names = ['start', '1']
-        setup_subscriptions_for_step(workflow_name, step_names)
+        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
+        setup_subscriptions_for_step(workflow.uid, step_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        shutdown_pool()
+        self.controller.shutdown_pool(1)
 
-        steps = executed_steps('defaultController', workflow_name, self.start, datetime.utcnow())
+        steps = []
+        for uid in step_uids:
+            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
         self.assertEqual(len(steps), 2)
-        names = [step['ancestry'].split(',')[-1] for step in steps]
-        orderless_list_compare(self, names, ['start', '1'])

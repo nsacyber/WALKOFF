@@ -8,7 +8,7 @@ python:
     - "3.5"
     - "3.6"
 install: pip install -r requirements.txt
-script: python installDependencies.py && python runAllTests.py test
+script: python installDependencies.py && python generate_certificates.py && python runAllTests.py test
 branches:
     only: 
     - master

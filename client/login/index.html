@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> WALKOFF - Automation for Everyone. Login </title>
+    
+    <!-- 1. Load libraries -->
+    <!-- Polyfill(s) for older browsers -->
+    <script src="client/node_modules/core-js/client/shim.min.js"></script>
+    <script src="client/node_modules/zone.js/dist/zone.js"></script>
+    <script src="client/node_modules/rxjs/bundles/Rx.js"></script>
+    <script src="client/node_modules/@angular/core/bundles/core.umd.js"></script>
+    <script src="client/node_modules/@angular/common/bundles/common.umd.js"></script>
+    <script src="client/node_modules/@angular/compiler/bundles/compiler.umd.js"></script>
+    <script src="client/node_modules/@angular/platform-browser/bundles/platform-browser.umd.js"></script>
+    <script src="client/node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js"></script>
+    <script src="client/node_modules/systemjs/dist/system.js"></script>
+    <script src="client/node_modules/typescript/lib/typescript.js"></script>
+    <!-- jQuery 2.2.3 -->
+    <script src="client/plugins/jQuery/jquery-2.2.3.min.js"></script>
+
+     <!-- 2. Configure SystemJS -->
+    <script src="client/systemjs.config.js"></script>
+    <script src=""></script>
+    <script>
+      SystemJS.import('login').catch(function(err){ console.error(err); });
+    </script>
+</head>
+<body>
+    <login-page></login-page>
+</body>
+</html>
+

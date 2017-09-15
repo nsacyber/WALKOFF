@@ -1,25 +1,25 @@
-import ast
 import unittest
+import time
 import socket
-from datetime import datetime
-import gevent
-from gevent.event import Event
 from os import path
-from core.controller import Controller, initialize_threading, shutdown_pool
+import core.controller
 from core.workflow import Workflow
 from core.step import Step
 from core.instance import Instance
 import core.config.config
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.case.callbacks import FunctionExecutionSuccess, StepInputValidated
-from core.helpers import construct_workflow_name_key, import_all_apps, import_all_filters, import_all_flags
+from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
+from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from tests.apps import App
 from tests.util.assertwrappers import orderless_list_compare
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from core.controller import _WorkflowKey
-from timeit import default_timer
+from tests.util.mock_objects import *
+from tests.util.thread_control import *
+import core.loadbalancer
+import threading
+
 try:
     from importlib import reload
 except ImportError:
@@ -35,45 +35,27 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        initialize_threading()
-
-    @classmethod
-    def tearDownClass(cls):
-        shutdown_pool()
+        core.config.config.num_processes = 2
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
-        case_database.initialize()
-        self.controller = Controller(workflows_path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
-        self.controller.load_workflows_from_file(
+        self.controller = core.controller.controller
+        self.controller.workflows = {}
+        self.controller.load_all_playbooks_from_directory(path=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
+        self.controller.load_playbook_from_file(
             path=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
-        self.workflow_name = construct_workflow_name_key(*self.id_tuple)
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
+        self.testWorkflow.execution_uid = 'some_uid'
+        case_database.initialize()
 
     def tearDown(self):
         self.controller.workflows = None
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
+        self.controller.shutdown_pool(0)
         reload(socket)
-
-    def __execution_test(self):
-        step_names = ['start', '1']
-        setup_subscriptions_for_step(self.testWorkflow.name, step_names)
-        start = datetime.utcnow()
-        # Check that the workflow executed correctly post-manipulation
-        self.controller.execute_workflow(*self.id_tuple)
-
-        steps = executed_steps('defaultController', self.testWorkflow.name, start, datetime.utcnow())
-        self.assertEqual(len(steps), 2)
-        names = [step['ancestry'].split(',')[-1] for step in steps]
-        orderless_list_compare(self, names, step_names)
-        name_result = {'start': "REPEATING: Hello World",
-                       '1': "REPEATING: This is a test."}
-        for step in steps:
-            name = step['ancestry'].split(',')[-1]
-            self.assertIn(name, name_result)
-            self.assertEqual(step['data']['result'], name_result[name])
-
     """
         CRUD - Workflow
     """
@@ -85,8 +67,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertEqual(len(self.controller.workflows), 3)
         self.assertEqual(self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').steps, {})
 
-        xml = self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').to_xml()
-        self.assertEqual(len(xml.findall(".//steps/*")), 0)
+        json = self.controller.get_workflow('emptyWorkflow', 'emptyWorkflow').as_json()
+        self.assertEqual(len(json['steps']), 0)
 
     def test_remove_workflow(self):
         initial_workflows = list(self.controller.workflows.keys())
@@ -109,75 +91,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertIn(new_key, self.controller.workflows)
 
     def test_display_workflow(self):
-        workflow = ast.literal_eval(self.testWorkflow.__repr__())
+        workflow = self.testWorkflow.as_json()
         self.assertEqual(len(workflow["steps"]), 1)
-        self.assertTrue(workflow["options"])
-
-    """
-        CRUD - Next
-    """
-
-    def test_update_next(self):
-        step = self.testWorkflow.steps["start"]
-        self.assertEqual(step.conditionals[0].name, "1")
-        step.conditionals[0].name = "2"
-        self.assertEqual(step.conditionals[0].name, "2")
-
-        xml = self.testWorkflow.to_xml()
-
-        # Check XML
-        self.assertEqual(xml.find(".//steps/step/[@id='start']/next").get("step"), "2")
-
-    def test_display_next(self):
-        conditional = ast.literal_eval(self.testWorkflow.steps["start"].conditionals[0].__repr__())
-        self.assertTrue(conditional["flags"])
-        self.assertEqual(conditional["name"], "1")
-
-    def test_to_from_cytoscape_data(self):
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path,
-                                                                'multiactionWorkflowTest.playbook'))
-        workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        original_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
-        cytoscape_data = workflow.get_cytoscape_data()
-        workflow.steps = {}
-        workflow.from_cytoscape_data(cytoscape_data)
-        derived_steps = {step_name: step.as_json() for step_name, step in workflow.steps.items()}
-        self.assertDictEqual(derived_steps, original_steps)
-
-    def test_name_parent_rename(self):
-        workflow = Workflow(parent_name='workflow_parent', name='workflow')
-        new_ancestry = ['workflow_parent_update']
-        workflow.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append('workflow')
-        self.assertListEqual(new_ancestry, workflow.ancestry)
-
-    def test_name_parent_step_rename(self):
-        workflow = Workflow(parent_name='workflow_parent', name='workflow')
-        step = Step(name="test_step", action='helloWorld', app='HelloWorld', ancestry=workflow.ancestry)
-        workflow.steps["test_step"] = step
-
-        new_ancestry = ["workflow_parent_update"]
-        workflow.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("workflow")
-        new_ancestry.append("test_step")
-        self.assertListEqual(new_ancestry, workflow.steps["test_step"].ancestry)
-
-    def test_name_parent_multiple_step_rename(self):
-        workflow = Workflow(parent_name='workflow_parent', name='workflow')
-        step_one = Step(name="test_step_one", action='helloWorld', app='HelloWorld', ancestry=workflow.ancestry)
-        step_two = Step(name="test_step_two", action='helloWorld', app='HelloWorld', ancestry=workflow.ancestry)
-        workflow.steps["test_step_one"] = step_one
-        workflow.steps["test_step_two"] = step_two
-
-        new_ancestry = ["workflow_parent_update"]
-        workflow.reconstruct_ancestry(new_ancestry)
-        new_ancestry.append("workflow")
-        new_ancestry.append("test_step_one")
-        self.assertListEqual(new_ancestry, workflow.steps["test_step_one"].ancestry)
-
-        new_ancestry.remove("test_step_one")
-        new_ancestry.append("test_step_two")
-        self.assertListEqual(new_ancestry, workflow.steps["test_step_two"].ancestry)
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')
@@ -189,6 +104,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_accumulated_risk_with_error(self):
         workflow = Workflow(name='workflow')
+        workflow.execution_uid = 'some_uid'
         step1 = Step(name="step_one", app='HelloWorld', action='Buggy', risk=1)
         step2 = Step(name="step_two", app='HelloWorld', action='Buggy', risk=2)
         step3 = Step(name="step_three", app='HelloWorld', action='Buggy', risk=3.5)
@@ -205,67 +121,63 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
-        from gevent import monkey
-        monkey.patch_all()
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.load_playbook_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
-        waiter = Event()
         uid = None
+        result = dict()
+        result['paused'] = False
+        result['resumed'] = False
 
-        def step_2_finished_listener(sender, **kwargs):
-            if sender.name == '2':
-                waiter.set()
+        @WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            result['paused'] = True
+            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+
+        @WorkflowResumed.connect
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
 
         def pause_resume_thread():
             self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
-            gevent.sleep(1.5)
-            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            return
 
+        @WorkflowExecutionStart.connect
         def step_1_about_to_begin_listener(sender, **kwargs):
-            if sender.name == '1':
-                gevent.spawn(pause_resume_thread)
+            threading.Thread(target=pause_resume_thread).start()
+            time.sleep(0)
 
-        FunctionExecutionSuccess.connect(step_2_finished_listener)
-        StepInputValidated.connect(step_1_about_to_begin_listener)
-
-        start = default_timer()
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        waiter.wait(timeout=5)
-        duration = default_timer() - start
-        self.assertTrue(2.5 < duration < 5)
+        self.controller.shutdown_pool(1)
+        self.assertTrue(result['paused'])
+        self.assertTrue(result['resumed'])
 
     def test_pause_and_resume_workflow_breakpoint(self):
-        from gevent import monkey
-        monkey.patch_all()
-        self.controller.load_workflows_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.load_playbook_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
 
-        waiter = Event()
+        uid = None
+        result = dict()
+        result['paused'] = False
+        result['resumed'] = False
 
-        def step_2_finished_listener(sender, **kwargs):
-            if sender.name == '2':
-                waiter.set()
+        @WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            result['paused'] = True
+            self.controller.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow', uid)
 
-        def pause_resume_thread():
-            self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
-            gevent.sleep(1.5)
-            self.controller.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow')
+        @WorkflowResumed.connect
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
 
-        def step_1_about_to_begin_listener(sender, **kwargs):
-            if sender.name == '1':
-                gevent.spawn(pause_resume_thread)
-
-        FunctionExecutionSuccess.connect(step_2_finished_listener)
-        StepInputValidated.connect(step_1_about_to_begin_listener)
-
-        start = default_timer()
-        self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        waiter.wait(timeout=5)
-        duration = default_timer() - start
-        self.assertTrue(2.5 < duration < 5)
+        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        self.controller.shutdown_pool(1)
+        self.assertTrue(result['paused'])
+        self.assertTrue(result['resumed'])
 
     def test_change_step_input(self):
-        import json
-
+        self.controller.initialize_threading()
         input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]
 
         input_arg = {arg['key']: arg['value'] for arg in input_list}
@@ -277,6 +189,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         FunctionExecutionSuccess.connect(step_finished_listener)
 
-        self.testWorkflow.execute(start_input=input_arg)
-        self.assertDictEqual(json.loads(result['value']),
+        self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow', start_input=input_arg)
+        self.controller.shutdown_pool(1)
+        self.assertDictEqual(result['value'],
                              {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})

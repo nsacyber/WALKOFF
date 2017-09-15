@@ -1,0 +1,54 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+	<div class="container-fluid">
+		<div class="row">
+			<form #caseForm="ngForm" (ngSubmit)="submit()">
+				<div class="col-xs-3">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" class="form-control" [(ngModel)]="workingCase.name" name="name" #name="ngModel" required>
+						<div *ngIf="name.errors && (name.dirty || name.touched)" class="alert alert-danger">
+							<div [hidden]="!name.errors.required">
+								Name is required.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-9">
+					<div class="form-group">
+						<label for="name">Note</label>
+						<input type="textarea" class="form-control" [(ngModel)]="workingCase.note" #note="ngModel" name="note">
+						<!--<div *ngIf="note.errors && (note.dirty || note.touched)" class="alert alert-danger">
+							<div [hidden]="!note.errors.required">
+								The note is required.
+							</div>
+						</div>-->
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="row">
+			<div class="col-xs-10 caseSubscriptionCol">
+				<svg overflow="scroll" id="caseSubscriptionsTree"></svg>
+			</div>
+			<div class="col-xs-2 caseSubscriptionCol">
+				<h3 [hidden]="!selectedNode.name">Selected events for {{selectedNode.type}} node "{{selectedNode.name}}"</h3>
+				<ul class="eventsList">
+					<li *ngFor="let event of workingEvents">
+						<input type="checkbox" [value]="event.isChecked" [checked]="event.isChecked"
+							(change)="handleEventSelectionChange(event, $event.target.checked)"> {{event.name}}
+					</li>
+					<li *ngIf="selectedNode.name && !workingEvents.length">
+						<i>No events available for this node.</i>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!caseForm.form.valid" (click)="submit()">{{submitText}}</button>
+</div>

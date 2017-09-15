@@ -1,36 +1,41 @@
 import json
-import copy
-import os
-from server import flaskserver as server
 from tests.util.assertwrappers import orderless_list_compare
-from tests.config import test_workflows_path_with_generated, test_workflows_path
 import core.config.paths
 import core.config.config
 from tests.util.servertestcase import ServerTestCase
-from server.return_codes import *
+from server.returncodes import *
+from flask import current_app
 
 
 class TestServer(ServerTestCase):
-    def test_login(self):
-        response = self.app.post('/login', data=dict(email='admin', password='admin'), follow_redirects=True)
-        self.assertEqual(response.status_code, SUCCESS)
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
-        response = self.app.get('/apps', headers=self.headers)
+        response = self.app.get('/api/apps', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response['apps'], expected_apps)
+        orderless_list_compare(self, response, expected_apps)
+
+    def test_list_apps_with_interfaces(self):
+        expected_apps = ['HelloWorld']
+        response = self.app.get('/api/apps?interfaces_only=true', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        orderless_list_compare(self, response, expected_apps)
 
     def test_list_widgets(self):
         expected = {'HelloWorld': ['testWidget', 'testWidget2'], 'DailyQuote': []}
         response = self.app.get('/widgets', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertDictEqual(response, expected)
+        self.assertEqual(2, len(response))
+        self.assertIn('HelloWorld', response)
+        self.assertIn('DailyQuote', response)
+        self.assertEqual(0, len(response['DailyQuote']))
+        orderless_list_compare(self, expected['HelloWorld'], response['HelloWorld'])
 
     def test_read_filters(self):
-        response = self.get_with_status_check('/filters', headers=self.headers)
+        response = self.get_with_status_check('/api/filters', headers=self.headers)
         expected = {'sub_top_filter': {'args': []},
                     'mod1_filter2': {'args': [{'required': True, 'type': 'number', 'name': 'arg1'}]},
                     'mod1_filter1': {'args': []},
@@ -52,7 +57,7 @@ class TestServer(ServerTestCase):
         self.assertDictEqual(response, {'filters': expected})
 
     def test_read_flags(self):
-        response = self.get_with_status_check('/flags', headers=self.headers)
+        response = self.get_with_status_check('/api/flags', headers=self.headers)
         expected = {
             'count':
                 {'description': 'Compares two numbers',
@@ -91,6 +96,7 @@ class TestServer(ServerTestCase):
 
 
 class TestConfiguration(ServerTestCase):
+
     def setUp(self):
         config_fields = [x for x in dir(core.config.config) if
                          not x.startswith('__') and type(getattr(core.config.config, x)).__name__
@@ -100,6 +106,8 @@ class TestConfiguration(ServerTestCase):
                                                              in ['str', 'unicode'])]
         self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
         self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
+        with open(core.config.paths.config_path) as config_file:
+            self.original_config_file = config_file.read()
 
     def preTearDown(self):
         for key, value in self.original_paths.items():
@@ -108,91 +116,64 @@ class TestConfiguration(ServerTestCase):
     def tearDown(self):
         for key, value in self.original_configs.items():
             setattr(core.config.config, key, value)
+        with open(core.config.paths.config_path, 'w') as config_file:
+            config_file.write(self.original_config_file)
 
     def test_get_configuration(self):
-        config_fields = [x for x in dir(core.config.config) if
-                         not x.startswith('__')
-                         and type(getattr(core.config.config, x)).__name__ in ['str', 'unicode', 'int']]
-        path_fields = [x for x in dir(core.config.paths) if
-                       (not x.startswith('__')
-                        and type(getattr(core.config.paths, x)).__name__ in ['str', 'unicode'])]
-        config_fields = list(set(config_fields) - set(path_fields))
-        configs = {key: getattr(core.config.config, key) for key in config_fields}
-        paths = {key: getattr(core.config.paths, key) for key in path_fields}
-        for key, value in paths.items():
-            response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
-            self.assertEqual(response.status_code, SUCCESS)
-            response = json.loads(response.get_data(as_text=True))
-            self.assertEqual(response[key], value)
-
-        for key, value in configs.items():
-            response = self.app.get('/configuration/{0}'.format(key), headers=self.headers)
-            self.assertEqual(response.status_code, SUCCESS)
-            response = json.loads(response.get_data(as_text=True))
-            self.assertEqual(response[key], str(value))
-
-        self.get_with_status_check('/configuration/junkName',
-                                   error='Configuration key does not exist.',
-                                   headers=self.headers,
-                                   status_code=OBJECT_DNE_ERROR)
+        expected = {'workflows_path': core.config.paths.workflows_path,
+                    'templates_path': core.config.paths.templates_path,
+                    'db_path': core.config.paths.db_path,
+                    'case_db_path': core.config.paths.case_db_path,
+                    'log_config_path': core.config.paths.logging_config_path,
+                    'host': core.config.config.host,
+                    'port': int(core.config.config.port),
+                    'walkoff_db_type': core.config.config.walkoff_db_type,
+                    'case_db_type': core.config.config.case_db_type,
+                    'https': bool(core.config.config.https),
+                    'tls_version': core.config.config.tls_version,
+                    'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
+                    'number_processes': int(core.config.config.num_processes),
+                    'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
+                    'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days)}
+        response = self.get_with_status_check('/api/configuration', headers=self.headers)
+        self.assertDictEqual(response, expected)
 
     def test_set_configuration(self):
-        original_config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and
-                                                                         type(getattr(core.config.config, x)).__name__
-                                                                         in ['str', 'unicode'])]
-        original_path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__') and
-                                                                      type(getattr(core.config.paths, x)).__name__
-                                                                      in ['str', 'unicode'])]
         data = {"templates_path": 'templates_path_reset',
                 "workflows_path": 'workflows_path_reset',
-                "apps_path": core.config.paths.apps_path,
-                "profile_visualizations_path": 'profile_visualizations_path_reset',
-                "keywords_path": 'keywords_path_reset',
                 "db_path": 'db_path_reset',
-                "tls_version": 'tls_version_reset',
-                "https": 'true',
-                "private_key_path": 'private_key_path',
-                "debug": 'false',
-                "default_server": 'default_server_reset',
+                "tls_version": '1.1',
+                "https": True,
                 "host": 'host_reset',
-                "port": 'port_reset'}
+                "port": 1100,
+                "access_token_duration": 20,
+                "refresh_token_duration": 35}
+        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+                                    content_type='application/json')
 
-        self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
+        expected = {core.config.paths.workflows_path: 'workflows_path_reset',
+                    core.config.paths.templates_path: 'templates_path_reset',
+                    core.config.paths.db_path: 'db_path_reset',
+                    core.config.config.host: 'host_reset',
+                    core.config.config.port: 1100,
+                    core.config.config.https: True}
 
-        config_fields = [x for x in dir(core.config.config) if (not x.startswith('__') and
-                                                                type(getattr(core.config.config, x)).__name__
-                                                                in ['str', 'unicode'])]
-        path_fields = [x for x in dir(core.config.paths) if (not x.startswith('__') and
-                                                             type(getattr(core.config.paths, x)).__name__
-                                                             in ['str', 'unicode'])]
-        orderless_list_compare(self, config_fields, original_config_fields)
-        orderless_list_compare(self, path_fields, original_path_fields)
+        for actual, expected_ in expected.items():
+            self.assertEqual(actual, expected_)
 
-        for key in data.keys():
-            self.assertIn(key, (set(config_fields) | set(path_fields)))
+        self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, 20*60)
+        self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, 35)
 
-        config_fields = list(set(config_fields) - set(path_fields))
-        configs = {key: getattr(core.config.config, key) for key in config_fields}
-        paths = {key: getattr(core.config.paths, key) for key in path_fields}
+    def test_set_configuration_invalid_token_durations(self):
+        access_token_duration = current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds
+        refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
+        templates_path = core.config.paths.templates_path
+        data = {"templates_path": 'templates_path_reset',
+                "access_token_duration": 60*25,
+                "refresh_token_duration": 1}
+        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+                                    content_type='application/json', status_code=BAD_REQUEST)
 
-        for key, value in configs.items():
-            if key in data:
-                self.assertEqual(value, data[key])
-
-        for key, value in paths.items():
-            if key in data:
-                self.assertEqual(value, data[key])
-
-    def test_set_workflows_path(self):
-        workflow_files = [os.path.splitext(workflow)[0]
-                          for workflow in os.listdir(core.config.paths.workflows_path)
-                          if workflow.endswith('.playbook')]
-        self.app.put('/playbooks/test_playbook', headers=self.headers)
-        original_workflow_keys = list(server.running_context.controller.workflows.keys())
-        data = {"apps_path": core.config.paths.apps_path,
-                "workflows_path": test_workflows_path}
-        self.post_with_status_check('/configuration/set', headers=self.headers, data=data)
-        self.assertNotEqual(len(server.running_context.controller.workflows.keys()), len(original_workflow_keys))
-        new_files = [os.path.splitext(workflow)[0]
-                     for workflow in os.listdir(test_workflows_path_with_generated) if workflow.endswith('.playbook')]
-        self.assertNotEqual(len(new_files), len(workflow_files))
+        self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)
+        self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, refresh_token_duration)
+        self.assertEqual(core.config.paths.templates_path, templates_path)

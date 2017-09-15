@@ -1,42 +1,66 @@
-<?xml version="1.0"?>
-<workflow name="multiactionWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hour>*</hour>
-            <minute>*/0.1</minute>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>helloWorld</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <input>
-            </input>
-            <next step="1">
-                <flag action="regMatch">
-                    <args>
-                        <regex>(.*)</regex>
-                    </args>
-                    <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
-                    </filters>
-                </flag>
-            </next>
-        </step>
-        <step id="1">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <call>Hello World</call>
-            </inputs>
-            <next></next>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "multiactionWorkflowTest",
+    "workflows": [
+        {
+            "name": "multiactionWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "repeatBackToMe",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "name": "1",
+                    "next": [],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "01204c1451c44f99b828b2367690801b",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "fead248eba064defbf25b33cccc734fc"
+                                        }
+                                    ],
+                                    "uid": "8f698454d6a74978a730f9f4e429e1f6"
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "f54edf0644ae4bd4878de898bf3997a7"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
+                    "widgets": []
+                }
+            ],
+            "uid": "81f0ae4aaf4b4eda905d35cbab0cd36d"
+        }
+    ]
+}

@@ -19,8 +19,8 @@ class TestLoadWorkflow(unittest.TestCase):
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def setUp(self):
-        self.c = controller.Controller()
-        self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        self.c = controller.Controller(workflows_path=config.test_workflows_path)
+        self.c.load_playbook_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
         self.workflow_name = _WorkflowKey('basicWorkflowTest', 'helloWorldWorkflow')
         self.testWorkflow = self.c.workflows[self.workflow_name]
 
@@ -59,7 +59,6 @@ class TestLoadWorkflow(unittest.TestCase):
 
         flag = flags[0]
         self.assertEqual(flag.action, 'regMatch')
-        # self.assertDictEqual({'regex': {'key': 'regex', 'type': 'regex', 'value': '(.*)'}}, flag.args)
         self.assertTrue(flag.filters)
 
     def test_workflow_next_step_filters(self):
@@ -72,24 +71,24 @@ class TestLoadWorkflow(unittest.TestCase):
 
     def test_load_workflow_invalid_app(self):
         original_workflows = self.c.get_all_workflows()
-        self.c.load_workflows_from_file(
+        self.c.load_playbook_from_file(
             path='{}invalidAppWorkflow.playbook'.format(config.test_invalid_workflows_path))
-        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+        self.assertListEqual(self.c.get_all_workflows(), original_workflows)
 
     def test_load_workflow_invalid_action(self):
         original_workflows = self.c.get_all_workflows()
-        self.c.load_workflows_from_file(
+        self.c.load_playbook_from_file(
             path='{}invalidActionWorkflow.playbook'.format(config.test_invalid_workflows_path))
-        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+        self.assertListEqual(self.c.get_all_workflows(), original_workflows)
 
     def test_load_workflow_invalid_input(self):
         original_workflows = self.c.get_all_workflows()
-        self.c.load_workflows_from_file(
+        self.c.load_playbook_from_file(
             path='{}invalidInputWorkflow.playbook'.format(config.test_invalid_workflows_path))
-        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+        self.assertListEqual(self.c.get_all_workflows(), original_workflows)
 
     def test_load_workflow_too_many_inputs(self):
         original_workflows = self.c.get_all_workflows()
-        self.c.load_workflows_from_file(
+        self.c.load_playbook_from_file(
             path='{}tooManyStepInputsWorkflow.playbook'.format(config.test_invalid_workflows_path))
-        self.assertDictEqual(self.c.get_all_workflows(), original_workflows)
+        self.assertListEqual(self.c.get_all_workflows(), original_workflows)

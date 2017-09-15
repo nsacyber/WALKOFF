@@ -1,4 +1,4 @@
-/apps:
+/api/apps:
   get:
     tags:
       - System
@@ -7,19 +7,22 @@
     operationId: server.endpoints.apps.read_all_apps
     produces:
       - application/json
+    parameters:
+      - in: query
+        name: interfaces_only
+        description: Return only the apps with custom interfaces?
+        type: boolean
+        required: false
     responses:
       200:
         description: Success
         schema:
-          type: object
-          required: [apps]
-          properties:
-            apps:
-              type: array
-              items:
-                type: string
-              example: [PhillipsHue, OpenDaylight, PaloAlto]
-/apps/actions:
+          type: array
+          description: List of app names
+          items:
+            type: string
+            example: [PhillipsHue, OpenDaylight, PaloAlto]
+/api/apps/actions:
   get:
     tags:
       - System
@@ -34,7 +37,7 @@
         schema:
           type: object
           description: All actions for each app. Of form {app_name -> action}
-/apps/{app_name}/actions:
+/api/apps/{app_name}/actions:
   get:
     tags:
       - Apps
@@ -63,7 +66,7 @@
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'
-/apps/{app_name}/devices:
+/api/apps/{app_name}/devices:
   get:
     tags:
       - Apps
@@ -89,200 +92,3 @@
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'
-/apps/{app_name}/devices/import:
-  get:
-    tags:
-      - Apps
-    summary: Import apps devices
-    description: ''
-    operationId: server.endpoints.apps.import_devices
-    consumes:
-      - multipart/form-data
-    produces:
-      - application/json
-    parameters:
-      - name: app_name
-        in: path
-        description: The name of the app
-        required: true
-        type: string
-      - in: formData
-        name: filename
-        description: The name of the JSON file to import. Defaults to ./data/appdevice.json
-        required: false
-        type: string
-    responses:
-      200:
-        description: Success
-      515:
-        description: Error reading file
-      '405':
-        description: Validation exception
-/apps/{app_name}/devices/export:
-  post:
-    tags:
-      - Apps
-    summary: Export apps devices
-    description: ''
-    operationId: server.endpoints.apps.export_devices
-    produces:
-      - application/json
-    parameters:
-      - name: app_name
-        in: path
-        description: The name of the app
-        required: true
-        type: string
-      - in: formData
-        name: filename
-        description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
-        required: false
-        type: string
-    responses:
-      200:
-        description: Success
-      515:
-        description: Error writing to file
-/apps/{app_name}/devices/{device_name}:
-  parameters:
-    - in: path
-      name: app_name
-      description: Name of the app
-      type: string
-      required: true
-    - in: path
-      name: device_name
-      description: Name of the device
-      type: string
-      required: true
-  put:
-    tags:
-      - Devices
-    summary: Add a device
-    description: ''
-    operationId: server.endpoints.apps.create_device
-    consumes:
-      - multipart/form-data
-    produces:
-      - application/json
-    parameters:
-      - in: formData
-        name: name
-        description: Name of the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - in: formData
-        name: username
-        description: Username for the device
-        type: string
-        required: false
-        maxLength: 50
-      - in: formData
-        name: pw
-        description: Password for the device
-        type: string
-        required: false
-      - in: formData
-        name: ipaddr
-        description: IP address of the device
-        type: string
-        required: false
-      - in: formData
-        name: port
-        description: Port of the device
-        type: integer
-        required: false
-        minimum: 1
-        maximum: 65535
-      - in: formData
-        name: extraFields
-        description: String representation of JSON to use as extra parameters
-        required: false
-        type: string
-    responses:
-      201:
-        description: Success
-      461:
-        description: App not found
-      462:
-        description: Device already exists
-  get:
-    tags:
-      - Devices
-    summary: Get a device
-    description: ''
-    operationId: server.endpoints.apps.read_device
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-      461:
-        description: App or device does not exist.
-  post:
-    tags:
-      - Devices
-    summary: Update a device
-    description: ''
-    operationId: server.endpoints.apps.update_device
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: formData
-        name: name
-        description: Name of the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - in: formData
-        name: username
-        description: Username for the device
-        type: string
-        required: false
-        minLength: 4
-        maxLength: 25
-      - in: formData
-        name: pw
-        description: Password for the device
-        type: string
-        required: false
-      - in: formData
-        name: ipaddr
-        description: IP address of the device
-        type: string
-        required: false
-      - in: formData
-        name: port
-        description: Port of the device
-        type: integer
-        required: false
-        minimum: 1
-        maximum: 65535
-      - in: formData
-        name: extraFields
-        description: String representation of JSON to use as extra parameters
-        required: false
-        type: string
-    responses:
-      200:
-        description: Success
-      461:
-        description: App or device does not exiss
-  delete:
-    tags:
-      - Devices
-    summary: Remove a device
-    description: ''
-    operationId: server.endpoints.apps.delete_device
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-      461:
-        description: App or device does not exist

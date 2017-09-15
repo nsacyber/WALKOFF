@@ -2,12 +2,11 @@ import importlib
 import sys
 import os
 from six import string_types
-from xml.etree import ElementTree
 import pkgutil
 import logging
 import core.config.paths
 import core.config.config
-from dicttoxml import dicttoxml
+import json
 
 try:
     from importlib import reload as reload_module
@@ -95,7 +94,7 @@ def import_app_main(app_name, path=None, reload=False):
     Args:
         app_name (str): The name of the App from which to import the main function.
         path (str, optional): The path to the apps module. Defaults to core.config.paths.apps_path
-
+        reload (bool, optional): Reload the module if already imported. Defaults to True
     Returns:
         The module object that was imported.
     """
@@ -143,6 +142,19 @@ def list_apps(path=None):
     return __list_valid_directories(path)
 
 
+def list_apps_with_interfaces(path=None):
+    if path is None:
+        path = core.config.paths.apps_path
+    apps = list_apps(path)
+    apps_with_interfaces = []
+    for app in apps:
+        app_path = os.path.join(path, app, 'interface', 'templates', 'index.html')
+        if os.path.isfile(app_path):
+            apps_with_interfaces.append(app)
+
+    return apps_with_interfaces
+
+
 def list_widgets(app, app_path=None):
     """Get a list of the widgets for a given app. 
     
@@ -171,7 +183,7 @@ def list_class_functions(class_name):
                                                    and callable(getattr(class_name, field)))]
 
 
-def locate_workflows_in_directory(path=None):
+def locate_playbooks_in_directory(path=None):
     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
     
     Args:
@@ -199,40 +211,11 @@ def get_workflow_names_from_file(filename):
         A list of workflow names from the specified file, if the file exists.
     """
     if os.path.isfile(filename):
-        tree = ElementTree.ElementTree(file=filename)
-        return [workflow.get('name') for workflow in tree.iter(tag="workflow")]
-
-
-__workflow_key_separator = '-'
-
-
-def construct_workflow_name_key(playbook, workflow):
-    """Constructs a key for the workflow given the playbook name and workflow name.
-    
-    Args:
-        playbook (str): The playbook under which the workflow is located.
-        workflow (str): The name of the workflow.
-        
-    Returns:
-        The key for the workflow given the playbook name and workflow name.
-    """
-    return '{0}{1}{2}'.format(playbook.lstrip(__workflow_key_separator), __workflow_key_separator, workflow)
-
-
-def extract_workflow_name(workflow_key, playbook_name=''):
-    """Extracts a workflow name from a given key.
-    
-    Args:
-        workflow_key (str): The constructed key of the workflow from the playbook name and workflow name.
-        playbook_name (str, optional): The playbook under which the workflow is located.
-        
-    Returns:
-        The extracted workflow name.
-    """
-    if playbook_name and workflow_key.startswith(playbook_name):
-        return workflow_key[len('{0}{1}'.format(playbook_name, __workflow_key_separator)):]
-    else:
-        return __workflow_key_separator.join(workflow_key.split(__workflow_key_separator)[1:])
+        with open(filename, 'r') as playbook_file:
+            playbook = playbook_file.read()
+            playbook = json.loads(playbook)
+            return [workflow['name'] for workflow in playbook['workflows']]
+    return []
 
 
 def combine_dicts(x, y):
@@ -445,26 +428,6 @@ def import_all_flags(package='core.flags'):
 
 def import_all_filters(package='core.filters'):
     return import_and_find_tags(package, 'filter')
-
-
-def inputs_xml_to_dict(xml):
-    accumulator = {}
-    children = xml.findall('*')
-    if children:
-        for child in children:
-            grandchildren = child.findall('*')
-            if child.findall('*') and all(grandchild.tag == 'item' for grandchild in grandchildren):
-                accumulator[child.tag] = [inputs_xml_to_dict(grandchild) for grandchild in grandchildren]
-            else:
-                accumulator[child.tag] = inputs_xml_to_dict(child)
-        return accumulator
-    else:
-        return xml.text
-
-
-def inputs_to_xml(inputs, root='inputs'):
-    xml_str = dicttoxml(inputs, custom_root=root, attr_type=False)
-    return ElementTree.fromstring(xml_str)
 
 
 def __get_step_from_reference(reference, accumulator, message_prefix):

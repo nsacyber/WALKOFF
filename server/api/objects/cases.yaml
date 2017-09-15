@@ -1,10 +1,30 @@
+AddCase:
+  type: object
+  required: [name]
+  additionalProperties: false
+  properties:
+    name:
+      description: Name of the case
+      type: string
+      example: case1
+    note:
+      description: A user-created note attached to the event
+      type: string
+      example: This case does some things I want it to do.
+    subscriptions:
+      description: The events this case is subscribed to
+      type: array
+      items:
+        $ref: '#/definitions/Subscription'
 Case:
   type: object
-  required: [name, note]
+  required: [id]
+  additionalProperties: false
   properties:
     id:
       description: Unique identifier for the case
       type: integer
+      readOnly: true
       example: 42
     name:
       description: Name of the case
@@ -14,75 +34,19 @@ Case:
       description: A user-created note attached to the event
       type: string
       example: This case does some things I want it to do.
-    events:
-      description: The events which are logged to this case
+    subscriptions:
+      description: The events this case is subscribed to
       type: array
       items:
-        $ref: '#/definitions/Event'
-Event:
-  type: object
-  required: [timestamp, event_type, ancestry, message, note, data]
-  properties:
-    id:
-      description: Unique identifier for the event
-      type: integer
-      example: 42
-    timestamp:
-      description: String representation of the time at which the event happened
-      type: string
-      example: '2017-05-12 15:54:18.121421'
-    event_type:
-      description: The type of event
-      type: string
-      enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
-      example: Step
-    ancestry:
-      description: An identifier of the event through its trace through the ancestry
-      type: array
-      items:
-        type: string
-      example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
-    message:
-      description: The message attached to the event
-      type: string
-      example: Next step not taken
-    note:
-      description: A user-created note attached to the event
-      type: string
-      example: This event handled that thing I wanted to stop
-    data:
-      description: An object providing additional information about the event
-      type: object
-      example: 'Output: This action output this: 1423'
-    cases:
-      description: The cases this event belongs to
-      type: array
-      example: [case1, mycase, thatonecase, thatothercase]
-      items:
-        $ref: '#/definitions/Case'
-SubscriptionChange:
-    type: object
-    required: [ancestry, events]
-    properties:
-      ancestry:
-        description: The ancestry of the execution element to modify
-        type: array
-        items:
-          type: string
-        example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
-      events:
-        description: The list of events to subscribe to
-        type: array
-        items:
-          type: string
-        example:
-          - Workflow Execution Start
-          - App Instance Created
-          - Step Execution Success
+        $ref: '#/definitions/Subscription'
+
 Subscription:
   type: object
-  required: [events, subscriptions]
+  required: [uid, events]
   properties:
+    uid:
+      description: Universal ID for the execution element  or 'controller' for the controller
+      type: string
     events:
       description: A list of events subscribed to
       type: array
@@ -92,14 +56,48 @@ Subscription:
         - Workflow Execution Start
         - App Instance Created
         - Step Execution Success
-    subscriptions:
-      description: Subscriptions for this elements sub-elements. Form of '{<sub-element-name> -> subscriptions}'
-      type: object
 
-CaseSubscription:
+Event:
   type: object
-  required: [subscriptions]
+  required: [timestamp, event_type, originator, message, note, data]
   properties:
-    subscriptions:
-      description: The subscriptions in the case Form of '{controllerName -> subscriptions}'
+    id:
+      description: Unique identifier for the event
+      type: integer
+      readOnly: true
+      example: 42
+    timestamp:
+      description: String representation of the time at which the event happened
+      type: string
+      readOnly: true
+      example: '2017-05-12 15:54:18.121421'
+    event_type:
+      description: The type of event
+      type: string
+      readOnly: true
+      enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
+      example: Step
+    originator:
+      description: The UID of the execution element which caused this event
+      type: string
+    message:
+      description: The message attached to the event
+      type: string
+      readOnly: true
+      example: Next step not taken
+    note:
+      description: A user-created note attached to the event
+      type: string
+      example: This event handled that thing I wanted to stop
+    data:
+      description: An object providing additional information about the event
       type: object
+      readOnly: true
+      example: 'Output: This action output this: 1423'
+    cases:
+      description: The cases this event belongs to
+      type: array
+      readOnly: true
+      example: [case1, mycase, thatonecase, thatothercase]
+      items:
+        $ref: '#/definitions/Case'

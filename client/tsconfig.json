@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["es2015", "dom", "es2017.object"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    // "outFile": "site.js",
+    "target": "es5",
+    "sourceMap": true
+  },
+  "include": [
+      "**/*.ts"
+  ],
+  "exclude": [
+      "node_modules",
+      "build",
+      "**/*.spec.ts"
+  ]
+}
