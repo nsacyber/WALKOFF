@@ -155,6 +155,10 @@ def list_apps_with_interfaces(path=None):
     return apps_with_interfaces
 
 
+def list_apps_with_device_types():
+    return [app for app, api in core.config.config.app_apis.items() if 'devices' in api]
+
+
 def list_widgets(app, app_path=None):
     """Get a list of the widgets for a given app. 
     

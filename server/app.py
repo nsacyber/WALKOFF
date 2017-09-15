@@ -40,9 +40,8 @@ def compose_yamls():
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
-    from server.blueprints import widget, events, widgets, workflowresult
+    from server.blueprints import events, widgets, workflowresult
     flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
-    flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
     flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
@@ -162,7 +161,7 @@ def create_app():
     core.config.config.initialize()
 
     import core.controller
-    core.controller.controller.load_all_workflows_from_directory()
+    core.controller.controller.load_all_playbooks_from_directory()
     setup_case_stream()
     return _app
 

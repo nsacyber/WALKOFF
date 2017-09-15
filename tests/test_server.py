@@ -23,6 +23,15 @@ class TestServer(ServerTestCase):
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response, expected_apps)
 
+    def test_list_apps_with_device_types(self):
+        fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
+                       {'name': 'test2', 'type': 'string', 'encrypted': False}]
+        core.config.config.app_apis.update({'TestApp': {'devices': {'test_type': {'fields': fields_json}}}})
+        response = self.app.get('/api/apps?has_device_types=true', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        orderless_list_compare(self, response, ['TestApp'])
+
     def test_list_widgets(self):
         expected = {'HelloWorld': ['testWidget', 'testWidget2'], 'DailyQuote': []}
         response = self.app.get('/widgets', headers=self.headers)

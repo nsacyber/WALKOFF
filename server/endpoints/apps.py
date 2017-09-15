@@ -7,13 +7,15 @@ from core import helpers
 from server.returncodes import *
 
 
-def read_all_apps(interfaces_only=None):
+def read_all_apps(interfaces_only=None, has_device_types=None):
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         if interfaces_only:
             return helpers.list_apps_with_interfaces(), SUCCESS
+        if has_device_types:
+            return helpers.list_apps_with_device_types(), SUCCESS
         return helpers.list_apps(), SUCCESS
 
     return __func()
