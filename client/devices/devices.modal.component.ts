@@ -175,16 +175,14 @@ export class DevicesModalComponent {
 	}
 
 	getMin(field: any) {
-		if (!field.minimum === undefined && !field.exclusiveMinimum === undefined) return null;
-
-		if (field.exclusiveMinimum !== undefined) return field.exclusiveMinimum + 1;
-		if (field.minimum !== undefined) return field.minimum;
+		if (field.minimum === undefined) return null;
+		if (field.exclusiveMinimum) return field.minimum + 1;
+		return field.minimum;
 	}
 
 	getMax(field: any) {
-		if (!field.maximum === undefined && !field.exclusiveMaximum === undefined) return null;
-
-		if (field.exclusiveMaximum !== undefined) return field.exclusiveMaximum - 1;
-		if (field.maximum !== undefined) return field.maximum;
+		if (field.maximum === undefined) return null;
+		if (field.exclusiveMaximum) return field.maximum + 1;
+		return field.maximum;
 	}
 }
