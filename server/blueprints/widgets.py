@@ -1,6 +1,5 @@
 import os
 from flask import Blueprint, render_template, g
-from server.security import roles_accepted
 from flask_jwt_extended import jwt_required
 
 widgets_page = Blueprint('widgetsPage', 'apps', template_folder=os.path.abspath('apps'), static_folder='static')

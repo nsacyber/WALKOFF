@@ -2,13 +2,13 @@ import json
 import logging
 from core.filter import Filter
 from core.flag import Flag
-from .database import db, TrackModificationsMixIn
+from .database import db
 from core.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 
 
-class Triggers(db.Model, ):
+class Triggers(db.Model):
     """
     ORM for the triggers in the Walkoff database
     """

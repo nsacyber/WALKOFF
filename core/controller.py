@@ -116,7 +116,8 @@ class Controller(object):
 
         while True:
             if (num_workflows == 0) or \
-                    (num_workflows != 0 and self.receiver is not None and num_workflows == self.receiver.workflows_executed):
+                    (num_workflows != 0 and self.receiver is not None
+                     and num_workflows == self.receiver.workflows_executed):
                 if self.manager_thread:
                     self.load_balancer.thread_exit = True
                     self.manager_thread.join()
@@ -249,7 +250,7 @@ class Controller(object):
         """Schedules one or more workflows to be run.
 
         Args:
-            task_id (str): The task ID for this scheduled execution.
+            task_id (str|int): The task ID for this scheduled execution.
             workflow_uids (list[str]): A list of workflow UIDs to be executed.
             trigger (str): The name of the trigger that will trigger the execution of the workflows.
         """
@@ -545,7 +546,8 @@ class Controller(object):
             execution_uid (str): The execution uid of the workflow.
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow and execution_uid in self.workflow_status and self.workflow_status[execution_uid] == WORKFLOW_RUNNING:
+        if (workflow and execution_uid in self.workflow_status
+                and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
             self.load_balancer.pause_workflow(execution_uid, workflow.name)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
@@ -563,7 +565,8 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            if workflow_execution_uid in self.workflow_status and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED:
+            if (workflow_execution_uid in self.workflow_status
+                    and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
                 self.load_balancer.resume_workflow(workflow_execution_uid, workflow.name)
                 self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
                 return True

@@ -55,35 +55,6 @@
               description: All the available flags. Form of '{flag_name -> Action}'
               type: object
 
-/api/interface/{interface_name}:
-  post:
-    tags:
-      - System
-    summary: Render interface
-    description: ''
-    operationId: server.endpoints.metadata.sys_pages
-    produces:
-      - application/json
-    parameters:
-      - name: interface_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: widget_args
-        description: Pass page and arguments to render widget.
-        required: false
-        schema:
-          $ref: '#/definitions/RenderArgs'
-    responses:
-      200:
-        description: Success
-      401:
-        description: User is unauthorized
-        schema:
-          $ref: '#/definitions/Error'
-
 /api/widgets:
   get:
     tags:

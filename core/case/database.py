@@ -228,7 +228,3 @@ def tear_down():
     """ Tears down the case database
     """
     pass
-    # case_db.session.close()
-    # case_db.transaction.rollback()
-    # case_db.connection.close()
-    # case_db.engine.dispose()

@@ -84,4 +84,3 @@ def read_all_devices(app_name):
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
 
     return __func()
-

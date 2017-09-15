@@ -116,7 +116,7 @@ def update_playbook():
                 current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
 
                 workflow = next(playbook for playbook in running_context.controller.get_all_workflows()
-                                 if playbook['name'] == new_name)['workflows']
+                                    if playbook['name'] == new_name)['workflows']
                 return workflow, SUCCESS
             else:
                 current_app.logger.error('No new name provided to update playbook')

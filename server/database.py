@@ -55,12 +55,14 @@ def clear_resources_for_role(role_name):
         if role_name in roles:
             roles.remove(role_name)
 
+
 user_roles_association = db.Table('user_roles_association',
                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
 
 roles_resources_association = db.Table('roles_resources_association',
-                                       db.Column('resource_permission_id', db.Integer, db.ForeignKey('resource_permission.id')),
+                                       db.Column('resource_permission_id', db.Integer,
+                                                 db.ForeignKey('resource_permission.id')),
                                        db.Column('role_id', db.Integer, db.ForeignKey('role.id')))
 
 
@@ -239,9 +241,9 @@ class Role(db.Model, TrackModificationsMixIn):
             The dictionary representation of the Role object.
         """
         out = {"id": self.id,
-                "name": self.name,
-                "description": self.description,
-                "resources": [resource.resource for resource in self.resources]}
+               "name": self.name,
+               "description": self.description,
+               "resources": [resource.resource for resource in self.resources]}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
