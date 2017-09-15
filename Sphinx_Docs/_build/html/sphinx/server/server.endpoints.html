@@ -49,26 +49,6 @@
 <div class="section" id="module-server.endpoints.apps">
 <span id="server-endpoints-apps-module"></span><h2>server.endpoints.apps module<a class="headerlink" href="#module-server.endpoints.apps" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.apps.create_device">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">create_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.create_device" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.apps.delete_device">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">delete_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.delete_device" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.apps.export_devices">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">export_devices</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.export_devices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.apps.import_devices">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">import_devices</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.import_devices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.endpoints.apps.list_app_actions">
 <code class="descclassname">server.endpoints.apps.</code><code class="descname">list_app_actions</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.list_app_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -80,7 +60,7 @@
 
 <dl class="function">
 <dt id="server.endpoints.apps.read_all_apps">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">read_all_apps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_all_apps" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.apps.</code><code class="descname">read_all_apps</code><span class="sig-paren">(</span><em>interfaces_only=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_all_apps" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -88,52 +68,40 @@
 <code class="descclassname">server.endpoints.apps.</code><code class="descname">read_all_devices</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_all_devices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</div>
+<div class="section" id="module-server.endpoints.auth">
+<span id="server-endpoints-auth-module"></span><h2>server.endpoints.auth module<a class="headerlink" href="#module-server.endpoints.auth" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.apps.read_device">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">read_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_device" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.auth.fresh_login">
+<code class="descclassname">server.endpoints.auth.</code><code class="descname">fresh_login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.auth.fresh_login" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.apps.update_device">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">update_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.update_device" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.auth.login">
+<code class="descclassname">server.endpoints.auth.</code><code class="descname">login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.auth.login" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.auth.logout">
+<code class="descclassname">server.endpoints.auth.</code><code class="descname">logout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.auth.logout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.auth.refresh">
+<code class="descclassname">server.endpoints.auth.</code><code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.auth.refresh" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-server.endpoints.cases">
 <span id="server-endpoints-cases-module"></span><h2>server.endpoints.cases module<a class="headerlink" href="#module-server.endpoints.cases" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.cases.convert_ancestry">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">convert_ancestry</code><span class="sig-paren">(</span><em>ancestry</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.convert_ancestry" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.convert_scheduler_events">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">convert_scheduler_events</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.convert_scheduler_events" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.convert_to_event_names">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">convert_to_event_names</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.convert_to_event_names" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.endpoints.cases.create_case">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">create_case</code><span class="sig-paren">(</span><em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.create_case" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.create_subscription">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">create_subscription</code><span class="sig-paren">(</span><em>case</em>, <em>element</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.create_subscription" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.cases.</code><code class="descname">create_case</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.create_case" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.cases.delete_case">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">delete_case</code><span class="sig-paren">(</span><em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.delete_case" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.delete_subscription">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">delete_subscription</code><span class="sig-paren">(</span><em>case</em>, <em>ancestry</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.delete_subscription" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.cases.</code><code class="descname">delete_case</code><span class="sig-paren">(</span><em>case_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.delete_case" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -153,32 +121,17 @@
 
 <dl class="function">
 <dt id="server.endpoints.cases.read_all_events">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">read_all_events</code><span class="sig-paren">(</span><em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.read_all_events" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.read_all_subscriptions">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">read_all_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.read_all_subscriptions" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.cases.</code><code class="descname">read_all_events</code><span class="sig-paren">(</span><em>case_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.read_all_events" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.cases.read_case">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">read_case</code><span class="sig-paren">(</span><em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.read_case" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.read_subscription">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">read_subscription</code><span class="sig-paren">(</span><em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.read_subscription" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.cases.</code><code class="descname">read_case</code><span class="sig-paren">(</span><em>case_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.read_case" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.cases.update_case">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">update_case</code><span class="sig-paren">(</span><em>case</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.update_case" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.cases.update_subscription">
-<code class="descclassname">server.endpoints.cases.</code><code class="descname">update_subscription</code><span class="sig-paren">(</span><em>case</em>, <em>element</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.update_subscription" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.cases.</code><code class="descname">update_case</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.cases.update_case" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -186,12 +139,50 @@
 <span id="server-endpoints-configuration-module"></span><h2>server.endpoints.configuration module<a class="headerlink" href="#module-server.endpoints.configuration" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="server.endpoints.configuration.read_config_values">
-<code class="descclassname">server.endpoints.configuration.</code><code class="descname">read_config_values</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.configuration.read_config_values" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.configuration.</code><code class="descname">read_config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.configuration.read_config_values" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.configuration.update_configuration">
-<code class="descclassname">server.endpoints.configuration.</code><code class="descname">update_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.configuration.update_configuration" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.configuration.</code><code class="descname">update_configuration</code><span class="sig-paren">(</span><em>configuration</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.configuration.update_configuration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-server.endpoints.devices">
+<span id="server-endpoints-devices-module"></span><h2>server.endpoints.devices module<a class="headerlink" href="#module-server.endpoints.devices" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="server.endpoints.devices.create_device">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">create_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.create_device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.delete_device">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">delete_device</code><span class="sig-paren">(</span><em>device_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.delete_device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.export_devices">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">export_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.export_devices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.import_devices">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">import_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.import_devices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.read_all_devices">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">read_all_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.read_all_devices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.read_device">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">read_device</code><span class="sig-paren">(</span><em>device_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.read_device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.update_device">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">update_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.update_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -204,17 +195,12 @@
 
 <dl class="function">
 <dt id="server.endpoints.events.update_event_note">
-<code class="descclassname">server.endpoints.events.</code><code class="descname">update_event_note</code><span class="sig-paren">(</span><em>event_id</em>, <em>note</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.events.update_event_note" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.events.</code><code class="descname">update_event_note</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.events.update_event_note" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-server.endpoints.metadata">
 <span id="server-endpoints-metadata-module"></span><h2>server.endpoints.metadata module<a class="headerlink" href="#module-server.endpoints.metadata" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="server.endpoints.metadata.login_info">
-<code class="descclassname">server.endpoints.metadata.</code><code class="descname">login_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.login_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="function">
 <dt id="server.endpoints.metadata.read_all_filters">
 <code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_filters" title="Permalink to this definition">¶</a></dt>
@@ -236,9 +222,23 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.metadata.sys_pages">
-<code class="descclassname">server.endpoints.metadata.</code><code class="descname">sys_pages</code><span class="sig-paren">(</span><em>interface_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.sys_pages" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.metadata.read_client_file">
+<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_client_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_client_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.metadata.validate_path">
+<code class="descclassname">server.endpoints.metadata.</code><code class="descname">validate_path</code><span class="sig-paren">(</span><em>directory</em>, <em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.validate_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the filename is inside of the given directory
+Args:</p>
+<blockquote>
+<div>directory (str): The directory in which to search
+filename (str): The given filename</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>(str): The sanitized path of the filename if valid, else None</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="module-server.endpoints.metrics">
@@ -273,12 +273,12 @@
 
 <dl class="function">
 <dt id="server.endpoints.playbooks.create_playbook">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">create_playbook</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.create_playbook" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">create_playbook</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.create_playbook" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.playbooks.create_workflow">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">create_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.create_workflow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">create_workflow</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.create_workflow" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -298,7 +298,7 @@
 
 <dl class="function">
 <dt id="server.endpoints.playbooks.get_playbooks">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">get_playbooks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.get_playbooks" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">get_playbooks</code><span class="sig-paren">(</span><em>full=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.get_playbooks" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -319,6 +319,11 @@
 <dl class="function">
 <dt id="server.endpoints.playbooks.read_playbook">
 <code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_playbook</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_playbook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.playbooks.read_results">
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_results" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -343,12 +348,12 @@
 
 <dl class="function">
 <dt id="server.endpoints.playbooks.update_playbook">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">update_playbook</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.update_playbook" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">update_playbook</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.update_playbook" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.playbooks.update_workflow">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">update_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.update_workflow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">update_workflow</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.update_workflow" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -356,7 +361,12 @@
 <span id="server-endpoints-roles-module"></span><h2>server.endpoints.roles module<a class="headerlink" href="#module-server.endpoints.roles" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="server.endpoints.roles.create_role">
-<code class="descclassname">server.endpoints.roles.</code><code class="descname">create_role</code><span class="sig-paren">(</span><em>role_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.create_role" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.roles.</code><code class="descname">create_role</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.create_role" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.roles.delete_role">
+<code class="descclassname">server.endpoints.roles.</code><code class="descname">delete_role</code><span class="sig-paren">(</span><em>role_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.delete_role" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -366,50 +376,55 @@
 
 <dl class="function">
 <dt id="server.endpoints.roles.read_role">
-<code class="descclassname">server.endpoints.roles.</code><code class="descname">read_role</code><span class="sig-paren">(</span><em>role_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.read_role" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.roles.</code><code class="descname">read_role</code><span class="sig-paren">(</span><em>role_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.read_role" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.roles.update_role">
-<code class="descclassname">server.endpoints.roles.</code><code class="descname">update_role</code><span class="sig-paren">(</span><em>role_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.update_role" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.roles.</code><code class="descname">update_role</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.roles.update_role" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-server.endpoints.scheduler">
 <span id="server-endpoints-scheduler-module"></span><h2>server.endpoints.scheduler module<a class="headerlink" href="#module-server.endpoints.scheduler" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.scheduler.pause_job">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">pause_job</code><span class="sig-paren">(</span><em>job_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.pause_job" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.control_scheduled_task">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">control_scheduled_task</code><span class="sig-paren">(</span><em>scheduled_task_id</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.control_scheduled_task" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.scheduler.pause_scheduler">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">pause_scheduler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.pause_scheduler" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.create_scheduled_task">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">create_scheduled_task</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.create_scheduled_task" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.scheduler.read_all_jobs">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">read_all_jobs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.read_all_jobs" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.delete_scheduled_task">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">delete_scheduled_task</code><span class="sig-paren">(</span><em>scheduled_task_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.delete_scheduled_task" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.scheduler.resume_job">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">resume_job</code><span class="sig-paren">(</span><em>job_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.resume_job" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.get_scheduler_status">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">get_scheduler_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.get_scheduler_status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.scheduler.resume_scheduler">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">resume_scheduler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.resume_scheduler" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.read_all_scheduled_tasks">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">read_all_scheduled_tasks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.read_all_scheduled_tasks" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.scheduler.start_scheduler">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">start_scheduler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.start_scheduler" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.read_scheduled_task">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">read_scheduled_task</code><span class="sig-paren">(</span><em>scheduled_task_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.read_scheduled_task" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.scheduler.stop_scheduler">
-<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">stop_scheduler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.stop_scheduler" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.scheduler.update_scheduled_task">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">update_scheduled_task</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.update_scheduled_task" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.scheduler.update_scheduler_status">
+<code class="descclassname">server.endpoints.scheduler.</code><code class="descname">update_scheduler_status</code><span class="sig-paren">(</span><em>status</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.scheduler.update_scheduler_status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -426,8 +441,8 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.triggers.listener">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">listener</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.listener" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.triggers.execute">
+<code class="descclassname">server.endpoints.triggers.</code><code class="descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.execute" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -450,12 +465,12 @@
 <span id="server-endpoints-users-module"></span><h2>server.endpoints.users module<a class="headerlink" href="#module-server.endpoints.users" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="server.endpoints.users.create_user">
-<code class="descclassname">server.endpoints.users.</code><code class="descname">create_user</code><span class="sig-paren">(</span><em>user_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.create_user" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.users.</code><code class="descname">create_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.create_user" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.users.delete_user">
-<code class="descclassname">server.endpoints.users.</code><code class="descname">delete_user</code><span class="sig-paren">(</span><em>user_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.delete_user" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.users.</code><code class="descname">delete_user</code><span class="sig-paren">(</span><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.delete_user" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -465,12 +480,12 @@
 
 <dl class="function">
 <dt id="server.endpoints.users.read_user">
-<code class="descclassname">server.endpoints.users.</code><code class="descname">read_user</code><span class="sig-paren">(</span><em>user_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.read_user" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.users.</code><code class="descname">read_user</code><span class="sig-paren">(</span><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.read_user" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.users.update_user">
-<code class="descclassname">server.endpoints.users.</code><code class="descname">update_user</code><span class="sig-paren">(</span><em>user_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.update_user" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.users.</code><code class="descname">update_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.users.update_user" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -490,8 +505,10 @@
 <li><a class="reference internal" href="#">server.endpoints package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.apps">server.endpoints.apps module</a></li>
+<li><a class="reference internal" href="#module-server.endpoints.auth">server.endpoints.auth module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.cases">server.endpoints.cases module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.configuration">server.endpoints.configuration module</a></li>
+<li><a class="reference internal" href="#module-server.endpoints.devices">server.endpoints.devices module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.events">server.endpoints.events module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.metadata">server.endpoints.metadata module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.metrics">server.endpoints.metrics module</a></li>

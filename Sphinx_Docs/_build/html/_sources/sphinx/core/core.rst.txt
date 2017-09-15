@@ -15,14 +15,6 @@ Subpackages
 Submodules
 ----------
 
-core\.arguments module
-----------------------
-
-.. automodule:: core.arguments
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 core\.contextdecorator module
 -----------------------------
 
@@ -35,6 +27,14 @@ core\.controller module
 -----------------------
 
 .. automodule:: core.controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.decorators module
+-----------------------
+
+.. automodule:: core.decorators
     :members:
     :undoc-members:
     :show-inheritance:
@@ -79,6 +79,14 @@ core\.instance module
     :undoc-members:
     :show-inheritance:
 
+core\.loadbalancer module
+-------------------------
+
+.. automodule:: core.loadbalancer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 core\.nextstep module
 ---------------------
 
@@ -87,10 +95,10 @@ core\.nextstep module
     :undoc-members:
     :show-inheritance:
 
-core\.options module
---------------------
+core\.scheduler module
+----------------------
 
-.. automodule:: core.options
+.. automodule:: core.scheduler
     :members:
     :undoc-members:
     :show-inheritance:
@@ -99,6 +107,22 @@ core\.step module
 -----------------
 
 .. automodule:: core.step
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.threadauthenticator module
+--------------------------------
+
+.. automodule:: core.threadauthenticator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.validator module
+----------------------
+
+.. automodule:: core.validator
     :members:
     :undoc-members:
     :show-inheritance:

@@ -48,25 +48,57 @@
 </div>
 <div class="section" id="module-core.filters.length">
 <span id="core-filters-length-module"></span><h2>core.filters.length module<a class="headerlink" href="#module-core.filters.length" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="function">
 <dt id="core.filters.length.length">
-<em class="property">class </em><code class="descclassname">core.filters.length.</code><code class="descname">length</code><a class="headerlink" href="#core.filters.length.length" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">core.filters.FilterType</span></code></p>
-<dl class="staticmethod">
-<dt id="core.filters.length.length.execute">
-<em class="property">static </em><code class="descname">execute</code><span class="sig-paren">(</span><em>args</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.length.length.execute" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">core.filters.length.</code><code class="descname">length</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.length.length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the length of the value provided to it.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
-<dd><dl class="first last docutils">
-<dt>If the value is a collection, it calls len() on it.</dt>
-<dd>If it is an int, it simply returns the value passed in</dd>
-</dl>
-</dd>
+<dd>If the value is a collection, it calls len() on it.
+If it is an int, it simply returns the value passed in</dd>
 </dl>
 </dd></dl>
 
-</dd></dl>
+</div>
+<div class="section" id="module-core.filters.math">
+<span id="core-filters-math-module"></span><h2>core.filters.math module<a class="headerlink" href="#module-core.filters.math" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.filters.math.add">
+<code class="descclassname">core.filters.math.</code><code class="descname">add</code><span class="sig-paren">(</span><em>num1</em>, <em>num2</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.math.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.filters.math.divide">
+<code class="descclassname">core.filters.math.</code><code class="descname">divide</code><span class="sig-paren">(</span><em>value</em>, <em>divisor</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.math.divide" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.filters.math.linear_scale">
+<code class="descclassname">core.filters.math.</code><code class="descname">linear_scale</code><span class="sig-paren">(</span><em>value</em>, <em>min_value</em>, <em>max_value</em>, <em>low_scale</em>, <em>high_scale</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.math.linear_scale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.filters.math.multiply">
+<code class="descclassname">core.filters.math.</code><code class="descname">multiply</code><span class="sig-paren">(</span><em>value</em>, <em>multiplier</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.math.multiply" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.filters.math.subtract">
+<code class="descclassname">core.filters.math.</code><code class="descname">subtract</code><span class="sig-paren">(</span><em>value</em>, <em>subtractor</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.math.subtract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-core.filters.selection">
+<span id="core-filters-selection-module"></span><h2>core.filters.selection module<a class="headerlink" href="#module-core.filters.selection" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.filters.selection.json_select">
+<code class="descclassname">core.filters.selection.</code><code class="descname">json_select</code><span class="sig-paren">(</span><em>json_in</em>, <em>element</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.selection.json_select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.filters.selection.list_select">
+<code class="descclassname">core.filters.selection.</code><code class="descname">list_select</code><span class="sig-paren">(</span><em>list_in</em>, <em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filters.selection.list_select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="module-core.filters">
@@ -85,6 +117,8 @@
 <li><a class="reference internal" href="#">core.filters package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-core.filters.length">core.filters.length module</a></li>
+<li><a class="reference internal" href="#module-core.filters.math">core.filters.math module</a></li>
+<li><a class="reference internal" href="#module-core.filters.selection">core.filters.selection module</a></li>
 <li><a class="reference internal" href="#module-core.filters">Module contents</a></li>
 </ul>
 </li>

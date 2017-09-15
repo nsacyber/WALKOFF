@@ -20,14 +20,6 @@ server\.blueprints\.events module
     :undoc-members:
     :show-inheritance:
 
-server\.blueprints\.widget module
----------------------------------
-
-.. automodule:: server.blueprints.widget
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 server\.blueprints\.widgets module
 ----------------------------------
 

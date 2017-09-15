@@ -12,6 +12,14 @@ server\.endpoints\.apps module
     :undoc-members:
     :show-inheritance:
 
+server\.endpoints\.auth module
+------------------------------
+
+.. automodule:: server.endpoints.auth
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 server\.endpoints\.cases module
 -------------------------------
 
@@ -24,6 +32,14 @@ server\.endpoints\.configuration module
 ---------------------------------------
 
 .. automodule:: server.endpoints.configuration
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.endpoints\.devices module
+---------------------------------
+
+.. automodule:: server.endpoints.devices
     :members:
     :undoc-members:
     :show-inheritance:
