@@ -66,7 +66,6 @@ def write_playbook_to_file(playbook_name):
 
     Args:
         playbook_name (str): The name of the playbook to write to a file.
-    :return:
     """
     playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
     backup = None
