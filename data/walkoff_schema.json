@@ -253,6 +253,11 @@
           "default": false,
           "description": "Should the field be encrypted?"
         },
+        "placeholder": {
+          "type": "string",
+          "default": "",
+          "description": "Text to display as for the input fields on the UI"
+        },
         "format": {
           "type": "string"
         },

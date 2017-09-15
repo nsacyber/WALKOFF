@@ -292,3 +292,9 @@ class TestAppApiValidation(unittest.TestCase):
                             'fields': [{'name': 'param1', 'type': 'string'}, {'name': 'param2', 'type': 'boolean'}]}}
         self.basicapi['devices'] = devices
         self.__generate_resolver_dereferencer(self.basicapi)
+
+    def test_device_with_placeholders(self):
+        devices = {'dev1': {'description': 'something',
+                            'fields': [{'name': 'param1', 'type': 'string', 'placeholder': 'some helper text'}]}}
+        self.basicapi['devices'] = devices
+        self.__generate_resolver_dereferencer(self.basicapi)
