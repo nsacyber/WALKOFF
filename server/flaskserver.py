@@ -3,18 +3,17 @@ import logging
 import os
 
 from flask import render_template, send_from_directory
-from flask_jwt_extended import current_user, jwt_required
+from flask_jwt_extended import jwt_required
 
 import core.config.config
 import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-from core.helpers import combine_dicts
 from server import app
 from server.context import running_context
 from server.security import roles_accepted_for_resources
-from . import database, interface
+from . import database
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,6 @@ database.initialize_resource_roles_from_cleared_database()
 def client_app_folder(filename):
     return send_from_directory(os.path.abspath(core.config.paths.client_path), filename)
 
-
 @app.route('/')
 @app.route('/playbook')
 @app.route('/scheduler')
@@ -37,6 +35,9 @@ def client_app_folder(filename):
 def default():
     return render_template("index.html")
 
+@app.route('/apps/<app_name>')
+def app_page(app_name):
+    return render_template("index.html")
 
 @app.route('/login')
 def login_page():
@@ -48,26 +49,6 @@ def login_page():
 @roles_accepted_for_resources('cases')
 def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
-
-
-# Returns System-Level Interface Pages
-@app.route('/interface/<string:name>', methods=['GET'])
-@jwt_required
-@roles_accepted_for_resources('interface')
-def sys_pages(name):
-    args = getattr(interface, name)()
-    combine_dicts(args, {"authKey": current_user.get_auth_token()})
-    return render_template("pages/" + name + "/index.html", **args)
-
-
-# TODO: DELETE
-@app.route('/interface/<string:name>/display', methods=['POST'])
-@jwt_required
-@roles_accepted_for_resources('interface')
-def system_pages(name):
-    args = getattr(interface, name)()
-    combine_dicts(args, {"authKey": current_user.get_auth_token()})
-    return render_template("pages/" + name + "/index.html", **args)
 
 
 @app.route('/widgets', methods=['GET'])

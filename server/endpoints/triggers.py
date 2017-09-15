@@ -16,7 +16,7 @@ def read_all_triggers():
     return __func()
 
 
-def listener():
+def execute():
     from server.context import running_context
 
     @jwt_required

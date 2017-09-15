@@ -5,9 +5,8 @@ import json
 import zmq.green as zmq
 import zmq.auth
 from zmq.utils.strtypes import asbytes, cast_unicode
-from core import workflow as wf
+from core.workflow import Workflow as wf
 from core.case import callbacks
-from core.threadauthenticator import ThreadAuthenticator
 import signal
 import core.config.paths
 try:
@@ -22,18 +21,50 @@ COMM_ADDR = 'tcp://127.0.0.1:5557'
 logger = logging.getLogger(__name__)
 
 
+def recreate_workflow(workflow_json):
+    """Recreates a workflow from a JSON to prepare for it to be executed.
+
+    Args:
+        workflow_json (JSON dict): The input workflow JSON, with some other fields as well.
+
+    Returns:
+        (Workflow object, start_input): A tuple containing the reconstructed Workflow object, and the input to
+            the start step.
+    """
+    uid = workflow_json['uid']
+    del workflow_json['uid']
+    execution_uid = workflow_json['execution_uid']
+    del workflow_json['execution_uid']
+    start = workflow_json['start']
+
+    start_input = ''
+    if 'start_input' in workflow_json:
+        start_input = workflow_json['start_input']
+        del workflow_json['start_input']
+
+    workflow = wf.from_json(workflow_json)
+    workflow.uid = uid
+    workflow.execution_uid = execution_uid
+    workflow.start = start
+    if 'breakpoint_steps' in workflow_json:
+        workflow.breakpoint_steps = workflow_json['breakpoint_steps']
+
+    return workflow, start_input
+
+
 class LoadBalancer:
-    def __init__(self):
+    def __init__(self, ctx):
+        """Initialize a LoadBalancer object, which manages workflow execution.
+
+        Args:
+            ctx (Context object): A Context object, shared with the Receiver thread.
+        """
         self.available_workers = []
         self.workflow_comms = {}
         self.thread_exit = False
         self.pending_workflows = Queue()
 
-        self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
-        self.auth.start()
-        self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+        self.ctx = ctx
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
 
@@ -52,6 +83,9 @@ class LoadBalancer:
         gevent.sleep(2)
 
     def manage_workflows(self):
+        """Manages the workflows to be executed and the workers. It waits for the server to submit a request to
+        execute a workflow, and then passes the workflow off to an available worker, once one becomes available.
+        """
         while True:
             if self.thread_exit:
                 break
@@ -73,13 +107,60 @@ class LoadBalancer:
                     continue
         self.request_socket.close()
         self.comm_socket.close()
-        self.auth.stop()
-        self.ctx.destroy()
         return
+
+    def add_workflow(self, workflow_json):
+        """Adds a workflow to the queue to be executed.
+
+        Args:
+            workflow_json (dict): Dict representation of a workflow, along with some additional fields necessary for
+                reconstructing the workflow.
+        """
+        self.pending_workflows.put(workflow_json)
+
+    def pause_workflow(self, workflow_execution_uid, workflow_name):
+        """Pauses a workflow currently executing.
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_name (str): The name of the workflow.
+        """
+        logger.info('Pausing workflow {0}'.format(workflow_name))
+        if workflow_execution_uid in self.workflow_comms:
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
+
+    def resume_workflow(self, workflow_execution_uid, workflow_name):
+        """Resumes a workflow that has previously been paused.
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_name (str): The name of the workflow.
+        """
+        logger.info('Resuming workflow {0}'.format(workflow_name))
+        if workflow_execution_uid in self.workflow_comms:
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
+
+    def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
+        """Resumes a step in a workflow that was listed as a breakpoint step.
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_name (str): The name of the workflow.
+        """
+        logger.info('Resuming workflow {0}'.format(workflow_name))
+        if workflow_execution_uid in self.workflow_comms:
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
 
 
 class Worker:
     def __init__(self, id_, worker_env=None):
+        """Initialize a Workflow object, which will be executing workflows.
+
+        Args:
+            id_ (str): The ID of the worker. Needed for ZMQ socket communication.
+            worker_env (function, optional): The optional custom function to setup the worker environment. Defaults
+                to None.
+        """
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
@@ -88,18 +169,7 @@ class Worker:
         client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
         client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
 
-        self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
-        self.auth.start()
-        self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
-
-        self.results_sock = self.ctx.socket(zmq.PUSH)
-        self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        self.results_sock.curve_secretkey = server_secret
-        self.results_sock.curve_publickey = server_public
-        self.results_sock.curve_server = True
-        self.results_sock.connect(RESULTS_ADDR)
+        self.ctx = zmq.Context()
 
         self.request_sock = self.ctx.socket(zmq.REQ)
         self.request_sock.identity = u"Worker-{}".format(id_).encode("ascii")
@@ -115,62 +185,50 @@ class Worker:
         self.comm_sock.curve_serverkey = server_public
         self.comm_sock.connect(COMM_ADDR)
 
-        if not worker_env == None:
+        self.results_sock = self.ctx.socket(zmq.PUSH)
+        self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
+        self.results_sock.curve_secretkey = client_secret
+        self.results_sock.curve_publickey = client_public
+        self.results_sock.curve_serverkey = server_public
+        self.results_sock.connect(RESULTS_ADDR)
+
+        if worker_env:
             Worker.setup_worker_env = worker_env
 
         self.setup_worker_env()
         self.execute_workflow_worker()
 
     def exit_handler(self, signum, frame):
+        """Clean up upon receiving a SIGINT or SIGABT.
+        """
         if self.request_sock:
             self.request_sock.close()
         if self.results_sock:
             self.results_sock.close()
         if self.comm_sock:
             self.comm_sock.close()
-        if self.auth:
-            self.auth.stop()
-        if self.ctx:
-            self.ctx.destroy()
         os._exit(0)
 
     def setup_worker_env(self):
+        """Sets up the worker environment, as the Worker executes in a new process.
+        """
         import core.config.config
         core.config.config.initialize()
 
     def execute_workflow_worker(self):
-        """Executes the workflow in a multi-threaded fashion.
+        """Keep executing workflows as they come in over the ZMQ socket from the manager.
         """
         self.request_sock.send(b"Ready")
         self.comm_sock.send(b"Executing")
 
         while True:
-            workflow = self.request_sock.recv()
+            workflow_in = self.request_sock.recv()
 
-            workflow_json = json.loads(cast_unicode(workflow))
-
-            uid = workflow_json['uid']
-            del workflow_json['uid']
-            execution_uid = workflow_json['execution_uid']
-            del workflow_json['execution_uid']
-            start = workflow_json['start']
-
-            start_input = ''
-            if 'start_input' in workflow_json:
-                start_input = workflow_json['start_input']
-                del workflow_json['start_input']
-
-            workflow = wf.Workflow()
-            workflow.from_json(workflow_json)
-            workflow.uid = uid
-            workflow.execution_uid = execution_uid
-            workflow.start = start
+            workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
             workflow.results_sock = self.results_sock
             workflow.comm_sock = self.comm_sock
-            if 'breakpoint_steps' in workflow_json:
-                workflow.breakpoint_steps = workflow_json['breakpoint_steps']
 
-            workflow.execute(execution_uid=execution_uid, start=start, start_input=start_input)
+            workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
             self.request_sock.send(b"Done")
 
 
@@ -181,6 +239,7 @@ class Receiver:
         'App Instance Created': (callbacks.AppInstanceCreated, True),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
         'Workflow Input Validated': (callbacks.WorkflowInputInvalid, True),
+        'Workflow Input Invalid': (callbacks.WorkflowInputInvalid, True),
         'Workflow Paused': (callbacks.WorkflowPaused, True),
         'Workflow Resumed': (callbacks.WorkflowResumed, True),
         'Step Execution Success': (callbacks.StepExecutionSuccess, True),
@@ -196,30 +255,43 @@ class Receiver:
         'Filter Success': (callbacks.FilterSuccess, False),
         'Filter Error': (callbacks.FilterError, False)}
 
-    def __init__(self):
+    def __init__(self, ctx):
+        """Initialize a Receiver object, which will receive callbacks from the execution elements.
+
+        Args:
+            ctx (Context object): A Context object, shared with the LoadBalancer thread.
+        """
         self.thread_exit = False
         self.workflows_executed = 0
 
-        client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
-        client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
-        server_public_file = os.path.join(core.config.paths.zmq_public_keys_path, "server.key")
-        server_public, _ = zmq.auth.load_certificate(server_public_file)
+        server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
+        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
 
-        self.ctx = zmq.Context()
+        self.ctx = ctx
+
         self.results_sock = self.ctx.socket(zmq.PULL)
-        self.results_sock.curve_secretkey = client_secret
-        self.results_sock.curve_publickey = client_public
-        self.results_sock.curve_serverkey = server_public
+        self.results_sock.curve_secretkey = server_secret
+        self.results_sock.curve_publickey = server_public
+        self.results_sock.curve_server = True
         self.results_sock.bind(RESULTS_ADDR)
 
     @staticmethod
     def send_callback(callback, sender, data):
+        """Sends a callback, received from an execution element over a ZMQ socket.
+
+        Args:
+            callback (callback object): The callback object to be sent.
+            sender (dict): The sender information.
+            data (dict): The data associated with the callback.
+        """
         if 'data' in data:
             callback.send(sender, data=data['data'])
         else:
             callback.send(sender)
 
     def receive_results(self):
+        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.
+        """
         while True:
             if self.thread_exit:
                 break
@@ -243,5 +315,4 @@ class Receiver:
                     self.workflows_executed += 1
 
         self.results_sock.close()
-        self.ctx.destroy()
         return

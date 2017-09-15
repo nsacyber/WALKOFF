@@ -28,7 +28,7 @@ class Filter(ExecutionElement):
         args = args if args is not None else {}
         self.args = validate_filter_parameters(self.args_api, args, self.action)
 
-    def send_callback(self, callback_name):
+    def __send_callback(self, callback_name):
         data = dict()
         data['callback_name'] = callback_name
         data['sender'] = {}
@@ -39,12 +39,12 @@ class Filter(ExecutionElement):
             self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):
-        """
-        Executes the flag
+        """Executes the flag.
 
         Args:
-            data_in: The input to the flag. Typically from the last step of the workflow or the input to a trigger
-            accumulator (dict): A record of executed steps and their results. Of form {step_name: result}
+            data_in: The input to the flag. Typically from the last step of the workflow or the input to a trigger.
+            accumulator (dict): A record of executed steps and their results. Of form {step_name: result}.
+
         Returns:
             (bool): Is the flag true for the given data and accumulator
         """
@@ -54,14 +54,14 @@ class Filter(ExecutionElement):
             args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.name))
             args.update({self.data_in_api['name']: data_in})
             result = get_filter(self.action)(**args)
-            self.send_callback("Filter Success")
+            self.__send_callback("Filter Success")
             return result
         except InvalidInput as e:
-            self.send_callback("Filter Error")
+            self.__send_callback("Filter Error")
             logger.error('Filter {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action, original_data_in, str(e)))
         except Exception as e:
-            self.send_callback("Filter Error")
+            self.__send_callback("Filter Error")
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 

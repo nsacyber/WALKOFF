@@ -12,20 +12,20 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', children=None, playbook_name='', uid=None):
+    def __init__(self, name='', children=None, uid=None, steps=None, start_step=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
             children (dict, optional): A dict of children. Defaults to None.
-            playbook_name (str, optional): The name of the playbook under which the workflow is located. Defaults
-                to an empty string.
+            uid (str, optional): Optional UID to pass in for the workflow. Defaults to None.
+            steps (dict, optional): Optional Step objects. Defaults to None.
+            start_step (str, optional): Optional name of the starting Step. Defaults to None.
         """
         ExecutionElement.__init__(self, name=name)
-        self.playbook_name = playbook_name
-        self.steps = {}
-        self.start_step = 'start'
+        self.steps = steps if steps is not None else {}
+        self.start_step = start_step if start_step is not None else 'start'
         self.children = children if children is not None else {}
         self.is_completed = False
         self.accumulated_risk = 0.0
@@ -119,7 +119,7 @@ class Workflow(ExecutionElement):
                            'Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
 
-    def send_callback(self, callback_name, data={}):
+    def __send_callback(self, callback_name, data={}):
         data['callback_name'] = callback_name
         data['sender'] = {}
         if 'name' in data:
@@ -145,7 +145,7 @@ class Workflow(ExecutionElement):
         """
         self.execution_uid = execution_uid
         logger.info('Executing workflow {0}'.format(self.name))
-        self.send_callback('Workflow Execution Start')
+        self.__send_callback('Workflow Execution Start')
         start = start if start is not None else self.start_step
         self.executor = self.__execute(start, start_input)
         next(self.executor)
@@ -162,30 +162,30 @@ class Workflow(ExecutionElement):
                     data = self.comm_sock.recv(flags=zmq.NOBLOCK)
                     if data == b'Pause':
                         self.comm_sock.send(b"Paused")
-                        self.send_callback("Workflow Paused")
+                        self.__send_callback("Workflow Paused")
                         res = self.comm_sock.recv()
                         if res != b'resume':
                             logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
                         else:
                             self.comm_sock.send(b"Resumed")
-                            self.send_callback("Workflow Resumed")
+                            self.__send_callback("Workflow Resumed")
                 except zmq.ZMQError:
                     pass
             if step is not None:
                 step.results_sock = self.results_sock
                 if step.name in self.breakpoint_steps:
-                    self.send_callback("Workflow Paused")
+                    self.__send_callback("Workflow Paused")
                     res = self.comm_sock.recv()
                     if not res == b'Resume breakpoint':
                         logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
                     else:
                         self.comm_sock.send(b"Resumed")
-                        self.send_callback("Workflow Resumed")
-                self.send_callback('Next Step Found')
+                        self.__send_callback("Workflow Resumed")
+                self.__send_callback('Next Step Found')
                 device_id = (step.app, step.device)
                 if device_id not in instances:
                     instances[device_id] = Instance.create(step.app, step.device)
-                    self.send_callback('App Instance Created')
+                    self.__send_callback('App Instance Created')
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
                 if first:
@@ -202,7 +202,7 @@ class Workflow(ExecutionElement):
     def __steps(self, start):
         initial_step_name = start
         current_name = initial_step_name
-        current = self.steps[current_name]
+        current = self.steps[current_name] if self.steps else None
         while current:
             yield current
             next_step = current.get_next_step(self.accumulator)
@@ -214,8 +214,8 @@ class Workflow(ExecutionElement):
                         if child_step:
                             yield  # needed so outer for-loop is in sync
                             yield child_step
-                        self.send_callback('Workflow Shutdown',
-                                           {'execution_uid': self.children[child_name].execution_uid,
+                        self.__send_callback('Workflow Shutdown',
+                                             {'execution_uid': self.children[child_name].execution_uid,
                                             'name': self.children[child_name].name,
                                             'uid': self.children[child_name].uid})
                     next_step = child_next_step
@@ -228,11 +228,11 @@ class Workflow(ExecutionElement):
         logger.debug('Swapping input to first step of workflow {0}'.format(self.name))
         try:
             step.set_input(start_input)
-            self.send_callback('Workflow Input Validated')
+            self.__send_callback('Workflow Input Validated')
         except InvalidInput as e:
             logger.error('Cannot change input to workflow {0}. '
                          'Invalid input. Error: {1}'.format(self.name, format_exception_message(e)))
-            self.send_callback('Workflow Input Invalid')
+            self.__send_callback('Workflow Input Invalid')
 
     def __execute_step(self, step, instance):
         data = {"data":
@@ -244,11 +244,11 @@ class Workflow(ExecutionElement):
             step.execute(instance=instance(), accumulator=self.accumulator)
             data['data']['result'] = step.output.as_json()
             data['data']['execution_uid'] = step.execution_uid
-            self.send_callback('Step Execution Success', data)
+            self.__send_callback('Step Execution Success', data)
         except Exception as e:
             data['data']['result'] = step.output.as_json()
             data['data']['execution_uid'] = step.execution_uid
-            self.send_callback('Step Execution Error', data)
+            self.__send_callback('Step Execution Error', data)
             if self.total_risk > 0:
                 self.accumulated_risk += float(step.risk) / self.total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.name,
@@ -262,8 +262,8 @@ class Workflow(ExecutionElement):
                     and type(self.children[child_name]).__name__ == 'Workflow'):
                 logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.name))
                 self.children[child_name].execution_uid = uuid.uuid4().hex
-                self.send_callback('Workflow Execution Start',
-                                   {'name': self.children[child_name].name,
+                self.__send_callback('Workflow Execution Start',
+                                     {'name': self.children[child_name].name,
                                     'execution_uid': self.children[child_name].execution_uid,
                                     'uid': self.children[child_name].uid})
                 child_step_generator = self.children[child_name].__steps(start=child_start)
@@ -288,7 +288,7 @@ class Workflow(ExecutionElement):
                 result_str[step] = 'error: could not convert to JSON'
         data = dict()
         data['data'] = dict(self.accumulator)
-        self.send_callback('Workflow Shutdown', data)
+        self.__send_callback('Workflow Shutdown', data)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self.accumulator))
 
     def __repr__(self):
@@ -315,24 +315,41 @@ class Workflow(ExecutionElement):
             out['children'] = list(self.children.keys())
         return out
 
-    def from_json(self, data):
+    @staticmethod
+    def from_json(json_in):
         """Reconstruct a Workflow object based on JSON data.
 
        Args:
-           data (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
+           json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
        """
+        name = json_in['name'] if 'name' in json_in else ''
+        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        children = {name: None for name in json_in['children']} if 'children' in json_in else {}
+        start_step = json_in['start_step'] if 'start_step' in json_in else None
+        steps = {}
+        for step_json in json_in['steps']:
+            step = Step.from_json(step_json, position=step_json['position'])
+            steps[step_json['name']] = step
+        return Workflow(name=name, uid=uid, children=children, start_step=start_step, steps=steps)
+
+    def update_from_json(self, json_in):
+        """Reconstruct a Workflow object based on JSON data.
+
+               Args:
+                   json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
+               """
         backup_steps = deepcopy(self.steps)
         self.steps = {}
-        if 'name' in data:
-            self.name = data['name']
-        uid = data['uid'] if 'uid' in data else uuid.uuid4().hex
-        self.children = {name: None for name in data['children']} if 'children' in data else {}
+        if 'name' in json_in:
+            self.name = json_in['name']
+        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        self.children = {name: None for name in json_in['children']} if 'children' in json_in else {}
         try:
-            if 'start' in data and data['start']:
-                self.start_step = data['start']
+            if 'start' in json_in and json_in['start']:
+                self.start_step = json_in['start']
             self.steps = {}
             self.uid = uid
-            for step_json in data['steps']:
+            for step_json in json_in['steps']:
                 step = Step.from_json(step_json, position=step_json['position'])
                 self.steps[step_json['name']] = step
         except (UnknownApp, UnknownAppAction, InvalidInput):

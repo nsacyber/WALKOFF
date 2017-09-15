@@ -7,6 +7,12 @@
     operationId: server.endpoints.apps.read_all_apps
     produces:
       - application/json
+    parameters:
+      - in: query
+        name: interfaces_only
+        description: Return only the apps with custom interfaces?
+        type: boolean
+        required: false
     responses:
       200:
         description: Success

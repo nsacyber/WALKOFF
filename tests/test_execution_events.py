@@ -6,7 +6,7 @@ from tests import config
 import core.config.config
 from tests.apps import App
 import core.controller
-from tests.util.thread_control import *
+from tests.util.mock_objects import *
 import core.loadbalancer
 
 
@@ -19,10 +19,12 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.c = core.controller.controller
-        self.c.initialize_threading(worker_env=modified_setup_worker_env)
+        self.c.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):
@@ -30,7 +32,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_workflow_execution_events(self):
 
-        self.c.load_workflows_from_file(path=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
+        self.c.load_playbook_from_file(path=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
         subs = {'case1': {workflow_uid: ['App Instance Created', 'Step Execution Success',
                                          'Next Step Found', 'Workflow Shutdown']}}
@@ -40,12 +42,13 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.shutdown_pool(1)
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
+
         self.assertEqual(len(execution_events), 6,
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(6, len(execution_events)))
 
     def test_step_execution_events(self):
-        self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        self.c.load_playbook_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values()]
         step_events = ['Function Execution Success', 'Step Started', 'Conditionals Executed']
@@ -63,7 +66,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(3, len(execution_events)))
 
     def test_flag_filters_execution_events(self):
-        self.c.load_workflows_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        self.c.load_playbook_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step = workflow.steps['start']
         subs = {step.uid: ['Function Execution Success', 'Step Started', 'Conditionals Executed']}

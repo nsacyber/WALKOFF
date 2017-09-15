@@ -40,7 +40,7 @@ class TestController(unittest.TestCase):
     def test_load_workflows_from_file(self):
         path = config.test_workflows_path + "tieredWorkflow.playbook"
         playbook_name = "testPlaybook"
-        self.controller.load_workflows_from_file(path=path, playbook_override=playbook_name)
+        self.controller.load_playbook_from_file(path=path, playbook_override=playbook_name)
         key = _WorkflowKey(playbook_name, "parentWorkflow")
         self.assertTrue(key in self.controller.workflows)
         key = _WorkflowKey(playbook_name, "childWorkflow")
@@ -48,7 +48,7 @@ class TestController(unittest.TestCase):
 
     def test_load_all_workflows_from_directory(self):
         path = config.test_workflows_path
-        workflows = helpers.locate_workflows_in_directory(path)
+        workflows = helpers.locate_playbooks_in_directory(path)
         keys = []
         invalid_workflows = ['invalidActionWorkflow', 'invalidAppWorkflow',
                              'tooManyStepInputsWorkflow', 'invalidInputWorkflow']
@@ -57,6 +57,6 @@ class TestController(unittest.TestCase):
                 playbook_name = workflow.split('.')[0]
                 if playbook_name not in invalid_workflows:
                     keys.append(_WorkflowKey(playbook_name, name))
-        self.controller.load_all_workflows_from_directory(path=path)
+        self.controller.load_all_playbooks_from_directory(path=path)
         for key in keys:
             self.assertTrue(key in self.controller.workflows)

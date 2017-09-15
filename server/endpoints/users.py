@@ -79,7 +79,6 @@ def update_user():
                         return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
                 if 'roles' in data:
                     user.set_roles(data['roles'])
-                    import server.database
                 if is_admin and 'active' in data:
                     user.active = data['active']
                 running_context.db.session.commit()

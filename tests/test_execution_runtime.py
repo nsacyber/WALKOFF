@@ -6,6 +6,7 @@ from core.case import subscription
 import core.config.config
 import core.case.database as case_database
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.mock_objects import *
 from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
@@ -21,13 +22,15 @@ class TestExecutionRuntime(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.controller.Controller.initialize_threading = mock_initialize_threading
+        core.controller.Controller.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.start = datetime.utcnow()
         case_database.initialize()
         self.controller = core.controller.controller
         self.controller.workflows = {}
-        self.controller.load_all_workflows_from_directory(path=config.test_workflows_path)
+        self.controller.load_all_playbooks_from_directory(path=config.test_workflows_path)
         self.controller.initialize_threading(worker_env=modified_setup_worker_env)
 
     def tearDown(self):
