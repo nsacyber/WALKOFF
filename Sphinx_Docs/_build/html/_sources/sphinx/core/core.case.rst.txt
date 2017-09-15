@@ -28,6 +28,14 @@ core\.case\.subscription module
     :undoc-members:
     :show-inheritance:
 
+core\.case\.workflowresults module
+----------------------------------
+
+.. automodule:: core.case.workflowresults
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

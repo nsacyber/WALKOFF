@@ -60,22 +60,6 @@ server\.flaskserver module
     :undoc-members:
     :show-inheritance:
 
-server\.forms module
---------------------
-
-.. automodule:: server.forms
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-server\.interface module
-------------------------
-
-.. automodule:: server.interface
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 server\.metrics module
 ----------------------
 
@@ -84,10 +68,34 @@ server\.metrics module
     :undoc-members:
     :show-inheritance:
 
-server\.return\_codes module
-----------------------------
+server\.returncodes module
+--------------------------
 
-.. automodule:: server.return_codes
+.. automodule:: server.returncodes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.scheduledtasks module
+-----------------------------
+
+.. automodule:: server.scheduledtasks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.security module
+-----------------------
+
+.. automodule:: server.security
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+server\.tokens module
+---------------------
+
+.. automodule:: server.tokens
     :members:
     :undoc-members:
     :show-inheritance:

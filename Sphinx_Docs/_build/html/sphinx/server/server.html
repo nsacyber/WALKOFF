@@ -51,7 +51,6 @@
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.app">server.blueprints.app module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.events">server.blueprints.events module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.widget">server.blueprints.widget module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.widgets">server.blueprints.widgets module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.workflowresult">server.blueprints.workflowresult module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints">Module contents</a></li>
@@ -60,8 +59,10 @@
 <li class="toctree-l1"><a class="reference internal" href="server.endpoints.html">server.endpoints package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.apps">server.endpoints.apps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.auth">server.endpoints.auth module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.cases">server.endpoints.cases module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.configuration">server.endpoints.configuration module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.devices">server.endpoints.devices module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.events">server.endpoints.events module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.metadata">server.endpoints.metadata module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.metrics">server.endpoints.metrics module</a></li>
@@ -92,6 +93,11 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="server.app.create_test_data">
+<code class="descclassname">server.app.</code><code class="descname">create_test_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.create_test_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="server.app.create_user">
 <code class="descclassname">server.app.</code><code class="descname">create_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.create_user" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -101,13 +107,18 @@
 <code class="descclassname">server.app.</code><code class="descname">read_and_indent</code><span class="sig-paren">(</span><em>filename</em>, <em>indent</em><span class="sig-paren">)</span><a class="headerlink" href="#server.app.read_and_indent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt id="server.app.register_blueprints">
+<code class="descclassname">server.app.</code><code class="descname">register_blueprints</code><span class="sig-paren">(</span><em>flaskapp</em><span class="sig-paren">)</span><a class="headerlink" href="#server.app.register_blueprints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-server.appdevice">
 <span id="server-appdevice-module"></span><h2>server.appdevice module<a class="headerlink" href="#module-server.appdevice" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="server.appdevice.App">
 <em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">App</code><span class="sig-paren">(</span><em>app=None</em>, <em>devices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
 <dl class="method">
 <dt id="server.appdevice.App.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>with_devices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.as_json" title="Permalink to this definition">¶</a></dt>
@@ -131,23 +142,23 @@
 <dl class="staticmethod">
 <dt id="server.appdevice.App.get_all_devices_for_app">
 <em class="property">static </em><code class="descname">get_all_devices_for_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_all_devices_for_app" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets all the devices associated with an app</p>
+<dd><p>Gets all the devices associated with an app.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>app_name (str): The name of the app</dd>
+<dd>app_name (str): The name of the app.</dd>
 <dt>Returns:</dt>
-<dd>(list[Device]): A list of devices associated with this app. Returns empty list if app is not in database</dd>
+<dd>(list[Device]): A list of devices associated with this app. Returns empty list if app is not in database.</dd>
 </dl>
 </dd></dl>
 
 <dl class="staticmethod">
 <dt id="server.appdevice.App.get_device">
 <em class="property">static </em><code class="descname">get_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the device associated with an app</p>
+<dd><p>Gets the device associated with the app.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>app_name (str): The name of the app
-device_name (str): The name of the device</dd>
+<dd>app_name (str): The name of the app.
+device_name (str): The name of the device.</dd>
 <dt>Returns:</dt>
 <dd>(Device): The desired device. Returns None if app or device not found.</dd>
 </dl>
@@ -156,6 +167,11 @@ device_name (str): The name of the device</dd>
 <dl class="attribute">
 <dt id="server.appdevice.App.id">
 <code class="descname">id</code><a class="headerlink" href="#server.appdevice.App.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="server.appdevice.App.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.initialize" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -177,23 +193,22 @@ device_name (str): The name of the device</dd>
 
 <dl class="class">
 <dt id="server.appdevice.Device">
-<em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>name=''</em>, <em>username=''</em>, <em>password=None</em>, <em>ip='0.0.0.0'</em>, <em>port=0</em>, <em>extra_fields=''</em>, <em>app_id=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
+<em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>name</em>, <em>app_id</em>, <em>username=''</em>, <em>password=None</em>, <em>ip='0.0.0.0'</em>, <em>port=0</em>, <em>extra_fields=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
 <dl class="staticmethod">
 <dt id="server.appdevice.Device.add_device">
-<em class="property">static </em><code class="descname">add_device</code><span class="sig-paren">(</span><em>name</em>, <em>username</em>, <em>password</em>, <em>ip</em>, <em>port</em>, <em>extra_fields</em>, <em>app_server</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.add_device" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">add_device</code><span class="sig-paren">(</span><em>name</em>, <em>app_id</em>, <em>username</em>, <em>password</em>, <em>ip</em>, <em>port</em>, <em>extra_fields</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.add_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a new Device object.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>name (str, optional): The name of the Device object. Defaults to an empty string.
+app_id (str): The ID of the App object to which this Device is associated.
 username (str, optional): The username for the Device object. Defaults to an empty string.
 password (str, optional): The password for the Device object. Defaults to an empty string.
 ip (str, optional): The IP address for for the Device object. Defaults to &#8220;0.0.0.0&#8221;.
 port (int, optional): The port for the Device object. Defaults to 0.
 extra_fields (str, optional): The string representation of a dictionary that holds various custom
-extra fields for the Device object. Defaults to an empty string.
-app_server (str, optional): The ID of the App object to which this Device is associated. Defaults to an 
-empty string.</dd>
+extra fields for the Device object. Defaults to an empty string.</dd>
 </dl>
 </dd></dl>
 
@@ -209,7 +224,7 @@ empty string.</dd>
 
 <dl class="method">
 <dt id="server.appdevice.Device.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_apps=True</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.as_json" title="Permalink to this definition">¶</a></dt>
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_apps=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.as_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the JSON representation of a Device object.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -230,11 +245,11 @@ empty string.</dd>
 
 <dl class="method">
 <dt id="server.appdevice.Device.edit_device">
-<code class="descname">edit_device</code><span class="sig-paren">(</span><em>form</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.edit_device" title="Permalink to this definition">¶</a></dt>
+<code class="descname">edit_device</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.edit_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Edits various fields of the Device object.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>form (WTForm): The WTForm object containing the fields that the user wishes to change.</dd>
+<dd>data (dict): The data object containing the fields that the user wishes to change.</dd>
 </dl>
 </dd></dl>
 
@@ -246,7 +261,12 @@ empty string.</dd>
 <dl class="method">
 <dt id="server.appdevice.Device.get_password">
 <code class="descname">get_password</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.get_password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieves the password for a device.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The decrypted password.</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="server.appdevice.Device.id">
@@ -290,13 +310,13 @@ empty string.</dd>
 <span id="server-casesubscription-module"></span><h2>server.casesubscription module<a class="headerlink" href="#module-server.casesubscription" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="server.casesubscription.CaseSubscription">
-<em class="property">class </em><code class="descclassname">server.casesubscription.</code><code class="descname">CaseSubscription</code><span class="sig-paren">(</span><em>name</em>, <em>subscription='{}'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.casesubscription.CaseSubscription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
+<em class="property">class </em><code class="descclassname">server.casesubscription.</code><code class="descname">CaseSubscription</code><span class="sig-paren">(</span><em>name</em>, <em>subscriptions=None</em>, <em>note=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.casesubscription.CaseSubscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
 <p>The ORM for the case subscriptions configuration</p>
 <dl class="method">
 <dt id="server.casesubscription.CaseSubscription.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.casesubscription.CaseSubscription.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of all the CaseSubscription object.</p>
+<dd><p>Gets the JSON representation of the CaseSubscription object.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
 <dd>The JSON representation of the CaseSubscription object.</dd>
@@ -337,8 +357,13 @@ subscription_json (dict): A JSON representation of the subscription</dd>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="server.casesubscription.CaseSubscription.subscription">
-<code class="descname">subscription</code><a class="headerlink" href="#server.casesubscription.CaseSubscription.subscription" title="Permalink to this definition">¶</a></dt>
+<dt id="server.casesubscription.CaseSubscription.note">
+<code class="descname">note</code><a class="headerlink" href="#server.casesubscription.CaseSubscription.note" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.casesubscription.CaseSubscription.subscriptions">
+<code class="descname">subscriptions</code><a class="headerlink" href="#server.casesubscription.CaseSubscription.subscriptions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="staticmethod">
@@ -350,10 +375,10 @@ subscription_json (dict): A JSON representation of the subscription</dd>
 <dl class="staticmethod">
 <dt id="server.casesubscription.CaseSubscription.update">
 <em class="property">static </em><code class="descname">update</code><span class="sig-paren">(</span><em>case_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.casesubscription.CaseSubscription.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Synchronizes the subscription from the subscription in memory in the core</p>
+<dd><p>Synchronizes the subscription from the subscription in memory in the core.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>case_name (str): The name of case to synchronize</dd>
+<dd>case_name (str): The name of case to synchronize.</dd>
 </dl>
 </dd></dl>
 
@@ -368,7 +393,7 @@ subscription_json (dict): A JSON representation of the subscription</dd>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="staticmethod">
 <dt id="server.context.Context.get_apps">
-<em class="property">static </em><code class="descname">get_apps</code><span class="sig-paren">(</span><em>path='.\\apps'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.get_apps" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">get_apps</code><span class="sig-paren">(</span><em>path='./apps'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.get_apps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all the App instances.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -380,7 +405,7 @@ subscription_json (dict): A JSON representation of the subscription</dd>
 
 <dl class="staticmethod">
 <dt id="server.context.Context.get_widgets">
-<em class="property">static </em><code class="descname">get_widgets</code><span class="sig-paren">(</span><em>path='.\\apps'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.get_widgets" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">get_widgets</code><span class="sig-paren">(</span><em>path='./apps'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.get_widgets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a dictionary of all Widgets for every App.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -388,12 +413,6 @@ subscription_json (dict): A JSON representation of the subscription</dd>
 <dt>Returns:</dt>
 <dd>A dictionary containing all App objects and any Widgets associated with them.</dd>
 </dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="server.context.Context.init_threads">
-<em class="property">static </em><code class="descname">init_threads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.init_threads" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initializes the thread pool.</p>
 </dd></dl>
 
 <dl class="method">
@@ -407,42 +426,71 @@ value (any): The value of the attribute to set.</dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="server.context.Context.shutdown_threads">
-<em class="property">static </em><code class="descname">shutdown_threads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.shutdown_threads" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shuts down the threadpool.</p>
-</dd></dl>
-
 </dd></dl>
 
 </div>
 <div class="section" id="module-server.database">
 <span id="server-database-module"></span><h2>server.database module<a class="headerlink" href="#module-server.database" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="server.database.Base">
-<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">Base</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Base" title="Permalink to this definition">¶</a></dt>
+<dt id="server.database.ResourcePermission">
+<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">ResourcePermission</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.ResourcePermission" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code></p>
+<dl class="method">
+<dt id="server.database.ResourcePermission.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_roles=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.ResourcePermission.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the dictionary representation of the ResourcePermission object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the</dt>
+<dd>ResourcePermission in the JSON representation. Defaults to False.</dd>
+</dl>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>with_roles</strong> &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
-<dt id="server.database.Base.created_at">
-<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x79ad0f0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.Base.created_at" title="Permalink to this definition">¶</a></dt>
+<dt id="server.database.ResourcePermission.id">
+<code class="descname">id</code><a class="headerlink" href="#server.database.ResourcePermission.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="server.database.Base.id">
-<code class="descname">id</code><em class="property"> = Column(None, Integer(), table=None, primary_key=True, nullable=False)</em><a class="headerlink" href="#server.database.Base.id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.database.Base.modified_at">
-<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x79ad438; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x79ad240; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.Base.modified_at" title="Permalink to this definition">¶</a></dt>
+<dt id="server.database.ResourcePermission.resource">
+<code class="descname">resource</code><a class="headerlink" href="#server.database.ResourcePermission.resource" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="server.database.Role">
-<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">Role</code><span class="sig-paren">(</span><em>name</em>, <em>description</em>, <em>pages</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">flask_security.core.RoleMixin</span></code></p>
+<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">Role</code><span class="sig-paren">(</span><em>name</em>, <em>description=''</em>, <em>resources=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
+<dl class="method">
+<dt id="server.database.Role.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_users=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the dictionary representation of the Role object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>with_users (bool, optional): Boolean to determine whether or not to include User objects associated with the</dt>
+<dd>Role in the JSON representation. Defaults to False.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The dictionary representation of the Role object.</dd>
+</dl>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="server.database.Role.created_at">
 <code class="descname">created_at</code><a class="headerlink" href="#server.database.Role.created_at" title="Permalink to this definition">¶</a></dt>
@@ -452,16 +500,6 @@ value (any): The value of the attribute to set.</dd>
 <dt id="server.database.Role.description">
 <code class="descname">description</code><a class="headerlink" href="#server.database.Role.description" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="method">
-<dt id="server.database.Role.display">
-<code class="descname">display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role.display" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the dictionary representation of the Role object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The dictionary representation of the Role object.</dd>
-</dl>
-</dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.Role.id">
@@ -478,41 +516,63 @@ value (any): The value of the attribute to set.</dd>
 <code class="descname">name</code><a class="headerlink" href="#server.database.Role.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="server.database.Role.set_description">
-<code class="descname">set_description</code><span class="sig-paren">(</span><em>description</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role.set_description" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the description of the Role.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>description (str): The description of the Role.</dd>
-</dl>
-</dd></dl>
+<dl class="attribute">
+<dt id="server.database.Role.resources">
+<code class="descname">resources</code><a class="headerlink" href="#server.database.Role.resources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
-<dt id="server.database.Role.to_string">
-<code class="descname">to_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role.to_string" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the dictionary representation of the Role object.</p>
+<dt id="server.database.Role.set_resources">
+<code class="descname">set_resources</code><span class="sig-paren">(</span><em>new_resources</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.Role.set_resources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the given list of resources to the Role object.</p>
 <dl class="docutils">
-<dt>Returns:</dt>
-<dd>The dictionary representation of the Role object.</dd>
+<dt>Args:</dt>
+<dd>new_resources (list|set[str]): A list of resource names with which the Role will be associated.</dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="class">
+<dt id="server.database.TrackModificationsMixIn">
+<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">TrackModificationsMixIn</code><a class="headerlink" href="#server.database.TrackModificationsMixIn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="server.database.TrackModificationsMixIn.created_at">
+<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x75129b0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.created_at" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.database.TrackModificationsMixIn.modified_at">
+<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7512cf8; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7512be0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.modified_at" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="server.database.User">
-<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">User</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">flask_security.core.UserMixin</span></code></p>
+<em class="property">class </em><code class="descclassname">server.database.</code><code class="descname">User</code><span class="sig-paren">(</span><em>name</em>, <em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
 <dl class="attribute">
 <dt id="server.database.User.active">
 <code class="descname">active</code><a class="headerlink" href="#server.database.User.active" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="server.database.User.confirmed_at">
-<code class="descname">confirmed_at</code><a class="headerlink" href="#server.database.User.confirmed_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dl class="method">
+<dt id="server.database.User.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_user_history=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the dictionary representation of a User object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>with_user_history (bool, optional): Boolean to determine whether or not to include user history in the JSON</dt>
+<dd>representation of the User. Defaults to False.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The dictionary representation of a User object.</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.User.created_at">
@@ -530,19 +590,16 @@ value (any): The value of the attribute to set.</dd>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="server.database.User.display">
-<code class="descname">display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.display" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the dictionary representation of a User object.</p>
+<dt id="server.database.User.has_role">
+<code class="descname">has_role</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.has_role" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a User has a Role associated with it.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>role (str): The name of the Role.</dd>
 <dt>Returns:</dt>
-<dd>The dictionary representation of a User object.</dd>
+<dd>True if the User has the Role, False otherwise.</dd>
 </dl>
 </dd></dl>
-
-<dl class="attribute">
-<dt id="server.database.User.email">
-<code class="descname">email</code><a class="headerlink" href="#server.database.User.email" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.User.id">
@@ -559,10 +616,26 @@ value (any): The value of the attribute to set.</dd>
 <code class="descname">last_login_ip</code><a class="headerlink" href="#server.database.User.last_login_ip" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="server.database.User.login">
+<code class="descname">login</code><span class="sig-paren">(</span><em>ip_address</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tracks login information for the User upon logging in.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>ip_address (str): The IP address from which the User logged in.</dd>
+</dl>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="server.database.User.login_count">
 <code class="descname">login_count</code><a class="headerlink" href="#server.database.User.login_count" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="server.database.User.logout">
+<code class="descname">logout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.logout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tracks login/logout information for the User upon logging out.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.User.modified_at">
@@ -572,48 +645,96 @@ value (any): The value of the attribute to set.</dd>
 <dl class="attribute">
 <dt id="server.database.User.password">
 <code class="descname">password</code><a class="headerlink" href="#server.database.User.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the password for the user.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.User.roles">
 <code class="descname">roles</code><a class="headerlink" href="#server.database.User.roles" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="server.database.User.set_roles">
+<code class="descname">set_roles</code><span class="sig-paren">(</span><em>new_roles</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.set_roles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the roles for a User.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>new_roles (list[str]): A list of Role names for the User.</dd>
+</dl>
+</dd></dl>
+
 <dl class="attribute">
-<dt id="server.database.User.roles_users">
-<code class="descname">roles_users</code><em class="property"> = Table('roles_users', MetaData(bind=None), Column('user_id', Integer(), ForeignKey('auth_user.id'), table=&lt;roles_users&gt;), Column('role_id', Integer(), ForeignKey('auth_role.id'), table=&lt;roles_users&gt;), schema=None)</em><a class="headerlink" href="#server.database.User.roles_users" title="Permalink to this definition">¶</a></dt>
+<dt id="server.database.User.username">
+<code class="descname">username</code><a class="headerlink" href="#server.database.User.username" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="server.database.User.set_roles">
-<code class="descname">set_roles</code><span class="sig-paren">(</span><em>roles</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.set_roles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds the given list of roles to the User object.</p>
+<dt id="server.database.User.verify_password">
+<code class="descname">verify_password</code><span class="sig-paren">(</span><em>password_attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.User.verify_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies that the input password matches with the stored password.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>roles (list[str]): A list of Role names with which the User will be associated.</dd>
+<dd>password_attempt(str): The input password.</dd>
+<dt>Returns:</dt>
+<dd>True if the passwords match, False if not.</dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
-<dt id="server.database.add_to_user_roles">
-<code class="descclassname">server.database.</code><code class="descname">add_to_user_roles</code><span class="sig-paren">(</span><em>role_name</em>, <em>urls</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.add_to_user_roles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a role to the list of allowed roles for a list of root endpoints.</p>
+<dt id="server.database.add_user">
+<code class="descclassname">server.database.</code><code class="descname">add_user</code><span class="sig-paren">(</span><em>username</em>, <em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.add_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a User object.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>role_name (str): The name of the role to add to the allowed roles list.
-urls (list[str]): The list of root endpoints to which to add the role.</dd>
+<dd>username (str): The username for the User.
+password (str): The password for the User.</dd>
+<dt>Returns:</dt>
+<dd>The new User object if successful, else None.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="server.database.initialize_user_roles">
-<code class="descclassname">server.database.</code><code class="descname">initialize_user_roles</code><span class="sig-paren">(</span><em>urls</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.initialize_user_roles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initializes the roles dictionary, used in determining which role can access which page(s).</p>
+<dt id="server.database.clear_resources_for_role">
+<code class="descclassname">server.database.</code><code class="descname">clear_resources_for_role</code><span class="sig-paren">(</span><em>role_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.clear_resources_for_role" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears all of the resources that a role has access to.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>urls (list[str]): The list of all root endpoints.</dd>
+<dd>role_name (str): The name of the role.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.database.initialize_resource_roles_from_cleared_database">
+<code class="descclassname">server.database.</code><code class="descname">initialize_resource_roles_from_cleared_database</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.database.initialize_resource_roles_from_cleared_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the roles dictionary, used in determining which role can access which resource(s).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.database.initialize_resource_roles_from_database">
+<code class="descclassname">server.database.</code><code class="descname">initialize_resource_roles_from_database</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.database.initialize_resource_roles_from_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the resource_roles dictionary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.database.remove_user">
+<code class="descclassname">server.database.</code><code class="descname">remove_user</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.remove_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the user.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>username (str): The username of the User to delete.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.database.set_resources_for_role">
+<code class="descclassname">server.database.</code><code class="descname">set_resources_for_role</code><span class="sig-paren">(</span><em>role_name</em>, <em>resources</em><span class="sig-paren">)</span><a class="headerlink" href="#server.database.set_resources_for_role" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the resources a role is allowed to access.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>role_name (str): The name of the role.
+resources (list[str]): The list of resources for which this role should have access.</dd>
 </dl>
 </dd></dl>
 
@@ -621,8 +742,13 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <div class="section" id="module-server.flaskserver">
 <span id="server-flaskserver-module"></span><h2>server.flaskserver module<a class="headerlink" href="#module-server.flaskserver" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.flaskserver.create_user">
-<code class="descclassname">server.flaskserver.</code><code class="descname">create_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.create_user" title="Permalink to this definition">¶</a></dt>
+<dt id="server.flaskserver.app_page">
+<code class="descclassname">server.flaskserver.</code><code class="descname">app_page</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.app_page" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.flaskserver.client_app_folder">
+<code class="descclassname">server.flaskserver.</code><code class="descname">client_app_folder</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.client_app_folder" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -641,856 +767,19 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.flaskserver.login_info">
-<code class="descclassname">server.flaskserver.</code><code class="descname">login_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.login_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.sys_pages">
-<code class="descclassname">server.flaskserver.</code><code class="descname">sys_pages</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.sys_pages" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.system_pages">
-<code class="descclassname">server.flaskserver.</code><code class="descname">system_pages</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.system_pages" title="Permalink to this definition">¶</a></dt>
+<dt id="server.flaskserver.login_page">
+<code class="descclassname">server.flaskserver.</code><code class="descname">login_page</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.login_page" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.flaskserver.write_playbook_to_file">
 <code class="descclassname">server.flaskserver.</code><code class="descname">write_playbook_to_file</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.write_playbook_to_file" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-server.forms">
-<span id="server-forms-module"></span><h2>server.forms module<a class="headerlink" href="#module-server.forms" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="server.forms.AddCaseForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddCaseForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddCaseForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddCaseForm.case_name">
-<code class="descname">case_name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddCaseForm.case_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<dd><p>Writes a playbook to file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): The name of the playbook to write to a file.</dd>
+</dl>
 </dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddEditStepForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddEditStepForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddEditStepForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.action">
-<code class="descname">action</code><em class="property"> = &lt;UnboundField(StringField, ('action', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.action" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.app">
-<code class="descname">app</code><em class="property"> = &lt;UnboundField(StringField, ('app', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.app" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.device">
-<code class="descname">device</code><em class="property"> = &lt;UnboundField(StringField, ('device', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.device" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.error">
-<code class="descname">error</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('error',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.error" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.id">
-<code class="descname">id</code><em class="property"> = &lt;UnboundField(StringField, ('id', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.input">
-<code class="descname">input</code><em class="property"> = &lt;UnboundField(StringField, ('input', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddEditStepForm.to">
-<code class="descname">to</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('to-id',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddEditStepForm.to" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddNewDeviceForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddNewDeviceForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddNewDeviceForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.apps">
-<code class="descname">apps</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('Apps',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.apps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.extraFields">
-<code class="descname">extraFields</code><em class="property"> = &lt;UnboundField(StringField, ('Extra Fields', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.extraFields" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.ipaddr">
-<code class="descname">ipaddr</code><em class="property"> = &lt;UnboundField(StringField, ('IP Address', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.ipaddr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('Name', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.port">
-<code class="descname">port</code><em class="property"> = &lt;UnboundField(IntegerField, ('Port', [&lt;wtforms.validators.Optional object&gt;, &lt;wtforms.validators.NumberRange object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.port" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.pw">
-<code class="descname">pw</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.pw" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.submit">
-<code class="descname">submit</code><em class="property"> = &lt;UnboundField(SubmitField, ('Submit',), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.submit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewDeviceForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('Username', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewDeviceForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddNewTriggerForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddNewTriggerForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddNewTriggerForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddNewTriggerForm.conditional">
-<code class="descname">conditional</code><em class="property"> = &lt;UnboundField(TextAreaField, ('Conditionals', [&lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.conditional" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewTriggerForm.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('Name', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewTriggerForm.playbook">
-<code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('Playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewTriggerForm.tag">
-<code class="descname">tag</code><em class="property"> = &lt;UnboundField(StringField, ('Tag', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.tag" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddNewTriggerForm.workflow">
-<code class="descname">workflow</code><em class="property"> = &lt;UnboundField(StringField, ('Workflow', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddNewTriggerForm.workflow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddPlaybookForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddPlaybookForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddPlaybookForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddPlaybookForm.playbook_template">
-<code class="descname">playbook_template</code><em class="property"> = &lt;UnboundField(StringField, ('playbook_template', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddPlaybookForm.playbook_template" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddSubscriptionForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddSubscriptionForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddSubscriptionForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddSubscriptionForm.ancestry">
-<code class="descname">ancestry</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('ancestry',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddSubscriptionForm.ancestry" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddSubscriptionForm.events">
-<code class="descname">events</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('events',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddSubscriptionForm.events" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddUserForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddUserForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddUserForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddUserForm.confirm">
-<code class="descname">confirm</code><em class="property"> = &lt;UnboundField(PasswordField, ('Repeat Password',), {})&gt;</em><a class="headerlink" href="#server.forms.AddUserForm.confirm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddUserForm.email">
-<code class="descname">email</code><em class="property"> = &lt;UnboundField(StringField, ('Email', [&lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddUserForm.email" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddUserForm.password">
-<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password', [&lt;flask_security.forms.Required object&gt;, &lt;flask_security.forms.EqualTo object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddUserForm.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddUserForm.roles">
-<code class="descname">roles</code><em class="property"> = &lt;UnboundField(SelectField, ('Roles',), {'choices': []})&gt;</em><a class="headerlink" href="#server.forms.AddUserForm.roles" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddUserForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('Username', [&lt;wtforms.validators.Required object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddUserForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.AddWorkflowForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">AddWorkflowForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.AddWorkflowForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.AddWorkflowForm.playbook">
-<code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddWorkflowForm.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.AddWorkflowForm.template">
-<code class="descname">template</code><em class="property"> = &lt;UnboundField(StringField, ('template', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.AddWorkflowForm.template" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.ConditionalArgsField">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">ConditionalArgsField</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.ConditionalArgsField" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.ConditionalArgsField.key">
-<code class="descname">key</code><em class="property"> = &lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ConditionalArgsField.key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.ConditionalArgsField.value">
-<code class="descname">value</code><em class="property"> = &lt;UnboundField(StringField, ('value', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ConditionalArgsField.value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.ConditionalField">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">ConditionalField</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.ConditionalField" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.ConditionalField.args">
-<code class="descname">args</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(FormField, (&lt;class 'server.forms.ConditionalArgsField'&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#server.forms.ConditionalField.args" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.ConditionalField.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('flag', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ConditionalField.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.ConditionalField.play">
-<code class="descname">play</code><em class="property"> = &lt;UnboundField(StringField, ('play', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ConditionalField.play" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.CopyPlaybookForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">CopyPlaybookForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.CopyPlaybookForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.CopyPlaybookForm.playbook">
-<code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.CopyPlaybookForm.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.CopyWorkflowForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">CopyWorkflowForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.CopyWorkflowForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.CopyWorkflowForm.playbook">
-<code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.CopyWorkflowForm.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.CopyWorkflowForm.workflow">
-<code class="descname">workflow</code><em class="property"> = &lt;UnboundField(StringField, ('workflow', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.CopyWorkflowForm.workflow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.DeleteSubscriptionForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">DeleteSubscriptionForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.DeleteSubscriptionForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.DeleteSubscriptionForm.ancestry">
-<code class="descname">ancestry</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('ancestry',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.DeleteSubscriptionForm.ancestry" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditCaseForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditCaseForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditCaseForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditCaseForm.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditCaseForm.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditCaseForm.note">
-<code class="descname">note</code><em class="property"> = &lt;UnboundField(StringField, ('note', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditCaseForm.note" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditConfigForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditConfigForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditConfigForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditConfigForm.key">
-<code class="descname">key</code><em class="property"> = &lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.DataRequired object&gt;, &lt;wtforms.validators.Length object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditConfigForm.key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditConfigForm.value">
-<code class="descname">value</code><em class="property"> = &lt;UnboundField(StringField, ('value',), {})&gt;</em><a class="headerlink" href="#server.forms.EditConfigForm.value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditDeviceForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditDeviceForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditDeviceForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.apps">
-<code class="descname">apps</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('Apps',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.apps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.extraFields">
-<code class="descname">extraFields</code><em class="property"> = &lt;UnboundField(StringField, ('Extra Fields', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.extraFields" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.ipaddr">
-<code class="descname">ipaddr</code><em class="property"> = &lt;UnboundField(StringField, ('IP Address', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.ipaddr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('Name', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.port">
-<code class="descname">port</code><em class="property"> = &lt;UnboundField(IntegerField, ('Port', [&lt;wtforms.validators.Optional object&gt;, &lt;wtforms.validators.NumberRange object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.port" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.pw">
-<code class="descname">pw</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.pw" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.submit">
-<code class="descname">submit</code><em class="property"> = &lt;UnboundField(SubmitField, ('Submit',), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.submit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditDeviceForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('Username', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditDeviceForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditEventForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditEventForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditEventForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditEventForm.note">
-<code class="descname">note</code><em class="property"> = &lt;UnboundField(StringField, ('note', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditEventForm.note" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditGlobalSubscriptionForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditGlobalSubscriptionForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditGlobalSubscriptionForm.controller">
-<code class="descname">controller</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('controller',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm.controller" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditGlobalSubscriptionForm.filter">
-<code class="descname">filter</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('filter',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm.filter" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditGlobalSubscriptionForm.flag">
-<code class="descname">flag</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('flag',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm.flag" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditGlobalSubscriptionForm.next_step">
-<code class="descname">next_step</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('next_step',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm.next_step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditGlobalSubscriptionForm.step">
-<code class="descname">step</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('step',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm.step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditGlobalSubscriptionForm.workflow">
-<code class="descname">workflow</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('workflow',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditGlobalSubscriptionForm.workflow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditRoleForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditRoleForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditRoleForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditRoleForm.description">
-<code class="descname">description</code><em class="property"> = &lt;UnboundField(StringField, ('description',), {})&gt;</em><a class="headerlink" href="#server.forms.EditRoleForm.description" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditRoleForm.pages">
-<code class="descname">pages</code><em class="property"> = &lt;UnboundField(StringField, ('pages',), {})&gt;</em><a class="headerlink" href="#server.forms.EditRoleForm.pages" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditSingleConfigForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditSingleConfigForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditSingleConfigForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditSingleConfigForm.value">
-<code class="descname">value</code><em class="property"> = &lt;UnboundField(StringField, ('value',), {})&gt;</em><a class="headerlink" href="#server.forms.EditSingleConfigForm.value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditSubscriptionForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditSubscriptionForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditSubscriptionForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditSubscriptionForm.ancestry">
-<code class="descname">ancestry</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('ancestry',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditSubscriptionForm.ancestry" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditSubscriptionForm.events">
-<code class="descname">events</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('events',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditSubscriptionForm.events" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditTriggerForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditTriggerForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditTriggerForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditTriggerForm.conditional">
-<code class="descname">conditional</code><em class="property"> = &lt;UnboundField(TextAreaField, ('Conditionals', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.conditional" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditTriggerForm.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('New Name', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditTriggerForm.playbook">
-<code class="descname">playbook</code><em class="property"> = &lt;UnboundField(StringField, ('Playbook', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Required object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditTriggerForm.tag">
-<code class="descname">tag</code><em class="property"> = &lt;UnboundField(StringField, ('Tag', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.tag" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditTriggerForm.workflow">
-<code class="descname">workflow</code><em class="property"> = &lt;UnboundField(StringField, ('Workflow', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Required object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditTriggerForm.workflow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.EditUserForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">EditUserForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.EditUserForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.EditUserForm.password">
-<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('password',), {})&gt;</em><a class="headerlink" href="#server.forms.EditUserForm.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.EditUserForm.role">
-<code class="descname">role</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('role',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.EditUserForm.role" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.ExportCaseForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">ExportCaseForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.ExportCaseForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.ExportCaseForm.filename">
-<code class="descname">filename</code><em class="property"> = &lt;UnboundField(StringField, ('Filename', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ExportCaseForm.filename" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.ExportImportAppDevices">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">ExportImportAppDevices</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.ExportImportAppDevices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.ExportImportAppDevices.filename">
-<code class="descname">filename</code><em class="property"> = &lt;UnboundField(StringField, ('Filename', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ExportImportAppDevices.filename" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.ImportCaseForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">ImportCaseForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.ImportCaseForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.ImportCaseForm.filename">
-<code class="descname">filename</code><em class="property"> = &lt;UnboundField(StringField, ('Filename', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ImportCaseForm.filename" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.IncomingDataForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">IncomingDataForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.IncomingDataForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.IncomingDataForm.data">
-<code class="descname">data</code><em class="property"> = &lt;UnboundField(StringField, ('data',), {})&gt;</em><a class="headerlink" href="#server.forms.IncomingDataForm.data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.IncomingDataForm.input">
-<code class="descname">input</code><em class="property"> = &lt;UnboundField(StringField, ('input',), {})&gt;</em><a class="headerlink" href="#server.forms.IncomingDataForm.input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.LoginForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">LoginForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.LoginForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.LoginForm.password">
-<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('password',), {})&gt;</em><a class="headerlink" href="#server.forms.LoginForm.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.LoginForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('username', [&lt;wtforms.validators.Length object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.LoginForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.NewRoleForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">NewRoleForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.NewRoleForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.NewRoleForm.description">
-<code class="descname">description</code><em class="property"> = &lt;UnboundField(StringField, ('description',), {})&gt;</em><a class="headerlink" href="#server.forms.NewRoleForm.description" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.NewRoleForm.name">
-<code class="descname">name</code><em class="property"> = &lt;UnboundField(StringField, ('name', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.NewRoleForm.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.NewUserForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">NewUserForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.NewUserForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.NewUserForm.password">
-<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('password', [&lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.NewUserForm.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.NewUserForm.role">
-<code class="descname">role</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('role',), {})&gt;, [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.NewUserForm.role" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.NewUserForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(StringField, ('username', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.NewUserForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.RemoveConfigForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">RemoveConfigForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.RemoveConfigForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.RemoveConfigForm.key">
-<code class="descname">key</code><em class="property"> = &lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.DataRequired object&gt;, &lt;wtforms.validators.Length object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.RemoveConfigForm.key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.RenderArgsForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">RenderArgsForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.RenderArgsForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.RenderArgsForm.key">
-<code class="descname">key</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('key', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#server.forms.RenderArgsForm.key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.RenderArgsForm.page">
-<code class="descname">page</code><em class="property"> = &lt;UnboundField(StringField, ('page', [&lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.RenderArgsForm.page" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.RenderArgsForm.value">
-<code class="descname">value</code><em class="property"> = &lt;UnboundField(FieldList, (&lt;UnboundField(StringField, ('value', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;,), {})&gt;</em><a class="headerlink" href="#server.forms.RenderArgsForm.value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.ResumeWorkflowForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">ResumeWorkflowForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.ResumeWorkflowForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.ResumeWorkflowForm.uuid">
-<code class="descname">uuid</code><em class="property"> = &lt;UnboundField(StringField, ('uuid', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.ResumeWorkflowForm.uuid" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.SavePlayForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">SavePlayForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.SavePlayForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.SavePlayForm.cytoscape">
-<code class="descname">cytoscape</code><em class="property"> = &lt;UnboundField(StringField, ('cytoscape', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SavePlayForm.cytoscape" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SavePlayForm.filename">
-<code class="descname">filename</code><em class="property"> = &lt;UnboundField(StringField, ('filename', [&lt;wtforms.validators.Length object&gt;, &lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SavePlayForm.filename" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.SettingsForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">SettingsForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.SettingsForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.apps_path">
-<code class="descname">apps_path</code><em class="property"> = &lt;UnboundField(StringField, ('Apps Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.apps_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.certificate_path">
-<code class="descname">certificate_path</code><em class="property"> = &lt;UnboundField(StringField, ('Certificate Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.certificate_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.db_path">
-<code class="descname">db_path</code><em class="property"> = &lt;UnboundField(StringField, ('Database Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.db_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.debug">
-<code class="descname">debug</code><em class="property"> = &lt;UnboundField(StringField, ('Debug', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.debug" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.default_server">
-<code class="descname">default_server</code><em class="property"> = &lt;UnboundField(StringField, ('Default Server', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.default_server" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.host">
-<code class="descname">host</code><em class="property"> = &lt;UnboundField(StringField, ('Host', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.host" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.https">
-<code class="descname">https</code><em class="property"> = &lt;UnboundField(StringField, ('HTTPS Enabled', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.https" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.keywords_path">
-<code class="descname">keywords_path</code><em class="property"> = &lt;UnboundField(StringField, ('Keywords Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.keywords_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.port">
-<code class="descname">port</code><em class="property"> = &lt;UnboundField(StringField, ('Port', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.port" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.private_key_path">
-<code class="descname">private_key_path</code><em class="property"> = &lt;UnboundField(StringField, ('Private Key Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.private_key_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.profile_visualizations_path">
-<code class="descname">profile_visualizations_path</code><em class="property"> = &lt;UnboundField(StringField, ('Profile Visualizations Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.profile_visualizations_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.templates_path">
-<code class="descname">templates_path</code><em class="property"> = &lt;UnboundField(StringField, ('Templates Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.templates_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.tls_version">
-<code class="descname">tls_version</code><em class="property"> = &lt;UnboundField(StringField, ('TLS Version', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.tls_version" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.SettingsForm.workflows_path">
-<code class="descname">workflows_path</code><em class="property"> = &lt;UnboundField(StringField, ('Workflows Path', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.SettingsForm.workflows_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.forms.UserForm">
-<em class="property">class </em><code class="descclassname">server.forms.</code><code class="descname">UserForm</code><span class="sig-paren">(</span><em>formdata=None</em>, <em>obj=None</em>, <em>prefix=''</em>, <em>data=None</em>, <em>meta=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.forms.UserForm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wtforms.form.Form</span></code></p>
-<dl class="attribute">
-<dt id="server.forms.UserForm.active">
-<code class="descname">active</code><em class="property"> = &lt;UnboundField(BooleanField, (), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.active" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.confirmed_at">
-<code class="descname">confirmed_at</code><em class="property"> = &lt;UnboundField(DateTimeField, ('Confirmed at', [&lt;wtforms.validators.Optional object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.confirmed_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.current_login_at">
-<code class="descname">current_login_at</code><em class="property"> = &lt;UnboundField(DateTimeField, ('Current login at',), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.current_login_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.current_login_ip">
-<code class="descname">current_login_ip</code><em class="property"> = &lt;UnboundField(StringField, ('Current login ip',), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.current_login_ip" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.email">
-<code class="descname">email</code><em class="property"> = &lt;UnboundField(StringField, ('Email', [&lt;wtforms.validators.DataRequired object&gt;]), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.email" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.last_login_at">
-<code class="descname">last_login_at</code><em class="property"> = &lt;UnboundField(DateTimeField, ('Last login at',), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.last_login_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.last_login_ip">
-<code class="descname">last_login_ip</code><em class="property"> = &lt;UnboundField(StringField, ('Last login ip',), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.last_login_ip" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.login_count">
-<code class="descname">login_count</code><em class="property"> = &lt;UnboundField(IntegerField, ('Login count',), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.login_count" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.password">
-<code class="descname">password</code><em class="property"> = &lt;UnboundField(PasswordField, ('Password',), {})&gt;</em><a class="headerlink" href="#server.forms.UserForm.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.roles">
-<code class="descname">roles</code><em class="property"> = &lt;UnboundField(SelectField, ('Roles',), {'choices': []})&gt;</em><a class="headerlink" href="#server.forms.UserForm.roles" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.forms.UserForm.username">
-<code class="descname">username</code><em class="property"> = &lt;UnboundField(SelectField, ('Username', [&lt;wtforms.validators.Optional object&gt;]), {'choices': []})&gt;</em><a class="headerlink" href="#server.forms.UserForm.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-server.interface">
-<span id="server-interface-module"></span><h2>server.interface module<a class="headerlink" href="#module-server.interface" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="server.interface.cases">
-<code class="descclassname">server.interface.</code><code class="descname">cases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.cases" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.interface.controller">
-<code class="descclassname">server.interface.</code><code class="descname">controller</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.controller" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.interface.dashboard">
-<code class="descclassname">server.interface.</code><code class="descname">dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.dashboard" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.interface.devices">
-<code class="descclassname">server.interface.</code><code class="descname">devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.devices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.interface.playbook">
-<code class="descclassname">server.interface.</code><code class="descname">playbook</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.interface.settings">
-<code class="descclassname">server.interface.</code><code class="descname">settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.settings" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.interface.triggers">
-<code class="descclassname">server.interface.</code><code class="descname">triggers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.interface.triggers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </div>
 <div class="section" id="module-server.metrics">
@@ -1520,20 +809,228 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 </dd></dl>
 
 </div>
-<div class="section" id="module-server.return_codes">
-<span id="server-return-codes-module"></span><h2>server.return_codes module<a class="headerlink" href="#module-server.return_codes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-server.returncodes">
+<span id="server-returncodes-module"></span><h2>server.returncodes module<a class="headerlink" href="#module-server.returncodes" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-server.scheduledtasks">
+<span id="server-scheduledtasks-module"></span><h2>server.scheduledtasks module<a class="headerlink" href="#module-server.scheduledtasks" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="server.scheduledtasks.ScheduledTask">
+<em class="property">class </em><code class="descclassname">server.scheduledtasks.</code><code class="descname">ScheduledTask</code><span class="sig-paren">(</span><em>name</em>, <em>description=''</em>, <em>status='running'</em>, <em>workflows=None</em>, <em>task_trigger=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.scheduledtasks.ScheduledTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
+<dl class="method">
+<dt id="server.scheduledtasks.ScheduledTask.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.as_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.created_at">
+<code class="descname">created_at</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.created_at" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.description">
+<code class="descname">description</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.id">
+<code class="descname">id</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.modified_at">
+<code class="descname">modified_at</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.modified_at" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.name">
+<code class="descname">name</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="server.scheduledtasks.ScheduledTask.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.status">
+<code class="descname">status</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="server.scheduledtasks.ScheduledTask.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.trigger_args">
+<code class="descname">trigger_args</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.trigger_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.trigger_type">
+<code class="descname">trigger_type</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.trigger_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="server.scheduledtasks.ScheduledTask.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledTask.workflows">
+<code class="descname">workflows</code><a class="headerlink" href="#server.scheduledtasks.ScheduledTask.workflows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="server.scheduledtasks.ScheduledWorkflow">
+<em class="property">class </em><code class="descclassname">server.scheduledtasks.</code><code class="descname">ScheduledWorkflow</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.scheduledtasks.ScheduledWorkflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code></p>
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledWorkflow.id">
+<code class="descname">id</code><a class="headerlink" href="#server.scheduledtasks.ScheduledWorkflow.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledWorkflow.task_id">
+<code class="descname">task_id</code><a class="headerlink" href="#server.scheduledtasks.ScheduledWorkflow.task_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.scheduledtasks.ScheduledWorkflow.uid">
+<code class="descname">uid</code><a class="headerlink" href="#server.scheduledtasks.ScheduledWorkflow.uid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-server.security">
+<span id="server-security-module"></span><h2>server.security module<a class="headerlink" href="#module-server.security" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="server.security.add_claims_to_access_token">
+<code class="descclassname">server.security.</code><code class="descname">add_claims_to_access_token</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="headerlink" href="#server.security.add_claims_to_access_token" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.security.expired_token_callback">
+<code class="descclassname">server.security.</code><code class="descname">expired_token_callback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.security.expired_token_callback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.security.is_token_blacklisted">
+<code class="descclassname">server.security.</code><code class="descname">is_token_blacklisted</code><span class="sig-paren">(</span><em>decoded_token</em><span class="sig-paren">)</span><a class="headerlink" href="#server.security.is_token_blacklisted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.security.jwt_required_in_query">
+<code class="descclassname">server.security.</code><code class="descname">jwt_required_in_query</code><span class="sig-paren">(</span><em>query_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.security.jwt_required_in_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.security.roles_accepted">
+<code class="descclassname">server.security.</code><code class="descname">roles_accepted</code><span class="sig-paren">(</span><em>*roles</em><span class="sig-paren">)</span><a class="headerlink" href="#server.security.roles_accepted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.security.roles_accepted_for_resources">
+<code class="descclassname">server.security.</code><code class="descname">roles_accepted_for_resources</code><span class="sig-paren">(</span><em>*resources</em><span class="sig-paren">)</span><a class="headerlink" href="#server.security.roles_accepted_for_resources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.security.token_is_revoked_loader">
+<code class="descclassname">server.security.</code><code class="descname">token_is_revoked_loader</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.security.token_is_revoked_loader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-server.tokens">
+<span id="server-tokens-module"></span><h2>server.tokens module<a class="headerlink" href="#module-server.tokens" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="server.tokens.BlacklistedToken">
+<em class="property">class </em><code class="descclassname">server.tokens.</code><code class="descname">BlacklistedToken</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.BlacklistedToken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code></p>
+<dl class="method">
+<dt id="server.tokens.BlacklistedToken.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.BlacklistedToken.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the JSON representation of a BlacklistedToken object.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The JSON representation of a BlacklistedToken object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="server.tokens.BlacklistedToken.expires">
+<code class="descname">expires</code><a class="headerlink" href="#server.tokens.BlacklistedToken.expires" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.tokens.BlacklistedToken.id">
+<code class="descname">id</code><a class="headerlink" href="#server.tokens.BlacklistedToken.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.tokens.BlacklistedToken.jti">
+<code class="descname">jti</code><a class="headerlink" href="#server.tokens.BlacklistedToken.jti" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="server.tokens.BlacklistedToken.user_identity">
+<code class="descname">user_identity</code><a class="headerlink" href="#server.tokens.BlacklistedToken.user_identity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="server.tokens.approve_token">
+<code class="descclassname">server.tokens.</code><code class="descname">approve_token</code><span class="sig-paren">(</span><em>token_id</em>, <em>user</em><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.approve_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Approves the given token.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.tokens.is_token_revoked">
+<code class="descclassname">server.tokens.</code><code class="descname">is_token_revoked</code><span class="sig-paren">(</span><em>decoded_token</em><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.is_token_revoked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the given token is revoked or not. Because we are adding all the
+tokens that we create into this database, if the token is not present
+in the database we are going to consider it revoked, as we don&#8217;t know where
+it was created.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>True if the token is revoked, False otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.tokens.prune_database">
+<code class="descclassname">server.tokens.</code><code class="descname">prune_database</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.prune_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete tokens that have expired from the database.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.tokens.prune_if_necessary">
+<code class="descclassname">server.tokens.</code><code class="descname">prune_if_necessary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.prune_if_necessary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.tokens.revoke_token">
+<code class="descclassname">server.tokens.</code><code class="descname">revoke_token</code><span class="sig-paren">(</span><em>decoded_token</em><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.revoke_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new token to the database. It is not revoked when it is added.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-server.triggers">
 <span id="server-triggers-module"></span><h2>server.triggers module<a class="headerlink" href="#module-server.triggers" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="server.triggers.Triggers">
-<em class="property">class </em><code class="descclassname">server.triggers.</code><code class="descname">Triggers</code><span class="sig-paren">(</span><em>name</em>, <em>playbook</em>, <em>workflow</em>, <em>condition</em>, <em>tag=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#server.database.Base" title="server.database.Base"><code class="xref py py-class docutils literal"><span class="pre">server.database.Base</span></code></a></p>
+<em class="property">class </em><code class="descclassname">server.triggers.</code><code class="descname">Triggers</code><span class="sig-paren">(</span><em>name</em>, <em>playbook</em>, <em>workflow</em>, <em>conditions</em>, <em>tag=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code></p>
 <p>ORM for the triggers in the Walkoff database</p>
 <dl class="method">
 <dt id="server.triggers.Triggers.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of all the Trigger object.</p>
+<dd><p>Gets the JSON representation of the Trigger object.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
 <dd>The JSON representation of the Trigger object.</dd>
@@ -1545,18 +1042,13 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 <code class="descname">condition</code><a class="headerlink" href="#server.triggers.Triggers.condition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="server.triggers.Triggers.created_at">
-<code class="descname">created_at</code><a class="headerlink" href="#server.triggers.Triggers.created_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
 <dt id="server.triggers.Triggers.edit_trigger">
-<code class="descname">edit_trigger</code><span class="sig-paren">(</span><em>form=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.edit_trigger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Edits a trigger</p>
+<code class="descname">edit_trigger</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.edit_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edits a Trigger object.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>form (form, optional): Wtf-form containing the edited information</dd>
+<dd>data (dict): JSON containing the edited information.</dd>
 <dt>Returns:</dt>
 <dd>True on successful edit, False otherwise.</dd>
 </dl>
@@ -1564,14 +1056,14 @@ urls (list[str]): The list of root endpoints to which to add the role.</dd>
 
 <dl class="staticmethod">
 <dt id="server.triggers.Triggers.execute">
-<em class="property">static </em><code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>input_in</em>, <em>trigger_name=None</em>, <em>tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tries to match the data_in against the conditionals of all the triggers registered in the database.</p>
+<em class="property">static </em><code class="descname">execute</code><span class="sig-paren">(</span><em>data</em>, <em>inputs</em>, <em>triggers=None</em>, <em>tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to match the data in against the conditionals of all the triggers registered in the database.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>data_in (str): Data to be used to match against the conditionals
-input_in (str): The input to the first step of the workflow
-trigger_name (str): The name of the specific trigger to execute
-tags (array): A list of tags to find the specific triggers to execute</dd>
+<dd>data (str): Data to be used to match against the conditionals
+inputs (list): The input to the first step of the workflow
+triggers (list[str], optional): List of names of the specific trigger to execute
+tags (list[str], optional): A list of tags to find the specific triggers to execute</dd>
 <dt>Returns:</dt>
 <dd>Dictionary of {&#8220;status&#8221;: &lt;status string&gt;}</dd>
 </dl>
@@ -1580,11 +1072,6 @@ tags (array): A list of tags to find the specific triggers to execute</dd>
 <dl class="attribute">
 <dt id="server.triggers.Triggers.id">
 <code class="descname">id</code><a class="headerlink" href="#server.triggers.Triggers.id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.modified_at">
-<code class="descname">modified_at</code><a class="headerlink" href="#server.triggers.Triggers.modified_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1605,12 +1092,24 @@ tags (array): A list of tags to find the specific triggers to execute</dd>
 <dl class="staticmethod">
 <dt id="server.triggers.Triggers.update_playbook">
 <em class="property">static </em><code class="descname">update_playbook</code><span class="sig-paren">(</span><em>old_playbook</em>, <em>new_playbook</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.update_playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Updates the Trigger objects associated with a playbook that has since changed its name.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_playbook (str): The previous name of the playbook.
+new_playbook (str): The new name of the playbook.</dd>
+</dl>
+</dd></dl>
 
 <dl class="staticmethod">
 <dt id="server.triggers.Triggers.update_workflow">
 <em class="property">static </em><code class="descname">update_workflow</code><span class="sig-paren">(</span><em>old_workflow</em>, <em>new_workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.update_workflow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Updates the Trigger objects associated with a workflow that has since changed its name.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_workflow (str): The previous name of the workflow.
+new_workflow (str): The new name of the workflow.</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="server.triggers.Triggers.workflow">
@@ -1622,11 +1121,6 @@ tags (array): A list of tags to find the specific triggers to execute</dd>
 </div>
 <div class="section" id="module-server.workflowresults">
 <span id="server-workflowresults-module"></span><h2>server.workflowresults module<a class="headerlink" href="#module-server.workflowresults" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="server.workflowresults.reset_max_results">
-<code class="descclassname">server.workflowresults.</code><code class="descname">reset_max_results</code><span class="sig-paren">(</span><em>max_len</em><span class="sig-paren">)</span><a class="headerlink" href="#server.workflowresults.reset_max_results" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </div>
 <div class="section" id="module-server">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-server" title="Permalink to this headline">¶</a></h2>
@@ -1650,10 +1144,11 @@ tags (array): A list of tags to find the specific triggers to execute</dd>
 <li><a class="reference internal" href="#module-server.context">server.context module</a></li>
 <li><a class="reference internal" href="#module-server.database">server.database module</a></li>
 <li><a class="reference internal" href="#module-server.flaskserver">server.flaskserver module</a></li>
-<li><a class="reference internal" href="#module-server.forms">server.forms module</a></li>
-<li><a class="reference internal" href="#module-server.interface">server.interface module</a></li>
 <li><a class="reference internal" href="#module-server.metrics">server.metrics module</a></li>
-<li><a class="reference internal" href="#module-server.return_codes">server.return_codes module</a></li>
+<li><a class="reference internal" href="#module-server.returncodes">server.returncodes module</a></li>
+<li><a class="reference internal" href="#module-server.scheduledtasks">server.scheduledtasks module</a></li>
+<li><a class="reference internal" href="#module-server.security">server.security module</a></li>
+<li><a class="reference internal" href="#module-server.tokens">server.tokens module</a></li>
 <li><a class="reference internal" href="#module-server.triggers">server.triggers module</a></li>
 <li><a class="reference internal" href="#module-server.workflowresults">server.workflowresults module</a></li>
 <li><a class="reference internal" href="#module-server">Module contents</a></li>

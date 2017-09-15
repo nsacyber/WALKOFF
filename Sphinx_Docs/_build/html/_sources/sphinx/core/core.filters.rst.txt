@@ -12,6 +12,22 @@ core\.filters\.length module
     :undoc-members:
     :show-inheritance:
 
+core\.filters\.math module
+--------------------------
+
+.. automodule:: core.filters.math
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.filters\.selection module
+-------------------------------
+
+.. automodule:: core.filters.selection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
