@@ -57,8 +57,9 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	//Only get apps that have device types for the purposes of devices
 	getApps() : Promise<string[]> {
-		return this.authHttp.get(`/api/apps`)
+		return this.authHttp.get(`/api/apps?has_device_types=true`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

@@ -20,11 +20,8 @@ import { DevicesComponent } from './devices/devices.component';
 import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
-<<<<<<< HEAD
 import { DashboardComponent } from './dashboard/dashboard.component';
-=======
 import { AppsComponent } from './apps/apps.component';
->>>>>>> development
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
