@@ -1,42 +1,59 @@
-<?xml version="1.0"?>
-<workflow name="multiactionWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hour>*</hour>
-            <minute>*/0.1</minute>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>invalid</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <next step="1">
-                <flag action="regMatch">
-                    <args>
-                        <regex>(.*)</regex>
-                    </args>
-                    <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
-                    </filters>
-                </flag>
-            </next>
-            <error></error>
-        </step>
-        <step id="1">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <call>Hello World</call>
-            </inputs>
-            <next></next>
-            <error></error>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "invalidActionWorkflow",
+    "workflows": [
+        {
+            "name": "multiactionWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "invalid",
+                    "app": "HelloWorld",
+                    "inputs": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "name": "1",
+                    "next": [],
+                    "position": {},
+                    "risk": 0,
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": []
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "widgets": []
+                }
+            ]
+        }
+    ]
+}

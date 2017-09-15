@@ -1,16 +1,22 @@
 import logging.config
-from gevent import ssl
+import ssl
+import os
 from os.path import isfile
-import json
-from gevent.wsgi import WSGIServer
 from core.config import config, paths
 from apps import *
+from gevent.wsgi import WSGIServer
+from gevent import monkey
+
+try:
+    from server import app
+except Exception as e:
+    print(e)
 
 logger = logging.getLogger('startserver')
 
 
 def get_ssl_context():
-    if config.https.lower() == "true":
+    if config.https:
         # Sets up HTTPS
         if config.tls_version == "1.2":
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -23,8 +29,7 @@ def get_ssl_context():
             context.load_cert_chain(paths.certificate_path, paths.private_key_path)
             return context
         else:
-            flaskserver.display_if_file_not_found(paths.certificate_path)
-            flaskserver.display_if_file_not_found(paths.private_key_path)
+            print('Certificates not found')
     return None
 
 
@@ -47,13 +52,16 @@ def setup_logger():
         logger.info("Basic logging is being used")
 
 
-if __name__ == "__main__":
+def run():
+    setup_logger()
+    monkey.patch_all()
     # The order of these imports matter for initialization (should probably be fixed)
     from server import flaskserver
     import core.case.database as case_database
     case_database.initialize()
     ssl_context = get_ssl_context()
-    flaskserver.running_context.init_threads()
+    flaskserver.running_context.controller.initialize_threading()
+
     try:
         port = int(config.port)
     except ValueError:
@@ -63,13 +71,23 @@ if __name__ == "__main__":
         if ssl_context:
             server = WSGIServer((host, port), application=flaskserver.app, ssl_context=ssl_context)
             proto = 'https'
-
         else:
             server = WSGIServer((host, port), application=flaskserver.app)
             proto = 'http'
-        setup_logger()
-        logger.info('Listening on host {2}://{0}:{1}'.format(host, port, proto))
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            logger.info('Shutting down server')
+        logger.info('Listening on host {0}://{1}:{2}'.format(proto, host, port))
+
+        server.serve_forever()
+
+        # app.run()
+
+
+if __name__ == "__main__":
+    try:
+        run()
+    except KeyboardInterrupt:
+        logger.info('Caught KeyboardInterrupt!')
+    finally:
+        from server import flaskserver
+        flaskserver.running_context.controller.shutdown_pool()
+        logger.info('Shutting down server')
+        os._exit(0)

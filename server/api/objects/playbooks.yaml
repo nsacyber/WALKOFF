@@ -1,3 +1,51 @@
+Playbook:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      playbook_template:
+        type: string
+
+AllPlaybooksOverview:
+  type: array
+  items:
+    $ref: '#/definitions/PlaybookOverview'
+
+PlaybookOverview:
+  type: object
+  description: Stripped-down view of a playbook
+  required: [name, workflows]
+  properties:
+    name:
+      type: string
+      description: name of the playbook
+    workflows:
+      description: workflows inside of this playbook
+      type: array
+      items:
+        $ref: '#/definitions/WorkflowDescription'
+
+
+WorkflowDescription:
+  type: object
+  required: [name, uid]
+  properties:
+    name:
+      type: string
+      description: name of the workflow
+    uid:
+      type: string
+      description: UID of the workflow
+
+UpdatePlaybook:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      new_name:
+        type: string
 Workflow:
   type: object
   required: [name]
@@ -8,47 +56,56 @@ Workflow:
       type: string
       example: HelloWorldWorkflow
     steps:
-      description: The steps defined in this workflow. Form of '{step_name -> step}'
-      type: object
-    accumulated_risk:
-      description: The risk which has been accumulated as this workflow has been executed
-      type: number
-      example: 0.43
-    options:
-      $ref: '#/definitions/WorkflowOptions'
+      description: The steps defined in this workflow.
+      type: array
+      items:
+        $ref: "#/definitions/DisplayStep"
     start:
       description: Name of the starting step
       type: string
       default: start
       example: step1
+    accumulated_risk:
+      description: The risk which has been accumulated as this workflow has been executed
+      type: number
+      example: 0.43
+      readOnly: true
+AddWorkflow:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      workflow_template:
+        type: string
+      playbook_template:
+        type: string
 
-WorkflowOptions:
+WorkflowUpdate:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+      new_name:
+        type: string
+
+CopyWorkflow:
+    type: object
+    properties:
+      playbook:
+        type: string
+      workflow:
+        type: string
+
+WorkflowId:
   type: object
-  description: Options attached to a workflow such as child workflows and schedulers
+  required: [id]
   properties:
-    scheduler:
-      type: object
-      required: [autorun, type]
-      properties:
-        autorun:
-          description: Should this workflow be run automatically?
-          type: boolean
-          example: true
-        type:
-          description: Type of scheduler
-          type: string
-          enum: [cron]
-          example: cron
-        args:
-          description: additional arguments
-          type: object
-    enabled:
-      description: determines if these options are enabled or disabled
-      type: boolean
-      example: true
-    children:
-      description: List of child workflows. Form of {workflow_name -> Workflow}
-      type: object
+    id:
+      type: string
+      description: 32-byte hexidecimal string representing the ID of the workflow
+      readOnly: true
 
 Step:
   type: object
@@ -118,11 +175,65 @@ Step:
       type: array
       items:
         $ref: '#/definitions/NextStep'
-    errors:
-      description: The possible next steps to take if this step fails
+
+DisplayStep:
+  type: object
+  description: Encapsulation of executing an action in an app
+  properties:
+    name:
+      description: Name of the step
+      type: string
+      example: step1
+    action:
+      description: The action the step will take
+      type: string
+      example: pause
+    app:
+      description: The app to which the action belongs
+      type: string
+      example: CyberAnalytics
+    device:
+      description: Name of the device to use
+      type: string
+      example: server4
+    risk:
+      description: risk associated with this step failing
+      type: number
+      default: 0
+      example: 20
+    inputs:
+      description: The input arguments to the action
       type: array
       items:
-        $ref: '#/definitions/NextStep'
+        $ref: '#/definitions/Argument'
+    widgets:
+      description: The widgets to which this app should send its output
+      type: array
+      items:
+        type: object
+        required: [app, name]
+        properties:
+          app:
+            description: Name of the app
+            type: string
+            example: HelloWorld
+          widget:
+            description: Name of the widget
+            type: string
+            example: testWidget
+    position:
+      description:  position of the step onthe workflow editor
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          description: x position
+          type: number
+          example: 443.22
+        y:
+          description: y position
+          type: number
+          example: -12.036
 
 NextStep:
   type: object
@@ -180,36 +291,11 @@ Filter:
 
 Argument:
   type: object
-  required: [key, value]
+  required: [name, value]
   description: Object used for passing an argument into various actions
   properties:
-    key:
+    name:
       type: string
       example: regex
     value:
-      type: string
       example: WALK(.*)
-    format:
-      type: string
-      description: Note -- Ignored completely with new version.
-      default: str
-      example: string
-      enum: [str, string, unicode, int]
-
-WorkflowFromCytoscape:
-  type: object
-  properties:
-    start:
-      description: starting step name
-      type: string
-      example: step1
-    cytoscape:
-      type: object
-
-WorkflowId:
-  type: object
-  required: [id]
-  properties:
-    id:
-      type: string
-      description: 32-byte hexidecimal string representing the ID of the workflow

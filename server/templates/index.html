@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Walkoff - Automation for Everyone </title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="client/node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="client/node_modules/font-awesome/css/font-awesome.min.css">
+    <!-- NG2-toasty bootstrap style -->
+    <link rel="stylesheet" href="client/node_modules/ng2-toasty/style-bootstrap.css">
+    <!-- Select2 4.0.3 -->
+    <link rel="stylesheet" href="client/node_modules/select2/dist/css/select2.min.css"></link>
+
+    <!-- Polyfill(s) for older browsers -->
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- 1. Load libraries -->
+    <!-- Polyfill(s) for older browsers -->
+    <script src="client/node_modules/core-js/client/shim.min.js"></script>
+    <script src="client/node_modules/zone.js/dist/zone.js"></script>
+    <!-- jQuery 3.2.1 -->
+    <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="client/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- Select2 4.0.3 -->
+    <script src="client/node_modules/select2/dist/js/select2.full.min.js"></script>
+    <script src="client/node_modules/systemjs/dist/system.js"></script>
+
+        <!-- 2. Configure SystemJS -->
+    <script src="client/systemjs.config.js"></script>
+    <script type="application/javascript">
+        SystemJS.import('main').catch(function(err){ console.error(err); });
+
+        document.addEventListener("DOMContentLoaded", function(e){
+            if (Notification.permission !== "granted"){
+                Notification.requestPermission();
+            }
+        });
+    </script>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+    <main-component>Loading...</main-component>
+</body>
+</html>

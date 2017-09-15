@@ -18,5 +18,11 @@ build/*
 *.pem
 data/log/*.log
 server/api/composed_api.yaml
-.vscode/
 node_modules/
+.vscode/
+.idea/markdown-navigator.xml
+.idea/markdown-navigator/profiles_settings.xml
+.idea/markdown-exported-files.xml
+private_keys
+public_keys
+client/build/

@@ -1,46 +1,101 @@
-<?xml version="1.0"?>
-<workflow name="dataflowWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>11-12</month>
-            <day>*</day>
-            <hour>*</hour>
-            <minute>*/0.1</minute>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>Add Three</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <num1>1</num1>
-                <num2>2</num2>
-                <num3>3</num3>
-            </inputs>
-            <next step="1"/>
-        </step>
-        <step id="1">
-            <action>Add Three</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <num1>1</num1>
-                <num2>2</num2>
-                <num3>3</num3>
-            </inputs>
-            <next step="2"/>
-        </step>
-        <step id="2">
-            <action>Add Three</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <num1>@start</num1>
-                <num2>@1</num2>
-                <num3>3</num3>
-            </inputs>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "dataflowTest",
+    "workflows": [
+        {
+            "name": "dataflowWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "Add Three",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "num1",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "num2",
+                            "value": 2.0
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "1",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "8b7b97775dba4b0a9dda0db213483cd1"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "811b1acdc3ec48a9abbdc0cf01c66176",
+                    "widgets": []
+                },
+                {
+                    "action": "Add Three",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "num1",
+                            "value": 1.0
+                        },
+                        {
+                            "name": "num2",
+                            "value": 2.0
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "4a21e9e1ea0f4286b14643d59ebdda2b"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "5ed04d7e28354ee7b81619dab9d34fe2",
+                    "widgets": []
+                },
+                {
+                    "action": "Add Three",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "num1",
+                            "value": "@start"
+                        },
+                        {
+                            "name": "num2",
+                            "value": "@1"
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "2",
+                    "next": [],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "9515a631ba4f4d6f8fcd6b843a277c40",
+                    "widgets": []
+                }
+            ],
+            "uid": "3dd54e7df3bc414a962426d92ce3e6d2"
+        }
+    ]
+}

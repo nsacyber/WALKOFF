@@ -1,25 +1,24 @@
-from core.helpers import construct_workflow_name_key
 import core.case.database as case_database
 from server import flaskserver
 from core.case.workflowresults import WorkflowResult
 from tests import config
 from tests.util.servertestcase import ServerTestCase
-
+from tests.util.thread_control import modified_setup_worker_env
 
 class TestWorkflowResults(ServerTestCase):
     def setUp(self):
+        flaskserver.running_context.controller.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):
         case_database.case_db.tear_down()
 
     def test_workflow_result_format(self):
-        flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+        flaskserver.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
-        construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.shutdown_threads()
+            flaskserver.running_context.controller.shutdown_pool(1)
 
         workflow_results = case_database.case_db.session.query(WorkflowResult).all()
         self.assertEqual(len(workflow_results), 1)
@@ -38,13 +37,12 @@ class TestWorkflowResults(ServerTestCase):
                               'result': {"status": "Success", "result": {"message": "HELLO WORLD"}}})
 
     def test_workflow_result_multiple_workflows(self):
-        flaskserver.running_context.controller.load_workflows_from_file(path=config.test_workflows_path +
+        flaskserver.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
                                                                              'multiactionWorkflowTest.playbook')
-        construct_workflow_name_key('multiactionWorkflowTest', 'multiactionWorkflow')
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.shutdown_threads()
+            flaskserver.running_context.controller.shutdown_pool(2)
 
         workflow_uids = case_database.case_db.session.query(WorkflowResult).with_entities(WorkflowResult.uid).all()
         self.assertSetEqual({uid1, uid2}, {uid[0] for uid in workflow_uids})

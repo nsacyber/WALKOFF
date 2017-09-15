@@ -1,4 +1,4 @@
-/availablesubscriptions:
+/api/availablesubscriptions:
   get:
     tags:
       - System
@@ -15,7 +15,7 @@
           type: array
           items:
             $ref: '#/definitions/AvailableSubscriptions'
-/filters:
+/api/filters:
   get:
     tags:
       - System
@@ -35,7 +35,7 @@
               description: All the available filters. Form of '{filter_name -> Action}'
               type: object
 
-/flags:
+/api/flags:
   get:
     tags:
       - System
@@ -55,60 +55,7 @@
               description: All the available flags. Form of '{flag_name -> Action}'
               type: object
 
-/interface/{interface_name}:
-  post:
-    tags:
-      - System
-    summary: Render interface
-    description: ''
-    operationId: server.endpoints.metadata.sys_pages
-    produces:
-      - application/json
-    parameters:
-      - name: interface_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
-      - in: body
-        name: widget_args
-        description: Pass page and arguments to render widget.
-        required: false
-        schema:
-          $ref: '#/definitions/RenderArgs'
-    responses:
-      200:
-        description: Success
-      401:
-        description: User is unauthorized
-        schema:
-          $ref: '#/definitions/Error'
-
-/key:
-  get:
-    tags:
-      - System
-    summary: Read api key
-    description: ''
-    operationId: server.endpoints.metadata.login_info
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          required: [auth_token]
-          properties:
-            auth_token:
-              description: API Authentication Token
-              type: string
-      401:
-        description: User is unauthorized
-        schema:
-          $ref: '#/definitions/Error'
-
-/widgets:
+/api/widgets:
   get:
     tags:
       - System
@@ -123,3 +70,24 @@
         schema:
           type: object
           description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'
+
+/api/client/{filename}:
+  get:
+    tags:
+      - Client
+    summary: Get a client file
+    description: ''
+    operationId: server.endpoints.metadata.read_client_file
+    produces:
+      - application/json
+    parameters:
+      - name: filename
+        in: path
+        description: The name of the file to fetch
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+      463:
+        description: Invalid filename

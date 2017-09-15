@@ -57,10 +57,10 @@ class TestHelperFunctions(unittest.TestCase):
                               'testExecutionWorkflow.playbook',
                               'testScheduler.playbook',
                               'tieredWorkflow.playbook']
-        received_workflows = locate_workflows_in_directory(test_workflows_path)
+        received_workflows = locate_playbooks_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 
-        self.assertListEqual(locate_workflows_in_directory('.'), [])
+        self.assertListEqual(locate_playbooks_in_directory('.'), [])
 
     def test_get_workflow_names_from_file(self):
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
@@ -70,7 +70,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(workflows, ['parentWorkflow', 'childWorkflow'])
 
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
-        self.assertIsNone(workflows)
+        self.assertListEqual(workflows, [])
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
@@ -79,28 +79,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_list_widgets(self):
         orderless_list_compare(self, list_widgets('HelloWorld'), ['testWidget', 'testWidget2'])
         self.assertListEqual(list_widgets('JunkApp'), [])
-
-    def test_construct_workflow_name_key(self):
-        input_output = {('', ''): '-',
-                        ('', 'test_workflow'): '-test_workflow',
-                        ('test_playbook', 'test_workflow'): 'test_playbook-test_workflow',
-                        ('-test_playbook', 'test_workflow'): 'test_playbook-test_workflow'}
-        for (playbook, workflow), expected_result in input_output.items():
-            self.assertEqual(construct_workflow_name_key(playbook, workflow), expected_result)
-
-    def test_extract_workflow_name(self):
-        wx = construct_workflow_name_key('www', 'xxx')
-        xy = construct_workflow_name_key('xxx', 'yyy')
-        yz = construct_workflow_name_key('yyy', 'zzz')
-        xyyz = construct_workflow_name_key(xy, yz)
-        input_output = {(wx, ''): 'xxx',
-                        (wx, 'www'): 'xxx',
-                        (wx, 'xxx'): 'xxx',
-                        (xyyz, ''): '{0}'.format(construct_workflow_name_key('yyy', yz)),
-                        (xyyz, 'xxx'): '{0}'.format(construct_workflow_name_key('yyy', yz)),
-                        (xyyz, xy): yz}
-        for (workflow_key, playbook_name), expected_workflow in input_output.items():
-            self.assertEqual(extract_workflow_name(workflow_key, playbook_name=playbook_name), expected_workflow)
 
     def test_import_py_file(self):
         module_name = 'tests.apps.HelloWorld'
@@ -291,71 +269,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_filter_invalid(self):
         with self.assertRaises(UnknownFilter):
             get_filter('invalid')
-
-    def test_input_xml_to_dict(self):
-        from xml.etree.cElementTree import fromstring
-        xml = """<inputs>
-                <a1>val1</a1>
-                <a3>val3</a3>
-                <a2>val2</a2>
-                <a5>val5</a5>
-                <a4>
-                    <a44>
-                        <a442>
-                            <item>val442-0</item>
-                            <item>val442-1</item>
-                        </a442>
-                        <a441>val441</a441>
-                    </a44>
-                    <a42>val42</a42>
-                    <a43>
-                        <item>
-                            <a432>val432</a432>
-                            <a431>
-                                <item>1</item>
-                                <item>1</item>
-                                <item>2</item>
-                                <item>3</item>
-                            </a431>
-                        </item>
-                        <item>
-                            <a431>
-                                <item>2</item>
-                                <item>2</item>
-                                <item>3</item>
-                                <item>4</item>
-                            </a431>
-                        </item>
-                    </a43>
-                    <a41>val41</a41>
-                </a4>
-            </inputs>"""
-        expected = {'a1': 'val1', 'a2': 'val2', 'a3': 'val3',
-                    'a4': {'a41': 'val41', 'a42': 'val42',
-                           'a43': [{'a431': ['1', '1', '2', '3'], 'a432': 'val432'},
-                                   {'a431': ['2', '2', '3', '4']}],
-                           'a44': {'a441': 'val441', 'a442': ['val442-0', 'val442-1']}},
-                    'a5': 'val5'}
-        xml = fromstring(xml)
-        converted = inputs_xml_to_dict(xml)
-        self.assertDictEqual(converted, expected)
-
-    def test_input_dict_to_from_xml(self):
-        inputs = {
-            'a1': 'val1',
-                  'a2': 'val2',
-                  'a3': 'val3',
-                  'a5': 'val5',
-                  'a4': {'a41': 'val41',
-                         'a42': 'val42',
-                         'a43': [{'a431': ['1', '1', '2', '3'],
-                                  'a432': 'val432'},
-                                 {'a431': ['2', '2', '3', '4']}],
-                         'a44': {'a441': 'val441',
-                                 'a442': ['val442-0', 'val442-1']}}}
-        xml = inputs_to_xml(inputs)
-        converted = inputs_xml_to_dict(xml)
-        self.assertDictEqual(converted, inputs)
 
     def test_dereference_step_routing(self):
         inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}

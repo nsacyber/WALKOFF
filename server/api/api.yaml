@@ -13,6 +13,8 @@ info:
     url: 'http://creativecommons.org/licenses/by/4.0/'
 
 tags:
+  - name: Authorization
+    description: Authorization Operations
   - name: Apps
     description: App Management Operations
   - name: Cases
@@ -45,6 +47,8 @@ tags:
     description: Trigger Operations
   - name: System
     description: System Operations
+  - name: Client
+    description: Serves up client pages
 
 schemes:
   - http
@@ -52,8 +56,10 @@ schemes:
 
 paths:
   $ref: ./apps.yaml
+  $ref: ./auth.yaml
   $ref: ./cases.yaml
   $ref: ./configuration.yaml
+  $ref: ./devices.yaml
   $ref: ./events.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
@@ -75,8 +81,10 @@ security:
 
 definitions:
     $ref: ./objects/objects.yaml
-    $ref: ./objects/appdevice.yaml
+    $ref: ./objects/auth.yaml
     $ref: ./objects/cases.yaml
+    $ref: ./objects/configuration.yaml
+    $ref: ./objects/devices.yaml
     $ref: ./objects/metrics.yaml
     $ref: ./objects/playbooks.yaml
     $ref: ./objects/roles.yaml

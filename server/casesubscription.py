@@ -1,54 +1,69 @@
 import json
 import logging
 
-from .database import db, Base
+from .database import db, TrackModificationsMixIn
 import core.case.subscription
+from core.case.subscription import convert_from_event_names, convert_to_event_names
 
 
-class CaseSubscription(Base):
+class CaseSubscription(db.Model, TrackModificationsMixIn):
     """
     The ORM for the case subscriptions configuration
     """
     __tablename__ = 'case_subscription'
 
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
-    subscription = db.Column(db.Text())
+    subscriptions = db.Column(db.Text())
+    note = db.Column(db.String)
 
-    def __init__(self, name, subscription='{}'):
+    def __init__(self, name, subscriptions=None, note=''):
         """
-        Constructs an instance of a CaseSubscription
+        Constructs an instance of a CaseSubscription.
         
         Args:
-            name (str): Name of the case subscription
-            subscription (str): A string of the JSON representation of the subscription
+            name (str): Name of the case subscription.
+            subscriptions (list(dict)): A subscription JSON object.
+            note (str, optional): Annotation of the event.
         """
         self.name = name
+        self.note = note
+        if subscriptions is None:
+            subscriptions = []
         try:
-            json.loads(subscription)
-            self.subscription = subscription
-        except:
-            self.subscription = '{}'
+            self.subscriptions = json.dumps(subscriptions)
+        except json.JSONDecodeError:
+            self.subscriptions = '[]'
+        finally:
+            subscriptions = {subscription['uid']: subscription['events'] for subscription in subscriptions}
+            if 'controller' in subscriptions:
+                subscriptions['controller'] = convert_from_event_names(subscriptions['controller'])
+            core.case.subscription.add_cases({name: subscriptions})
 
     def as_json(self):
-        """ Gets the JSON representation of all the CaseSubscription object.
+        """ Gets the JSON representation of the CaseSubscription object.
         
         Returns:
             The JSON representation of the CaseSubscription object.
         """
-        return {"name": self.name,
-                "subscription": json.loads(self.subscription)}
+        return {"id": self.id,
+                "name": self.name,
+                "subscriptions": json.loads(self.subscriptions),
+                "note": self.note}
 
     @staticmethod
     def update(case_name):
-        """ Synchronizes the subscription from the subscription in memory in the core
+        """ Synchronizes the subscription from the subscription in memory in the core.
         
         Args:
-            case_name (str): The name of case to synchronize
+            case_name (str): The name of case to synchronize.
         """
         case = CaseSubscription.query.filter_by(name=case_name).first()
-        if case:
-            if case_name in core.case.subscription.subscriptions:
-                case.subscription = json.dumps(core.case.subscription.subscriptions_as_json()[case_name])
+        if case and case_name in core.case.subscription.subscriptions:
+            case_subs = core.case.subscription.subscriptions[case_name]
+            if 'controller' in case_subs:
+                case_subs['controller'] = convert_to_event_names(case_subs['controller'])
+            case.subscriptions = json.dumps([{'uid': uid, 'events': events} for uid, events in case_subs.items()])
 
     @staticmethod
     def from_json(name, subscription_json):
@@ -61,13 +76,14 @@ class CaseSubscription(Base):
         Returns:
             The CaseSubscription object parsed from the JSON object.
         """
-        return CaseSubscription(name, subscription=json.dumps(subscription_json))
+        return CaseSubscription(name, subscriptions=subscription_json)
 
     @staticmethod
     def sync_to_subscriptions():
         """Sets the subscription in memory to that loaded into the database
         """
         logging.getLogger(__name__).debug('Syncing cases')
-        subscriptions = {case.name: core.case.subscription.CaseSubscriptions.from_json(json.loads(case.subscription))
-                         for case in CaseSubscription.query.all()}
+        cases = CaseSubscription.query.all()
+        subscriptions = {case.name: {subscription['uid']: subscription['events']
+                                     for subscription in json.loads(case.subscriptions)} for case in cases}
         core.case.subscription.set_subscriptions(subscriptions)

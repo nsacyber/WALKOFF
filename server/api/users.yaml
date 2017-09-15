@@ -1,4 +1,4 @@
-/users:
+/api/users:
   get:
     tags:
       - Users
@@ -11,20 +11,10 @@
       200:
         description: Success
         schema:
-          description: A list of usernames
           type: array
+          description: A list of users
           items:
-            type: string
-          example:
-            - administrator
-            - guest
-/users/{user_name}:
-  parameters:
-    - name: user_name
-      in: path
-      description: The name that needs to be fetched.
-      required: true
-      type: string
+            $ref: '#/definitions/DisplayUser'
   put:
     tags:
       - Users
@@ -32,7 +22,7 @@
     description: ''
     operationId: server.endpoints.users.create_user
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
     parameters:
@@ -41,33 +31,15 @@
         description: The new user object to be created
         required: true
         schema:
-          $ref: '#/definitions/User'
+          $ref: '#/definitions/AddUser'
     responses:
       201:
         description: User created.
+        schema:
+          description: The newly created user.
+          $ref: '#/definitions/DisplayUser'
       462:
         description: Could not create user <username>. User already exists.
-        schema:
-          $ref: '#/definitions/Error'
-  get:
-    tags:
-      - Users
-    summary: Get a user
-    description: ''
-    operationId: server.endpoints.users.read_user
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          description: A list of user objects
-          type: object
-          properties:
-            user:
-              $ref: '#/definitions/DisplayUser'
-      461:
-        description: Could not display user <username>. User does not exist.
         schema:
           $ref: '#/definitions/Error'
   post:
@@ -77,7 +49,7 @@
     description: ''
     operationId: server.endpoints.users.update_user
     consumes:
-      - multipart/form-data
+      - application/json
     produces:
       - application/json
     parameters:
@@ -91,13 +63,41 @@
       200:
         description: Success
         schema:
-          description: A list of user objects
-          type: object
-          properties:
-            user:
-              $ref: '#/definitions/DisplayUser'
+          description: The updated user.
+          $ref: '#/definitions/DisplayUser'
+      400:
+        description: Invalid password
+        schema:
+          $ref: '#/definitions/Error'
       461:
         description: Could not edit user <username>. User does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+
+
+/api/users/{user_id}:
+  parameters:
+    - name: user_id
+      in: path
+      description: The id of the user to be fetched
+      required: true
+      type: integer
+  get:
+    tags:
+      - Users
+    summary: Get a user
+    description: ''
+    operationId: server.endpoints.users.read_user
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: The user object matching the user id inputted
+          $ref: '#/definitions/DisplayUser'
+      461:
+        description: Could not display user <username>. User does not exist.
         schema:
           $ref: '#/definitions/Error'
   delete:
@@ -106,8 +106,6 @@
     summary: Delete a user
     description: ''
     operationId: server.endpoints.users.delete_user
-    consumes:
-      - multipart/form-data
     produces:
       - application/json
     responses:

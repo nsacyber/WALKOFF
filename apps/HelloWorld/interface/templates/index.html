@@ -2,10 +2,10 @@
     <head>
         <link rel="stylesheet" href="{{ url_for('appPage.static', app=g.app, filename='lib/c3/c3.min.css' ) }}">
         <link rel="stylesheet" href="{{ url_for('appPage.static', app=g.app, filename='lib/jvectormap/jquery-jvectormap-1.2.2.css' ) }}" media="screen">
-        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css' ) }}">
+        <link rel="stylesheet" href="client/node_modules/bootstrap/dist/css/bootstrap.min.css">
 
-        <script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+        <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
+        <script src="client/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
         <script src="{{ url_for('appPage.static', app=g.app, filename='lib/d3/d3.min.js') }}"></script>
         <script src="{{ url_for('appPage.static', app=g.app, filename='lib/c3/c3.min.js') }}"></script>
         <script src="{{ url_for('appPage.static', app=g.app, filename='lib/jvectormap/jquery-jvectormap-1.2.2.min.js') }}"></script>

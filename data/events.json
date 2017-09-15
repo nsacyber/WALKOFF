@@ -16,11 +16,13 @@
     "Next Step Found",
     "Workflow Shutdown",
     "Workflow Input Validated",
-    "Workflow Input Invalid"
+    "Workflow Input Invalid",
+    "Workflow Paused",
+    "Workflow Resumed"
   ],
   "step": [
     "Function Execution Success",
-    "Input Validated",
+    "Step Started",
     "Input Invalid",
     "Conditionals Executed",
     "Step Execution Success",

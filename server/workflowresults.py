@@ -7,7 +7,7 @@ import json
 @WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
     workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender.uid).first()
+        WorkflowResult.uid == sender['execution_uid']).first()
     if workflow_result is not None:
         workflow_result.complete()
         case_database.case_db.session.commit()
@@ -15,7 +15,7 @@ def __workflow_ended_callback(sender, **kwargs):
 
 @WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
-    workflow_result = WorkflowResult(sender.uid, sender.name)
+    workflow_result = WorkflowResult(sender['execution_uid'], sender['name'])
     case_database.case_db.session.add(workflow_result)
     case_database.case_db.session.commit()
 
@@ -29,14 +29,14 @@ def __append_step_result(workflow_result, data, step_type):
 @StepExecutionSuccess.connect
 def __step_execution_success_callback(sender, **kwargs):
     workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender.uid).first()
+        WorkflowResult.uid == sender['execution_uid']).first()
     if workflow_result is not None:
-        __append_step_result(workflow_result, json.loads(kwargs['data']), 'success')
+        __append_step_result(workflow_result, kwargs['data'], 'success')
 
 
 @StepExecutionError.connect
 def __step_execution_error_callback(sender, **kwargs):
     workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender.uid).first()
+        WorkflowResult.uid == sender['execution_uid']).first()
     if workflow_result is not None:
-        __append_step_result(workflow_result, json.loads(kwargs['data']), 'error')
+        __append_step_result(workflow_result, kwargs['data'], 'error')

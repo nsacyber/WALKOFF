@@ -1,34 +1,54 @@
-<?xml version="1.0"?>
-<workflow name="helloWorldWorkflow">
-    <options>
-        <enabled>true</enabled>
-        <scheduler type="cron" autorun="false">
-            <month>1-2</month>
-            <day>*</day>
-            <hour>*</hour>
-            <second>*/10</second>
-        </scheduler>
-    </options>
-    <steps>
-        <step id="start">
-            <action>repeatBackToMe</action>
-            <app>HelloWorld</app>
-            <device>hwTest</device>
-            <inputs>
-                <call>Hello World</call>
-            </inputs>
-            <next step="1">
-                <flag action="regMatch">
-                    <args>
-                        <regex>(.*)</regex>
-                    </args>
-                    <filters>
-                        <filter action="length">
-                            <args></args>
-                        </filter>
-                    </filters>
-                </flag>
-            </next>
-        </step>
-    </steps>
-</workflow>
+{
+    "name": "simpleDataManipulationWorkflow",
+    "workflows": [
+        {
+            "name": "helloWorldWorkflow",
+            "start": "start",
+            "steps": [
+                {
+                    "action": "repeatBackToMe",
+                    "app": "HelloWorld",
+                    "device": "hwTest",
+                    "inputs": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "name": "start",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "regMatch",
+                                    "args": [
+                                        {
+                                            "name": "regex",
+                                            "value": "(.*)"
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "d0b24e6095ac45669753899bd11d37fd"
+                                        }
+                                    ],
+                                    "uid": "532ac813429f4f62b7f1d92ac9f324ab"
+                                }
+                            ],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "7bd621d9645348c99be8fc9504543e26"
+                        }
+                    ],
+                    "position": {},
+                    "risk": 0,
+                    "uid": "389b95462e334a52bb0b9608713f81b8",
+                    "widgets": []
+                }
+            ],
+            "uid": "09de2eb519b641e9bc7d6ab0ab766d19"
+        }
+    ]
+}

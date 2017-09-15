@@ -2,10 +2,10 @@ import importlib
 import json
 import sys
 import logging
-from os import listdir, environ, pathsep
+from os import listdir
 from os.path import isfile, join, splitext
 import core.config.paths
-from core.config.paths import keywords_path, graphviz_path
+from core.config.paths import keywords_path
 from collections import OrderedDict
 import yaml
 
@@ -47,24 +47,15 @@ def write_values_to_file(keys=None):
     with open(core.config.paths.config_path, 'w') as config_file:
         config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
-
-# Enables/Disables Browser Notifications
-notifications = "True"
-
-# Path to graphviz location
-environ["PATH"] += (pathsep + graphviz_path)
-
-# Database Path
-
 reinitialize_case_db_on_startup = True
 
 tls_version = "1.2"
-https = "false"
+https = False
 
-debug = "True"
-default_server = "True"
+debug = True
+default_server = True
 host = "127.0.0.1"
-port = "5000"
+port = 5000
 
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
@@ -82,7 +73,7 @@ execution_settings = {
     "maxJobs": 2
 }
 
-num_threads = 5
+num_processes = 5
 threadpool_shutdown_timeout_sec = 3
 
 # Function Dict Paths/Initialization
@@ -91,7 +82,7 @@ app_apis = {}
 
 
 def load_app_apis(apps_path=None):
-    from core.helpers import list_apps
+    from core.helpers import list_apps, format_exception_message
     global app_apis
     if apps_path is None:
         apps_path = core.config.paths.apps_path
@@ -111,7 +102,7 @@ def load_app_apis(apps_path=None):
                     validate_app_spec(api, app)
                     app_apis[app] = api
             except Exception as e:
-                __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(e)))
+                __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
 
 try:
     with open(core.config.paths.events_path) as f:
@@ -139,13 +130,14 @@ def load_flagfilter_apis(path=None):
         __logger.fatal('Cannot open flagfilter api: Error {0}'.format(str(e)))
         sys.exit(1)
     except yaml.YAMLError:
-        __logger.fatal('flagfiler api is invalid yaml')
+        __logger.fatal('flagfilter api is invalid yaml')
         sys.exit(1)
 
 
 def initialize():
     global filters
     global flags
+
     load_config()
     from core.helpers import import_all_apps, import_all_filters, import_all_flags
     import_all_apps()

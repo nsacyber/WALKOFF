@@ -1,81 +1,151 @@
-from flask import current_app
-from flask_security import roles_accepted
-from server.return_codes import *
+from flask import current_app, request
+from server.security import roles_accepted_for_resources
+from flask_jwt_extended import jwt_required
+from server.returncodes import *
+from core.scheduler import InvalidTriggerArgs
 
 
-def start_scheduler():
+def get_scheduler_status():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        status = running_context.controller.start()
-        current_app.logger.info('Scheduler started. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
+        return {"status": running_context.controller.scheduler.scheduler.state}, SUCCESS
     return __func()
 
 
-def stop_scheduler():
+def update_scheduler_status(status):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        status = running_context.controller.stop()
-        current_app.logger.info('Scheduler stopped. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
+        updated_status = running_context.controller.scheduler.scheduler.state
+        if status == "start":
+            updated_status = running_context.controller.scheduler.start()
+            current_app.logger.info('Scheduler started. Status {0}'.format(updated_status))
+        elif status == "stop":
+            updated_status = running_context.controller.scheduler.stop()
+            current_app.logger.info('Scheduler stopped. Status {0}'.format(updated_status))
+        elif status == "pause":
+            updated_status = running_context.controller.scheduler.pause()
+            current_app.logger.info('Scheduler paused. Status {0}'.format(updated_status))
+        elif status == "resume":
+            updated_status = running_context.controller.scheduler.resume()
+            current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
+        return {"status": updated_status}, SUCCESS
+
     return __func()
 
 
-def pause_scheduler():
+def read_all_scheduled_tasks():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        status = running_context.controller.pause()
-        current_app.logger.info('Scheduler paused. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
+        return [task.as_json() for task in running_context.ScheduledTask.query.all()], SUCCESS
     return __func()
 
 
-def resume_scheduler():
+def create_scheduled_task():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        status = running_context.controller.resume()
-        current_app.logger.info('Scheduler resumed. Status {0}'.format(status))
-        return {"status": status}, SUCCESS
+        data = request.get_json()
+        task = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
+        if task is None:
+            try:
+                task = running_context.ScheduledTask(**data)
+            except InvalidTriggerArgs:
+                return {'error': 'invalid scheduler arguments'}, 400
+            else:
+                running_context.db.session.add(task)
+                running_context.db.session.commit()
+                return task.as_json(), OBJECT_CREATED
+        else:
+            return {'error': 'Could not create object. Object with given name already exists'}, OBJECT_EXISTS_ERROR
     return __func()
 
 
-def pause_job(job_id):
+def read_scheduled_task(scheduled_task_id):
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        running_context.controller.pause_job(job_id)
-        current_app.logger.info('Scheduler paused job {0}'.format(job_id))
-        return {"status": "Job Paused"}, SUCCESS
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            return task.as_json(), SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
     return __func()
 
 
-def resume_job(job_id):
+def update_scheduled_task():
     from server.context import running_context
 
-    @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        running_context.controller.resume_job(job_id)
-        current_app.logger.info('Scheduler resumed job {0}'.format(job_id))
-        return {"status": "Job Resumed"}, SUCCESS
+        data = request.get_json()
+        task = running_context.ScheduledTask.query.filter_by(id=data['id']).first()
+        if task is not None:
+            if 'name' in data:
+                same_name = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
+                if same_name is not None and same_name.id != data['id']:
+                    return {'error': 'Task with that name already exists.'}, OBJECT_EXISTS_ERROR
+            try:
+                task.update(data)
+            except InvalidTriggerArgs:
+                return {'error': 'invalid scheduler arguments'}, 400
+            else:
+                running_context.db.session.commit()
+                return task.as_json(), SUCCESS
+        else:
+            return {'error': 'Could not update object. Object does not exist.'}, OBJECT_DNE_ERROR
+
     return __func()
 
 
-def read_all_jobs():
+def delete_scheduled_task(scheduled_task_id):
     from server.context import running_context
 
-    # @roles_accepted(*running_context.user_roles['/execution/scheduler'])
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
     def __func():
-        jobs = []
-        for job in running_context.controller.get_scheduled_jobs():
-            jobs.append({"name": job.name, "id": job.id})
-        return {"jobs": jobs}, SUCCESS
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            running_context.db.session.delete(task)
+            running_context.db.session.commit()
+            return {}, SUCCESS
+        else:
+            return {'error': 'Could not delete object. Object does not exist'}, OBJECT_DNE_ERROR
+
+    return __func()
+
+
+def control_scheduled_task(scheduled_task_id, action):
+    from server.context import running_context
+
+    @jwt_required
+    @roles_accepted_for_resources('scheduler')
+    def __func():
+        task = running_context.ScheduledTask.query.filter_by(id=scheduled_task_id).first()
+        if task is not None:
+            if action == 'start':
+                task.start()
+                running_context.db.session.commit()
+                return {}, SUCCESS
+            elif action == 'stop':
+                task.stop()
+                running_context.db.session.commit()
+                return {}, SUCCESS
+        else:
+            return {'error': 'Could not read object. Object does not exist'}, OBJECT_DNE_ERROR
+
     return __func()

@@ -4,6 +4,8 @@ from gevent.event import Event, AsyncResult
 from gevent import sleep
 from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError
 from datetime import datetime
+from server.security import jwt_required_in_query
+import server.workflowresults  # do not delete needed to register callbacks
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 
@@ -34,7 +36,7 @@ def __workflow_ended_callback(sender, **kwargs):
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
               'timestamp': str(datetime.utcnow()),
               'result': data}
     __workflow_shutdown_event_json.set(json.dumps(result))
@@ -44,12 +46,13 @@ def __workflow_ended_callback(sender, **kwargs):
 
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender['inputs'])
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
+              'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}
@@ -61,16 +64,18 @@ def __step_ended_callback(sender, **kwargs):
 
 def __step_error_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender['inputs'])
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
+              'timestamp': str(datetime.utcnow()),
               'type': "ERROR",
               'input': step_input,
               'result': data}
     __workflow_step_event_json.set(json.dumps(result))
+    sleep(0)
     __step_signal.set()
     __step_signal.clear()
     sleep(0)
@@ -79,16 +84,18 @@ def __step_error_callback(sender, **kwargs):
 @FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender['inputs'])
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
+              'timestamp': str(datetime.utcnow()),
               'type': "SUCCESS",
               'input': step_input,
               'result': data}
     __workflow_step_event_json.set(json.dumps(result))
+    sleep(0)
     __step_signal.set()
     __step_signal.clear()
     sleep(0)
@@ -96,24 +103,25 @@ def __step_ended_callback(sender, **kwargs):
 
 @StepExecutionError.connect
 def __step_error_callback(sender, **kwargs):
-    result = {'name': sender.name, 'type': 'ERROR'}
+    result = {'name': sender['name'], 'type': 'ERROR'}
     if 'data' in kwargs:
-        data = json.loads(kwargs['data'])
+        data = kwargs['data']
         result['input'] = data['input']
         result['result'] = data['result']
     __workflow_step_event_json.set(json.dumps(result))
+    sleep(0)
     __step_signal.set()
     __step_signal.clear()
     sleep(0)
 
 
 @workflowresults_page.route('/stream', methods=['GET'])
+@jwt_required_in_query('access_token')
 def stream_workflow_success_events():
     return Response(__workflow_shutdown_event_stream(), mimetype='text/event-stream')
 
 
 @workflowresults_page.route('/stream-steps', methods=['GET'])
-# @auth_token_required
-# @roles_accepted(*running_context.user_roles['/playbooks'])
+@jwt_required_in_query('access_token')
 def stream_workflow_step_events():
     return Response(__workflow_steps_event_stream(), mimetype='text/event-stream')

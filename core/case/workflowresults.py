@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
 
+
 class WorkflowResult(Case_Base):
     """Case ORM for the events database
     """

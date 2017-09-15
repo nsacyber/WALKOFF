@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="client/node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: "Verdana", sans-serif;
+        }
+
+        #logo {
+            height: 300px;
+            width: 400px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        h2 {
+            text-align: right;
+        }
+
+        .row {
+            margin-bottom: 10px;
+        }
+
+        div.loginFormContainer {
+            width: 640px;
+            margin: 0 auto 20px auto;
+            border-radius: 5px;
+            background-color: #F4F8FF;
+            padding: 10px;
+            box-shadow: 0px 2px 5px #CCC;
+        }
+
+        div.loginFormContainer label {
+            font-size: 1.4em;
+            margin-top: 3px;
+            font-weight: 100;
+        }
+
+        div.loginFormContainer #message {
+            font-size: 1.4em;
+            margin-top: 3px;
+            color: crimson;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form">
+        <div class="formHeader">
+            <img id="logo" src="client/login/img/walkoffLogo.png"/>
+        </div>
+
+        <div class="loginFormContainer">
+            <h2><strong>WALK</strong>OFF Login</h2>
+            <form id="loginForm" action="/login-process" method="POST">
+                <div class="row">
+                    <div class="col-xs-2">
+                        <label for="name">Username</label>
+                    </div>
+                    <div class="col-xs-10">
+                        <input id="username" type="text" class="form-control" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-2">
+                        <label for="name">Password</label>
+                    </div>
+                    <div class="col-xs-10">
+                        <input id="password" type="password" class="form-control" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-10">
+                        <span id="message"></span>
+                    </div>
+                    <div class="col-xs-2">
+                        <input type="submit" id="login" class="btn btn-primary pull-right" value="Login" />
+                    </div>
+                </div>
+            </form>
+        </div>
+        <span class="clear"></span>
+    </div>
+
+    <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="client/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script>
+        $("#loginForm").on("submit", function (e) {
+            e.preventDefault();
+            var username = $("#username").val();
+            var password = $("#password").val();
+            $.ajax({
+                url: '/api/auth',
+                contentType: 'application/json',
+                data: JSON.stringify({ "username": username, "password": password }),
+                type: "POST",
+                async: false,
+                success: function (data) {
+                    sessionStorage.setItem("access_token", data["access_token"]);
+                    sessionStorage.setItem("refresh_token", data["refresh_token"]);
+                    location.href = "/";
+                },
+                error: function (e) {
+                    $("#message").text("Invalid Login");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

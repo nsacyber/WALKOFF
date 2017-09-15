@@ -92,9 +92,16 @@ $("#addNewDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices/" + $("#deviceForm #name").val(),
             'success': function (data) {
+<<<<<<< HEAD
+                var result = JSON.parse(data);
+                $("#deviceForm")[0].reset();
+                getDeviceList();
+                alert(result['status']);
+=======
                 $("#deviceForm")[0].reset();
                 getDeviceList();
                 $.notify('Device successfully added.', "success");
+>>>>>>> 03ebfdedc3423e17de7ce00fb73fb413992a2ae0
             },
             'error': function(data){
                 $.notify('Device could not be added.', "error");
@@ -113,9 +120,16 @@ $("#removeDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
+<<<<<<< HEAD
+                var result = JSON.parse(data);
+                $("#deviceForm")[0].reset();
+                getDeviceList();
+                alert(result['status']);
+=======
                 $("#deviceForm")[0].reset();
                 getDeviceList();
                 $.notify('Device ' + activeDevice + ' successfully removed.', "success");
+>>>>>>> 03ebfdedc3423e17de7ce00fb73fb413992a2ae0
             },
             'error': function(e) {
                 $.notify('Device ' + activeDevice + ' could not be removed.', "error");
@@ -135,9 +149,15 @@ $("#editDevice").on("click", function(){
             'headers':{"Authentication-Token":authKey},
             'url': "/apps/" + activeApp + "/devices/" + activeDevice,
             'success': function (data) {
+<<<<<<< HEAD
+                var result = JSON.parse(data);
+                $("#deviceForm")[0].reset();
+                alert(result['status']);
+=======
                 $("#deviceForm")[0].reset();
                 getDeviceList();
                 $.notify('Device ' + activeDevice + ' successfully edited.', "success");
+>>>>>>> 03ebfdedc3423e17de7ce00fb73fb413992a2ae0
             },
             'error': function(data){
                 $.notify('Device ' + activeDevice + ' could not be edited.', "error");
