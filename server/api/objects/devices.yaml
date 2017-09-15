@@ -21,7 +21,7 @@ AddDevice:
       maxLength: 25
     description:
       type: string
-      example: This device type configures my app under some circumstances
+      example: This device type configures the app under some circumstances
       description: A description of your device type
     fields:
       description: fields used to configure this device
@@ -63,3 +63,45 @@ Device:
       type: array
       items:
         $ref: '#/definitions/Argument'
+
+DeviceType:
+  type: object
+  description: A type of device
+  properties:
+    name:
+      type: string
+    app:
+      type: string
+      example: HelloWorld
+      description: The name of the app associated with this device
+    description:
+      type: string
+      example: This device type configures my app under some circumstances
+      description: A description of your device type
+    fields:
+      type: array
+      items:
+        $ref: '#/definitions/DeviceField'
+
+DeviceField:
+  type: object
+  required: [name, type]
+  properties:
+    name:
+      type: string
+    type:
+      type: string
+      enum: [string, number, integer, boolean]
+    required:
+      description: is the argument required
+      type: boolean
+      default: false
+    description:
+      type: string
+      description: description of what the argument provides
+    default:
+      description: default value for the argument
+    encrypted:
+      type: boolean
+      description: Is this field encrypted
+      default: false

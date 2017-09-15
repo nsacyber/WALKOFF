@@ -103,6 +103,32 @@ class TestServer(ServerTestCase):
         #     response = self.get_with_status_check('/apps/actions', headers=self.headers)
         #     orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
 
+    def test_get_device_types(self):
+        fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
+                       {'name': 'test2', 'type': 'string', 'encrypted': False}]
+        fields_json2 = [{'name': 'test3', 'type': 'integer', 'encrypted': True}]
+        core.config.config.app_apis.update({'TestApp': {'devices': {'test_type': {'fields': fields_json,
+                                                                                  'description': 'desc'},
+                                                                    'test_type2': {'fields': fields_json2}}}})
+        response = self.app.get('/api/devicetypes', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        # expected = [{'fields': [{'encrypted': True, 'type': 'integer', 'name': 'test3'}],
+        #              'app': 'TestApp',
+        #              'name': 'test_type2'},
+        #             {'fields': [{'encrypted': False, 'type': 'integer', 'name': 'test_name'},
+        #                         {'encrypted': False, 'type': 'string', 'name': 'test2'}],
+        #              'app': 'TestApp',
+        #              'description': 'desc',
+        #              'name': 'test_type'}]
+        self.assertEqual(len(response), 2)
+        for device_type in response:
+            if device_type['name'] == 'test_type':
+                self.assertSetEqual(set(device_type.keys()), {'fields', 'app', 'name', 'description'})
+            elif device_type['name'] == 'test_type2':
+                self.assertSetEqual(set(device_type.keys()), {'fields', 'app', 'name'})
+            else:
+                self.fail()
 
 class TestConfiguration(ServerTestCase):
 

@@ -76,19 +76,19 @@ def read_all_flags():
     return __func()
 
 
-def sys_pages(interface_name):
-    from server import interface
-
+def read_all_device_types():
     @jwt_required
-    @roles_accepted_for_resources('interface')
+    @roles_accepted_for_resources('apps')
     def __func():
-        if current_user.is_authenticated and interface_name:
-            args = getattr(interface, interface_name)()
-            combine_dicts(args, {"authKey": current_user.get_auth_token()})
-            return render_template("pages/" + interface_name + "/index.html", **args), SUCCESS
-        else:
-            current_app.logger.debug('Unsuccessful login attempt')
-            return {"error": "Could not Log In."}, UNAUTHORIZED_ERROR
+        response = []
+        for app, app_api in core.config.config.app_apis.items():
+            if 'devices' in app_api:
+                for type_name, type_api in app_api['devices'].items():
+                    api = dict(type_api)
+                    api['name'] = type_name
+                    api['app'] = app
+                    response.append(api)
+        return response, SUCCESS
 
     return __func()
 
