@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 
@@ -21,6 +22,8 @@ export class DevicesModalComponent {
 	@Input() submitText: string;
 	@Input() appNames: string[] = [];
 	@Input() deviceTypes: DeviceType[] = [];
+	@ViewChild('typeRef') typeRef: ElementRef;
+	// @ViewChild('deviceForm') form: FormGroup
 
 	deviceTypesForApp: DeviceType[] = [];
 	// save device type fields on saving/loading so we don't clear all progress if we switch device type
@@ -30,12 +33,25 @@ export class DevicesModalComponent {
 	validationErrors: { [key: string]: string } = {};
 	encryptedConfirmFields: { [key: string]: string } = {};
 
-	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService: ToastyService, 
+		private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef) {
 		this.toastyConfig.theme = 'bootstrap';
+	}
 
+	ngAfterViewInit(): void {
 		//For an existing device, set our available device types and store the known fields for our device type
-		if (this.workingDevice.app) this.deviceTypesForApp = this.deviceTypes.filter(dt => dt.app === this.workingDevice.app);
-		if (this.workingDevice.type) this.deviceTypeFields[this.workingDevice.type] = this.workingDevice.fields;
+		if (this.workingDevice.app) {
+			this.deviceTypesForApp = this.deviceTypes.filter(dt => dt.app === this.workingDevice.app);
+		}
+		//Detect changes beforehand so the select box is updated
+		this.cdr.detectChanges();
+		if (this.workingDevice.type) {
+			this.deviceTypeFields[this.workingDevice.type] = this.workingDevice.fields;
+			this.typeRef.nativeElement.value = this.workingDevice.type;
+			this.handleDeviceTypeSelection(null, this.workingDevice.type);
+		}
+		//Detect changes once more to actually use the selected device type
+		this.cdr.detectChanges();
 	}
 
 	handleAppSelection(event: any, app: string): void {
@@ -89,7 +105,7 @@ export class DevicesModalComponent {
 	submit(): void {
 		if (!this.validate()) return;
 
-		let toSubmit = this.workingDevice.toDevice();
+		let toSubmit = WorkingDevice.toDevice(this.workingDevice);
 
 		//If device has an ID, device already exists, call update
 		if (this.workingDevice.id) {
@@ -110,6 +126,12 @@ export class DevicesModalComponent {
 				}))
 				.catch(e => this.toastyService.error(e.message));
 		}
+	}
+
+	isBasicInfoValid(): boolean {
+		if (this.workingDevice.name && this.workingDevice.name.trim() && this.workingDevice.app && this.workingDevice.type) return true;
+
+		return false;
 	}
 
 	validate(): boolean {

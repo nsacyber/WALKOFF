@@ -12,15 +12,16 @@ export class Device {
 	port: number;
 	extra_fields: Object;
 
-	toWorkingDevice(): WorkingDevice {
+	static toWorkingDevice(device: Device): WorkingDevice {
 		let out = new WorkingDevice();
-		out.id = this.id;
-		out.name = this.name;
-		out.app = this.app;
-		out.type = this.type;
+		out.id = device.id;
+		out.name = device.name;
+		out.description = device.description;
+		out.app = device.app;
+		out.type = device.type;
 		out.fields = {};
 
-		this.fields.forEach(element => {
+		device.fields.forEach(element => {
 			out.fields[element.name] = element.value;
 		});
 
@@ -36,17 +37,17 @@ export class WorkingDevice {
 	type: string;
 	fields: { [key: string]: any } = {};
 
-	toDevice(): Device {
-		let self = this;
+	static toDevice(workingDevice: WorkingDevice): Device {
 		let out = new Device();
-		out.id = this.id;
-		out.name = this.name;
-		out.app = this.app;
-		out.type = this.type;
+		out.id = workingDevice.id;
+		out.name = workingDevice.name;
+		out.description = workingDevice.description;
+		out.app = workingDevice.app;
+		out.type = workingDevice.type;
 		out.fields = [];
 
-		Object.keys(this.fields).forEach(function (key) {
-			out.fields.push({ name: key, value: self.fields[key] });
+		Object.keys(workingDevice.fields).forEach(function (key) {
+			out.fields.push({ name: key, value: workingDevice.fields[key] });
 		});
 
 		return out;

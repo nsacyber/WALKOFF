@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -18,6 +18,7 @@ import { DeviceType } from '../models/deviceType';
 	styleUrls: [
 		'client/devices/devices.css',
 	],
+	encapsulation: ViewEncapsulation.None,
 	providers: [DevicesService]
 })
 export class DevicesComponent {
@@ -93,8 +94,7 @@ export class DevicesComponent {
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.appNames = this.appNames;
 		modalRef.componentInstance.deviceTypes = this.deviceTypes;
-
-		modalRef.componentInstance.workingDevice = device.toWorkingDevice();
+		modalRef.componentInstance.workingDevice = Device.toWorkingDevice(device);
 
 		this._handleModalClose(modalRef);
 	}
@@ -157,5 +157,15 @@ export class DevicesComponent {
 			.getDeviceTypes()
 			.then(deviceTypes => this.deviceTypes = deviceTypes)
 			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
+	}
+
+	getCustomFields(device: Device): string {
+		let obj: { [key: string]: string } = {};
+		device.fields.forEach(element => {
+			obj[element.name] = element.value;
+		});
+		let out = JSON.stringify(obj, null, 1);
+		out = out.substr(1, out.length - 2).replace(/"/g, '');
+		return out;
 	}
 }

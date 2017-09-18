@@ -93,13 +93,13 @@ devices:
         type: string
         minLength: 5
         maxLength: 100
-        pattern: ^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$
+        pattern: ^([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])$
       - name: Enum field
         type: string
         enum: [val 1, val 2, val 3, another val]
       - name: Encrypted field
         type: string
         encrypted: true
-        name: Number field
+      - name: Number field
         type: number
         default: 10
