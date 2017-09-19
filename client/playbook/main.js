@@ -16,6 +16,8 @@ $(function(){
     var flagsList = [];
     var filtersList = [];
     var startNode = null;
+    var offsetX = -330;
+    var offsetY = -170;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
     var authToken = sessionStorage.getItem('access_token');
     
@@ -532,8 +534,8 @@ $(function(){
 
         // The following coordinates is where the user dropped relative to the
         // top-left of the graph
-        var x = event.pageX - this.offsetLeft;
-        var y = event.pageY - this.offsetTop;
+        var x = event.pageX + offsetX;
+        var y = event.pageY + offsetY;
 
         insertNode(app, action, x, y, true);
     }
