@@ -4,6 +4,7 @@ from core.workflow import Workflow
 class Playbook(object):
     def __init__(self, name, workflows):
         self.name = name
+        # TODO: When playbook endpoints use UIDs, this should store UIDS
         self.workflows = {workflow.name: workflow for workflow in workflows}
 
     def add_workflow(self, workflow):

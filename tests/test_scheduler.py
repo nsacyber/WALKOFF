@@ -9,9 +9,13 @@ class MockWorkflow(object):
     def __init__(self, uid, name=''):
         self.uid = uid
         self.name = name
+        self.other = 'other'
 
     def execute(self):
         pass
+
+    def as_json(self):
+        return {'name': self.name, 'uid': self.uid, 'other': self.other}
 
 
 def execute(playbook_name, workflow_name):
