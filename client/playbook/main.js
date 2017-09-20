@@ -555,9 +555,9 @@ $(function(){
         _.each(actionInfo.args, function(inputInfo) {
 
             var defaultValue;
-            if (inputInfo.type === "str")
+            if (inputInfo.type === "string")
                 defaultValue = "";
-            else if (inputInfo.type === "bool")
+            else if (inputInfo.type === "boolean")
                 defaultValue = false;
             else
                 defaultValue = 0;
