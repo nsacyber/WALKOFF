@@ -516,6 +516,7 @@ def add_default_template(playbook_name, workflow_name):
 
 
 @jwt_required
+@roles_accepted_for_resources('playbooks')
 def read_results():
     ret = []
     completed_workflows = [workflow.as_json() for workflow in
@@ -533,3 +534,15 @@ def read_results():
 def read_all_results():
     return [workflow.as_json() for workflow in
             case_database.case_db.session.query(WorkflowResult).all()], SUCCESS
+
+
+def read_result(uid):
+
+    @jwt_required
+    def __func():
+        workflow_result = case_database.case_db.session.query(WorkflowResult).filter(WorkflowResult.uid == uid).first()
+        if workflow_result is not None:
+            return workflow_result.as_json(), SUCCESS
+        else:
+            return {'error': 'No workflow found'}, OBJECT_DNE_ERROR
+    return __func()

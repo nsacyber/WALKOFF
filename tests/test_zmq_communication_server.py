@@ -64,22 +64,6 @@ class TestWorkflowServer(ServerTestCase):
         result = step['data']
         self.assertEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
-    def test_read_results(self):
-        flask_server.running_context.controller.initialize_threading()
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-
-        with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.controller.shutdown_pool(3)
-
-        response = self.get_with_status_check('/workflowresults', headers=self.headers)
-        self.assertEqual(len(response), 3)
-        for result in response:
-            self.assertIn('timestamp', result)
-            self.assertIn('result', result)
-            self.assertIn('name', result)
-
     def test_read_all_results(self):
         flask_server.running_context.controller.initialize_threading()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
@@ -89,7 +73,7 @@ class TestWorkflowServer(ServerTestCase):
         with flask_server.running_context.flask_app.app_context():
             flask_server.running_context.controller.shutdown_pool(3)
 
-        response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
+        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
 
         for result in response:
