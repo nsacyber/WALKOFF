@@ -48,6 +48,16 @@ DetailedStepResult:
       type: string
       example: 'This One step'
       readOnly: true
+    action:
+      description: The name of the action take by the step
+      type: string
+      example: get that thing
+      readOnly: true
+    app:
+      description: The name of the app associated with the step
+      type: string
+      example: ThingGetter
+      readOnly: true
     result:
       description: The result of the step
       type: object
