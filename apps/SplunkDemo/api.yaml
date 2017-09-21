@@ -1,0 +1,37 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Skeleton App
+  description: An app template.
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  basic:
+    run: test_function
+    description: Basic function which does not take in paramaters
+    returns:
+      Success:
+        schema:
+          type: object
+  'action with params':
+    run: test_function_with_param
+    description: Basic function which takes in parameter and returns it
+    parameters:
+    - name: test_param
+      description: The test parameter
+      required: true
+      type: string
+    returns:
+      Success:
+        description: repeated method
+        schema:
+          type: string
+  'action using device':
+    run: test_function_with_device_reference
+    description: Basic function which uses the connexted device
+    returns:
+      Success:
+        schema:
+          type: string
