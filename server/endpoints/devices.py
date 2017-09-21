@@ -6,16 +6,15 @@ import core.config.config
 import core.config.paths
 from server.returncodes import *
 import pyaes
-from server.database import db
+from server.appdevice import Device, App, device_db
 
 
 def read_all_devices():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        query = running_context.Device.query.all()
+        query = device_db.session.query(Device).all()
         output = []
         if query:
             for device in query:
@@ -26,7 +25,6 @@ def read_all_devices():
 
 
 def import_devices():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
@@ -48,7 +46,7 @@ def import_devices():
                     if key not in ['ip', 'name', 'port', 'username']:
                         extra_fields[key] = device[key]
                 extra_fields_str = json.dumps(extra_fields)
-                running_context.Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
+                Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
                                                   port=device['port'], extra_fields=extra_fields_str, password=None,
                                                   app_id=app)
         current_app.logger.debug('Imported devices from {0}'.format(filename))
@@ -58,7 +56,6 @@ def import_devices():
 
 
 def export_devices():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
@@ -66,7 +63,7 @@ def export_devices():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         returned_json = {}
-        apps = running_context.App.query.all()
+        apps = device_db.session.query(App).all()
         for app in apps:
             devices = []
             for device in app.devices:
@@ -89,12 +86,11 @@ def export_devices():
 
 
 def read_device(device_id):
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        dev = running_context.Device.query.filter_by(id=device_id).first()
+        dev = device_db.session.query(Device).filter(Device.id == device_id).first()
         if dev is not None:
             return dev.as_json(), SUCCESS
         else:
@@ -106,16 +102,15 @@ def read_device(device_id):
 
 
 def delete_device(device_id):
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        dev = running_context.Device.query.filter_by(id=device_id).first()
+        dev = device_db.session.query(Device).filter(Device.id == device_id).first()
         if dev is not None:
-            db.session.delete(dev)
+            device_db.session.delete(dev)
             current_app.logger.info('Device removed {0}'.format(device_id))
-            db.session.commit()
+            device_db.session.commit()
             return {}, SUCCESS
         else:
             current_app.logger.error('Could not delete device {0}. '
@@ -126,13 +121,12 @@ def delete_device(device_id):
 
 
 def create_device():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         data = request.get_json()
-        if len(running_context.Device.query.filter_by(name=data['name']).all()) > 0:
+        if len(device_db.session.query(Device).filter(Device.name == data['name']).all()) > 0:
             current_app.logger.error('Could not create device {0}. '
                                      'Device already exists.'.format(data['name']))
             return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
@@ -150,7 +144,7 @@ def create_device():
             pw = data['password'] if 'password' in data else ''
             enc_pw = aes.encrypt(pw)
 
-        dev = running_context.Device.add_device(name=data['name'],
+        dev = Device.add_device(name=data['name'],
                                                 username=data['username'] if 'username' in data else '',
                                                 password=enc_pw,
                                                 ip=data['ip'] if 'ip' in data else '',
@@ -163,16 +157,15 @@ def create_device():
 
 
 def update_device():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         data = request.get_json()
-        dev = running_context.Device.query.filter_by(id=data['id']).first()
+        dev = device_db.session.query(Device).filter(Device.id == data['id']).first()
         if dev is not None:
             dev.edit_device(data)
-            db.session.commit()
+            device_db.session.commit()
             current_app.logger.info('Editing device {0}:{1} to {2}'.format(dev.app_id,
                                                                            dev.name,
                                                                            dev.as_json(with_apps=False)))

@@ -59,6 +59,7 @@ port = 5000
 
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
+device_db_type = 'sqlite'
 
 # Loads the keywords into the environment filter for use
 JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")

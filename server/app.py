@@ -8,6 +8,7 @@ from core.config import paths
 import core.config.config
 import connexion
 from core.helpers import format_db_path
+from server.appdevice import App, device_db
 
 logger = logging.getLogger(__name__)
 
@@ -180,12 +181,12 @@ def create_user():
         initialize_resource_roles_from_database()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
+                                           for _app in device_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+        device_db.session.add(App(app=app_name, devices=[]))
     running_context.db.session.commit()
-
+    device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers
@@ -207,12 +208,12 @@ def create_test_data():
         running_context.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
+                                           for _app in device_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+        device_db.session.add(App(app=app_name, devices=[]))
     running_context.db.session.commit()
-
+    device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers

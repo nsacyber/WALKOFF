@@ -10,7 +10,6 @@ class Context(object):
         self.apps = self.get_apps()
 
         from server.app import app
-        from server.appdevice import Device, App
         from server.database import User, Role, resource_roles, db
         from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
@@ -19,8 +18,6 @@ class Context(object):
 
         self.User = User
         self.Role = Role
-        self.Device = Device
-        self.App = App
         self.Triggers = Triggers
         self.CaseSubscription = CaseSubscription
         self.flask_app = app

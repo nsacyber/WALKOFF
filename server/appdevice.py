@@ -1,23 +1,26 @@
 import json
 from abc import abstractmethod
-from flask import current_app
-from . import database
 import core.config.paths
-from core.helpers import format_exception_message
+from core.config.config import device_db_type
+from core.helpers import format_exception_message, format_db_path
 import pyaes
 import logging
+from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-db = database.db
 
 logger = logging.getLogger(__name__)
 
+Device_Base = declarative_base()
 
-class App(db.Model, database.TrackModificationsMixIn):
+
+class App(Device_Base):
     __tablename__ = 'app'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String)
-    devices = db.relationship("Device", back_populates="app")
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    devices = relationship("Device", back_populates="app")
 
     def __init__(self, app=None, devices=None):
         """Initializes an App object.
@@ -54,7 +57,7 @@ class App(db.Model, database.TrackModificationsMixIn):
         Returns:
             (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database.
         """
-        app = App.query.filter_by(name=app_name).first()
+        app = device_db.session.query(App).filter(App.name == app_name).first()
         if app is not None:
             return app.devices
         else:
@@ -71,7 +74,7 @@ class App(db.Model, database.TrackModificationsMixIn):
         Returns:
             (Device): The desired device. Returns None if app or device not found.
         """
-        app = App.query.filter_by(name=app_name).first()
+        app = device_db.session.query(App).filter(App.name == app_name).first()
         if app is not None:
             # efficient generator to get first instance of device with matching name. Returns None if not found.
             device = next((device for device in app.devices if device.name == device_name), None)
@@ -90,18 +93,18 @@ class App(db.Model, database.TrackModificationsMixIn):
         pass
 
 
-class Device(db.Model, database.TrackModificationsMixIn):
+class Device(Device_Base):
     __tablename__ = 'device'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String)
-    username = db.Column(db.String(80))
-    password = db.Column(db.LargeBinary())
-    ip = db.Column(db.String(15))
-    port = db.Column(db.Integer())
-    extra_fields = db.Column(db.String)
-    app_id = db.Column(db.String, db.ForeignKey('app.name'))
-    app = db.relationship(App, back_populates="devices")
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    username = Column(String(80))
+    password = Column(LargeBinary())
+    ip = Column(String(15))
+    port = Column(Integer())
+    extra_fields = Column(String)
+    app_id = Column(String, ForeignKey('app.name'))
+    app = relationship(App, back_populates="devices")
 
     def __init__(self, name, app_id, username="", password=None, ip="0.0.0.0", port=0, extra_fields=""):
         """Initializes a new Device object, which will be associated with an App object.
@@ -143,9 +146,9 @@ class Device(db.Model, database.TrackModificationsMixIn):
         """
         device = Device(name=name, username=username, app_id=app_id, password=password, ip=ip, port=port,
                         extra_fields=extra_fields)
-        db.session.add(device)
-        db.session.commit()
-        current_app.logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
+        device_db.session.add(device)
+        device_db.session.commit()
+        logger.info('Adding device {0}'.format(device.as_json(with_apps=False)))
         return device
 
     def get_password(self):
@@ -158,7 +161,7 @@ class Device(db.Model, database.TrackModificationsMixIn):
             with open(core.config.paths.AES_key_path, 'rb') as key_file:
                 key = key_file.read()
         except (OSError, IOError):
-            current_app.logger.error('No AES key found')
+            logger.error('No AES key found')
             return None
         else:
             aes = pyaes.AESModeOfOperationCTR(key)
@@ -184,7 +187,7 @@ class Device(db.Model, database.TrackModificationsMixIn):
                 with open(core.config.paths.AES_key_path, 'rb') as key_file:
                     key = key_file.read()
             except (OSError, IOError) as e:
-                current_app.logger.error('Error loading AES key from from {0}: '
+                logger.error('Error loading AES key from from {0}: '
                                          '{1}'.format(core.config.paths.AES_key_path, format_exception_message(e)))
             else:
                 aes = pyaes.AESModeOfOperationCTR(key)
@@ -232,3 +235,30 @@ class Device(db.Model, database.TrackModificationsMixIn):
     def __repr__(self):
         return str({"name": self.name, "username": self.username, "password": self.password,
                     "ip": self.ip, "port": str(self.port), "app": self.app.as_json()})
+
+
+class DeviceDatabase(object):
+    """
+    Wrapper for the SQLAlchemy Case database object
+    """
+
+    def __init__(self):
+        self.engine = create_engine(format_db_path(core.config.config.device_db_type, core.config.paths.device_db_path))
+        self.connection = self.engine.connect()
+        self.transaction = self.connection.begin()
+
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        self.session = scoped_session(Session)
+
+        Device_Base.metadata.bind = self.engine
+        Device_Base.metadata.create_all(self.engine)
+
+
+def get_device_db(_singleton=DeviceDatabase()):
+    """ Singleton factory which returns the case database"""
+    return _singleton
+
+
+device_db = get_device_db()
+
