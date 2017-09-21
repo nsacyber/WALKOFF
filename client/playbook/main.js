@@ -156,6 +156,11 @@ $(function(){
         var appNames = [];
         if (!_.isEmpty(appData)) appNames = _.keys(appData);
 
+        var defaultObjectOptions = {
+            disable_properties: true,
+            no_additional_properties: true
+        };
+
         // This function creates a subschema for a single action. It contains
         // all the inputs of the action so the user only needs to enter the value.
         // When the user changes the action/flag/filter dropdown menu, the correct
@@ -166,12 +171,7 @@ $(function(){
                 // type: "array",
                 title: "Inputs",
                 required: ['$action'],
-                options: {
-                    hidden: args.length === 0,
-                    // disable_array_add: true,
-                    // disable_array_delete: true,
-                    // disable_array_reorder: true
-                },
+                options: defaultObjectOptions,
                 //Items populated below
                 // items: []
                 properties: {
@@ -185,6 +185,8 @@ $(function(){
                 }
             };
 
+            subSchema.options['hidden'] = args.length === 0;
+
             _.each(args, function(arg, index) {
                 var input = _.cloneDeep(arg);
                 var inputName = input.name;
@@ -195,6 +197,10 @@ $(function(){
                 //Hack: allow for output references "@<step_name>" for number fields
                 if (input.type === "number" || input.type === "integer") input.type = "string";
 
+                if (input.type === "object") {
+                    input.disable_properties = false;
+                    input.no_additional_properties = false;
+                }
                 // var valueSchema = null;
                 // if (pythonType === "string") {
                 //     valueSchema = {
@@ -227,9 +233,7 @@ $(function(){
                     type: "object",
                     title: "Input " + (index+1) + ": " + inputName + (input.required ? ' *' : ''),
                     propertyOrder: index,
-                    options: {
-                        disable_collapse: true
-                    },
+                    options: defaultObjectOptions,
                     properties: {
                         value: input,
                         name: { // This is hidden since it should not be modified by user
@@ -241,6 +245,8 @@ $(function(){
                         }
                     }
                 };
+
+                subSchema.properties[inputName].options.disable_collapse = true;
             });
 
             return subSchema;
@@ -281,6 +287,7 @@ $(function(){
             title: "Node Parameters",
             definitions: definitions,
             required: ['name', 'start', 'app'],
+            options: defaultObjectOptions,
             properties: {
                 name: {
                     type: "string",
@@ -335,6 +342,7 @@ $(function(){
                     type: "object",
                     headerTemplate: "Next Node {{ i1 }}: {{ self.name }}",
                     required: ['status'],
+                    options: defaultObjectOptions,
                     properties: {
                         name: {
                             type: "string",
@@ -355,6 +363,7 @@ $(function(){
                                 type: "object",
                                 title: "Next Step Flag",
                                 headerTemplate: "Flag {{ i1 }}",
+                                options: defaultObjectOptions,
                                 properties: {
                                     args: {
                                         title: "Select Flag",
@@ -368,6 +377,7 @@ $(function(){
                                         items: {
                                             type: "object",
                                             title: "Filter",
+                                            options: defaultObjectOptions,
                                             properties: {
                                                 args: {
                                                     title: "Select Filter",
@@ -461,10 +471,10 @@ $(function(){
 
             disable_edit_json: true,
 
-            disable_properties: true,
+            // disable_properties: true,
 
             // Disable additional properties
-            no_additional_properties: true,
+            // no_additional_properties: true,
 
             // Require all properties by default
             required_by_default: false
