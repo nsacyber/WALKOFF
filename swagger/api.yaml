@@ -13,6 +13,8 @@ info:
     url: 'http://creativecommons.org/licenses/by/4.0/'
 
 tags:
+  - name: Authorization
+    description: Authorization Operations
   - name: Apps
     description: App Management Operations
   - name: Cases
@@ -45,13 +47,15 @@ tags:
     description: Trigger Operations
   - name: System
     description: System Operations
+  - name: Client
+    description: Serves up client pages
 
 schemes:
   - http
   - https
 
 paths:
-  /apps:
+  /api/apps:
     get:
       tags:
         - System
@@ -60,19 +64,22 @@ paths:
       operationId: server.endpoints.apps.read_all_apps
       produces:
         - application/json
+      parameters:
+        - in: query
+          name: interfaces_only
+          description: Return only the apps with custom interfaces?
+          type: boolean
+          required: false
       responses:
         200:
           description: Success
           schema:
-            type: object
-            required: [apps]
-            properties:
-              apps:
-                type: array
-                items:
-                  type: string
-                example: [PhillipsHue, OpenDaylight, PaloAlto]
-  /apps/actions:
+            type: array
+            description: List of app names
+            items:
+              type: string
+              example: [PhillipsHue, OpenDaylight, PaloAlto]
+  /api/apps/actions:
     get:
       tags:
         - System
@@ -87,7 +94,7 @@ paths:
           schema:
             type: object
             description: All actions for each app. Of form {app_name -> action}
-  /apps/{app_name}/actions:
+  /api/apps/{app_name}/actions:
     get:
       tags:
         - Apps
@@ -116,7 +123,7 @@ paths:
           description: App does not exist
           schema:
             $ref: '#/definitions/Error'
-  /apps/{app_name}/devices:
+  /api/apps/{app_name}/devices:
     get:
       tags:
         - Apps
@@ -142,204 +149,79 @@ paths:
           description: App does not exist
           schema:
             $ref: '#/definitions/Error'
-  /apps/{app_name}/devices/import:
-    get:
-      tags:
-        - Apps
-      summary: Import apps devices
-      description: ''
-      operationId: server.endpoints.apps.import_devices
-      consumes:
-        - multipart/form-data
-      produces:
-        - application/json
-      parameters:
-        - name: app_name
-          in: path
-          description: The name of the app
-          required: true
-          type: string
-        - in: formData
-          name: filename
-          description: The name of the JSON file to import. Defaults to ./data/appdevice.json
-          required: false
-          type: string
-      responses:
-        200:
-          description: Success
-        515:
-          description: Error reading file
-        '405':
-          description: Validation exception
-  /apps/{app_name}/devices/export:
+  /api/auth:
     post:
       tags:
-        - Apps
-      summary: Export apps devices
+        - Authorization
+      summary: Login and get access and refresh tokens
       description: ''
-      operationId: server.endpoints.apps.export_devices
-      produces:
-        - application/json
-      parameters:
-        - name: app_name
-          in: path
-          description: The name of the app
-          required: true
-          type: string
-        - in: formData
-          name: filename
-          description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
-          required: false
-          type: string
-      responses:
-        200:
-          description: Success
-        515:
-          description: Error writing to file
-  /apps/{app_name}/devices/{device_name}:
-    parameters:
-      - in: path
-        name: app_name
-        description: Name of the app
-        type: string
-        required: true
-      - in: path
-        name: device_name
-        description: Name of the device
-        type: string
-        required: true
-    put:
-      tags:
-        - Devices
-      summary: Add a device
-      description: ''
-      operationId: server.endpoints.apps.create_device
+      operationId: server.endpoints.auth.login
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
-        - in: formData
-          name: name
-          description: Name of the device
-          type: string
-          required: false
-          minLength: 4
-          maxLength: 25
-        - in: formData
-          name: username
-          description: Username for the device
-          type: string
-          required: false
-          maxLength: 50
-        - in: formData
-          name: pw
-          description: Password for the device
-          type: string
-          required: false
-        - in: formData
-          name: ipaddr
-          description: IP address of the device
-          type: string
-          required: false
-        - in: formData
-          name: port
-          description: Port of the device
-          type: integer
-          required: false
-          minimum: 1
-          maximum: 65535
-        - in: formData
-          name: extraFields
-          description: String representation of JSON to use as extra parameters
-          required: false
-          type: string
+        - in: body
+          name: body
+          description: The username and password
+          required: true
+          schema:
+            $ref: '#/definitions/Authentication'
       responses:
         201:
           description: Success
-        461:
-          description: App not found
-        462:
-          description: Device already exists
-    get:
-      tags:
-        - Devices
-      summary: Get a device
-      description: ''
-      operationId: server.endpoints.apps.read_device
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-        461:
-          description: App or device does not exist.
+          schema:
+            $ref: '#/definitions/Token'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+  
+  /api/auth/refresh:
     post:
       tags:
-        - Devices
-      summary: Update a device
+        - Authorization
+      summary: Get a fresh access token
       description: ''
-      operationId: server.endpoints.apps.update_device
+      operationId: server.endpoints.auth.refresh
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Token'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+  
+  /api/auth/logout:
+    post:
+      tags:
+        - Authorization
+      summary: Logout of walkoff
+      operationId: server.endpoints.auth.logout
+      produces:
+        - application/json
       consumes:
         - application/json
-      produces:
-        - application/json
       parameters:
-        - in: formData
-          name: name
-          description: Name of the device
-          type: string
-          required: false
-          minLength: 4
-          maxLength: 25
-        - in: formData
-          name: username
-          description: Username for the device
-          type: string
-          required: false
-          minLength: 4
-          maxLength: 25
-        - in: formData
-          name: pw
-          description: Password for the device
-          type: string
-          required: false
-        - in: formData
-          name: ipaddr
-          description: IP address of the device
-          type: string
-          required: false
-        - in: formData
-          name: port
-          description: Port of the device
-          type: integer
-          required: false
-          minimum: 1
-          maximum: 65535
-        - in: formData
-          name: extraFields
-          description: String representation of JSON to use as extra parameters
-          required: false
-          type: string
+        - in: body
+          name: body
+          description: The refresh token to be revoked
+          required: true
+          schema:
+            type: object
+            required: [refresh_token]
+            properties:
+              refresh_token:
+                type: string
+                description: the refresh token to be revoked
       responses:
         200:
           description: Success
-        461:
-          description: App or device does not exiss
-    delete:
-      tags:
-        - Devices
-      summary: Remove a device
-      description: ''
-      operationId: server.endpoints.apps.delete_device
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-        461:
-          description: App or device does not exist
-  /cases:
+  /api/cases:
     get:
       tags:
         - Cases
@@ -352,19 +234,9 @@ paths:
         200:
           description: Success
           schema:
-            type: object
-            properties:
-              cases:
-                type: array
-                items:
-                  $ref: '#/definitions/Case'
-  /cases/{case}:
-    parameters:
-      - name: case
-        in: path
-        description: The name of the case
-        required: true
-        type: string
+            type: array
+            items:
+              $ref: '#/definitions/Case'
     put:
       tags:
         - Cases
@@ -373,16 +245,60 @@ paths:
       operationId: server.endpoints.cases.create_case
       produces:
         - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The name of the case to be created
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Case_One
       responses:
         201:
           description: Object created
           schema:
-            type: object
-            description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
+            $ref: '#/definitions/Case'
         462:
           description: Case already exists.
           schema:
             $ref: '#/definitions/Error'
+    post:
+      tags:
+        - Cases
+      summary: Update a case
+      description: ''
+      operationId: server.endpoints.cases.update_case
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Case'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Case'
+        461:
+          description: Case does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+  /api/cases/{case_id}:
+    parameters:
+      - name: case_id
+        in: path
+        description: The ID of the case
+        required: true
+        type: integer
     get:
       tags:
         - Cases
@@ -395,45 +311,7 @@ paths:
         200:
           description: Success
           schema:
-            type: object
-            properties:
-              case:
-                $ref: '#/definitions/Case'
-        461:
-          description: Case does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-    post:
-      tags:
-        - Cases
-      summary: Update a case
-      description: ''
-      operationId: server.endpoints.cases.update_case
-      consumes:
-        - application/x-www-form-urlencoded
-      produces:
-        - application/json
-      parameters:
-        - in: formData
-          name: name
-          description: New name of the case.
-          required: false
-          type: string
-        - in: formData
-          name: note
-          description: Note to add to the case
-          required: false
-          type: string
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            properties:
-              cases:
-                type: array
-                items:
-                  $ref: '#/definitions/Case'
+            $ref: '#/definitions/Case'
         461:
           description: Case does not exist.
           schema:
@@ -454,89 +332,19 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   
-  /cases/import:
+  /api/cases/{case_id}/events:
+    parameters:
+      - name: case_id
+        in: path
+        description: The ID of the case
+        required: true
+        type: integer
     get:
       tags:
         - Cases
-      summary: Import case data
-      description: ''
-      operationId: server.endpoints.cases.import_cases
-      consumes:
-        - application/x-www-form-urlencoded
-      produces:
-        - application/json
-      parameters:
-        - in: formData
-          name: filename
-          description: Filename of JSON to import into case database.
-          required: false
-          type: string
-      responses:
-        200:
-          description: Success
-        463:
-          description: Invalid JSON in file.
-          schema:
-            $ref: '#/definitions/Error'
-        515:
-          description: An error occurred opening the file.
-          schema:
-            $ref: '#/definitions/Error'
-  
-  /cases/export:
-    post:
-      tags:
-        - Cases
-      summary: Export case data
-      description: ''
-      operationId: server.endpoints.cases.export_cases
-      consumes:
-        - application/x-www-form-urlencoded
-      produces:
-        - application/json
-      parameters:
-        - in: formData
-          name: filename
-          description: Filename of JSON to import into case database.
-          required: false
-          type: string
-      responses:
-        200:
-          description: Success
-        515:
-          description: Could not write to file.
-          schema:
-            $ref: '#/definitions/Error'
-  
-  /cases/subscriptions:
-    get:
-      tags:
-        - Subscriptions
-      summary: Read all subscriptions for all cases
-      description: ''
-      operationId: server.endpoints.cases.read_all_subscriptions
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-  
-  /cases/{case}/events:
-    get:
-      tags:
-        - Cases
-      summary: Read all case events
+      summary: Read all the events for a case
       description: ''
       operationId: server.endpoints.cases.read_all_events
-      parameters:
-        - name: case
-          in: path
-          description: The name of the case
-          required: true
-          type: string
       produces:
         - application/json
       responses:
@@ -551,165 +359,307 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   
-  
-  /cases/{case}/subscriptions:
-    parameters:
-      - name: case
-        in: path
-        description: The name of the case
-        required: true
-        type: string
-    put:
-      tags:
-        - Subscriptions
-      summary: Create a subscription
-      description: ''
-      operationId: server.endpoints.cases.create_subscription
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: element
-          description: Created subscription object
-          required: true
-          schema:
-            $ref: '#/definitions/SubscriptionChange'
-      responses:
-        201:
-          description: Object created
-          schema:
-            type: object
-            description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-        461:
-          description: Case does not exist.
-          schema:
-            $ref: '#/definitions/Error'
+  /api/cases/import:
     get:
       tags:
-        - Subscriptions
-      summary: Read a subscription
+        - Cases
+      summary: Import case data
       description: ''
-      operationId: server.endpoints.cases.read_subscription
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            description: The subscriptions of the case
-            $ref: '#definitions/CaseSubscription'
-        461:
-          description: Case does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-    post:
-      tags:
-        - Subscriptions
-      summary: Update a subscription
-      description: ''
-      operationId: server.endpoints.cases.update_subscription
+      operationId: server.endpoints.cases.import_cases
       consumes:
         - application/json
       produces:
         - application/json
       parameters:
         - in: body
-          name: element
-          description: Edited subscription object
-          required: true
-          schema:
-            $ref: '#/definitions/SubscriptionChange'
-      responses:
-        200:
-          description: Success
+          name: body
+          description: Filename of JSON to import into Case database
+          required: false
+          x-nullable: true
           schema:
             type: object
-            description: All the cases and their subscriptions. Form of '{case_name -> CaseSubscriptions}'
-        461:
-          description: Case or element does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-    delete:
-      tags:
-        - Subscriptions
-      summary: Delete a subscription
-      description: ''
-      operationId: server.endpoints.cases.delete_subscription
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: ancestry
-          description: Ancestry of execution element
-          required: true
-          schema:
-            type: object
-            required:
-              - ancestry
             properties:
-              ancestry:
-                description: The ancestry of execution element whose subscription is to be deleted
-                type: array
-                items:
-                  type: string
-                example: [defaultController, myplaybook, step3]
+              filename:
+                type: string
+                example: import_list.json
       responses:
         200:
           description: Success
-        461:
-          description: Case or element does not exist.
+        463:
+          description: Invalid JSON in file.
           schema:
             $ref: '#/definitions/Error'
-  '/configuration/{key}':
+        515:
+          description: An error occurred opening the file.
+          schema:
+            $ref: '#/definitions/Error'
+  
+  /api/cases/export:
+    post:
+      tags:
+        - Cases
+      summary: Export case data
+      description: ''
+      operationId: server.endpoints.cases.export_cases
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The name of the JSON file to export to.
+          required: false
+          x-nullable: true
+          schema:
+            type: object
+            properties:
+              filename:
+                type: string
+                example: export_list.json
+      responses:
+        200:
+          description: Success
+        515:
+          description: Could not write to file.
+          schema:
+            $ref: '#/definitions/Error'
+  /api/configuration:
     get:
       tags:
         - Configuration
-      summary: Read a configuration key
-      description: ''
+      summary: Reads the configuration
       operationId: server.endpoints.configuration.read_config_values
-      parameters:
-        - name: key
-          in: path
-          description: 'The configuration key '
-          required: true
-          type: string
       produces:
         - application/json
       responses:
         200:
           description: Success
           schema:
-            type: object
-            description: '{[key]: <current value>}'
-        461:
-          description: Configuration key does not exist.
+            $ref: '#/definitions/Configuration'
+        401:
+          description: Unauthorized access
           schema:
             $ref: '#/definitions/Error'
-  /configuration/set:
     post:
       tags:
         - Configuration
-      summary: Update a configuration value
-      description: ''
+      summary: Updates the configuration
       operationId: server.endpoints.configuration.update_configuration
       consumes:
-        - multipart/form-data
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: configuration
+          in: body
+          description: The configuration object
+          required: true
+          schema:
+            $ref: '#/definitions/Configuration'
+      responses:
+        200:
+          description: Success
+        401:
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/Error'
+        515:
+          description: Could not write configuration to file
+          schema:
+            $ref: '#/definitions/Error'
+  /api/devices/import:
+    get:
+      tags:
+        - Devices
+      summary: Import devices
+      description: ''
+      operationId: server.endpoints.devices.import_devices
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The name of the JSON file to import. Defaults to ./data/appdevice.json
+          required: false
+          schema:
+            type: object
+            properties:
+              filename:
+                type: string
+                example: import_list.json
+      responses:
+        200:
+          description: Success
+        515:
+          description: Error reading file
+          schema:
+            $ref: '#/definitions/Error'
+        405:
+          description: Validation exception
+          schema:
+            $ref: '#/definitions/Error'
+  /api/devices/export:
+    post:
+      tags:
+        - Devices
+      summary: Export devices
+      description: ''
+      operationId: server.endpoints.devices.export_devices
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
+          required: false
+          schema:
+            type: object
+            properties:
+              filename:
+                type: string
+                example: export_list.json
+      responses:
+        200:
+          description: Success
+        515:
+          description: Error writing to file
+          schema:
+            $ref: '#/definitions/Error'
+  /api/devices/{device_id}:
+    parameters:
+      - in: path
+        name: device_id
+        description: ID of the device
+        type: integer
+        required: true
+    get:
+      tags:
+        - Devices
+      summary: Get a device
+      description: ''
+      operationId: server.endpoints.devices.read_device
       produces:
         - application/json
       responses:
         200:
           description: Success
-  /events/{event_id}:
+          schema:
+            $ref: '#/definitions/OutputDevice'
+        461:
+          description: Device does not exist.
+    delete:
+      tags:
+        - Devices
+      summary: Remove a device
+      description: ''
+      operationId: server.endpoints.devices.delete_device
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+        461:
+          description: Device does not exist
+          schema:
+            $ref: '#/definitions/Error'
+  /api/devices:
+    get:
+      tags:
+        - Devices
+      summary: Get all devices
+      description: ''
+      operationId: server.endpoints.devices.read_all_devices
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            description: A list of devices
+            items:
+              $ref: '#/definitions/OutputDevice'
+    put:
+      tags:
+        - Devices
+      summary: Add a device
+      description: ''
+      operationId: server.endpoints.devices.create_device
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The new device object to be created
+          required: true
+          schema:
+            $ref: '#/definitions/CreateDevice'
+      responses:
+        201:
+          description: Success
+          schema:
+            $ref: '#/definitions/OutputDevice'
+        462:
+          description: Device already exists
+          schema:
+            $ref: '#/definitions/Error'
+  
+    post:
+      tags:
+        - Devices
+      summary: Update a device
+      description: ''
+      operationId: server.endpoints.devices.update_device
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The new device object to be created
+          required: true
+          schema:
+            $ref: '#/definitions/EditDevice'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/OutputDevice'
+        461:
+          description: Device does not exist
+          schema:
+            $ref: '#/definitions/Error'
+  /api/events/{event_id}:
     parameters:
       - name: event_id
         in: path
         description: The name that needs to be fetched.
         required: true
         type: string
+    get:
+      tags:
+        - Events
+      summary: Read an event
+      description: ''
+      operationId: server.endpoints.events.read_event
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Event'
+        461:
+          description: Object does not exist
+          schema:
+            $ref: '#/definitions/Error'
+  /api/events:
     post:
       tags:
         - Events
@@ -722,33 +672,19 @@ paths:
         - application/json
       parameters:
         - in: body
-          name: note
+          name: body
           description: Note to add to the case
           required: true
           schema:
             type: object
-            required: [note]
+            required: [id, note]
             properties:
+              id:
+                type: integer
+                example: 1234
               note:
                 type: string
                 example: This event was import somehow. I should make a note about it
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: '#/definitions/Event'
-        461:
-          description: Object does not exist
-          schema:
-            $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Events
-      summary: Read an event
-      description: ''
-      operationId: server.endpoints.events.read_event
-      produces:
-        - application/json
       responses:
         200:
           description: Success
@@ -772,7 +708,7 @@ paths:
   #        200:
   #          description: Success
 
-  /availablesubscriptions:
+  /api/availablesubscriptions:
     get:
       tags:
         - System
@@ -789,7 +725,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/AvailableSubscriptions'
-  /filters:
+  /api/filters:
     get:
       tags:
         - System
@@ -809,7 +745,7 @@ paths:
                 description: All the available filters. Form of '{filter_name -> Action}'
                 type: object
   
-  /flags:
+  /api/flags:
     get:
       tags:
         - System
@@ -829,60 +765,7 @@ paths:
                 description: All the available flags. Form of '{flag_name -> Action}'
                 type: object
   
-  /interface/{interface_name}:
-    post:
-      tags:
-        - System
-      summary: Render interface
-      description: ''
-      operationId: server.endpoints.metadata.sys_pages
-      produces:
-        - application/json
-      parameters:
-        - name: interface_name
-          in: path
-          description: The name that needs to be fetched.
-          required: true
-          type: string
-        - in: body
-          name: widget_args
-          description: Pass page and arguments to render widget.
-          required: false
-          schema:
-            $ref: '#/definitions/RenderArgs'
-      responses:
-        200:
-          description: Success
-        401:
-          description: User is unauthorized
-          schema:
-            $ref: '#/definitions/Error'
-  
-  /key:
-    get:
-      tags:
-        - System
-      summary: Read api key
-      description: ''
-      operationId: server.endpoints.metadata.login_info
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            required: [auth_token]
-            properties:
-              auth_token:
-                description: API Authentication Token
-                type: string
-        401:
-          description: User is unauthorized
-          schema:
-            $ref: '#/definitions/Error'
-  
-  /widgets:
+  /api/widgets:
     get:
       tags:
         - System
@@ -897,6 +780,28 @@ paths:
           schema:
             type: object
             description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'
+  
+  /api/client/{filename}:
+    get:
+      tags:
+        - Client
+      summary: Get a client file
+      description: ''
+      operationId: server.endpoints.metadata.read_client_file
+      produces:
+        - application/json
+      parameters:
+        - name: filename
+          in: path
+          description: The name of the file to fetch
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+        463:
+          description: Invalid filename
+
   /metrics/apps:
     get:
       tags:
@@ -925,7 +830,7 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/WorkflowMetrics'
-  /playbooks:
+  /api/playbooks:
     get:
       tags:
         - Playbooks
@@ -934,23 +839,18 @@ paths:
       operationId: server.endpoints.playbooks.get_playbooks
       produces:
         - application/json
+      parameters:
+        - in: query
+          name: full
+          type: boolean
+          required: false
       responses:
         200:
           description: Success
           schema:
-            type: object
-            required: [playbooks]
-            properties:
-              playbooks:
-                type: object
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-  /playbooks/{playbook_name}:
-    parameters:
-      - name: playbook_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
+            type: array
+            items:
+              $ref: '#/definitions/AllPlaybooksOverview'
     put:
       tags:
         - Playbooks
@@ -958,7 +858,7 @@ paths:
       description: ''
       operationId: server.endpoints.playbooks.create_playbook
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
@@ -973,48 +873,14 @@ paths:
           description: Object created
           schema:
             type: object
-            required: [playbooks]
-            properties:
-              playbooks:
-                type: object
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+            description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
         211:
           description: Playbook created with empty template
           schema:
             type: object
-            required: [playbooks]
-            properties:
-              playbooks:
-                type: object
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
+            description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
         462:
           description: Playbook already exists.
-          schema:
-            $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Playbooks
-      summary: Read a playbook
-      description: ''
-      operationId: server.endpoints.playbooks.read_playbook
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            required: [workflows]
-            properties:
-              workflows:
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-                type: object
-        461:
-          description: Object does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-        463:
-          description: Invalid input error.
           schema:
             $ref: '#/definitions/Error'
     post:
@@ -1033,23 +899,48 @@ paths:
           description: Fields of the playbook object to be updated
           required: true
           schema:
-            $ref: '#/definitions/Playbook'
+            $ref: '#/definitions/UpdatePlaybook'
       responses:
         200:
           description: Success
           schema:
             type: object
-            required: [workflows]
-            properties:
-              workflows:
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-                type: object
+            description: All workflows for the associated playbook. Form of '{playbook_name -> [workflow_name]}'
         461:
           description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
         462:
           description: Playbook with that name already exists.
+          schema:
+            $ref: '#/definitions/Error'
+        463:
+          description: Invalid input error.
+          schema:
+            $ref: '#/definitions/Error'
+  /api/playbooks/{playbook_name}:
+    parameters:
+      - name: playbook_name
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    get:
+      tags:
+        - Playbooks
+      summary: Read a playbook
+      description: ''
+      operationId: server.endpoints.playbooks.read_playbook
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: object
+            description: All workflows for the specified playbook. Form of '{playbook_name -> [workflow_name]}'
+        461:
+          description: Object does not exist.
           schema:
             $ref: '#/definitions/Error'
         463:
@@ -1067,13 +958,6 @@ paths:
       responses:
         200:
           description: Success
-          schema:
-            type: object
-            required: [workflows]
-            properties:
-              workflows:
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-                type: object
         461:
           description: Playbook does not exist.
           schema:
@@ -1082,7 +966,7 @@ paths:
           description: I/O error.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/copy:
+  /api/playbooks/{playbook_name}/copy:
     post:
       tags:
         - Playbooks
@@ -1097,17 +981,23 @@ paths:
           type: string
         - in: body
           name: body
-          description: Playbook name
-          required: true
+          description: New playbook name (defaults to <Current_Name>_Copy)
+          required: false
           schema:
-            $ref: '#/definitions/Playbook'
+            type: object
+            properties:
+              playbook:
+                type: string
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       responses:
         201:
-          description: Playbook created.
+          description: Playbook created
+          schema:
+            type: object
+            description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
         461:
           description: Playbook does not exist.
           schema:
@@ -1116,34 +1006,32 @@ paths:
           description: Invalid playbook name. Playbook already exists.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows:
+  /api/playbooks/{playbook_name}/workflows:
+    parameters:
+      - name: playbook_name
+        in: path
+        description: 'The name that needs to be fetched. '
+        required: true
+        type: string
     get:
       tags:
         - Playbooks
       summary: Read all workflows in playbook
       description: ''
       operationId: server.endpoints.playbooks.get_workflows
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
       produces:
         - application/json
       responses:
-        201:
-          description: Workflow created.
+        200:
+          description: Success
           schema:
-            type: object
-            required: [workflows]
-            properties:
-              workflows:
-                description: All the workflows
-                type: array
-                items:
-                  type: string
-                example: [workflow_1, HelloWorldWorkflow, ThatOneWorkflow]
+            type: array
+            description: The JSON representation of all the workflows for the playbook
+            items:
+              type: object
+              properties:
+                schema:
+                  $ref: '#/definitions/Workflow'
         461:
           description: Playbook does not exist.
           schema:
@@ -1152,18 +1040,6 @@ paths:
           description: Invalid input error.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}:
-    parameters:
-    - name: playbook_name
-      in: path
-      description: The name that needs to be fetched.
-      required: true
-      type: string
-    - name: workflow_name
-      in: path
-      description: 'The name that needs to be fetched. '
-      required: true
-      type: string
     put:
       tags:
         - Workflows
@@ -1171,7 +1047,7 @@ paths:
       description: ''
       operationId: server.endpoints.playbooks.create_workflow
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
@@ -1185,46 +1061,17 @@ paths:
         201:
           description: Workflow created.
           schema:
-            type: object
-            required: [workflow]
-            properties:
-              workflow:
-                $ref: '#/definitions/Workflow'
+            $ref: '#/definitions/Workflow'
         211:
           description: Workflow created using default template.
           schema:
-            type: object
-            required: [workflow]
-            properties:
-              workflow:
-                $ref: '#/definitions/Workflow'
+            $ref: '#/definitions/Workflow'
         461:
           description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
         462:
           description: Workflow already exists.
-          schema:
-            $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Workflows
-      summary: Read a workflow
-      description: ''
-      operationId: server.endpoints.playbooks.read_workflow
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: '#/definitions/Workflow'
-        461:
-          description: Playbook or workflow does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-        463:
-          description: Element not found, or malformed JSON.
           schema:
             $ref: '#/definitions/Error'
     post:
@@ -1265,6 +1112,39 @@ paths:
           description: Invalid input error.
           schema:
             $ref: '#/definitions/Error'
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}:
+    parameters:
+    - name: playbook_name
+      in: path
+      description: The name that needs to be fetched.
+      required: true
+      type: string
+    - name: workflow_name
+      in: path
+      description: 'The name that needs to be fetched. '
+      required: true
+      type: string
+    get:
+      tags:
+        - Workflows
+      summary: Read a workflow
+      description: ''
+      operationId: server.endpoints.playbooks.read_workflow
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Workflow'
+        461:
+          description: Playbook or workflow does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        463:
+          description: Element not found, or malformed JSON.
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       tags:
         - Workflows
@@ -1276,18 +1156,11 @@ paths:
       responses:
         200:
           description: Success
-          schema:
-            type: object
-            required: [playbooks]
-            properties:
-              playbooks:
-                description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-                type: object
         461:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}/risk:
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}/risk:
     get:
       tags:
         - Workflows
@@ -1326,7 +1199,7 @@ paths:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}/copy:
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}/copy:
     post:
       tags:
         - Workflows
@@ -1347,16 +1220,18 @@ paths:
         - in: body
           name: body
           description: The new playbook and/or workflow name
-          required: true
+          required: false
           schema:
-            $ref: '#/definitions/PlaybookWorkflow'
+            $ref: '#/definitions/CopyWorkflow'
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       responses:
         201:
           description: Workflow copied.
+          schema:
+            $ref: '#/definitions/Workflow'
         461:
           description: Playbook or workflow does not exist.
           schema:
@@ -1365,7 +1240,7 @@ paths:
           description: Workflow already exists.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}/execute:
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}/execute:
     post:
       tags:
         - Workflows
@@ -1394,7 +1269,7 @@ paths:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}/pause:
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}/pause:
     post:
       tags:
         - Workflows
@@ -1428,7 +1303,7 @@ paths:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}/resume:
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}/resume:
     post:
       tags:
         - Workflows
@@ -1466,7 +1341,7 @@ paths:
           description: Invalid UUID.
           schema:
             $ref: '#/definitions/Error'
-  /playbooks/{playbook_name}/workflows/{workflow_name}/save:
+  /api/playbooks/{playbook_name}/workflows/{workflow_name}/save:
     post:
       tags:
         - Workflows
@@ -1484,6 +1359,20 @@ paths:
           description: 'The name that needs to be fetched. '
           required: true
           type: string
+        - in: body
+          name: body
+          description: Start step and Steps
+          required: true
+          schema:
+            type: object
+            required: [steps]
+            properties:
+              start:
+                type: string
+              steps:
+                type: array
+                items:
+                  $ref: "#/definitions/Step"
       produces:
         - application/json
       consumes:
@@ -1503,7 +1392,7 @@ paths:
           description: I/O error.
           schema:
             $ref: '#/definitions/Error'
-  /roles:
+  /api/roles:
     get:
       tags:
         - Roles
@@ -1519,17 +1408,7 @@ paths:
             description: A list of roles
             type: array
             items:
-              type: string
-            example:
-              - administrative_role
-              - guest
-  '/roles/{role_name}':
-    parameters:
-      - name: role_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
+              $ref: '#/definitions/Role'
     put:
       tags:
         - Roles
@@ -1537,7 +1416,7 @@ paths:
       description: ''
       operationId: server.endpoints.roles.create_role
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
@@ -1546,12 +1425,45 @@ paths:
           description: The role object to be created
           required: true
           schema:
+            $ref: '#/definitions/AddRole'
+      responses:
+        201:
+          description: Object created.
+          schema:
+            $ref: '#/definitions/Role'
+        462:
+          description: Object exists.
+    post:
+      tags:
+        - Roles
+      summary: Update a role
+      description: ''
+      operationId: server.endpoints.roles.update_role
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Updated fields for the role object
+          required: true
+          schema:
             $ref: '#/definitions/Role'
       responses:
-        '201':
-          description: Object created.
-        '462':
-          description: Object exists.
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Role'
+        461:
+          description: Object does not exist.
+  /api/roles/{role_id}:
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
     get:
       tags:
         - Roles
@@ -1561,181 +1473,201 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        200:
           description: Success
           schema:
             $ref: '#/definitions/Role'
-        '461':
+        461:
           description: Object does not exist.
-    post:
+    delete:
       tags:
         - Roles
-      summary: Update a role
+      summary: Delete a role
       description: ''
-      operationId: server.endpoints.roles.update_role
-      consumes:
-        - multipart/form-data
+      operationId: server.endpoints.roles.delete_role
       produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+        461:
+          description: Object does not exist.
+
+  /api/scheduler:
+    get:
+      tags:
+        - Scheduler
+      summary: Get the current scheduler status.
+      description: ''
+      operationId: server.endpoints.scheduler.get_scheduler_status
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Scheduler'
+  
+  /api/scheduler/{status}:
+    parameters:
+      - in: path
+        name: status
+        description: Requested status of the scheduler
+        type: string
+        required: true
+    get:
+      tags:
+        - Scheduler
+      summary: Update the status of the scheduler
+      description: ''
+      operationId: server.endpoints.scheduler.update_scheduler_status
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Scheduler'
+  
+  /api/scheduledtasks:
+    get:
+      tags:
+        - Scheduler
+      summary: Get all the scheduled tasks
+      operationId: server.endpoints.scheduler.read_all_scheduled_tasks
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            description: A list of Scheduled Task objects
+            type: array
+            items:
+              $ref: '#/definitions/ScheduledTask'
+    put:
+      tags:
+        - Scheduler
+      summary: Create a new Scheduled Task
+      operationId: server.endpoints.scheduler.create_scheduled_task
+      produces:
+        - application/json
+      consumes:
         - application/json
       parameters:
         - in: body
           name: body
-          description: Updated fields for the role object
+          description: The new Scheduled Task object
           required: true
           schema:
-            $ref: '#/definitions/EditRole'
+            $ref: '#/definitions/AddScheduledTask'
       responses:
-        '200':
+        201:
           description: Success
           schema:
-            $ref: '#/definitions/Role'
-        '461':
-          description: Object does not exist.
-
-  /execution/scheduler/start:
+            description: A list of Scheduled Task objects
+            type: array
+            items:
+              $ref: '#/definitions/ScheduledTask'
+        462:
+          description: Scheduled task already exists
+          schema:
+            $ref: '#/definitions/Error'
     post:
       tags:
         - Scheduler
-      summary: Start the scheduler
-      description: ''
-      operationId: server.endpoints.scheduler.start_scheduler
+      summary: Update a new Scheduled Task
+      operationId: server.endpoints.scheduler.update_scheduled_task
       produces:
         - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            properties:
-              status:
-                description: State of scheduler or error message
-                type: string
-                example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-  /execution/scheduler/stop:
-    post:
-      tags:
-        - Scheduler
-      summary: Stop the scheduler
-      description: ''
-      operationId: server.endpoints.scheduler.stop_scheduler
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            properties:
-              status:
-                description: State of scheduler or error message
-                type: string
-                example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-  /execution/scheduler/pause:
-    post:
-      tags:
-        - Scheduler
-      summary: Pause the scheduler
-      description: ''
-      operationId: server.endpoints.scheduler.pause_scheduler
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            properties:
-              status:
-                description: State of scheduler or error message
-                type: string
-                example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-  /execution/scheduler/resume:
-    post:
-      tags:
-        - Scheduler
-      summary: Resume the scheduler
-      description: ''
-      operationId: server.endpoints.scheduler.resume_scheduler
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            type: object
-            properties:
-              status:
-                description: State of scheduler or error message
-                type: string
-                example: 0 for stopped, 1 for running, 2 for paused, or on error Scheduler Already Stopped/Running/Paused
-  /execution/scheduler/{job_id}/pause:
-    post:
-      tags:
-        - Scheduler
-      summary: Pause a specific job
-      description: ''
-      operationId: server.endpoints.scheduler.pause_job
-      produces:
+      consumes:
         - application/json
       parameters:
-        - name: job_id
-          in: path
-          description: The job ID that needs to be fetched.
+        - in: body
+          name: body
+          description: The updated Scheduled Task object
           required: true
-          type: string
+          schema:
+            $ref: '#/definitions/ScheduledTask'
       responses:
         200:
           description: Success
           schema:
-            type: object
-            properties:
-              status:
-                description: State of job
-                type: string
-                example: Job Paused
-  /execution/scheduler/{job_id}/resume:
-    post:
-      tags:
-        - Scheduler
-      summary: Resume a specific job
-      description: ''
-      operationId: server.endpoints.scheduler.resume_job
-      produces:
-        - application/json
-      parameters:
-        - name: job_id
-          in: path
-          description: The job ID that needs to be fetched.
-          required: true
-          type: string
-      responses:
-        '200':
-          description: Success
+            $ref: '#/definitions/ScheduledTask'
+        461:
+          description: Scheduled task does not exist
           schema:
-            type: object
-            properties:
-              status:
-                description: State of job
-                type: string
-                example: Job Resumed
-  /execution/scheduler/jobs:
+            $ref: '#/definitions/Error'
+        462:
+          description: Scheduled task name already exists
+          schema:
+            $ref: '#/definitions/Error'
+  
+  /api/scheduledtasks/{scheduled_task_id}:
+    parameters:
+      - name: scheduled_task_id
+        in: path
+        description: The ID of the scheduled task.
+        required: true
+        type: string
     get:
       tags:
         - Scheduler
-      summary: Read all jobs
-      description: ''
-      operationId: server.endpoints.scheduler.read_all_jobs
+      summary: Get the scheduled task
+      operationId: server.endpoints.scheduler.read_scheduled_task
       produces:
         - application/json
       responses:
         200:
           description: Success
           schema:
-            description: A list of job objects
-            type: object
-            properties:
-              jobs:
-                $ref: '#/definitions/Job'
+            $ref: '#/definitions/ScheduledTask'
+        461:
+          description: Scheduled task does not exist
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Scheduler
+      summary: Delete the scheduled task
+      operationId: server.endpoints.scheduler.delete_scheduled_task
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+        461:
+          description: Scheduled task does not exist
+          schema:
+            $ref: '#/definitions/Error'
+  
+  /api/scheduledtasks/{scheduled_task_id}/{action}:
+    put:
+      tags:
+        - Scheduler
+      summary: Enable the scheduled task
+      operationId: server.endpoints.scheduler.control_scheduled_task
+      produces:
+        - application/json
+      parameters:
+        - name: scheduled_task_id
+          in: path
+          description: The ID of the scheduled task.
+          required: true
+          type: string
+        - name: action
+          in: path
+          description: The action to take on the task.
+          required: true
+          type: string
+          enum: [start, stop]
+      responses:
+        200:
+          description: Success
+        461:
+          description: Scheduled task does not exist
+          schema:
+            $ref: '#/definitions/Error'
   /execution/listener/triggers:
     get:
       tags:
@@ -1755,18 +1687,25 @@ paths:
               triggers:
                 type: array
                 items:
-                  $ref: '#/definitions/DisplayTrigger'
-  /execution/listener/execute:
+                  $ref: '#/definitions/Trigger'
+  /api/triggers/execute:
     post:
       tags:
         - Triggers
-      summary: Execute the trigger listener
+      summary: Execute the trigger
       description: ''
-      operationId: server.endpoints.triggers.listener
+      operationId: server.endpoints.triggers.execute
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Fields to execute the trigger
+          required: true
+          schema:
+            $ref: '#/definitions/TriggerExecutionParameters'
       responses:
         202:
           description: Success asynchronous.
@@ -1787,34 +1726,21 @@ paths:
       description: ''
       operationId: server.endpoints.triggers.create_trigger
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
-        - in: formData
-          name: conditional
-          description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
-          type: string
+        - in: body
+          name: body
+          description: Fields for the trigger object
           required: true
-        - in: formData
-          name: playbook
-          description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
-          type: string
-          required: true
-        - in: formData
-          name: workflow
-          description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
-          type: string
-          required: true
+          schema:
+            $ref: '#/definitions/Trigger'
       responses:
         201:
           description: Trigger created.
         462:
           description: Trigger already exists.
-          schema:
-            $ref: '#/definitions/Error'
-        463:
-          description: Invalid JSON in conditional field.
           schema:
             $ref: '#/definitions/Error'
     get:
@@ -1829,11 +1755,7 @@ paths:
         200:
           description: Success
           schema:
-            description: The trigger object
-            type: object
-            properties:
-              trigger:
-                $ref: '#/definitions/DisplayTrigger'
+            $ref: '#/definitions/Trigger'
         461:
           description: Trigger does not exist.
           schema:
@@ -1845,25 +1767,16 @@ paths:
       description: ''
       operationId: server.endpoints.triggers.update_trigger
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
-        - in: formData
-          name: conditional
-          description: String representation of a list of Flag objects such as "[{"flag"; "regMatch", "args"; [{"key"; "regex", "value"; "(.*)"}], "filters"; []}]" (replace ; with colon)
-          type: string
+        - in: body
+          name: body
+          description: Fields for the trigger object
           required: true
-        - in: formData
-          name: playbook
-          description: The name of the playbook that relates to this trigger such as HelloWorldPlaybook
-          type: string
-          required: true
-        - in: formData
-          name: workflow
-          description: The name of the workflow that relates to this trigger such as HelloWorldWorkflow
-          type: string
-          required: true
+          schema:
+            $ref: '#/definitions/Trigger'
       responses:
         200:
           description: Success
@@ -1873,10 +1786,6 @@ paths:
             $ref: '#/definitions/Error'
         462:
           description: Trigger already exists.
-          schema:
-            $ref: '#/definitions/Error'
-        463:
-          description: Invalid JSON in conditional field.
           schema:
             $ref: '#/definitions/Error'
     delete:
@@ -1894,7 +1803,7 @@ paths:
           description: Trigger does not exist.
           schema:
             $ref: '#/definitions/Error'
-  /users:
+  /api/users:
     get:
       tags:
         - Users
@@ -1907,20 +1816,10 @@ paths:
         200:
           description: Success
           schema:
-            description: A list of usernames
             type: array
+            description: A list of users
             items:
-              type: string
-            example:
-              - administrator
-              - guest
-  /users/{user_name}:
-    parameters:
-      - name: user_name
-        in: path
-        description: The name that needs to be fetched.
-        required: true
-        type: string
+              $ref: '#/definitions/DisplayUser'
     put:
       tags:
         - Users
@@ -1928,7 +1827,7 @@ paths:
       description: ''
       operationId: server.endpoints.users.create_user
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
@@ -1937,33 +1836,15 @@ paths:
           description: The new user object to be created
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: '#/definitions/AddUser'
       responses:
         201:
           description: User created.
+          schema:
+            description: The newly created user.
+            $ref: '#/definitions/DisplayUser'
         462:
           description: Could not create user <username>. User already exists.
-          schema:
-            $ref: '#/definitions/Error'
-    get:
-      tags:
-        - Users
-      summary: Get a user
-      description: ''
-      operationId: server.endpoints.users.read_user
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-          schema:
-            description: A list of user objects
-            type: object
-            properties:
-              user:
-                $ref: '#/definitions/DisplayUser'
-        461:
-          description: Could not display user <username>. User does not exist.
           schema:
             $ref: '#/definitions/Error'
     post:
@@ -1973,7 +1854,7 @@ paths:
       description: ''
       operationId: server.endpoints.users.update_user
       consumes:
-        - multipart/form-data
+        - application/json
       produces:
         - application/json
       parameters:
@@ -1987,13 +1868,41 @@ paths:
         200:
           description: Success
           schema:
-            description: A list of user objects
-            type: object
-            properties:
-              user:
-                $ref: '#/definitions/DisplayUser'
+            description: The updated user.
+            $ref: '#/definitions/DisplayUser'
+        400:
+          description: Invalid password
+          schema:
+            $ref: '#/definitions/Error'
         461:
           description: Could not edit user <username>. User does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+  
+  
+  /api/users/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        description: The id of the user to be fetched
+        required: true
+        type: integer
+    get:
+      tags:
+        - Users
+      summary: Get a user
+      description: ''
+      operationId: server.endpoints.users.read_user
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            description: The user object matching the user id inputted
+            $ref: '#/definitions/DisplayUser'
+        461:
+          description: Could not display user <username>. User does not exist.
           schema:
             $ref: '#/definitions/Error'
     delete:
@@ -2002,8 +1911,6 @@ paths:
       summary: Delete a user
       description: ''
       operationId: server.endpoints.users.delete_user
-      consumes:
-        - multipart/form-data
       produces:
         - application/json
       responses:
@@ -2101,34 +2008,6 @@ definitions:
             type: integer
           extraFields:
             type: string
-    
-    Playbook:
-        type: object
-        properties:
-          name:
-            type: string
-    AddWorkflow:
-        type: object
-        properties:
-          playbook:
-            type: string
-          template:
-            type: string
-    PlaybookWorkflow:
-        type: object
-        properties:
-          playbook:
-            type: string
-          workflow:
-            type: string
-    WorkflowUpdate:
-        type: object
-        properties:
-          name:
-            type: string
-          options:
-            type: object
-    
     Error:
       type: object
       required: [error]
@@ -2155,34 +2034,54 @@ definitions:
           items:
             type: string
           example: [Event1, Event_2, 'Event 3']
-    OutputDevice:
+    Authentication:
       type: object
-      required: [name, username, ip, port, app_name]
+      required: [username, password]
+      additionalProperties: false
       properties:
-        name:
-          type: string
-          example: [Server1]
         username:
           type: string
-          example: [alligator9]
-        ip:
+        password:
           type: string
-          example: 127.0.0.1
-        port:
-          type: integer
-          example: 25
-        app_name:
+    
+    Token:
+      type: object
+      required: [access_token]
+      properties:
+        access_token:
           type: string
-          example: CiscoIntegration
-        extra_fields:
-          type: object
+          description: Short-lived JWT used to provide access
+        refresh_token:
+          type: string
+          description: Long-lived JWT used to refresh a token
+
+    AddCase:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name:
+          description: Name of the case
+          type: string
+          example: case1
+        note:
+          description: A user-created note attached to the event
+          type: string
+          example: This case does some things I want it to do.
+        subscriptions:
+          description: The events this case is subscribed to
+          type: array
+          items:
+            $ref: '#/definitions/Subscription'
     Case:
       type: object
-      required: [name, note]
+      required: [id]
+      additionalProperties: false
       properties:
         id:
           description: Unique identifier for the case
           type: integer
+          readOnly: true
           example: 42
         name:
           description: Name of the case
@@ -2192,75 +2091,19 @@ definitions:
           description: A user-created note attached to the event
           type: string
           example: This case does some things I want it to do.
-        events:
-          description: The events which are logged to this case
+        subscriptions:
+          description: The events this case is subscribed to
           type: array
           items:
-            $ref: '#/definitions/Event'
-    Event:
-      type: object
-      required: [timestamp, event_type, ancestry, message, note, data]
-      properties:
-        id:
-          description: Unique identifier for the event
-          type: integer
-          example: 42
-        timestamp:
-          description: String representation of the time at which the event happened
-          type: string
-          example: '2017-05-12 15:54:18.121421'
-        event_type:
-          description: The type of event
-          type: string
-          enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
-          example: Step
-        ancestry:
-          description: An identifier of the event through its trace through the ancestry
-          type: array
-          items:
-            type: string
-          example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
-        message:
-          description: The message attached to the event
-          type: string
-          example: Next step not taken
-        note:
-          description: A user-created note attached to the event
-          type: string
-          example: This event handled that thing I wanted to stop
-        data:
-          description: An object providing additional information about the event
-          type: object
-          example: 'Output: This action output this: 1423'
-        cases:
-          description: The cases this event belongs to
-          type: array
-          example: [case1, mycase, thatonecase, thatothercase]
-          items:
-            $ref: '#/definitions/Case'
-    SubscriptionChange:
-        type: object
-        required: [ancestry, events]
-        properties:
-          ancestry:
-            description: The ancestry of the execution element to modify
-            type: array
-            items:
-              type: string
-            example: [defaultController, myplaybook, monitoringworkflow, step1, step3, flag_action1]
-          events:
-            description: The list of events to subscribe to
-            type: array
-            items:
-              type: string
-            example:
-              - Workflow Execution Start
-              - App Instance Created
-              - Step Execution Success
+            $ref: '#/definitions/Subscription'
+    
     Subscription:
       type: object
-      required: [events, subscriptions]
+      required: [uid, events]
       properties:
+        uid:
+          description: Universal ID for the execution element  or 'controller' for the controller
+          type: string
         events:
           description: A list of events subscribed to
           type: array
@@ -2270,17 +2113,214 @@ definitions:
             - Workflow Execution Start
             - App Instance Created
             - Step Execution Success
-        subscriptions:
-          description: Subscriptions for this elements sub-elements. Form of '{<sub-element-name> -> subscriptions}'
-          type: object
     
-    CaseSubscription:
+    Event:
       type: object
-      required: [subscriptions]
+      required: [timestamp, event_type, originator, message, note, data]
       properties:
-        subscriptions:
-          description: The subscriptions in the case Form of '{controllerName -> subscriptions}'
+        id:
+          description: Unique identifier for the event
+          type: integer
+          readOnly: true
+          example: 42
+        timestamp:
+          description: String representation of the time at which the event happened
+          type: string
+          readOnly: true
+          example: '2017-05-12 15:54:18.121421'
+        event_type:
+          description: The type of event
+          type: string
+          readOnly: true
+          enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
+          example: Step
+        originator:
+          description: The UID of the execution element which caused this event
+          type: string
+        message:
+          description: The message attached to the event
+          type: string
+          readOnly: true
+          example: Next step not taken
+        note:
+          description: A user-created note attached to the event
+          type: string
+          example: This event handled that thing I wanted to stop
+        data:
+          description: An object providing additional information about the event
           type: object
+          readOnly: true
+          example: 'Output: This action output this: 1423'
+        cases:
+          description: The cases this event belongs to
+          type: array
+          readOnly: true
+          example: [case1, mycase, thatonecase, thatothercase]
+          items:
+            $ref: '#/definitions/Case'
+    Configuration:
+        type: object
+        description: The configuration
+        additionalProperties : false
+        properties:
+          workflows_path:
+            type: string
+            description: The path to the workflows
+          templates_path:
+            type: string
+            description: The path to the workflow templates
+          db_path:
+            type: string
+            description: The path to the primary WALKOFF database
+          case_db_path:
+            type: string
+            description: The path to the case database
+          log_config_path:
+            type: string
+            description: The path to the logging configuration
+          host:
+            type: string
+            description: The server's host URL
+          port:
+            type: integer
+            description: The server's port
+            minimum: 0
+            maximum: 65535
+          walkoff_db_type:
+            type: string
+            description: The type of database used by the primary WALKOFF database
+            enum: [sqlite, mysql, postgresql, oracle, mssql]
+          case_db_type:
+            type: string
+            description: The type of database used by the case database
+            enum: [sqlite, mysql, postgresql, oracle, mssql]
+          https:
+            type: boolean
+            description: Toggle HTTPS on/off
+          tls_version:
+            type: string
+            description: The version of TLS to use
+            enum: ['1.1', '1.2', '1.3']
+          clear_case_db_on_startup:
+            type: boolean
+            description: Should the case database be cleared upon a server restart?
+          number_processes:
+            type: integer
+            minimum: 1
+            description: Number of worker processes which can execute workflows
+          access_token_duration:
+            type: number
+            minimum: 1
+            description: Time (in minutes) to allow an access token to persist. Should greater than the duration of the refresh token
+          refresh_token_duration:
+            type: number
+            minimum: 1
+            description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
+    
+    
+
+    CreateDevice:
+      type: object
+      required: [name, app]
+      properties:
+        name:
+          description: Name of the device
+          type: string
+          minLength: 4
+          maxLength: 25
+          example: Server1
+        username:
+          description: Username for the device
+          type: string
+          maxLength: 50
+          example: alligator9
+        password:
+          description: Password for the device
+          type: string
+          example: password123
+        ip:
+          description: IP address of the device
+          type: string
+          example: 127.0.0.1
+        port:
+          description: Port of the device
+          type: integer
+          minimum: 1
+          maximum: 65535
+          example: 25
+        app:
+          type: string
+          example: HelloWorld
+        extra_fields:
+          description: String representation of JSON to use as extra parameters
+          type: object
+          example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
+    EditDevice:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+          example: 1234
+          readOnly: true
+        name:
+          description: Name of the device
+          type: string
+          minLength: 4
+          maxLength: 25
+          example: Server1
+        username:
+          description: Username for the device
+          type: string
+          maxLength: 50
+          example: alligator9
+        password:
+          description: Password for the device
+          type: string
+          example: password123
+        ip:
+          description: IP address of the device
+          type: string
+          example: 127.0.0.1
+        port:
+          description: Port of the device
+          type: integer
+          minimum: 1
+          maximum: 65535
+          example: 25
+        app:
+          type: string
+          example: HelloWorld
+        extra_fields:
+          description: String representation of JSON to use as extra parameters
+          type: object
+          example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
+    OutputDevice:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1234
+          readOnly: true
+        name:
+          type: string
+          example: Server1
+        username:
+          type: string
+          example: alligator9
+        ip:
+          type: string
+          example: 127.0.0.1
+        port:
+          type: integer
+          example: 25
+        app:
+          type: string
+          example: HelloWorld
+        extra_fields:
+          type: object
+          example: "{protocol: TCP, keep_alive: False, extraFieldThree: fieldThree}"
+
     ActionMetricDetails:
       type: object
       required: [count, avg_time]
@@ -2289,10 +2329,12 @@ definitions:
           description: Number of times the action has been called
           type: integer
           example: 102
+          readOnly: true
         avg_time:
           description: Average execution time for the action. As a timestamp format
           type: string
           example: '0:00:00.001000'
+          readOnly: true
     ActionMetric:
       type: object
       required: [name]
@@ -2301,6 +2343,7 @@ definitions:
           description: Action name
           type: string
           example: repeatBackToMe
+          readOnly: true
         success_metrics:
           $ref: '#/definitions/ActionMetricDetails'
         error_metrics:
@@ -2313,10 +2356,12 @@ definitions:
           description: Name of app
           type: string
           example: HelloWorld
+          readOnly: true
         count:
           description: Number of times the app has been used
           type: integer
           example: 42
+          readOnly: true
         actions:
           description: Metrics of the app's actions
           type: array
@@ -2340,14 +2385,17 @@ definitions:
           description: Name of the workflow
           type: string
           example: HelloWorldWorkflow
+          readOnly: true
         count:
           description: Number of times the workflow has been used
           type: integer
           example: 42
+          readOnly: true
         avg_time:
           description: The average run time of this workflow
           type: string
           example: '1 day, 0:01:40.000500'
+          readOnly: true
     WorkflowMetrics:
       type: object
       required: [workflows]
@@ -2357,6 +2405,54 @@ definitions:
           items:
             $ref: '#/definitions/WorkflowMetric'
 
+    Playbook:
+        type: object
+        required: [name]
+        properties:
+          name:
+            type: string
+          playbook_template:
+            type: string
+    
+    AllPlaybooksOverview:
+      type: array
+      items:
+        $ref: '#/definitions/PlaybookOverview'
+    
+    PlaybookOverview:
+      type: object
+      description: Stripped-down view of a playbook
+      required: [name, workflows]
+      properties:
+        name:
+          type: string
+          description: name of the playbook
+        workflows:
+          description: workflows inside of this playbook
+          type: array
+          items:
+            $ref: '#/definitions/WorkflowDescription'
+    
+    
+    WorkflowDescription:
+      type: object
+      required: [name, uid]
+      properties:
+        name:
+          type: string
+          description: name of the workflow
+        uid:
+          type: string
+          description: UID of the workflow
+    
+    UpdatePlaybook:
+        type: object
+        required: [name]
+        properties:
+          name:
+            type: string
+          new_name:
+            type: string
     Workflow:
       type: object
       required: [name]
@@ -2367,47 +2463,56 @@ definitions:
           type: string
           example: HelloWorldWorkflow
         steps:
-          description: The steps defined in this workflow. Form of '{step_name -> step}'
-          type: object
-        accumulated_risk:
-          description: The risk which has been accumulated as this workflow has been executed
-          type: number
-          example: 0.43
-        options:
-          $ref: '#/definitions/WorkflowOptions'
+          description: The steps defined in this workflow.
+          type: array
+          items:
+            $ref: "#/definitions/DisplayStep"
         start:
           description: Name of the starting step
           type: string
           default: start
           example: step1
+        accumulated_risk:
+          description: The risk which has been accumulated as this workflow has been executed
+          type: number
+          example: 0.43
+          readOnly: true
+    AddWorkflow:
+        type: object
+        required: [name]
+        properties:
+          name:
+            type: string
+          workflow_template:
+            type: string
+          playbook_template:
+            type: string
     
-    WorkflowOptions:
+    WorkflowUpdate:
+        type: object
+        required: [name]
+        properties:
+          name:
+            type: string
+          new_name:
+            type: string
+    
+    CopyWorkflow:
+        type: object
+        properties:
+          playbook:
+            type: string
+          workflow:
+            type: string
+    
+    WorkflowId:
       type: object
-      description: Options attached to a workflow such as child workflows and schedulers
+      required: [id]
       properties:
-        scheduler:
-          type: object
-          required: [autorun, type]
-          properties:
-            autorun:
-              description: Should this workflow be run automatically?
-              type: boolean
-              example: true
-            type:
-              description: Type of scheduler
-              type: string
-              enum: [cron]
-              example: cron
-            args:
-              description: additional arguments
-              type: object
-        enabled:
-          description: determines if these options are enabled or disabled
-          type: boolean
-          example: true
-        children:
-          description: List of child workflows. Form of {workflow_name -> Workflow}
-          type: object
+        id:
+          type: string
+          description: 32-byte hexidecimal string representing the ID of the workflow
+          readOnly: true
     
     Step:
       type: object
@@ -2477,11 +2582,65 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/NextStep'
-        errors:
-          description: The possible next steps to take if this step fails
+    
+    DisplayStep:
+      type: object
+      description: Encapsulation of executing an action in an app
+      properties:
+        name:
+          description: Name of the step
+          type: string
+          example: step1
+        action:
+          description: The action the step will take
+          type: string
+          example: pause
+        app:
+          description: The app to which the action belongs
+          type: string
+          example: CyberAnalytics
+        device:
+          description: Name of the device to use
+          type: string
+          example: server4
+        risk:
+          description: risk associated with this step failing
+          type: number
+          default: 0
+          example: 20
+        inputs:
+          description: The input arguments to the action
           type: array
           items:
-            $ref: '#/definitions/NextStep'
+            $ref: '#/definitions/Argument'
+        widgets:
+          description: The widgets to which this app should send its output
+          type: array
+          items:
+            type: object
+            required: [app, name]
+            properties:
+              app:
+                description: Name of the app
+                type: string
+                example: HelloWorld
+              widget:
+                description: Name of the widget
+                type: string
+                example: testWidget
+        position:
+          description:  position of the step onthe workflow editor
+          type: object
+          required: [x, y]
+          properties:
+            x:
+              description: x position
+              type: number
+              example: 443.22
+            y:
+              description: y position
+              type: number
+              example: -12.036
     
     NextStep:
       type: object
@@ -2539,40 +2698,16 @@ definitions:
     
     Argument:
       type: object
-      required: [key, value]
+      required: [name, value]
       description: Object used for passing an argument into various actions
       properties:
-        key:
+        name:
           type: string
           example: regex
         value:
-          type: string
           example: WALK(.*)
-        format:
-          type: string
-          description: Note -- Ignored completely with new version.
-          default: str
-          example: string
-          enum: [str, string, unicode, int]
-    
-    WorkflowFromCytoscape:
-      type: object
-      properties:
-        start:
-          description: starting step name
-          type: string
-          example: step1
-        cytoscape:
-          type: object
-    
-    WorkflowId:
-      type: object
-      required: [id]
-      properties:
-        id:
-          type: string
-          description: 32-byte hexidecimal string representing the ID of the workflow
-    Role:
+
+    AddRole:
         type: object
         required: [name]
         properties:
@@ -2583,95 +2718,174 @@ definitions:
           description:
             description: Description of the role
             type: string
-            example: A user with this role can access any page and has administrative-level privileges.
-    EditRole:
+            example: A user with this role can access any resource and has administrative-level privileges.
+          resources:
+            description: A list of resources that a user with this role can access
+            example: [/users, /cases, /playbooks]
+            type: array
+            items:
+              type: string
+    
+    Role:
         type: object
+        required: [id]
         properties:
+          id:
+            type: integer
+            minimum: 1
+            description: id of the object
           name:
             description: Name of the role
             type: string
             example: administrative_role
-          pages:
-            description: A string representation of a list of pages that a user with this role can access
+          description:
+            description: Description of the role
             type: string
+            example: A user with this role can access any resource and has administrative-level privileges.
+          resources:
+            description: A list of resources that a user with this role can access
             example: [/users, /cases, /playbooks]
+            type: array
+            items:
+              type: string
 
-    Job:
+    Scheduler:
+      type: object
+      required: [status]
+      properties:
+        status:
+          description: State of trigger
+          type: string
+          example: 0 for stopped, 1 for running, 2 for paused, or a warning string
+    
+    AddScheduledTask:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        workflows:
+          description: List if UIDs of workflows attached to this task
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+          description: Name of this task
+        description:
+          type: string
+          description: description of this task
+        status:
+          type: string
+          description: Status of the task
+          enum: [running, stopped]
+        task_trigger:
+          $ref: '#/definitions/TaskTrigger'
+    
+    ScheduledTask:
+      type: object
+      required: [id]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          description: ID of the object
+          readOnly: true
+        workflows:
+          description: List if UIDs of workflows attached to this task
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+          description: Name of this task
+        description:
+          type: string
+          description: description of this task
+        status:
+          type: string
+          description: Status of the task
+          enum: [running, stopped]
+        task_trigger:
+          $ref: '#/definitions/TaskTrigger'
+    
+    TaskTrigger:
+      type: object
+      description: Scheduler to use.
+      required: [args, type]
+      properties:
+        type:
+          description: Type of scheduler trigger to use for this task
+          type: string
+          enum: [date, interval, cron]
+          example: date
+        args:
+          type: object
+          description: Arguments for the trigger.
+
+    Trigger:
       type: object
       properties:
         name:
-          description: Job name
+          description: Name of the trigger
           type: string
-          example: jobOne
-        id:
-          description: Job ID
+          example: triggerOne
+        conditions:
+          description: String representation of a list of Flag objects
+          type: array
+          items:
+            $ref: '#/definitions/Flag'
+        playbook:
+          description: The name of the playbook that relates to this trigger
           type: string
-          example: 12345
-    Trigger:
-        type: object
-        required: [conditional, playbook, workflow]
-        properties:
-          name:
-            description: Name of the trigger
+          example: HelloWorldPlaybook
+        workflow:
+          description: The name of the workflow that relates to this trigger
+          type: string
+          example: HelloWorldWorkflow
+        tag:
+          type: string
+    
+    TriggerExecutionParameters:
+      type: object
+      properties:
+        data:
+          type: string
+        inputs:
+          type: object
+        triggers:
+          type: array
+          items:
             type: string
-            example: triggerOne
-          conditional:
-            description: String representation of a list of Flag objects
+        tags:
+          type: array
+          items:
             type: string
-            example: '[{"flag": "regMatch", "args": {"regex", "(.*)"}, "filters": []}]'
-          playbook:
-            description: The name of the playbook that relates to this trigger
-            type: string
-            example: HelloWorldPlaybook
-          workflow:
-            description: The name of the workflow that relates to this trigger
-            type: string
-            example: HelloWorldWorkflow
-    DisplayTrigger:
-        type: object
-        properties:
-          name:
-            description: Name of the trigger
-            type: string
-            example: triggerOne
-          conditions:
-            description: A list of Flag objects (see Flag for further description)
-            type: array
-            items:
-              $ref: '#/definitions/Flag'
-          playbook:
-            description: The name of the playbook that relates to this trigger
-            type: string
-            example: HelloWorldPlaybook
-          workflow:
-            description: The name of the workflow that relates to this trigger
-            type: string
-            example: HelloWorldWorkflow
     
     TriggerExecutionResponse:
-        type: object
-        required: [errors, executed]
-        properties:
-            errors:
-                description: The errors executed. Array of the form [{trigger_name -> error message}]
-                type: array
-            executed:
-                description: The executed workflows
-                type: array
-                items:
-                    $ref: '#/definitions/TriggeredWorkflow'
+      type: object
+      required: [errors, executed]
+      properties:
+          errors:
+              description: The errors executed. Array of the form [{trigger_name -> error message}]
+              type: array
+          executed:
+              description: The executed workflows
+              type: array
+              items:
+                  $ref: '#/definitions/TriggeredWorkflow'
     
     TriggeredWorkflow:
-        type: object
-        required: [id, name]
-        properties:
-            id:
-                type: string
-                description: The UID of the workflow executing
-            name:
-                type: string
-                description: The name of the trigger executing
-    User:
+      type: object
+      required: [id, name]
+      properties:
+          id:
+              type: string
+              description: The UID of the workflow executing
+              readOnly: true
+          name:
+              type: string
+              description: The name of the trigger executing
+    AddUser:
         type: object
         required: [username, password]
         properties:
@@ -2683,24 +2897,38 @@ definitions:
             description: Password for the user
             type: string
             example: password123
-          role:
-            description: A list of endpoints that this user can access
+          roles:
+            description: A list of roles that this user possesses
             type: array
+            description: A list of role names
             items:
               type: string
-            example:
-              - /users
-              - /cases
-              - /playbooks
     EditUser:
         type: object
+        required: [id]
         properties:
+          id:
+            description: Database id of the user
+            type: integer
+            example: 123
+            readOnly: true
+          username:
+            description: New username or email of the user
+            type: string
+            example: administrator
+          old_password:
+            description: Previous password for the user
+            type: string
+            example: password123
           password:
             description: New password for the user
             type: string
-            example: password123
-          role:
-            description: New list of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+            example: password321
+          active:
+            description: activate/deactive a user
+            type: boolean
+          roles:
+            description: New list of role objects that this user possesses
             type: array
             items:
               type: string
@@ -2711,23 +2939,23 @@ definitions:
     DisplayUser:
         type: object
         properties:
+          id:
+            description: Database id of the user
+            type: integer
+            example: 123
+            readOnly: true
           username:
             description: Username or email of the user
             type: string
             example: administrator
-          role:
-            description: List of endpoints that this user can access (e.g. ["/users", "/cases", ...])
+          active:
+            description: activate/deactive a user
+            type: boolean
+          roles:
+            description: List of role objects that this user possesses
             type: array
             items:
               type: string
-            example:
-              - /users
-              - /cases
-              - /playbooks
-          active:
-            description: A boolean displaying whether or not a user is currently active
-            type: string
-            example: True
     WorkflowResult:
       type: object
       required: [name, timestamp, result]
@@ -2759,18 +2987,22 @@ definitions:
           description: The name of the workflow. Contains both playbook and workflow information
           type: string
           example: PlaybookName-WorkflowName
+          readOnly: true
         started_at:
           description: The timestamp of when the workflow completed
           type: string
           example: '2017-05-24 00:42:22.934058'
+          readOnly: true
         completed_at:
           description: The timestamp of when the workflow completed
           type: string
           example: '2017-05-24 00:43:26.930892'
+          readOnly: true
         status:
           description: The status of the workflow
           type: string
           enum: [completed, running]
+          readOnly: true
         results:
           description: The results of the workflow steps
           type: array
@@ -2789,20 +3021,25 @@ definitions:
           description: The name of the step
           type: string
           example: 'This One step'
+          readOnly: true
         result:
           description: The result of the step
           type: object
+          readOnly: true
         type:
           description: Success or failure of the step
           type: string
           example: SUCCESS
           enum: [SUCCESS, ERROR]
+          readOnly: true
         timestamp:
           description: The timestamp of when the step completed
           type: string
           example: '2017-05-24 00:43:26.930892'
+          readOnly: true
         input:
           description: The input to the step. Of form {input_name -> value}
           type: object
+          readOnly: true
 
 
