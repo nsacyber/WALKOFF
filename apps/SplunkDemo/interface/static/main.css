@@ -2,9 +2,60 @@
 	width: 80%;
 } */
 
+#main.malwareAppMain h1 {
+	text-align: center;
+}
+
+#main.malwareAppMain {
+  font-family: "Helvetica Neue", sans-serif;
+	background: #222;
+	color: white;
+}
+
+#main.malwareAppMain a {
+	color: rgb(221, 28, 119);
+}
+
+#main.malwareAppMain .table-striped>tbody>tr:nth-of-type(odd) {
+	background: #444;
+}
+
+#main.malwareAppMain .table-hover>tbody>tr:hover {
+	background-color: rgb(221, 28, 119);
+}
+
+#main.malwareAppMain .hoverinfo {
+	background-color: rgb(221, 28, 119);
+	border: none;
+	font-size: 2rem;
+	border-radius: 5px;
+}
+
 .basicInfoCol {
 	text-align: right;
 }
+
+/* #mapContainer {
+	background-size:cover;
+	width:100%;
+	min-height:100px;
+	height:calc(100vw * (6/10) - 30px);
+	margin:0 auto;
+} */
+
+#mapContainer {
+	position: relative;
+	width: 1000px;
+	height: 600px;
+	margin-top: -80px;
+	margin-bottom: -80px;
+}
+
+/* Simple way to get rid of the excess whitespace from the default projection */
+/* #mapContainer svg {
+	margin-top: -80px;
+	margin-bottom: -100px;
+} */
 
 /* TIMELINE
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -17,7 +68,7 @@
 } */
 
 #timelineContainer button {
-  background: transparent;
+  /* background: transparent; */
   border: none;
   cursor: pointer;
   outline: none;
@@ -25,8 +76,9 @@
 
 #timelineContainer {
   font: normal 16px/1.5 "Helvetica Neue", sans-serif;
-  background: #456990;
-  color: #fff;
+  background: #333;
+	color: #fff;
+	border-radius: 10px;
 }
 
 
@@ -34,7 +86,6 @@
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 .section {
-  background: #F45B69;
   padding: 5px 0;
 }
 
@@ -91,7 +142,7 @@
 	height: 12px;
 	transform: translateY(-50%);
 	border-radius: 50%;
-	background: #F45B69;
+	background: rgb(221, 28, 119);
   }
   
   .timeline ol li div {
@@ -102,7 +153,7 @@
 	font-size: 1rem;
 	white-space: normal;
 	color: black;
-	background: lightgreen;
+	background: lightblue;
 	border-radius: 5px;
   }
 
@@ -129,7 +180,7 @@
   .timeline ol li:nth-child(odd) div::before {
 	top: 100%;
 	border-width: 8px 8px 0 0;
-	border-color: lightgreen transparent transparent transparent;
+	border-color: lightblue transparent transparent transparent;
   }
 
   .timeline ol li.error:nth-child(odd) div::before {
@@ -144,7 +195,7 @@
   .timeline ol li:nth-child(even) div::before {
 	top: -8px;
 	border-width: 8px 0 0 8px;
-	border-color: transparent transparent transparent lightgreen;
+	border-color: transparent transparent transparent lightblue;
   }
 
   .timeline ol li.error:nth-child(even) div::before {
@@ -170,7 +221,14 @@
 	display: flex;
 	justify-content: center;
 	margin-bottom: 20px;
-  }
+	}
+	
+	.timeline .arrows button {
+	width: 40px;
+	height: 40px;
+	border-radius: 20px;
+	background: rgb(221, 28, 119);
+	}
   
   .timeline .arrows .arrow__prev {
 	margin-right: 20px;

@@ -1,7 +1,7 @@
 $(function () {
 	const PROCESS_STEP_NAME = 'get_process_info';
 	const FILE_STEP_NAME = 'get_file_info';
-	const APP_NAME = 'UncomplicatedFirewall';
+	const APP_NAME = 'SplunkDemo';
 
 	// refreshJwtAjax({
 	// 	'async': false,
@@ -160,21 +160,31 @@ $(function () {
 		var map = new Datamap({
 			element: document.getElementById('mapContainer'),
 			fills: {
-				defaultFill: "#222222",
+				defaultFill: "#333",
 				source: '#C60000',
 				target: '#477EFF'
 			},
+			geographyConfig: {
+				highlightFillColor: 'rgb(221, 28, 119)',
+				highlightBorderColor: 'white',
+				highlightBorderWidth: 3,
+			},
+			bubblesConfig: {
+				highlightFillColor: 'rgb(221, 28, 119)',
+				highlightBorderColor: 'white',
+				highlightBorderWidth: 3,
+			}
 		});
 
 		map.bubbles([
 			{ name: 'Source IP: ' + data.source_ip, latitude: data.source_latitude, longitude: data.source_longitude, radius: 15, fillKey: 'source' },
 			{ name: 'Target IP: ' + data.target_ip, latitude: data.target_latitude, longitude: data.target_longitude, radius: 15, fillKey: 'target' },
 		],
-		{
-			popupTemplate: function (geo, data) {
-				return "<div class='hoverinfo'>" + data.name + "</div>";
-			}
-		});
+			{
+				popupTemplate: function (geo, data) {
+					return "<div class='hoverinfo'>" + data.name + "</div>";
+				}
+			});
 
 		map.arc([
 			{
@@ -225,6 +235,7 @@ $(function () {
 		});
 
 		///TIMELINE STUFF
+
 		// VARIABLES
 		const timeline = document.querySelector(".timeline ol"),
 			elH = document.querySelectorAll(".timeline li > div"),
@@ -237,11 +248,13 @@ $(function () {
 			disabledClass = "disabled";
 
 		// START
-		window.addEventListener("load", init);
+		init();
 
 		function init() {
+			console.log('hi');
 			setEqualHeights(elH);
 			animateTl(xScrolling, arrows, timeline);
+			setKeyboardFn(arrowPrev, arrowNext);
 		}
 
 		// SET EQUAL HEIGHTS
@@ -314,6 +327,24 @@ $(function () {
 					counter++;
 				});
 			}
+		}
+
+		// ADD BASIC KEYBOARD FUNCTIONALITY
+		function setKeyboardFn(prev, next) {
+			document.addEventListener("keydown", (e) => {
+				if ((e.which === 37) || (e.which === 39)) {
+					const timelineOfTop = timeline.offsetTop;
+					const y = window.pageYOffset;
+					if (timelineOfTop !== y) {
+						window.scrollTo(0, timelineOfTop);
+					}
+					if (e.which === 37) {
+						prev.click();
+					} else if (e.which === 39) {
+						next.click();
+					}
+				}
+			});
 		}
 	}
 });

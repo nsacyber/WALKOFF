@@ -17,20 +17,26 @@
     height: 100%;
 } */
 
-.navbar-custom {
+#walkoffNav {
   background-color: #3c8dbc;
 }
 
-.navbar-custom a {
+#walkoffNav a {
   color: #f6f6f6;
 }
 
-.navbar-custom a .navLink {
+#walkoffNav a .navLink {
   margin-left: 5px;
 }
 
-.navbar-custom .dropdown-item {
+#walkoffNav .dropdown-item {
   color: #333333;
+}
+
+#walkoffNav {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
 }
 
 .navbar-nav > .user-menu .user-image {
