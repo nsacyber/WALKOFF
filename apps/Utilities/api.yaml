@@ -8,19 +8,6 @@ info:
   license:
     name: Creative Commons
 actions:
-  echo object:
-    run: echo_object
-    description: returns the argument passed into it
-    parameters:
-      - name: data
-        description: the data to echo
-        required: true
-        schema:
-           type: object
-    returns:
-      Success:
-        schema:
-          type: object
   'json select':
     run: json_select
     description: Gets a selected sub element of a json
