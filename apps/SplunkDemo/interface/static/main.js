@@ -1,23 +1,25 @@
 $(function () {
-	const PROCESS_STEP_NAME = 'get_process_info';
-	const FILE_STEP_NAME = 'get_file_info';
+	const PROCESS_STEP_NAME = 'get process info';
+	const FILE_STEP_NAME = 'stats';
 	const APP_NAME = 'SplunkDemo';
+	let authToken = sessionStorage.getItem('access_token');
 
-	// refreshJwtAjax({
-	// 	'async': false,
-	// 	'type': "POST",
-	// 	'global': false,
-	// 	'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
-	// 	'url': "/api/apps/" + APP_NAME + "/result",
-	// 	'success': function (data) {
-	// 	},
-	// 	'error': function (e) {
-	// 		console.log(e);
-	// 	}
-	// });
+	refreshJwtAjax({
+		'async': false,
+		'type': "GET",
+		'global': false,
+		'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
+		'url': "/apps/" + APP_NAME + "/data",
+		'success': function (data) {
+			initPage(data);
+		},
+		'error': function (e) {
+			console.log(e);
+		}
+	});
 
 	function refreshJwtAjax(request) {
-		if (!window.JwtHelper.isTokenExpired(authToken, 300)) {
+		if (!window.parent.JwtHelper.isTokenExpired(authToken, 300)) {
 			$.ajax(request);
 			return;
 		}
@@ -44,101 +46,131 @@ $(function () {
 		});
 	}
 
-	let data = {
-		workflow_results: [{
-			timestamp: '2017-09-20 14:10:21.702320',
-			action: PROCESS_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'HELLO WORLD'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:15:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'GOODBYE WORLD'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:25:21.702320',
-			action: 'some_action',
-			type: 'FAILURE',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'ERROR'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:30:21.702320',
-			action: 'some_other_action',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'some other result'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:45:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:45:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'FAILURE',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:50:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		},
-		{
-			timestamp: '2017-09-20 14:55:21.702320',
-			action: FILE_STEP_NAME,
-			type: 'SUCCESS',
-			result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
-		}],
-		source_ip: '165.257.22.34',
-		source_latitude: -31.32,
-		source_longitude: 23.32,
-		target_ip: '10.200.255.212',
-		target_latitude: 37.618889,
-		target_longitude: -122.375,
-		pcap_name: 'test.pcap',
-		exe_name: 'notavirus.py',
-	};
+	function viewPCAP(pcap_name) {
+		refreshJwtAjax({
+			'async': false,
+			'type': "GET",
+			'global': false,
+			'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
+			'url': `/apps/${APP_NAME}/view_pcap/${pcap_name}`,
+			'success': function (data) {
+				console.log('Opening wireshark locally...');
+			},
+			'error': function (e) {
+				console.log(e);
+			}
+		});
+	}
 
-	initPage(data);
+	// let data = {
+	// 	workflow_results: [{
+	// 		timestamp: '2017-09-20 14:10:21.702320',
+	// 		action: PROCESS_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'HELLO WORLD'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:15:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'remote',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'GOODBYE WORLD'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:25:21.702320',
+	// 		action: 'some_action',
+	// 		type: 'FAILURE',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'ERROR'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:30:21.702320',
+	// 		action: 'some_other_action',
+	// 		location: 'remote',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'some other result'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:45:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:45:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'FAILURE',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:50:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'remote',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'remote',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'remote',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	},
+	// 	{
+	// 		timestamp: '2017-09-20 14:55:21.702320',
+	// 		action: FILE_STEP_NAME,
+	// 		type: 'SUCCESS',
+	// 		location: 'local',
+	// 		result: "{u'result': {u'status': u'Success', u'result': {u'message': u'something else'}}}"
+	// 	}],
+	// 	source_ip: '165.257.22.34',
+	// 	source_latitude: -31.32,
+	// 	source_longitude: 23.32,
+	// 	target_ip: '10.200.255.212',
+	// 	target_latitude: 37.618889,
+	// 	target_longitude: -122.375,
+	// 	pcap_name: 'test.pcap',
+	// 	exe_name: 'notavirus.py',
+	// };
+
+	// initPage(data);
 
 	function initPage(data) {
 		let processResult = data.workflow_results.find(function (wr) {
@@ -154,6 +186,7 @@ $(function () {
 		$('#target_ip').text(data.target_ip);
 		$('#pcap_link').text(data.pcap_name);
 		$('#pcap_link').attr('href', 'apps/' + APP_NAME + '/data/' + data.pcap_name);
+		$('#view_pcap_link').on('click', viewPCAP(data.pcap_name));
 		$('#exe_link').text(data.exe_name);
 		$('#exe_link').attr('href', 'apps/' + APP_NAME + '/data/' + data.exe_name);
 
@@ -176,15 +209,17 @@ $(function () {
 			}
 		});
 
-		map.bubbles([
-			{ name: 'Source IP: ' + data.source_ip, latitude: data.source_latitude, longitude: data.source_longitude, radius: 15, fillKey: 'source' },
-			{ name: 'Target IP: ' + data.target_ip, latitude: data.target_latitude, longitude: data.target_longitude, radius: 15, fillKey: 'target' },
-		],
+		map.bubbles(
+			[
+				{ name: 'Source IP: ' + data.source_ip, latitude: data.source_latitude, longitude: data.source_longitude, radius: 15, fillKey: 'source' },
+				{ name: 'Target IP: ' + data.target_ip, latitude: data.target_latitude, longitude: data.target_longitude, radius: 15, fillKey: 'target' },
+			],
 			{
 				popupTemplate: function (geo, data) {
 					return "<div class='hoverinfo'>" + data.name + "</div>";
 				}
-			});
+			}
+		);
 
 		map.arc([
 			{
@@ -197,7 +232,7 @@ $(function () {
 					longitude: data.target_longitude
 				}
 			}
-		])
+		]);
 
 		// var table = $("#workflowResultsTable").DataTable({
 		// 	columns: [
@@ -225,10 +260,10 @@ $(function () {
 
 		data.workflow_results.forEach(function (wr) {
 			$('.timeline ol').append(
-				`<li ${wr.type !== 'SUCCESS' ? 'class="error"' : ''}>
+				`<li class="${wr.type !== 'SUCCESS' ? 'error' : ''} ${wr.location}">
 					<div>
 						<time>${wr.timestamp}</time>
-						<span>${wr.action}</span>
+						<span>${wr.action} <i>(${wr.location})</i></span>
 					</div>
 				</li>`
 			);
@@ -251,7 +286,6 @@ $(function () {
 		init();
 
 		function init() {
-			console.log('hi');
 			setEqualHeights(elH);
 			animateTl(xScrolling, arrows, timeline);
 			setKeyboardFn(arrowPrev, arrowNext);

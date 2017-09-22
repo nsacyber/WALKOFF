@@ -284,9 +284,6 @@ export class CasesModalComponent {
 			let indexToDelete = self.workingCase.subscriptions.indexOf(matchingSubscription);
 			self.workingCase.subscriptions.splice(indexToDelete, 1);
 		}
-
-		console.log(self.workingCase);
-		console.log(event);
 	}
 
 	submit(): void {

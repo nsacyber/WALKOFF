@@ -152,13 +152,13 @@
 	padding: 15px;
 	font-size: 1rem;
 	white-space: normal;
-	color: black;
-	background: lightblue;
+	color: white;
+	background: #1d83e2;
 	border-radius: 5px;
   }
 
-  .timeline ol li.error div {
-	  background: pink;
+  .timeline ol li.remote div {
+	  background: #dd7e11;
   }
   
   .timeline ol li div::before {
@@ -180,11 +180,11 @@
   .timeline ol li:nth-child(odd) div::before {
 	top: 100%;
 	border-width: 8px 8px 0 0;
-	border-color: lightblue transparent transparent transparent;
+	border-color: #1d83e2 transparent transparent transparent;
   }
 
-  .timeline ol li.error:nth-child(odd) div::before {
-	border-color: pink transparent transparent transparent;
+  .timeline ol li.remote:nth-child(odd) div::before {
+	border-color: #dd7e11 transparent transparent transparent;
   }
   
   .timeline ol li:nth-child(even) div {
@@ -195,11 +195,11 @@
   .timeline ol li:nth-child(even) div::before {
 	top: -8px;
 	border-width: 8px 0 0 8px;
-	border-color: transparent transparent transparent lightblue;
+	border-color: transparent transparent transparent #1d83e2;
   }
 
-  .timeline ol li.error:nth-child(even) div::before {
-	border-color: transparent transparent transparent pink;
+  .timeline ol li.remote:nth-child(even) div::before {
+	border-color: transparent transparent transparent #dd7e11;
   }
   
   .timeline time {
