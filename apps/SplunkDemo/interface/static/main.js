@@ -52,7 +52,7 @@ $(function () {
 			'type': "GET",
 			'global': false,
 			'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
-			'url': `/apps/${APP_NAME}/view_pcap/${pcap_name}`,
+			'url': `/apps/${APP_NAME}/view_pcap`,
 			'success': function (data) {
 				console.log('Opening wireshark locally...');
 			},
@@ -173,20 +173,13 @@ $(function () {
 	// initPage(data);
 
 	function initPage(data) {
-		let processResult = data.workflow_results.find(function (wr) {
-			return wr.action === PROCESS_STEP_NAME;
-		});
-		let fileResult = data.workflow_results.find(function (wr) {
-			return wr.action === FILE_STEP_NAME;
-		});
-		processResult.result = JSON.parse(processResult.result.replace(/u'/g, "'").replace(/'/g, '"')).result.result;
-		fileResult.result = JSON.parse(fileResult.result.replace(/u'/g, "'").replace(/'/g, '"')).result.result;
-
 		$('#source_ip').text(data.source_ip);
 		$('#target_ip').text(data.target_ip);
 		$('#pcap_link').text(data.pcap_name);
 		$('#pcap_link').attr('href', 'apps/' + APP_NAME + '/data/' + data.pcap_name);
-		$('#view_pcap_link').on('click', viewPCAP(data.pcap_name));
+		$('#view_pcap_link').click(function () {
+			viewPCAP(data.pcap_name);
+		});
 		$('#exe_link').text(data.exe_name);
 		$('#exe_link').attr('href', 'apps/' + APP_NAME + '/data/' + data.exe_name);
 
@@ -234,42 +227,37 @@ $(function () {
 			}
 		]);
 
-		// var table = $("#workflowResultsTable").DataTable({
-		// 	columns: [
-		// 		{ data: "name", title: "ID" },
-		// 		{ data: "timestamp", title: "Timestamp" },
-		// 		{ data: "type", title: "Type" },
-		// 		{ data: "input", title: "Input" },
-		// 		{ data: "result", title: "Result" }
-		// 	],
-		// 	order: [1, 'desc']
-		// });
-
-		// data.workflow_results.forEach(function (wr) {
-		// 	table.row.add(data);
-		// 	table.draw();
-		// });
-
-		Object.keys(processResult.result).forEach(function (key) {
-			$('#processInformationTable > tbody:last-child').append('<tr><td>' + key + '</td><td>' + processResult.result[key] + '</td></tr>');
+		let processResult = data.workflow_results.find(function (wr) {
+			return wr.action === PROCESS_STEP_NAME;
+		});
+		let fileResult = data.workflow_results.find(function (wr) {
+			return wr.action === FILE_STEP_NAME;
 		});
 
-		Object.keys(fileResult.result).forEach(function (key) {
-			$('#fileInformationTable > tbody:last-child').append('<tr><td>' + key + '</td><td>' + fileResult.result[key] + '</td></tr>');
-		});
+		if (processResult) {
+			// processResult.result = JSON.parse(processResult.result.replace(/u'/g, "'").replace(/'/g, '"')).result.result;
+			Object.keys(processResult.result.result).forEach(function (key) {
+				$('#processInformationTable > tbody:last-child').append('<tr><td>' + key + '</td><td>' + processResult.result.result[key] + '</td></tr>');
+			});
+		} 
+		if (fileResult) {
+			// fileResult.result = JSON.parse(fileResult.result.replace(/u'/g, "'").replace(/'/g, '"')).result.result;
+			Object.keys(fileResult.result.result).forEach(function (key) {
+				$('#fileInformationTable > tbody:last-child').append('<tr><td>' + key + '</td><td>' + fileResult.result.result[key] + '</td></tr>');
+			});
+		}
 
+		///TIMELINE STUFF
 		data.workflow_results.forEach(function (wr) {
 			$('.timeline ol').append(
 				`<li class="${wr.type !== 'SUCCESS' ? 'error' : ''} ${wr.location}">
 					<div>
 						<time>${wr.timestamp}</time>
-						<span>${wr.action} <i>(${wr.location})</i></span>
+						<span>${wr.app} - ${wr.action} <i>(${wr.location})</i></span>
 					</div>
 				</li>`
 			);
 		});
-
-		///TIMELINE STUFF
 
 		// VARIABLES
 		const timeline = document.querySelector(".timeline ol"),

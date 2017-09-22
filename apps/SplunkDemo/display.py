@@ -36,14 +36,12 @@ def get_data():
     workflow_results = unrolled_steps
     echo_step = next((step for step in unrolled_steps if step['action'] == 'echo object'), None)
     data = echo_step['input']['data']
-    print(data)
     response = {'workflow_results': unrolled_steps, 
                 'pcap_name': 'capture.pcap',
                 'exe_name': 'quanrantined_malware.bin'}
     response.update(data)
     # update with pcap and bin
     return jsonify(response)
-
 
 @blueprint.blueprint.route('/view_pcap', methods=['GET'])
 def view_in_wireshark():
