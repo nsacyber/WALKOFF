@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from apps import AppBlueprint
 import os.path
 import json
@@ -42,11 +42,13 @@ def get_data():
                 'exe_name': 'quanrantined_malware.bin'}
     response.update(data)
     # update with pcap and bin
-    return response
+    return jsonify(response)
+
 
 @blueprint.blueprint.route('/view_pcap', methods=['GET'])
 def view_in_wireshark():
     os.system('wireshark -r /home/ubunutu/WALKOFF/SplunkDemo/data/capture.pcap &')
+    return 'Success'
 
 
 
