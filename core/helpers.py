@@ -142,6 +142,19 @@ def list_apps(path=None):
     return __list_valid_directories(path)
 
 
+def list_apps_with_interfaces(path=None):
+    if path is None:
+        path = core.config.paths.apps_path
+    apps = list_apps(path)
+    apps_with_interfaces = []
+    for app in apps:
+        app_path = os.path.join(path, app, 'interface', 'templates', 'index.html')
+        if os.path.isfile(app_path):
+            apps_with_interfaces.append(app)
+
+    return apps_with_interfaces
+
+
 def list_widgets(app, app_path=None):
     """Get a list of the widgets for a given app. 
     

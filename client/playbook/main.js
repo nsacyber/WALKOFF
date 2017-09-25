@@ -1,9 +1,4 @@
-if (typeof(EventSource) !== "undefined") {
-    stepResultsSSE = new EventSource('workflowresults/stream-steps');
-}
-else {
-    console.log('EventSource is not supported on your browser. Please switch to a browser that supports EventSource to receive real-time updates.');
-}
+
 
 $(function(){
     "use strict";
@@ -23,10 +18,35 @@ $(function(){
     var startNode = null;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
     var authToken = sessionStorage.getItem('access_token');
-
+    
     //--------------------
     // Top level functions
     //--------------------
+
+    // TODO: this function only really authorizes on the first call. we should switch to maybe a web socket to handle this route in the future
+    function createWorkflowResultsSSE() {
+        if (!window.JwtHelper.isTokenExpired(authToken)) {
+            window.stepResultsSSE = new EventSource('workflowresults/stream-steps?access_token=' + authToken);
+            return;
+        }
+        
+        $.ajax({
+            'async': false,
+            'type': "POST",
+            'global': false,
+            'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
+            'url': "/api/auth/refresh",
+            'success': function (data) {
+                sessionStorage.setItem('access_token', data['access_token']);
+                authToken = data['access_token'];
+                window.stepResultsSSE = new EventSource('workflowresults/stream-steps?access_token=' + authToken);
+            },
+            'error': function (e) {
+                console.log(e);
+            }
+        });
+    }
+    createWorkflowResultsSSE();
 
     function refreshJwtAjax(request) {
         if (!window.JwtHelper.isTokenExpired(authToken, 300)) {

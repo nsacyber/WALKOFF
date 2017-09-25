@@ -7,6 +7,10 @@ from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 from core.config.paths import case_db_path
 import core.config.config
 from core.helpers import format_db_path
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 Case_Base = declarative_base()
 
@@ -82,27 +86,6 @@ class Event(Case_Base):
             output['cases'] = [case.as_json(with_events=False) for case in self.cases]
         return output
 
-    # @staticmethod
-    # def create(sender, timestamp, entry_message, entry_type, data=''):
-    #     """Factory method to construct an Event object.
-    #
-    #     Args:
-    #         sender (cls): A boolean to determine whether or not the events of the Case object should be
-    #         included in the output.
-    #         timestamp (str): A string representation of a timestamp
-    #         entry_message (str): The message associated with the event
-    #         entry_type (str): The type of event being logged (Workflow, NextStep, Flag, etc.)
-    #         data: Extra information to be logged with the event
-    #
-    #     Returns:
-    #         An Event object.
-    #     """
-    #     return Event(type=entry_type,
-    #                  timestamp=timestamp,
-    #                  originator=','.join(map(str, sender.)),
-    #                  message=entry_message,
-    #                  data=data)
-
 
 class CaseDatabase(object):
     """
@@ -138,8 +121,6 @@ class CaseDatabase(object):
         additions = [Case(name=case_name) for case_name in (set(case_names) - existing_cases)]
         self.session.add_all(additions)
         self.session.commit()
-        existing_cases = self.session.query(Case).all()
-        existing_case_names = [case.name for case in existing_cases]
 
     def delete_cases(self, case_names):
         """ Removes cases to the database
@@ -182,7 +163,7 @@ class CaseDatabase(object):
         
         Args:
             event (cls): A core.case.database.Event object to add to the cases
-            cases (list[str]): The cases to add the event to
+            cases (list[str]): The names of the cases to add the event to
         """
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
@@ -192,7 +173,7 @@ class CaseDatabase(object):
                     if case_elem.name == case:
                         event.cases.append(case_elem)
             else:
-                print("ERROR: Case is not tracked")
+                logger.error("Case is not tracked")
         self.session.add(event)
         self.session.commit()
 
@@ -223,7 +204,7 @@ class CaseDatabase(object):
             raise Exception
 
         result = [event.as_json()
-                  for event in self.session.query(Event).join(Event.cases).filter(Case.id == event_id).all()]
+                  for event in event_id.events]
         return result
 
 
@@ -247,7 +228,3 @@ def tear_down():
     """ Tears down the case database
     """
     pass
-    # case_db.session.close()
-    # case_db.transaction.rollback()
-    # case_db.connection.close()
-    # case_db.engine.dispose()

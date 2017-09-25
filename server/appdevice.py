@@ -19,17 +19,6 @@ class App(db.Model, database.TrackModificationsMixIn):
     name = db.Column(db.String)
     devices = db.relationship("Device", back_populates="app")
 
-    def as_json(self, with_devices=False):
-        """Gets the JSON representation of an App object.
-        
-        Returns:
-            The JSON representation of an App object.
-        """
-        output = {'name': self.name}
-        if with_devices:
-            output['devices'] = [device.as_json() for device in self.devices]
-        return output
-
     def __init__(self, app=None, devices=None):
         """Initializes an App object.
         
@@ -45,14 +34,25 @@ class App(db.Model, database.TrackModificationsMixIn):
         # self.api = WalkoffAppDefinition(self.name, self)
         pass
 
+    def as_json(self, with_devices=False):
+        """Gets the JSON representation of an App object.
+
+        Returns:
+            The JSON representation of an App object.
+        """
+        output = {'name': self.name}
+        if with_devices:
+            output['devices'] = [device.as_json() for device in self.devices]
+        return output
+
     @staticmethod
     def get_all_devices_for_app(app_name):
-        """ Gets all the devices associated with an app
+        """ Gets all the devices associated with an app.
 
         Args:
-            app_name (str): The name of the app
+            app_name (str): The name of the app.
         Returns:
-            (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
+            (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database.
         """
         app = App.query.filter_by(name=app_name).first()
         if app is not None:
@@ -63,17 +63,17 @@ class App(db.Model, database.TrackModificationsMixIn):
 
     @staticmethod
     def get_device(app_name, device_name):
-        """ Gets the device associated with an app
+        """ Gets the device associated with the app.
 
         Args:
-            app_name (str): The name of the app
-            device_name (str): The name of the device
+            app_name (str): The name of the app.
+            device_name (str): The name of the device.
         Returns:
             (Device): The desired device. Returns None if app or device not found.
         """
         app = App.query.filter_by(name=app_name).first()
         if app is not None:
-            # efficient generator to get first instance of device with matching name. returns None if not found
+            # efficient generator to get first instance of device with matching name. Returns None if not found.
             device = next((device for device in app.devices if device.name == device_name), None)
             if device is not None:
                 return device
@@ -108,13 +108,13 @@ class Device(db.Model, database.TrackModificationsMixIn):
         
         Args:
             name (str, optional): The name of the Device object. Defaults to an empty string.
+            app_id (str): The ID of the App object to which this Device is associated.
             username (str, optional): The username for the Device object. Defaults to an empty string.
             password (str, optional): The password for the Device object. Defaults to an empty string.
             ip (str, optional): The IP address for for the Device object. Defaults to "0.0.0.0".
             port (int, optional): The port for the Device object. Defaults to 0.
             extra_fields (str, optional): The string representation of a dictionary that holds various custom
                 extra fields for the Device object. Defaults to an empty string.
-            app_id (str): The ID of the App object to which this Device is associated.
         """
         self.name = name
         self.app_id = app_id
@@ -149,6 +149,11 @@ class Device(db.Model, database.TrackModificationsMixIn):
         return device
 
     def get_password(self):
+        """Retrieves the password for a device.
+
+        Returns:
+            The decrypted password.
+        """
         try:
             with open(core.config.paths.AES_key_path, 'rb') as key_file:
                 key = key_file.read()

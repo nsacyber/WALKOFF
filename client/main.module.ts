@@ -20,6 +20,7 @@ import { DevicesComponent } from './devices/devices.component';
 import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
+import { AppsComponent } from './apps/apps.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
@@ -49,6 +50,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		TriggersComponent,
 		CasesComponent,
 		SettingsComponent,
+		AppsComponent,
 		//Modals
 		SchedulerModalComponent,
 		DevicesModalComponent,

@@ -1,15 +1,13 @@
 import os
-from flask import render_template, current_app, send_file
+from flask import send_file
 from server.security import roles_accepted_for_resources
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-from server.returncodes import SUCCESS, UNAUTHORIZED_ERROR
-
-from core.helpers import combine_dicts
+from server.returncodes import SUCCESS
 
 
 def read_all_possible_subscriptions():
@@ -72,23 +70,6 @@ def read_all_flags():
             ret['args'] = args
             flags[flag_name] = ret
         return {"flags": flags}, SUCCESS
-
-    return __func()
-
-
-def sys_pages(interface_name):
-    from server import interface
-
-    @jwt_required
-    @roles_accepted_for_resources('interface')
-    def __func():
-        if current_user.is_authenticated and interface_name:
-            args = getattr(interface, interface_name)()
-            combine_dicts(args, {"authKey": current_user.get_auth_token()})
-            return render_template("pages/" + interface_name + "/index.html", **args), SUCCESS
-        else:
-            current_app.logger.debug('Unsuccessful login attempt')
-            return {"error": "Could not Log In."}, UNAUTHORIZED_ERROR
 
     return __func()
 

@@ -22,9 +22,9 @@
   post:
     tags:
       - Triggers
-    summary: Execute the trigger listener
+    summary: Execute the trigger
     description: ''
-    operationId: server.endpoints.triggers.listener
+    operationId: server.endpoints.triggers.execute
     consumes:
       - application/json
     produces:

@@ -130,7 +130,7 @@ def load_flagfilter_apis(path=None):
         __logger.fatal('Cannot open flagfilter api: Error {0}'.format(str(e)))
         sys.exit(1)
     except yaml.YAMLError:
-        __logger.fatal('flagfiler api is invalid yaml')
+        __logger.fatal('flagfilter api is invalid yaml')
         sys.exit(1)
 
 

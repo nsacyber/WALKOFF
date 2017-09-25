@@ -6,8 +6,9 @@ from tests import config
 import core.config.config
 from tests.apps import App
 import core.controller
-from tests.util.thread_control import *
+from tests.util.mock_objects import *
 import core.loadbalancer
+import core.workflowExecutor
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -19,10 +20,12 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.workflowExecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
+        core.workflowExecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.c = core.controller.controller
-        self.c.initialize_threading(worker_env=modified_setup_worker_env)
+        self.c.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):
@@ -40,6 +43,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.shutdown_pool(1)
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
+
         self.assertEqual(len(execution_events), 6,
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(6, len(execution_events)))

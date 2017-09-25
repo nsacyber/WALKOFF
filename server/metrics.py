@@ -3,6 +3,7 @@ from core.case.callbacks import StepStarted, FunctionExecutionSuccess, StepExecu
     WorkflowShutdown, WorkflowExecutionStart
 
 app_metrics = {}
+
 '''
 form of {<app>: {'actions': {<action>: {"success" : {'count': <count>
                                                      'avg_time': <average_execution_time>}
@@ -10,7 +11,9 @@ form of {<app>: {'actions': {<action>: {"success" : {'count': <count>
                                                   'avg_time': <average_execution_time>}
                  'count': <count>}}
 '''
+
 workflow_metrics = {}
+
 '''
 form  of {<workflow-name>: {'count': <count>, 'avg_time': <average_execution_time>}}
 '''

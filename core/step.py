@@ -107,9 +107,14 @@ class Step(ExecutionElement):
             self._update_json(updated_json=json.loads(env))
 
     def set_input(self, new_input):
+        """Updates the input for a Step object.
+
+        Args:
+            new_input (dict): The new inputs for the Step object.
+        """
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
 
-    def send_callback(self, callback_name, data={}):
+    def __send_callback(self, callback_name, data={}):
         data['sender'] = {}
         data['sender']['name'] = self.name
         data['sender']['app'] = self.app
@@ -133,18 +138,18 @@ class Step(ExecutionElement):
             The result of the executed function.
         """
         self.execution_uid = uuid.uuid4().hex
-        self.send_callback('Step Started')
+        self.__send_callback('Step Started')
         try:
             args = dereference_step_routing(self.input, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self.input_api, args, self.app, self.action)
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
-            self.send_callback('Function Execution Success',
-                               {'name': self.name, 'data': {'result': result.as_json()}})
+            self.__send_callback('Function Execution Success',
+                                 {'name': self.name, 'data': {'result': result.as_json()}})
         except InvalidInput as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
-            self.send_callback('Step Input Invalid')
+            self.__send_callback('Step Input Invalid')
             self.output = ActionResult('error: {0}'.format(formatted_error), 'InvalidInput')
             raise
         except Exception as e:
@@ -174,7 +179,7 @@ class Step(ExecutionElement):
             next_step = next_step(self.output, accumulator)
             if next_step is not None:
                 self.next_up = next_step
-                self.send_callback('Conditionals Executed')
+                self.__send_callback('Conditionals Executed')
                 return next_step
 
     def __repr__(self):

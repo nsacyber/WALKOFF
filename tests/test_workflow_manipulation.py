@@ -13,8 +13,11 @@ from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests import config
 from tests.apps import App
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.mock_objects import *
 from tests.util.thread_control import *
 import core.loadbalancer
+import core.workflowExecutor
 import threading
 
 try:
@@ -33,6 +36,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
+        core.workflowExecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
+        core.workflowExecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -135,7 +140,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(result['resumed'])
 
     def test_change_step_input(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]
 
         input_arg = {arg['key']: arg['value'] for arg in input_list}

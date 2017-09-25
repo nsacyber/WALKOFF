@@ -22,12 +22,12 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Apps <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#" class="dropdown-item">You have no Shortstop apps installed.</a></li>
-                <!--{% for app in apps %}
-                          <li><a class="installedApp" href="#"><i class="fa fa-gear"></i> {{app}} </a></li>
-                      {% else %}
-                          <li>You have no Shortstop apps installed.</li>
-                    {% endfor %}-->
+                <li *ngFor="let app of apps">
+                  <a class="installedApp" routerLink="/apps/{{app}}"><i class="fa fa-gear"></i><span>{{app}}</span></a>
+                </li>
+                <li *ngIf="!apps || !apps.length">
+                  <span class="dropdown-item">You have no Shortstop apps installed.</span>
+                </li>
               </ul>
             </li>
             <li>

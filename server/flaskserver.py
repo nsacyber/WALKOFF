@@ -3,6 +3,7 @@ import logging
 import os
 from flask import render_template, send_from_directory
 from flask_jwt_extended import jwt_required
+
 import core.config.config
 import core.config.paths
 import core.filters
@@ -35,6 +36,11 @@ def default():
     return render_template("index.html")
 
 
+@app.route('/apps/<app_name>')
+def app_page(app_name):
+    return render_template("index.html")
+
+
 @app.route('/login')
 def login_page():
     return render_template("login.html")
@@ -55,6 +61,11 @@ def list_all_widgets():
 
 
 def write_playbook_to_file(playbook_name):
+    """Writes a playbook to file.
+
+    Args:
+        playbook_name (str): The name of the playbook to write to a file.
+    """
     playbook_filename = os.path.join(core.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
     backup = None
     try:

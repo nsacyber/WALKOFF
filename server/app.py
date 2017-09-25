@@ -40,9 +40,8 @@ def compose_yamls():
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
-    from server.blueprints import widget, events, widgets, workflowresult
-    flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
-    flaskapp.register_blueprint(widget.widget_page, url_prefix='/apps/<app>/<widget>')
+    from server.blueprints import events, widgets, workflowresult
+    flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
     flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
@@ -118,7 +117,6 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
-
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
@@ -140,11 +138,7 @@ def create_app():
         JWT_BLACKLIST_ENABLED=True,
         JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
-    _app.jinja_options = Flask.jinja_options.copy()
-    _app.jinja_options.update(dict(
-        variable_start_string='<%',
-        variable_end_string='%>'
-    ))
+
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'

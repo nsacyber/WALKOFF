@@ -614,7 +614,7 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_execute_workflow(self):
-        flask_server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
@@ -643,7 +643,7 @@ class TestWorkflowServer(ServerTestCase):
 
     # TODO: FIX THIS TEST
     def test_execute_workflow_in_memory(self):
-        flask_server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         data = {"playbook_template": 'basicWorkflow',
                 "workflow_template": 'helloWorldWorkflow',
@@ -678,7 +678,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_results(self):
-        flask_server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        flask_server.running_context.controller.initialize_threading()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
@@ -694,7 +694,7 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn('name', result)
 
     def test_read_all_results(self):
-        flask_server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        flask_server.running_context.controller.initialize_threading()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)

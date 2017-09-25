@@ -7,7 +7,7 @@ from tests.util.thread_control import modified_setup_worker_env
 
 class TestWorkflowResults(ServerTestCase):
     def setUp(self):
-        flaskserver.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        flaskserver.running_context.controller.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):

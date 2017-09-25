@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Response, Headers } from '@angular/http';
+import { Http, Response, Headers } from '@angular/http';
 import { JwtHelper } from 'angular2-jwt';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
@@ -10,7 +10,7 @@ const ACCESS_TOKEN_NAME = 'access_token';
 export class AuthService {
 	jwtHelper = new JwtHelper();
 
-	constructor(private authHttp: JwtHttp) {
+	constructor(private authHttp: JwtHttp, private http: Http) {
 	}
 
 	//TODO: not currently used, eventually should be used on the login
@@ -42,7 +42,7 @@ export class AuthService {
 	}
 
 	//TODO: figure out how roles are going to be stored 
-	canAccess(page: string): boolean {
+	canAccess(resource: string): boolean {
 		let tokenInfo = this.getAndDecodeAccessToken();
 
 		return false;
@@ -54,6 +54,22 @@ export class AuthService {
 
 	getAccessToken(): string {
 		return sessionStorage.getItem(ACCESS_TOKEN_NAME);
+	}
+
+	getAccessTokenRefreshed(): Promise<string> {
+		let token = this.getAccessToken();
+		if (!this.jwtHelper.isTokenExpired(token)) return Promise.resolve(token);
+		let refreshToken = this.getRefreshToken();
+
+		if (!refreshToken || this.jwtHelper.isTokenExpired(refreshToken))
+			return Promise.reject('Refresh token does not exist or has expired. Please log in again.');
+
+		let headers = new Headers({ Authorization: `Bearer ${this.getRefreshToken()}` });
+		return this.http.post('/api/auth/refresh', {}, { headers: headers })
+			.toPromise()
+			.then(this.extractData)
+			.then(token => token.access_token)
+			.catch(this.handleError);
 	}
 
 	getAndDecodeRefreshToken(): any {

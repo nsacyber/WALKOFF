@@ -38,10 +38,29 @@ task_id_separator = '-'
 
 
 def construct_task_id(scheduled_task_id, workflow_uid):
+    """
+    Constructs a task id
+
+    Args:
+        scheduled_task_id (int|str): Id of the scheduled task (presumably from the database)
+        workflow_uid (str): UUID of the workflow to execute
+
+    Returns:
+        (str) A task id to use in the scheduler
+    """
     return '{0}{1}{2}'.format(scheduled_task_id, task_id_separator, workflow_uid)
 
 
 def split_task_id(task_id):
+    """
+    Extracts the scheduled task id and workflow id from the task id
+
+    Args:
+        task_id (str): The task id
+
+    Returns:
+        (list[str]) A list in which the first two elements are the scheduled task id and the workflow id respectively
+    """
     return task_id.split(task_id_separator)[:2]
 
 
@@ -58,12 +77,27 @@ class Scheduler(object):
         self.uid = 'controller'
 
     def schedule_workflows(self, task_id, executable, workflows, trigger):
+        """
+        Schedules a workflow for execution
+
+        Args:
+            task_id (int): Id of the scheduled task
+            executable (func): A callable to execute must take in two arguments -- a playbook name and a workflow name
+            workflows (tuple(str)): A tuple of playbook name, workflow name, and workflow uid
+            trigger (Trigger): The trigger to use for this scheduled task
+        """
         for playbook_name, workflow_name, uid in workflows:
             self.scheduler.add_job(executable, args=(playbook_name, workflow_name),
                                    id=construct_task_id(task_id, uid),
                                    trigger=trigger, replace_existing=True)
 
     def get_all_scheduled_workflows(self):
+        """
+        Gets all the scheduled workflows
+
+        Returns:
+             (dict{str: list[str]}) A dict of task_id to workflow uids
+        """
         tasks = {}
         for job in self.scheduler.get_jobs():
             task, workflow_uid = split_task_id(job.id)
@@ -74,6 +108,15 @@ class Scheduler(object):
         return tasks
 
     def get_scheduled_workflows(self, task_id):
+        """
+        Gets all the scheduled worfklows for a given task id
+
+        Args:
+            task_id (str): The task id
+
+        Returns:
+            (list[str]) A list fo workflow uid associated with this task id
+        """
         tasks = []
         for job in self.scheduler.get_jobs():
             task, workflow_uid = split_task_id(job.id)
@@ -82,11 +125,25 @@ class Scheduler(object):
         return tasks
 
     def update_workflows(self, task_id, trigger):
+        """
+        Updates the workflows for a given task id to use a different trigger
+
+        Args:
+            task_id (str|int): The task id to update
+            trigger (Trigger): The new trigger to use
+        """
         existing_tasks = {construct_task_id(task_id, uid) for uid in self.get_scheduled_workflows(task_id)}
         for job_id in existing_tasks:
             self.scheduler.reschedule_job(job_id=job_id, trigger=trigger)
 
     def unschedule_workflows(self, task_id, workflow_uids):
+        """
+        Unschedules a workflow
+
+        Args:
+            task_id (str|int): The task ID to unschedule
+            workflow_uids (list[str]): The list of workflow UIDs to update
+        """
         for workflow_uid in workflow_uids:
             try:
                 self.scheduler.remove_job(construct_task_id(task_id, workflow_uid))
@@ -158,6 +215,13 @@ class Scheduler(object):
         return self.scheduler.state
 
     def pause_workflows(self, task_id, workflow_uids):
+        """
+        Pauses some workflows associated with a task
+
+        Args:
+            task_id (int|str): The id of the task to pause
+            workflow_uids (list[str]): The list of workflow UIDs to pause
+        """
         for workflow_uid in workflow_uids:
             job_id = construct_task_id(task_id, workflow_uid)
             try:
@@ -167,10 +231,17 @@ class Scheduler(object):
                 logger.warning('Cannot pause scheduled workflow {}. Workflow ID not found'.format(job_id))
 
     def resume_workflows(self, task_id, workflow_uids):
+        """
+        Resumes some workflows associated with a task
+
+        Args:
+            task_id (int|str): The id of the task to pause
+            workflow_uids (list[str]): The list of workflow UIDs to resume
+        """
         for workflow_uid in workflow_uids:
             job_id = construct_task_id(task_id, workflow_uid)
             try:
-                self.scheduler.remove_job(job_id=job_id)
+                self.scheduler.resume_job(job_id=job_id)
                 logger.info('Resumed job {0}'.format(job_id))
             except JobLookupError:
                 logger.warning('Cannot resume scheduled workflow {}. Workflow ID not found'.format(job_id))

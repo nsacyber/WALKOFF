@@ -6,14 +6,18 @@ import tests.config
 import server.flaskserver
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.apps import App
+from tests.util.mock_objects import *
 from tests.util.thread_control import *
+import core.controller
 import core.loadbalancer
+import core.workflowExecutor
 import os
 import json
 
 
 class ServerTestCase(unittest.TestCase):
     test_workflows_path = tests.config.test_workflows_path_with_generated
+    patch = True
 
     @classmethod
     def setUpClass(cls):
@@ -49,7 +53,12 @@ class ServerTestCase(unittest.TestCase):
         core.config.config.load_flagfilter_apis(path=tests.config.function_api_path)
         core.config.config.num_processes = 2
 
+        if cls.patch:
+            core.workflowExecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
+            core.workflowExecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
+
         core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
+
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
 
