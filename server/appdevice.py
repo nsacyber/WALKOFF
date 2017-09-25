@@ -155,7 +155,7 @@ class DeviceField(db.Model, DeviceFieldMixin):
         self._value = str(value)
 
     def as_json(self):
-        return {"name": self.name, "value": self.value, "type": self.type, "encrypted": False}
+        return {"name": self.name, "value": self.value}
 
     @staticmethod
     def from_json(data):
@@ -184,7 +184,7 @@ class EncryptedDeviceField(db.Model, DeviceFieldMixin):
         self._value = aes.encrypt(str(new_value))
 
     def as_json(self):
-        return {"name": self.name, "type": self.type, "encrypted": True}
+        return {"name": self.name, "encrypted": True}
 
     @staticmethod
     def from_json(data):
