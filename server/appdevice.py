@@ -91,6 +91,7 @@ class Device(db.Model, TrackModificationsMixIn):
         fields_json = [field.as_json() for field in self.plaintext_fields]
         fields_json.extend([field.as_json() for field in self.encrypted_fields])
         return {"name": self.name,
+                "id": self.id,
                 "fields": fields_json,
                 "type": self.type,
                 "description": self.description}
