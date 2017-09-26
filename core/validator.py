@@ -395,6 +395,12 @@ def validate_filter_parameters(api, inputs, filter_name):
 def validate_device_field(field_api, value, message_prefix):
     field_type = field_api['type']
     field_api = deepcopy(field_api)
+
+    # Necessary for optional enum fields
+    if 'enum' in field_api and not 'required' in field_api:
+        if value == '' or value is None:
+            return
+
     if 'required' in field_api:
         field_api.pop('required')
     if 'encrypted' in field_api:
