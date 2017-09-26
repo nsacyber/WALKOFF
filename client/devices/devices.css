@@ -29,5 +29,8 @@
 
 #deviceForm .required {
 	color: crimson;
+}
+
+#deviceForm .fa {
 	margin-left: 5px;
 }

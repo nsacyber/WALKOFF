@@ -32,6 +32,7 @@ export class DevicesModalComponent {
 	selectedDeviceType: DeviceType;
 	validationErrors: { [key: string]: string } = {};
 	encryptedConfirmFields: { [key: string]: string } = {};
+	encryptedFieldsToBeCleared: { [key: string]: boolean } = {};
 
 	constructor(private devicesService: DevicesService, private activeModal: NgbActiveModal, private toastyService: ToastyService, 
 		private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef) {
@@ -76,6 +77,10 @@ export class DevicesModalComponent {
 		this.validationErrors = {};
 	}
 
+	handleEncryptedFieldClear(fieldName: string, isChecked: boolean): void {
+		this.encryptedFieldsToBeCleared[fieldName] = isChecked;
+	}
+
 	private _getEncryptedConfirmFields(deviceType: DeviceType): void {
 		this.encryptedConfirmFields = {};
 		deviceType.fields.forEach(field => {
@@ -109,6 +114,22 @@ export class DevicesModalComponent {
 
 		//If device has an ID, device already exists, call update
 		if (this.workingDevice.id) {
+			let self = this;
+			toSubmit.fields.forEach((field, index, array) => {
+				const ftype = self.selectedDeviceType.fields.find(ft => ft.name === field.name);
+	
+				if (!ftype.encrypted) return;
+	
+				//If we are to be clearing our value, please set it to empty string and return
+				if (self.encryptedFieldsToBeCleared[field.name]) field.value = '';
+	
+				//If our values are null or whitespace, and we're not clearing the existing value, remove the field so it doesn't get overwritten
+				else if ((typeof(field.value) === 'string' && !field.value.trim()) ||
+					(typeof(field.value) === 'number' && !field.value)) array.splice(index, 1);
+			});
+
+			console.log(toSubmit);
+
 			this.devicesService
 				.editDevice(toSubmit)
 				.then(device => this.activeModal.close({
@@ -163,7 +184,7 @@ export class DevicesModalComponent {
 						if (enumArray.indexOf(inputs[field.name]) < 0)
 							this._concatValidationMessage(field.name, `Invalid select input.`);
 					}
-					if (field.encrypted && this.encryptedConfirmFields[field.name] !== inputs[field.name])
+					if (field.encrypted && !this.encryptedFieldsToBeCleared[field.name] && this.encryptedConfirmFields[field.name] !== inputs[field.name])
 						this._concatValidationMessage(field.name, `The values for ${field.name} do not match.`);
 					break;
 				//For numbers, check against min/max and multipleOf constraints

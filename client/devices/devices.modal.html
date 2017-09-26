@@ -51,12 +51,26 @@
 			</div>
 			<ng-container *ngIf="selectedDeviceType">
 				<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
-					<label for="{{i.name}}">{{i.name}}<span *ngIf="i.required" class="fa fa-asterisk required"></span></label>
+					<label for="{{i.name}}">
+						{{i.name}}
+						<span *ngIf="i.required" class="fa fa-asterisk required" title="This field is required."></span>
+						<span *ngIf="i.encrypted" class="fa fa-lock"
+						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></span>
+					</label>
 
 					<!-- Normal string text entries -->
 					<input *ngIf="i.type === 'string' && !i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
 					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.minLength > 0 ? i.minLength : null" [attr.maxlength]="i.maxLength > 0 ? i.maxLength : null"
-					 [attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [attr.placeholder]="i.placeholder">
+					 [attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [disabled]="encryptedFieldsToBeCleared[i.name]"
+					 [attr.placeholder]="i.placeholder">
+
+					 <!-- If we have an encrypted field AND this is an edit AND there is an encrypted value on the server, allow the user to clear it if it's not required -->
+					 <div *ngIf="workingDevice.id && i.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
+						<label class="form-check-label">
+							<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" 
+							 (change)="handleEncryptedFieldClear(i.name, $event.target.checked)"> Clear Existing Value
+						</label>
+					</div>
 
 					<!-- Enum types, make a select box -->
 					<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]" [attr.required]="i.required">
@@ -76,7 +90,7 @@
 					<ng-container *ngIf="encryptedConfirmFields[i.name] !== undefined">
 						<label for="_{{i.name}}" class="confirmLabel">Repeat {{i.name}}</label>
 						<input type="password" class="form-control" name="_{{i.name}}" [(ngModel)]="encryptedConfirmFields[i.name]"
-						 placeholder="Enter the value for {{i.name}} again" required>
+						[disabled]="encryptedFieldsToBeCleared[i.name]" placeholder="Enter the value for {{i.name}} again" required>
 					</ng-container>
 
 					<!-- Validation errors go here if they exist -->
