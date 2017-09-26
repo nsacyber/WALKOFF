@@ -72,11 +72,9 @@
 					 [attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [disabled]="encryptedFieldsToBeCleared[i.name]"
 					 [attr.placeholder]="i.placeholder">
 
-
-
 					<!-- Enum types, make a select box -->
 					<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]" [attr.required]="i.required">
-						<option *ngIf="!i.required" value=""></option>
+						<!-- <option *ngIf="!i.required" value=""></option> -->
 						<option *ngFor="let i of i.enum" [value]="i" [label]="i">{{i}}</option>
 					</select>
 

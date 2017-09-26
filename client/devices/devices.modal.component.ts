@@ -179,10 +179,10 @@ export class DevicesModalComponent {
 					if (field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
 						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.pattern}.`);
 					if (field.enum) {
-						let enumArray: string[] = field.enum.slice(0);
-						if (!field.required) enumArray.push('');
-						if (enumArray.indexOf(inputs[field.name]) < 0)
-							this._concatValidationMessage(field.name, `Invalid select input.`);
+						// let enumArray: string[] = field.enum.slice(0);
+						// if (!field.required) enumArray.push('');
+						if (field.enum.indexOf(inputs[field.name]) < 0)
+							this._concatValidationMessage(field.name, `You must select a value from the list.`);
 					}
 					if (field.encrypted && !this.encryptedFieldsToBeCleared[field.name] && this.encryptedConfirmFields[field.name] !== inputs[field.name])
 						this._concatValidationMessage(field.name, `The values for ${field.name} do not match.`);
