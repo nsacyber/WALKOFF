@@ -20,7 +20,7 @@
 						<select class="form-control" [ngModel]="workingDevice.app" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" name="app"
 						 tabindex="3" required>
 							<option value=""></option>
-							<option *ngFor="let i of appNames" [value]="i" [label]="i"></option>
+							<option *ngFor="let i of appNames" [value]="i" [label]="i">{{i}}</option>
 						</select>
 						<div *ngIf="app.errors && (app.dirty || app.touched)" class="alert alert-danger">
 							<div [hidden]="!app.errors.required">
@@ -39,7 +39,7 @@
 						<select class="form-control" [ngModel]="workingDevice.type" #typeRef #type="ngModel" (change)="handleDeviceTypeSelection(event, $event.target.value)"
 						 name="type" tabindex="4" required>
 							<option value=""></option>
-							<option *ngFor="let i of deviceTypesForApp" [value]="i.name" [label]="i.name"></option>
+							<option *ngFor="let i of deviceTypesForApp" [value]="i.name" [label]="i.name">{{i.name}}</option>
 						</select>
 						<div *ngIf="type.errors && (type.dirty || type.touched)" class="alert alert-danger">
 							<div [hidden]="!type.errors.required">
@@ -61,7 +61,7 @@
 					<!-- Enum types, make a select box -->
 					<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]" [attr.required]="i.required">
 						<option *ngIf="!i.required" value=""></option>
-						<option *ngFor="let i of i.enum" [value]="i" [label]="i"></option>
+						<option *ngFor="let i of i.enum" [value]="i" [label]="i">{{i}}</option>
 					</select>
 
 					<!-- For numbers enter number info -->
