@@ -117,7 +117,7 @@ class Device(db.Model, TrackModificationsMixIn):
 
             for curr_field in self.encrypted_fields:
                 for updated_field in updated_encrypted_fields:
-                    if updated_field.value and updated_field.name == curr_field.name:
+                    if updated_field.name == curr_field.name:
                         self.encrypted_fields.remove(curr_field)
                         self.encrypted_fields.append(updated_field)
 
