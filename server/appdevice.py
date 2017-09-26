@@ -1,26 +1,32 @@
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.declarative import declared_attr, declarative_base
 import pyaes
 import logging
-from server.database import db, TrackModificationsMixIn
+from core.helpers import format_db_path
 from sqlalchemy.ext.hybrid import hybrid_property
 from core.validator import convert_primitive_type
-from server.app import key
+from core.config.config import secret_key as key
+import core.config.paths
+from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 logger = logging.getLogger(__name__)
+
+Device_Base = declarative_base()
 
 
 class UnknownDeviceField(Exception):
     pass
 
 
-class App(db.Model):
+class App(Device_Base):
     __tablename__ = 'app'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(25), nullable=False, unique=True)
-    devices = db.relationship('Device',
-                              cascade='all, delete-orphan',
-                              backref='post',
-                              lazy='dynamic')
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(25), nullable=False)
+    devices = relationship('Device',
+                           cascade='all, delete-orphan',
+                           backref='post',
+                           lazy='dynamic')
 
     def __init__(self, name, devices=None):
         self.name = name
@@ -54,21 +60,24 @@ class App(db.Model):
         return App(data['name'], devices)
 
 
-class Device(db.Model, TrackModificationsMixIn):
+class Device(Device_Base):
     __tablename__ = 'device'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(25), nullable=False)
-    type = db.Column(db.String(25), nullable=False)
-    description = db.Column(db.String(255), default='')
-    plaintext_fields = db.relationship('DeviceField',
-                                       cascade='all, delete-orphan',
-                                       backref='post',
-                                       lazy='dynamic')
-    encrypted_fields = db.relationship('EncryptedDeviceField',
-                                       cascade='all, delete-orphan',
-                                       backref='post',
-                                       lazy='dynamic')
-    app_id = db.Column(db.Integer, db.ForeignKey('app.id'))
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(25), nullable=False)
+    type = Column(String(25), nullable=False)
+    description = Column(String(255), default='')
+    plaintext_fields = relationship('DeviceField',
+                                    cascade='all, delete-orphan',
+                                    backref='post',
+                                    lazy='dynamic')
+    encrypted_fields = relationship('EncryptedDeviceField',
+                                    cascade='all, delete-orphan',
+                                    backref='post',
+                                    lazy='dynamic')
+    app_id = Column(Integer, ForeignKey('app.id'))
+    created_at = Column(DateTime, default=func.current_timestamp())
+    modified_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
     def __init__(self, name, plaintext_fields, encrypted_fields, device_type, description=''):
         self.name = name
@@ -136,18 +145,18 @@ allowed_device_field_types = ('string', 'number', 'boolean', 'integer')
 
 
 class DeviceFieldMixin(object):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(25), nullable=False)
-    type = db.Column(db.Enum(*allowed_device_field_types))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(25), nullable=False)
+    type = Column(Enum(*allowed_device_field_types))
 
     @declared_attr
     def device_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('device.id'))
+        return Column(Integer, ForeignKey('device.id'))
 
 
-class DeviceField(db.Model, DeviceFieldMixin):
+class DeviceField(Device_Base, DeviceFieldMixin):
     __tablename__ = 'plaintext_device_field'
-    _value = db.Column('value', db.String(), nullable=False)
+    _value = Column('value', String(), nullable=False)
 
     def __init__(self, name, field_type, value):
         self.name = name
@@ -175,9 +184,9 @@ class DeviceField(db.Model, DeviceFieldMixin):
         return DeviceField(data['name'], type_, data['value'])
 
 
-class EncryptedDeviceField(db.Model, DeviceFieldMixin):
+class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
     __tablename__ = 'encrypted_device_field'
-    _value = db.Column('value', db.LargeBinary(), nullable=False)
+    _value = Column('value', LargeBinary(), nullable=False)
 
     def __init__(self, name, field_type, value):
         self.name = name
@@ -215,7 +224,7 @@ def get_all_devices_for_app(app_name):
     Returns:
         (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
     """
-    app = App.query.filter_by(name=app_name).first()
+    app = device_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.devices[:]
     else:
@@ -232,7 +241,7 @@ def get_all_devices_of_type_from_app(app_name, device_type):
         Returns:
             (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
         """
-    app = App.query.filter_by(name=app_name).first()
+    app = device_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.get_devices_of_type(device_type)
     else:
@@ -249,9 +258,34 @@ def get_device(app_name, device_name):
     Returns:
         (Device): The desired device. Returns None if app or device not found.
     """
-    app = App.query.filter_by(name=app_name).first()
+    app = device_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.get_device(device_name)
     else:
         logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
         return None
+
+
+class DeviceDatabase(object):
+    """
+    Wrapper for the SQLAlchemy database object
+    """
+
+    def __init__(self):
+        self.engine = create_engine(format_db_path(core.config.config.device_db_type, core.config.paths.device_db_path))
+        self.connection = self.engine.connect()
+        self.transaction = self.connection.begin()
+
+        Session = sessionmaker()
+        Session.configure(bind=self.engine)
+        self.session = scoped_session(Session)
+
+        Device_Base.metadata.bind = self.engine
+        Device_Base.metadata.create_all(self.engine)
+
+
+def get_device_db(_singleton=DeviceDatabase()):
+    """Singleton factory which returns the database"""
+    return _singleton
+
+device_db = get_device_db()

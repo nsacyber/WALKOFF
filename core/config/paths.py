@@ -6,6 +6,7 @@ templates_path = join('.', 'data', 'templates')
 keywords_path = join('.', 'core', 'keywords')
 db_path = "data/walkoff.db"
 case_db_path = join('data', 'events.db')
+device_db_path = join('data', 'devices.db')
 certificate_path = "data/shortstop.public.pem"
 private_key_path = "data/shortstop.private.pem"
 function_info_path = join('.', 'data', 'functions.json')

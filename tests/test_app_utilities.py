@@ -1,6 +1,6 @@
 import unittest
-from server.database import db
-from server.appdevice import get_device, get_all_devices_for_app, get_all_devices_of_type_from_app, App, Device
+from server.appdevice import get_device, get_all_devices_for_app, \
+    get_all_devices_of_type_from_app, App, Device, device_db
 import server.flaskserver
 
 
@@ -20,19 +20,19 @@ class TestAppUtilities(unittest.TestCase):
         self.device4 = Device('test4', [], [], 'type2')
 
     def tearDown(self):
-        db.session.rollback()
-        app = App.query.filter_by(name=self.app_name).first()
+        device_db.session.rollback()
+        app = device_db.session.query(App).filter(App.name == self.app_name).first()
         if app is not None:
-            db.session.delete(app)
-        for device in Device.query.all():
-            db.session.delete(device)
-        db.session.commit()
+            device_db.session.delete(app)
+        for device in device_db.session.query(Device).all():
+            device_db.session.delete(device)
+            device_db.session.commit()
 
     def add_test_app(self, devices=None):
         devices = devices if devices is not None else []
         app = App(self.app_name, devices=devices)
-        db.session.add(app)
-        db.session.commit()
+        device_db.session.add(app)
+        device_db.session.commit()
 
     def test_get_all_devices_for_app_dne(self):
         self.assertListEqual(get_all_devices_for_app('invalid'), [])

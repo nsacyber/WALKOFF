@@ -7,7 +7,7 @@ import core.config.paths
 from server.returncodes import *
 from core.validator import validate_device_fields
 from core.helpers import get_app_device_api, InvalidInput, UnknownDevice, UnknownApp, format_exception_message
-from server.database import db
+from server.appdevice import Device, App, device_db
 
 
 def get_device_json_with_app_name(device):
@@ -19,23 +19,21 @@ def get_device_json_with_app_name(device):
 
 
 def read_all_devices():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        return [get_device_json_with_app_name(device) for device in running_context.Device.query.all()], SUCCESS
+        return [get_device_json_with_app_name(device) for device in device_db.session.query(Device).all()], SUCCESS
 
     return __func()
 
 
 def read_device(device_id):
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        device = running_context.Device.query.filter_by(id=device_id).first()
+        device = device_db.session.query(Device).filter(Device.id == device_id).first()
         if device is not None:
             return get_device_json_with_app_name(device), SUCCESS
         else:
@@ -47,16 +45,15 @@ def read_device(device_id):
 
 
 def delete_device(device_id):
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        dev = running_context.Device.query.filter_by(id=device_id).first()
+        dev = device_db.session.query(Device).filter(Device.id == device_id).first()
         if dev is not None:
-            db.session.delete(dev)
+            device_db.session.delete(dev)
             current_app.logger.info('Device removed {0}'.format(device_id))
-            db.session.commit()
+            device_db.session.commit()
             return {}, SUCCESS
         else:
             current_app.logger.error('Could not delete device {0}. '
@@ -84,13 +81,12 @@ def add_configuration_keys_to_device_json(device_fields, device_fields_api):
 
 
 def create_device():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         add_device_json = request.get_json()
-        if running_context.Device.query.filter_by(name=add_device_json['name']).first() is not None:
+        if device_db.session.query(Device).filter(Device.name == add_device_json['name']).first() is not None:
             current_app.logger.error('Could not create device {0}. '
                                      'Device already exists.'.format(add_device_json['name']))
             return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
@@ -118,15 +114,15 @@ def create_device():
         else:
             fields = add_device_json['fields']
             add_configuration_keys_to_device_json(fields, device_fields_api)
-            app = running_context.App.query.filter_by(name=app).first()
+            app = device_db.session.query(App).filter(App.name == app).first()
             if app is None:
                 current_app.logger.error('SEVERE: App defined in api does not have corresponding entry in database. '
                                          'Cannot add device')
                 return {'error': 'Unknown app'}, INVALID_INPUT_ERROR
-            device = running_context.Device.from_json(add_device_json)
+            device = Device.from_json(add_device_json)
             app.add_device(device)
-            db.session.add(device)
-            db.session.commit()
+            device_db.session.add(device)
+            device_db.session.commit()
             device_json = get_device_json_with_app_name(device)
             # remove_configuration_keys_from_device_json(device_json)
             return device_json, OBJECT_CREATED
@@ -135,13 +131,12 @@ def create_device():
 
 
 def update_device():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         update_device_json = request.get_json()
-        device = running_context.Device.query.filter_by(id=update_device_json['id']).first()
+        device = device_db.session.query(Device).filter(Device.id == update_device_json['id']).first()
         if device is None:
             current_app.logger.error('Could not update device {0}. '
                                      'Device does not exist.'.format(update_device_json['id']))
@@ -174,7 +169,7 @@ def update_device():
                 fields = update_device_json['fields'] if 'fields' in update_device_json else None
                 add_configuration_keys_to_device_json(fields, device_fields_api)
             device.update_from_json(update_device_json)
-            db.session.commit()
+            device_db.session.commit()
             device_json = get_device_json_with_app_name(device)
             # remove_configuration_keys_from_device_json(device_json)
             return device_json, SUCCESS
@@ -183,7 +178,6 @@ def update_device():
 
 
 def import_devices():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
@@ -205,9 +199,9 @@ def import_devices():
                     if key not in ['ip', 'name', 'port', 'username']:
                         extra_fields[key] = device[key]
                 extra_fields_str = json.dumps(extra_fields)
-                running_context.Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
-                                                  port=device['port'], extra_fields=extra_fields_str, password=None,
-                                                  app_id=app)
+                Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
+                                  port=device['port'], extra_fields=extra_fields_str, password=None,
+                                  app_id=app)
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 
@@ -215,7 +209,6 @@ def import_devices():
 
 
 def export_devices():
-    from server.context import running_context
 
     @jwt_required
     @roles_accepted_for_resources('apps')
@@ -223,7 +216,7 @@ def export_devices():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         returned_json = {}
-        apps = running_context.App.query.all()
+        apps = device_db.session.query(App).query.all()
         for app in apps:
             devices = []
             for device in app.devices:

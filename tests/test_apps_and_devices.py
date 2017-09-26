@@ -2,6 +2,7 @@ import json
 import os
 from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
+from server.appdevice import App, Device, device_db
 import tests.config
 import core.config.paths
 from server.returncodes import *
@@ -20,10 +21,9 @@ class TestAppsAndDevices(ServerTestCase):
         self.extraFields = {"extraFieldOne": "extraNameOne", "extraFieldTwo": "extraNameTwo"}
 
     def tearDown(self):
-        with server.running_context.flask_app.app_context():
-            server.running_context.Device.query.filter_by(name=self.name).delete()
-            server.running_context.Device.query.filter_by(name="testDeviceTwo").delete()
-            server.database.db.session.commit()
+            device_db.session.query(Device).filter(Device.name == self.name).delete()
+            device_db.session.query(Device).filter(Device.name == "testDeviceTwo").delete()
+            device_db.session.commit()
 
     def test_add_device(self):
         data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,
