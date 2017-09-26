@@ -22,7 +22,7 @@ export class Device {
 		out.fields = {};
 
 		device.fields.forEach(element => {
-			out.fields[element.name] = element.value;
+			out.fields[element.name] = element.value !== undefined ? element.value : null;
 		});
 
 		return out;

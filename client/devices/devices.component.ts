@@ -162,7 +162,7 @@ export class DevicesComponent {
 	getCustomFields(device: Device): string {
 		let obj: { [key: string]: string } = {};
 		device.fields.forEach(element => {
-			obj[element.name] = element.value;
+			if (element.value) obj[element.name] = element.value;
 		});
 		let out = JSON.stringify(obj, null, 1);
 		out = out.substr(1, out.length - 2).replace(/"/g, '');
