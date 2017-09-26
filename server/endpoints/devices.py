@@ -71,8 +71,8 @@ def add_configuration_keys_to_device_json(device_fields, device_fields_api):
     for field in device_fields:
         if field['name'] in device_fields_api:
             field['type'] = device_fields_api[field['name']]['type']
-            if 'encrypted' in device_fields_api:
-                field['encrypted'] = device_fields_api['name']['encrypted']
+            if 'encrypted' in device_fields_api[field['name']]:
+                field['encrypted'] = device_fields_api[field['name']]['encrypted']
 
 
 # TODO: Delete. No longer used.

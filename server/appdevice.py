@@ -100,10 +100,11 @@ class Device(db.Model, TrackModificationsMixIn):
     def _construct_fields_from_json(fields_json):
         plaintext_fields, encrypted_fields = [], []
         for field in fields_json:
-            if 'encrypted' not in field or not field['encrypted']:
-                plaintext_fields.append(DeviceField.from_json(field))
-            else:
+            if 'encrypted' in field and field['encrypted']:
                 encrypted_fields.append(EncryptedDeviceField.from_json(field))
+            else:
+                plaintext_fields.append(DeviceField.from_json(field))
+
         return plaintext_fields, encrypted_fields
 
     def update_from_json(self, json_in):
