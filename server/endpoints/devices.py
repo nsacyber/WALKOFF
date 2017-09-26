@@ -28,6 +28,7 @@ def read_all_devices():
 
     return __func()
 
+
 def read_device(device_id):
     from server.context import running_context
 
@@ -74,11 +75,12 @@ def add_configuration_keys_to_device_json(device_fields, device_fields_api):
                 field['encrypted'] = device_fields_api['name']['encrypted']
 
 
-def remove_configuration_keys_from_device_json(device_json):
-    for field in device_json['fields']:
-        field.pop('type')
-        if 'encrypted' in field:
-            field.pop('encrypted')
+# TODO: Delete. No longer used.
+# def remove_configuration_keys_from_device_json(device_json):
+#     for field in device_json['fields']:
+#         field.pop('type')
+#         if 'encrypted' in field:
+#             field.pop('encrypted')
 
 
 def create_device():
@@ -126,7 +128,7 @@ def create_device():
             db.session.add(device)
             db.session.commit()
             device_json = get_device_json_with_app_name(device)
-            remove_configuration_keys_from_device_json(device_json)
+            # remove_configuration_keys_from_device_json(device_json)
             return device_json, OBJECT_CREATED
 
     return __func()
@@ -174,7 +176,7 @@ def update_device():
             device.update_from_json(update_device_json)
             db.session.commit()
             device_json = get_device_json_with_app_name(device)
-            remove_configuration_keys_from_device_json(device_json)
+            # remove_configuration_keys_from_device_json(device_json)
             return device_json, SUCCESS
 
     return __func()

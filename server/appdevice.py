@@ -155,8 +155,12 @@ class DeviceField(db.Model, DeviceFieldMixin):
     def value(self, value):
         self._value = str(value)
 
-    def as_json(self):
-        return {"name": self.name, "value": self.value}
+    def as_json(self, with_config_fields=False):
+        device = {"name": self.name, "value": self.value}
+        if with_config_fields:
+            device["type"] = self.type
+            device["encrypted"] = False
+        return device
 
     @staticmethod
     def from_json(data):
@@ -184,8 +188,11 @@ class EncryptedDeviceField(db.Model, DeviceFieldMixin):
         aes = pyaes.AESModeOfOperationCTR(key)
         self._value = aes.encrypt(str(new_value))
 
-    def as_json(self):
-        return {"name": self.name, "encrypted": True}
+    def as_json(self, with_config_fields=False):
+        device = {"name": self.name, "encrypted": True}
+        if with_config_fields:
+            device["type"] = self.type
+        return device
 
     @staticmethod
     def from_json(data):
