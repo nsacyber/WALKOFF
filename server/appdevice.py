@@ -113,9 +113,17 @@ class Device(db.Model, TrackModificationsMixIn):
         if 'description' in json_in:
             self.description = json_in['description']
         if 'fields' in json_in:
-            plaintext_fields, encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
-            self.plaintext_fields = plaintext_fields
-            self.encrypted_fields = encrypted_fields
+            updated_plaintext_fields, updated_encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
+
+            for curr_field in self.encrypted_fields:
+                for updated_field in updated_encrypted_fields:
+                    if updated_field.value and updated_field.name == curr_field.name:
+                        self.encrypted_fields.remove(curr_field)
+                        updated_encrypted_fields.remove(updated_field)
+                        self.encrypted_fields.append(updated_field)
+
+            self.plaintext_fields = updated_plaintext_fields
+            self.encrypted_fields.extend(updated_encrypted_fields)
         if 'type' in json_in:
             self.type = json_in['type']
 
