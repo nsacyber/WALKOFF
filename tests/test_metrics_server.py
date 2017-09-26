@@ -98,7 +98,7 @@ class MetricsServerTest(ServerTestCase):
 
     def test_action_metrics(self):
         server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multistepError.playbook')
 
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
@@ -111,11 +111,11 @@ class MetricsServerTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         server.running_context.controller.initialize_threading(worker_env=modified_setup_worker_env)
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multistepError.playbook')
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'tieredWorkflow.playbook')
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')

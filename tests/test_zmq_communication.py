@@ -31,7 +31,7 @@ class TestZMQCommuncation(unittest.TestCase):
     def setUp(self):
         self.controller = core.controller.controller
         self.controller.workflows = {}
-        self.controller.load_all_playbooks_from_directory(path=config.test_workflows_path)
+        self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
         self.testWorkflow.execution_uid = 'some_uid'
@@ -123,7 +123,7 @@ class TestZMQCommuncation(unittest.TestCase):
     '''Communication Socket Testing'''
 
     def test_pause_and_resume_workflow(self):
-        self.controller.load_playbook_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
         result = dict()
@@ -154,7 +154,7 @@ class TestZMQCommuncation(unittest.TestCase):
         self.assertTrue(result['resumed'])
 
     def test_pause_and_resume_workflow_breakpoint(self):
-        self.controller.load_playbook_from_file(path=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
         self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
 
         uid = None

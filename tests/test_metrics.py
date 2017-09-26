@@ -13,7 +13,7 @@ class MetricsTest(ServerTestCase):
         server.running_context.controller.initialize_threading()
 
     def test_action_metrics(self):
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multistepError.playbook')
 
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
@@ -43,9 +43,9 @@ class MetricsTest(ServerTestCase):
         self.assertEqual(metrics.app_metrics['HelloWorld']['actions']['helloWorld']['success']['count'], 1)
 
     def test_workflow_metrics(self):
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multistepError.playbook')
-        server.running_context.controller.load_playbook_from_file(path=config.test_workflows_path +
+        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
 
         error_key = 'multiactionErrorWorkflow'

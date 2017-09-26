@@ -97,7 +97,7 @@ class ServerTestCase(unittest.TestCase):
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
         server.flaskserver.running_context.controller.workflows = {}
-        server.flaskserver.running_context.controller.load_all_playbooks_from_directory()
+        server.flaskserver.running_context.controller.load_playbooks()
 
     def tearDown(self):
         shutil.rmtree(core.config.paths.workflows_path)

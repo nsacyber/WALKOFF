@@ -28,7 +28,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def setUp(self):
         self.controller = core.controller.controller
         self.controller.workflows = {}
-        self.controller.load_all_playbooks_from_directory(path=config.test_workflows_path)
+        self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.start = datetime.utcnow()
 
         self.controller.initialize_threading()

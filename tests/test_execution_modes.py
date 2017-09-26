@@ -32,7 +32,7 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_start_stop_execution_loop(self):
         c = controller.Controller()
-        c.load_playbook_from_file(path=config.test_workflows_path + "testScheduler.playbook")
+        c.load_playbook(resource=config.test_workflows_path + "testScheduler.playbook")
         subs = {'controller': [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
                                EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,
                                EVENT_JOB_ERROR]}
@@ -49,7 +49,7 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_pause_resume_scheduler_execution(self):
         c = controller.Controller()
-        c.load_playbook_from_file(path=config.test_workflows_path + "testScheduler.playbook")
+        c.load_playbook(resource=config.test_workflows_path + "testScheduler.playbook")
 
         subs = {'controller': [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
                                EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,

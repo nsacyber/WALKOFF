@@ -33,7 +33,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_workflow_execution_events(self):
 
-        self.c.load_playbook_from_file(path=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
+        self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
         subs = {'case1': {workflow_uid: ['App Instance Created', 'Step Execution Success',
                                          'Next Step Found', 'Workflow Shutdown']}}
@@ -49,7 +49,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(6, len(execution_events)))
 
     def test_step_execution_events(self):
-        self.c.load_playbook_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values()]
         step_events = ['Function Execution Success', 'Step Started', 'Conditionals Executed']
@@ -67,7 +67,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(3, len(execution_events)))
 
     def test_flag_filters_execution_events(self):
-        self.c.load_playbook_from_file(path=config.test_workflows_path + 'basicWorkflowTest.playbook')
+        self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step = workflow.steps['start']
         subs = {step.uid: ['Function Execution Success', 'Step Started', 'Conditionals Executed']}

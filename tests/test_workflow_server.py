@@ -325,7 +325,7 @@ class TestWorkflowServer(ServerTestCase):
 
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.load_playbook_from_file(os.path.join(core.config.paths.workflows_path,
+        flask_server.running_context.controller.load_playbook(os.path.join(core.config.paths.workflows_path,
                                                                                       'test.playbook'))
         loaded_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
         # compare the steps in loaded and expected workflow
