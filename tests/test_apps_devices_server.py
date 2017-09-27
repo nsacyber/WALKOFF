@@ -12,18 +12,15 @@ import pyaes
 class TestAppsAndDevices(ServerTestCase):
     def setUp(self):
         self.name = "testDevice"
-
         self.username = "testUsername"
         self.password = "testPassword"
         self.ip = "127.0.0.1"
         self.port = 6000
 
-        self.extraFields = {"extraFieldOne": "extraNameOne", "extraFieldTwo": "extraNameTwo"}
-
     def tearDown(self):
-            device_db.session.query(Device).filter(Device.name == self.name).delete()
-            device_db.session.query(Device).filter(Device.name == "testDeviceTwo").delete()
-            device_db.session.commit()
+        device_db.session.query(Device).filter(Device.name == self.name).delete()
+        device_db.session.query(Device).filter(Device.name == "testDeviceTwo").delete()
+        device_db.session.commit()
 
     def test_add_device(self):
         data = {"name": self.name, "username": self.username, "password": self.password, "ip": self.ip, "port": self.port,

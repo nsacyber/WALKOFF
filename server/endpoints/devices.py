@@ -11,9 +11,9 @@ from server.appdevice import Device, App, device_db
 
 
 def get_device_json_with_app_name(device):
-    from server.context import running_context
+
     device_json = device.as_json()
-    app = running_context.App.query.filter_by(id=device.app_id).first()
+    app = device_db.session.query(App).filter(App.id == device.app_id).first()
     device_json['app'] = app.name if app is not None else ''
     return device_json
 
