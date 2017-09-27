@@ -159,10 +159,17 @@ export class DevicesModalComponent {
 		this.validationErrors = {};
 		let inputs = this.workingDevice.fields;
 
+		//Trim whitespace out of our inputs first
+		Object.keys(inputs).forEach(function (key) {
+			if (typeof(inputs[key]) === 'string') {
+				inputs[key] = (inputs[key] as string).trim();
+			}
+		});
+
 		this.selectedDeviceType.fields.forEach(field => {
 			if (field.required) {
 				if (inputs[field.name] == null ||
-					(typeof inputs[field.name] === 'string' && !(inputs[field.name] as string).trim()) ||
+					(typeof inputs[field.name] === 'string' && !inputs[field.name]) ||
 					(typeof inputs[field.name] === 'number' && inputs[field.name] === null)) {
 					this.validationErrors[field.name] = `You must enter a value for ${field.name}.`
 					return;
@@ -172,16 +179,16 @@ export class DevicesModalComponent {
 				//For strings, check against min/max length, regex pattern, or enum constraints
 				case 'string':
 					if (inputs[field.name] == null) inputs[field.name] = '';
-					if (field.minLength !== undefined && inputs[field.name].length < field.minLength)
+					if (inputs[field.name] && field.minLength !== undefined && inputs[field.name].length < field.minLength)
 						this._concatValidationMessage(field.name, `Must be at least ${field.minLength} characters.`);
 					if (field.maxLength !== undefined && inputs[field.name].length > field.maxLength)
 						this._concatValidationMessage(field.name, `Must be at most ${field.minLength} characters.`);
-					if (field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
+					if (inputs[field.name] && field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
 						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.pattern}.`);
 					if (field.enum) {
-						// let enumArray: string[] = field.enum.slice(0);
-						// if (!field.required) enumArray.push('');
-						if (field.enum.indexOf(inputs[field.name]) < 0)
+						let enumArray: string[] = field.enum.slice(0);
+						if (!field.required) enumArray.push('');
+						if (enumArray.indexOf(inputs[field.name]) < 0)
 							this._concatValidationMessage(field.name, `You must select a value from the list.`);
 					}
 					if (field.encrypted && !this.encryptedFieldsToBeCleared[field.name] && this.encryptedConfirmFields[field.name] !== inputs[field.name])
