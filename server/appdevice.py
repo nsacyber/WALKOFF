@@ -96,9 +96,9 @@ class Device(Device_Base):
         else:
             raise UnknownDeviceField
 
-    def as_json(self):
+    def as_json(self, export=False):
         fields_json = [field.as_json() for field in self.plaintext_fields]
-        fields_json.extend([field.as_json() for field in self.encrypted_fields])
+        fields_json.extend([field.as_json(export) for field in self.encrypted_fields])
         return {"name": self.name,
                 "id": self.id,
                 "fields": fields_json,
@@ -165,18 +165,17 @@ class DeviceField(Device_Base, DeviceFieldMixin):
 
     @hybrid_property
     def value(self):
-        return convert_primitive_type(self._value, self.type)
+        try:
+            return convert_primitive_type(self._value, self.type)
+        except (TypeError, ValueError):
+            return self._value
 
     @value.setter
     def value(self, value):
         self._value = str(value)
 
-    def as_json(self, with_config_fields=False):
-        device = {"name": self.name, "value": self.value}
-        if with_config_fields:
-            device["type"] = self.type
-            device["encrypted"] = False
-        return device
+    def as_json(self):
+        return {"name": self.name, "value": self._value}
 
     @staticmethod
     def from_json(data):
@@ -197,18 +196,21 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
     @hybrid_property
     def value(self):
         aes = pyaes.AESModeOfOperationCTR(key)
-        return convert_primitive_type(aes.decrypt(self._value), self.type)
+        try:
+            return convert_primitive_type(aes.decrypt(self._value), self.type)
+        except (TypeError, ValueError):
+            return aes.decrypt(self._value)
 
     @value.setter
     def value(self, new_value):
         aes = pyaes.AESModeOfOperationCTR(key)
         self._value = aes.encrypt(str(new_value))
 
-    def as_json(self, with_config_fields=False):
-        device = {"name": self.name, "encrypted": True}
-        if with_config_fields:
-            device["type"] = self.type
-        return device
+    def as_json(self, export=False):
+        field = {"name": self.name, "encrypted": True}
+        if export:
+            field = {"name": self.name, "value": self.value}
+        return field
 
     @staticmethod
     def from_json(data):

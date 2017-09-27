@@ -10,7 +10,7 @@ case_suite = TestSuite()
 add_tests_to_suite(case_suite, __case_tests)
 
 __server_tests = [test_case_server, test_triggers, test_server, test_scheduler_actions,
-                  test_apps_and_devices, test_workflow_server, test_app_blueprint, test_metrics_server,
+                  test_device_server, test_workflow_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_zmq_communication_server]
 server_suite = TestSuite()

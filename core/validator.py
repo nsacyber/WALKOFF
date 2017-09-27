@@ -32,10 +32,7 @@ def make_type(value, type_literal):
     if (isinstance(value, dict) or isinstance(value, list)) and type_func == str:
         return json.dumps(value)
     else:
-        try:
-            return type_func(value)
-        except (ValueError, TypeError):
-            return value
+        return type_func(value)
 
 
 def convert_primitive_type(value, parameter_type):

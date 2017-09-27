@@ -1,10 +1,11 @@
 from tests.util.servertestcase import ServerTestCase
 import json
-from server.appdevice import Device, App, DeviceField
-from server.database import db
+from server.appdevice import Device, App, DeviceField, device_db
 from server.returncodes import *
 import core.config.config
-from server.endpoints.devices import remove_configuration_keys_from_device_json
+import os
+import tests.config
+import core.config.paths
 
 
 class TestDevicesServer(ServerTestCase):
@@ -12,15 +13,15 @@ class TestDevicesServer(ServerTestCase):
         self.test_app_name = 'TestApp'
 
     def tearDown(self):
-        db.session.rollback()
-        for device in Device.query.all():
-            db.session.delete(device)
-        for field in DeviceField.query.all():
-            db.session.delete(field)
-        app = App.query.filter_by(name=self.test_app_name).first()
+        device_db.session.rollback()
+        for device in device_db.session.query(Device).all():
+            device_db.session.delete(device)
+        for field in device_db.session.query(DeviceField).all():
+            device_db.session.delete(field)
+        app = device_db.session.query(App).filter(App.name == self.test_app_name).first()
         if app is not None:
-            db.session.delete(app)
-        db.session.commit()
+            device_db.session.delete(app)
+        device_db.session.commit()
         core.config.config.app_apis = {}
 
     def test_read_all_devices_no_devices_in_db(self):
@@ -31,8 +32,8 @@ class TestDevicesServer(ServerTestCase):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
         app = App(name=self.test_app_name, devices=[device1, device2])
-        db.session.add(app)
-        db.session.commit()
+        device_db.session.add(app)
+        device_db.session.commit()
         response = self.get_with_status_check('/api/devices', headers=self.headers, status_code=SUCCESS)
         expected_device1 = device1.as_json()
         expected_device1['app'] = 'TestApp'
@@ -44,9 +45,9 @@ class TestDevicesServer(ServerTestCase):
     def test_read_device(self):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
-        db.session.add(device2)
-        db.session.add(device1)
-        db.session.commit()
+        device_db.session.add(device2)
+        device_db.session.add(device1)
+        device_db.session.commit()
         response = self.get_with_status_check('/api/devices/{}'.format(device1.id), headers=self.headers,
                                               status_code=SUCCESS)
         expected_device1 = device1.as_json()
@@ -59,20 +60,20 @@ class TestDevicesServer(ServerTestCase):
     def test_delete_device(self):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
-        db.session.add(device2)
-        db.session.add(device1)
-        db.session.commit()
+        device_db.session.add(device2)
+        device_db.session.add(device1)
+        device_db.session.commit()
         device1_id = device1.id
         self.delete_with_status_check('/api/devices/{}'.format(device1_id), headers=self.headers, status_code=SUCCESS)
-        self.assertIsNone(Device.query.filter_by(id=device1_id).first())
+        self.assertIsNone(device_db.session.query(Device).filter(Device.id == device1_id).first())
 
     def test_delete_device_device_dne(self):
         self.delete_with_status_check('/api/devices/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_create_device_device_already_exists(self):
         device1 = Device('test', [], [], 'type', description='description')
-        db.session.add(device1)
-        db.session.commit()
+        device_db.session.add(device1)
+        device_db.session.commit()
         device_json = {'app': 'test', 'name': 'test', 'type': 'some_type', 'fields': []}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
@@ -120,26 +121,25 @@ class TestDevicesServer(ServerTestCase):
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
         core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
         app = App(name=self.test_app_name)
-        db.session.add(app)
-        db.session.commit()
+        device_db.session.add(app)
+        device_db.session.commit()
 
         device_json = {'app': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
         response = self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=OBJECT_CREATED, content_type='application/json')
-        device = Device.query.filter_by(name='test').first()
+        device = device_db.session.query(Device).filter(Device.name == 'test').first()
         self.assertIsNotNone(device)
         expected = device.as_json()
         expected['app'] = 'TestApp'
-        remove_configuration_keys_from_device_json(expected)
         self.assertEqual(response, expected)
 
     def test_update_device_device_dne(self):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
-        db.session.add(device2)
-        db.session.add(device1)
-        db.session.commit()
+        device_db.session.add(device2)
+        device_db.session.add(device1)
+        device_db.session.commit()
         data = {'id': 404, 'name': 'renamed'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                               status_code=OBJECT_DNE_ERROR, content_type='application/json')
@@ -147,9 +147,9 @@ class TestDevicesServer(ServerTestCase):
     def test_update_device_app_dne(self):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
-        db.session.add(device2)
-        db.session.add(device1)
-        db.session.commit()
+        device_db.session.add(device2)
+        device_db.session.add(device1)
+        device_db.session.commit()
         data = {'id': device1.id, 'name': 'renamed', 'app': 'Invalid'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                               status_code=INVALID_INPUT_ERROR, content_type='application/json')
@@ -158,8 +158,8 @@ class TestDevicesServer(ServerTestCase):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
         app = App(name=self.test_app_name, devices=[device1, device2])
-        db.session.add(app)
-        db.session.commit()
+        device_db.session.add(app)
+        device_db.session.commit()
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
@@ -173,8 +173,8 @@ class TestDevicesServer(ServerTestCase):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
         app = App(name=self.test_app_name, devices=[device1, device2])
-        db.session.add(app)
-        db.session.commit()
+        device_db.session.add(app)
+        device_db.session.commit()
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
@@ -190,8 +190,8 @@ class TestDevicesServer(ServerTestCase):
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
         app = App(name=self.test_app_name, devices=[device1, device2])
-        db.session.add(app)
-        db.session.commit()
+        device_db.session.add(app)
+        device_db.session.commit()
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
@@ -205,3 +205,101 @@ class TestDevicesServer(ServerTestCase):
 
         self.assertEqual(device1.name, 'renamed')
         self.assertEqual(device1.get_plaintext_fields(), {field['name']: field['value'] for field in fields_json})
+
+    def test_export_apps_devices_no_filename(self):
+        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+
+        fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
+                  {"name": "Number field", "value": '5'}, {"name": "Enum field", "value": "val 1"},
+                  {"name": "Boolean field", "value": 'True'}]
+        data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
+        self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
+                                              status_code=OBJECT_CREATED, content_type="application/json")
+
+        self.post_with_status_check('/api/devices/export', headers=self.headers, content_type="application/json",
+                                    data=json.dumps({}))
+
+        self.assertIn('appdevice.json', os.listdir(tests.config.test_data_path))
+        with open(core.config.paths.default_appdevice_export_path, 'r') as appdevice_file:
+            read_file = appdevice_file.read()
+            read_file = read_file.replace('\n', '')
+            read_json = json.loads(read_file)
+        self.assertIn('HelloWorld', read_json)
+        self.assertTrue(len(read_json['HelloWorld']) >= 1)
+        devices_read = 0
+        for device in read_json['HelloWorld']:
+            if device['name'] == 'testDevice':
+                self.assertEqual(len(device['fields']), len(fields))
+                for field in fields:
+                    self.assertIn(field, device['fields'])
+                devices_read += 1
+        self.assertEqual(devices_read, 1)
+
+    def test_export_apps_devices_with_filename(self):
+        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+
+        fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
+                  {"name": "Number field", "value": '5'}, {"name": "Enum field", "value": "val 1"},
+                  {"name": "Boolean field", "value": 'True'}]
+        data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
+        self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
+                                              status_code=OBJECT_CREATED, content_type="application/json")
+
+        filename = 'testappdevices.json'
+        filepath = os.path.join(tests.config.test_data_path, filename)
+        data = {'filename': filepath}
+        self.post_with_status_check('/api/devices/export',
+                                    data=json.dumps(data), headers=self.headers, content_type = "application/json")
+
+        self.assertIn(filename, os.listdir(tests.config.test_data_path))
+        with open(filepath, 'r') as appdevice_file:
+            read_file = appdevice_file.read()
+            read_file = read_file.replace('\n', '')
+            read_json = json.loads(read_file)
+        self.assertIn('HelloWorld', read_json)
+        self.assertTrue(len(read_json['HelloWorld']) >= 1)
+        devices_read = 0
+        for device in read_json['HelloWorld']:
+            if device['name'] == 'testDevice':
+                self.assertEqual(len(device['fields']), len(fields))
+                for field in fields:
+                    self.assertIn(field, device['fields'])
+                devices_read += 1
+        self.assertEqual(devices_read, 1)
+
+    def test_import_apps_devices(self):
+        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+
+        fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
+                  {"name": "Number field", "value": '5'}, {"name": "Enum field", "value": "val 1"},
+                  {"name": "Boolean field", "value": 'True'}]
+        data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
+        self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
+                                   status_code=OBJECT_CREATED, content_type="application/json")
+
+        filename = 'testappdevices.json'
+        filepath = os.path.join(tests.config.test_data_path, filename)
+        data = {'filename': filepath}
+        self.post_with_status_check('/api/devices/export',
+                                    data=json.dumps(data), headers=self.headers, content_type = "application/json")
+
+        fields.remove({"name": "Encrypted field", "value": "encrypted"})
+        fields.append({"name": "Encrypted field", "encrypted": True})
+
+        dev = device_db.session.query(Device).filter(Device.name == "testDevice").first()
+        device_db.session.delete(dev)
+        device_db.session.commit()
+
+        self.get_with_status_check('/api/devices/import',
+                                   data=json.dumps(data), headers=self.headers, content_type="application/json")
+
+        app = device_db.session.query(App).filter(App.name == "HelloWorld").first()
+        app_id = app.id
+        devices = device_db.session.query(Device).all()
+        for device in devices:
+            if device.name == 'testDevice':
+                device_json = device.as_json()
+                self.assertEqual(device.app_id, app_id)
+                self.assertEqual(len(device_json['fields']), len(fields))
+                for field in fields:
+                    self.assertIn(field, device_json['fields'])

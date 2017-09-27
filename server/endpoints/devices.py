@@ -188,20 +188,45 @@ def import_devices():
             with open(filename, 'r') as devices_file:
                 read_file = devices_file.read()
                 read_file = read_file.replace('\n', '')
-                apps_devices = json.loads(read_file)
+                apps = json.loads(read_file)
         except (OSError, IOError) as e:
             current_app.logger.error('Error importing devices from {0}: {1}'.format(filename, e))
             return {"error": "Error reading file."}, IO_ERROR
-        for app in apps_devices:
-            for device in apps_devices[app]:
-                extra_fields = {}
-                for key in device:
-                    if key not in ['ip', 'name', 'port', 'username']:
-                        extra_fields[key] = device[key]
-                extra_fields_str = json.dumps(extra_fields)
-                Device.add_device(name=device['name'], username=device['username'], ip=device['ip'],
-                                  port=device['port'], extra_fields=extra_fields_str, password=None,
-                                  app_id=app)
+        for app in apps:
+            for device in apps[app]:
+                if device_db.session.query(Device).filter(Device.name == device['name']).first() is not None:
+                    current_app.logger.error('Could not import device {0}. '
+                                             'Device already exists.'.format(device['name']))
+                    continue
+                fields = {field['name']: field['value'] for field in device['fields']}
+                device_type = device['type']
+                try:
+                    device_api = get_app_device_api(app, device_type)
+                    device_fields_api = device_api['fields']
+                    validate_device_fields(device_fields_api, fields, device_type, app)
+                except UnknownDevice:
+                    current_app.logger.error('Cannot import device for app {0}, type {1}. '
+                                             'Type does not exist'.format(app, device_type))
+                    continue
+                except InvalidInput as e:
+                    current_app.logger.error('Cannot import device for app {0}, type {1}. '
+                                             'Invalid input'.format(app, device_type,
+                                                                    format_exception_message(e)))
+                    continue
+                else:
+                    fields = device['fields']
+                    add_configuration_keys_to_device_json(fields, device_fields_api)
+                    app = device_db.session.query(App).filter(App.name == app).first()
+                    if app is None:
+                        current_app.logger.error(
+                            'SEVERE: App defined in api does not have corresponding entry in database. '
+                            'Cannot import device')
+                        continue
+                    device_obj = Device.from_json(device)
+                    app.add_device(device_obj)
+                    device_db.session.add(device_obj)
+                    device_db.session.commit()
+
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 
@@ -216,11 +241,11 @@ def export_devices():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
         returned_json = {}
-        apps = device_db.session.query(App).query.all()
+        apps = device_db.session.query(App).all()
         for app in apps:
             devices = []
             for device in app.devices:
-                device_json = device.as_json()
+                device_json = device.as_json(export=True)
                 device_json.pop('app', None)
                 device_json.pop('id', None)
                 devices.append(device_json)
