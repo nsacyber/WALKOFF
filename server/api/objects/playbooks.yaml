@@ -26,7 +26,6 @@ PlaybookOverview:
       items:
         $ref: '#/definitions/WorkflowDescription'
 
-
 WorkflowDescription:
   type: object
   required: [name, uid]
@@ -46,6 +45,7 @@ UpdatePlaybook:
         type: string
       new_name:
         type: string
+
 Workflow:
   type: object
   required: [name]
@@ -70,6 +70,7 @@ Workflow:
       type: number
       example: 0.43
       readOnly: true
+
 AddWorkflow:
     type: object
     required: [name]
