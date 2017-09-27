@@ -156,6 +156,7 @@ export class DevicesModalComponent {
 	}
 
 	validate(): boolean {
+		let self = this;
 		this.validationErrors = {};
 		let inputs = this.workingDevice.fields;
 
@@ -163,6 +164,8 @@ export class DevicesModalComponent {
 		Object.keys(inputs).forEach(function (key) {
 			if (typeof(inputs[key]) === 'string') {
 				inputs[key] = (inputs[key] as string).trim();
+				//Also trim encrypted confirm fields if necessary
+				if (self.encryptedConfirmFields[key]) self.encryptedConfirmFields[key] = self.encryptedConfirmFields[key].trim();
 			}
 		});
 
@@ -179,27 +182,34 @@ export class DevicesModalComponent {
 				//For strings, check against min/max length, regex pattern, or enum constraints
 				case 'string':
 					if (inputs[field.name] == null) inputs[field.name] = '';
-					if (inputs[field.name] && field.minLength !== undefined && inputs[field.name].length < field.minLength)
-						this._concatValidationMessage(field.name, `Must be at least ${field.minLength} characters.`);
-					if (field.maxLength !== undefined && inputs[field.name].length > field.maxLength)
-						this._concatValidationMessage(field.name, `Must be at most ${field.minLength} characters.`);
-					if (inputs[field.name] && field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
-						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.pattern}.`);
+
+					if (field.encrypted && !this.encryptedFieldsToBeCleared[field.name] && this.encryptedConfirmFields[field.name] !== inputs[field.name])
+						this._concatValidationMessage(field.name, `The values for ${field.name} do not match.`);
 					if (field.enum) {
 						let enumArray: string[] = field.enum.slice(0);
 						if (!field.required) enumArray.push('');
 						if (enumArray.indexOf(inputs[field.name]) < 0)
 							this._concatValidationMessage(field.name, `You must select a value from the list.`);
 					}
-					if (field.encrypted && !this.encryptedFieldsToBeCleared[field.name] && this.encryptedConfirmFields[field.name] !== inputs[field.name])
-						this._concatValidationMessage(field.name, `The values for ${field.name} do not match.`);
+
+					//We're past the required check; Don't do any more validation if we have an empty string as input
+					if (!inputs[field.name]) break;
+
+					if (field.minLength !== undefined && inputs[field.name].length < field.minLength)
+						this._concatValidationMessage(field.name, `Must be at least ${field.minLength} characters.`);
+					if (field.maxLength !== undefined && inputs[field.name].length > field.maxLength)
+						this._concatValidationMessage(field.name, `Must be at most ${field.minLength} characters.`);
+					if (field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
+						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.pattern}.`);
 					break;
 				//For numbers, check against min/max and multipleOf constraints
 				case 'number':
 				case 'integer':
+					//We're past the required check; if number is null, don't do any more validation
+					if (inputs[field.name] == null) break;
+
 					let min = this.getMin(field);
 					let max = this.getMax(field);
-					if (inputs[field.name] == null) inputs[field.name] = 0;
 					if (min !== null && inputs[field.name] < min)
 						this._concatValidationMessage(field.name, `The minimum value is ${min}.`);
 					if (max !== null && inputs[field.name] > max)
