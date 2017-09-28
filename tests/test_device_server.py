@@ -210,8 +210,8 @@ class TestDevicesServer(ServerTestCase):
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
-                  {"name": "Number field", "value": '5'}, {"name": "Enum field", "value": "val 1"},
-                  {"name": "Boolean field", "value": 'True'}]
+                  {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
+                  {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                               status_code=OBJECT_CREATED, content_type="application/json")
@@ -239,8 +239,8 @@ class TestDevicesServer(ServerTestCase):
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
-                  {"name": "Number field", "value": '5'}, {"name": "Enum field", "value": "val 1"},
-                  {"name": "Boolean field", "value": 'True'}]
+                  {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
+                  {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                               status_code=OBJECT_CREATED, content_type="application/json")
@@ -271,8 +271,8 @@ class TestDevicesServer(ServerTestCase):
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
-                  {"name": "Number field", "value": '5'}, {"name": "Enum field", "value": "val 1"},
-                  {"name": "Boolean field", "value": 'True'}]
+                  {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
+                  {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")

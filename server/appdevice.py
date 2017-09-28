@@ -165,17 +165,19 @@ class DeviceField(Device_Base, DeviceFieldMixin):
 
     @hybrid_property
     def value(self):
-        try:
-            return convert_primitive_type(self._value, self.type)
-        except (TypeError, ValueError):
+        if self._value == '':
             return self._value
+        elif self._value == 'None':
+            return None
+        else:
+            return convert_primitive_type(self._value, self.type)
 
     @value.setter
     def value(self, value):
         self._value = str(value)
 
     def as_json(self):
-        return {"name": self.name, "value": self._value}
+        return {"name": self.name, "value": self.value}
 
     @staticmethod
     def from_json(data):
@@ -196,10 +198,13 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
     @hybrid_property
     def value(self):
         aes = pyaes.AESModeOfOperationCTR(key)
-        try:
-            return convert_primitive_type(aes.decrypt(self._value), self.type)
-        except (TypeError, ValueError):
-            return aes.decrypt(self._value)
+        val = aes.decrypt(self._value)
+        if val == '' or val is None:
+            return val
+        elif val == 'None':
+            return None
+        else:
+            return convert_primitive_type(val, self.type)
 
     @value.setter
     def value(self, new_value):
