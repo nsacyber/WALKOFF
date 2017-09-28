@@ -293,7 +293,7 @@ Filter:
 Argument:
   type: object
   required: [name, value]
-  description: Object used for passing an argument into various actions
+  description: Object used for passing an argument into various actions or device
   properties:
     name:
       type: string

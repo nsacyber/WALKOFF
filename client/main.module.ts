@@ -20,6 +20,7 @@ import { DevicesComponent } from './devices/devices.component';
 import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppsComponent } from './apps/apps.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
@@ -45,6 +46,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		MainComponent,
 		//Router module components
 		PlaybookComponent,
+		DashboardComponent,
 		SchedulerComponent,
 		DevicesComponent,
 		TriggersComponent,

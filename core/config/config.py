@@ -60,22 +60,15 @@ port = 5000
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
 device_db_type = 'sqlite'
+secret_key = "SHORTSTOPKEYTEST"
 
 # Loads the keywords into the environment filter for use
 JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
                  for fn in listdir(keywords_path) if
                  isfile(join(keywords_path, fn)) and not splitext(fn)[0] in ["__init__", "."]}
 
-# Active Execution (Workflows called from constant loop) settings.
-# secondsDelay - delay in seconds between execution loops
-# maxJobs - maximum number of jobs to be run at once
-execution_settings = {
-    "secondsDelay": 0.1,
-    "maxJobs": 2
-}
 
 num_processes = 5
-threadpool_shutdown_timeout_sec = 3
 
 # Function Dict Paths/Initialization
 

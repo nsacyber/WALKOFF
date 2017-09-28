@@ -6,10 +6,9 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
-
 @Injectable()
 export class DashboardService {
-	constructor (private http: Http) {
+	constructor (private authHttp: JwtHttp) {
 	}
 
 	private handleError (error: Response | any): Promise<any> {

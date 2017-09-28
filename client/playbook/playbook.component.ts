@@ -13,7 +13,7 @@ import { PlaybookService } from './playbook.service';
 })
 export class PlaybookComponent {
 
-	constructor(private playbookService: PlaybookService) {
+    constructor(private playbookService: PlaybookService) {
     }
 
     ngAfterViewInit() {
@@ -22,8 +22,8 @@ export class PlaybookComponent {
             while (indx < document.body.childNodes.length) {
                 if ('localName' in document.body.childNodes[indx]
                     && (document.body.childNodes[indx].localName == 'link'
-                    || document.body.childNodes[indx].localName == 'script')) {
-                        document.body.removeChild(document.body.childNodes[indx]);
+                        || document.body.childNodes[indx].localName == 'script')) {
+                    document.body.removeChild(document.body.childNodes[indx]);
                 } else {
                     indx++;
                 }

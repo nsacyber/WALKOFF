@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { DashboardComponent } from './dashboard/dashboard.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 import { DevicesComponent } from './devices/devices.component';
@@ -12,7 +13,7 @@ import { AppsComponent } from './apps/apps.component';
 
 const routes: Routes = [
 	{ path: '', redirectTo: '/playbook', pathMatch: 'full' },
-	// { path: 'dashboard', component: DashboardComponent },
+	{ path: 'dashboard', component: DashboardComponent },
 	{ path: 'playbook', component: PlaybookComponent },
 	{ path: 'scheduler', component: SchedulerComponent },
 	{ path: 'devices', component: DevicesComponent },

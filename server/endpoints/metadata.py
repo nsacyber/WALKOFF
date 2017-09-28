@@ -74,6 +74,23 @@ def read_all_flags():
     return __func()
 
 
+def read_all_device_types():
+    @jwt_required
+    @roles_accepted_for_resources('apps')
+    def __func():
+        response = []
+        for app, app_api in core.config.config.app_apis.items():
+            if 'devices' in app_api:
+                for type_name, type_api in app_api['devices'].items():
+                    api = dict(type_api)
+                    api['name'] = type_name
+                    api['app'] = app
+                    response.append(api)
+        return response, SUCCESS
+
+    return __func()
+
+
 def read_all_widgets():
 
     @jwt_required

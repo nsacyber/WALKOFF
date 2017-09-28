@@ -55,6 +55,23 @@
               description: All the available flags. Form of '{flag_name -> Action}'
               type: object
 
+/api/devicetypes:
+  get:
+    tags:
+      - System
+    summary: Read all the device types for all apps
+    description: ''
+    operationId: server.endpoints.metadata.read_all_device_types
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/DeviceType'
+
 /api/widgets:
   get:
     tags:

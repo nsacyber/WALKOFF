@@ -1,13 +1,13 @@
 @import '/client/node_modules/ng-pick-datetime/styles/picker.min.css';
 
-#main {
+#main.schedulerMain {
 	padding: 10px 15px;
 }
 
-#schedulerStatus {
+.schedulerMain #schedulerStatus {
 	display: inline-block;
 }
 
-ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+.schedulerMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
 	white-space: initial;
 }
