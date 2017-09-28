@@ -12,6 +12,10 @@ class Main(App):
         App.__init__(self, name, device)
 
     @action
+    def echo_object(self, data):
+        return data
+
+    @action
     def json_select(self, json_reference, element):
         return json.loads(json_reference)[element]
 

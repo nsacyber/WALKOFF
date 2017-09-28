@@ -140,12 +140,13 @@ def create_app():
         JWT_BLACKLIST_ENABLED=True,
         JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
-    _app.jinja_options = Flask.jinja_options.copy()
-    _app.jinja_options.update(dict(
-        variable_start_string='<%',
-        variable_end_string='%>'
-    ))
-    _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
+    # _app.jinja_options = Flask.jinja_options.copy()
+    # _app.jinja_options.update(dict(
+    #     variable_start_string='<%',
+    #     variable_end_string='%>'
+    # ))
+    # _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
+
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'
@@ -191,6 +192,33 @@ def create_user():
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
         device_db.session.add(App(name=app_name, devices=[]))
+    running_context.db.session.commit()
+    device_db.session.commit()
+    running_context.CaseSubscription.sync_to_subscriptions()
+
+    app.logger.handlers = logging.getLogger('server').handlers
+
+
+def create_test_data():
+    from server.context import running_context
+    from . import database
+
+    running_context.db.create_all()
+
+    if not database.User.query.first():
+        admin_role = running_context.user_datastore.create_role(name='admin',
+                                                                description='administrator',
+                                                                pages=server.database.default_resources)
+
+        u = running_context.User.add_user(username='admin', password='admin')
+        running_context.user_datastore.add_role_to_user(u, admin_role)
+        running_context.db.session.commit()
+
+    apps = set(helpers.list_apps()) - set([_app.name
+                                           for _app in device_db.session.query(App).all()])
+    app.logger.debug('Found apps: {0}'.format(apps))
+    for app_name in apps:
+        device_db.session.add(App(app=app_name, devices=[]))
     running_context.db.session.commit()
     device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()

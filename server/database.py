@@ -22,11 +22,19 @@ def initialize_resource_roles_from_cleared_database():
 
 
 def initialize_resource_roles_from_database():
+    """Initializes the resource_roles dictionary.
+    """
     for resource in ResourcePermission.query.all():
         resource_roles[resource.resource] = {role.name for role in resource.roles}
 
 
 def set_resources_for_role(role_name, resources):
+    """Sets the resources a role is allowed to access.
+
+    Args:
+        role_name (str): The name of the role.
+        resources (list[str]): The list of resources for which this role should have access.
+    """
     for resource, roles in resource_roles.items():
         if resource in resources:
             roles.add(role_name)
@@ -38,16 +46,23 @@ def set_resources_for_role(role_name, resources):
 
 
 def clear_resources_for_role(role_name):
+    """Clears all of the resources that a role has access to.
+
+    Args:
+        role_name (str): The name of the role.
+    """
     for resource, roles in resource_roles.items():
         if role_name in roles:
             roles.remove(role_name)
+
 
 user_roles_association = db.Table('user_roles_association',
                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
 
 roles_resources_association = db.Table('roles_resources_association',
-                                       db.Column('resource_permission_id', db.Integer, db.ForeignKey('resource_permission.id')),
+                                       db.Column('resource_permission_id', db.Integer,
+                                                 db.ForeignKey('resource_permission.id')),
                                        db.Column('role_id', db.Integer, db.ForeignKey('role.id')))
 
 
@@ -71,21 +86,47 @@ class User(db.Model, TrackModificationsMixIn):
     login_count = db.Column(db.Integer, default=0)
 
     def __init__(self, name, password):
+        """Initializes a new User object
+
+        Args:
+            name (str): The username for the User.
+            password (str): The password for the User.
+        """
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
 
     @hybrid_property
     def password(self):
+        """Returns the password for the user.
+        """
         return self._password
 
     @password.setter
     def password(self, new_password):
+        """Sets the password for a user, and encrypts it.
+
+        Args:
+            new_password (str): The new password for the User.
+        """
         self._password = pbkdf2_sha512.hash(new_password)
 
     def verify_password(self, password_attempt):
+        """Verifies that the input password matches with the stored password.
+
+        Args:
+            password_attempt(str): The input password.
+
+        Returns:
+            True if the passwords match, False if not.
+        """
         return pbkdf2_sha512.verify(password_attempt, self._password)
 
     def set_roles(self, new_roles):
+        """Sets the roles for a User.
+
+        Args:
+            new_roles (list[str]): A list of Role names for the User.
+        """
         self.roles[:] = []
 
         new_role_names = set(new_roles)
@@ -97,6 +138,11 @@ class User(db.Model, TrackModificationsMixIn):
             logger.warning('Cannot add roles {0} to user {1}. Roles do not exist'.format(roles_not_added, self.id))
 
     def login(self, ip_address):
+        """Tracks login information for the User upon logging in.
+
+        Args:
+            ip_address (str): The IP address from which the User logged in.
+        """
         self.last_login_at = self.current_login_at
         self.current_login_at = datetime.utcnow()
         self.last_login_ip = self.current_login_ip
@@ -104,6 +150,8 @@ class User(db.Model, TrackModificationsMixIn):
         self.login_count += 1
 
     def logout(self):
+        """Tracks login/logout information for the User upon logging out.
+        """
         if self.login_count > 0:
             self.login_count -= 1
         else:
@@ -111,10 +159,22 @@ class User(db.Model, TrackModificationsMixIn):
         db.session.commit()
 
     def has_role(self, role):
+        """Checks if a User has a Role associated with it.
+
+        Args:
+            role (str): The name of the Role.
+
+        Returns:
+            True if the User has the Role, False otherwise.
+        """
         return role in [role.name for role in self.roles]
 
     def as_json(self, with_user_history=False):
         """Returns the dictionary representation of a User object.
+
+        Args:
+            with_user_history (bool, optional): Boolean to determine whether or not to include user history in the JSON
+                representation of the User. Defaults to False.
 
         Returns:
             The dictionary representation of a User object.
@@ -156,7 +216,7 @@ class Role(db.Model, TrackModificationsMixIn):
             self.set_resources(resources)
 
     def set_resources(self, new_resources):
-        """Adds the given list of roles to the User object.
+        """Adds the given list of resources to the Role object.
 
         Args:
             new_resources (list|set[str]): A list of resource names with which the Role will be associated.
@@ -173,13 +233,17 @@ class Role(db.Model, TrackModificationsMixIn):
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
 
+        Args:
+            with_users (bool, optional): Boolean to determine whether or not to include User objects associated with the
+                Role in the JSON representation. Defaults to False.
+
         Returns:
             The dictionary representation of the Role object.
         """
         out = {"id": self.id,
-                "name": self.name,
-                "description": self.description,
-                "resources": [resource.resource for resource in self.resources]}
+               "name": self.name,
+               "description": self.description,
+               "resources": [resource.resource for resource in self.resources]}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
@@ -191,9 +255,23 @@ class ResourcePermission(db.Model):
     resource = db.Column(db.String(255), unique=True, nullable=False)
 
     def __init__(self, resource):
+        """Initializes a new ResourcePermission object, which is a type of Resource that a Role may have access to.
+
+        Args:
+            resource (name): Name of the Resource object.
+        """
         self.resource = resource
 
     def as_json(self, with_roles=False):
+        """Returns the dictionary representation of the ResourcePermission object.
+
+        Args:
+            with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the
+                ResourcePermission in the JSON representation. Defaults to False.
+
+        :param with_roles:
+        :return:
+        """
         out = {'resource': self.resource}
         if with_roles:
             out["roles"] = [role.name for role in self.roles]
@@ -201,6 +279,15 @@ class ResourcePermission(db.Model):
 
 
 def add_user(username, password):
+    """Adds a User object.
+
+    Args:
+        username (str): The username for the User.
+        password (str): The password for the User.
+
+    Returns:
+        The new User object if successful, else None.
+    """
     if User.query.filter_by(username=username).first() is None:
         user = User(username, password)
         db.session.add(user)
@@ -211,4 +298,9 @@ def add_user(username, password):
 
 
 def remove_user(username):
+    """Removes the user.
+
+    Args:
+        username (str): The username of the User to delete.
+    """
     User.query.filter_by(username=username).delete()

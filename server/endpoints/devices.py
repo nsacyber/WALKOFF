@@ -36,6 +36,7 @@ def read_device(device_id):
         device = device_db.session.query(Device).filter(Device.id == device_id).first()
         if device is not None:
             return get_device_json_with_app_name(device), SUCCESS
+
         else:
             current_app.logger.error('Could not read device {0}. '
                                      'Device does not exist'.format(device_id))

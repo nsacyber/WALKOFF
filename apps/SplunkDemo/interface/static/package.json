@@ -1,0 +1,13 @@
+{
+  "name": "WALKOFF",
+  "description": "WALKOFF",
+  "license": "MIT",
+  "dependencies": {
+    "datamaps": "^0.5.8"
+  },
+  "repository": {},
+  "engines": {
+    "node": ">= 4.2.1",
+    "npm": ">= 3"
+  }
+}

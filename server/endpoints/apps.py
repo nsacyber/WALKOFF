@@ -70,7 +70,6 @@ def list_app_actions(app_name):
 
 @jwt_required
 def read_all_devices(app_name):
-    from server.context import running_context
 
     @roles_accepted_for_resources('apps')
     def __func():
@@ -87,4 +86,3 @@ def read_all_devices(app_name):
             return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
 
     return __func()
-

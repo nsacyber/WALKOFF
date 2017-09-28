@@ -1,15 +1,13 @@
 import os
-from flask import render_template, current_app, send_file
+from flask import send_file
 from server.security import roles_accepted_for_resources
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 import core.filters
 import core.flags
 from core import helpers
-from server.returncodes import SUCCESS, UNAUTHORIZED_ERROR
-
-from core.helpers import combine_dicts
+from server.returncodes import SUCCESS
 
 
 def read_all_possible_subscriptions():

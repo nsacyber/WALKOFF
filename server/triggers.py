@@ -2,13 +2,13 @@ import json
 import logging
 from core.filter import Filter
 from core.flag import Flag
-from .database import db, TrackModificationsMixIn
+from .database import db
 from core.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 
 
-class Triggers(db.Model, ):
+class Triggers(db.Model):
     """
     ORM for the triggers in the Walkoff database
     """
@@ -22,14 +22,14 @@ class Triggers(db.Model, ):
 
     def __init__(self, name, playbook, workflow, conditions, tag=''):
         """
-        Constructs a Trigger object
+        Constructs a Trigger object.
         
         Args:
-            name (str): Name of the trigger object
-            playbook (str): Playbook of the workflow to be connected to the trigger
-            workflow (str): The workflow to be connected to the trigger
-            conditions (str): String of the JSON representation of the conditional to be checked by the trigger
-            tag (str): An optional tag (grouping parameter) for the trigger
+            name (str): Name of the trigger object.
+            playbook (str): Playbook of the workflow to be connected to the trigger.
+            workflow (str): The workflow to be connected to the trigger;
+            conditions (str): String of the JSON representation of the conditional to be checked by the trigger.
+            tag (str, optional): An optional tag (grouping parameter) for the trigger.
         """
         self.name = name
         self.playbook = playbook
@@ -38,10 +38,10 @@ class Triggers(db.Model, ):
         self.tag = tag
 
     def edit_trigger(self, data):
-        """Edits a trigger
+        """Edits a Trigger object.
         
         Args:
-            data (dict): JSON containing the edited information
+            data (dict): JSON containing the edited information.
             
         Returns:
             True on successful edit, False otherwise.
@@ -63,6 +63,12 @@ class Triggers(db.Model, ):
 
     @staticmethod
     def update_playbook(old_playbook, new_playbook):
+        """Updates the Trigger objects associated with a playbook that has since changed its name.
+
+        Args:
+            old_playbook (str): The previous name of the playbook.
+            new_playbook (str): The new name of the playbook.
+        """
         if new_playbook:
             triggers = Triggers.query.filter_by(playbook=old_playbook).all()
             for trigger in triggers:
@@ -71,6 +77,12 @@ class Triggers(db.Model, ):
 
     @staticmethod
     def update_workflow(old_workflow, new_workflow):
+        """Updates the Trigger objects associated with a workflow that has since changed its name.
+
+        Args:
+            old_workflow (str): The previous name of the workflow.
+            new_workflow (str): The new name of the workflow.
+        """
         if new_workflow:
             triggers = Triggers.query.filter_by(workflow=old_workflow).all()
             for trigger in triggers:
@@ -78,7 +90,7 @@ class Triggers(db.Model, ):
         db.session.commit()
 
     def as_json(self):
-        """ Gets the JSON representation of all the Trigger object.
+        """ Gets the JSON representation of the Trigger object.
         
         Returns:
             The JSON representation of the Trigger object.
@@ -91,13 +103,13 @@ class Triggers(db.Model, ):
 
     @staticmethod
     def execute(data, inputs, triggers=None, tags=None):
-        """Tries to match the data_in against the conditionals of all the triggers registered in the database.
+        """Tries to match the data in against the conditionals of all the triggers registered in the database.
         
         Args:
             data (str): Data to be used to match against the conditionals
             inputs (list): The input to the first step of the workflow
-            triggers (list): List of names of the specific trigger to execute
-            tags (list): A list of tags to find the specific triggers to execute
+            triggers (list[str], optional): List of names of the specific trigger to execute
+            tags (list[str], optional): A list of tags to find the specific triggers to execute
             
         Returns:
             Dictionary of {"status": <status string>}

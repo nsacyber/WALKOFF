@@ -116,7 +116,7 @@ def update_playbook():
                 current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
 
                 workflow = next(playbook for playbook in running_context.controller.get_all_workflows()
-                                 if playbook['name'] == new_name)['workflows']
+                                    if playbook['name'] == new_name)['workflows']
                 return workflow, SUCCESS
             else:
                 current_app.logger.error('No new name provided to update playbook')
@@ -516,6 +516,7 @@ def add_default_template(playbook_name, workflow_name):
 
 
 @jwt_required
+@roles_accepted_for_resources('playbooks')
 def read_results():
     ret = []
     completed_workflows = [workflow.as_json() for workflow in
@@ -533,3 +534,15 @@ def read_results():
 def read_all_results():
     return [workflow.as_json() for workflow in
             case_database.case_db.session.query(WorkflowResult).all()], SUCCESS
+
+
+def read_result(uid):
+
+    @jwt_required
+    def __func():
+        workflow_result = case_database.case_db.session.query(WorkflowResult).filter(WorkflowResult.uid == uid).first()
+        if workflow_result is not None:
+            return workflow_result.as_json(), SUCCESS
+        else:
+            return {'error': 'No workflow found'}, OBJECT_DNE_ERROR
+    return __func()

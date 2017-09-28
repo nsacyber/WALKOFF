@@ -19,12 +19,12 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
 
     def __init__(self, name, subscriptions=None, note=''):
         """
-        Constructs an instance of a CaseSubscription
+        Constructs an instance of a CaseSubscription.
         
         Args:
-            name (str): Name of the case subscription
-            subscriptions (list(dict)): A subscription JSON object
-            note (str, optional): Annotation of the event
+            name (str): Name of the case subscription.
+            subscriptions (list(dict)): A subscription JSON object.
+            note (str, optional): Annotation of the event.
         """
         self.name = name
         self.note = note
@@ -41,7 +41,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
             core.case.subscription.add_cases({name: subscriptions})
 
     def as_json(self):
-        """ Gets the JSON representation of all the CaseSubscription object.
+        """ Gets the JSON representation of the CaseSubscription object.
         
         Returns:
             The JSON representation of the CaseSubscription object.
@@ -53,10 +53,10 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
 
     @staticmethod
     def update(case_name):
-        """ Synchronizes the subscription from the subscription in memory in the core
+        """ Synchronizes the subscription from the subscription in memory in the core.
         
         Args:
-            case_name (str): The name of case to synchronize
+            case_name (str): The name of case to synchronize.
         """
         case = CaseSubscription.query.filter_by(name=case_name).first()
         if case and case_name in core.case.subscription.subscriptions:

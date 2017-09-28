@@ -216,8 +216,8 @@ class Workflow(ExecutionElement):
                             yield child_step
                         self.__send_callback('Workflow Shutdown',
                                              {'execution_uid': self.children[child_name].execution_uid,
-                                            'name': self.children[child_name].name,
-                                            'uid': self.children[child_name].uid})
+                                              'name': self.children[child_name].name,
+                                              'uid': self.children[child_name].uid})
                     next_step = child_next_step
             current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
             current = self.steps[current_name] if current_name is not None else None
@@ -236,10 +236,10 @@ class Workflow(ExecutionElement):
 
     def __execute_step(self, step, instance):
         data = {"data":
-                {"app": step.app,
-                    "action": step.action,
-                    "name": step.name,
-                    "input": step.input}}
+                    {"app": step.app,
+                     "action": step.action,
+                     "name": step.name,
+                     "input": step.input}}
         try:
             step.execute(instance=instance(), accumulator=self.accumulator)
             data['data']['result'] = step.output.as_json()
@@ -264,8 +264,8 @@ class Workflow(ExecutionElement):
                 self.children[child_name].execution_uid = uuid.uuid4().hex
                 self.__send_callback('Workflow Execution Start',
                                      {'name': self.children[child_name].name,
-                                    'execution_uid': self.children[child_name].execution_uid,
-                                    'uid': self.children[child_name].uid})
+                                      'execution_uid': self.children[child_name].execution_uid,
+                                      'uid': self.children[child_name].uid})
                 child_step_generator = self.children[child_name].__steps(start=child_start)
                 return child_step_generator, child_next, child_name
         return None, None, None
@@ -325,7 +325,7 @@ class Workflow(ExecutionElement):
         name = json_in['name'] if 'name' in json_in else ''
         uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
         children = {name: None for name in json_in['children']} if 'children' in json_in else {}
-        start_step = json_in['start_step'] if 'start_step' in json_in else None
+        start_step = json_in['start'] if 'start' in json_in else None
         steps = {}
         for step_json in json_in['steps']:
             step = Step.from_json(step_json, position=step_json['position'])

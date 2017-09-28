@@ -14,6 +14,11 @@ class BlacklistedToken(db.Model):
     expires = db.Column(db.DateTime, nullable=False)
 
     def as_json(self):
+        """Get the JSON representation of a BlacklistedToken object.
+
+        Returns:
+            The JSON representation of a BlacklistedToken object.
+        """
         return {
             'id': self.id,
             'jti': self.jti,
@@ -23,8 +28,7 @@ class BlacklistedToken(db.Model):
 
 
 def revoke_token(decoded_token):
-    """
-    Adds a new token to the database. It is not revoked when it is added.
+    """Adds a new token to the database. It is not revoked when it is added.
     """
     jti = decoded_token['jti']
     user_identity = decoded_token[current_app.config['JWT_IDENTITY_CLAIM']]
@@ -41,11 +45,13 @@ def revoke_token(decoded_token):
 
 
 def is_token_revoked(decoded_token):
-    """
-    Checks if the given token is revoked or not. Because we are adding all the
+    """Checks if the given token is revoked or not. Because we are adding all the
     tokens that we create into this database, if the token is not present
     in the database we are going to consider it revoked, as we don't know where
     it was created.
+
+    Returns:
+        True if the token is revoked, False otherwise.
     """
     jti = decoded_token['jti']
     token = BlacklistedToken.query.filter_by(jti=jti).first()
@@ -53,8 +59,7 @@ def is_token_revoked(decoded_token):
 
 
 def approve_token(token_id, user):
-    """
-    Approves the given token.
+    """Approves the given token.
     """
     token = BlacklistedToken.query.filter_by(id=token_id, user_identity=user).first()
     if token is not None:
@@ -71,8 +76,7 @@ def prune_if_necessary():
 
 
 def prune_database():
-    """
-    Delete tokens that have expired from the database.
+    """Delete tokens that have expired from the database.
     """
     now = datetime.now()
     expired = BlacklistedToken.query.filter(BlacklistedToken.expires < now).all()

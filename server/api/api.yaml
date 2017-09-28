@@ -4,7 +4,7 @@ info:
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
     orchestration tools. https://iadgov.github.io/WALKOFF/
-  version: 0.1.2
+  version: 0.3.1
   title: WALKOFF
   contact:
     email: walkoff@nsa.gov

@@ -6,11 +6,3 @@ class _BlueprintInjection(object):
 
 AppBlueprint = _BlueprintInjection
 WidgetBlueprint = _BlueprintInjection
-
-
-
-
-
-
-
-

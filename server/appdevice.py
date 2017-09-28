@@ -54,6 +54,17 @@ class App(Device_Base):
         return {"name": self.name,
                 "devices": [device.as_json() for device in self.devices]}
 
+    def as_json(self, with_devices=False):
+        """Gets the JSON representation of an App object.
+
+        Returns:
+            The JSON representation of an App object.
+        """
+        output = {'name': self.name}
+        if with_devices:
+            output['devices'] = [device.as_json() for device in self.devices]
+        return output
+
     @staticmethod
     def from_json(data):
         devices = [Device.from_json(device) for device in data['devices']] if 'devices' in data else None
