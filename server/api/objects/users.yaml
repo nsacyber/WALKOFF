@@ -13,7 +13,6 @@ AddUser:
       roles:
         description: A list of roles that this user possesses
         type: array
-        description: A list of role names
         items:
           type: string
 EditUser:
