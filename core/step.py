@@ -11,6 +11,7 @@ from core.nextstep import NextStep
 from core.widgetsignals import get_widget_signal
 from apps import get_app_action
 from core.validator import validate_app_action_parameters
+from core.case.callbacks import data_sent
 import uuid
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,6 @@ class Step(ExecutionElement):
         self.next_up = None
         self.raw_json = raw_json if raw_json is not None else {}
         self.execution_uid = 'default'
-        self.results_sock = None
         self.execution_uid = None
 
     def _update_json(self, updated_json):
@@ -124,8 +124,9 @@ class Step(ExecutionElement):
         data['sender']['id'] = self.name
         data['sender']['execution_uid'] = self.execution_uid
         data['sender']['uid'] = self.uid
-        if self.results_sock:
-            self.results_sock.send_json(data)
+        data_sent.send(None, data=data)
+        # if self.results_sock:
+        #     self.results_sock.send_json(data)
 
     def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
@@ -175,7 +176,6 @@ class Step(ExecutionElement):
         """
 
         for next_step in self.conditionals:
-            next_step.results_sock = self.results_sock
             next_step = next_step(self.output, accumulator)
             if next_step is not None:
                 self.next_up = next_step

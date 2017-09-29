@@ -164,6 +164,11 @@ class Worker:
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
+        def handle_data_sent(sender, **kwargs):
+            self.on_data_sent(sender, **kwargs)
+        self.handle_data_sent = handle_data_sent
+        callbacks.data_sent.connect(handle_data_sent)
+
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
@@ -198,6 +203,9 @@ class Worker:
         self.setup_worker_env()
         self.execute_workflow_worker()
 
+    def on_data_sent(self, sender, **kwargs):
+        self.results_sock.send_json(kwargs['data'])
+
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT.
         """
@@ -225,7 +233,6 @@ class Worker:
             workflow_in = self.request_sock.recv()
 
             workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
-            workflow.results_sock = self.results_sock
             workflow.comm_sock = self.comm_sock
 
             workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)

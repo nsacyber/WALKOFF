@@ -4,6 +4,7 @@ from core.validator import validate_filter_parameters, validate_parameter
 from copy import deepcopy
 import logging
 import uuid
+from core.case.callbacks import data_sent
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +20,6 @@ class Filter(ExecutionElement):
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
         """
-        self.results_sock = None
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
         ExecutionElement.__init__(self, action, uid)
@@ -35,8 +35,9 @@ class Filter(ExecutionElement):
         data['sender']['name'] = self.name
         data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
-        if self.results_sock:
-            self.results_sock.send_json(data)
+        data_sent.send(None, data=data)
+        # if self.results_sock:
+        #     self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):
         """Executes the flag.

@@ -5,6 +5,7 @@ from core.executionelement import ExecutionElement
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 from core.instance import Instance
 from core.step import Step
+from core.case.callbacks import data_sent
 import uuid
 import zmq.green as zmq
 
@@ -35,7 +36,6 @@ class Workflow(ExecutionElement):
         self.breakpoint_steps = []
         self.accumulator = {}
         self.comm_sock = None
-        self.results_sock = None
         self.uid = uuid.uuid4().hex if uid is None else uid
         self.execution_uid = 'default'
 
@@ -132,8 +132,9 @@ class Workflow(ExecutionElement):
             data['sender']['execution_uid'] = self.execution_uid
             data['sender']['id'] = self.name
             data['sender']['uid'] = self.uid
-        if self.results_sock:
-            self.results_sock.send_json(data)
+        data_sent.send(None, data=data)
+        # if self.results_sock:
+        #     self.results_sock.send_json(data)
 
     def execute(self, execution_uid, start=None, start_input=''):
         """Executes a Workflow by executing all Steps in the Workflow list of Step objects.
@@ -172,7 +173,6 @@ class Workflow(ExecutionElement):
                 except zmq.ZMQError:
                     pass
             if step is not None:
-                step.results_sock = self.results_sock
                 if step.name in self.breakpoint_steps:
                     self.__send_callback("Workflow Paused")
                     res = self.comm_sock.recv()

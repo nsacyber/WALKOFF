@@ -145,3 +145,6 @@ FlagError, __flag_error_callback = __construct_logging_signal('Flag', 'Flag Erro
 # Filter callbacks
 FilterSuccess, __filter_success_callback = __construct_logging_signal('Filter', 'Filter Success', 'Filter success')
 FilterError, __filter_error_callback = __construct_logging_signal('Filter', 'Filter Error', 'Filter error')
+
+# Load Balancer callbacks
+data_sent = Signal('sent')

@@ -3,6 +3,7 @@ from core.filter import Filter
 from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
                           dereference_step_routing, format_exception_message)
 from core.validator import validate_flag_parameters, validate_parameter
+from core.case.callbacks import data_sent
 import logging
 import uuid
 
@@ -21,7 +22,6 @@ class Flag(ExecutionElement):
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
         """
-        self.results_sock = None
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
         ExecutionElement.__init__(self, action, uid)
@@ -38,14 +38,14 @@ class Flag(ExecutionElement):
         data['sender']['name'] = self.name
         data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
-        if self.results_sock:
-            self.results_sock.send_json(data)
+        data_sent.send(None, data=data)
+        # if self.results_sock:
+        #     self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):
         data = data_in
 
         for filter_element in self.filters:
-            filter_element.results_sock = self.results_sock
             data = filter_element(data, accumulator)
         try:
             data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
