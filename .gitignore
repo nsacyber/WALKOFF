@@ -10,6 +10,7 @@
 .idea/vcs.xml
 data/walkoff.db
 data/events.db
+data/devices.db
 tests/profileVisualizations/*
 build/*
 .idea/dictionaries/*.xml

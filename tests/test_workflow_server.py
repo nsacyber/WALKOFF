@@ -30,7 +30,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def tearDown(self):
         flask_server.running_context.controller.shutdown_pool(0)
-        core.controller.workflows = {}
+        flask_server.running_context.controller.playbook_store.playbooks = {}
         case_database.case_db.tear_down()
 
     def test_display_all_playbooks(self):
@@ -51,6 +51,7 @@ class TestWorkflowServer(ServerTestCase):
         self.get_with_status_check('/api/playbooks/junkName', error='Playbook does not exist.', headers=self.headers,
                                    status_code=OBJECT_DNE_ERROR)
 
+    # TODO: Delete. Templates are no longer used.
     def test_display_available_workflow_templates(self):
         response = self.get_with_status_check('/api/playbooks/templates', headers=self.headers)
         self.assertDictEqual(response, {'basicWorkflow': ['helloWorldWorkflow'],
@@ -61,57 +62,62 @@ class TestWorkflowServer(ServerTestCase):
                                    error='Playbook or workflow does not exist.',
                                    headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
-    def test_add_playbook_default(self):
-        expected_playbooks = flask_server.running_context.controller.get_all_workflows()
-        original_length = len(list(expected_playbooks))
-        data = {"name": "test_playbook"}
-        response = self.put_with_status_check('/api/playbooks', headers=self.headers,
-                                              status_code=OBJECT_CREATED, data=json.dumps(data),
-                                              content_type="application/json")
-        for playbook in expected_playbooks:
-            if playbook['name'] == 'test_playbook':
-                playbook['name'] = 'emptyWorkflow'
-            for workflow in playbook['workflows']:
-                workflow.pop('uid')
-        response = next(playbook for playbook in response if playbook['name'] == 'test_playbook')['workflows']
-        for workflow in response:
-            workflow.pop('uid')
-        self.assertListEqual(response, [{u'name': u'emptyWorkflow'}])
-        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), original_length + 1)
+    # TODO: Delete. Templates are no longer used.
+    # def test_add_playbook_default(self):
+    #     expected_playbooks = flask_server.running_context.controller.get_all_workflows()
+    #     original_length = len(list(expected_playbooks))
+    #     data = {"name": "test_playbook"}
+    #     response = self.put_with_status_check('/api/playbooks', headers=self.headers,
+    #                                           status_code=OBJECT_CREATED, data=json.dumps(data),
+    #                                           content_type="application/json")
+    #     for playbook in expected_playbooks:
+    #         if playbook['name'] == 'test_playbook':
+    #             playbook['name'] = 'emptyWorkflow'
+    #         for workflow in playbook['workflows']:
+    #             workflow.pop('uid')
+    #     print(response)
+    #     response = next(playbook for playbook in response if playbook['name'] == 'test_playbook')['workflows']
+    #     for workflow in response:
+    #         workflow.pop('uid')
+    #     print(response)
+    #     self.assertListEqual(response, [{u'name': u'emptyWorkflow'}])
+    #     self.assertEqual(len(list(flask_server.running_context.controller.playbook_store.playbooks)), original_length + 1)
 
-    def test_add_playbook_template(self):
-        data = {'playbook_template': 'basicWorkflow', "name": "test_playbook"}
-        response = self.put_with_status_check('/api/playbooks',
-                                              data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
-                                              content_type="application/json")
-        for playbook in response:
-            for workflow in playbook['workflows']:
-                workflow.pop('uid')
-        expected = [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
-                             {u'name': u'test_playbook', u'workflows': [{u'name': u'helloWorldWorkflow'}]}]
-        for workflow in response:
-            self.assertIn(workflow, expected)
-        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
+    # TODO: Delete. Templates are no longer used.
+    # def test_add_playbook_template(self):
+    #     data = {'playbook_template': 'basicWorkflow', "name": "test_playbook"}
+    #     response = self.put_with_status_check('/api/playbooks',
+    #                                           data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+    #                                           content_type="application/json")
+    #     for playbook in response:
+    #         for workflow in playbook['workflows']:
+    #             workflow.pop('uid')
+    #     expected = [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
+    #                          {u'name': u'test_playbook', u'workflows': [{u'name': u'helloWorldWorkflow'}]}]
+    #     for workflow in response:
+    #         self.assertIn(workflow, expected)
+    #     self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
 
-    def test_add_playbook_template_invalid_name(self):
-        data = {'playbook_template': 'junkPlaybookTemplate', "name": "test_playbook"}
-        response = self.put_with_status_check('/api/playbooks',
-                                              data=json.dumps(data), headers=self.headers,
-                                              status_code=SUCCESS_WITH_WARNING,
-                                              content_type="application/json")
-        for playbook in response:
-            for workflow in playbook['workflows']:
-                workflow.pop('uid')
-        expected = [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
-                                        {u'name': u'test_playbook', u'workflows': [{u'name': u'emptyWorkflow'}]}]
-        for workflow in response:
-            self.assertIn(workflow, expected)
-        self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
+    # TODO: Delete. Templates are no longer used.
+    # def test_add_playbook_template_invalid_name(self):
+    #     data = {'playbook_template': 'junkPlaybookTemplate', "name": "test_playbook"}
+    #     response = self.put_with_status_check('/api/playbooks',
+    #                                           data=json.dumps(data), headers=self.headers,
+    #                                           status_code=OBJECT_CREATED,
+    #                                           content_type="application/json")
+    #     for playbook in response:
+    #         for workflow in playbook['workflows']:
+    #             workflow.pop('uid')
+    #     expected = [{u'name': u'test', u'workflows': [{u'name': u'helloWorldWorkflow'}]},
+    #                                     {u'name': u'test_playbook', u'workflows': [{u'name': u'emptyWorkflow'}]}]
+    #     for workflow in response:
+    #         self.assertIn(workflow, expected)
+    #     self.assertEqual(len(list(flask_server.running_context.controller.workflows)), 2)
 
     def test_add_playbook_already_exists(self):
         data = {'playbook_template': 'junkPlaybookTemplate', "name": "test_playbook"}
         self.put_with_status_check('/api/playbooks',
-                                   data=json.dumps(data), headers=self.headers, status_code=SUCCESS_WITH_WARNING,
+                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
                                    content_type="application/json")
         self.put_with_status_check('/api/playbooks',
                                    error='Playbook already exists.',
@@ -134,6 +140,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
 
+    # TODO: Delete. Templates are no longer used.
     def test_add_templated_workflow(self):
         initial_playbooks = flask_server.running_context.controller.get_all_workflows()
         initial_workflows = next(playbook['workflows'] for playbook in initial_playbooks if playbook['name'] == 'test')
@@ -148,6 +155,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
 
+    # TODO: Delete. Templates are no longer used.
     def test_add_templated_workflow_invalid_template(self):
         initial_playbooks = flask_server.running_context.controller.get_all_workflows()
         initial_workflows = next(playbook['workflows'] for playbook in initial_playbooks if playbook['name'] == 'test')
@@ -155,7 +163,7 @@ class TestWorkflowServer(ServerTestCase):
                 "workflow_template": "junktemplatename",
                 "name": "test_name"}
         self.put_with_status_check('/api/playbooks/test/workflows',
-                                   data=json.dumps(data), headers=self.headers, status_code=SUCCESS_WITH_WARNING,
+                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
                                    content_type="application/json")
 
         final_playbooks = flask_server.running_context.controller.get_all_workflows()
@@ -163,6 +171,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
 
+    # TODO: Delete. Templates are no longer used.
     def test_add_templated_workflow_invalid_template_playbook(self):
         initial_playbooks = flask_server.running_context.controller.get_all_workflows()
         initial_workflows = next(playbook['workflows'] for playbook in initial_playbooks if playbook['name'] == 'test')
@@ -171,7 +180,7 @@ class TestWorkflowServer(ServerTestCase):
                 "name": "test_name"}
         response = self.put_with_status_check('/api/playbooks/test/workflows',
                                               data=json.dumps(data), headers=self.headers,
-                                              status_code=SUCCESS_WITH_WARNING,
+                                              status_code=OBJECT_CREATED,
                                               content_type="application/json")
         self.empty_workflow_json['uid'] = response['uid']
         self.empty_workflow_json['accumulated_risk'] = 0.0
@@ -247,7 +256,7 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertDictEqual(response, expected_json)
 
-        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
+        self.assertEqual(len(flask_server.running_context.controller.playbook_store.playbooks.keys()), 1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
         self.assertFalse(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
@@ -262,7 +271,7 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertDictEqual(response, expected_json)
 
-        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
+        self.assertEqual(len(flask_server.running_context.controller.playbook_store.playbooks.keys()), 1)
         self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
         self.assertTrue(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
@@ -516,7 +525,7 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy',
                                     headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps({}),
                                     content_type="application/json")
-        self.assertEqual(len(flask_server.running_context.controller.workflows['test'].workflows), 2)
+        self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 2)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
         self.assertTrue(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow_Copy'))
@@ -544,7 +553,7 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
                                     content_type="application/json")
 
-        self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 1)
+        self.assertEqual(len(flask_server.running_context.controller.playbook_store.playbooks.keys()), 1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
 
     def test_copy_workflow_different_playbook(self):
@@ -555,8 +564,8 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy', data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        self.assertEqual(len(flask_server.running_context.controller.workflows['test'].workflows), 1)
-        self.assertEqual(len(flask_server.running_context.controller.workflows['new_playbook'].workflows), 2)
+        self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 1)
+        self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('new_playbook')), 1)
         # self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 3)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
         self.assertTrue(

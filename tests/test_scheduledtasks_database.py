@@ -23,6 +23,7 @@ class TestScheduledTask(unittest.TestCase):
         if tasks:
             ScheduledTask.query.delete()
         server.running_context.controller.scheduler.scheduler.remove_all_jobs()
+        server.running_context.controller.scheduler.stop()
 
     def assertSchedulerWorkflowsRunningEqual(self, workflows=None):
         if workflows is None:
@@ -53,7 +54,7 @@ class TestScheduledTask(unittest.TestCase):
         self.assertSchedulerWorkflowsRunningEqual(expected_running_workflows)
 
     def patch_controller_workflows(self, workflow_uids):
-        server.running_context.controller.workflows = {i: Playbook(i, [MockWorkflow(workflow_uids[i], i+1)])
+        server.running_context.controller.playbook_store.playbooks = {i: Playbook(i, [MockWorkflow(workflow_uids[i], i+1)])
                                                        for i, uid in enumerate(workflow_uids)}
 
     def test_init_default(self):

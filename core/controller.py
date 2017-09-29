@@ -98,11 +98,11 @@ class Controller(object):
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
         playbook_workflows = self.playbook_store.get_workflows_by_uid(workflow_uids)
-        workflows = []
+        schedule_workflows = []
         for playbook_name, workflows in playbook_workflows.items():
             for workflow in workflows:
-                workflows.append((playbook_name, workflow.name, workflow.uid))
-        self.scheduler.schedule_workflows(task_id, self.execute_workflow, workflows, trigger)
+                schedule_workflows.append((playbook_name, workflow.name, workflow.uid))
+        self.scheduler.schedule_workflows(task_id, self.execute_workflow, schedule_workflows, trigger)
 
     def create_workflow(self, playbook_name, workflow_name):
         """Creates a workflow from a workflow template.
@@ -288,7 +288,7 @@ class Controller(object):
             old_playbook_name (str): The name of the playbook to be copied.
             new_playbook_name (str): The new name of the duplicated playbook.
         """
-        self.playbook_store.create_playbook(old_playbook_name, new_playbook_name)
+        self.playbook_store.copy_playbook(old_playbook_name, new_playbook_name)
 
     #TODO: This method needs to be implemented somewhere
     def get_workflow_status(self, uid):
