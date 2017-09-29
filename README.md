@@ -96,8 +96,9 @@ WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
 Walkoff is still under active development; as such changes are being made frequently to the code base as new features
 are added. We are using Semantic Versioning. Until the full feature set is developed, the versions will begin with 0.x.y
 The "x" version will be updated when a breaking change is made, a breaking change being defined as one which modifies
-either a database schema or the REST API. No guarantees are yet made for the stability of the backend Python modules.
-The "y" version will be updated for patches, bug fixes, and non-breaking features.
+either a database schema or the REST API or a new method in which way in which apps are developed and specified which
+is not backward-compatible with the previous version. No guarantees are yet made for the stability of the backend
+Python modules. The "y" version will be updated for patches, bug fixes, and non-breaking features.
 
 ## Contributions
 WALKOFF is a community focused effort and contributions are welcome.  
