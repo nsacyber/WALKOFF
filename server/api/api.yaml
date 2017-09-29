@@ -76,9 +76,9 @@ securityDefinitions:
     name: Authorization
     in: header
     description: >
-      We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens, you can use
-      put that token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
-      default. When it expires, you'll receive a 401 response code when it does. At that point, use the /api/auth/refresh
+      We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens. Then use the
+      access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
+      default. When it expires, you'll receive a 401 response code. At that point, use the /api/auth/refresh
       with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
       please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
       implementation.
