@@ -46,16 +46,6 @@ class Playbook(object):
         if workflow_name in self.workflows:
             self.workflows.pop(workflow_name)
 
-    def set_child_workflows(self):
-        all_workflow_children = {workflow.name: workflow.children for workflow in self.workflows.values()}
-        for workflow_name, workflow_children in all_workflow_children.items():
-            if workflow_children:
-                self.workflows[workflow_name].children = {child: self.workflows[child]
-                                                          for child in workflow_children if child in self.workflows}
-
-    def get_child_workflows(self):
-        return {workflow_name: workflow.children for workflow_name, workflow in self.workflows.items()}
-
     def as_json(self):
         return {"name": self.name,
                 "workflows": [workflow.as_json() for workflow in self.workflows.values()]}

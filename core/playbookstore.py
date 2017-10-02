@@ -3,11 +3,9 @@ import logging
 import uuid
 from copy import deepcopy
 import core.config.paths
-from os.path import sep
 from jsonplaybookloader import JsonPlaybookLoader
-from core.helpers import locate_playbooks_in_directory
 from core.workflow import Workflow
-import os.path
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +35,6 @@ class PlaybookStore(object):
         else:
             self.playbooks[playbook_name].add_workflow(workflow)
         logger.info('Loaded workflow {} into storage'.format(workflow.uid))
-        self._add_child_workflows()
 
     def load_playbook(self, resource, loader=JsonPlaybookLoader):
         """Loads multiple workloads from a file.
@@ -50,7 +47,6 @@ class PlaybookStore(object):
         playbook = loader.load_playbook(resource)
         if playbook is not None:
             self.add_playbook(playbook)
-            self._add_child_workflows()
 
     def add_playbook(self, playbook):
         if playbook.name in self.playbooks:
@@ -76,11 +72,6 @@ class PlaybookStore(object):
         """
         for playbook in loader.load_playbooks(resource_collection):
             self.add_playbook(playbook)
-        self._add_child_workflows()
-
-    def _add_child_workflows(self):
-        for playbook in self.playbooks.values():
-            playbook.set_child_workflows()
 
     def create_workflow(self, playbook_name, workflow_name):
         workflow = Workflow(name=workflow_name)
