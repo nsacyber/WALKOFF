@@ -35,7 +35,7 @@ def create_playbook():
     def __func():
         data = request.get_json()
         playbook_name = data['name']
-        if playbook_name in running_context.controller.get_all_playbooks():
+        if running_context.controller.is_playbook_registered(playbook_name):
             return {"error": "Playbook already exists."}, OBJECT_EXISTS_ERROR
         running_context.controller.create_playbook(playbook_name)
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
