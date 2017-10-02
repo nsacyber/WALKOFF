@@ -125,14 +125,55 @@ class TestPlaybook(unittest.TestCase):
     def test_rename_workflow_no_workflows(self):
         playbook = Playbook('test', [])
         playbook.rename_workflow('anything', 'renamed')
-        self.assertEqual(playbook.workflows, [])
+        self.assertDictEqual(playbook.workflows, {})
 
     def test_rename_workflow_not_found(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        self.fail()
+        playbook.rename_workflow('invalid', 'new_name')
+        self.assertTrue(all(playbook.has_workflow_uid(uid) for uid in range(3)))
+        self.assertFalse(playbook.has_workflow_name('invalid'))
 
     def test_rename_workflow(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        self.fail()
+        playbook.rename_workflow(3, 'new_name')
+        self.assertTrue(playbook.has_workflow_name('new_name'))
+        self.assertFalse(playbook.has_workflow_name(3))
+
+    def test_remove_workflow_by_name_no_workflows(self):
+        playbook = Playbook('test', [])
+        playbook.remove_workflow_by_name('something')
+        self.assertDictEqual(playbook.workflows, {})
+
+    def test_remove_workflow_by_name_workflow_not_found(self):
+        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
+        playbook = Playbook('test', workflows)
+        playbook.remove_workflow_by_name('invalid')
+        self.assertEqual(len(playbook.workflows), 3)
+
+    def test_remove_workflow_by_name(self):
+        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
+        playbook = Playbook('test', workflows)
+        playbook.remove_workflow_by_name(2)
+        self.assertEqual(len(playbook.workflows), 2)
+        self.assertFalse(playbook.has_workflow_name(2))
+
+    def test_as_json_no_workflows(self):
+        playbook = Playbook('test', [])
+        self.assertDictEqual(playbook.as_json(), {'name': 'test', 'workflows': []})
+
+    def test_as_json_with_workflows(self):
+        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
+        playbook = Playbook('test', workflows)
+        expected = {'name': 'test', 'workflows': [{'other': 'other', 'name': 1, 'uid': 0},
+                                                  {'other': 'other', 'name': 2, 'uid': 1},
+                                                  {'other': 'other', 'name': 3, 'uid': 2}]}
+        self.assertDictEqual(playbook.as_json(), expected)
+
+    def test_from_json_no_workflows(self):
+        playbook_json = {'name': 'test', 'workflows': []}
+        playbook = Playbook.from_json(playbook_json)
+        self.assertEqual(playbook.name, 'test')
+        self.assertDictEqual(playbook.workflows, {})
+
