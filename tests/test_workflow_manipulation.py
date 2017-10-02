@@ -64,16 +64,16 @@ class TestWorkflowManipulation(unittest.TestCase):
         workflow.create_step(name="stepTwo", action='helloWorld', app='HelloWorld', risk=2)
         workflow.create_step(name="stepThree", action='helloWorld', app='HelloWorld', risk=3)
 
-        self.assertEqual(workflow.total_risk, 6)
+        self.assertEqual(workflow._total_risk, 6)
 
     def test_accumulated_risk_with_error(self):
         workflow = Workflow(name='workflow')
-        workflow.execution_uid = 'some_uid'
+        workflow._execution_uid = 'some_uid'
         step1 = Step(name="step_one", app='HelloWorld', action='Buggy', risk=1)
         step2 = Step(name="step_two", app='HelloWorld', action='Buggy', risk=2)
         step3 = Step(name="step_three", app='HelloWorld', action='Buggy', risk=3.5)
         workflow.steps = {'step_one': step1, 'step_two': step2, 'step_three': step3}
-        workflow.total_risk = 6.5
+        workflow._total_risk = 6.5
 
         instance = Instance.create(app_name='HelloWorld', device_name='test_device_name')
 

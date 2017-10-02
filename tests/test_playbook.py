@@ -7,10 +7,22 @@ from tests.util.assertwrappers import orderless_list_compare
 class TestPlaybook(unittest.TestCase):
 
     def test_init(self):
+        playbook = Playbook('test')
+        self.assertEqual(playbook.name, 'test')
+        self.assertIsNotNone(playbook.uid)
+        self.assertDictEqual(playbook.workflows, {})
+
+    def test_init_with_workflows(self):
         workflows = [MockWorkflow(i, i+1) for i in range(3)]
         playbook = Playbook('test', workflows)
         self.assertEqual(playbook.name, 'test')
         orderless_list_compare(self, list(playbook.workflows.keys()), [workflow.name for workflow in workflows])
+
+    def test_init_with_uid(self):
+        playbook = Playbook('test', uid='uuu')
+        self.assertEqual(playbook.name, 'test')
+        self.assertEqual(playbook.uid, 'uuu')
+        self.assertDictEqual(playbook.workflows, {})
 
     def test_add_workflow(self):
         workflow = MockWorkflow('uid', 'wf_name')
@@ -100,12 +112,12 @@ class TestPlaybook(unittest.TestCase):
 
     def test_get_all_workflows_as_json_no_workflows(self):
         playbook = Playbook('test', [])
-        self.assertListEqual(playbook.get_all_workflows_as_json(), [])
+        self.assertListEqual(playbook.get_all_workflow_representations(), [])
 
     def test_get_all_workflows_as_json(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        workflow_jsons = playbook.get_all_workflows_as_json()
+        workflow_jsons = playbook.get_all_workflow_representations()
         expected = [{'name': i+1, 'uid': i, 'other': 'other'} for i in range(3)]
         for workflow_json in workflow_jsons:
             self.assertIn(workflow_json, expected)
@@ -158,18 +170,6 @@ class TestPlaybook(unittest.TestCase):
         playbook.remove_workflow_by_name(2)
         self.assertEqual(len(playbook.workflows), 2)
         self.assertFalse(playbook.has_workflow_name(2))
-
-    def test_as_json_no_workflows(self):
-        playbook = Playbook('test', [])
-        self.assertDictEqual(playbook.as_json(), {'name': 'test', 'workflows': []})
-
-    def test_as_json_with_workflows(self):
-        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
-        playbook = Playbook('test', workflows)
-        expected = {'name': 'test', 'workflows': [{'other': 'other', 'name': 1, 'uid': 0},
-                                                  {'other': 'other', 'name': 2, 'uid': 1},
-                                                  {'other': 'other', 'name': 3, 'uid': 2}]}
-        self.assertDictEqual(playbook.as_json(), expected)
 
     def test_from_json_no_workflows(self):
         playbook_json = {'name': 'test', 'workflows': []}

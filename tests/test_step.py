@@ -1,7 +1,6 @@
 import unittest
-import socket
 from core.flag import Flag
-from core.step import Step, _Widget
+from core.step import Step, Widget
 from core.nextstep import NextStep
 from core.decorators import ActionResult
 import core.config.config
@@ -28,7 +27,7 @@ class TestStep(unittest.TestCase):
                            'action': 'helloWorld',
                            'device': '',
                            'name': '',
-                           'next': [],
+                           'next_steps': [],
                            'position': {},
                            'inputs': [],
                            'widgets': [],
@@ -37,7 +36,7 @@ class TestStep(unittest.TestCase):
         self.basic_input_json = {'app': 'HelloWorld',
                                  'action': 'helloWorld',
                                  'name': '',
-                                 'next': [],
+                                 'next_steps': [],
                                  'position': {},
                                  'inputs': [],
                                  'uid': self.uid}
@@ -48,16 +47,17 @@ class TestStep(unittest.TestCase):
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device, device)
-        self.assertDictEqual({key: input_element for key, input_element in elem.input.items()}, inputs)
-        self.assertListEqual([conditional.as_json() for conditional in elem.conditionals], next_steps)
+        self.assertDictEqual({key: input_element for key, input_element in elem.inputs.items()}, inputs)
+        self.assertListEqual([conditional.read() for conditional in elem.next_steps], next_steps)
         self.assertEqual(elem.risk, risk)
-        widgets = [_Widget(app, widget) for (app, widget) in widgets]
+        widgets = [Widget(app, widget) for (app, widget) in widgets]
         self.assertEqual(len(elem.widgets), len(widgets))
         for widget in elem.widgets:
-            self.assertIn(widget, widgets)
+            found = next((widget_ for widget_ in widgets if widget.app == widget_.app and widget.name == widget_.name), None)
+            self.assertIsNotNone(found)
         position = position if position is not None else {}
         self.assertDictEqual(elem.position, position)
-        self.assertIsNone(elem.output)
+        self.assertIsNone(elem.get_output())
         self.assertFalse(elem.templated)
         if uid is None:
             self.assertIsNotNone(elem.uid)
@@ -125,56 +125,7 @@ class TestStep(unittest.TestCase):
     def test_init_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [step.as_json() for step in next_steps], [])
-
-    def test_as_json(self):
-        step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_name(self):
-        step = Step(app='HelloWorld', action='helloWorld', name='name', uid=self.uid)
-        self.basic_json['name'] = 'name'
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_device(self):
-        step = Step(app='HelloWorld', action='helloWorld', device='device', uid=self.uid)
-        self.basic_json['device'] = 'device'
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_risk(self):
-        step = Step(app='HelloWorld', action='helloWorld', risk=120.6, uid=self.uid)
-        self.basic_json['risk'] = 120.6
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_inputs(self):
-        step = Step(app='HelloWorld', action='returnPlusOne', inputs={'number': '-5.6'}, uid=self.uid)
-        self.basic_json['action'] = 'returnPlusOne'
-        self.basic_json['inputs'] = [{'name': 'number', 'value': -5.6}]
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_next_steps(self):
-        next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps, uid=self.uid)
-        self.basic_json['next'] = [next_step.as_json() for next_step in next_steps]
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_position(self):
-        step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485}, uid=self.uid)
-        self.basic_json['position'] = {'x': -12.3, 'y': 485}
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_with_widgets(self):
-        widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
-        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets, uid=self.uid)
-        self.basic_json['widgets'] = [{'app': widget[0], 'name': widget[1]} for widget in widgets]
-        self.assertDictEqual(step.as_json(), self.basic_json)
-
-    def test_as_json_after_executed(self):
-        step = Step(app='HelloWorld', action='helloWorld', uid=self.uid)
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
-        step.execute(instance.instance, {})
-        step_json = step.as_json()
-        self.assertDictEqual(step_json['output'], ActionResult({'message': 'HELLO WORLD'}, 'Success').as_json())
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [step.read() for step in next_steps], [])
 
     def test_from_json_app_and_action_only(self):
         step = Step.from_json(self.basic_input_json, {})
@@ -219,7 +170,7 @@ class TestStep(unittest.TestCase):
         step = Step.from_json(self.basic_input_json, {})
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
 
-    def test_from_json_with_widgets(self):
+    def test_from_json_withWidgets(self):
         widget_json = [{'name': 'widget_name', 'app': 'app1'}, {'name': 'w2', 'app': 'app2'}]
         widget_tuples = [('app1', 'widget_name'), ('app2', 'w2')]
         self.basic_input_json['widgets'] = widget_json
@@ -262,8 +213,8 @@ class TestStep(unittest.TestCase):
 
     def test_from_json_with_next_steps(self):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        next_steps_json = [next_step.as_json() for next_step in next_steps]
-        self.basic_input_json['next'] = next_steps_json
+        next_steps_json = [next_step.read() for next_step in next_steps]
+        self.basic_input_json['next_steps'] = next_steps_json
         step = Step.from_json(self.basic_input_json, {})
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, next_steps_json, [])
 
@@ -271,7 +222,7 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='helloWorld')
         instance = Instance.create(app_name='HelloWorld', device_name='device1')
         self.assertEqual(step.execute(instance.instance, {}), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
-        self.assertEqual(step.output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+        self.assertEqual(step._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_execute_with_args(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
@@ -279,7 +230,7 @@ class TestStep(unittest.TestCase):
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(step.output, result)
+        self.assertEqual(step._output, result)
 
     def test_execute_with_accumulator_with_conversion(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
@@ -288,7 +239,7 @@ class TestStep(unittest.TestCase):
         result = step.execute(instance.instance, accumulator)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(step.output, result)
+        self.assertEqual(step._output, result)
 
     def test_execute_with_accumulator_with_extra_steps(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
@@ -297,7 +248,7 @@ class TestStep(unittest.TestCase):
         result = step.execute(instance.instance, accumulator)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(step.output, result)
+        self.assertEqual(step._output, result)
 
     def test_execute_with_accumulator_missing_step(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
@@ -314,7 +265,7 @@ class TestStep(unittest.TestCase):
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 11.0)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(step.output, result)
+        self.assertEqual(step._output, result)
 
     def test_execute_action_which_raises_exception(self):
         from tests.apps.HelloWorld.exceptions import CustomException
@@ -346,22 +297,22 @@ class TestStep(unittest.TestCase):
 
     def test_get_next_step_no_next_steps(self):
         step = Step(app='HelloWorld', action='helloWorld')
-        step.output = 'something'
+        step._output = 'something'
         self.assertIsNone(step.get_next_step({}))
 
     def test_get_next_step(self):
         flag1 = [Flag(action='mod1_flag2', args={'arg1': '3'}), Flag(action='mod1_flag2', args={'arg1': '-1'})]
         next_steps = [NextStep(flags=flag1, name='name1'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
-        step.output = ActionResult(2, 'Success')
+        step._output = ActionResult(2, 'Success')
         self.assertEqual(step.get_next_step({}), 'name2')
-        step.output = ActionResult(1, 'Success')
+        step._output = ActionResult(1, 'Success')
         self.assertEqual(step.get_next_step({}), 'name1')
 
     def test_set_input_valid(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
         step.set_input({'num1': '-5.62', 'num2': '5', 'num3': '42.42'})
-        self.assertDictEqual(step.input, {'num1': -5.62, 'num2': 5., 'num3': 42.42})
+        self.assertDictEqual(step.inputs, {'num1': -5.62, 'num2': 5., 'num3': 42.42})
 
     def test_set_input_invalid_name(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})

@@ -120,18 +120,18 @@ class PlaybookStore(object):
         else:
             return False
 
-    def get_all_workflows(self, with_json=False):
+    def get_all_workflows(self, full_representations=False):
         """Gets all of the currently loaded workflows.
 
         Args:
-            with_json (bool, optional): A boolean specifying whether or not to include the JSON representation
+            full_representations (bool, optional): A boolean specifying whether or not to include the JSON representation
                 of all the workflows, or just their names. Defaults to false.
 
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
         """
-        if with_json:
-            return [{'name': playbook_name, 'workflows': playbook.get_all_workflows_as_json()}
+        if full_representations:
+            return [{'name': playbook_name, 'workflows': playbook.get_all_workflow_representations()}
                     for playbook_name, playbook in self.playbooks.items()]
         else:
             return [{'name': playbook_name, 'workflows': playbook.get_all_workflows_as_limited_json()}
@@ -224,7 +224,7 @@ class PlaybookStore(object):
         else:
             return []
 
-    def playbook_as_json(self, playbook_name):
+    def get_playbook_representation(self, playbook_name, writer=None):
         """Returns the JSON representation of a playbook.
 
         Args:
@@ -234,7 +234,7 @@ class PlaybookStore(object):
             The JSON representation of the playbook if the playbook has any workflows under it, else None.
         """
         if playbook_name in self.playbooks:
-            return self.playbooks[playbook_name].as_json()
+            return self.playbooks[playbook_name].read(reader=writer)
         else:
             logger.debug('No workflows are registered in controller to convert to JSON')
             return None
@@ -279,7 +279,7 @@ class PlaybookStore(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            workflow.breakpoint_steps.extend(steps)
+            workflow.add_breakpoint_steps(steps)
 
     def get_workflows_by_uid(self, workflow_uids):
         playbook_workflows = {}

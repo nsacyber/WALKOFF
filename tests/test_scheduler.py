@@ -15,6 +15,9 @@ class MockWorkflow(object):
     def execute(self):
         pass
 
+    def read(self, reader=None):
+        return {'name': self.name, 'uid': self.uid, 'other': self.other}
+
     def as_json(self):
         return {'name': self.name, 'uid': self.uid, 'other': self.other}
 

@@ -24,7 +24,7 @@
                         }
                     ],
                     "name": "1",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "0ed91d07f1774d16a991d7815814fff1",
@@ -49,7 +49,7 @@
                         }
                     ],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "1",
@@ -81,7 +81,7 @@
                         }
                     ],
                     "name": "2",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "2",

@@ -16,7 +16,7 @@
                         }
                     ],
                     "name": "1",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "2",
@@ -35,7 +35,7 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "1",
@@ -59,7 +59,7 @@
                         }
                     ],
                     "name": "2",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "b7725c22c881484ebe2901027f1acd7f",

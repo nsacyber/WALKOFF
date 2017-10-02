@@ -147,17 +147,17 @@ class Controller(object):
         """
         self.playbook_store.remove_playbook(playbook_name)
 
-    def get_all_workflows(self, with_json=False):
+    def get_all_workflows(self, full_representation=False):
         """Gets all of the currently loaded workflows.
 
         Args:
-            with_json (bool, optional): A boolean specifying whether or not to include the JSON representation
+            full_representation (bool, optional): A boolean specifying whether or not to include the JSON representation
                 of all the workflows, or just their names. Defaults to false.
         
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
         """
-        return self.playbook_store.get_all_workflows(with_json)
+        return self.playbook_store.get_all_workflows(full_representation)
 
     def get_all_playbooks(self):
         """Gets a list of all playbooks.
@@ -259,7 +259,7 @@ class Controller(object):
         """
         return self.playbook_store.get_all_workflows_by_playbook(playbook_name)
 
-    def playbook_as_json(self, playbook_name):
+    def get_playbook_representation(self, playbook_name, writer=None):
         """Returns the JSON representation of a playbook.
 
         Args:
@@ -268,7 +268,7 @@ class Controller(object):
         Returns:
             The JSON representation of the playbook if the playbook has any workflows under it, else None.
         """
-        return self.playbook_store.playbook_as_json(playbook_name)
+        return self.playbook_store.get_playbook_representation(playbook_name, writer=writer)
 
     def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
         """Duplicates a workflow into its current playbook, or a different playbook.

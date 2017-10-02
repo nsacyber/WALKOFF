@@ -64,7 +64,7 @@ class MockLoadBalancer(object):
             self.workflow_comms[workflow_json['execution_uid']] = 'worker'
 
             workflow, start_input = loadbalancer.recreate_workflow(workflow_json)
-            workflow.comm_sock = self.comm_queue
+            workflow.set_comm_sock(self.comm_queue)
 
             workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
 

@@ -12,7 +12,7 @@
                     "device": "",
                     "inputs": [],
                     "name": "1",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "2",
@@ -34,7 +34,7 @@
                     "device": "",
                     "inputs": [],
                     "name": "3",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "2",
@@ -56,7 +56,7 @@
                     "device": "",
                     "inputs": [],
                     "name": "2",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "3",

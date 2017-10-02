@@ -150,7 +150,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertTrue(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.playbook')))
 
     def test_edit_workflow_name_only(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').as_json()
+        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
         workflow_name = "test_name"
         data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
@@ -168,7 +168,7 @@ class TestWorkflowServer(ServerTestCase):
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
 
     def test_edit_workflow_empty_name(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').as_json()
+        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
         data = {"new_name": "", "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
                                                data=json.dumps(data),
@@ -183,7 +183,7 @@ class TestWorkflowServer(ServerTestCase):
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
 
     def test_edit_workflow_(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').as_json()
+        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
         workflow_name = "test_name"
         data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
@@ -211,11 +211,11 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).as_json()
+                          position={'x': 0, 'y': 0}).read()
 
         initial_steps.append(added_step)
         data = {"steps": initial_steps}
@@ -230,7 +230,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(resulting_workflow.steps.keys()), len(list(initial_steps)))
         for initial_step in initial_steps:
             self.assertIn(initial_step['name'], resulting_workflow.steps.keys())
-            self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['name']].as_json())
+            self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['name']].read())
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]
@@ -248,7 +248,7 @@ class TestWorkflowServer(ServerTestCase):
 
         def remove_uids(step):
             step.uid = ''
-            for next_step in step.conditionals:
+            for next_step in step.next_steps:
                 next_step.uid = ''
                 for flag in next_step.flags:
                     flag.uid = ''
@@ -259,16 +259,16 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn(step_name, resulting_workflow.steps.keys())
             remove_uids(loaded_step)
             remove_uids(resulting_workflow.steps[step_name])
-            self.assertDictEqual(loaded_step.as_json(), resulting_workflow.steps[step_name].as_json())
+            self.assertDictEqual(loaded_step.read(), resulting_workflow.steps[step_name].read())
 
     def test_save_workflow_invalid_app(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).as_json()
+                          position={'x': 0, 'y': 0}).read()
         added_step['app'] = 'Invalid'
 
         initial_steps.append(added_step)
@@ -282,11 +282,11 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_action(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).as_json()
+                          position={'x': 0, 'y': 0}).read()
         added_step['action'] = 'Invalid'
 
         initial_steps.append(added_step)
@@ -300,11 +300,11 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_input_name(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).as_json()
+                          position={'x': 0, 'y': 0}).read()
         added_step['inputs'] = [{'name': 'Invalid', 'value': 5}]
 
         initial_steps.append(added_step)
@@ -318,11 +318,11 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_input_format(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).as_json()
+                          position={'x': 0, 'y': 0}).read()
         added_step['inputs'][0]['value'] = 'aaaa'
 
         initial_steps.append(added_step)
@@ -336,11 +336,11 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_new_start_step(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).as_json()
+                          position={'x': 0, 'y': 0}).read()
 
         initial_steps.append(added_step)
         data = {"steps": initial_steps, "start": "new_start"}
@@ -350,7 +350,7 @@ class TestWorkflowServer(ServerTestCase):
                                     content_type='application/json')
 
         resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        self.assertEqual(resulting_workflow.start_step, "new_start")
+        self.assertEqual(resulting_workflow.start, "new_start")
 
     def test_save_workflow_invalid_name(self):
         data = {"steps": []}
@@ -400,7 +400,7 @@ class TestWorkflowServer(ServerTestCase):
                      content_type="application/json")
 
         initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        initial_steps = [step.as_json() for step in initial_workflow.steps.values()]
+        initial_steps = [step.read() for step in initial_workflow.steps.values()]
 
         data = {"steps": initial_steps}
         self.app.post('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
@@ -440,8 +440,8 @@ class TestWorkflowServer(ServerTestCase):
         workflow_copy = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow_Copy')
         new_workflow_name = 'helloWorldWorkflow_Copy'
         self.assertEqual(workflow_copy.name, new_workflow_name)
-        copy_workflow_json = workflow_copy.as_json()
-        original_workflow_json = workflow_original.as_json()
+        copy_workflow_json = workflow_copy.read()
+        original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
         copy_workflow_json.pop('uid')
@@ -449,8 +449,8 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
         self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
         for step in workflow_copy.steps:
-            self.assertEqual(len(workflow_original.steps[step].conditionals),
-                             len(workflow_copy.steps[step].conditionals))
+            self.assertEqual(len(workflow_original.steps[step].next_steps),
+                             len(workflow_copy.steps[step].next_steps))
 
     def test_copy_workflow_invalid_name(self):
         data = {"workflow": "helloWorldWorkflow"}
@@ -481,8 +481,8 @@ class TestWorkflowServer(ServerTestCase):
         workflow_copy = flask_server.running_context.controller.get_workflow('new_playbook', 'helloWorldWorkflow_Copy')
         new_workflow_name = 'helloWorldWorkflow_Copy'
         self.assertEqual(workflow_copy.name, new_workflow_name)
-        copy_workflow_json = workflow_copy.as_json()
-        original_workflow_json = workflow_original.as_json()
+        copy_workflow_json = workflow_copy.read()
+        original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
         copy_workflow_json.pop('uid')
@@ -492,8 +492,8 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
         for step in workflow_copy.steps:
-            self.assertEqual(len(workflow_original.steps[step].conditionals),
-                             len(workflow_copy.steps[step].conditionals))
+            self.assertEqual(len(workflow_original.steps[step].next_steps),
+                             len(workflow_copy.steps[step].next_steps))
 
     def test_copy_playbook(self):
         self.post_with_status_check('/api/playbooks/test/copy',

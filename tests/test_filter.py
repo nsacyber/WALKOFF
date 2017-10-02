@@ -18,7 +18,6 @@ class TestFilter(unittest.TestCase):
         args = args if args is not None else {}
         self.assertEqual(elem.action, action)
         self.assertDictEqual(elem.args, args)
-        self.assertEqual(elem.name, elem.action)
         if uid is None:
             self.assertIsNotNone(elem.uid)
         else:
@@ -56,24 +55,6 @@ class TestFilter(unittest.TestCase):
     def test_init_with_no_action_or_xml(self):
         with self.assertRaises(InvalidElementConstructed):
             Filter()
-
-    def test_as_json_no_args(self):
-        uid = uuid.uuid4().hex
-        filter_elem = Filter(action='Top Filter', uid=uid)
-        expected = {'action': 'Top Filter', 'args': [], 'uid': uid}
-        self.assertDictEqual(filter_elem.as_json(), expected)
-
-    def test_as_json_with_args(self):
-        uid = uuid.uuid4().hex
-        filter_elem = Filter(action='mod1_filter2', args={'arg1': '-5.4'}, uid=uid)
-        expected = {'action': 'mod1_filter2', 'args':  [{'name': 'arg1', 'value': -5.4}], 'uid': uid}
-        self.assertDictEqual(filter_elem.as_json(), expected)
-
-    def test_as_json_with_args_with_routing(self):
-        uid = uuid.uuid4().hex
-        filter_elem = Filter(action='mod1_filter2', args={'arg1': '@step1'}, uid=uid)
-        expected = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': '@step1'}], 'uid': uid}
-        self.assertDictEqual(filter_elem.as_json(), expected)
 
     def test_from_json_no_args(self):
         json_in = {'action': 'Top Filter', 'args': []}

@@ -16,7 +16,7 @@
                         }
                     ],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [
                                 {

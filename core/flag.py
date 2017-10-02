@@ -5,7 +5,6 @@ from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, Inv
 from core.validator import validate_flag_parameters, validate_parameter
 from core.case.callbacks import data_sent
 import logging
-import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -24,23 +23,19 @@ class Flag(ExecutionElement):
         """
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
-        ExecutionElement.__init__(self, action, uid)
+        ExecutionElement.__init__(self, uid)
         self.action = action
         args = args if args is not None else {}
-        self.args_api, self.data_in_api = get_flag_api(self.action)
-        self.args = validate_flag_parameters(self.args_api, args, self.action)
+        self._args_api, self._data_in_api = get_flag_api(self.action)
+        self.args = validate_flag_parameters(self._args_api, args, self.action)
         self.filters = filters if filters is not None else []
 
     def __send_callback(self, callback_name):
         data = dict()
         data['callback_name'] = callback_name
         data['sender'] = {}
-        data['sender']['name'] = self.name
-        data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):
         data = data_in
@@ -48,11 +43,11 @@ class Flag(ExecutionElement):
         for filter_element in self.filters:
             data = filter_element(data, accumulator)
         try:
-            data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
-            args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.name))
+            data = validate_parameter(data, self._data_in_api, 'Flag {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.uid))
             self.__send_callback("Flag Success")
-            logger.debug('Arguments passed to flag {0} (uid {1}) are valid'.format(self.name, self.uid))
-            args.update({self.data_in_api['name']: data})
+            logger.debug('Arguments passed to flag {} are valid'.format(self.uid))
+            args.update({self._data_in_api['name']: data})
             return get_flag(self.action)(**args)
         except InvalidInput as e:
             logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
@@ -66,17 +61,6 @@ class Flag(ExecutionElement):
             self.__send_callback("Flag Error")
             return False
 
-    def as_json(self):
-        """Gets the JSON representation of a Flag object.
-        
-        Returns:
-            The JSON representation of a Flag object.
-        """
-        return {"uid": self.uid,
-                "action": self.action,
-                "args": [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.args.items()],
-                "filters": [filter_element.as_json() for filter_element in self.filters]}
-
     @staticmethod
     def from_json(json_in):
         """Forms a Flag object from the provided JSON object.
@@ -88,7 +72,7 @@ class Flag(ExecutionElement):
             The Flag object parsed from the JSON object.
         """
         args = {arg['name']: arg['value'] for arg in json_in['args']}
-        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        uid = json_in['uid'] if 'uid' in json_in else None
         filters = [Filter.from_json(filter_element) for filter_element in json_in['filters']]
         flag = Flag(action=json_in['action'], args=args, filters=filters, uid=uid)
         return flag
@@ -97,5 +81,5 @@ class Flag(ExecutionElement):
         output = {'uid': self.uid,
                   'action': self.action,
                   'args': self.args,
-                  'filters': [filter_element.as_json() for filter_element in self.filters]}
+                  'filters': [filter_element.read() for filter_element in self.filters]}
         return str(output)

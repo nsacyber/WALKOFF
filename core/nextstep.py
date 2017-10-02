@@ -2,7 +2,6 @@ import logging
 from core.executionelement import ExecutionElement
 from core.flag import Flag
 from core.case.callbacks import data_sent
-import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,8 @@ class NextStep(ExecutionElement):
             uid (str, optional): A universally unique identifier for this object.
             Created from uuid.uuid4().hex in Python
         """
-        ExecutionElement.__init__(self, name, uid)
+        ExecutionElement.__init__(self, uid)
+        self.name = name
         self.status = status
         self.flags = flags if flags is not None else []
 
@@ -29,8 +29,6 @@ class NextStep(ExecutionElement):
         data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
 
     def __eq__(self, other):
         return self.name == other.name and self.status == other.status and set(self.flags) == set(other.flags)
@@ -51,21 +49,10 @@ class NextStep(ExecutionElement):
 
     def __repr__(self):
         output = {'uid': self.uid,
-                  'flags': [flag.as_json() for flag in self.flags],
+                  'flags': [flag.read() for flag in self.flags],
                   'status': self.status,
                   'name': self.name}
         return str(output)
-
-    def as_json(self):
-        """Gets the JSON representation of a NextStep object.
-
-        Returns:
-            The JSON representation of a NextStep object.
-        """
-        return {"uid": self.uid,
-                "flags": [flag.as_json() for flag in self.flags],
-                "status": self.status,
-                "name": str(self.name) if self.name else ''}
 
     @staticmethod
     def from_json(json):
@@ -79,7 +66,7 @@ class NextStep(ExecutionElement):
         """
         name = json['name'] if 'name' in json else ''
         status = json['status'] if 'status' in json else 'Success'
-        uid = json['uid'] if 'uid' in json else uuid.uuid4().hex
+        uid = json['uid'] if 'uid' in json else None
         next_step = NextStep(name=name, status=status, uid=uid)
         if json['flags']:
             next_step.flags = [Flag.from_json(flag) for flag in json['flags']]

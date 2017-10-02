@@ -166,7 +166,7 @@ Step:
           description: y position
           type: number
           example: -12.036
-    next:
+    next_steps:
       description: The possible next steps
       type: array
       items:

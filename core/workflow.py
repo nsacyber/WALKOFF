@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, steps=None, start_step=None):
+    def __init__(self, name='', uid=None, steps=None, start=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
@@ -21,21 +21,20 @@ class Workflow(ExecutionElement):
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
             uid (str, optional): Optional UID to pass in for the workflow. Defaults to None.
             steps (dict, optional): Optional Step objects. Defaults to None.
-            start_step (str, optional): Optional name of the starting Step. Defaults to None.
+            start (str, optional): Optional name of the starting Step. Defaults to None.
         """
-        ExecutionElement.__init__(self, name=name)
+        ExecutionElement.__init__(self, uid)
+        self.name = name
         self.steps = steps if steps is not None else {}
-        self.start_step = start_step if start_step is not None else 'start'
-        self.is_completed = False
+        self.start = start if start is not None else 'start'
         self.accumulated_risk = 0.0
-        self.total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
-        self.is_paused = False
-        self.executor = None
-        self.breakpoint_steps = []
-        self.accumulator = {}
-        self.comm_sock = None
-        self.uid = uuid.uuid4().hex if uid is None else uid
-        self.execution_uid = 'default'
+
+        self._total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
+        self._is_paused = False
+        self._breakpoint_steps = []
+        self._accumulator = {}
+        self._comm_sock = None
+        self._execution_uid = 'default'
 
     def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
@@ -56,8 +55,8 @@ class Workflow(ExecutionElement):
         next_steps = next_steps if next_steps is not None else []
         self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
                                 next_steps=next_steps, risk=risk)
-        self.total_risk += risk
-        logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[name].as_json()))
+        self._total_risk += risk
+        logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[name].read()))
 
     def remove_step(self, name=''):
         """Removes a Step object from the Workflow's list of Steps given the Step name.
@@ -79,7 +78,7 @@ class Workflow(ExecutionElement):
 
     def __go_to_next_step(self, current='', next_up=''):
         if next_up not in self.steps:
-            self.steps[current].next_up = None
+            self.steps[current].set_next_up(None)
             current = None
         else:
             current = next_up
@@ -88,9 +87,7 @@ class Workflow(ExecutionElement):
     def pause(self):
         """Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Step.
         """
-        # if self.executor is not None:
-        #     logger.info('Pausing workflow {0}'.format(self.ancestry))
-        self.is_paused = True
+        self._is_paused = True
         logger.info('Pausing workflow {0}'.format(self.name))
 
     def resume(self):
@@ -98,7 +95,7 @@ class Workflow(ExecutionElement):
         """
         try:
             logger.info('Attempting to resume workflow {0}'.format(self.name))
-            self.is_paused = False
+            self._is_paused = False
         except (StopIteration, AttributeError) as e:
             logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
@@ -108,7 +105,7 @@ class Workflow(ExecutionElement):
         """
         try:
             logger.debug('Attempting to resume workflow {0} from breakpoint'.format(self.name))
-            self.is_paused = False
+            self._is_paused = False
         except (StopIteration, AttributeError) as e:
             logger.warning('Cannot resume workflow {0} from breakpoint. '
                            'Reason: {1}'.format(self.name, format_exception_message(e)))
@@ -124,7 +121,7 @@ class Workflow(ExecutionElement):
             data['sender']['uid'] = data['uid']
         else:
             data['sender']['name'] = self.name
-            data['sender']['execution_uid'] = self.execution_uid
+            data['sender']['execution_uid'] = self._execution_uid
             data['sender']['id'] = self.name
             data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
@@ -137,12 +134,12 @@ class Workflow(ExecutionElement):
             start (str, optional): The name of the first Step. Defaults to "start".
             start_input (str, optional): Input into the first Step. Defaults to an empty string.
         """
-        self.execution_uid = execution_uid
+        self._execution_uid = execution_uid
         logger.info('Executing workflow {0}'.format(self.name))
         self.__send_callback('Workflow Execution Start')
-        start = start if start is not None else self.start_step
-        self.executor = self.__execute(start, start_input)
-        next(self.executor)
+        start = start if start is not None else self.start
+        executor = self.__execute(start, start_input)
+        next(executor)
 
     def __execute(self, start, start_input):
         instances = {}
@@ -151,28 +148,28 @@ class Workflow(ExecutionElement):
         first = True
         for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.name))
-            if self.comm_sock:
+            if self._comm_sock:
                 try:
-                    data = self.comm_sock.recv(flags=zmq.NOBLOCK)
+                    data = self._comm_sock.recv(flags=zmq.NOBLOCK)
                     if data == b'Pause':
-                        self.comm_sock.send(b"Paused")
+                        self._comm_sock.send(b"Paused")
                         self.__send_callback("Workflow Paused")
-                        res = self.comm_sock.recv()
+                        res = self._comm_sock.recv()
                         if res != b'resume':
                             logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
                         else:
-                            self.comm_sock.send(b"Resumed")
+                            self._comm_sock.send(b"Resumed")
                             self.__send_callback("Workflow Resumed")
                 except zmq.ZMQError:
                     pass
             if step is not None:
-                if step.name in self.breakpoint_steps:
+                if step.name in self._breakpoint_steps:
                     self.__send_callback("Workflow Paused")
-                    res = self.comm_sock.recv()
+                    res = self._comm_sock.recv()
                     if not res == b'Resume breakpoint':
                         logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
                     else:
-                        self.comm_sock.send(b"Resumed")
+                        self._comm_sock.send(b"Resumed")
                         self.__send_callback("Workflow Resumed")
                 self.__send_callback('Next Step Found')
                 device_id = (step.app, step.device)
@@ -188,7 +185,7 @@ class Workflow(ExecutionElement):
 
                 self.__execute_step(step, instances[device_id])
                 total_steps.append(step)
-                self.accumulator[step.name] = step.output.result
+                self._accumulator[step.name] = step.get_output().result
         self.__shutdown(instances)
         yield
 
@@ -198,7 +195,7 @@ class Workflow(ExecutionElement):
         current = self.steps[current_name] if self.steps else None
         while current:
             yield current
-            next_step = current.get_next_step(self.accumulator)
+            next_step = current.get_next_step(self._accumulator)
             current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
             current = self.steps[current_name] if current_name is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
@@ -219,18 +216,18 @@ class Workflow(ExecutionElement):
                     {"app": step.app,
                      "action": step.action,
                      "name": step.name,
-                     "input": step.input}}
+                     "input": step.inputs}}
         try:
-            step.execute(instance=instance(), accumulator=self.accumulator)
-            data['data']['result'] = step.output.as_json()
-            data['data']['execution_uid'] = step.execution_uid
+            step.execute(instance=instance(), accumulator=self._accumulator)
+            data['data']['result'] = step.get_output().as_json()
+            data['data']['execution_uid'] = step.get_execution_uid()
             self.__send_callback('Step Execution Success', data)
         except Exception as e:
-            data['data']['result'] = step.output.as_json()
-            data['data']['execution_uid'] = step.execution_uid
+            data['data']['result'] = step.get_output().as_json()
+            data['data']['execution_uid'] = step.get_execution_uid()
             self.__send_callback('Step Execution Error', data)
-            if self.total_risk > 0:
-                self.accumulated_risk += float(step.risk) / self.total_risk
+            if self._total_risk > 0:
+                self.accumulated_risk += float(step.risk) / self._total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.name,
                                                                                    format_exception_message(e)))
 
@@ -244,33 +241,33 @@ class Workflow(ExecutionElement):
                 logger.error('Error caught while shutting down app instance. '
                              'Device: {0}. Error {1}'.format(instance, format_exception_message(e)))
         result_str = {}
-        for step, step_result in self.accumulator.items():
+        for step, step_result in self._accumulator.items():
             try:
                 result_str[step] = json.dumps(step_result)
             except TypeError:
                 logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
                 result_str[step] = 'error: could not convert to JSON'
         data = dict()
-        data['data'] = dict(self.accumulator)
+        data['data'] = dict(self._accumulator)
         self.__send_callback('Workflow Shutdown', data)
-        logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self.accumulator))
+        logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def __repr__(self):
         return str({'uid': self.uid,
                     'steps': {step: self.steps[step] for step in self.steps},
                     'accumulated_risk': round(self.accumulated_risk, 4)})
 
-    def as_json(self):
-        """Gets the JSON representation of a Step object.
-        
-        Returns:
-            The JSON representation of a Step object.
-        """
-        return {'uid': self.uid,
-                'name': self.name,
-                'steps': [step.as_json() for name, step in self.steps.items()],
-                'start': self.start_step,
-                'accumulated_risk': round(self.accumulated_risk, 4)}
+    def add_breakpoint_steps(self, steps):
+        self._breakpoint_steps.extend(steps)
+
+    def get_breakpoint_steps(self):
+        return self._breakpoint_steps
+
+    def get_comm_sock(self):
+        return self._comm_sock
+
+    def set_comm_sock(self, comm_sock):
+        self._comm_sock = comm_sock
 
     @staticmethod
     def from_json(json_in):
@@ -280,13 +277,13 @@ class Workflow(ExecutionElement):
            json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
        """
         name = json_in['name'] if 'name' in json_in else ''
-        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        uid = json_in['uid'] if 'uid' in json_in else None
         start_step = json_in['start'] if 'start' in json_in else None
         steps = {}
         for step_json in json_in['steps']:
             step = Step.from_json(step_json, position=step_json['position'])
             steps[step_json['name']] = step
-        return Workflow(name=name, uid=uid, start_step=start_step, steps=steps)
+        return Workflow(name=name, uid=uid, start=start_step, steps=steps)
 
     def update_from_json(self, json_in):
         """Reconstruct a Workflow object based on JSON data.
@@ -301,7 +298,7 @@ class Workflow(ExecutionElement):
         uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
         try:
             if 'start' in json_in and json_in['start']:
-                self.start_step = json_in['start']
+                self.start = json_in['start']
             self.steps = {}
             self.uid = uid
             for step_json in json_in['steps']:

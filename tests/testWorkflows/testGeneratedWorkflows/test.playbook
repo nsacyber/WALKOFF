@@ -1,5 +1,6 @@
 {
     "name": "test",
+    "uid": "bb3b737c392f422ea3cdb2b5ea3c4cb4",
     "workflows": [
         {
             "accumulated_risk": 0.0,
@@ -17,7 +18,7 @@
                         }
                     ],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [
                                 {

@@ -3,7 +3,6 @@ from core.helpers import get_filter, get_filter_api, InvalidInput, InvalidElemen
 from core.validator import validate_filter_parameters, validate_parameter
 from copy import deepcopy
 import logging
-import uuid
 from core.case.callbacks import data_sent
 logger = logging.getLogger(__name__)
 
@@ -22,22 +21,18 @@ class Filter(ExecutionElement):
         """
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
-        ExecutionElement.__init__(self, action, uid)
+        ExecutionElement.__init__(self, uid)
         self.action = action
-        self.args_api, self.data_in_api = get_filter_api(self.action)
+        self._args_api, self._data_in_api = get_filter_api(self.action)
         args = args if args is not None else {}
-        self.args = validate_filter_parameters(self.args_api, args, self.action)
+        self.args = validate_filter_parameters(self._args_api, args, self.action)
 
     def __send_callback(self, callback_name):
         data = dict()
         data['callback_name'] = callback_name
         data['sender'] = {}
-        data['sender']['name'] = self.name
-        data['sender']['id'] = self.name
         data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
 
     def __call__(self, data_in, accumulator):
         """Executes the flag.
@@ -51,9 +46,9 @@ class Filter(ExecutionElement):
         """
         original_data_in = deepcopy(data_in)
         try:
-            data_in = validate_parameter(data_in, self.data_in_api, 'Filter {0}'.format(self.action))
-            args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.name))
-            args.update({self.data_in_api['name']: data_in})
+            data_in = validate_parameter(data_in, self._data_in_api, 'Filter {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.uid))
+            args.update({self._data_in_api['name']: data_in})
             result = get_filter(self.action)(**args)
             self.__send_callback("Filter Success")
             return result
@@ -66,17 +61,6 @@ class Filter(ExecutionElement):
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 
-    def as_json(self):
-        """Gets the JSON representation of a Filter object.
-        
-        Returns:
-            The JSON representation of a Filter object.
-        """
-        args = [{'name': arg_name, 'value': arg_value} for arg_name, arg_value in self.args.items()]
-        return {"uid": self.uid,
-                "action": self.action,
-                "args": args}
-
     @staticmethod
     def from_json(json_in):
         """Forms a Filter object from the provided JSON object.
@@ -87,7 +71,7 @@ class Filter(ExecutionElement):
         Returns:
             The Filter object parsed from the JSON object.
         """
-        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        uid = json_in['uid'] if 'uid' in json_in else None
         out_filter = Filter(action=json_in['action'],
                             args={arg['name']: arg['value'] for arg in json_in['args']},
                             uid=uid)

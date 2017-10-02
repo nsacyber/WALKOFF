@@ -47,7 +47,7 @@ def recreate_workflow(workflow_json):
     workflow.execution_uid = execution_uid
     workflow.start = start
     if 'breakpoint_steps' in workflow_json:
-        workflow.breakpoint_steps = workflow_json['breakpoint_steps']
+        workflow.add_breakpoint_steps(workflow_json['breakpoint_steps'])
 
     return workflow, start_input
 
@@ -233,7 +233,7 @@ class Worker:
             workflow_in = self.request_sock.recv()
 
             workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
-            workflow.comm_sock = self.comm_sock
+            workflow.set_comm_sock(self.comm_sock)
 
             workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
             self.request_sock.send(b"Done")

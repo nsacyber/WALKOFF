@@ -149,15 +149,14 @@ class WorkflowExecutor(object):
             logger.info('Executing workflow {0} with default starting step'.format(workflow_name, start))
         self.workflow_status[uid] = WORKFLOW_RUNNING
 
-        wf_json = workflow.as_json()
+        wf_json = workflow.read()
         if start:
             wf_json['start'] = start
         if start_input:
             wf_json['start_input'] = start_input
         wf_json['execution_uid'] = uid
-        if workflow.breakpoint_steps:
-            wf_json['breakpoint_steps'] = workflow.breakpoint_steps
-
+        if workflow.get_breakpoint_steps():
+            wf_json['breakpoint_steps'] = workflow.get_breakpoint_steps()
         self.load_balancer.pending_workflows.put(wf_json)
 
         callbacks.SchedulerJobExecuted.send(self)
@@ -176,7 +175,6 @@ class WorkflowExecutor(object):
             execution_uid (str): The execution uid of the workflow.
             workflow (Workflow): The workflow to pause.
         """
-        # workflow = self.get_workflow(playbook_name, workflow_name)
         if (workflow and execution_uid in self.workflow_status
                 and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
             self.load_balancer.pause_workflow(execution_uid, workflow.name)

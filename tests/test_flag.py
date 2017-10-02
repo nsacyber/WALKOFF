@@ -19,7 +19,7 @@ class TestFlag(unittest.TestCase):
         self.assertEqual(flag.action, action)
         self.assertEqual(len(flag.filters), len(filters))
         for actual_filter, expected_filter in zip(flag.filters, filters):
-            self.assertDictEqual(actual_filter.as_json(), expected_filter.as_json())
+            self.assertDictEqual(actual_filter.read(), expected_filter.read())
         self.assertDictEqual(flag.args, args)
         if uid is None:
             self.assertIsNotNone(flag.uid)
@@ -63,28 +63,6 @@ class TestFlag(unittest.TestCase):
     def test_init_with_no_action_no_xml(self):
         with self.assertRaises(InvalidElementConstructed):
             Flag()
-
-    def test_as_json_action_only(self):
-        uid = uuid.uuid4().hex
-        flag = Flag(action='Top Flag', uid=uid)
-        expected = {'action': 'Top Flag', 'args': [], 'filters': [], 'uid': uid}
-        self.assertDictEqual(flag.as_json(), expected)
-
-    def test_as_json_with_args(self):
-        uid = uuid.uuid4().hex
-        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, uid=uid)
-        expected = {'action': 'mod1_flag2', 'args': [{'name': 'arg1', 'value': 11113}],
-                    'filters': [], 'uid': uid}
-        self.assertDictEqual(flag.as_json(), expected)
-
-    def test_as_json_with_args_and_filters(self):
-        uid = uuid.uuid4().hex
-        filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
-        flag = Flag(action='mod1_flag2', args={'arg1': '11113'}, filters=filters, uid=uid)
-        filters_json = [filter_element.as_json() for filter_element in flag.filters]
-        expected = {'action': 'mod1_flag2', 'args': [{'name': 'arg1', 'value': 11113}],
-                    'filters': filters_json, 'uid': uid}
-        self.assertDictEqual(flag.as_json(), expected)
 
     def test_call_action_only_no_args_valid_data_no_conversion(self):
         self.assertTrue(Flag(action='Top Flag')(3.4, {}))
@@ -158,7 +136,7 @@ class TestFlag(unittest.TestCase):
 
     def test_from_json_with_filters(self):
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
-        filters_json = [filter_elem.as_json() for filter_elem in filters]
+        filters_json = [filter_elem.read() for filter_elem in filters]
         args = [{'name': 'arg1', 'value': 3}]
         json_in = {'action': 'mod1_flag2', 'args': args, 'filters': filters_json}
         flag = Flag.from_json(json_in)
