@@ -1,68 +1,69 @@
-<div id="main">
-    <!--<div id="header">
-        <h1> Workflow Editor </h1>
-    </div>
-    <div id="body">
-        <h3 id="currentWorkflowText"></h3>
-    </div>-->
-    <div class=btn-toolbar role=toolbar>
-        <div class=btn-group role=group>
+<div id="main" class="playbookMain">
+    <div id="playbookToolbar" class=btn-toolbar role=toolbar>
+        <div class="btn-group" role="group">
             <button id="new-button" type=button class="btn btn-default" data-toggle="tooltip" title="New Workflow">
-                <i class="fa fa-file-o"></i>
+                <span class="fa fa-file-o"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
+        <div class="btn-group" role="group">
             <button id="load-button" type=button class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow">
-                <i class="fa fa-folder-open-o"></i>
+                <span class="fa fa-folder-open-o"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="save-button" type=button class="btn btn-default" data-toggle="tooltip" title="Save Workflow">
-                <i class="fa fa-save"></i>
+        <div class="btn-group" role="group">
+            <button id="save-button" type=button class="btn btn-default" data-toggle="tooltip" title="Save Workflow" [disabled]="!loadedWorkflow">
+                <span class="fa fa-save"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="remove-button" type=button class="btn btn-default" data-toggle="tooltip" title="Delete Selected Nodes">
+        <div class="btn-group" role="group">
+            <button id="remove-button" type=button class="btn btn-default" data-toggle="tooltip" title="Delete Selected Nodes" [disabled]="!loadedWorkflow"
+                (click)="removeSelectedNodes()">
                 <span class="glyphicon glyphicon-trash"></span>
             </button>
         </div>
-        <!--TODO: re-enable undo/redo once we restructure how next steps / edges are stored-->
-        <!--<div class=btn-group role=group>
-            <button id="undo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Undo">
+        <div class="btn-group" role="group">
+            <button id="undo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Undo" [disabled]="!loadedWorkflow || ur.isUndoStackEmpty()"
+                (click)="ur.undo()">
                 <span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="redo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Redo">
+        <div class="btn-group" role="group">
+            <button id="redo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Redo" [disabled]="!loadedWorkflow || ur.isRedoStackEmpty()"
+                (click)="ur.redo()">
                 <span class="glyphicon glyphicon-repeat"></span>
             </button>
-        </div>-->
-        <div class=btn-group role=group>
-            <button id="cut-button" type=button class="btn btn-default" data-toggle="tooltip" title="Cut">
-                <i class="fa fa-cut" style="transform: rotate(-90deg);"></i>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="cut-button" type=button class="btn btn-default" data-toggle="tooltip" title="Cut" [disabled]="!loadedWorkflow"
+                (click)="cut()">
+                <span class="fa fa-cut" style="transform: rotate(-90deg);"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="copy-button" type=button class="btn btn-default" data-toggle="tooltip" title="Copy">
-                <i class="fa fa-copy"></i>
+        <div class="btn-group" role="group">
+            <button id="copy-button" type=button class="btn btn-default" data-toggle="tooltip" title="Copy" [disabled]="!loadedWorkflow"
+                (click)="copy()">
+                <span class="fa fa-copy"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="paste-button" type=button class="btn btn-default" data-toggle="tooltip" title="Paste">
-                <i class="fa fa-paste"></i>
+        <div class="btn-group" role="group">
+            <button id="paste-button" type=button class="btn btn-default" data-toggle="tooltip" title="Paste" [disabled]="!loadedWorkflow"
+                (click)="paste()">
+                <span class="fa fa-paste"></span>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="execute-button" type=button class="btn btn-default" data-toggle="tooltip" title="Execute Workflow" disabled="disabled">
+        <div class="btn-group" role="group">
+            <button id="execute-button" type=button class="btn btn-default" data-toggle="tooltip" title="Execute Workflow" [disabled]="!loadedWorkflow"
+                (click)="executeWorkflow()">
                 <i class="fa fa-play-circle"></i>
             </button>
         </div>
-        <div class=btn-group role=group>
-            <button id="clear-execution-highlighting-button" type=button class="btn btn-default" data-toggle="tooltip" title="Clear Execution Results Highlighting" disabled="disabled">
+        <div class="btn-group" role="group">
+            <button id="clear-execution-highlighting-button" type=button class="btn btn-default" data-toggle="tooltip" title="Clear Execution Results Highlighting"
+                [disabled]="!loadedWorkflow" (click)="clearExecutionHighlighting()">
                 <i class="fa fa-undo"></i>
             </button>
         </div>
-        <label id="currentWorkflowText"></label>
+        <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
     </div>
 
     <div id="top">
@@ -84,7 +85,21 @@
                         </div>
 
                         <div class="col-md-6 graphEditorColumn">
-                            <div id="cy" tabindex="0"></div>
+                            <div id="cy" *ngIf="loadedWorkflow" tabindex="0"></div>
+                            <div id="cy-instructions" *ngIf="!loadedWorkflow">
+                                <p>Instructions:</p>
+                                <p>
+                                    <button class="btn btn-default" id="loadInitialWorkflow" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>
+                                </p>
+                                <p>
+                                    Use this button to load the workflow into the graph. After loading an initial workflow you may use the Load Workflow button
+                                    on the toolbar.
+                                </p>
+                                <p>
+                                    <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow step.
+                                    <b>Double click</b> also works.
+                                </p>
+                            </div>
                         </div>
 
                         <div class="col-md-4 graphEditorColumn">
@@ -111,34 +126,38 @@
         </div>
     </div>
 
-
-
-    <div id="cy-instructions-template" class="hidden">
-        <p> Instructions:</p>
-        <p> <button class="btn btn-default" id="loadInitialWorkflow" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>            </p>
-        <p> Use this button to load the workflow into the graph. After loading an initial workflow you may use the Load Workflow
-            button on the toolbar.</p>
-        <p> <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow step. <b>Double click</b> also
-            works. </p>
-    </div>
-
-    <div id="dialog-template" class="hidden">
-        <p class="validateTips">All form fields are required.</p>
-        <form>
-            <fieldset>
-                <label for="input1" class="label1"></label>
-                <input type="text" name="input1" value="" class="text
-                                ui-widget-content
-                                ui-corner-all
-                                input1">
-
-                    <label for="input2" class="label2"></label>
-                    <input type="text" name="input2" value="" class="text
-                                ui-widget-content
-                                ui-corner-all
-                                input2">
-            </fieldset>
-        </form>
+    <div class="modal fade" id="playbookAndWorkflowActionModal" tabindex="-1" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="playbookAndWorkflowActionModalTitle">{{modalParams.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div *ngIf="modalParams.shouldShowPlaybook" class="form-group">
+                        <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
+                        <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect" [(ngModel)]="modalParams.selectedPlaybook"
+                            class="form-control">
+                            <option value="0">-- Create new Playbook --</option>
+                            <option *ngFor="let i of getPlaybooks()" [value]="i" [label]="i">{{i}}</option>
+                        </select>
+                        <input type="text" *ngIf="modalParams.selectedPlaybook === 0 || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
+                            class="form-control" placeholder="Enter a new playbook name">
+                    </div>
+                    <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
+                        <h6>Enter a Playbook</h6>
+                        <input type="text" [(ngModel)]="modalParams.newPlaybook" class="form-control" placeholder="Enter a new workflow name">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">{{modalParams.submitText}}</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="workflowsModal" tabindex="-1" role="dialog" aria-labelledby="workflowModalTitle" aria-hidden="true">
@@ -153,44 +172,7 @@
                 <div class="modal-body">
                     <div id="workflows"></div>
                 </div>
-                <!--<div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>-->
             </div>
         </div>
     </div>
-
-    <div id="executionModal" class="hidden">
-        <table class="table table-bordered table-hover executionTable">
-            <thead>
-                <th>Id</th>
-                <th>Type</th>
-                <th>Input</th>
-                <th>Result</th>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <button id="resetGraphBtn"> Reset Graph </button>
-    </div>
-
-    <!--<script src="{{ url_for('static', filename='plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/jQueryUI/jquery-ui.js' ) }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-undo-redo.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-panzoom.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-edgehandles.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-clipboard.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-grid-guide.js') }}"></script>-->
-    <!--<script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-context-menus.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/cytoscape/cytoscape-edge-bend-editing.js') }}"></script>-->
-    <!--<script src="{{ url_for('static', filename='plugins/jstree/jstree.min.js') }}"></script>-->
-    <!--<script src="{{ url_for('static', filename='plugins/jquery-qtip/jquery.qtip.min.js') }}"></script>-->
-    <!--<script src="{{ url_for('static', filename='plugins/jsoneditor/jsoneditor.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/lodash/lodash.js') }}"></script>
-    <script src="{{ url_for('static', filename='plugins/notifyjs/notify.min.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='pages/playbook/js/main.js' ) }}"> </script>-->
 </div>

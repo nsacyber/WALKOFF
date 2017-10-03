@@ -6,27 +6,32 @@
 	var map = {
 		// 'login': 'client/modules/login',
 		'main': 'client/build',
-		// 'npm:' : 'client/node_modules/',
 		'models': 'client/models',
-		'rxjs': 'client/node_modules/rxjs',
-		//'angular2-in-memory-web-api': 'client/node_modules/angular2-in-memory-web-api',
-		'@angular': 'client/node_modules/@angular',
-		'angular2-datatable': 'client/node_modules/angular2-datatable',
-		'lodash': 'client/node_modules/lodash',
-		'jquery': 'client/node_modules/jquery/dist/jquery.min.js',
-		'ts': 'client/node_modules/plugin-typescript/lib/plugin.js',
+		'rxjs': 'npm:rxjs',
+		'@angular': 'npm:@angular',
+		'angular2-datatable': 'npm:angular2-datatable',
+		'lodash': 'npm:lodash',
+		'jquery': 'npm:jquery/dist/jquery.min.js',
+		'ts': 'npm:plugin-typescript/lib/plugin.js',
 		'tsconfig.json': 'client/tsconfig.json',
-		'typescript': 'client/node_modules/typescript/lib/typescript.js',
-		'@ng-bootstrap/ng-bootstrap': 'client/node_modules/@ng-bootstrap/ng-bootstrap/bundles/ng-bootstrap.js',
-		'@swimlane/ngx-datatable': 'client/node_modules/@swimlane/ngx-datatable/release/index.js',
-		'ng2-toasty': 'client/node_modules/ng2-toasty/bundles/index.umd.js',
-		'ng2-select2': 'client/node_modules/ng2-select2/ng2-select2.bundle.js',
-		'ngx-contextmenu': 'client/node_modules/ngx-contextmenu/lib/ngx-contextmenu.js',
-		'd3': 'client/node_modules/d3/build/d3.node.js',
-		'angular2-jwt': 'client/node_modules/angular2-jwt/angular2-jwt.js',
-		'angular2-jwt-refresh': 'client/node_modules/angular2-jwt-refresh/dist/angular2-jwt-refresh.js',
+		'typescript': 'npm:typescript/lib/typescript.js',
+		'@ng-bootstrap/ng-bootstrap': 'npm:@ng-bootstrap/ng-bootstrap/bundles/ng-bootstrap.js',
+		'@swimlane/ngx-datatable': 'npm:@swimlane/ngx-datatable/release/index.js',
+		'ng2-toasty': 'npm:ng2-toasty/bundles/index.umd.js',
+		'ng2-select2': 'npm:ng2-select2/ng2-select2.bundle.js',
+		'ngx-contextmenu': 'npm:ngx-contextmenu/lib/ngx-contextmenu.js',
+		'd3': 'npm:d3/build/d3.node.js',
+		'angular2-jwt': 'npm:angular2-jwt/angular2-jwt.js',
+		'angular2-jwt-refresh': 'npm:angular2-jwt-refresh/dist/angular2-jwt-refresh.js',
 		'ng-pick-datetime': 'npm:ng-pick-datetime',
 		'moment': 'npm:moment',
+		'cytoscape': 'npm:cytoscape/dist',
+		'cytoscape-clipboard': 'npm:cytoscape-clipboard/cytoscape-clipboard.js',
+		'cytoscape-edgehandles': 'npm:cytoscape-edgehandles/cytoscape-edgehandles.js',
+		'cytoscape-grid-guide': 'npm:cytoscape-grid-guide/cytoscape-grid-guide.js',
+		'cytoscape-panzoom': 'npm:cytoscape-panzoom/cytoscape-panzoom.js',
+		'cytoscape-undo-redo': 'npm:cytoscape-undo-redo/cytoscape-undo-redo.js',
+		'angular2-uuid': 'npm:angular2-uuid/index.js',
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension
@@ -47,6 +52,8 @@
 			main: 'moment.js',
 			defaultExtension: 'js'
 		},
+		'cytoscape': { main: 'cytoscape.min.js', defaultExtension: 'js' },
+		// 'uuid': { main: 'index.js', defaultExtension: 'js' },
 	};
 
 	var ngPackageNames = [
@@ -106,7 +113,7 @@
 	];
 
 	d3PackageNames.forEach(function (pkgName) {
-		map[pkgName] = `client/node_modules/${pkgName}/build/${pkgName}.min.js`;
+		map[pkgName] = `npm:${pkgName}/build/${pkgName}.min.js`;
 	});
 
 	var config = {

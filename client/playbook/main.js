@@ -7,81 +7,25 @@ $(function(){
     // Top level variables
     //--------------------
 
-    var currentPlaybook = null;
-    var currentWorkflow = null;
-    var workflowList = null;
+    var workflowsForPlaybooks = null;
     var cy = null;
     var ur = null;
-    var appData = null;
+    var actionsForApps = null;
     var flagsList = [];
     var filtersList = [];
     var startNode = null;
     var offsetX = -330;
     var offsetY = -170;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
-    var authToken = sessionStorage.getItem('access_token');
     
     //--------------------
     // Top level functions
     //--------------------
 
-    // TODO: this function only really authorizes on the first call. we should switch to maybe a web socket to handle this route in the future
-    function createWorkflowResultsSSE() {
-        if (!window.JwtHelper.isTokenExpired(authToken)) {
-            window.stepResultsSSE = new EventSource('workflowresults/stream-steps?access_token=' + authToken);
-            return;
-        }
-        
-        $.ajax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('refresh_token') },
-            'url': "/api/auth/refresh",
-            'success': function (data) {
-                sessionStorage.setItem('access_token', data['access_token']);
-                authToken = data['access_token'];
-                window.stepResultsSSE = new EventSource('workflowresults/stream-steps?access_token=' + authToken);
-            },
-            'error': function (e) {
-                console.log(e);
-            }
-        });
-    }
-    createWorkflowResultsSSE();
-
-    function refreshJwtAjax(request) {
-        if (!window.JwtHelper.isTokenExpired(authToken, 300)) {
-            $.ajax(request);
-            return;
-        }
-
-        var refreshToken = sessionStorage.getItem('refresh_token');
-
-        if (!refreshToken) location.href = '/login';
-
-        $.ajax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers': { "Authorization": 'Bearer ' + refreshToken },
-            'url': "/api/auth/refresh",
-            'success': function (data) {
-                sessionStorage.setItem('access_token', data['access_token']);
-                authToken = data['access_token'];
-                request['headers']['Authorization'] = 'Bearer ' + authToken;
-                $.ajax(request);
-            },
-            'error': function (e) {
-                console.log(e);
-            }
-        });
-    }
-
     // Reformat the JSON data returned from the /playbook endpoint
     // into a format that jsTree can understand.
     function formatWorkflowJsonDataForJsTree(data) {
-        workflowList = data;
+        workflowsForPlaybooks = data;
         var jstreeData = [];
         _.each(data, function(playbook) {
             var jsTreePlaybook = {};
@@ -105,7 +49,7 @@ $(function(){
     // Reformat the JSON data returned from the /api/apps/actions endpoint
     // into a format that jsTree can understand.
     function formatAppsActionJsonDataForJsTree(data) {
-        appData = {};
+        actionsForApps = {};
         var jstreeData = [];
         _.each(data, function(actions, appName) {
             var app = {};
@@ -124,7 +68,7 @@ $(function(){
 
             jstreeData.push(app);
 
-            appData[appName] = {actions: actions};
+            actionsForApps[appName] = {actions: actions};
         });
 
         // Sort jstreeData by app name
@@ -135,26 +79,9 @@ $(function(){
         return jstreeData;
     }
 
-    function getStartNode() {
-        return startNode;
-    }
-
-    function setStartNode(start) {
-        // If no start was given set it to one of the root nodes
-        if (start) {
-            startNode = start;
-        }
-        else {
-            var roots = cy.nodes().roots();
-            if (roots.size() > 0) {
-                startNode = roots[0].data("parameters").name;
-            }
-        }
-    }
-
     function createNodeSchema(parameters) {
         var appNames = [];
-        if (!_.isEmpty(appData)) appNames = _.keys(appData);
+        if (!_.isEmpty(actionsForApps)) appNames = _.keys(actionsForApps);
 
         // This function creates a subschema for a single action. It contains
         // all the inputs of the action so the user only needs to enter the value.
@@ -253,7 +180,7 @@ $(function(){
         var definitions = {};
 
         // Create the sub-schema for the action inputs
-        var actionInputSchema = convertInputToSchema(appData[parameters.app].actions[parameters.action].args, parameters.action);
+        var actionInputSchema = convertInputToSchema(actionsForApps[parameters.app].actions[parameters.action].args, parameters.action);
 
         // Create the sub-schema for the flags
         var flags = _.cloneDeep(flagsList);
@@ -303,7 +230,7 @@ $(function(){
                 device: {
                     type: "string",
                     title: "Device",
-                    enum: appData[parameters.app].devices
+                    enum: actionsForApps[parameters.app].devices
                 },
                 action: {
                     type: "string",
@@ -349,7 +276,7 @@ $(function(){
                         status: {
                             type: "string",
                             title: "Status",
-                            enum: appData[parameters.app].actions[parameters.action].returns,
+                            enum: actionsForApps[parameters.app].actions[parameters.action].returns,
                             default: "Success"
                         },
                         flags: {
@@ -393,136 +320,6 @@ $(function(){
         return schema;
     }
 
-    // Modify the parameters JSON object a little to conform to the schema expected by the parameters form
-    function transformParametersToSchema(parameters) {
-        parameters = _.cloneDeep(parameters);
-
-        // We need to store a hidden property since in an oneOf,
-        // the schema must match exactly one of the options. There
-        // can be cases where two actions contain the exact same arguments,
-        // so to distinguish the two actions place the action name in
-        // in the $action property. This action is hidden and cannot be
-        // modified by the user.
-        // parameters.$action = parameters.action;
-
-        _.each(parameters.next, function(nextStep) {
-            _.each(nextStep.flags, function(flag) {
-                flag.args.$action = flag.action;
-
-                _.each(flag.filters, function(filter) {
-                    filter.args.$action = filter.action;
-                });
-            });
-        });
-
-        parameters.start = (getStartNode() === parameters.name);
-
-        return parameters;
-    }
-
-    // Revert changes to the parameters JSON object of previous function
-    function transformParametersFromSchema(_parameters) {
-        var parameters =  _.cloneDeep(_parameters);
-
-        // parameters.action = parameters.$action;
-        // delete parameters.input.$action;
-
-        _.each(parameters.next, function(nextStep) {
-            _.each(nextStep.flags, function(flag) {
-                flag.action = flag.args.$action;
-                delete flag.args.$action;
-
-                _.each(flag.filters, function(filter) {
-                    filter.action = filter.args.$action;
-                    delete filter.args.$action;
-                });
-            });
-        });
-
-        return parameters;
-    }
-
-    // This function displays a form next to the graph for editing a node when clicked upon
-    function onNodeSelect(e) {
-        var ele = e.cyTarget;
-
-        currentNodeInParametersEditor = ele;
-
-        $("#parametersBar").removeClass('hidden');
-        var parameters = ele.data('parameters');
-        $("#parameters").empty();
-
-        parameters = transformParametersToSchema(parameters);
-
-        // Initialize the editor with a JSON schema
-        var schema = createNodeSchema(parameters);
-        JSONEditor.defaults.options.theme = 'bootstrap3';
-        JSONEditor.defaults.options.iconlib = "bootstrap3";
-        var editor = new JSONEditor(document.getElementById('parameters'),{
-            schema: schema,
-
-            startval: parameters,
-
-            disable_edit_json: true,
-
-            disable_properties: true,
-
-            // Disable additional properties
-            no_additional_properties: true,
-
-            // Require all properties by default
-            required_by_default: false
-        });
-
-        editor.getEditor('root.app').disable();
-        editor.getEditor('root.action').disable();
-        editor.getEditor('root.name').disable();
-
-        // Hack: It appears this function is called as soon as you click on the node.
-        // Therefore ignore the first time this function is called.
-        var firstCall = true;
-        editor.on('change',function() {
-            if (firstCall) {
-                firstCall = false;
-                return;
-            }
-            var updatedParameters = editor.getValue();
-            updatedParameters = transformParametersFromSchema(updatedParameters);
-
-            ele.data('parameters', updatedParameters);
-            // ele.data('label', updatedParameters.action);
-            setStartNode(updatedParameters.name);
-        });
-    }
-
-    //TODO: bring up a separate JSON editor for "next" step information (filters/flags)
-    function onEdgeSelect(event) {
-        return;
-    }
-
-    function onUnselect(event) {
-        if (!cy.$('node:selected').length) hideParameters();
-    }
-
-    // when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
-    function onEdgeRemove(event) {
-        var edgeData = event.cyTarget.data();
-        // Do nothing if this is a temporary edge (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
-        if (!edgeData.parameters || edgeData.parameters.temp) return;
-
-        var parentNode = event.cyTarget.source();
-        var parentData = _.cloneDeep(parentNode.data());
-
-        parentData.parameters.next = _.reject(parentData.parameters.next, (next) => { return next.name === event.cyTarget.data().target; });
-        parentNode.data(parentData);
-    }
-
-    // This is called while the user is dragging
-    function dragHelper( event ) {
-        // Return empty div for helper so that original dragged item does not move
-        return '<div></div>';
-    }
-
     // This function is called when the user drops a new node onto the graph
     function handleDropEvent( event, ui ) {
         if (cy === null)
@@ -544,68 +341,6 @@ $(function(){
         insertNode(app, action, x, y, true);
     }
 
-    function insertNode(app, action, x, y, shouldUseRenderedPosition) {
-        // Find next available id
-        var id = 1;
-        while (true) {
-            var element = cy.getElementById(id.toString());
-            if (element.length === 0)
-                break;
-            id += 1;
-        }
-
-        var inputs = {};
-        var actionInfo = appData[app].actions[action];
-        _.each(actionInfo.args, function(inputInfo) {
-
-            var defaultValue;
-            if (inputInfo.type === "string")
-                defaultValue = inputInfo.default || "";
-            else if (inputInfo.type === "boolean")
-                defaultValue = inputInfo.default || false;
-            else
-                defaultValue = inputInfo.default || 0;
-
-            inputs[inputInfo.name] = {
-                name: inputInfo.name,
-                value: defaultValue
-            };
-        });
-
-        // Add the node with the id just found to the graph in the location dropped
-        // into by the mouse.
-        var nodeToBeAdded = {
-            group: 'nodes',
-            data: {
-                id: id.toString(),
-                label: action,
-                parameters: {
-                    action: action,
-                    app: app,
-                    device: "",
-                    errors: [],
-                    inputs: inputs,
-                    name: id.toString(),
-                    next: [],
-                }
-            },
-        };
-
-        setNodeDisplayProperties(nodeToBeAdded);
-
-        if (shouldUseRenderedPosition) nodeToBeAdded.renderedPosition = { x: x, y: y };
-        else nodeToBeAdded.position = { x: x, y: y };
-
-        var newNode = ur.do('add', nodeToBeAdded);
-    }
-
-    // This function removes selected nodes and edges
-    function removeSelectedNodes() {
-        var selecteds = cy.$(":selected");
-        if (selecteds.length > 0)
-            ur.do("remove", selecteds);
-    }
-
     function onNodeAdded(event) {
         var node = event.cyTarget;
         // If the number of nodes in the graph is one, set the start node to it.
@@ -618,7 +353,7 @@ $(function(){
         var node = event.cyTarget;
         var parameters = node.data("parameters");
         // If the start node was deleted, set it to one of the roots of the graph
-        if (parameters && node.isNode() && getStartNode() == parameters.name) {
+        if (parameters && node.isNode() && this.startNode == parameters.name) {
             setStartNode();
         }
         // If an edge was deleted, delete the corresponding next
@@ -669,161 +404,10 @@ $(function(){
         // create new edges for the new node.
         for (var i=0; i<newNodes.length; ++i) {
             var parameters = newNodes[i].data("parameters");
-            parameters.name = newNodes[i].data("id")
+            parameters.name = newNodes[i].data("id");
             parameters.next = [];
             newNodes[i].data("parameters", parameters);
         }
-    }
-
-    function renamePlaybook(oldPlaybookName, newPlaybookName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + oldPlaybookName,
-            'dataType': 'json',
-            'contentType': 'application/json; charset=utf-8',
-            'data': JSON.stringify({'new_name': newPlaybookName}),
-            'success': function (data) {
-                downloadWorkflowList();
-                $.notify('Playbook ' + newPlaybookName + ' renamed successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Playbook ' + newPlaybookName + ' could not be renamed.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
-    function duplicatePlaybook(oldPlaybookName, newPlaybookName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + oldPlaybookName + "/copy",
-            'dataType': 'json',
-            'data': {playbook: newPlaybookName},
-            'success': function (data) {
-                downloadWorkflowList();
-                $.notify('Playbook ' + newPlaybookName + ' duplicated successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Playbook ' + newPlaybookName + ' could not be duplicated.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
-    function deletePlaybook(playbookName, workflowName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "DELETE",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + playbookName,
-            'success': function (data) {
-                downloadWorkflowList();
-
-                if (currentPlaybook === playbookName)
-                    closeCurrentWorkflow();
-
-                $.notify('Playbook ' + playbookName + ' removed successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Playbook ' + playbookName + ' could not be removed.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
-    function renameWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
-            'dataType': 'json',
-            'contentType': 'application/json; charset=utf-8',
-            'data': JSON.stringify({'new_name': newWorkflowName}),
-            'success': function (data) {
-                downloadWorkflowList();
-                $.notify('Workflow ' + newWorkflowName + ' renamed successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Workflow ' + newWorkflowName + ' could not be renamed.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
-    function duplicateWorkflow(oldWorkflowName, playbookName, newWorkflowName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
-            'dataType': 'json',
-            'data': {playbook: playbookName, workflow: newWorkflowName},
-            'success': function (data) {
-                downloadWorkflowList();
-                $.notify('Workflow ' + newWorkflowName + ' duplicated successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Workflow ' + newWorkflowName + ' could not be duplicated.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
-    function deleteWorkflow(playbookName, workflowName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "DELETE",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName,
-            'success': function (data) {
-                downloadWorkflowList();
-
-                if (currentPlaybook === playbookName && currentWorkflow === workflowName)
-                    closeCurrentWorkflow();
-
-                $.notify('Workflow ' + workflowName + ' removed successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Workflow ' + workflowName + ' could not be removed.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
-    function newWorkflow(playbookName, workflowName) {
-        refreshJwtAjax({
-            'async': false,
-            'type': "PUT",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'dataType': 'json',
-            'data': JSON.stringify({name: workflowName}),
-            'contentType': 'application/json; charset=utf-8',
-            'url': "/api/playbooks/" + playbookName + "/workflows",
-            'success': function (data) {
-                downloadWorkflowList();
-
-                //If nothing is currently loaded, load our new workflow.
-                if (!cy) loadWorkflow(playbookName, workflowName);
-
-                $.notify('Workflow ' + workflowName + ' added successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Workflow ' + workflowName + ' could not be added.', 'error');
-                console.log(e);
-            }
-        });
     }
 
     function transformInputsToLoad(workflowData) {
@@ -879,39 +463,6 @@ $(function(){
         });
     }
 
-    function saveWorkflow(playbookName, workflowName, _workflowData) {
-        if (!startNode) {
-            $.notify('Workflow cannot be saved without a starting step.', 'warning');
-            return;
-        }
-        var workflowData = _.filter(_workflowData, function (data) { return data.group === "nodes"; });
-
-        var steps = _.map(workflowData, function (step) {
-            var ret = _.cloneDeep(step.data.parameters);
-            ret.position = _.clone(step.position);
-            return ret;
-        });
-        transformInputsToSave(steps);
-        var data = JSON.stringify({start: startNode, steps: steps });
-        refreshJwtAjax({
-            'async': false,
-            'type': "POST",
-            'global': false,
-            'dataType': 'json',
-            'contentType': 'application/json; charset=utf-8',
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + workflowName + "/save",
-            'data': data,
-            'success': function (data) {
-                $.notify('Workflow ' + workflowName + ' saved successfully.', 'success');
-            },
-            'error': function (e) {
-                $.notify('Workflow ' + workflowName + ' could not be saved.', 'error');
-                console.log(e);
-            }
-        });
-    }
-
     function saveWorkflowJson(playbookName, workflowName, workflowDataEditor) {
         // Convert data in string format under JSON tab to a dictionary
         var dataJson = JSON.parse(workflowDataEditor);
@@ -961,21 +512,6 @@ $(function(){
         saveWorkflow(playbookName, workflowName, workflowData)
     }
 
-    function setNodeDisplayProperties(step) {
-        //add a type field to handle node styling
-        var app = appData[step.data.parameters.app];
-        var action = app.actions[step.data.parameters.action];
-
-        if (action.event) {
-            step.data.type = 'eventAction';
-
-            // step.data.label += ' (' + action.event + ')';
-        }
-        else {
-            step.data.type = 'action';
-        }
-    }
-
     function loadWorkflow(playbookName, workflowName) {
 
         currentPlaybook = playbookName;
@@ -1005,93 +541,9 @@ $(function(){
         hideInstructions();
 
         // Create the Cytoscape graph
-        cy = cytoscape({
-            container: document.getElementById('cy'),
-
-            boxSelectionEnabled: false,
-            autounselectify: false,
-            wheelSensitivity: 0.1,
-            layout: { name: 'preset' },
-            style: [
-                {
-                    selector: 'node[type="action"]',
-                    css: {
-                        'content': 'data(label)',
-                        'text-valign': 'center',
-                        'text-halign': 'center',
-                        'shape': 'roundrectangle',
-                        'background-color': '#bbb',
-                        'selection-box-color': 'red',
-                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
-                        'font-weight': 'lighter',
-                        'font-size': '15px',
-                        'width':'40',
-                        'height':'40'
-                    }
-                },
-                {
-                    selector: 'node[type="eventAction"]',
-                    css: {
-                        'content': 'data(label)',
-                        'text-valign': 'center',
-                        'text-halign': 'center',
-                        'shape': 'star',
-                        'background-color': '#edbd21',
-                        'selection-box-color': 'red',
-                        'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
-                        'font-weight': 'lighter',
-                        'font-style': 'italic',
-                        'font-size': '15px',
-                        'width':'40',
-                        'height':'40'
-                    }
-                },
-                {
-                    selector: 'node:selected',
-                    css: {
-                        'background-color': '#45F'
-                    }
-                },
-                {
-                    selector: '.good-highlighted',
-                    css: {
-                        'background-color': '#399645',
-                        'transition-property': 'background-color',
-                        'transition-duration': '0.5s'
-                    }
-                },
-                {
-                    selector: '.bad-highlighted',
-                    css: {
-                        'background-color': '#8e3530',
-                        'transition-property': 'background-color',
-                        'transition-duration': '0.5s'
-                    }
-                },
-                {
-                    selector: '$node > node',
-                    css: {
-                        'padding-top': '10px',
-                        'padding-left': '10px',
-                        'padding-bottom': '10px',
-                        'padding-right': '10px',
-                        'text-valign': 'top',
-                        'text-halign': 'center'
-                    }
-                },
-                {
-                    selector: 'edge',
-                    css: {
-                        'target-arrow-shape': 'triangle',
-                        'curve-style': 'bezier',
-                    }
-                }
-            ]
-        });
-
+        cy = cytoscape(this.cyOptions);
 
         // Enable various Cytoscape extensions
-
         // Undo/Redo extension
         ur = cy.undoRedo({});
 
@@ -1099,52 +551,7 @@ $(function(){
         cy.panzoom({});
 
         // Extension for drawing edges
-        cy.edgehandles({
-            preview: false,
-            toggleOffOnLeave: true,
-            complete: function( sourceNode, targetNodes, addedEntities ) {
-                var sourceParameters = sourceNode.data().parameters;
-                if (!sourceParameters.hasOwnProperty("next"))
-                    sourceParameters.next = [];
-
-                // The edge handles extension is not integrated into the undo/redo extension.
-                // So in order that adding edges is contained in the undo stack,
-                // remove the edge just added and add back in again using the undo/redo
-                // extension. Also add info to edge which is displayed when user clicks on it.
-                for (var i=0; i<targetNodes.length; i++) {
-                    addedEntities[i].data('parameters', {
-                        flags: [],
-                        name: targetNodes[i].data().parameters.name,
-                        nextStep: targetNodes[i].data().parameters.name,
-                        temp: true
-                    });
-
-                    //If we attempt to draw an edge that already exists, please remove it and take no further action
-                    if (_.find(sourceParameters.next, (next) => { return next.name === targetNodes[i].data().id })) {
-                        cy.remove(addedEntities);
-                        return;
-                    }
-
-                    sourceParameters.next.push({
-                        flags: [],
-                        status: 'Success',
-                        name: targetNodes[i].data().id // Note use id, not name since name can be changed
-                    });
-
-                    sourceNode.data('parameters', sourceParameters);
-                }
-
-                cy.remove(addedEntities);
-
-                _.each(addedEntities, function (ae) {
-                    var data = ae.data();
-                    delete data.parameters.temp;
-                    ae.data(data);
-                });
-
-                var newEdges = ur.do('add',addedEntities); // Added back in using undo/redo extension
-            },
-        });
+        cy.edgehandles(this.cyEdgehandlesOptions);
 
         // Extension for copy and paste
         cy.clipboard();
@@ -1155,27 +562,6 @@ $(function(){
             // strokeStyle: '#222'
             //options...
         });
-
-        //var contextMenusInstance = cy.contextMenus();
-
-        // var edgeBendEditingInstance = cy.edgeBendEditing({
-        //     // this function specifies the positions of bend points
-        //     bendPositionsFunction: function(ele) {
-        //         return ele.data('bendPointPositions');
-        //     },
-        //     // whether to initilize bend points on creation of this extension automatically
-        //     initBendPointsAutomatically: true,
-        //     // whether the bend editing operations are undoable (requires cytoscape-undo-redo.js)
-        //     undoable: true,
-        //     // the size of bend shape is obtained by multipling width of edge with this parameter
-        //     bendShapeSizeFactor: 6,
-        //     // whether to start the plugin in the enabled state
-        //     enabled: true,
-        //     // title of add bend point menu item (User may need to adjust width of menu items according to length of this option)
-        //     addBendMenuItemTitle: "Add Bend Point",
-        //     // title of remove bend point menu item (User may need to adjust width of menu items according to length of this option)
-        //     removeBendMenuItemTitle: "Remove Bend Point"
-        // });
 
         transformInputsToLoad(workflowData);
 
@@ -1234,17 +620,7 @@ $(function(){
         $("#cy").empty();
         $("#currentWorkflowText").text("");
         hideParameters();
-        showInstruction();
-    }
-
-    function showInstruction() {
-        var cyInstructions = $( "#cy-instructions-template" ).clone().removeClass('hidden');
-        cyInstructions.attr("id", "cy-instructions");
-        $("#cy").append(cyInstructions);
-    }
-
-    function hideInstructions() {
-        $("#cy-instructions").remove();
+        showInstructions();
     }
 
     function hideParameters() {
@@ -1252,7 +628,7 @@ $(function(){
     }
 
     // Download list of workflows for display in the Workflows list
-    function downloadWorkflowList() {
+    function getPlaybooksWithWorkflows() {
 
         function customMenu(node) {
             if (node.data && node.data.playbook) {
@@ -1271,7 +647,7 @@ $(function(){
                                        workflowName,
                                        false,
                                        renameCallback,
-                                       checkIfWorkflowExists);
+                                       _doesWorkflowExist);
                         }
                     },
                     duplicateItem: { // The "duplicate" menu item
@@ -1286,7 +662,7 @@ $(function(){
                                        workflowName,
                                        false,
                                        duplicateCallback,
-                                       checkIfWorkflowExists);
+                                       _doesWorkflowExist);
                         }
                     },
                     deleteItem: { // The "delete" menu item
@@ -1314,7 +690,7 @@ $(function(){
                                        "",
                                        true,
                                        renameCallback,
-                                       checkIfPlaybookExists);
+                                       _doesPlaybookExist);
                         }
                     },
                     duplicateItem: { // The "duplicate" menu item
@@ -1328,7 +704,7 @@ $(function(){
                                        "",
                                        true,
                                        duplicateCallback,
-                                       checkIfPlaybookExists);
+                                       _doesPlaybookExist);
                         }
                     },
                     deleteItem: { // The "delete" menu item
@@ -1392,144 +768,6 @@ $(function(){
         });
     }
 
-
-    function checkIfPlaybookExists(playbookName) {
-        if(workflowList.hasOwnProperty(playbookName)) {
-            return {
-                result: false,
-                error: 'Playbook "' + playbookName + '" already exists.'
-            };
-        }
-        else {
-            return {
-                result: true,
-                error: null
-            };
-        }
-    }
-
-    function checkIfWorkflowExists(playbookName, workflowName) {
-        if (workflowList.hasOwnProperty(playbookName) &&
-            workflowList[playbookName].indexOf(workflowName) >= 0) {
-            return {
-                result: false,
-                error: 'Workflow "' + workflowName + '" already exists.'
-            };
-        }
-        else {
-            return {
-                result: true,
-                error: null
-            };
-        }
-    }
-
-
-    // The following function popups a dialog to be used for creating,
-    // renaming and duplicating playbooks and workflows.
-    function showDialog(title,
-                        label1Text,
-                        input1Text,
-                        isInput1Hidden,
-                        label2Text,
-                        input2Text,
-                        isInput2Hidden,
-                        submitCallback,
-                        validateCallback) {
-
-        var dialog = $( "#dialog-template" ).clone().removeClass('hidden');
-
-        var label1 = dialog.find( ".label1" );
-        var input1 = dialog.find( ".input1" );
-        var label2 = dialog.find( ".label2" );
-        var input2 = dialog.find( ".input2" );
-        var allFields = $( [] ).add( input1 ).add( input2 );
-        var tips = dialog.find( ".validateTips" );
-
-        dialog.attr("title", title);
-        label1.text(label1Text);
-        input1.val(input1Text);
-        label2.text(label2Text);
-        input2.val(input2Text);
-        if (isInput1Hidden) {
-            label1.addClass('hidden');
-            input1.addClass('hidden');
-        }
-        else if (isInput2Hidden) {
-            label2.addClass('hidden');
-            input2.addClass('hidden');
-        }
-
-        function updateTips( t ) {
-            tips
-                .text( t )
-                .addClass( "ui-state-highlight" );
-            setTimeout(function() {
-                tips.removeClass( "ui-state-highlight", 1500 );
-            }, 500 );
-        }
-
-        function checkLength( o, n, min, max ) {
-            if ( o.val().length > max || o.val().length < min ) {
-                o.addClass( "ui-state-error" );
-                updateTips( "Length of " + n + " must be between " +
-                            min + " and " + max + " characters." );
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        function customValidation(value1, value2) {
-            var result = validateCallback(value1, value2);
-            if (result.result) {
-                return true;
-            }
-            else {
-                updateTips(result.error);
-                return false;
-            }
-        }
-
-        function closeDialog() {
-            dialog.dialog("close");
-            dialog.remove();
-        }
-
-        $('form').on('submit', function(event){
-            event.preventDefault();
-        });
-
-        var buttons = {};
-        buttons[title] = function() {
-            var valid = true;
-            allFields.removeClass( "ui-state-error" );
-
-            if (!isInput1Hidden)
-                valid = valid && checkLength( input1, label1Text, 1, 50 );
-            if (!isInput2Hidden)
-                valid = valid && checkLength( input2, label2Text, 1, 50 );
-            valid = valid && customValidation(input1.val(), input2.val());
-            if (valid) {
-                submitCallback(input1.val(), input2.val());
-                closeDialog();
-            }
-        };
-        buttons["Cancel"] = function() {
-            closeDialog();
-        };
-
-        dialog.dialog({
-            autoOpen: false,
-            modal: true,
-            dialogClass: "no-close",
-            buttons: buttons
-        });
-
-        dialog.dialog( "open" );
-    }
-
-
     //-------------------------
     // Configure event handlers
     //-------------------------
@@ -1542,22 +780,6 @@ $(function(){
         drop: handleDropEvent
     } );
 
-    // Handle undo button press
-    $( "#undo-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        ur.undo();
-    });
-
-    // Handle redo button press
-    $( "#redo-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        ur.redo();
-    });
-
     // Handle new button press
     $( "#new-button" ).click(function() {
         // $("#workflows-tab").tab('show');
@@ -1569,49 +791,7 @@ $(function(){
                    "",
                    false,
                    newWorkflow,
-                   checkIfWorkflowExists);
-    });
-
-    $( "#execute-button" ).click(function() {
-        // window.executionDialog = $("#executionModal").clone().removeClass('hidden');
-        // executionDialog.dialog({
-        //     autoOpen: false,
-        //     modal: false,
-        //     title: "Execution Results",
-        //     width: 600,
-        //     close: function(event, ui){
-        //         cy.elements().removeClass("good-highlighted bad-highlighted");
-        //     }
-        // });
-
-        // executionDialog.dialog( "open" );
-
-        // $(executionDialog).find("button").on("click", function(){
-        //     cy.elements().removeClass("good-highlighted bad-highlighted");
-        //     executionDialog.dialog("close");
-        // });
-        refreshJwtAjax({
-            'async': true,
-            'type': "POST",
-            'global': false,
-            'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + currentPlaybook + "/workflows/" + currentWorkflow + "/execute",
-            'success': function (data) {
-                // $('#clear-execution-highlighting-button').removeAttr('disabled');
-                
-                $.notify(currentWorkflow + ' is scheduled to execute.', 'success');
-                //Set up event listener for workflow results if possible
-            },
-            'error': function (jqXHR, status, error) {
-                $.notify(currentWorkflow + ' is has failed to be executed.', 'error');
-                //$("#eventList").append("<li>" + currentWorkflow + " has failed to be scheduled.</li>");
-            }
-        });
-    });
-
-    $("#clear-execution-highlighting-button").click(function () {
-        cy.elements().removeClass("good-highlighted bad-highlighted");
-        // $('#clear-execution-highlighting-button').attr('disabled', 'disabled');
+                   _doesWorkflowExist);
     });
 
     // Handle save button press
@@ -1626,38 +806,6 @@ $(function(){
             // If the JSON tab is active
             saveWorkflowJson(currentPlaybook, currentWorkflow, document.getElementById('cy-json-data').value);
         }
-    });
-
-    // Handle delete button press
-    $( "#remove-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        removeSelectedNodes();
-    });
-
-    // Handle cut button press
-    $( "#cut-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        cut();
-    });
-
-    // Handle cut button press
-    $( "#copy-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        copy();
-    });
-
-    // Handle cut button press
-    $( "#paste-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        paste();
     });
 
     // The following handler ensures the graph has the focus whenever you click on it so
@@ -1699,7 +847,7 @@ $(function(){
     //---------------------------------
 
     // Download all workflows for display in the Workflows tree
-    downloadWorkflowList();
+    getPlaybooksWithWorkflows();
 
     // Download all actions in all apps for display in the Actions tree
     refreshJwtAjax({
@@ -1748,59 +896,14 @@ $(function(){
                     });
                 }
             });
-
-            // Now is a good time to download all devices for all apps
-            _.each(appData, function(actions, appName) {
-                refreshJwtAjax({
-                    'async': false,
-                    'type': "GET",
-                    'global': false,
-                    'headers':{"Authorization": 'Bearer ' + authToken},
-                    'url': "/api/apps/" + appName + "/devices",
-                    'dataType': 'json',
-                    'contentType': 'application/json; charset=utf-8',
-                    'data': {},
-                    'success': function (data) {
-                        appData[appName].devices = [];
-                        _.each(data, function(value) {
-                            appData[appName].devices.push(value.name);
-                        });
-                    }
-                });
-            });
         }
     });
 
-    // Download list of all flags
-    refreshJwtAjax({
-        'async': false,
-        'type': "GET",
-        'global': false,
-        'headers':{"Authorization": 'Bearer ' + authToken},
-        'url': "/api/flags",
-        'dataType': 'json',
-        'success': function (data) {
-            flagsList = data.flags;
-        }
-    });
-
-    // Download list of all filters
-    refreshJwtAjax({
-        'async': false,
-        'type': "GET",
-        'global': false,
-        'headers':{"Authorization": 'Bearer ' + authToken},
-        'url': "/api/filters",
-        'dataType': 'json',
-        'success': function (data) {
-            filtersList = data.filters;
-        }
-    });
 
     //---------------------------------
     // Other setup
     //---------------------------------
-    showInstruction();
+    showInstructions();
 
     function getStepTemplate() {
         return {

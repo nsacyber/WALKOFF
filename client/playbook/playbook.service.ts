@@ -12,11 +12,12 @@ import { Device } from '../models/device';
 export class PlaybookService {
 	constructor (private authHttp: JwtHttp) {}
 
-	getPlaybooks() : Promise<Playbook> {
-		return this.authHttp.get(`/api/playbooks/`)
+	// TODO: should maybe just return all playbooks and not just names?
+	getPlaybooks() : Promise<{ [key: string] : string[] }> {
+		return this.authHttp.get(`/api/playbooks`)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Playbook)
+			// .then(data => data as Playbook)
 			.catch(this.handleError);
 	}
 
@@ -92,7 +93,6 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
-	// TODO: currently an any type, should probably be some sort of 
 	getActionsForApps() : Promise<{ [key: string] : string[] }> {
 		return this.authHttp.get(`/api/apps/actions`, {})
 			.toPromise()
@@ -109,7 +109,7 @@ export class PlaybookService {
 	}
 	
 	getConditions() : Promise<Condition[]> {
-		return this.authHttp.get(`/api/conditions`)
+		return this.authHttp.get(`/api/flags`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Condition[])
@@ -117,7 +117,7 @@ export class PlaybookService {
 	}
 
 	getTransforms() : Promise<Transform[]> {
-		return this.authHttp.get(`/api/transforms`)
+		return this.authHttp.get(`/api/filters`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Transform[])
