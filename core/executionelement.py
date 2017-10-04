@@ -15,7 +15,7 @@ class ExecutionElement(object):
 
     @classmethod
     def create(cls, representation, reader=JsonElementCreator):
-        reader.create(representation, element_class=cls)
+        return reader.create(representation, element_class=cls)
 
     def read(self, reader=None):
         if reader is None:
@@ -24,7 +24,7 @@ class ExecutionElement(object):
 
     def __repr__(self):
         representation = self.read()
-        uid = representation.pop('uid')
+        uid = representation.pop('uid', None)
         out = '<{0} at {1} : uid={2}'.format(self.__class__.__name__, hex(id(self)), uid)
         for key, value in representation.items():
             if (isinstance(value, list)

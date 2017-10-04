@@ -1,5 +1,4 @@
 import json
-from collections import namedtuple
 import logging
 from core import contextdecorator
 import core.config.config
@@ -23,6 +22,9 @@ class Widget(object):
 
 
 class Step(ExecutionElement):
+
+    _templatable = True
+
     def __init__(self,
                  name='',
                  action='',
@@ -65,18 +67,23 @@ class Step(ExecutionElement):
         self.app = app
         self._run, self._input_api = get_app_action_api(self.app, self.action)
         get_app_action(self.app, self._run)
-        inputs = inputs if inputs is not None else {}
+        if isinstance(inputs, list):
+            inputs = {arg['name']: arg['value'] for arg in inputs}
+        elif isinstance(inputs, dict):
+            inputs = inputs
+        else:
+            inputs = {}
         self.templated = templated
         if not self.templated:
             self.inputs = validate_app_action_parameters(self._input_api, inputs, self.app, self.action)
         else:
             self.inputs = inputs
-        self.device = device
+        self.device = device if (device is not None and device != 'None') else ''
         self.risk = risk
         self.next_steps = next_steps if next_steps is not None else []
         self.position = position if position is not None else {}
-        self.widgets = [Widget(widget_app, widget_name)
-                        for (widget_app, widget_name) in widgets] if widgets is not None else []
+        self.widgets = [widget if isinstance(widget, Widget) else Widget(**widget)
+                        for widget in widgets] if widgets is not None else []
 
         self._output = None
         self._next_up = None
@@ -108,7 +115,7 @@ class Step(ExecutionElement):
                 self.inputs = inputs
         else:
             self.inputs = validate_app_action_parameters(self._input_api, {}, self.app, self.action)
-        self.next_steps = [NextStep.from_json(cond_json) for cond_json in updated_json['next_steps']]
+        self.next_steps = [NextStep.create(cond_json) for cond_json in updated_json['next_steps']]
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -198,41 +205,3 @@ class Step(ExecutionElement):
                 self.__send_callback('Conditionals Executed')
                 return next_step
 
-    @staticmethod
-    def from_json(json_in, position):
-        """Forms a Step object from the provided JSON object.
-        
-        Args:
-            json_in (dict): The JSON object to convert from.
-            position (dict): position of the step node of the form {'x': <x position>, 'y': <y position>}
-            
-        Returns:
-            The Step object parsed from the JSON object.
-        """
-        device = json_in['device'] if ('device' in json_in
-                                       and json_in['device'] is not None
-                                       and json_in['device'] != 'None') else ''
-        risk = json_in['risk'] if 'risk' in json_in else 0
-        widgets = []
-        uid = json_in['uid'] if 'uid' in json_in else None
-        if 'widgets' in json_in:
-            widgets = [(widget['app'], widget['name'])
-                       for widget in json_in['widgets'] if ('app' in widget and 'name' in widget)]
-        conditionals = []
-        if 'next_steps' in json_in:
-            conditionals = [NextStep.from_json(next_step) for next_step in json_in['next_steps'] if next_step]
-        if isinstance(position, list):
-            print('incorrect!')
-            position = {}
-        return Step(name=json_in['name'],
-                    action=json_in['action'],
-                    app=json_in['app'],
-                    device=device,
-                    risk=risk,
-                    inputs={arg['name']: arg['value'] for arg in json_in['inputs']},
-                    next_steps=conditionals,
-                    position={key: value for key, value in position.items()},
-                    widgets=widgets,
-                    uid=uid,
-                    templated=json_in['templated'] if 'templated' in json_in else False,
-                    raw_representation=json_in)

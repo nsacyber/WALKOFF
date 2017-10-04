@@ -171,9 +171,3 @@ class TestPlaybook(unittest.TestCase):
         self.assertEqual(len(playbook.workflows), 2)
         self.assertFalse(playbook.has_workflow_name(2))
 
-    def test_from_json_no_workflows(self):
-        playbook_json = {'name': 'test', 'workflows': []}
-        playbook = Playbook.from_json(playbook_json)
-        self.assertEqual(playbook.name, 'test')
-        self.assertDictEqual(playbook.workflows, {})
-

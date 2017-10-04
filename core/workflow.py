@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, steps=None, start=None):
+    def __init__(self, name='', uid=None, steps=None, start=None, accumulated_risk=0.0, breakpoint_steps=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
@@ -25,13 +25,13 @@ class Workflow(ExecutionElement):
         """
         ExecutionElement.__init__(self, uid)
         self.name = name
-        self.steps = steps if steps is not None else {}
+        self.steps = {step.name: step for step in steps} if steps is not None else {}
         self.start = start if start is not None else 'start'
-        self.accumulated_risk = 0.0
+        self.accumulated_risk = accumulated_risk
 
         self._total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
         self._is_paused = False
-        self._breakpoint_steps = []
+        self._breakpoint_steps = breakpoint_steps if breakpoint_steps is not None else []
         self._accumulator = {}
         self._comm_sock = None
         self._execution_uid = 'default'
@@ -264,22 +264,6 @@ class Workflow(ExecutionElement):
     def set_comm_sock(self, comm_sock):
         self._comm_sock = comm_sock
 
-    @staticmethod
-    def from_json(json_in):
-        """Reconstruct a Workflow object based on JSON data.
-
-       Args:
-           json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
-       """
-        name = json_in['name'] if 'name' in json_in else ''
-        uid = json_in['uid'] if 'uid' in json_in else None
-        start_step = json_in['start'] if 'start' in json_in else None
-        steps = {}
-        for step_json in json_in['steps']:
-            step = Step.from_json(step_json, position=step_json['position'])
-            steps[step_json['name']] = step
-        return Workflow(name=name, uid=uid, start=start_step, steps=steps)
-
     def update_from_json(self, json_in):
         """Reconstruct a Workflow object based on JSON data.
 
@@ -297,7 +281,7 @@ class Workflow(ExecutionElement):
             self.steps = {}
             self.uid = uid
             for step_json in json_in['steps']:
-                step = Step.from_json(step_json, position=step_json['position'])
+                step = Step.create(step_json)
                 self.steps[step_json['name']] = step
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps

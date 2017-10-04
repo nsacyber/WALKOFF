@@ -48,7 +48,3 @@ class Playbook(ExecutionElement):
         if workflow_name in self.workflows:
             self.workflows.pop(workflow_name)
 
-    @staticmethod
-    def from_json(json_in):
-        return Playbook(name=json_in['name'],
-                        workflows=[Workflow.from_json(workflow_json) for workflow_json in json_in['workflows']])

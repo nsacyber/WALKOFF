@@ -14,7 +14,8 @@ from threading import Event
 from core.case.callbacks import WorkflowShutdown
 from server.returncodes import *
 from core.step import Step
-
+import logging
+logging.basicConfig()
 
 class TestWorkflowServer(ServerTestCase):
     def setUp(self):
@@ -558,12 +559,11 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_results(self):
         flask_server.running_context.controller.initialize_threading()
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
 
-        with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.controller.shutdown_pool(3)
+        workflow.execute('a', start='start')
+        workflow.execute('b', start='start')
+        workflow.execute('c', start='start')
 
         response = self.get_with_status_check('/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
@@ -574,12 +574,11 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_all_results(self):
         flask_server.running_context.controller.initialize_threading()
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
 
-        with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.controller.shutdown_pool(3)
+        workflow.execute('a', start='start')
+        workflow.execute('b', start='start')
+        workflow.execute('c', start='start')
 
         response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
         self.assertEqual(len(response), 3)

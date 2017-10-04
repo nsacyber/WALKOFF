@@ -25,7 +25,12 @@ class Flag(ExecutionElement):
             raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
         ExecutionElement.__init__(self, uid)
         self.action = action
-        args = args if args is not None else {}
+        if isinstance(args, list):
+            args = {arg['name']: arg['value'] for arg in args}
+        elif isinstance(args, dict):
+            args = args
+        else:
+            args = {}
         self._args_api, self._data_in_api = get_flag_api(self.action)
         self.args = validate_flag_parameters(self._args_api, args, self.action)
         self.filters = filters if filters is not None else []
@@ -60,19 +65,3 @@ class Flag(ExecutionElement):
                          'Error {3}. Returning False'.format(self.action, self.args, data, format_exception_message(e)))
             self.__send_callback("Flag Error")
             return False
-
-    @staticmethod
-    def from_json(json_in):
-        """Forms a Flag object from the provided JSON object.
-        
-        Args:
-            json_in (JSON object): The JSON object to convert from.
-            
-        Returns:
-            The Flag object parsed from the JSON object.
-        """
-        args = {arg['name']: arg['value'] for arg in json_in['args']}
-        uid = json_in['uid'] if 'uid' in json_in else None
-        filters = [Filter.from_json(filter_element) for filter_element in json_in['filters']]
-        flag = Flag(action=json_in['action'], args=args, filters=filters, uid=uid)
-        return flag

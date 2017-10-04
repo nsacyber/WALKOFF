@@ -109,14 +109,25 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='helloWorld', device='dev')
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'dev', {}, [], [])
 
+    def test_init_with_none_device(self):
+        step = Step(app='HelloWorld', action='helloWorld', device='None')
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
+
     def test_init_with_risk(self):
         step = Step(app='HelloWorld', action='helloWorld', risk=42.3)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], risk=42.3)
 
     def test_init_with_widgets(self):
-        widgets = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
+        widget_tuples = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
+        widgets = [{'app': widget[0], 'name': widget[1]} for widget in widget_tuples]
         step = Step(app='HelloWorld', action='helloWorld', widgets=widgets)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], widgets)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], widget_tuples)
+
+    def test_init_with_widget_objects(self):
+        widget_tuples = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
+        widgets = [Widget(*widget) for widget in widget_tuples]
+        step = Step(app='HelloWorld', action='helloWorld', widgets=widgets)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], widget_tuples)
 
     def test_init_with_position(self):
         step = Step(app='HelloWorld', action='helloWorld', position={'x': -12.3, 'y': 485})
@@ -126,97 +137,6 @@ class TestStep(unittest.TestCase):
         next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [step.read() for step in next_steps], [])
-
-    def test_from_json_app_and_action_only(self):
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
-
-    def test_from_json_with_uid(self):
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], uid=self.uid)
-
-    def test_from_json_invalid_app(self):
-        self.basic_input_json['app'] = 'Invalid'
-        with self.assertRaises(UnknownApp):
-            Step.from_json(self.basic_input_json, {})
-
-    def test_from_json_invalid_action(self):
-        self.basic_input_json['action'] = 'invalid'
-        with self.assertRaises(UnknownAppAction):
-            Step.from_json(self.basic_input_json, {})
-
-    def test_from_json_with_name(self):
-        self.basic_input_json['name'] = 'name1'
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, 'name1', 'helloWorld', 'HelloWorld', '', {}, [], [])
-
-    def test_from_json_with_risk(self):
-        self.basic_input_json['risk'] = 132.3
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], risk=132.3)
-
-    def test_from_json_with_device(self):
-        self.basic_input_json['device'] = 'device1'
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'device1', {}, [], [])
-
-    def test_from_json_with_device_is_none(self):
-        self.basic_input_json['device'] = None
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
-
-    def test_from_json_with_device_is_none_string(self):
-        self.basic_input_json['device'] = 'None'
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [])
-
-    def test_from_json_withWidgets(self):
-        widget_json = [{'name': 'widget_name', 'app': 'app1'}, {'name': 'w2', 'app': 'app2'}]
-        widget_tuples = [('app1', 'widget_name'), ('app2', 'w2')]
-        self.basic_input_json['widgets'] = widget_json
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], widget_tuples)
-
-    def test_from_json_with_inputs(self):
-        self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                                           {'name': 'num3', 'value': '-10.265'}]
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'Add Three', 'HelloWorld', '',
-                            {'num1': -5.6, 'num2': 4.3, 'num3': -10.265}, [], [])
-
-    def test_from_json_with_inputs_invalid_name(self):
-        self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'invalid', 'value': '4.3'},
-                                           {'name': 'num3', 'value': '-10.265'}]
-        with self.assertRaises(InvalidInput):
-            Step.from_json(self.basic_input_json, {})
-
-    def test_from_json_with_inputs_invalid_format(self):
-        self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                                           {'name': 'num3', 'value': 'invalid'}]
-        with self.assertRaises(InvalidInput):
-            Step.from_json(self.basic_input_json, {})
-
-    def test_from_json_with_step_routing(self):
-        self.basic_input_json['action'] = 'Add Three'
-        self.basic_input_json['inputs'] = [{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '@step1'},
-                                           {'name': 'num3', 'value': '@step2'}]
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'Add Three', 'HelloWorld', '',
-                            {'num1': -5.6, 'num2': '@step1', 'num3': '@step2'}, [], [])
-
-    def test_from_json_with_position(self):
-        step = Step.from_json(self.basic_input_json, {'x': 125.3, 'y': 198.7})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, [], [], position={'x': 125.3, 'y': 198.7})
-
-    def test_from_json_with_next_steps(self):
-        next_steps = [NextStep(), NextStep(name='name'), NextStep(name='name2')]
-        next_steps_json = [next_step.read() for next_step in next_steps]
-        self.basic_input_json['next_steps'] = next_steps_json
-        step = Step.from_json(self.basic_input_json, {})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, next_steps_json, [])
 
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')

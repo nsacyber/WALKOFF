@@ -114,15 +114,11 @@ class MetricsServerTest(ServerTestCase):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multistepError.playbook')
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'tieredWorkflow.playbook')
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        server.running_context.controller.shutdown_pool(5)
+        server.running_context.controller.shutdown_pool(3)
 
         response = self.app.get('/metrics/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)

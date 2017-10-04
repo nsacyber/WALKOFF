@@ -52,31 +52,6 @@ class TestFilter(unittest.TestCase):
         with self.assertRaises(InvalidInput):
             Filter(action='mod1_filter2', args={'arg1': 'invalid'})
 
-    def test_init_with_no_action_or_xml(self):
-        with self.assertRaises(InvalidElementConstructed):
-            Filter()
-
-    def test_from_json_no_args(self):
-        json_in = {'action': 'Top Filter', 'args': []}
-        filter_elem = Filter.from_json(json_in)
-        self.__compare_init(filter_elem, 'Top Filter')
-
-    def test_from_json_with_uid(self):
-        uid = uuid.uuid4().hex
-        json_in = {'action': 'Top Filter', 'args': [], 'uid': uid}
-        filter_elem = Filter.from_json(json_in)
-        self.__compare_init(filter_elem, 'Top Filter', uid=uid)
-
-    def test_from_json_with_args(self):
-        json_in = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': 5.4}]}
-        filter_elem = Filter.from_json(json_in)
-        self.__compare_init(filter_elem, 'mod1_filter2', args={'arg1': 5.4})
-
-    def test_from_json_with_args_with_routing(self):
-        json_in = {'action': 'mod1_filter2', 'args': [{'name': 'arg1', 'value': '@step1'}]}
-        filter_elem = Filter.from_json(json_in)
-        self.__compare_init(filter_elem, 'mod1_filter2', args={'arg1': '@step1'})
-
     def test_call_with_no_args_no_conversion(self):
         self.assertAlmostEqual(Filter(action='Top Filter')(5.4, {}), 5.4)
 

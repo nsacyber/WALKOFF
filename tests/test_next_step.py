@@ -56,22 +56,6 @@ class TestNextStep(unittest.TestCase):
         next_step = NextStep(name='name', flags=flags)
         self.__compare_init(next_step, 'name', expected_flag_json)
 
-    def test_from_json_name_only(self):
-        json_in = {'name': 'name1', 'flags': []}
-        next_step = NextStep.from_json(json_in)
-        self.__compare_init(next_step, 'name1', [])
-
-    def test_from_json_with_status(self):
-        json_in = {'name': 'name1', 'status': 'test_status', 'flags': []}
-        next_step = NextStep.from_json(json_in)
-        self.__compare_init(next_step, 'name1', [], status='test_status')
-
-    def test_from_json_with_flags(self):
-        flag_json = [{'action': 'Top Flag', 'args': [], 'filters': []},
-                     {'action': 'mod1_flag1', 'args': [], 'filters': []}]
-        next_step = NextStep.from_json({'name': 'name1', 'flags': flag_json})
-        self.__compare_init(next_step, 'name1', flag_json)
-
     def test_eq(self):
         flags = [Flag(action='mod1_flag1'), Flag(action='Top Flag')]
         next_steps = [NextStep(),

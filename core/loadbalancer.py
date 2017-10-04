@@ -5,7 +5,7 @@ import json
 import zmq.green as zmq
 import zmq.auth
 from zmq.utils.strtypes import asbytes, cast_unicode
-from core.workflow import Workflow as wf
+from core.workflow import Workflow
 from core.case import callbacks
 import signal
 import core.config.paths
@@ -42,7 +42,7 @@ def recreate_workflow(workflow_json):
         start_input = workflow_json['start_input']
         del workflow_json['start_input']
 
-    workflow = wf.from_json(workflow_json)
+    workflow = Workflow.create(workflow_json)
     workflow.uid = uid
     workflow.execution_uid = execution_uid
     workflow.start = start

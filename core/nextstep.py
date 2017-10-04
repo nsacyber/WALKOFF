@@ -46,21 +46,3 @@ class NextStep(ExecutionElement):
                 return None
         else:
             return None
-
-    @staticmethod
-    def from_json(json):
-        """Forms a NextStep object from the provided JSON object.
-        
-        Args:
-            json (JSON object): The JSON object to convert from.
-            
-        Returns:
-            The NextStep object parsed from the JSON object.
-        """
-        name = json['name'] if 'name' in json else ''
-        status = json['status'] if 'status' in json else 'Success'
-        uid = json['uid'] if 'uid' in json else None
-        next_step = NextStep(name=name, status=status, uid=uid)
-        if json['flags']:
-            next_step.flags = [Flag.from_json(flag) for flag in json['flags']]
-        return next_step

@@ -4,6 +4,8 @@ import threading
 import zmq.green as zmq
 from zmq.utils.strtypes import cast_unicode
 from core.case.callbacks import data_sent
+import time
+
 try:
     from Queue import Queue
 except ImportError:
@@ -24,13 +26,17 @@ def mock_initialize_threading(self, worker_env=None):
 
 
 def mock_shutdown_pool(self, num_workflows=0):
-    while True:
+    shutdown = 5
+    timed = 0
+    while timed < shutdown:
         if (num_workflows == 0) or (num_workflows != 0 and num_workflows == workflows_executed):
             if self.manager_thread and self.manager_thread.is_alive():
                 self.load_balancer.pending_workflows.put("Exit")
                 self.manager_thread.join()
             self.threading_is_initialized = False
             break
+        timed += 0.1
+        time.sleep(0.1)
     self.cleanup_threading()
     return
 
@@ -57,7 +63,6 @@ class MockLoadBalancer(object):
     def manage_workflows(self):
         while True:
             workflow_json = self.pending_workflows.recv()
-
             if workflow_json == "Exit":
                 return
 

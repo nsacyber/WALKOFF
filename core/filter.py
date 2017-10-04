@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class Filter(ExecutionElement):
 
-    def __init__(self, action=None, args=None, uid=None):
+    def __init__(self, action, args=None, uid=None):
         """Initializes a new Filter object. A Filter is used to filter input into a workflow.
         
         Args:
@@ -24,7 +24,13 @@ class Filter(ExecutionElement):
         ExecutionElement.__init__(self, uid)
         self.action = action
         self._args_api, self._data_in_api = get_filter_api(self.action)
-        args = args if args is not None else {}
+        if isinstance(args, list):
+            args = {arg['name']: arg['value'] for arg in args}
+        elif isinstance(args, dict):
+            args = args
+        else:
+            args = {}
+
         self.args = validate_filter_parameters(self._args_api, args, self.action)
 
     def __send_callback(self, callback_name):
@@ -60,20 +66,4 @@ class Filter(ExecutionElement):
             self.__send_callback("Filter Error")
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
-
-    @staticmethod
-    def from_json(json_in):
-        """Forms a Filter object from the provided JSON object.
-
-        Args:
-            json_in (JSON object): The JSON object to convert from.
-
-        Returns:
-            The Filter object parsed from the JSON object.
-        """
-        uid = json_in['uid'] if 'uid' in json_in else None
-        out_filter = Filter(action=json_in['action'],
-                            args={arg['name']: arg['value'] for arg in json_in['args']},
-                            uid=uid)
-        return out_filter
 
