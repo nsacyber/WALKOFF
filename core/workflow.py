@@ -252,11 +252,6 @@ class Workflow(ExecutionElement):
         self.__send_callback('Workflow Shutdown', data)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
-    def __repr__(self):
-        return str({'uid': self.uid,
-                    'steps': {step: self.steps[step] for step in self.steps},
-                    'accumulated_risk': round(self.accumulated_risk, 4)})
-
     def add_breakpoint_steps(self, steps):
         self._breakpoint_steps.extend(steps)
 

@@ -198,22 +198,6 @@ class Step(ExecutionElement):
                 self.__send_callback('Conditionals Executed')
                 return next_step
 
-    def __repr__(self):
-        output = {'uid': self.uid,
-                  'name': self.name,
-                  'action': self.action,
-                  'app': self.app,
-                  'device': self.device,
-                  'risk': str(self.risk),
-                  'input': self.inputs,
-                  'next_steps': [next_step for next_step in self.next_steps],
-                  'nextUp': self._next_up,
-                  'position': self.position,
-                  'widget': str([{'app': widget.app, 'name': widget.widget} for widget in self.widgets])}
-        if self._output:
-            output["output"] = self._output.as_json()
-        return str(output)
-
     @staticmethod
     def from_json(json_in, position):
         """Forms a Step object from the provided JSON object.

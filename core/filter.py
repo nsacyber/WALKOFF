@@ -77,8 +77,3 @@ class Filter(ExecutionElement):
                             uid=uid)
         return out_filter
 
-    def __repr__(self):
-        output = {'uid': self.uid,
-                  'action': self.action,
-                  'args': self.args}
-        return str(output)

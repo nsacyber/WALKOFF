@@ -76,10 +76,3 @@ class Flag(ExecutionElement):
         filters = [Filter.from_json(filter_element) for filter_element in json_in['filters']]
         flag = Flag(action=json_in['action'], args=args, filters=filters, uid=uid)
         return flag
-
-    def __repr__(self):
-        output = {'uid': self.uid,
-                  'action': self.action,
-                  'args': self.args,
-                  'filters': [filter_element.read() for filter_element in self.filters]}
-        return str(output)

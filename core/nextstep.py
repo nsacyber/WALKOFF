@@ -47,13 +47,6 @@ class NextStep(ExecutionElement):
         else:
             return None
 
-    def __repr__(self):
-        output = {'uid': self.uid,
-                  'flags': [flag.read() for flag in self.flags],
-                  'status': self.status,
-                  'name': self.name}
-        return str(output)
-
     @staticmethod
     def from_json(json):
         """Forms a NextStep object from the provided JSON object.
