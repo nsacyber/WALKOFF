@@ -22,7 +22,7 @@ __execution_tests = [test_execution_runtime, test_execution_element, test_execut
                      test_app_utilities, test_apps_registration, test_input_validation, test_decorators,
                      test_app_api_validation, test_flag_filter_validation, test_app_event, test_workflow_results,
                      test_roles_pages_database, test_users_roles_database, test_page_roles_cache, test_playbook,
-                     test_json_element_creator, test_json_element_reader]
+                     test_json_element_creator, test_json_element_reader, test_json_playbook_loader, test_playbook_store]
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 

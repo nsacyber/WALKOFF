@@ -22,7 +22,7 @@ class Controller(object):
             workflows_path (str, optional): Path to the workflows.
         """
         self.uid = 'controller'
-        self.playbook_store = PlaybookStore(workflows_path)
+        self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
         self.executor = core.workflowExecutor.WorkflowExecutor()
 
@@ -147,7 +147,7 @@ class Controller(object):
         """
         self.playbook_store.remove_playbook(playbook_name)
 
-    def get_all_workflows(self, full_representation=False):
+    def get_all_workflows(self, full_representation=False, reader=None):
         """Gets all of the currently loaded workflows.
 
         Args:
@@ -157,7 +157,7 @@ class Controller(object):
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
         """
-        return self.playbook_store.get_all_workflows(full_representation)
+        return self.playbook_store.get_all_workflows(full_representation, reader=None)
 
     def get_all_playbooks(self):
         """Gets a list of all playbooks.

@@ -31,7 +31,7 @@ class Workflow(ExecutionElement):
 
         self._total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
         self._is_paused = False
-        self._breakpoint_steps = breakpoint_steps if breakpoint_steps is not None else []
+        self._breakpoint_steps = set(breakpoint_steps) if breakpoint_steps is not None else set()
         self._accumulator = {}
         self._comm_sock = None
         self._execution_uid = 'default'
@@ -253,10 +253,10 @@ class Workflow(ExecutionElement):
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def add_breakpoint_steps(self, steps):
-        self._breakpoint_steps.extend(steps)
+        self._breakpoint_steps |= set(steps)
 
     def get_breakpoint_steps(self):
-        return self._breakpoint_steps
+        return list(self._breakpoint_steps)
 
     def get_comm_sock(self):
         return self._comm_sock

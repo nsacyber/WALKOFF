@@ -14,8 +14,8 @@ class ExecutionElement(object):
         self.uid = uuid.uuid4().hex if uid is None else uid
 
     @classmethod
-    def create(cls, representation, reader=JsonElementCreator):
-        return reader.create(representation, element_class=cls)
+    def create(cls, representation, creator=JsonElementCreator):
+        return creator.create(representation, element_class=cls)
 
     def read(self, reader=None):
         if reader is None:

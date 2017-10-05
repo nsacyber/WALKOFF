@@ -33,8 +33,8 @@ class Playbook(ExecutionElement):
     def get_all_workflow_uids(self):
         return [workflow.uid for workflow in self.workflows.values()]
 
-    def get_all_workflow_representations(self, writer=None):
-        return [workflow.read(reader=writer) for workflow in self.workflows.values()]
+    def get_all_workflow_representations(self, reader=None):
+        return [workflow.read(reader=reader) for workflow in self.workflows.values()]
 
     def get_all_workflows_as_limited_json(self):
         return [{'name': workflow_names, 'uid': workflow.uid} for workflow_names, workflow in self.workflows.items()]

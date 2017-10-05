@@ -38,10 +38,11 @@ class JsonPlaybookLoader(object):
                     if workflow_json is None:
                         logger.warning('Workflow {0} not found in playbook {0}. '
                                        'Cannot load.'.format(workflow_name, playbook_name))
+                        return None
                     workflow = Workflow.create(workflow_json)
                     return playbook_name, workflow
-                except ValueError:
-                    logger.error('Cannot parse {}'.format(resource))
+                except ValueError as e:
+                    logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidInput, UnknownApp, UnknownAppAction, UnknownFilter, UnknownFlag) as e:
                     logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
                                                                                        format_exception_message(e)))
