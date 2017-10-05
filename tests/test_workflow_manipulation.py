@@ -1,24 +1,22 @@
-import unittest
-import time
 import socket
+import unittest
 from os import path
-import core.controller
-from core.workflow import Workflow
-from core.step import Step
-from core.instance import Instance
-import core.config.config
+
 import core.case.database as case_database
 import core.case.subscription as case_subscription
+import core.config.config
+import core.controller
+import core.loadbalancer
+import core.multiprocessedexecutor
 from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
+from core.executionelements.step import Step
+from core.executionelements.workflow import Workflow
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.appinstance import AppInstance
 from tests import config
 from tests.apps import App
-from tests.util.assertwrappers import orderless_list_compare
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
-import core.loadbalancer
-import core.workflowexecutor
-import threading
 
 try:
     from importlib import reload
@@ -36,8 +34,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
-        core.workflowexecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
-        core.workflowexecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
+        core.multiprocessedexecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -75,7 +73,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         workflow.steps = {'step_one': step1, 'step_two': step2, 'step_three': step3}
         workflow._total_risk = 6.5
 
-        instance = Instance.create(app_name='HelloWorld', device_name='test_device_name')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='test_device_name')
 
         workflow._Workflow__execute_step(workflow.steps["step_one"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0 / 6.5)

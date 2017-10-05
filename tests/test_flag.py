@@ -1,11 +1,12 @@
 import unittest
-from core.helpers import (import_all_filters, import_all_flags, InvalidInput,
-                          InvalidElementConstructed, UnknownFlag, UnknownFilter)
-import core.config.config
-from core.flag import Flag
-from core.filter import Filter
-from tests.config import function_api_path
 import uuid
+
+import core.config.config
+from core.executionelements.filter import Filter
+from core.executionelements.flag import Flag
+from core.helpers import (import_all_filters, import_all_flags, InvalidInput,
+                          InvalidElementConstructed)
+from tests.config import function_api_path
 
 
 class TestFlag(unittest.TestCase):

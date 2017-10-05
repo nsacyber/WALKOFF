@@ -4,7 +4,7 @@ class JsonElementReader(object):
 
     @staticmethod
     def read(element):
-        from core.executionelement import ExecutionElement
+        from core.executionelements.executionelement import ExecutionElement
         accumulator = {}
         for field, value in ((field, getattr(element, field)) for field in dir(element)
                              if not field.startswith('_')
@@ -30,7 +30,7 @@ class JsonElementReader(object):
 
     @staticmethod
     def _read_dict(field_name, dict_, accumulator):
-        from core.executionelement import ExecutionElement
+        from core.executionelements.executionelement import ExecutionElement
         if dict_ and all(isinstance(dict_value, ExecutionElement) for dict_value in dict_.values()):
             accumulator[field_name] = [JsonElementReader.read(dict_value) for dict_value in dict_.values()]
         elif field_name == 'position':

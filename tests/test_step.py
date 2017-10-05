@@ -1,15 +1,16 @@
 import unittest
-from core.flag import Flag
-from core.step import Step, Widget
-from core.nextstep import NextStep
-from core.decorators import ActionResult
+import uuid
+
 import core.config.config
 import core.config.paths
-from tests.config import test_apps_path, function_api_path
-from core.instance import Instance
+from core.decorators import ActionResult
+from core.executionelements.flag import Flag
+from core.executionelements.nextstep import NextStep
+from core.executionelements.step import Step, Widget
 from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
                           import_all_filters)
-import uuid
+from core.appinstance import AppInstance
+from tests.config import test_apps_path, function_api_path
 
 
 class TestStep(unittest.TestCase):
@@ -140,13 +141,13 @@ class TestStep(unittest.TestCase):
 
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         self.assertEqual(step.execute(instance.instance, {}), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
         self.assertEqual(step._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_execute_with_args(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
@@ -155,7 +156,7 @@ class TestStep(unittest.TestCase):
     def test_execute_with_accumulator_with_conversion(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
         accumulator = {'1': '-5.6', 'step2': '4.3'}
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, accumulator)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
@@ -164,7 +165,7 @@ class TestStep(unittest.TestCase):
     def test_execute_with_accumulator_with_extra_steps(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
         accumulator = {'1': '-5.6', 'step2': '4.3', '3': '45'}
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, accumulator)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
@@ -173,7 +174,7 @@ class TestStep(unittest.TestCase):
     def test_execute_with_accumulator_missing_step(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '@1', 'num2': '@step2', 'num3': '10.2'})
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(InvalidInput):
             step.execute(instance.instance, accumulator)
 
@@ -181,7 +182,7 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='Json Sample',
                     inputs={'json_in': {'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
                                         'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5}, {'a': '', 'b': -0.5}]}})
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 11.0)
         self.assertEqual(result.status, 'Success')
@@ -190,13 +191,13 @@ class TestStep(unittest.TestCase):
     def test_execute_action_which_raises_exception(self):
         from tests.apps.HelloWorld.exceptions import CustomException
         step = Step(app='HelloWorld', action='Buggy')
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(CustomException):
             step.execute(instance.instance, {})
 
     def test_execute_event(self):
         step = Step(app='HelloWorld', action='Sample Event', inputs={'arg1': 1})
-        instance = Instance.create(app_name='HelloWorld', device_name='device1')
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
         import time
         from tests.apps.HelloWorld.events import event1

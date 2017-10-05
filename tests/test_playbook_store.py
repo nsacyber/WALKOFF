@@ -1,8 +1,9 @@
-from unittest import TestCase
-from core.playbook import Playbook
-from core.workflow import Workflow
-from core.playbookstore import PlaybookStore
 from copy import deepcopy
+from unittest import TestCase
+
+from core.executionelements.playbook import Playbook
+from core.executionelements.workflow import Workflow
+from core.playbookstore import PlaybookStore
 
 
 class MockPlaybookLoader(object):

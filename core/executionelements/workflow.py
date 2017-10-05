@@ -1,13 +1,15 @@
 import json
 import logging
-from copy import deepcopy
-from core.executionelement import ExecutionElement
-from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
-from core.instance import Instance
-from core.step import Step
-from core.case.callbacks import data_sent
 import uuid
+from copy import deepcopy
+
 import zmq.green as zmq
+
+from core.case.callbacks import data_sent
+from core.executionelements.executionelement import ExecutionElement
+from core.executionelements.step import Step
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
+from core.appinstance import AppInstance
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +176,7 @@ class Workflow(ExecutionElement):
                 self.__send_callback('Next Step Found')
                 device_id = (step.app, step.device)
                 if device_id not in instances:
-                    instances[device_id] = Instance.create(step.app, step.device)
+                    instances[device_id] = AppInstance.create(step.app, step.device)
                     self.__send_callback('App Instance Created')
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)

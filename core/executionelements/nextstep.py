@@ -1,7 +1,7 @@
 import logging
-from core.executionelement import ExecutionElement
-from core.flag import Flag
+
 from core.case.callbacks import data_sent
+from core.executionelements.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
 

@@ -1,20 +1,22 @@
 import json
+import logging
+import os
+from datetime import datetime
 from os import path
-from tests.util.servertestcase import ServerTestCase
+from threading import Event
+
+import core.case.database as case_database
+import core.case.subscription
+import core.config.paths
+from core import helpers
+from core.case.callbacks import WorkflowShutdown
+from core.executionelements.step import Step
+from server import flaskserver as flask_server
+from server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
-from datetime import datetime
-from server import flaskserver as flask_server
-from core import helpers
-import core.case.subscription
-import core.case.database as case_database
-import os
-import core.config.paths
-from threading import Event
-from core.case.callbacks import WorkflowShutdown
-from server.returncodes import *
-from core.step import Step
-import logging
+from tests.util.servertestcase import ServerTestCase
+
 logging.basicConfig()
 
 class TestWorkflowServer(ServerTestCase):

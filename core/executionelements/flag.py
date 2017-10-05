@@ -1,10 +1,10 @@
-from core.executionelement import ExecutionElement
-from core.filter import Filter
+import logging
+
+from core.case.callbacks import data_sent
+from core.executionelements.executionelement import ExecutionElement
 from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
                           dereference_step_routing, format_exception_message)
 from core.validator import validate_flag_parameters, validate_parameter
-from core.case.callbacks import data_sent
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,12 @@
-from core.jsonplaybookloader import JsonPlaybookLoader as Loader
-from unittest import TestCase
-from tests.config import test_data_path
-import os.path
-import os
 import json
-from core.playbook import Playbook
-from core.workflow import Workflow
+import os
+import os.path
+from unittest import TestCase
+
+from core.executionelements.playbook import Playbook
+from core.executionelements.workflow import Workflow
+from core.jsonplaybookloader import JsonPlaybookLoader as Loader
+from tests.config import test_data_path
 
 
 class TestJsonPlaybookLoader(TestCase):

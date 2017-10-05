@@ -1,6 +1,6 @@
 import unittest
 
-from core import instance
+from core import appinstance
 from tests.config import test_apps_path
 from tests.apps import App
 from core.helpers import import_all_apps
@@ -16,23 +16,23 @@ class TestInstance(unittest.TestCase):
         # extra janky way to import this because we still need a more predictable and consistent way to import modules
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
-        inst = instance.Instance.create("HelloWorld", "testDevice")
-        self.assertIsInstance(inst, instance.Instance)
+        inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
+        self.assertIsInstance(inst, appinstance.AppInstance)
         self.assertIsInstance(inst.instance, hello_world_main_class)
-        self.assertEqual(inst.state, instance.OK)
+        self.assertEqual(inst.state, appinstance.OK)
 
     def test_create_invalid_app_name(self):
-        self.assertIsNone(instance.Instance.create("InvalidAppName", "testDevice"))
+        self.assertIsNone(appinstance.AppInstance.create("InvalidAppName", "testDevice"))
 
     def test_call(self):
-        inst = instance.Instance.create("HelloWorld", "testDevice")
+        inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
         created_app = inst()
         hello_world_main = importlib.import_module('tests.apps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
         self.assertIsInstance(created_app, hello_world_main_class)
 
     def test_shutdown(self):
-        inst = instance.Instance.create("HelloWorld", "testDevice")
-        self.assertEqual(inst.state, instance.OK)
+        inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
+        self.assertEqual(inst.state, appinstance.OK)
         inst.shutdown()
-        self.assertEqual(inst.state, instance.SHUTDOWN)
+        self.assertEqual(inst.state, appinstance.SHUTDOWN)

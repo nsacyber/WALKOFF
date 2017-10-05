@@ -1,12 +1,13 @@
 import unittest
-from core.nextstep import NextStep
-from core.flag import Flag
-from core.helpers import import_all_filters, import_all_flags, import_all_apps
-from tests.config import test_apps_path, function_api_path
-import core.config.config
-from tests.apps import App
-from core.decorators import ActionResult
 import uuid
+
+import core.config.config
+from core.decorators import ActionResult
+from core.executionelements.flag import Flag
+from core.executionelements.nextstep import NextStep
+from core.helpers import import_all_filters, import_all_flags, import_all_apps
+from tests.apps import App
+from tests.config import test_apps_path, function_api_path
 
 
 class TestNextStep(unittest.TestCase):

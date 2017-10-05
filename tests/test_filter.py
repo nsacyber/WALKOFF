@@ -1,9 +1,10 @@
 import unittest
-from core.filter import Filter
-import core.config.config
-from tests.config import function_api_path
-from core.helpers import import_all_filters, import_all_flags, UnknownFilter, InvalidInput, InvalidElementConstructed
 import uuid
+
+import core.config.config
+from core.executionelements.filter import Filter
+from core.helpers import import_all_filters, import_all_flags, UnknownFilter, InvalidInput
+from tests.config import function_api_path
 
 
 class TestFilter(unittest.TestCase):

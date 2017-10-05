@@ -1,17 +1,19 @@
 import json
 import logging
-from core import contextdecorator
+import uuid
+
 import core.config.config
+from apps import get_app_action
+from core import contextdecorator
+from core.case.callbacks import data_sent
 from core.decorators import ActionResult
-from core.executionelement import ExecutionElement
+from core.executionelements.executionelement import ExecutionElement
+from core.executionelements.nextstep import NextStep
 from core.helpers import (get_app_action_api, InvalidElementConstructed, InvalidInput,
                           dereference_step_routing, format_exception_message)
-from core.nextstep import NextStep
-from core.widgetsignals import get_widget_signal
-from apps import get_app_action
 from core.validator import validate_app_action_parameters
-from core.case.callbacks import data_sent
-import uuid
+from core.widgetsignals import get_widget_signal
+
 logger = logging.getLogger(__name__)
 
 
@@ -137,7 +139,8 @@ class Step(ExecutionElement):
         """
         self.inputs = validate_app_action_parameters(self._input_api, new_input, self.app, self.action)
 
-    def __send_callback(self, callback_name, data={}):
+    def __send_callback(self, callback_name, data=None):
+        data = data if data is not None else {}
         data['sender'] = {}
         data['sender']['name'] = self.name
         data['sender']['app'] = self.app
@@ -148,8 +151,6 @@ class Step(ExecutionElement):
         data['sender']['execution_uid'] = self._execution_uid
         data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
 
     def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
@@ -184,7 +185,7 @@ class Step(ExecutionElement):
         else:
             self._output = result
             for widget in self.widgets:
-                get_widget_signal(widget.app, widget.widget).send(self, data=json.dumps({"result": result.as_json()}))
+                get_widget_signal(widget.app, widget.name).send(self, data=json.dumps({"result": result.as_json()}))
             logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
 

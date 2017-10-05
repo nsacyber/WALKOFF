@@ -1,14 +1,17 @@
-import os
-import gevent
-import logging
 import json
-import zmq.green as zmq
-import zmq.auth
-from zmq.utils.strtypes import asbytes, cast_unicode
-from core.workflow import Workflow
-from core.case import callbacks
+import logging
+import os
 import signal
+
+import gevent
+import zmq.auth
+import zmq.green as zmq
+from zmq.utils.strtypes import asbytes, cast_unicode
+
 import core.config.paths
+from core.case import callbacks
+from core.executionelements.workflow import Workflow
+
 try:
     from Queue import Queue
 except ImportError:

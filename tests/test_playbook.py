@@ -1,5 +1,6 @@
 import unittest
-from core.playbook import Playbook
+
+from core.executionelements.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
 

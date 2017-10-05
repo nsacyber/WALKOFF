@@ -1,5 +1,4 @@
-from core.workflow import Workflow
-from core.executionelement import ExecutionElement
+from core.executionelements.executionelement import ExecutionElement
 
 
 class Playbook(ExecutionElement):

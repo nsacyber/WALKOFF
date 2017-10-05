@@ -1,8 +1,9 @@
-from core.playbook import Playbook
 import logging
 from copy import deepcopy
+
+from core.executionelements.playbook import Playbook
+from core.executionelements.workflow import Workflow
 from jsonplaybookloader import JsonPlaybookLoader
-from core.workflow import Workflow
 
 logger = logging.getLogger(__name__)
 

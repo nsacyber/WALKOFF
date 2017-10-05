@@ -1,6 +1,7 @@
-from core.jsonelementreader import JsonElementReader
 from unittest import TestCase
-from core.executionelement import ExecutionElement
+
+from core.executionelements.executionelement import ExecutionElement
+from core.jsonelementreader import JsonElementReader
 
 
 class A(ExecutionElement):

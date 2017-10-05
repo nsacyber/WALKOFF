@@ -1,7 +1,7 @@
 import unittest
 import uuid
 
-from core.executionelement import ExecutionElement
+from core.executionelements.executionelement import ExecutionElement
 
 
 class B(ExecutionElement):
