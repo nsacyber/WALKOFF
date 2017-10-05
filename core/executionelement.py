@@ -22,6 +22,20 @@ class ExecutionElement(object):
             reader = JsonElementReader
         return reader.read(self)
 
+    def regenerate_uids(self):
+        self.uid = uuid.uuid4().hex
+        for field, value in ((field, getattr(self, field)) for field in dir(self)
+                             if not callable(getattr(self, field))):
+            if isinstance(value, list):
+                for list_element in (list_element_ for list_element_ in value
+                        if isinstance(list_element_, ExecutionElement)):
+                    list_element.regenerate_uids()
+            elif isinstance(value, dict):
+                for dict_element in (element for element in value.values() if isinstance(element, ExecutionElement)):
+                    dict_element.regenerate_uids()
+            elif isinstance(value, ExecutionElement):
+                value.regenerate_uids()
+
     def __repr__(self):
         representation = self.read()
         uid = representation.pop('uid', None)

@@ -452,16 +452,20 @@ class TestPlaybookStore(TestCase):
     def test_copy_playbook(self):
         self.store.playbooks['play1'] = self.loader.playbook1
         self.store.playbooks['play2'] = self.loader.playbook2
+        original_uid = self.loader.playbook1.uid
         self.store.copy_playbook('play1', 'play3')
         self.assertStoreKeysEqual({'play1', 'play2', 'play3'})
         self.assertPlaybookWorkflowNamesEqual('play3', {'work1', 'work2'})
+        self.assertNotEqual(self.store.playbooks['play3'].uid, original_uid)
 
     def test_copy_playbook_new_playbook_already_exists(self):
         self.store.playbooks['play1'] = self.loader.playbook1
         self.store.playbooks['play2'] = self.loader.playbook2
+        original_uid = self.loader.playbook1.uid
         self.store.copy_playbook('play1', 'play2')
         self.assertStoreKeysEqual({'play1', 'play2'})
         self.assertPlaybookWorkflowNamesEqual('play2', {'work1', 'work2'})
+        self.assertNotEqual(self.store.playbooks['play2'].uid, original_uid)
 
     def test_add_breakpoint_steps_to_workflow_empty_store(self):
         # just to make sure it doesn't error

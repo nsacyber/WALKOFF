@@ -1,8 +1,6 @@
 from core.playbook import Playbook
 import logging
-import uuid
 from copy import deepcopy
-import core.config.paths
 from jsonplaybookloader import JsonPlaybookLoader
 from core.workflow import Workflow
 
@@ -259,7 +257,7 @@ class PlaybookStore(object):
         if workflow is not None:
             workflow_copy = deepcopy(workflow)
             workflow_copy.name = new_workflow_name
-            workflow_copy.uid = uuid.uuid4().hex
+            workflow_copy.regenerate_uids()
 
             if new_playbook_name in self.playbooks:
                 self.playbooks[new_playbook_name].add_workflow(workflow_copy)
@@ -277,6 +275,7 @@ class PlaybookStore(object):
         """
         if old_playbook_name in self.playbooks:
             self.playbooks[new_playbook_name] = deepcopy(self.playbooks[old_playbook_name])
+            self.playbooks[new_playbook_name].regenerate_uids()
 
     def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
         """Adds a breakpoint (for debugging purposes) in the specified steps.
