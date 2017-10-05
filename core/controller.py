@@ -2,7 +2,7 @@ import logging
 from core.scheduler import Scheduler
 import core.config.config
 import core.config.paths
-import core.workflowExecutor
+import core.workflowexecutor
 from core.playbookstore import PlaybookStore
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ NUM_PROCESSES = core.config.config.num_processes
 
 
 class Controller(object):
-    def __init__(self, workflows_path=core.config.paths.workflows_path):
+    def __init__(self):
         """Initializes a Controller object.
         
         Args:
@@ -24,7 +24,7 @@ class Controller(object):
         self.uid = 'controller'
         self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
-        self.executor = core.workflowExecutor.WorkflowExecutor()
+        self.executor = core.workflowexecutor.WorkflowExecutor()
 
     def initialize_threading(self, worker_env=None):
         self.executor.initialize_threading(worker_env)
@@ -34,7 +34,7 @@ class Controller(object):
 
     def pause_workflow(self, playbook_name, workflow_name, execution_uid):
         workflow = self.get_workflow(playbook_name, workflow_name)
-        self.executor.pause_workflow(playbook_name, workflow_name, execution_uid, workflow)
+        self.executor.pause_workflow(execution_uid, workflow)
 
     def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid):
         """Resumes a workflow that has been paused.
@@ -50,7 +50,7 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            self.executor.resume_workflow(playbook_name, workflow_name, workflow_execution_uid, workflow)
+            self.executor.resume_workflow(workflow_execution_uid, workflow)
 
     def resume_breakpoint_step(self, playbook_name, workflow_name, uid):
         """Resumes a step that has been specified as a breakpoint.
@@ -62,7 +62,7 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            self.executor.resume_breakpoint_step(playbook_name, workflow_name, uid, workflow)
+            self.executor.resume_breakpoint_step(uid, workflow)
 
     def load_workflow(self, resource, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.
@@ -231,7 +231,7 @@ class Controller(object):
         """
         if self.playbook_store.is_workflow_registered(playbook_name, workflow_name):
             workflow = self.playbook_store.get_workflow(playbook_name, workflow_name)
-            return self.executor.execute_workflow(workflow, playbook_name, workflow_name, start, start_input)
+            return self.executor.execute_workflow(workflow, start, start_input)
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
             return None, 'Attempted to execute playbook which does not exist in controller'

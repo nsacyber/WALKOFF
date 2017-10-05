@@ -8,7 +8,7 @@ from tests.apps import App
 import core.controller
 from tests.util.mock_objects import *
 import core.loadbalancer
-import core.workflowExecutor
+import core.workflowexecutor
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -20,8 +20,8 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.workflowExecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
-        core.workflowExecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
+        core.workflowexecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
+        core.workflowexecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.c = core.controller.controller

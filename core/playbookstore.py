@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class PlaybookStore(object):
-    def __init__(self):  # This should be taken out and amde explicit in the initialization
+    def __init__(self):
         self.playbooks = {}
 
     def load_workflow(self, resource, workflow_name, loader=JsonPlaybookLoader):

@@ -126,27 +126,22 @@ class WorkflowExecutor(object):
         self.load_balancer = None
         self.receiver = None
 
-    def execute_workflow(self, workflow, playbook_name, workflow_name, start=None, start_input=None):
+    def execute_workflow(self, workflow, start=None, start_input=None):
         """Executes a workflow.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first, or starting step. Defaults to "start".
             start_input (dict, optional): The input to the starting step of the workflow
         """
-        # key = _WorkflowKey(playbook_name, workflow_name)
-        # if key in self.workflows:
-        #     workflow = self.workflows[key]
         uid = uuid.uuid4().hex
 
         if not self.threading_is_initialized:
             self.initialize_threading()
 
         if start is not None:
-            logger.info('Executing workflow {0} for step {1}'.format(workflow_name, start))
+            logger.info('Executing workflow {0} for step {1}'.format(workflow.name, start))
         else:
-            logger.info('Executing workflow {0} with default starting step'.format(workflow_name, start))
+            logger.info('Executing workflow {0} with default starting step'.format(workflow.name, start))
         self.workflow_status[uid] = WORKFLOW_RUNNING
 
         wf_json = workflow.read()
@@ -162,11 +157,8 @@ class WorkflowExecutor(object):
         callbacks.SchedulerJobExecuted.send(self)
         # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
         return uid
-        # else:
-        #     logger.error('Attempted to execute playbook which does not exist in controller')
-        #     return None, 'Attempted to execute playbook which does not exist in controller'
 
-    def pause_workflow(self, playbook_name, workflow_name, execution_uid, workflow):
+    def pause_workflow(self, execution_uid, workflow):
         """Pauses a workflow that is currently executing.
 
         Args:
@@ -180,12 +172,10 @@ class WorkflowExecutor(object):
             self.load_balancer.pause_workflow(execution_uid, workflow.name)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
-    def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid, workflow):
+    def resume_workflow(self, workflow_execution_uid, workflow):
         """Resumes a workflow that has been paused.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
             workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
                 pause_workflow(). This is needed to resume a workflow for security purposes.
             workflow (Workflow): The workflow to resume.
@@ -204,18 +194,15 @@ class WorkflowExecutor(object):
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
                 return False
 
-    def resume_breakpoint_step(self, playbook_name, workflow_name, uid, workflow):
+    def resume_breakpoint_step(self, uid, workflow):
         """Resumes a step that has been specified as a breakpoint.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
             uid (str): The UID of the workflow that is being executed.
         """
-        # workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow and uid in self.workflow_status:
             logger.info('Resuming workflow {0} from breakpoint'.format(workflow.name))
-            self.load_balancer.resume_breakpoint_step(uid, workflow_name)
+            self.load_balancer.resume_breakpoint_step(uid, workflow.name)
             return True
         else:
             logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow.name))
