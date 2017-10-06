@@ -30,6 +30,11 @@ class MultiprocessedExecutor(object):
         self.workflow_status = {}
         self.workflows_executed = 0
 
+        def handle_workflow_shutdown(sender, **kwargs):
+            self.__remove_workflow_status(sender, **kwargs)
+        self.handle_data_sent = handle_workflow_shutdown
+        callbacks.WorkflowShutdown.connect(handle_workflow_shutdown)
+
         self.ctx = None
         self.auth = None
 
@@ -37,6 +42,10 @@ class MultiprocessedExecutor(object):
         self.manager_thread = None
         self.receiver = None
         self.receiver_thread = None
+
+    def __remove_workflow_status(self, sender, **kwargs):
+        if 'execution_uid' in sender and sender['execution_uid'] in self.workflow_status:
+            self.workflow_status.pop('execution_uid', None)
 
     def initialize_threading(self, worker_env=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
