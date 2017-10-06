@@ -10,7 +10,6 @@ from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.step import Step
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 from core.appinstance import AppInstance
-from core.workflowinterrupter import GeventWorkflowInterrupter
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ class Workflow(ExecutionElement):
         self._accumulator = {}
         self._comm_sock = None
         self._execution_uid = 'default'
-        self._workflow_interrupter = GeventWorkflowInterrupter()
+        self._pause_resume_event = Event()
 
     def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
@@ -102,7 +101,10 @@ class Workflow(ExecutionElement):
         if self._is_paused:
             self._is_paused = False
             self.__send_callback("Workflow Resumed")
-            self._workflow_interrupter.resume()
+            print('resumed and sent')
+            self._pause_resume_event.set()
+            self._pause_resume_event.clear()
+            print('reset event')
         else:
             logger.warning('Attempted to resume workflow {0} which is not paused'.format(self._execution_uid))
 
@@ -149,7 +151,8 @@ class Workflow(ExecutionElement):
             if step.name in self._breakpoint_steps:
                 self.pause()
             if self._is_paused:
-                self._workflow_interrupter.pause()
+                print('is paused. waiting.')
+                self._pause_resume_event.wait(timeout=100)
             self.__send_callback('Next Step Found')
             device_id = self.__create_app_instance(step, instances)
             step.render_step(steps=total_steps)
