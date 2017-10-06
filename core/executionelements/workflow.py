@@ -3,7 +3,7 @@ import logging
 import uuid
 from copy import deepcopy
 
-from gevent.event import Event
+import zmq.green as zmq
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
@@ -37,7 +37,6 @@ class Workflow(ExecutionElement):
         self._accumulator = {}
         self._comm_sock = None
         self._execution_uid = 'default'
-        self._pause_resume_event = Event()
 
     def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
@@ -92,24 +91,27 @@ class Workflow(ExecutionElement):
         """
         self._is_paused = True
         logger.info('Pausing workflow {0}'.format(self.name))
-        self.__send_callback("Workflow Paused")
-        print('paused and sent')
 
     def resume(self):
         """Resumes a Workflow that has previously been paused.
         """
-        if self._is_paused:
+        try:
+            logger.info('Attempting to resume workflow {0}'.format(self.name))
             self._is_paused = False
-            self.__send_callback("Workflow Resumed")
-            print('resumed and sent')
-            self._pause_resume_event.set()
-            self._pause_resume_event.clear()
-            print('reset event')
-        else:
-            logger.warning('Attempted to resume workflow {0} which is not paused'.format(self._execution_uid))
+        except (StopIteration, AttributeError) as e:
+            logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
+            pass
 
-    def is_paused(self):
-        return self._is_paused
+    def resume_breakpoint_step(self):
+        """Resumes a Workflow that has hit a breakpoint at a Step. This is used for debugging purposes.
+        """
+        try:
+            logger.debug('Attempting to resume workflow {0} from breakpoint'.format(self.name))
+            self._is_paused = False
+        except (StopIteration, AttributeError) as e:
+            logger.warning('Cannot resume workflow {0} from breakpoint. '
+                           'Reason: {1}'.format(self.name, format_exception_message(e)))
+            pass
 
     def __send_callback(self, callback_name, data={}):
         data['callback_name'] = callback_name
@@ -146,24 +148,46 @@ class Workflow(ExecutionElement):
         total_steps = []
         steps = self.__steps(start=start)
         first = True
-        for step in (step for step in steps if step is not None):
+        for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.name))
-            if step.name in self._breakpoint_steps:
-                self.pause()
-            if self._is_paused:
-                print('is paused. waiting.')
-                self._pause_resume_event.wait(timeout=100)
-            self.__send_callback('Next Step Found')
-            device_id = self.__create_app_instance(step, instances)
-            step.render_step(steps=total_steps)
-            if first:
-                first = False
-                if start_input:
-                    self.__swap_step_input(step, start_input)
+            if self._comm_sock:
+                try:
+                    data = self._comm_sock.recv(flags=zmq.NOBLOCK)
+                    if data == b'Pause':
+                        self._comm_sock.send(b"Paused")
+                        self.__send_callback("Workflow Paused")
+                        res = self._comm_sock.recv()
+                        if res != b'resume':
+                            logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
+                        else:
+                            self._comm_sock.send(b"Resumed")
+                            self.__send_callback("Workflow Resumed")
+                except zmq.ZMQError:
+                    pass
+            if step is not None:
+                if step.name in self._breakpoint_steps:
+                    self.__send_callback("Workflow Paused")
+                    res = self._comm_sock.recv()
+                    if not res == b'Resume breakpoint':
+                        logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
+                    else:
+                        self._comm_sock.send(b"Resumed")
+                        self.__send_callback("Workflow Resumed")
+                self.__send_callback('Next Step Found')
+                device_id = (step.app, step.device)
+                if device_id not in instances:
+                    instances[device_id] = AppInstance.create(step.app, step.device)
+                    self.__send_callback('App Instance Created')
+                    logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
+                step.render_step(steps=total_steps)
+                if first:
+                    first = False
+                    if start_input:
+                        self.__swap_step_input(step, start_input)
 
-            self.__execute_step(step, instances[device_id])
-            total_steps.append(step)
-            self._accumulator[step.name] = step.get_output().result
+                self.__execute_step(step, instances[device_id])
+                total_steps.append(step)
+                self._accumulator[step.name] = step.get_output().result
         self.__shutdown(instances)
         yield
 
@@ -178,14 +202,6 @@ class Workflow(ExecutionElement):
             current = self.steps[current_name] if current_name is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
-
-    def __create_app_instance(self, step, instances):
-        device_id = (step.app, step.device)
-        if device_id not in instances:
-            instances[device_id] = AppInstance.create(*device_id)
-            self.__send_callback('App Instance Created')
-            logger.debug('Created new app instance: App {0}, device {1}'.format(*device_id))
-        return device_id
 
     def __swap_step_input(self, step, start_input):
         logger.debug('Swapping input to first step of workflow {0}'.format(self.name))
