@@ -567,7 +567,7 @@ class TestWorkflowServer(ServerTestCase):
         workflow.execute('b', start='start')
         workflow.execute('c', start='start')
 
-        response = self.get_with_status_check('/workflowresults', headers=self.headers)
+        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
         for result in response:
             self.assertIn('timestamp', result)
@@ -582,7 +582,7 @@ class TestWorkflowServer(ServerTestCase):
         workflow.execute('b', start='start')
         workflow.execute('c', start='start')
 
-        response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
+        response = self.get_with_status_check('/api/workflowresults/all', headers=self.headers)
         self.assertEqual(len(response), 3)
 
         for result in response:

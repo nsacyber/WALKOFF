@@ -22,8 +22,8 @@ server/api/composed_api.yaml
 node_modules/
 .vscode/
 .idea/markdown-navigator.xml
-.idea/markdown-navigator/profiles_settings.xml
 .idea/markdown-exported-files.xml
-private_keys
-public_keys
+private_keys/
+public_keys/
+.idea/markdown-navigator/profiles_settings.xml
 client/build/

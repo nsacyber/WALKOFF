@@ -3,6 +3,7 @@ import { Http, Response, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Device } from '../models/device';
+import { DeviceType } from '../models/deviceType';
 
 @Injectable()
 export class DevicesService {
@@ -56,10 +57,89 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	//Only get apps that have device types for the purposes of devices
 	getApps() : Promise<string[]> {
-		return this.authHttp.get(`/api/apps`)
+		return this.authHttp.get(`/api/apps?has_device_types=true`)
 			.toPromise()
 			.then(this.extractData)
+			.catch(this.handleError);
+	}
+
+	getDeviceTypes() : Promise<DeviceType[]> {
+		// return Promise.resolve(<DeviceType[]>[
+		// 	{
+		// 		name: 'Test Device Type',
+		// 		app: 'HelloWorld',
+		// 		fields: [
+		// 			{
+		// 				name: 'Text field',
+		// 				type: 'string',
+		// 				minLength: 5,
+		// 				maxLength: 20,
+		// 				required: true,
+		// 				placeholder: 'enter something please'
+		// 			},
+		// 			{
+		// 				name: 'Encrypted field',
+		// 				type: 'string',
+		// 				encrypted: true,
+		// 				placeholder: 'shh its a secret'
+		// 			},
+		// 			{
+		// 				name: 'Number field',
+		// 				type: 'integer',
+		// 				minimum: 0,
+		// 				exclusiveMaximum: 25,
+		// 				multipleOf: 5,
+		// 				placeholder: 'this ones a number',
+		// 				required: true,
+		// 			},
+		// 			{
+		// 				name: 'Enum field',
+		// 				type: 'string',
+		// 				enum: ['val 1', 'val 2', 'val 3', 'another val'],
+		// 				required: true,
+		// 				placeholder: 'this ones a dropdown'
+		// 			},
+		// 			{
+		// 				name: 'Boolean field',
+		// 				type: 'boolean'
+		// 			}
+		// 		]
+		// 	},
+		// 	{
+		// 		name: 'Test Type 2',
+		// 		app: 'HelloWorld',
+		// 		fields: [
+		// 			{
+		// 				name: 'Text field',
+		// 				type: 'string',
+		// 				minLength: 5,
+		// 				maxLength: 100,
+		// 				pattern: `^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$`
+		// 			},
+		// 			{
+		// 				name: 'Enum field',
+		// 				type: 'string',
+		// 				enum: ['val 1', 'val 2', 'val 3', 'another val']
+		// 			},
+		// 			{
+		// 				name: 'Encrypted field',
+		// 				type: 'string',
+		// 				encrypted: true
+		// 			},
+		// 			{
+		// 				name: 'Number field',
+		// 				type: 'number',
+		// 				default: 10
+		// 			},
+		// 		]
+		// 	}
+		// ]);
+		return this.authHttp.get(`api/devicetypes`)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as DeviceType[])
 			.catch(this.handleError);
 	}
 	

@@ -155,6 +155,10 @@ def list_apps_with_interfaces(path=None):
     return apps_with_interfaces
 
 
+def list_apps_with_device_types():
+    return [app for app, api in core.config.config.app_apis.items() if 'devices' in api]
+
+
 def list_widgets(app, app_path=None):
     """Get a list of the widgets for a given app. 
     
@@ -295,6 +299,18 @@ def get_app_action_api(app, action):
             raise UnknownAppAction(app, action)
 
 
+def get_app_device_api(app, device_type):
+    try:
+        app_api = core.config.config.app_apis[app]
+    except KeyError:
+        raise UnknownApp(app)
+    else:
+        try:
+            return app_api['devices'][device_type]
+        except KeyError:
+            raise UnknownDevice(app, device_type)
+
+
 def __split_api_params(api):
     data_param_name = api['dataIn']
     args = []
@@ -356,6 +372,13 @@ class UnknownAppAction(Exception):
         super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action_name, app))
         self.app = app
         self.action = action_name
+
+
+class UnknownDevice(Exception):
+    def __init__(self, app, device_type):
+        super(UnknownDevice, self).__init__('Unknown device {0} for device {1} '.format(app, device_type))
+        self.app = app
+        self.device_type = device_type
 
 
 class InvalidInput(Exception):

@@ -5,15 +5,18 @@ import core.config.config
 import core.config.paths
 from core import helpers
 from server.returncodes import *
+from server.appdevice import Device, device_db
 
 
-def read_all_apps(interfaces_only=None):
+def read_all_apps(interfaces_only=None, has_device_types=None):
 
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         if interfaces_only:
             return helpers.list_apps_with_interfaces(), SUCCESS
+        if has_device_types:
+            return helpers.list_apps_with_device_types(), SUCCESS
         return helpers.list_apps(), SUCCESS
 
     return __func()
@@ -67,12 +70,11 @@ def list_app_actions(app_name):
 
 @jwt_required
 def read_all_devices(app_name):
-    from server.context import running_context
 
     @roles_accepted_for_resources('apps')
     def __func():
         if app_name in core.config.config.app_apis.keys():
-            query = running_context.Device.query.all()
+            query = device_db.session.query(Device).all()
             output = []
             if query:
                 for device in query:

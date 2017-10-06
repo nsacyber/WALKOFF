@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 Case_Base = declarative_base()
 
+logger = logging.getLogger(__name__)
+
 
 class _CaseEventLink(Case_Base):
     __tablename__ = 'case_event'

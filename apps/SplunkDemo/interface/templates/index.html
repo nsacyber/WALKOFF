@@ -1,0 +1,98 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="client/node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="client/node_modules/datatables/media/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="client/node_modules/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('appPage.static', app=g.app, filename='main.css') }}">
+    </script>
+
+    <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="client/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="client/node_modules/datatables/media/js/jquery.dataTables.min.js"></script>
+    <script src="{{ url_for('appPage.static', app=g.app, filename='node_modules/topojson/build/topojson.min.js') }}"></script>
+    <script src="{{ url_for('appPage.static', app=g.app, filename='node_modules/d3/d3.min.js') }}"></script>
+    <script src="{{ url_for('appPage.static', app=g.app, filename='node_modules/datamaps/dist/datamaps.world.min.js') }}"></script>
+    <script src="{{ url_for('appPage.static', app=g.app, filename='main.js') }}"></script>
+</head>
+
+<body>
+    <div id="main" class="container-fluid malwareAppMain">
+        <h1>Malware Action Demo</h3>
+        <div class="row">
+            <div class="col-xs-2 basicInfoCol">
+                <h3>Source IP</h3>
+                <div id="source_ip">1.2.3.4</div>
+                <h3>Target IP</h3>
+                <div id="target_ip">4.3.2.1</div>
+                <h3>Output PCAP</h3>
+                <a href="#" id="pcap_link">output.pcap</a><br/>
+                <a id="view_pcap_link">Open in Wireshark</a>
+                <h3>Infected EXE</h3>
+                <a href="#" id="exe_link">infected.exe</a>
+            </div>
+            <div class="col-xs-10">
+                <div id="mapContainer"></div>
+            </div>
+        </div>
+        <!-- <div id="workflowResultsContainer">
+            <h4>Execution Results</h4>
+            <table id="workflowResultsTable" class="table table-bordered table-hover"></table>
+        </div> -->
+        <div id="timelineContainer">
+            <section class="section intro">
+                <div class="container">
+                    <h1>Workflow Timeline &rarr;</h1>
+                </div>
+            </section>
+            <section class="timeline">
+                <ol>
+                    <!-- <li>
+                        <div>
+                            <time>1934</time>
+                            Some content here
+                        </div>
+                    </li> -->
+                </ol>
+
+                <div class="arrows">
+                    <button class="arrow arrow__prev disabled" disabled>
+                        <span class="fa fa-chevron-circle-left"></span>
+                    </button>
+                    <button class="arrow arrow__next">
+                        <span class="fa fa-chevron-circle-right"></span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <h3>Process Information</h3>
+                <table id="processInformationTable" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <td>Parameter Name</td>
+                            <td>Value</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="col-xs-6">
+                <h3>File Information</h3>
+                <table id="fileInformationTable" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <td>Parameter Name</td>
+                            <td>Value</td>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

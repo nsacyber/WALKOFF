@@ -1,0 +1,244 @@
+/* #main.malwareAppMain {
+	width: 80%;
+} */
+
+#main.malwareAppMain h1 {
+	text-align: center;
+}
+
+#main.malwareAppMain {
+  font-family: "Helvetica Neue", sans-serif;
+	background: #222;
+	color: white;
+}
+
+#main.malwareAppMain a {
+	color: rgb(221, 28, 119);
+}
+
+#main.malwareAppMain .table-striped>tbody>tr:nth-of-type(odd) {
+	background: #444;
+}
+
+#main.malwareAppMain .table-hover>tbody>tr:hover {
+	background-color: rgb(221, 28, 119);
+}
+
+#main.malwareAppMain .hoverinfo {
+	background-color: rgb(221, 28, 119);
+	border: none;
+	font-size: 2rem;
+	border-radius: 5px;
+}
+
+.basicInfoCol {
+	text-align: right;
+}
+
+/* #mapContainer {
+	background-size:cover;
+	width:100%;
+	min-height:100px;
+	height:calc(100vw * (6/10) - 30px);
+	margin:0 auto;
+} */
+
+#mapContainer {
+	position: relative;
+	width: 1000px;
+	height: 600px;
+	margin-top: -80px;
+	margin-bottom: -80px;
+}
+
+/* Simple way to get rid of the excess whitespace from the default projection */
+/* #mapContainer svg {
+	margin-top: -80px;
+	margin-bottom: -100px;
+} */
+
+/* TIMELINE
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+/* #timelineContainer *,
+#timelineContainer *::before,
+#timelineContainer *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+} */
+
+#timelineContainer button {
+  /* background: transparent; */
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+#timelineContainer {
+  font: normal 16px/1.5 "Helvetica Neue", sans-serif;
+  background: #333;
+	color: #fff;
+	border-radius: 10px;
+}
+
+
+/* .section SECTION
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.section {
+  padding: 5px 0;
+}
+
+.section .container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.section h1 {
+  font-size: 2.5rem;
+}
+
+.section h2 {
+  font-size: 1.3rem;
+}
+.timeline {
+	white-space: nowrap;
+	overflow-x: hidden;
+  }
+  
+  .timeline ol {
+	font-size: 0;
+	width: 100vw;
+	padding: 120px 0 100px 0;
+	transition: all 1s;
+  }
+  
+  .timeline ol li {
+	position: relative;
+	display: inline-block;
+	list-style-type: none;
+	width: 160px;
+	height: 3px;
+	background: #fff;
+  }
+  
+  .timeline ol li:last-child {
+	width: 280px;
+  }
+  
+  .timeline ol li:not(:first-child) {
+	margin-left: 14px;
+  }
+  
+  .timeline ol li:not(:last-child)::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: calc(100% + 1px);
+	bottom: 0;
+	width: 12px;
+	height: 12px;
+	transform: translateY(-50%);
+	border-radius: 50%;
+	background: rgb(221, 28, 119);
+  }
+  
+  .timeline ol li div {
+	position: absolute;
+	left: calc(100% + 7px);
+	width: 280px;
+	padding: 15px;
+	font-size: 1rem;
+	white-space: normal;
+	color: white;
+	background: #1d83e2;
+	border-radius: 5px;
+  }
+
+  .timeline ol li.remote div {
+	  background: #dd7e11;
+  }
+  
+  .timeline ol li div::before {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 0;
+	height: 0;
+	border-style: solid;
+  }
+  
+  .timeline ol li:nth-child(odd) div {
+	top: -16px;
+	transform: translateY(-100%);
+	border-bottom-left-radius: 0;
+  }
+  
+  .timeline ol li:nth-child(odd) div::before {
+	top: 100%;
+	border-width: 8px 8px 0 0;
+	border-color: #1d83e2 transparent transparent transparent;
+  }
+
+  .timeline ol li.remote:nth-child(odd) div::before {
+	border-color: #dd7e11 transparent transparent transparent;
+  }
+  
+  .timeline ol li:nth-child(even) div {
+	top: calc(100% + 16px);
+	border-top-left-radius: 0;
+  }
+  
+  .timeline ol li:nth-child(even) div::before {
+	top: -8px;
+	border-width: 8px 0 0 8px;
+	border-color: transparent transparent transparent #1d83e2;
+  }
+
+  .timeline ol li.remote:nth-child(even) div::before {
+	border-color: transparent transparent transparent #dd7e11;
+  }
+  
+  .timeline time {
+	display: block;
+	font-size: 1.6rem;
+	font-weight: bold;
+	margin-bottom: 8px;
+  }
+
+  .timeline span {
+	  font-size: 1.4rem;
+  }
+  
+  
+  /* TIMELINE ARROWS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– */
+  
+  .timeline .arrows {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 20px;
+	}
+	
+	.timeline .arrows button {
+	width: 40px;
+	height: 40px;
+	border-radius: 20px;
+	background: rgb(221, 28, 119);
+	}
+  
+  .timeline .arrows .arrow__prev {
+	margin-right: 20px;
+  }
+  
+  .timeline .disabled {
+	opacity: .5;
+  }
+  
+  .timeline .arrows img {
+	width: 45px;
+	height: 45px;
+  }

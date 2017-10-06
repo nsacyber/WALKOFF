@@ -16,14 +16,14 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="name">Active</label>
+						<label for="active">Active</label>
 						<input type="checkbox" class="form-control" [(ngModel)]="workingUser.active" name="active">
 					</div>
 					<!--TODO: roles-->
 				</div>
 				<div class="col-xs-6">
 					<div class="form-group" *ngIf="workingUser.id">
-						<label for="name">Current Password</label>
+						<label for="currentPassword">Current Password</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" #currentPassword="ngModel" name="currentPassword">
 						<div *ngIf="currentPassword.errors && (currentPassword.dirty || currentPassword.touched)" class="alert alert-danger">
 							<div [hidden]="!currentPassword.errors.required">
@@ -32,7 +32,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="name">New Password</label>
+						<label for="newPassword">New Password</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" #newPassword="ngModel" name="newPassword">
 						<div *ngIf="((currentPassword && currentPassword.value) || !workingUser.id) && (newPassword.dirty || newPassword.touched) && !newPassword.value"
 							class="alert alert-danger">
@@ -40,7 +40,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="name">Confirm New Password</label>
+						<label for="confirmNewPassword">Confirm New Password</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" #confirmNewPassword="ngModel" name="confirmNewPassword">
 						<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && confirmNewPassword.value && newPassword.value !== confirmNewPassword.value"
 							class="alert alert-danger">

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -10,6 +10,7 @@ import { DevicesModalComponent } from './devices.modal.component';
 import { DevicesService } from './devices.service';
 
 import { Device } from '../models/device';
+import { DeviceType } from '../models/deviceType';
 
 @Component({
 	selector: 'devices-component',
@@ -17,6 +18,7 @@ import { Device } from '../models/device';
 	styleUrls: [
 		'client/devices/devices.css',
 	],
+	encapsulation: ViewEncapsulation.None,
 	providers: [DevicesService]
 })
 export class DevicesComponent {
@@ -27,6 +29,7 @@ export class DevicesComponent {
 	appNames: string[] = [];
 	availableApps: Select2OptionData[] = [];
 	appSelectConfig: Select2Options;
+	deviceTypes: DeviceType[] = [];
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
 
@@ -43,6 +46,7 @@ export class DevicesComponent {
 
 		this.getDevices();
 		this.getApps();
+		this.getDeviceTypes();
 
 		this.filterQuery
 			.valueChanges
@@ -79,6 +83,7 @@ export class DevicesComponent {
 		modalRef.componentInstance.title = 'Add New Device';
 		modalRef.componentInstance.submitText = 'Add Device';
 		modalRef.componentInstance.appNames = this.appNames;
+		modalRef.componentInstance.deviceTypes = this.deviceTypes;
 
 		this._handleModalClose(modalRef);
 	}
@@ -88,8 +93,8 @@ export class DevicesComponent {
 		modalRef.componentInstance.title = `Edit Device ${device.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.appNames = this.appNames;
-
-		modalRef.componentInstance.workingDevice = _.cloneDeep(device);
+		modalRef.componentInstance.deviceTypes = this.deviceTypes;
+		modalRef.componentInstance.workingDevice = Device.toWorkingDevice(device);
 
 		this._handleModalClose(modalRef);
 	}
@@ -144,6 +149,23 @@ export class DevicesComponent {
 				this.appNames = appNames;
 				this.availableApps = appNames.map((appName) => { return { id: appName, text: appName } });
 			})
-			.catch(e => this.toastyService.error(`Error retrieving apps: ${e.message}`))
+			.catch(e => this.toastyService.error(`Error retrieving apps: ${e.message}`));
+	}
+
+	getDeviceTypes(): void {
+		this.devicesService
+			.getDeviceTypes()
+			.then(deviceTypes => this.deviceTypes = deviceTypes)
+			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
+	}
+
+	getCustomFields(device: Device): string {
+		let obj: { [key: string]: string } = {};
+		device.fields.forEach(element => {
+			if (element.value) obj[element.name] = element.value;
+		});
+		let out = JSON.stringify(obj, null, 1);
+		out = out.substr(1, out.length - 2).replace(/"/g, '');
+		return out;
 	}
 }

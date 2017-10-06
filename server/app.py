@@ -8,6 +8,7 @@ from core.config import paths
 import core.config.config
 import connexion
 from core.helpers import format_db_path
+from server.appdevice import App, device_db
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ def compose_yamls():
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
     from server.blueprints import events, widgets, workflowresult
-    flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
+    flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
     flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
@@ -117,6 +118,7 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
+
 def create_app():
     from .blueprints.events import setup_case_stream
     from flask import Flask
@@ -127,7 +129,7 @@ def create_app():
     _app.jinja_loader = FileSystemLoader(['server/templates'])
     _app.config.update(
         # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-        SECRET_KEY="SHORTSTOPKEYTEST",
+        SECRET_KEY=core.config.config.secret_key,
         SQLALCHEMY_DATABASE_URI=format_db_path(core.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
         SECURITY_PASSWORD_HASH='pbkdf2_sha512',
         SECURITY_TRACKABLE=False,
@@ -138,6 +140,12 @@ def create_app():
         JWT_BLACKLIST_ENABLED=True,
         JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
+    # _app.jinja_options = Flask.jinja_options.copy()
+    # _app.jinja_options.update(dict(
+    #     variable_start_string='<%',
+    #     variable_end_string='%>'
+    # ))
+    # _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
 
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -180,12 +188,12 @@ def create_user():
         initialize_resource_roles_from_database()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
+                                           for _app in device_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+        device_db.session.add(App(name=app_name, devices=[]))
     running_context.db.session.commit()
-
+    device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers
@@ -207,12 +215,12 @@ def create_test_data():
         running_context.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in running_context.db.session.query(running_context.App).all()])
+                                           for _app in device_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        running_context.db.session.add(running_context.App(app=app_name, devices=[]))
+        device_db.session.add(App(app=app_name, devices=[]))
     running_context.db.session.commit()
-
+    device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers

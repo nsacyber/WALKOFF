@@ -3,42 +3,106 @@
 </div>
 <div class="modal-body">
 	<div class="container-fluid">
-		<div class="row">
-			<div class="col-xs-6">
-				<div class="form-group">
-					<label for="name">Name</label>
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.name" name="name" required tabindex="1">
+		<form id="deviceForm" #deviceForm="ngForm" (ngSubmit)="submit()">
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<input type="text" class="form-control" [(ngModel)]="workingDevice.name" #name="ngModel" name="name" required tabindex="1">
+						<div *ngIf="name.errors && (name.dirty || name.touched)" class="alert alert-danger">
+							<div [hidden]="!name.errors.required">
+								Name is required.
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="app">Associated App<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<select class="form-control" [ngModel]="workingDevice.app" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" name="app"
+						 tabindex="3" required>
+							<option value=""></option>
+							<option *ngFor="let i of appNames" [value]="i" [label]="i">{{i}}</option>
+						</select>
+						<div *ngIf="app.errors && (app.dirty || app.touched)" class="alert alert-danger">
+							<div [hidden]="!app.errors.required">
+								App is required.
+							</div>
+						</div>
+					</div>
 				</div>
-				<div class="form-group">
-					<label for="name">IP Address</label>
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.ip" name="ip" required tabindex="3">
-				</div>
-				<div class="form-group">
-					<label for="name">Username</label>
-					<input type="text" class="form-control" [(ngModel)]="workingDevice.username" name="username" required tabindex="5">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label for="description">Description</label>
+						<input type="text" class="form-control" [(ngModel)]="workingDevice.description" name="ip" tabindex="2">
+					</div>
+					<div class="form-group">
+						<label for="type">Device Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<select class="form-control" [ngModel]="workingDevice.type" #typeRef #type="ngModel" (change)="handleDeviceTypeSelection(event, $event.target.value)"
+						 name="type" tabindex="4" required>
+							<option value=""></option>
+							<option *ngFor="let i of deviceTypesForApp" [value]="i.name" [label]="i.name">{{i.name}}</option>
+						</select>
+						<div *ngIf="type.errors && (type.dirty || type.touched)" class="alert alert-danger">
+							<div [hidden]="!type.errors.required">
+								Device type is required.
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div class="col-xs-6">
-				<div class="form-group">
-					<label for="name">Associated App</label>
-					<select class="form-control" [(ngModel)]="workingDevice.app" name="app" tabindex="2">
-						<option value=""></option>
-						<option *ngFor="let i of appNames" [value]="i" [label]="i"></option>
+			<ng-container *ngIf="selectedDeviceType">
+				<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
+					<label for="{{i.name}}">
+						{{i.name}}
+						<span *ngIf="i.required" class="fa fa-asterisk required" title="This field is required."></span>
+						<span *ngIf="i.encrypted" class="fa fa-lock"
+						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></span>
+						<!-- If we have an encrypted field AND this is an edit AND there is an encrypted value on the server, allow the user to clear it if it's not required -->
+						<div *ngIf="workingDevice.id && i.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
+							<label class="form-check-label">
+								Clear Existing Value
+								<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" 
+								(change)="handleEncryptedFieldClear(i.name, $event.target.checked)">
+							</label>
+						</div>
+					</label>
+
+					<!-- Normal string text entries -->
+					<input *ngIf="i.type === 'string' && !i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
+					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.minLength > 0 ? i.minLength : null" [attr.maxlength]="i.maxLength > 0 ? i.maxLength : null"
+					 [attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [disabled]="encryptedFieldsToBeCleared[i.name]"
+					 [attr.placeholder]="i.placeholder">
+
+					<!-- Enum types, make a select box -->
+					<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]" [attr.required]="i.required">
+						<option *ngIf="!i.required" value=""></option>
+						<option *ngFor="let i of i.enum" [value]="i" [label]="i">{{i}}</option>
 					</select>
+
+					<!-- For numbers enter number info -->
+					<input *ngIf="i.type === 'number' || i.type === 'integer'" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
+					 type="number" [attr.min]="getMin(i)" [attr.max]="getMax(i)" [attr.step]="i.multipleOf > 0 ? i.multipleOf : null" [attr.required]="i.required"
+					 [attr.placeholder]="i.placeholder">
+
+					<!-- Checkbox for boolean values -->
+					<input *ngIf="i.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
+
+					<!-- Repeat input for encrypted fields -->
+					<ng-container *ngIf="encryptedConfirmFields[i.name] !== undefined">
+						<label for="_{{i.name}}" class="confirmLabel">Repeat {{i.name}}</label>
+						<input type="password" class="form-control" name="_{{i.name}}" [(ngModel)]="encryptedConfirmFields[i.name]"
+						[disabled]="encryptedFieldsToBeCleared[i.name]" placeholder="Enter the value for {{i.name}} again" required>
+					</ng-container>
+
+					<!-- Validation errors go here if they exist -->
+					<div *ngIf="validationErrors[i.name]" class="alert alert-danger">
+						{{validationErrors[i.name]}}
+					</div>
 				</div>
-				<div class="form-group">
-					<label for="name">Port</label>
-					<input type="number" min="1" max="65535" class="form-control" [(ngModel)]="workingDevice.port" name="port" required tabindex="4">
-				</div>
-				<div class="form-group">
-					<label for="name">Password</label>
-					<input type="password" class="form-control" [(ngModel)]="workingDevice.password" name="newPassword" required tabindex="6">
-				</div>
-			</div>
-		</div>
+			</ng-container>
+		</form>
 	</div>
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
-	<button type="button" class="btn btn-primary" (click)="submit()">{{submitText}}</button>
+	<button type="button" class="btn btn-primary" [disabled]="!isBasicInfoValid()" (click)="submit()">{{submitText}}</button>
 </div>

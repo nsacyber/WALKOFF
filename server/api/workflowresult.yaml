@@ -1,19 +1,4 @@
-/workflowresults:
-  get:
-    tags: [Workflows]
-    summary: Gets a summary of the results of the workflows
-    description: ''
-    operationId: server.endpoints.playbooks.read_results
-    produces: [application/json]
-    responses:
-      200:
-        description: Success
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/WorkflowResult'
-
-/workflowresults/all:
+/api/workflowresults:
   get:
     tags: [Workflow]
     summary: Gets all the results from all the executed workflows
@@ -24,3 +9,25 @@
         description: Success
         schema:
           $ref: '#/definitions/CompleteWorkflowResults'
+
+/api/workflowresults/{uid}:
+  get:
+    tags: [Workflow]
+    summary: Gets the results from an executed workflow
+    operationId: server.endpoints.playbooks.read_result
+    produces: [application/json]
+    parameters:
+      - name: uid
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/WorkflowResult'
+      461:
+        description: Object does not exist
+        schema:
+          $ref: '#/definitions/Error'
