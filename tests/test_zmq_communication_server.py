@@ -16,7 +16,7 @@ try:
 except ImportError:
     from imp import reload
 
-class TestWorkflowServer(ServerTestCase):
+class TestZmqCommunicationServer(ServerTestCase):
     patch = False
 
     def setUp(self):

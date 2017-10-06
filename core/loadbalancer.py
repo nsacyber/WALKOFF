@@ -2,10 +2,10 @@ import json
 import logging
 import os
 import signal
-
 import gevent
-import zmq.auth
 import zmq.green as zmq
+
+import zmq.auth
 from zmq.utils.strtypes import asbytes, cast_unicode
 
 import core.config.paths
@@ -23,7 +23,7 @@ COMM_ADDR = 'tcp://127.0.0.1:5557'
 
 logger = logging.getLogger(__name__)
 
-
+logging.basicConfig()
 def recreate_workflow(workflow_json):
     """Recreates a workflow from a JSON to prepare for it to be executed.
 
@@ -128,6 +128,7 @@ class LoadBalancer:
             workflow_execution_uid (str): The execution UID of the workflow.
             workflow_name (str): The name of the workflow.
         """
+        print('loadbalancer.pause_workflow')
         logger.info('Pausing workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
@@ -139,9 +140,10 @@ class LoadBalancer:
             workflow_execution_uid (str): The execution UID of the workflow.
             workflow_name (str): The name of the workflow.
         """
+        print('loadbalancer.resume_workflow')
         logger.info('Resuming workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
     def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
         """Resumes a step in a workflow that was listed as a breakpoint step.
@@ -200,10 +202,21 @@ class Worker:
         self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(RESULTS_ADDR)
 
+        self.executing_workflow = None
+
         if worker_env:
             Worker.setup_worker_env = worker_env
 
         self.setup_worker_env()
+
+        self.request_sock.send(b"Ready")
+        self.comm_sock.send(b"Executing")
+
+
+        print('spawning')
+        gevent.spawn(self.handle_workflow_communication)
+        gevent.sleep(0)
+        print('spawned')
         self.execute_workflow_worker()
 
     def on_data_sent(self, sender, **kwargs):
@@ -229,17 +242,33 @@ class Worker:
     def execute_workflow_worker(self):
         """Keep executing workflows as they come in over the ZMQ socket from the manager.
         """
-        self.request_sock.send(b"Ready")
-        self.comm_sock.send(b"Executing")
 
         while True:
+            print('inside worker')
             workflow_in = self.request_sock.recv()
+            print('workflow in {}'.format(workflow_in))
+            self.executing_workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
 
-            workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
-            workflow.set_comm_sock(self.comm_sock)
-
-            workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
+            self.executing_workflow.execute(execution_uid=self.executing_workflow.execution_uid,
+                                            start=self.executing_workflow.start, start_input=start_input)
             self.request_sock.send(b"Done")
+
+    def handle_workflow_communication(self):
+        while True:
+            gevent.sleep(0)
+            data = self.comm_sock.recv()
+            print('received {}'.format(data))
+            if data == b'Pause':
+                self.executing_workflow.pause()
+                self.comm_sock.send(b"Paused")
+            elif data == b'Resume':
+                self.executing_workflow.resume()
+                self.comm_sock.send(b"Resumed")
+            elif data == b'Resume breakpoint':
+                self.executing_workflow.resume()
+                self.comm_sock.send(b"Resumed")
+            else:
+                logger.warning('Received unknown message {} on Worker comm socket'.format(data))
 
 
 class Receiver:
