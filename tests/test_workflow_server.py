@@ -430,6 +430,17 @@ class TestWorkflowServer(ServerTestCase):
                                  headers=self.headers)
         self.assertEqual(404, response.status_code)
 
+    @staticmethod
+    def strip_uids(element):
+        element.pop('uid', None)
+        for key, value in element.items():
+            if isinstance(value, list):
+                for list_element in (list_element_ for list_element_ in value if isinstance(list_element_, dict)):
+                    TestWorkflowServer.strip_uids(list_element)
+            elif isinstance(value, dict):
+                for dict_element in (element for element in value.values() if isinstance(element, dict)):
+                    TestWorkflowServer.strip_uids(dict_element)
+
     def test_copy_workflow(self):
         self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy',
                                     headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps({}),
@@ -447,8 +458,8 @@ class TestWorkflowServer(ServerTestCase):
         original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
-        copy_workflow_json.pop('uid')
-        original_workflow_json.pop('uid')
+        TestWorkflowServer.strip_uids(copy_workflow_json)
+        TestWorkflowServer.strip_uids(original_workflow_json)
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
         self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
         for step in workflow_copy.steps:
@@ -475,7 +486,6 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 1)
         self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('new_playbook')), 1)
-        # self.assertEqual(len(flask_server.running_context.controller.workflows.keys()), 3)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
         self.assertTrue(
             flask_server.running_context.controller.is_workflow_registered('new_playbook', 'helloWorldWorkflow_Copy'))
@@ -488,8 +498,8 @@ class TestWorkflowServer(ServerTestCase):
         original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
-        copy_workflow_json.pop('uid')
-        original_workflow_json.pop('uid')
+        TestWorkflowServer.strip_uids(copy_workflow_json)
+        TestWorkflowServer.strip_uids(original_workflow_json)
 
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
 
