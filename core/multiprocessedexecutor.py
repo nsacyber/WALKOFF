@@ -158,7 +158,7 @@ class WorkflowExecutor(object):
         # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
         return uid
 
-    def pause_workflow(self, execution_uid, workflow):
+    def pause_workflow(self, execution_uid, workflow_name):
         """Pauses a workflow that is currently executing.
 
         Args:
@@ -167,10 +167,10 @@ class WorkflowExecutor(object):
         """
         if (workflow and execution_uid in self.workflow_status
                 and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
-            self.load_balancer.pause_workflow(execution_uid, workflow.name)
+            self.load_balancer.pause_workflow(execution_uid, workflow_name)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
-    def resume_workflow(self, workflow_execution_uid, workflow):
+    def resume_workflow(self, workflow_execution_uid, workflow_name):
         """Resumes a workflow that has been paused.
 
         Args:
@@ -184,23 +184,23 @@ class WorkflowExecutor(object):
         if workflow:
             if (workflow_execution_uid in self.workflow_status
                     and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
-                self.load_balancer.resume_workflow(workflow_execution_uid, workflow.name)
+                self.load_balancer.resume_workflow(workflow_execution_uid, workflow_name)
                 self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
                 return True
             else:
-                logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
+                logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow_name))
                 return False
 
-    def resume_breakpoint_step(self, uid, workflow):
+    def resume_breakpoint_step(self, uid, workflow_name):
         """Resumes a step that has been specified as a breakpoint.
 
         Args:
             uid (str): The UID of the workflow that is being executed.
         """
         if workflow and uid in self.workflow_status:
-            logger.info('Resuming workflow {0} from breakpoint'.format(workflow.name))
-            self.load_balancer.resume_breakpoint_step(uid, workflow.name)
+            logger.info('Resuming workflow {0} from breakpoint'.format(workflow_name))
+            self.load_balancer.resume_breakpoint_step(uid, workflow_name)
             return True
         else:
-            logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow.name))
+            logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow_name))
             return False

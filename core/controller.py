@@ -4,6 +4,7 @@ import core.config.config
 import core.config.paths
 import core.multiprocessedexecutor
 from core.playbookstore import PlaybookStore
+from core.multiprocessedexecutor import WorkflowExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ NUM_PROCESSES = core.config.config.num_processes
 
 
 class Controller(object):
-    def __init__(self):
+    def __init__(self, executor=WorkflowExecutor):
         """Initializes a Controller object.
         
         Args:
@@ -24,7 +25,7 @@ class Controller(object):
         self.uid = 'controller'
         self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
-        self.executor = core.multiprocessedexecutor.WorkflowExecutor()
+        self.executor = executor()
 
     def initialize_threading(self, worker_env=None):
         self.executor.initialize_threading(worker_env)
@@ -34,7 +35,8 @@ class Controller(object):
 
     def pause_workflow(self, playbook_name, workflow_name, execution_uid):
         workflow = self.get_workflow(playbook_name, workflow_name)
-        self.executor.pause_workflow(execution_uid, workflow)
+        if workflow:
+            self.executor.pause_workflow(execution_uid, workflow_name)
 
     def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid):
         """Resumes a workflow that has been paused.
@@ -50,7 +52,7 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            self.executor.resume_workflow(workflow_execution_uid, workflow)
+            self.executor.resume_workflow(workflow_execution_uid, workflow_name)
 
     def resume_breakpoint_step(self, playbook_name, workflow_name, uid):
         """Resumes a step that has been specified as a breakpoint.
@@ -62,7 +64,7 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            self.executor.resume_breakpoint_step(uid, workflow)
+            self.executor.resume_breakpoint_step(uid, workflow_name)
 
     def load_workflow(self, resource, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.

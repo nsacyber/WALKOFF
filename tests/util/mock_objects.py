@@ -5,6 +5,7 @@ import zmq.green as zmq
 from zmq.utils.strtypes import cast_unicode
 from core.case.callbacks import data_sent
 import time
+from core.executionelements.workflow import Workflow
 
 try:
     from Queue import Queue
@@ -13,6 +14,8 @@ except ImportError:
 
 workflows_executed = 0
 
+from gevent.monkey import patch_all
+patch_all()
 
 def mock_initialize_threading(self, worker_env=None):
     global workflows_executed
@@ -44,9 +47,9 @@ def mock_shutdown_pool(self, num_workflows=0):
 class MockLoadBalancer(object):
     def __init__(self):
         self.pending_workflows = MockRequestQueue()
-        self.comm_queue = MockCommQueue()
         self.results_queue = MockReceiveQueue()
         self.workflow_comms = {}
+        self.executing_workflow = None
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
@@ -68,41 +71,24 @@ class MockLoadBalancer(object):
 
             self.workflow_comms[workflow_json['execution_uid']] = 'worker'
 
-            workflow, start_input = loadbalancer.recreate_workflow(workflow_json)
-            workflow.set_comm_sock(self.comm_queue)
-
-            workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
+            self.executing_workflow, start_input = loadbalancer.recreate_workflow(workflow_json)
+            threading.Thread(target=Workflow.execute,
+                             args=(self.executing_workflow, self.executing_workflow.execution_uid),
+                             kwargs={'start': self.executing_workflow.start, 'start_input': start_input}).start()
+            # self.executing_workflow.execute(execution_uid=self.executing_workflow.execution_uid,
+            #                                 start=self.executing_workflow.start, start_input=start_input)
 
     def pause_workflow(self, workflow_execution_uid, workflow_name):
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_queue.status = b"Pause"
+            self.executing_workflow.pause()
 
     def resume_workflow(self, workflow_execution_uid, workflow_name):
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_queue.status = b"resume"
+            self.executing_workflow.resume()
 
     def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_queue.status = b"Resume breakpoint"
-
-
-class MockCommQueue(object):
-    def __init__(self):
-        self.status = b"Running"
-
-    def recv(self, flags=None):
-        if flags == zmq.NOBLOCK:
-            if self.status == b"Pause":
-                return self.status
-            else:
-                raise zmq.ZMQError
-        else:
-            while self.status != b"resume" and self.status != b"Resume breakpoint":
-                pass
-            return self.status
-
-    def send(self, data):
-        pass
+            self.executing_workflow.resume()
 
 
 class MockReceiveQueue(loadbalancer.Receiver):

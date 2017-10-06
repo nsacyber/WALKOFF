@@ -8,6 +8,8 @@ import zmq.green as zmq
 import zmq.auth
 from zmq.utils.strtypes import asbytes, cast_unicode
 
+from threading import Thread
+
 import core.config.paths
 from core.case import callbacks
 from core.executionelements.workflow import Workflow
@@ -154,7 +156,7 @@ class LoadBalancer:
         """
         logger.info('Resuming workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume Breakpoint'])
 
 
 class Worker:
@@ -212,15 +214,15 @@ class Worker:
         self.request_sock.send(b"Ready")
         self.comm_sock.send(b"Executing")
 
-
-        print('spawning')
-        gevent.spawn(self.handle_workflow_communication)
+        Thread(target=Worker.handle_workflow_communication, args=(self,)).start()
         gevent.sleep(0)
-        print('spawned')
         self.execute_workflow_worker()
 
     def on_data_sent(self, sender, **kwargs):
         self.results_sock.send_json(kwargs['data'])
+
+    def on_breakpoint(self, *args, **kwargs):
+        self.executing_workflow.pause()
 
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT.
@@ -244,7 +246,6 @@ class Worker:
         """
 
         while True:
-            print('inside worker')
             workflow_in = self.request_sock.recv()
             print('workflow in {}'.format(workflow_in))
             self.executing_workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
@@ -264,7 +265,7 @@ class Worker:
             elif data == b'Resume':
                 self.executing_workflow.resume()
                 self.comm_sock.send(b"Resumed")
-            elif data == b'Resume breakpoint':
+            elif data == b'Resume Breakpoint':
                 self.executing_workflow.resume()
                 self.comm_sock.send(b"Resumed")
             else:
