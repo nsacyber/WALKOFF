@@ -23,8 +23,8 @@ class TestExecutionRuntime(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.multiprocessedexecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
-        core.multiprocessedexecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
+        core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.start = datetime.utcnow()

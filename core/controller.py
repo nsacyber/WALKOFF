@@ -1,10 +1,9 @@
 import logging
 from core.scheduler import Scheduler
 import core.config.config
-import core.config.paths
 import core.multiprocessedexecutor
 from core.playbookstore import PlaybookStore
-
+from core.multiprocessedexecutor import MultiprocessedExecutor
 logger = logging.getLogger(__name__)
 
 WORKFLOW_RUNNING = 1
@@ -15,7 +14,7 @@ NUM_PROCESSES = core.config.config.num_processes
 
 
 class Controller(object):
-    def __init__(self):
+    def __init__(self, executor=MultiprocessedExecutor):
         """Initializes a Controller object.
         
         Args:
@@ -24,7 +23,7 @@ class Controller(object):
         self.uid = 'controller'
         self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
-        self.executor = core.multiprocessedexecutor.WorkflowExecutor()
+        self.executor = executor()
 
     def initialize_threading(self, worker_env=None):
         self.executor.initialize_threading(worker_env)

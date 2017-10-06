@@ -22,7 +22,7 @@ WORKFLOW_COMPLETED = 4
 NUM_PROCESSES = core.config.config.num_processes
 
 
-class WorkflowExecutor(object):
+class MultiprocessedExecutor(object):
     def __init__(self):
         self.threading_is_initialized = False
         self.uid = "executor"

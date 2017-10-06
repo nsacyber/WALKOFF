@@ -7,15 +7,10 @@ import gevent
 import zmq.auth
 import zmq.green as zmq
 from zmq.utils.strtypes import asbytes, cast_unicode
-
+from gevent.queue import Queue
 import core.config.paths
 from core.case import callbacks
 from core.executionelements.workflow import Workflow
-
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
 RESULTS_ADDR = 'tcp://127.0.0.1:5556'
@@ -319,7 +314,7 @@ class Receiver:
                 data = data if callback[1] else {}
                 Receiver.send_callback(callback[0], sender, data)
             except KeyError:
-                logger.error('Unknown callabck sent {}'.format(callback_name))
+                logger.error('Unknown callback {} sent'.format(callback_name))
             else:
                 if callback_name == 'Workflow Shutdown':
                     self.workflows_executed += 1
