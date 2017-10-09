@@ -49,7 +49,7 @@ class MockLoadBalancer(object):
             data_sent.connect(handle_data_sent)
 
     def on_data_sent(self, sender, **kwargs):
-        self.results_queue.send_json(kwargs['data'])
+        self.results_queue.send(sender, kwargs)
 
     def add_workflow(self, workflow_json):
         self.pending_workflows.put(workflow_json)
@@ -104,14 +104,13 @@ class MockReceiveQueue(loadbalancer.Receiver):
     def __init__(self):
         pass
 
-    def send_json(self, data):
+    def send(self, sender, kwargs):
         global workflows_executed
 
-        callback_name = data['callback_name']
-        sender = data['sender']
+        callback_name = kwargs['callback_name']
 
         callback = self.callback_lookup[callback_name]
-        data = data if callback[1] else {}
+        data = json.loads(kwargs['data']) if callback[1] else {}
         loadbalancer.Receiver.send_callback(callback[0], sender, data)
 
         if callback_name == 'Workflow Shutdown':

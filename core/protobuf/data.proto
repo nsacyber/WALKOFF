@@ -1,0 +1,73 @@
+syntax = "proto2";
+
+package core;
+
+message Message {
+
+    enum Type {
+        WORKFLOWPACKET = 1;
+        WORKFLOWPACKETDATA = 2;
+        STEPPACKET = 3;
+        STEPPACKETDATA = 4;
+        GENERALPACKET = 5;
+    }
+
+    optional Type type = 1;
+    optional WorkflowPacket workflow_packet = 2;
+    optional WorkflowPacketData workflow_packet_data = 3;
+    optional StepPacket step_packet = 4;
+    optional StepPacketData step_packet_data = 5;
+    optional GeneralPacket general_packet = 6;
+
+}
+
+message WorkflowPacket {
+
+    message WorkflowSender {
+        optional string name = 1;
+        optional string uid = 2;
+        optional string execution_uid = 3;
+    }
+
+    optional WorkflowSender sender = 1;
+    optional string callback_name = 2;
+}
+
+message WorkflowPacketData {
+    optional WorkflowPacket.WorkflowSender sender = 1;
+    optional string callback_name = 2;
+    optional string additional_data = 3;
+}
+
+message StepPacket {
+
+    message StepSender {
+        optional string name = 1;
+        optional string uid = 2;
+        optional string execution_uid = 3;
+        optional string app = 4;
+        optional string action = 5;
+        map<string, string> input = 6;
+    }
+
+    optional StepSender sender = 1;
+    optional string callback_name = 2;
+}
+
+message StepPacketData {
+
+    optional StepPacket.StepSender sender = 1;
+    optional string callback_name = 2;
+    optional string additional_data = 3;
+}
+
+message GeneralPacket {
+
+    message GeneralSender {
+        optional string uid = 1;
+        optional string app = 2;
+    }
+
+    optional GeneralSender sender = 1;
+    optional string callback_name = 2;
+}

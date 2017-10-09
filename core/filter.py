@@ -28,17 +28,6 @@ class Filter(ExecutionElement):
         args = args if args is not None else {}
         self.args = validate_filter_parameters(self.args_api, args, self.action)
 
-    def __send_callback(self, callback_name):
-        data = dict()
-        data['callback_name'] = callback_name
-        data['sender'] = {}
-        data['sender']['name'] = self.name
-        data['sender']['id'] = self.name
-        data['sender']['uid'] = self.uid
-        data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
-
     def __call__(self, data_in, accumulator):
         """Executes the flag.
 
@@ -55,14 +44,14 @@ class Filter(ExecutionElement):
             args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.name))
             args.update({self.data_in_api['name']: data_in})
             result = get_filter(self.action)(**args)
-            self.__send_callback("Filter Success")
+            data_sent.send(self, callback_name="Filter Success", object_type="Filter")
             return result
         except InvalidInput as e:
-            self.__send_callback("Filter Error")
+            data_sent.send(self, callback_name="Filter Error", object_type="Filter")
             logger.error('Filter {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action, original_data_in, str(e)))
         except Exception as e:
-            self.__send_callback("Filter Error")
+            data_sent.send(self, callback_name="Filter Error", object_type="Filter")
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 

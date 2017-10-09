@@ -114,20 +114,6 @@ class Step(ExecutionElement):
         """
         self.input = validate_app_action_parameters(self.input_api, new_input, self.app, self.action)
 
-    def __send_callback(self, callback_name, data={}):
-        data['sender'] = {}
-        data['sender']['name'] = self.name
-        data['sender']['app'] = self.app
-        data['sender']['action'] = self.action
-        data['sender']['inputs'] = self.input
-        data['callback_name'] = callback_name
-        data['sender']['id'] = self.name
-        data['sender']['execution_uid'] = self.execution_uid
-        data['sender']['uid'] = self.uid
-        data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
-
     def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
         
@@ -139,18 +125,18 @@ class Step(ExecutionElement):
             The result of the executed function.
         """
         self.execution_uid = uuid.uuid4().hex
-        self.__send_callback('Step Started')
+        data_sent.send(self, callback_name="Step Started", object_type="Step")
         try:
             args = dereference_step_routing(self.input, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self.input_api, args, self.app, self.action)
             action = get_app_action(self.app, self.run)
             result = action(instance, **args)
-            self.__send_callback('Function Execution Success',
-                                 {'name': self.name, 'data': {'result': result.as_json()}})
+            data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
+                           data=json.dumps({"result": result.as_json()}))
         except InvalidInput as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
-            self.__send_callback('Step Input Invalid')
+            data_sent.send(self, callback_name="Step Input Invalid", object_type="Step")
             self.output = ActionResult('error: {0}'.format(formatted_error), 'InvalidInput')
             raise
         except Exception as e:
@@ -179,7 +165,7 @@ class Step(ExecutionElement):
             next_step = next_step(self.output, accumulator)
             if next_step is not None:
                 self.next_up = next_step
-                self.__send_callback('Conditionals Executed')
+                data_sent.send(self, callback_name="Conditionals Executed", object_type="Step")
                 return next_step
 
     def __repr__(self):

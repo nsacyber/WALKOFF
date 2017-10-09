@@ -10,6 +10,7 @@ class MockWorkflow(object):
         self.uid = uid
         self.name = name
         self.other = 'other'
+        self.children = []
 
     def execute(self):
         pass

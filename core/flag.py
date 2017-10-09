@@ -31,17 +31,6 @@ class Flag(ExecutionElement):
         self.args = validate_flag_parameters(self.args_api, args, self.action)
         self.filters = filters if filters is not None else []
 
-    def __send_callback(self, callback_name):
-        data = dict()
-        data['callback_name'] = callback_name
-        data['sender'] = {}
-        data['sender']['name'] = self.name
-        data['sender']['id'] = self.name
-        data['sender']['uid'] = self.uid
-        data_sent.send(None, data=data)
-        # if self.results_sock:
-        #     self.results_sock.send_json(data)
-
     def __call__(self, data_in, accumulator):
         data = data_in
 
@@ -50,20 +39,20 @@ class Flag(ExecutionElement):
         try:
             data = validate_parameter(data, self.data_in_api, 'Flag {0}'.format(self.action))
             args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.name))
-            self.__send_callback("Flag Success")
+            data_sent.send(self, callback_name="Flag Success", object_type="Flag")
             logger.debug('Arguments passed to flag {0} (uid {1}) are valid'.format(self.name, self.uid))
             args.update({self.data_in_api['name']: data})
             return get_flag(self.action)(**args)
         except InvalidInput as e:
             logger.error('Flag {0} has invalid input {1} which was converted to {2}. Error: {3}. '
                          'Returning False'.format(self.action, data_in, data, format_exception_message(e)))
-            self.__send_callback("Flag Error")
+            data_sent.send(self, callback_name="Flag Error", object_type="Flag")
             return False
         except Exception as e:
             logger.error('Error encountered executing '
                          'flag {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action, self.args, data, format_exception_message(e)))
-            self.__send_callback("Flag Error")
+            data_sent.send(self, callback_name="Flag Error", object_type="Flag")
             return False
 
     def as_json(self):
