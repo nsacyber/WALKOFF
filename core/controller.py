@@ -258,7 +258,7 @@ class Controller(object):
         """
         return self.playbook_store.get_all_workflows_by_playbook(playbook_name)
 
-    def get_playbook_representation(self, playbook_name, writer=None):
+    def get_playbook_representation(self, playbook_name, reader=None):
         """Returns the JSON representation of a playbook.
 
         Args:
@@ -267,7 +267,7 @@ class Controller(object):
         Returns:
             The JSON representation of the playbook if the playbook has any workflows under it, else None.
         """
-        return self.playbook_store.get_playbook_representation(playbook_name, writer=writer)
+        return self.playbook_store.get_playbook_representation(playbook_name, reader=reader)
 
     def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
         """Duplicates a workflow into its current playbook, or a different playbook.

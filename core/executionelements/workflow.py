@@ -124,7 +124,6 @@ class Workflow(ExecutionElement):
         else:
             data['sender']['name'] = self.name
             data['sender']['execution_uid'] = self._execution_uid
-            data['sender']['id'] = self.name
             data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
 

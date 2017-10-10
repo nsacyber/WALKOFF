@@ -228,7 +228,6 @@ class TestWorkflowServer(ServerTestCase):
                                     content_type='application/json')
 
         resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-
         # compare the steps in initial and final workflow
         self.assertEqual(len(resulting_workflow.steps.keys()), len(list(initial_steps)))
         for initial_step in initial_steps:
@@ -577,12 +576,8 @@ class TestWorkflowServer(ServerTestCase):
         workflow.execute('b', start='start')
         workflow.execute('c', start='start')
 
-        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
-        self.assertEqual(len(response), 3)
-        for result in response:
-            self.assertIn('timestamp', result)
-            self.assertIn('result', result)
-            self.assertIn('name', result)
+        response = self.get_with_status_check('/api/workflowresults/a', headers=self.headers)
+        self.assertSetEqual(set(response.keys()), {'status', 'uid', 'results', 'started_at', 'completed_at', 'name'})
 
     def test_read_all_results(self):
         flask_server.running_context.controller.initialize_threading()
@@ -592,10 +587,10 @@ class TestWorkflowServer(ServerTestCase):
         workflow.execute('b', start='start')
         workflow.execute('c', start='start')
 
-        response = self.get_with_status_check('/api/workflowresults/all', headers=self.headers)
+        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
 
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for step_result in result['results']:
-                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result'})
+                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
