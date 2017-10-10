@@ -225,8 +225,6 @@ class Workflow(ExecutionElement):
             data['execution_uid'] = step.execution_uid
             data_sent.send(self, callback_name="Step Execution Success", object_type="Workflow", data=json.dumps(data))
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             data['result'] = step.output.as_json()
             data['execution_uid'] = step.execution_uid
             data_sent.send(self, callback_name="Step Execution Error", object_type="Workflow", data=json.dumps(data))
