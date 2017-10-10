@@ -19,7 +19,6 @@ export class DashboardComponent {
 		this.currentDashboard = "Default Dashboard";
 	}
 	ngAfterViewInit() {
-
 		let addLink = (script: string) => {
 			let s = document.createElement("link");
 			s.rel = "stylesheet";

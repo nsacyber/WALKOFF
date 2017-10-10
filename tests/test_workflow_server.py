@@ -686,22 +686,6 @@ class TestWorkflowServer(ServerTestCase):
     #     result = step['data']
     #     self.assertDictEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
-    def test_read_results(self):
-        flask_server.running_context.controller.initialize_threading()
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-
-        with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.controller.shutdown_pool(3)
-
-        response = self.get_with_status_check('/workflowresults', headers=self.headers)
-        self.assertEqual(len(response), 3)
-        for result in response:
-            self.assertIn('timestamp', result)
-            self.assertIn('result', result)
-            self.assertIn('name', result)
-
     def test_read_all_results(self):
         flask_server.running_context.controller.initialize_threading()
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
@@ -711,10 +695,33 @@ class TestWorkflowServer(ServerTestCase):
         with flask_server.running_context.flask_app.app_context():
             flask_server.running_context.controller.shutdown_pool(3)
 
-        response = self.get_with_status_check('/workflowresults/all', headers=self.headers)
+        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
 
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for step_result in result['results']:
-                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result'})
+                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
+
+    def test_read_results(self):
+        flask_server.running_context.controller.initialize_threading()
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        response = json.loads(self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers).get_data(as_text=True))
+        execution_id = response['id']
+        with flask_server.running_context.flask_app.app_context():
+            flask_server.running_context.controller.shutdown_pool(3)
+
+        response = self.get_with_status_check('/api/workflowresults/{}'.format(execution_id), headers=self.headers)
+        self.assertSetEqual(set(response.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
+
+    def test_read_result_invalid(self):
+        flask_server.running_context.controller.initialize_threading()
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+
+        with flask_server.running_context.flask_app.app_context():
+            flask_server.running_context.controller.shutdown_pool(3)
+
+        self.get_with_status_check('/api/workflowresults/invalid', headers=self.headers, status_code=OBJECT_DNE_ERROR)

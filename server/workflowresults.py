@@ -21,7 +21,7 @@ def __workflow_started_callback(sender, **kwargs):
 
 
 def __append_step_result(workflow_result, data, step_type):
-    step_result = StepResult(data['name'], json.dumps(data['result']), json.dumps(data['input']), step_type)
+    step_result = StepResult(data['name'], json.dumps(data['result']), json.dumps(data['input']), step_type, data['app'], data['action'])
     workflow_result.results.append(step_result)
     case_database.case_db.session.commit()
 

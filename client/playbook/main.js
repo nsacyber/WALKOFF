@@ -16,6 +16,8 @@ $(function(){
     var flagsList = [];
     var filtersList = [];
     var startNode = null;
+    var offsetX = -330;
+    var offsetY = -170;
     var currentNodeInParametersEditor = null; // node being displayed in json editor
     var authToken = sessionStorage.getItem('access_token');
     
@@ -164,12 +166,7 @@ $(function(){
                 // type: "array",
                 title: "Inputs",
                 required: ['$action'],
-                options: {
-                    hidden: args.length === 0,
-                    // disable_array_add: true,
-                    // disable_array_delete: true,
-                    // disable_array_reorder: true
-                },
+                options: { hidden: args.length === 0 },
                 //Items populated below
                 // items: []
                 properties: {
@@ -188,10 +185,19 @@ $(function(){
                 var inputName = input.name;
                 delete input.name;
 
-                input.title = "Type: " + input.type;
-
                 //Hack: allow for output references "@<step_name>" for number fields
                 if (input.type === "number" || input.type === "integer") input.type = "string";
+
+                // TODO: really we shouldn't need to grab type from under 'schema'; this is just here to support a backend change
+                // should be removed once the backend is fixed to correct the validation of objects
+                if (input.type === "object" || (input.schema && input.schema.type === "object")) {
+                    if (input.schema && !input.type) input.type = input.schema.type;
+                    input.options = input.options || {};
+                    input.options.disable_properties = false;
+                    input.additionalProperties = true;
+                }
+
+                input.title = "Type: " + input.type;
 
                 // var valueSchema = null;
                 // if (pythonType === "string") {
@@ -532,8 +538,8 @@ $(function(){
 
         // The following coordinates is where the user dropped relative to the
         // top-left of the graph
-        var x = event.pageX - this.offsetLeft;
-        var y = event.pageY - this.offsetTop;
+        var x = event.pageX + offsetX;
+        var y = event.pageY + offsetY;
 
         insertNode(app, action, x, y, true);
     }
@@ -553,12 +559,12 @@ $(function(){
         _.each(actionInfo.args, function(inputInfo) {
 
             var defaultValue;
-            if (inputInfo.type === "str")
-                defaultValue = "";
-            else if (inputInfo.type === "bool")
-                defaultValue = false;
+            if (inputInfo.type === "string")
+                defaultValue = inputInfo.default || "";
+            else if (inputInfo.type === "boolean")
+                defaultValue = inputInfo.default || false;
             else
-                defaultValue = 0;
+                defaultValue = inputInfo.default || 0;
 
             inputs[inputInfo.name] = {
                 name: inputInfo.name,

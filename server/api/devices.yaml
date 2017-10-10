@@ -77,7 +77,7 @@
       200:
         description: Success
         schema:
-          $ref: '#/definitions/OutputDevice'
+          $ref: '#/definitions/Device'
       461:
         description: Device does not exist.
   delete:
@@ -111,7 +111,7 @@
           type: array
           description: A list of devices
           items:
-            $ref: '#/definitions/OutputDevice'
+            $ref: '#/definitions/Device'
   put:
     tags:
       - Devices
@@ -128,12 +128,12 @@
         description: The new device object to be created
         required: true
         schema:
-          $ref: '#/definitions/CreateDevice'
+          $ref: '#/definitions/AddDevice'
     responses:
       201:
         description: Success
         schema:
-          $ref: '#/definitions/OutputDevice'
+          $ref: '#/definitions/Device'
       462:
         description: Device already exists
         schema:
@@ -155,12 +155,12 @@
         description: The new device object to be created
         required: true
         schema:
-          $ref: '#/definitions/EditDevice'
+          $ref: '#/definitions/Device'
     responses:
       200:
         description: Success
         schema:
-          $ref: '#/definitions/OutputDevice'
+          $ref: '#/definitions/Device'
       461:
         description: Device does not exist
         schema:

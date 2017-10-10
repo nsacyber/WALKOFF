@@ -1,27 +1,11 @@
-WorkflowResult:
-  type: object
-  required: [name, timestamp, result]
-  properties:
-    name:
-      description: The name of the workflow. Contains both playbook and workflow information
-      type: string
-      example: PlaybookName-WorkflowName
-    timestamp:
-      description: The timestamp of when the workflow completed
-      type: string
-      example: '2017-05-24 00:42:22.934058'
-    result:
-      description: The result of the workflow
-      type: string
-
 CompleteWorkflowResults:
   type: object
   required: [id]
   properties:
     id:
-      $ref: '#/definitions/DetailedWorkflowResult'
+      $ref: '#/definitions/WorkflowResult'
 
-DetailedWorkflowResult:
+WorkflowResult:
   type: object
   required: [name, started_at, status, results, uid]
   properties:
@@ -63,6 +47,16 @@ DetailedStepResult:
       description: The name of the step
       type: string
       example: 'This One step'
+      readOnly: true
+    action:
+      description: The name of the action take by the step
+      type: string
+      example: get that thing
+      readOnly: true
+    app:
+      description: The name of the app associated with the step
+      type: string
+      example: ThingGetter
       readOnly: true
     result:
       description: The result of the step

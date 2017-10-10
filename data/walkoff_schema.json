@@ -32,6 +32,9 @@
     "filters": {
       "$ref": "#/definitions/filters"
     },
+    "devices": {
+      "$ref": "#/definitions/devices"
+    },
     "definitions": {
       "$ref": "#/definitions/definitions"
     },
@@ -172,6 +175,138 @@
         }
       },
       "additionalProperties": false
+    },
+    "devices": {
+      "type": "object",
+      "description": "Devices used by this app",
+      "patternProperties": {
+        "": {
+          "$ref": "#/definitions/device"
+        }
+      }
+    },
+    "device": {
+      "type": "object",
+      "required": ["fields"],
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        }
+      },
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "A brief description of the parameter. This could contain examples of use.  GitHub Flavored Markdown is allowed."
+        },
+        "fields": {
+          "type": "array",
+          "description": "Device used by this app",
+          "additionalItems": false,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/deviceField"
+              },
+              {
+                "$ref": "#/definitions/jsonReference"
+              }
+            ]
+
+          }
+        }
+      }
+    },
+    "deviceField": {
+      "description": "Field needed by a device",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        }
+      },
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Determines whether or not this parameter is required or optional."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the parameter. This could contain examples of use.  GitHub Flavored Markdown is allowed."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the parameter."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "integer",
+            "array"
+          ]
+        },
+        "encrypted": {
+          "type": "boolean",
+          "default": false,
+          "description": "Should the field be encrypted?"
+        },
+        "placeholder": {
+          "type": "string",
+          "default": "",
+          "description": "Text to display as for the input fields on the UI"
+        },
+        "format": {
+          "type": "string"
+        },
+        "items": {
+          "$ref": "#/definitions/primitivesItems"
+        },
+        "default": {
+          "$ref": "#/definitions/default"
+        },
+        "maximum": {
+          "$ref": "#/definitions/maximum"
+        },
+        "exclusiveMaximum": {
+          "$ref": "#/definitions/exclusiveMaximum"
+        },
+        "minimum": {
+          "$ref": "#/definitions/minimum"
+        },
+        "exclusiveMinimum": {
+          "$ref": "#/definitions/exclusiveMinimum"
+        },
+        "maxLength": {
+          "$ref": "#/definitions/maxLength"
+        },
+        "minLength": {
+          "$ref": "#/definitions/minLength"
+        },
+        "pattern": {
+          "$ref": "#/definitions/pattern"
+        },
+        "maxItems": {
+          "$ref": "#/definitions/maxItems"
+        },
+        "minItems": {
+          "$ref": "#/definitions/minItems"
+        },
+        "uniqueItems": {
+          "$ref": "#/definitions/uniqueItems"
+        },
+        "enum": {
+          "$ref": "#/definitions/enum"
+        },
+        "multipleOf": {
+          "$ref": "#/definitions/multipleOf"
+        },
+        "example": {
+          "type": ["number", "integer", "string", "boolean"]
+        }
+      }
     },
     "definitions": {
       "type": "object",

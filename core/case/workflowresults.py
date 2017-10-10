@@ -48,17 +48,23 @@ class StepResult(Case_Base):
     result = Column(String)
     input = Column(String)
     type = Column(String)
+    action = Column(String)
+    app = Column(String)
     workflow_result_id = Column(Integer, ForeignKey('workflow.id'))
 
-    def __init__(self, name, result, step_input, step_type):
+    def __init__(self, name, result, step_input, step_type, app, action):
         self.name = name
         self.result = result
         self.input = step_input
         self.type = step_type
         self.timestamp = datetime.utcnow()
+        self.app = app
+        self.action = action
 
     def as_json(self):
         return {"name": self.name,
+                "app": self.app,
+                "action": self.action,
                 "result": json.loads(self.result),
                 "input": json.loads(self.input),
                 "type": self.type,

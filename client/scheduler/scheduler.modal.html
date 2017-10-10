@@ -19,7 +19,7 @@
 					<label for="name">Trigger Type</label>
 					<select class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.type" name="type" tabindex="4" (change)="changeType($event.target.value)">
 						<option value=""></option>
-						<option *ngFor="let i of scheduledItemTriggerTypes" [value]="i" [label]="i"></option>
+						<option *ngFor="let i of scheduledItemTriggerTypes" [value]="i" [label]="i">{{i}}</option>
 					</select>
 				</div>
 			</div>

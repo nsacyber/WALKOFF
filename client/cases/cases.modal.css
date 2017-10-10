@@ -20,12 +20,19 @@ svg#caseSubscriptionsTree {
 		stroke-width: 3px;
 		cursor: pointer;
 	}
-	svg#caseSubscriptionsTree .node.highlighted circle {
+	svg#caseSubscriptionsTree .node.highlighted circle, 
+	svg#caseSubscriptionsTree .node.highlighted.included circle{
 		stroke: red;
+	}
+	svg#caseSubscriptionsTree .node.included circle {
+		stroke: black;
 	}
 	svg#caseSubscriptionsTree .node text {
 		font: 12px sans-serif;
 		cursor: pointer;
+	}
+	svg#caseSubscriptionsTree .node.included text {
+		font-weight: bold;
 	}
 	svg#caseSubscriptionsTree .link {
 		fill: none;
