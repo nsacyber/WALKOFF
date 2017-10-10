@@ -37,9 +37,15 @@
     <script src="client/node_modules/select2/dist/js/select2.full.min.js"></script>
     <!-- EventSource polyfill 0.9.0 -->
     <script src="client/node_modules/event-source-polyfill/eventsource.js"></script>
+    <script src="client/node_modules/lodash/lodash.min.js"></script>
+    <script src="client/node_modules/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="client/node_modules/cytoscape-clipboard/cytoscape-clipboard.js"></script>
+    <script src="client/node_modules/cytoscape-edgehandles/cytoscape-edgehandles.js"></script>
+    <script src="client/node_modules/cytoscape-grid-guide/cytoscape-grid-guide.js"></script>
+    <script src="client/node_modules/cytoscape-panzoom/cytoscape-panzoom.js"></script>
+    <script src="client/node_modules/cytoscape-undo-redo/cytoscape-undo-redo.js"></script>
     <script src="client/node_modules/systemjs/dist/system.js"></script>
-
-        <!-- 2. Configure SystemJS -->
+    <!-- 2. Configure SystemJS -->
     <script src="client/systemjs.config.js"></script>
     <script type="application/javascript">
         SystemJS.import('main').catch(function(err){ console.error(err); });

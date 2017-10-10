@@ -20,6 +20,7 @@
     "@swimlane/ngx-datatable": "~9.3.1",
     "@types/d3": "^4.10.0",
     "@types/jquery": "~3.2.8",
+    "@types/jstree": "^3.3.35",
     "@types/lodash": "~4.14.68",
     "@types/select2": "~4.0.38",
     "angular2-jwt": "~0.2.3",

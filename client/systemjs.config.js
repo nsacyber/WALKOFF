@@ -31,6 +31,7 @@
 		'cytoscape-grid-guide': 'npm:cytoscape-grid-guide/cytoscape-grid-guide.js',
 		'cytoscape-panzoom': 'npm:cytoscape-panzoom/cytoscape-panzoom.js',
 		'cytoscape-undo-redo': 'npm:cytoscape-undo-redo/cytoscape-undo-redo.js',
+		'jstree': 'npm:jstree/dist',
 		'angular2-uuid': 'npm:angular2-uuid/index.js',
 	};
 
@@ -52,7 +53,8 @@
 			main: 'moment.js',
 			defaultExtension: 'js'
 		},
-		'cytoscape': { main: 'cytoscape.min.js', defaultExtension: 'js' },
+		'cytoscape': { main: 'cytoscape.js', defaultExtension: 'js' },
+		'jstree': { main: 'jstree.min.js', defaultExtension: 'js' },
 		// 'uuid': { main: 'index.js', defaultExtension: 'js' },
 	};
 

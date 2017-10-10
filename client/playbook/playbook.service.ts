@@ -6,14 +6,15 @@ import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
+import { Action } from '../models/playbook/action';
 import { Device } from '../models/device';
 
 @Injectable()
 export class PlaybookService {
-	constructor (private authHttp: JwtHttp) {}
+	constructor(private authHttp: JwtHttp) { }
 
 	// TODO: should maybe just return all playbooks and not just names?
-	getPlaybooks() : Promise<{ [key: string] : string[] }> {
+	getPlaybooks(): Promise<{ [key: string]: string[] }> {
 		return this.authHttp.get(`/api/playbooks`)
 			.toPromise()
 			.then(this.extractData)
@@ -21,64 +22,111 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
-	renamePlaybook(oldName: string, newName: string) : Promise<void> {
+	/**
+	 * Renames an existing playbook.
+	 * @param oldName Current playbook name to change
+	 * @param newName New name for the updated playbook
+	 */
+	renamePlaybook(oldName: string, newName: string): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${oldName}`, { new_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	duplicatePlaybook(oldName: string, newName: string) : Promise<void> {
+	/**
+	 * Duplicates and saves an existing playbook, it's workflows, steps, next steps, etc. under a new name.
+	 * @param oldName Name of the playbook to duplicate
+	 * @param newName Name of the new copy to be saved
+	 */
+	duplicatePlaybook(oldName: string, newName: string): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${oldName}`, { playbook: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	deletePlaybook(playbookToDelete: string) : Promise<void> {
+	/**
+	 * Deletes a playbook by name.
+	 * @param playbookToDelete Name of playbook to be deleted.
+	 */
+	deletePlaybook(playbookToDelete: string): Promise<void> {
 		return this.authHttp.delete(`/api/playbooks/${playbookToDelete}`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	renameWorkflow(playbook: string, oldName: string, newName: string) : Promise<void> {
+	/**
+	 * Renames a workflow under a given playbook.
+	 * @param playbook Name of playbook the workflow exists under
+	 * @param oldName Current workflow name to be changed
+	 * @param newName New name for the updated workflow
+	 */
+	renameWorkflow(playbook: string, oldName: string, newName: string): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}`, { new_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Duplicates a workflow under a given playbook, its steps, next steps, etc. under a new name.
+	 * @param playbook Name of playbook the workflow exists under
+	 * @param oldName Current workflow name to be duplicated
+	 * @param newName Name for the new copy to be saved
+	 */
 	// TODO: probably don't need playbook in body, verify on server
-	duplicateWorkflow(playbook: string, oldName: string, newName: string) : Promise<void> {
+	duplicateWorkflow(playbook: string, oldName: string, newName: string): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}/copy`, { playbook: playbook, workflow: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	deleteWorkflow(playbook: string, workflowToDelete: string) : Promise<void> {
+	/**
+	 * Deletes a given workflow under a given playbook.
+	 * @param playbook Name of the playbook the workflow exists under
+	 * @param workflowToDelete Name of the workflow to be deleted
+	 */
+	deleteWorkflow(playbook: string, workflowToDelete: string): Promise<void> {
 		return this.authHttp.delete(`/api/playbooks/${playbook}/workflows/${workflowToDelete}`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	newWorkflow(playbook: string, workflow: string) : Promise<void> {
+	/**
+	 * Creates a new blank workflow under a given playbook.
+	 * @param playbook Name of the playbook the new workflow should be added under
+	 * @param workflow Name of the new workflow to be saved
+	 */
+	newWorkflow(playbook: string, workflow: string): Promise<void> {
 		return this.authHttp.put(`/api/playbooks/${playbook}/workflows`, { name: workflow })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	saveWorkflow(playbook: string, workflow: string, workflowData: Object) : Promise<void> {
+	/**
+	 * Saves the data of a given workflow specified under a given playbook.
+	 * @param playbook Name of the playbook the workflow exists under
+	 * @param workflow Name of the workflow to be saved
+	 * @param workflowData Data to be saved under the workflow (steps, etc.)
+	 */
+	saveWorkflow(playbook: string, workflow: string, workflowData: Object): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${workflow}/save`, { data: workflowData })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	loadWorkflow(playbook: string, workflow: string) : Promise<Workflow> {
+	/**
+	 * Loads the data of a given workflow under a given playbook.
+	 * @param playbook Name of playbook the workflow exists under
+	 * @param workflow Name of the workflow to load
+	 */
+	loadWorkflow(playbook: string, workflow: string): Promise<Workflow> {
 		return this.authHttp.get(`/api/playbooks/${playbook}/workflows/${workflow}`)
 			.toPromise()
 			.then(this.extractData)
@@ -86,29 +134,47 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
-	executeWorkflow(playbook: string, workflow: string) : Promise<void> {
+	/**
+	 * Notifies the server to execute a given workflow under a given playbook. Note that execution results are not returned here, but on a separate stream-steps EventSource.
+	 * @param playbook Name of the playbook the workflow exists under
+	 * @param workflow Name of the workflow to execute
+	 */
+	executeWorkflow(playbook: string, workflow: string): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${workflow}/execute`, {})
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	getActionsForApps() : Promise<{ [key: string] : string[] }> {
+	/**
+	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
+	 */
+	getActionsForApps(): Promise<{
+		[app_name: string]: {
+			[action_name: string]: Action
+		}
+	}> {
 		return this.authHttp.get(`/api/apps/actions`, {})
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
-	getDevices() : Promise<Device[]> {
+	/**
+	 * Returns an array of all devices within the DB.
+	 */
+	getDevices(): Promise<Device[]> {
 		return this.authHttp.get(`/api/devices`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device[])
 			.catch(this.handleError);
 	}
-	
-	getConditions() : Promise<Condition[]> {
+
+	/**
+	 * Returns an array of all next step conditions specified within the application and its apps.
+	 */
+	getConditions(): Promise<Condition[]> {
 		return this.authHttp.get(`/api/flags`)
 			.toPromise()
 			.then(this.extractData)
@@ -116,7 +182,10 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
-	getTransforms() : Promise<Transform[]> {
+	/**
+	 * Returns an array of all data transforms specified within the application and its apps.
+	 */
+	getTransforms(): Promise<Transform[]> {
 		return this.authHttp.get(`/api/filters`)
 			.toPromise()
 			.then(this.extractData)
@@ -124,12 +193,12 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
-	private extractData (res: Response) {
+	private extractData(res: Response) {
 		let body = res.json();
 		return body || {};
 	}
 
-	private handleError (error: Response | any): Promise<any> {
+	private handleError(error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
 		if (error instanceof Response) {

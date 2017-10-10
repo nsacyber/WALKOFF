@@ -6,12 +6,14 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="load-button" type=button class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow">
+            <button id="load-button" type=button class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow"
+                (click)="loadWorkflow('basicWorkflowTest', 'helloWorldWorkflow')">
                 <span class="fa fa-folder-open-o"></span>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="save-button" type=button class="btn btn-default" data-toggle="tooltip" title="Save Workflow" [disabled]="!loadedWorkflow">
+            <button id="save-button" type=button class="btn btn-default" data-toggle="tooltip" title="Save Workflow" [disabled]="!loadedWorkflow"
+                (click)="save()">
                 <span class="fa fa-save"></span>
             </button>
         </div>
@@ -22,13 +24,13 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="undo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Undo" [disabled]="!loadedWorkflow || ur.isUndoStackEmpty()"
+            <button id="undo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Undo" [disabled]="!loadedWorkflow || (ur && ur.isUndoStackEmpty())"
                 (click)="ur.undo()">
                 <span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="redo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Redo" [disabled]="!loadedWorkflow || ur.isRedoStackEmpty()"
+            <button id="redo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Redo" [disabled]="!loadedWorkflow || (ur && ur.isRedoStackEmpty())"
                 (click)="ur.redo()">
                 <span class="glyphicon glyphicon-repeat"></span>
             </button>
@@ -85,11 +87,11 @@
                         </div>
 
                         <div class="col-md-6 graphEditorColumn">
-                            <div id="cy" *ngIf="loadedWorkflow" tabindex="0"></div>
-                            <div id="cy-instructions" *ngIf="!loadedWorkflow">
+                            <div id="cy" #cy [hidden]="!loadedWorkflow" tabindex="0"></div>
+                            <div id="cy-instructions" [hidden]="loadedWorkflow">
                                 <p>Instructions:</p>
                                 <p>
-                                    <button class="btn btn-default" id="loadInitialWorkflow" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>
+                                    <button class="btn btn-primary" id="loadInitialWorkflow" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>
                                 </p>
                                 <p>
                                     Use this button to load the workflow into the graph. After loading an initial workflow you may use the Load Workflow button
@@ -103,7 +105,12 @@
                         </div>
 
                         <div class="col-md-4 graphEditorColumn">
-                            <div id="parameters"></div>
+                            <div *ngIf="selectedNode && selectedNodeType === 'node'">
+                                <div class="form-group">
+                                    <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                                    <input type="text" class="form-control" [(ngModel)]="selectedNode.name" name="name" required tabindex="1">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,7 +118,7 @@
                 <div id="cyJson" class="tab-pane fade">
                     <div class="row">
                         <div class="col-md-12">
-                            <textarea id="cy-json-data"></textarea>
+                            <textarea id="cy-json-data" [(ngModel)]="cyJsonData"></textarea>
                         </div>
                     </div>
                 </div>
