@@ -31,6 +31,7 @@ def mock_shutdown_pool(self, num_workflows=0):
                 self.manager_thread.join()
             self.threading_is_initialized = False
             break
+    data_sent.receivers = {}
     self.cleanup_threading()
     return
 
