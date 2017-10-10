@@ -44,8 +44,6 @@ def recreate_workflow(workflow_json):
     workflow.uid = uid
     workflow.execution_uid = execution_uid
     workflow.start = start
-    if 'breakpoint_steps' in workflow_json:
-        workflow.add_breakpoint_steps(workflow_json['breakpoint_steps'])
 
     return workflow, start_input
 
@@ -137,17 +135,6 @@ class LoadBalancer:
         logger.info('Resuming workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
-
-    def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
-        """Resumes a step in a workflow that was listed as a breakpoint step.
-
-        Args:
-            workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
-        """
-        logger.info('Resuming workflow {0}'.format(workflow_name))
-        if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
 
 
 class Worker:

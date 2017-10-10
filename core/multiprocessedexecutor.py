@@ -159,8 +159,6 @@ class MultiprocessedExecutor(object):
         if start_input:
             workflow_json['start_input'] = start_input
         workflow_json['execution_uid'] = uid
-        if workflow.get_breakpoint_steps():
-            workflow_json['breakpoint_steps'] = workflow.get_breakpoint_steps()
         self.load_balancer.add_workflow(workflow_json)
 
         callbacks.SchedulerJobExecuted.send(self)
@@ -199,17 +197,3 @@ class MultiprocessedExecutor(object):
             else:
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
                 return False
-
-    def resume_breakpoint_step(self, uid, workflow):
-        """Resumes a step that has been specified as a breakpoint.
-
-        Args:
-            uid (str): The UID of the workflow that is being executed.
-        """
-        if workflow and uid in self.workflow_status:
-            logger.info('Resuming workflow {0} from breakpoint'.format(workflow.name))
-            self.load_balancer.resume_breakpoint_step(uid, workflow.name)
-            return True
-        else:
-            logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow.name))
-            return False

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, steps=None, start=None, accumulated_risk=0.0, breakpoint_steps=None):
+    def __init__(self, name='', uid=None, steps=None, start=None, accumulated_risk=0.0):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
@@ -33,7 +33,6 @@ class Workflow(ExecutionElement):
 
         self._total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
         self._is_paused = False
-        self._breakpoint_steps = set(breakpoint_steps) if breakpoint_steps is not None else set()
         self._accumulator = {}
         self._comm_sock = None
         self._execution_uid = 'default'
@@ -102,17 +101,6 @@ class Workflow(ExecutionElement):
             logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
 
-    def resume_breakpoint_step(self):
-        """Resumes a Workflow that has hit a breakpoint at a Step. This is used for debugging purposes.
-        """
-        try:
-            logger.debug('Attempting to resume workflow {0} from breakpoint'.format(self.name))
-            self._is_paused = False
-        except (StopIteration, AttributeError) as e:
-            logger.warning('Cannot resume workflow {0} from breakpoint. '
-                           'Reason: {1}'.format(self.name, format_exception_message(e)))
-            pass
-
     def __send_callback(self, callback_name, data={}):
         data['callback_name'] = callback_name
         data['sender'] = {}
@@ -164,14 +152,6 @@ class Workflow(ExecutionElement):
                 except zmq.ZMQError:
                     pass
             if step is not None:
-                if step.name in self._breakpoint_steps:
-                    self.__send_callback("Workflow Paused")
-                    res = self._comm_sock.recv()
-                    if not res == b'Resume breakpoint':
-                        logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
-                    else:
-                        self._comm_sock.send(b"Resumed")
-                        self.__send_callback("Workflow Resumed")
                 self.__send_callback('Next Step Found')
                 device_id = (step.app, step.device)
                 if device_id not in instances:
@@ -252,12 +232,6 @@ class Workflow(ExecutionElement):
         data['data'] = dict(self._accumulator)
         self.__send_callback('Workflow Shutdown', data)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
-
-    def add_breakpoint_steps(self, steps):
-        self._breakpoint_steps |= set(steps)
-
-    def get_breakpoint_steps(self):
-        return list(self._breakpoint_steps)
 
     def get_comm_sock(self):
         return self._comm_sock

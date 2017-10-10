@@ -278,18 +278,6 @@ class PlaybookStore(object):
             self.playbooks[new_playbook_name] = deepcopy(self.playbooks[old_playbook_name])
             self.playbooks[new_playbook_name].regenerate_uids()
 
-    def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
-        """Adds a breakpoint (for debugging purposes) in the specified steps.
-
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow under which the steps are located.
-            steps (list[str]): The list of step names for which the user would like to pause execution.
-        """
-        workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow is not None:
-            workflow.add_breakpoint_steps(steps)
-
     def get_workflows_by_uid(self, workflow_uids):
         playbook_workflows = {}
         for playbook_name, playbook in self.playbooks.items():

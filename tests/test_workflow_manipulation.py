@@ -114,30 +114,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
 
-    def test_pause_and_resume_workflow_breakpoint(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
-        self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
-        self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
-
-        uid = None
-        result = dict()
-        result['paused'] = False
-        result['resumed'] = False
-
-        @WorkflowPaused.connect
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            self.controller.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow', uid)
-
-        @WorkflowResumed.connect
-        def workflow_resumed_listener(sender, **kwargs):
-            result['resumed'] = True
-
-        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        self.controller.shutdown_pool(1)
-        self.assertTrue(result['paused'])
-        self.assertTrue(result['resumed'])
-
     def test_change_step_input(self):
         self.controller.initialize_threading()
         input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]

@@ -51,18 +51,6 @@ class Controller(object):
         if workflow:
             self.executor.resume_workflow(workflow_execution_uid, workflow)
 
-    def resume_breakpoint_step(self, playbook_name, workflow_name, uid):
-        """Resumes a step that has been specified as a breakpoint.
-
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
-            uid (str): The UID of the workflow that is being executed.
-        """
-        workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow:
-            self.executor.resume_breakpoint_step(uid, workflow)
-
     def load_workflow(self, resource, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.
 
@@ -208,16 +196,6 @@ class Controller(object):
             new_playbook (str): The new name of the playbook.
         """
         self.playbook_store.update_playbook_name(old_playbook, new_playbook)
-
-    def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
-        """Adds a breakpoint (for debugging purposes) in the specified steps.
-        
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow under which the steps are located.
-            steps (list[str]): The list of step names for which the user would like to pause execution.
-        """
-        self.playbook_store.add_workflow_breakpoint_steps(playbook_name, workflow_name, steps)
 
     def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
         """Executes a workflow.
