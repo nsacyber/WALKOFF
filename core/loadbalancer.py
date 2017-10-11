@@ -152,6 +152,12 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
 
+    def send_data_to_trigger(self, data, workflow_uids):
+        for uid in workflow_uids:
+            if uid in self.workflow_comms:
+                self.comm_socket.send_multipart(
+                    [self.workflow_comms[uid], b'', str.encode(json.dumps(data))])
+
 
 class Worker:
     def __init__(self, id_, worker_env=None):

@@ -290,6 +290,21 @@ class Controller(object):
         """
         self.playbook_store.copy_playbook(old_playbook_name, new_playbook_name)
 
+    def send_data_to_trigger(self, data, workflow_uids=None):
+        """Tries to match the data in against the conditionals of all the triggers registered in the database.
+
+        Args:
+            data (str): Data to be used to match against the conditionals
+            inputs (list): The input to the first step of the workflow
+            triggers (list[str], optional): List of names of the specific trigger to execute
+            tags (list[str], optional): A list of tags to find the specific triggers to execute
+
+        Returns:
+            Dictionary of {"status": <status string>}
+        """
+        if workflow_uids is not None:
+            self.executor.send_data_to_trigger(data, workflow_uids)
+
     #TODO: This method needs to be implemented somewhere
     def get_workflow_status(self, uid):
         pass

@@ -222,3 +222,6 @@ class WorkflowExecutor(object):
         else:
             logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow.name))
             return False
+
+    def send_data_to_trigger(self, data, workflow_uids):
+        self.load_balancer.send_data_to_trigger(data, workflow_uids)
