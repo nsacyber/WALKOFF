@@ -125,7 +125,7 @@ class TestPlaybookStore(TestCase):
         workflow = Workflow('work1')
         self.store.add_workflow('play1', workflow)
         self.assertStoreKeysEqual({'play1'})
-        self.assertListEqual(self.store.playbooks['play1'].workflows.values(), [workflow])
+        self.assertListEqual(list(self.store.playbooks['play1'].workflows.values()), [workflow])
 
     def test_add_workflow_playbook_in_store(self):
         self.store.playbooks['play1'] = self.loader.playbook1
@@ -139,7 +139,7 @@ class TestPlaybookStore(TestCase):
         workflow = Workflow('work3')
         self.store.add_workflow('play2', workflow)
         self.assertSetEqual(set(self.store.playbooks.keys()), {'play1', 'play2'})
-        self.assertListEqual(self.store.playbooks['play2'].workflows.values(), [workflow])
+        self.assertListEqual(list(self.store.playbooks['play2'].workflows.values()), [workflow])
 
     def test_load_playbooks(self):
         self.store.load_playbooks('resource', loader=self.loader)
@@ -165,26 +165,26 @@ class TestPlaybookStore(TestCase):
     def test_create_playbook_empty_store_no_workflows(self):
         self.store.create_playbook('play1')
         self.assertStoreKeysEqual({'play1'})
-        self.assertListEqual(self.store.playbooks['play1'].workflows.values(), [])
+        self.assertListEqual(list(self.store.playbooks['play1'].workflows.values()), [])
 
     def test_create_playbook_empty_store_with_workflows(self):
         workflow = Workflow('work1')
         self.store.create_playbook('play1', [workflow])
         self.assertStoreKeysEqual({'play1'})
-        self.assertListEqual(self.store.playbooks['play1'].workflows.values(), [workflow])
+        self.assertListEqual(list(self.store.playbooks['play1'].workflows.values()), [workflow])
 
     def test_create_playbook_nonempty_store_no_workflows(self):
         self.store.playbooks['play1'] = self.loader.playbook1
         self.store.create_playbook('play2')
         self.assertStoreKeysEqual({'play1', 'play2'})
-        self.assertListEqual(self.store.playbooks['play2'].workflows.values(), [])
+        self.assertListEqual(list(self.store.playbooks['play2'].workflows.values()), [])
 
     def test_create_playbook_nonempty_store_with_workflows(self):
         self.store.playbooks['play1'] = self.loader.playbook1
         workflow = Workflow('work1')
         self.store.create_playbook('play2', [workflow])
         self.assertStoreKeysEqual({'play1', 'play2'})
-        self.assertListEqual(self.store.playbooks['play2'].workflows.values(), [workflow])
+        self.assertListEqual(list(self.store.playbooks['play2'].workflows.values()), [workflow])
 
     def test_create_playbook_playbook_already_exists(self):
         self.store.playbooks['play1'] = self.loader.playbook1

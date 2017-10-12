@@ -127,32 +127,6 @@ class Workflow(ExecutionElement):
                 try:
                     data = self._comm_sock.recv(flags=zmq.NOBLOCK)
                     if data == b'Pause':
-# <<<<<<< HEAD:core/workflow.py
-#                         self.comm_sock.send(b"Paused")
-#                         data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
-#                         res = self.comm_sock.recv()
-#                         if res != b'resume':
-#                             logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
-#                         else:
-#                             self.comm_sock.send(b"Resumed")
-#                             data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
-#                 except zmq.ZMQError:
-#                     pass
-#             if step is not None:
-#                 if step.name in self.breakpoint_steps:
-#                     data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
-#                     res = self.comm_sock.recv()
-#                     if not res == b'Resume breakpoint':
-#                         logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
-#                     else:
-#                         self.comm_sock.send(b"Resumed")
-#                         data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
-#                 data_sent.send(self, callback_name="Next Step Found", object_type="Workflow")
-#                 device_id = (step.app, step.device)
-#                 if device_id not in instances:
-#                     instances[device_id] = Instance.create(step.app, step.device)
-#                     data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
-# =======
                         self._comm_sock.send(b"Paused")
                         data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
                         res = self._comm_sock.recv()
@@ -169,7 +143,6 @@ class Workflow(ExecutionElement):
                 if device_id not in instances:
                     instances[device_id] = AppInstance.create(step.app, step.device)
                     data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
-# >>>>>>> origin/controller-refactor:core/executionelements/workflow.py
                     logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
                 step.render_step(steps=total_steps)
                 if first:
@@ -205,7 +178,6 @@ class Workflow(ExecutionElement):
             data_sent.send(self, callback_name="Workflow Input Invalid", object_type="Workflow")
 
     def __execute_step(self, step, instance):
-# <<<<<<< HEAD:core/workflow.py
         data = {"app": step.app,
                 "action": step.action,
                 "name": step.name,
@@ -224,40 +196,6 @@ class Workflow(ExecutionElement):
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.name,
                                                                                    format_exception_message(e)))
 
-    # def __get_child_step_generator(self, tiered_step_str):
-    #     params = tiered_step_str.split(':')
-    #     if len(params) == 3:
-    #         child_name, child_start, child_next = params[0].lstrip('@'), params[1], params[2]
-    #         if (child_name in self.children
-    #                 and type(self.children[child_name]).__name__ == 'Workflow'):
-    #             logger.debug('Executing child workflow {0} of workflow {1}'.format(child_name, self.name))
-    #             self.children[child_name].execution_uid = uuid.uuid4().hex
-    #             data_sent.send(self.children[child_name], callback_name="Workflow Shutdown", object_type="Workflow")
-    #             child_step_generator = self.children[child_name].__steps(start=child_start)
-    #             return child_step_generator, child_next, child_name
-    #     return None, None, None
-
-# =======
-#         data = {"data":
-#                     {"app": step.app,
-#                      "action": step.action,
-#                      "name": step.name,
-#                      "input": step.inputs}}
-#         try:
-#             step.execute(instance=instance(), accumulator=self._accumulator)
-#             data['data']['result'] = step.get_output().as_json()
-#             data['data']['execution_uid'] = step.get_execution_uid()
-#             self.__send_callback('Step Execution Success', data)
-#         except Exception as e:
-#             data['data']['result'] = step.get_output().as_json()
-#             data['data']['execution_uid'] = step.get_execution_uid()
-#             self.__send_callback('Step Execution Error', data)
-#             if self._total_risk > 0:
-#                 self.accumulated_risk += float(step.risk) / self._total_risk
-#             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.name,
-#                                                                                    format_exception_message(e)))
-#
-# >>>>>>> origin/controller-refactor:core/executionelements/workflow.py
     def __shutdown(self, instances):
         # Upon finishing shuts down instances
         for instance in instances:
@@ -274,7 +212,6 @@ class Workflow(ExecutionElement):
             except TypeError:
                 logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
                 result_str[step] = 'error: could not convert to JSON'
-# <<<<<<< HEAD:core/workflow.py
         data = dict(self._accumulator)
         try:
             data_json = json.dumps(data)
@@ -282,12 +219,6 @@ class Workflow(ExecutionElement):
             data_json = str(data)
         data_sent.send(self, callback_name="Workflow Shutdown", object_type="Workflow", data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
-# =======
-#         data = dict()
-#         data['data'] = dict(self._accumulator)
-#         self.__send_callback('Workflow Shutdown', data)
-#         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
-# >>>>>>> origin/controller-refactor:core/executionelements/workflow.py
 
     def get_comm_sock(self):
         return self._comm_sock
