@@ -11,7 +11,7 @@ class ExecutionElement(object):
             name (str, optional): The name of the ExecutionElement. Defaults to an empty string.
             uid (str, optional): The UID of this ExecutionElement. Constructed from a UUID4 hex string
         """
-        self.uid = uuid.uuid4().hex if uid is None else uid
+        self.uid = str(uuid.uuid4()) if uid is None else uid
 
     @classmethod
     def create(cls, representation, creator=JsonElementCreator):
@@ -23,7 +23,7 @@ class ExecutionElement(object):
         return reader.read(self)
 
     def regenerate_uids(self):
-        self.uid = uuid.uuid4().hex
+        self.uid = str(uuid.uuid4())
         for field, value in ((field, getattr(self, field)) for field in dir(self)
                              if not callable(getattr(self, field))):
             if isinstance(value, list):

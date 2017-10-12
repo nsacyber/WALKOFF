@@ -19,7 +19,7 @@ class Flag(ExecutionElement):
                 converted to a dictionary of str:Argument. Defaults to None.
             filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
-                Created from uuid.uuid4().hex in Python
+                Created from uuid.uuid4() in Python
         """
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in flag constructor')

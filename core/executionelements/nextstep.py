@@ -14,7 +14,7 @@ class NextStep(ExecutionElement):
             name (str, optional): The name of the NextStep object. Defaults to an empty string.
             flags (list[Flag], optional): A list of Flag objects for the NextStep object. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
-            Created from uuid.uuid4().hex in Python
+            Created from uuid.uuid4() in Python
         """
         ExecutionElement.__init__(self, uid)
         self.name = name

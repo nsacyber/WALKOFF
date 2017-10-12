@@ -57,7 +57,7 @@ class Step(ExecutionElement):
                 corresponding widget. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             uid (str, optional): A universally unique identifier for this object.
-                Created from uuid.uuid4().hex in Python
+                Created from uuid.uuid4() in Python
             raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating
         """
         ExecutionElement.__init__(self, uid)
@@ -150,7 +150,7 @@ class Step(ExecutionElement):
         Returns:
             The result of the executed function.
         """
-        self._execution_uid = uuid.uuid4().hex
+        self._execution_uid = str(uuid.uuid4())
         data_sent.send(self, callback_name="Step Started", object_type="Step")
         try:
             args = dereference_step_routing(self.inputs, accumulator, 'In step {0}'.format(self.name))

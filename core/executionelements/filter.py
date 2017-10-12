@@ -19,7 +19,7 @@ class Filter(ExecutionElement):
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
-                Created from uuid.uuid4().hex in Python
+                Created from uuid.uuid4() in Python
         """
         if action is None:
             raise InvalidElementConstructed('Action or xml must be specified in filter constructor')

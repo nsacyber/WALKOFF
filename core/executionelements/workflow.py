@@ -21,7 +21,7 @@ class Workflow(ExecutionElement):
             
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
-            uid (str, optional): Optional UID to pass in for the workflow. Defaults to None.
+            uid (str, optional): Optional UID to pass in for the workflow. Defaults to uuid.uuid4().
             steps (dict, optional): Optional Step objects. Defaults to None.
             start (str, optional): Optional name of the starting Step. Defaults to None.
         """
@@ -235,7 +235,7 @@ class Workflow(ExecutionElement):
         self.steps = {}
         if 'name' in json_in:
             self.name = json_in['name']
-        uid = json_in['uid'] if 'uid' in json_in else uuid.uuid4().hex
+        uid = json_in['uid'] if 'uid' in json_in else self.uid
         try:
             if 'start' in json_in and json_in['start']:
                 self.start = json_in['start']

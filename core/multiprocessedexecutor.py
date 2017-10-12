@@ -142,7 +142,7 @@ class MultiprocessedExecutor(object):
             start (str, optional): The name of the first, or starting step. Defaults to "start".
             start_input (dict, optional): The input to the starting step of the workflow
         """
-        uid = uuid.uuid4().hex
+        uid = str(uuid.uuid4())
 
         if not self.threading_is_initialized:
             self.initialize_threading()
