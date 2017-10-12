@@ -10,7 +10,7 @@ from tests.util.mock_objects import *
 from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
-import core.workflowExecutor
+import core.multiprocessedexecutor
 import os
 import json
 
@@ -54,8 +54,8 @@ class ServerTestCase(unittest.TestCase):
         core.config.config.num_processes = 2
 
         if cls.patch:
-            core.workflowExecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
-            core.workflowExecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
+            core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+            core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
 
         core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 

@@ -1,9 +1,10 @@
 import json
 import logging
-from core.filter import Filter
-from core.flag import Flag
-from .database import db
+
+from core.executionelements.filter import Filter
+from core.executionelements.flag import Flag
 from core.helpers import format_exception_message
+from .database import db
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +170,7 @@ class Triggers(db.Model):
                    for filter_element in conditional['filters']]
         return Flag(action=conditional['action'],
                     args=Triggers.__to_new_input_format(conditional['args']),
-                    filters=filters)(data_in, {})
+                    filters=filters).execute(data_in, {})
 
     def __repr__(self):
         return json.dumps(self.as_json())

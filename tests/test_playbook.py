@@ -1,5 +1,6 @@
 import unittest
-from core.playbook import Playbook
+
+from core.executionelements.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
 
@@ -7,10 +8,22 @@ from tests.util.assertwrappers import orderless_list_compare
 class TestPlaybook(unittest.TestCase):
 
     def test_init(self):
+        playbook = Playbook('test')
+        self.assertEqual(playbook.name, 'test')
+        self.assertIsNotNone(playbook.uid)
+        self.assertDictEqual(playbook.workflows, {})
+
+    def test_init_with_workflows(self):
         workflows = [MockWorkflow(i, i+1) for i in range(3)]
         playbook = Playbook('test', workflows)
         self.assertEqual(playbook.name, 'test')
         orderless_list_compare(self, list(playbook.workflows.keys()), [workflow.name for workflow in workflows])
+
+    def test_init_with_uid(self):
+        playbook = Playbook('test', uid='uuu')
+        self.assertEqual(playbook.name, 'test')
+        self.assertEqual(playbook.uid, 'uuu')
+        self.assertDictEqual(playbook.workflows, {})
 
     def test_add_workflow(self):
         workflow = MockWorkflow('uid', 'wf_name')
@@ -100,12 +113,12 @@ class TestPlaybook(unittest.TestCase):
 
     def test_get_all_workflows_as_json_no_workflows(self):
         playbook = Playbook('test', [])
-        self.assertListEqual(playbook.get_all_workflows_as_json(), [])
+        self.assertListEqual(playbook.get_all_workflow_representations(), [])
 
     def test_get_all_workflows_as_json(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        workflow_jsons = playbook.get_all_workflows_as_json()
+        workflow_jsons = playbook.get_all_workflow_representations()
         expected = [{'name': i+1, 'uid': i, 'other': 'other'} for i in range(3)]
         for workflow_json in workflow_jsons:
             self.assertIn(workflow_json, expected)
@@ -125,14 +138,37 @@ class TestPlaybook(unittest.TestCase):
     def test_rename_workflow_no_workflows(self):
         playbook = Playbook('test', [])
         playbook.rename_workflow('anything', 'renamed')
-        self.assertEqual(playbook.workflows, [])
+        self.assertDictEqual(playbook.workflows, {})
 
     def test_rename_workflow_not_found(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        self.fail()
+        playbook.rename_workflow('invalid', 'new_name')
+        self.assertTrue(all(playbook.has_workflow_uid(uid) for uid in range(3)))
+        self.assertFalse(playbook.has_workflow_name('invalid'))
 
     def test_rename_workflow(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        self.fail()
+        playbook.rename_workflow(3, 'new_name')
+        self.assertTrue(playbook.has_workflow_name('new_name'))
+        self.assertFalse(playbook.has_workflow_name(3))
+
+    def test_remove_workflow_by_name_no_workflows(self):
+        playbook = Playbook('test', [])
+        playbook.remove_workflow_by_name('something')
+        self.assertDictEqual(playbook.workflows, {})
+
+    def test_remove_workflow_by_name_workflow_not_found(self):
+        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
+        playbook = Playbook('test', workflows)
+        playbook.remove_workflow_by_name('invalid')
+        self.assertEqual(len(playbook.workflows), 3)
+
+    def test_remove_workflow_by_name(self):
+        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
+        playbook = Playbook('test', workflows)
+        playbook.remove_workflow_by_name(2)
+        self.assertEqual(len(playbook.workflows), 2)
+        self.assertFalse(playbook.has_workflow_name(2))
+

@@ -19,7 +19,7 @@
                         }
                     ],
                     "name": "1",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "widgets": []
@@ -30,7 +30,7 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [
                                 {

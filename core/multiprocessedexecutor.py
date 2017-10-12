@@ -22,13 +22,18 @@ WORKFLOW_COMPLETED = 4
 NUM_PROCESSES = core.config.config.num_processes
 
 
-class WorkflowExecutor(object):
+class MultiprocessedExecutor(object):
     def __init__(self):
         self.threading_is_initialized = False
         self.uid = "executor"
         self.pids = []
         self.workflow_status = {}
         self.workflows_executed = 0
+
+        def handle_workflow_shutdown(sender, **kwargs):
+            self.__remove_workflow_status(sender, **kwargs)
+        self.handle_data_sent = handle_workflow_shutdown
+        callbacks.WorkflowShutdown.connect(handle_workflow_shutdown)
 
         self.ctx = None
         self.auth = None
@@ -38,13 +43,17 @@ class WorkflowExecutor(object):
         self.receiver = None
         self.receiver_thread = None
 
+    def __remove_workflow_status(self, sender, **kwargs):
+        if sender.get_execution_uid() in self.workflow_status:
+            self.workflow_status.pop(sender.get_execution_uid(), None)
+
     def initialize_threading(self, worker_env=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
         Args:
             worker_env (function, optional): Optional alternative worker setup environment function.
         """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
-                    os.path.exists(core.config.paths.zmq_private_keys_path)):
+                os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
 
@@ -126,68 +135,52 @@ class WorkflowExecutor(object):
         self.load_balancer = None
         self.receiver = None
 
-    def execute_workflow(self, workflow, playbook_name, workflow_name, start=None, start_input=None):
+    def execute_workflow(self, workflow, start=None, start_input=None):
         """Executes a workflow.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first, or starting step. Defaults to "start".
             start_input (dict, optional): The input to the starting step of the workflow
         """
-        # key = _WorkflowKey(playbook_name, workflow_name)
-        # if key in self.workflows:
-        #     workflow = self.workflows[key]
         uid = uuid.uuid4().hex
 
         if not self.threading_is_initialized:
             self.initialize_threading()
 
         if start is not None:
-            logger.info('Executing workflow {0} for step {1}'.format(workflow_name, start))
+            logger.info('Executing workflow {0} for step {1}'.format(workflow.name, start))
         else:
-            logger.info('Executing workflow {0} with default starting step'.format(workflow_name, start))
+            logger.info('Executing workflow {0} with default starting step'.format(workflow.name, start))
         self.workflow_status[uid] = WORKFLOW_RUNNING
 
-        wf_json = workflow.as_json()
+        workflow_json = workflow.read()
         if start:
-            wf_json['start'] = start
+            workflow_json['start'] = start
         if start_input:
-            wf_json['start_input'] = start_input
-        wf_json['execution_uid'] = uid
-        if workflow.breakpoint_steps:
-            wf_json['breakpoint_steps'] = workflow.breakpoint_steps
-
-        self.load_balancer.pending_workflows.put(wf_json)
+            workflow_json['start_input'] = start_input
+        workflow_json['execution_uid'] = uid
+        self.load_balancer.add_workflow(workflow_json)
 
         callbacks.SchedulerJobExecuted.send(self)
         # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
         return uid
-        # else:
-        #     logger.error('Attempted to execute playbook which does not exist in controller')
-        #     return None, 'Attempted to execute playbook which does not exist in controller'
 
-    def pause_workflow(self, playbook_name, workflow_name, execution_uid, workflow):
+    def pause_workflow(self, execution_uid, workflow):
         """Pauses a workflow that is currently executing.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
             execution_uid (str): The execution uid of the workflow.
             workflow (Workflow): The workflow to pause.
         """
-        # workflow = self.get_workflow(playbook_name, workflow_name)
         if (workflow and execution_uid in self.workflow_status
                 and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
             self.load_balancer.pause_workflow(execution_uid, workflow.name)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
-    def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid, workflow):
+    def resume_workflow(self, workflow_execution_uid, workflow):
         """Resumes a workflow that has been paused.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
             workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
                 pause_workflow(). This is needed to resume a workflow for security purposes.
             workflow (Workflow): The workflow to resume.
@@ -195,7 +188,6 @@ class WorkflowExecutor(object):
         Returns:
             True if successful, false otherwise.
         """
-        # workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
             if (workflow_execution_uid in self.workflow_status
                     and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
@@ -205,20 +197,3 @@ class WorkflowExecutor(object):
             else:
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
                 return False
-
-    def resume_breakpoint_step(self, playbook_name, workflow_name, uid, workflow):
-        """Resumes a step that has been specified as a breakpoint.
-
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
-            uid (str): The UID of the workflow that is being executed.
-        """
-        # workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow and uid in self.workflow_status:
-            logger.info('Resuming workflow {0} from breakpoint'.format(workflow.name))
-            self.load_balancer.resume_breakpoint_step(uid, workflow_name)
-            return True
-        else:
-            logger.warning('Cannot resume workflow {0} from breakpoint step.'.format(workflow.name))
-            return False

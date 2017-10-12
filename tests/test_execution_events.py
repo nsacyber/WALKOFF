@@ -8,7 +8,7 @@ from tests.apps import App
 import core.controller
 from tests.util.mock_objects import *
 import core.loadbalancer
-import core.workflowExecutor
+import core.multiprocessedexecutor
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -20,8 +20,8 @@ class TestExecutionEvents(unittest.TestCase):
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
-        core.workflowExecutor.WorkflowExecutor.initialize_threading = mock_initialize_threading
-        core.workflowExecutor.WorkflowExecutor.shutdown_pool = mock_shutdown_pool
+        core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.c = core.controller.controller
@@ -71,7 +71,7 @@ class TestExecutionEvents(unittest.TestCase):
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step = workflow.steps['start']
         subs = {step.uid: ['Function Execution Success', 'Step Started', 'Conditionals Executed']}
-        next_step = next(conditional for conditional in step.conditionals if conditional.name == '1')
+        next_step = next(conditional for conditional in step.next_steps if conditional.name == '1')
         subs[next_step.uid] = ['Next Step Taken', 'Next Step Not Taken']
         flag = next(flag for flag in next_step.flags if flag.action == 'regMatch')
         subs[flag.uid] = ['Flag Success', 'Flag Error']

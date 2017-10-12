@@ -18,7 +18,7 @@ class TestLoadWorkflow(unittest.TestCase):
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
     def setUp(self):
-        self.c = controller.Controller(workflows_path=config.test_workflows_path)
+        self.c = controller.Controller()
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         self.testWorkflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
@@ -42,7 +42,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.device, 'hwTest')
 
     def test_workflow_next_steps(self):
-        next_step = self.testWorkflow.steps['start'].conditionals
+        next_step = self.testWorkflow.steps['start'].next_steps
         self.assertEqual(len(next_step), 1)
 
         next_step = next_step[0]
@@ -50,7 +50,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(next_step.flags)
 
     def test_workflow_next_step_flags(self):
-        flags = self.testWorkflow.steps['start'].conditionals[0].flags
+        flags = self.testWorkflow.steps['start'].next_steps[0].flags
 
         # Verify flags exist
         self.assertTrue(len(flags) == 1)
@@ -60,7 +60,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(flag.filters)
 
     def test_workflow_next_step_filters(self):
-        filters = self.testWorkflow.steps['start'].conditionals[0].flags[0].filters
+        filters = self.testWorkflow.steps['start'].next_steps[0].flags[0].filters
         self.assertEqual(len(filters), 1)
 
         filter_element = filters[0]

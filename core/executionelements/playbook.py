@@ -1,11 +1,12 @@
-from core.workflow import Workflow
+from core.executionelements.executionelement import ExecutionElement
 
 
-class Playbook(object):
-    def __init__(self, name, workflows):
+class Playbook(ExecutionElement):
+    def __init__(self, name, workflows=None, uid=None):
+        ExecutionElement.__init__(self, uid)
         self.name = name
         # TODO: When playbook endpoints use UIDs, this should store UIDS
-        self.workflows = {workflow.name: workflow for workflow in workflows}
+        self.workflows = {workflow.name: workflow for workflow in workflows} if workflows is not None else {}
 
     def add_workflow(self, workflow):
         self.workflows[workflow.name] = workflow
@@ -31,8 +32,8 @@ class Playbook(object):
     def get_all_workflow_uids(self):
         return [workflow.uid for workflow in self.workflows.values()]
 
-    def get_all_workflows_as_json(self):
-        return [workflow.as_json() for workflow in self.workflows.values()]
+    def get_all_workflow_representations(self, reader=None):
+        return [workflow.read(reader=reader) for workflow in self.workflows.values()]
 
     def get_all_workflows_as_limited_json(self):
         return [{'name': workflow_names, 'uid': workflow.uid} for workflow_names, workflow in self.workflows.items()]
@@ -46,21 +47,3 @@ class Playbook(object):
         if workflow_name in self.workflows:
             self.workflows.pop(workflow_name)
 
-    def set_child_workflows(self):
-        all_workflow_children = {workflow.name: workflow.children for workflow in self.workflows.values()}
-        for workflow_name, workflow_children in all_workflow_children.items():
-            if workflow_children:
-                self.workflows[workflow_name].children = {child: self.workflows[child]
-                                                          for child in workflow_children if child in self.workflows}
-
-    def get_child_workflows(self):
-        return {workflow_name: workflow.children for workflow_name, workflow in self.workflows.items()}
-
-    def as_json(self):
-        return {"name": self.name,
-                "workflows": [workflow.as_json() for workflow in self.workflows.values()]}
-
-    @staticmethod
-    def from_json(json_in):
-        return Playbook(name=json_in['name'],
-                        workflows=[Workflow.from_json(workflow_json) for workflow_json in json_in['workflows']])

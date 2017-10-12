@@ -34,7 +34,7 @@ class TestZMQCommuncation(unittest.TestCase):
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
-        self.testWorkflow.execution_uid = 'some_uid'
+        self.testWorkflow.set_execution_uid('some_uid')
         self.start = datetime.utcnow()
         self.controller.initialize_threading(modified_setup_worker_env)
         case_database.initialize()
@@ -147,29 +147,6 @@ class TestZMQCommuncation(unittest.TestCase):
         def step_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
             time.sleep(0)
-
-        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        self.controller.shutdown_pool(1)
-        self.assertTrue(result['paused'])
-        self.assertTrue(result['resumed'])
-
-    def test_pause_and_resume_workflow_breakpoint(self):
-        self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
-        self.controller.add_workflow_breakpoint_steps('pauseWorkflowTest', 'pauseWorkflow', ['2'])
-
-        uid = None
-        result = dict()
-        result['paused'] = False
-        result['resumed'] = False
-
-        @WorkflowPaused.connect
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            self.controller.resume_breakpoint_step('pauseWorkflowTest', 'pauseWorkflow', uid)
-
-        @WorkflowResumed.connect
-        def workflow_resumed_listener(sender, **kwargs):
-            result['resumed'] = True
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
         self.controller.shutdown_pool(1)

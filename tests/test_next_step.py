@@ -1,12 +1,13 @@
 import unittest
-from core.nextstep import NextStep
-from core.flag import Flag
-from core.helpers import import_all_filters, import_all_flags, import_all_apps
-from tests.config import test_apps_path, function_api_path
-import core.config.config
-from tests.apps import App
-from core.decorators import ActionResult
 import uuid
+
+import core.config.config
+from core.decorators import ActionResult
+from core.executionelements.flag import Flag
+from core.executionelements.nextstep import NextStep
+from core.helpers import import_all_filters, import_all_flags, import_all_apps
+from tests.apps import App
+from tests.config import test_apps_path, function_api_path
 
 
 class TestNextStep(unittest.TestCase):
@@ -56,44 +57,6 @@ class TestNextStep(unittest.TestCase):
         next_step = NextStep(name='name', flags=flags)
         self.__compare_init(next_step, 'name', expected_flag_json)
 
-    def test_as_json(self):
-        uid = uuid.uuid4().hex
-        self.assertDictEqual(NextStep(uid=uid).as_json(), {'name': '', 'status': 'Success', 'flags': [], 'uid': uid})
-
-    def test_as_json_with_name(self):
-        uid = uuid.uuid4().hex
-        self.assertDictEqual(NextStep(name='name1', uid=uid).as_json(),
-                             {'name': 'name1', 'status': 'Success', 'flags': [], 'uid': uid})
-
-    def test_as_json_with_status(self):
-        uid = uuid.uuid4().hex
-        self.assertDictEqual(NextStep(status='test_status', uid=uid).as_json(),
-                             {'name': '', 'status': 'test_status', 'flags': [], 'uid': uid})
-
-    def test_as_json_full(self):
-        uid = uuid.uuid4().hex
-        flags = [Flag(action='Top Flag', uid=uid), Flag(action='mod1_flag1', uid=uid)]
-        expected_flag_json = [{'action': 'Top Flag', 'args': [], 'filters': [], 'uid': uid},
-                              {'action': 'mod1_flag1', 'args': [], 'filters': [], 'uid': uid}]
-        self.assertDictEqual(NextStep(name='name1', flags=flags, uid=uid).as_json(),
-                             {'name': 'name1', 'status': 'Success', 'flags': expected_flag_json, 'uid': uid})
-
-    def test_from_json_name_only(self):
-        json_in = {'name': 'name1', 'flags': []}
-        next_step = NextStep.from_json(json_in)
-        self.__compare_init(next_step, 'name1', [])
-
-    def test_from_json_with_status(self):
-        json_in = {'name': 'name1', 'status': 'test_status', 'flags': []}
-        next_step = NextStep.from_json(json_in)
-        self.__compare_init(next_step, 'name1', [], status='test_status')
-
-    def test_from_json_with_flags(self):
-        flag_json = [{'action': 'Top Flag', 'args': [], 'filters': []},
-                     {'action': 'mod1_flag1', 'args': [], 'filters': []}]
-        next_step = NextStep.from_json({'name': 'name1', 'flags': flag_json})
-        self.__compare_init(next_step, 'name1', flag_json)
-
     def test_eq(self):
         flags = [Flag(action='mod1_flag1'), Flag(action='Top Flag')]
         next_steps = [NextStep(),
@@ -107,7 +70,7 @@ class TestNextStep(unittest.TestCase):
                 else:
                     self.assertNotEqual(next_steps[i], next_steps[j])
 
-    def test_call(self):
+    def test_execute(self):
         flags1 = [Flag(action='regMatch', args={'regex': '(.*)'})]
         flags2 = [Flag(action='regMatch', args={'regex': '(.*)'}),
                   Flag(action='regMatch', args={'regex': 'a'})]
@@ -122,6 +85,6 @@ class TestNextStep(unittest.TestCase):
             next_step = NextStep(name=name, flags=flags)
             if expect_name:
                 expected_name = next_step.name
-                self.assertEqual(next_step(input_str, {}), expected_name)
+                self.assertEqual(next_step.execute(input_str, {}), expected_name)
             else:
-                self.assertIsNone(next_step(input_str, {}))
+                self.assertIsNone(next_step.execute(input_str, {}))

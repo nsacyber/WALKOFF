@@ -311,7 +311,7 @@ $(function(){
                     enum: [parameters.action]
                 },
                 inputs: _.cloneDeep(actionInputSchema),
-                next: {
+                next_steps: {
                     options: {
                         hidden: true
                     }
@@ -325,9 +325,9 @@ $(function(){
         };
 
 
-        var numSteps = parameters.next.length;
+        var numSteps = parameters.next_steps.length;
         if (numSteps > 0) {
-            schema.properties.next = {
+            schema.properties.next_steps = {
                 type: "array",
                 title: "Next Nodes",
                 options: {
@@ -405,7 +405,7 @@ $(function(){
         // modified by the user.
         // parameters.$action = parameters.action;
 
-        _.each(parameters.next, function(nextStep) {
+        _.each(parameters.next_steps, function(nextStep) {
             _.each(nextStep.flags, function(flag) {
                 flag.args.$action = flag.action;
 
@@ -427,7 +427,7 @@ $(function(){
         // parameters.action = parameters.$action;
         // delete parameters.input.$action;
 
-        _.each(parameters.next, function(nextStep) {
+        _.each(parameters.next_steps, function(nextStep) {
             _.each(nextStep.flags, function(flag) {
                 flag.action = flag.args.$action;
                 delete flag.args.$action;
@@ -513,7 +513,7 @@ $(function(){
         var parentNode = event.cyTarget.source();
         var parentData = _.cloneDeep(parentNode.data());
 
-        parentData.parameters.next = _.reject(parentData.parameters.next, (next) => { return next.name === event.cyTarget.data().target; });
+        parentData.parameters.next_steps = _.reject(parentData.parameters.next_steps, (next) => { return next.name === event.cyTarget.data().target; });
         parentNode.data(parentData);
     }
 
@@ -586,7 +586,7 @@ $(function(){
                     errors: [],
                     inputs: inputs,
                     name: id.toString(),
-                    next: [],
+                    next_steps: [],
                 }
             },
         };
@@ -833,7 +833,7 @@ $(function(){
                 return result;
             }, {});
 
-            _.each(step.next, function (nextStep) {
+            _.each(step.next_steps, function (nextStep) {
                 _.each(nextStep.flags, function (flag) {
                     flag.args = _.reduce(flag.args, function (result, arg) {
                         result[arg.name] = _.clone(arg);
@@ -859,7 +859,7 @@ $(function(){
                 return result;
             }, []);
 
-            _.each(step.next, function (nextStep) {
+            _.each(step.next_steps, function (nextStep) {
                 _.each(nextStep.flags, function (flag) {
                     flag.args = _.reduce(flag.args, function (result, arg) {
                         if (typeof arg !== 'object') return result;
@@ -1105,7 +1105,7 @@ $(function(){
             complete: function( sourceNode, targetNodes, addedEntities ) {
                 var sourceParameters = sourceNode.data().parameters;
                 if (!sourceParameters.hasOwnProperty("next"))
-                    sourceParameters.next = [];
+                    sourceParameters.next_steps = [];
 
                 // The edge handles extension is not integrated into the undo/redo extension.
                 // So in order that adding edges is contained in the undo stack,
@@ -1120,12 +1120,12 @@ $(function(){
                     });
 
                     //If we attempt to draw an edge that already exists, please remove it and take no further action
-                    if (_.find(sourceParameters.next, (next) => { return next.name === targetNodes[i].data().id })) {
+                    if (_.find(sourceParameters.next_steps, (next) => { return next.name === targetNodes[i].data().id })) {
                         cy.remove(addedEntities);
                         return;
                     }
 
-                    sourceParameters.next.push({
+                    sourceParameters.next_steps.push({
                         flags: [],
                         status: 'Success',
                         name: targetNodes[i].data().id // Note use id, not name since name can be changed
@@ -1187,7 +1187,7 @@ $(function(){
             var ret = { group: "nodes", position: _.clone(value.position) };
             ret.data = { id: value.name, parameters: _.cloneDeep(value), label: value.action };
             setNodeDisplayProperties(ret);
-            _.each(value.next, function (nextStep) {
+            _.each(value.next_steps, function (nextStep) {
                 edges.push({
                     group: "edges",
                     data: {

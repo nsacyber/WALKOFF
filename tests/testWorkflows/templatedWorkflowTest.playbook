@@ -16,7 +16,7 @@
                         }
                     ],
                     "name": "1",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "templated": true,
@@ -29,7 +29,7 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [
                                 {

@@ -1,0 +1,55 @@
+{
+    "name": "firewall",
+    "workflows": [
+        {
+            "accumulated_risk": 0.0,
+            "name": "firewall",
+            "start": "1",
+            "steps": [
+                {
+                    "action": "enable",
+                    "app": "UncomplicatedFirewall",
+                    "device": "",
+                    "inputs": [],
+                    "name": "1",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "2ecd2c5915214c6a89fc8822286faa72"
+                        }
+                    ],
+                    "position": {
+                        "x": 470,
+                        "y": 330
+                    },
+                    "risk": 0,
+                    "uid": "39ce72eb646647839387bafd4d3b5d05",
+                    "widgets": []
+                },
+                {
+                    "action": "status",
+                    "app": "UncomplicatedFirewall",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "verbose",
+                            "value": true
+                        }
+                    ],
+                    "name": "2",
+                    "next": [],
+                    "position": {
+                        "x": 870,
+                        "y": 670
+                    },
+                    "risk": 0,
+                    "uid": "ae657b418e0847eb85067961303c38d0",
+                    "widgets": []
+                }
+            ],
+            "uid": "e50030c2273e4aafb56153c1e5a5c90c"
+        }
+    ]
+}

@@ -24,7 +24,7 @@
                         }
                     ],
                     "name": "1",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "2",
@@ -56,7 +56,7 @@
                         }
                     ],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "1",
@@ -88,7 +88,7 @@
                         }
                     ],
                     "name": "2",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "9515a631ba4f4d6f8fcd6b843a277c40",
