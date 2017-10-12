@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "DailyQuoteWorkflow",
-            "start": "start",
+            "start": "ffd28bd2913242949069b8579fa148fd",
             "steps": [
                 {
                     "action": "getQuote",
@@ -11,32 +11,6 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "flags": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "filters": [
-                                        {
-                                            "action": "length",
-                                            "args": [],
-                                            "uid": "c6c6f6f99c734674b224e9196f644277"
-                                        }
-                                    ],
-                                    "uid": "b9453b66e2e34b0b843b8e43e375d4e4"
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success",
-                            "uid": "b5e0e28a180d408c98be09055e38b8f6"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "ffd28bd2913242949069b8579fa148fd",

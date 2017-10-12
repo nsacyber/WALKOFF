@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "templatedWorkflow",
-            "start": "start",
+            "start": "403e56dee3b74c5fad931d5e821fe2b9",
             "steps": [
                 {
                     "action": "repeatBackToMe",
@@ -50,7 +50,7 @@
                                     "uid": "9975455237b9471d8f5f1ba967739fc8"
                                 }
                             ],
-                            "name": "1",
+                            "name": "cd178e70ba734022b3ee1715255e9fd2",
                             "status": "Success",
                             "uid": "de6dda564ec344499f641d82b9625bcb"
                         }

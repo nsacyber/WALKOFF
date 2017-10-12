@@ -3,21 +3,7 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
-            "options": {
-                "children": [],
-                "enabled": true,
-                "scheduler": {
-                    "args": {
-                        "day": "*",
-                        "hour": "*",
-                        "month": "1-2",
-                        "second": "*/4"
-                    },
-                    "autorun": "false",
-                    "type": "cron"
-                }
-            },
-            "start": "start",
+            "start": "7aeb492a73c345bbb4e8570bb682c87d",
             "steps": [
                 {
                     "action": "repeatBackToMe",

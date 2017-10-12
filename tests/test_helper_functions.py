@@ -55,8 +55,7 @@ class TestHelperFunctions(unittest.TestCase):
                               'simpleDataManipulationWorkflow.playbook',
                               'templatedWorkflowTest.playbook',
                               'testExecutionWorkflow.playbook',
-                              'testScheduler.playbook',
-                              'tieredWorkflow.playbook']
+                              'testScheduler.playbook']
         received_workflows = locate_playbooks_in_directory(test_workflows_path)
         orderless_list_compare(self, received_workflows, expected_workflows)
 
@@ -65,9 +64,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_workflow_names_from_file(self):
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
         self.assertListEqual(workflows, ['helloWorldWorkflow'])
-
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'tieredWorkflow.playbook'))
-        self.assertListEqual(workflows, ['parentWorkflow', 'childWorkflow'])
 
         workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
         self.assertListEqual(workflows, [])

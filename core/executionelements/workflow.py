@@ -27,7 +27,7 @@ class Workflow(ExecutionElement):
         """
         ExecutionElement.__init__(self, uid)
         self.name = name
-        self.steps = {step.name: step for step in steps} if steps is not None else {}
+        self.steps = {step.uid: step for step in steps} if steps is not None else {}
         self.start = start if start is not None else 'start'
         self.accumulated_risk = accumulated_risk
 
@@ -54,12 +54,13 @@ class Workflow(ExecutionElement):
         """
         arg_input = arg_input if arg_input is not None else {}
         next_steps = next_steps if next_steps is not None else []
-        self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
-                                next_steps=next_steps, risk=risk)
+        step = Step(
+            name=name, action=action, app=app, device=device, inputs=arg_input, next_steps=next_steps, risk=risk)
+        self.steps[step.uid] = step
         self._total_risk += risk
-        logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[name].read()))
+        logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[step.uid].read()))
 
-    def remove_step(self, name=''):
+    def remove_step(self, uid):
         """Removes a Step object from the Workflow's list of Steps given the Step name.
         
         Args:
@@ -68,16 +69,14 @@ class Workflow(ExecutionElement):
         Returns:
             True on success, False otherwise.
         """
-        if name in self.steps:
-            new_dict = dict(self.steps)
-            del new_dict[name]
-            self.steps = new_dict
+        if uid in self.steps:
+            self.steps.pop(uid)
             logger.debug('Removed step {0} from workflow {1}'.format(name, self.name))
             return True
         logger.warning('Could not remove step {0} from workflow {1}. Step does not exist'.format(name, self.name))
         return False
 
-    def __go_to_next_step(self, current='', next_up=''):
+    def __go_to_next_step(self, current, next_up):
         if next_up not in self.steps:
             self.steps[current].set_next_up(None)
             current = None
@@ -244,7 +243,7 @@ class Workflow(ExecutionElement):
             self.uid = uid
             for step_json in json_in['steps']:
                 step = Step.create(step_json)
-                self.steps[step_json['name']] = step
+                self.steps[step_json['uid']] = step
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps
             raise

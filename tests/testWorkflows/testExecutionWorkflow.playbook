@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
-            "start": "start",
+            "start": "af46e96b015d42e7abe04925fe1c43f0",
             "steps": [
                 {
                     "action": "repeatBackToMe",

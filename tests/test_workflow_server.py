@@ -231,8 +231,8 @@ class TestWorkflowServer(ServerTestCase):
         # compare the steps in initial and final workflow
         self.assertEqual(len(resulting_workflow.steps.keys()), len(list(initial_steps)))
         for initial_step in initial_steps:
-            self.assertIn(initial_step['name'], resulting_workflow.steps.keys())
-            self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['name']].read())
+            self.assertIn(initial_step['uid'], resulting_workflow.steps.keys())
+            self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['uid']].read())
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]
@@ -572,10 +572,9 @@ class TestWorkflowServer(ServerTestCase):
 
         flask_server.running_context.controller.initialize_threading()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-
-        workflow.execute('a', start='start')
-        workflow.execute('b', start='start')
-        workflow.execute('c', start='start')
+        workflow.execute('a')
+        workflow.execute('b')
+        workflow.execute('c')
 
         response = self.get_with_status_check('/api/workflowresults/a', headers=self.headers)
         self.assertSetEqual(set(response.keys()), {'status', 'uid', 'results', 'started_at', 'completed_at', 'name'})
@@ -584,9 +583,9 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.initialize_threading()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
 
-        workflow.execute('a', start='start')
-        workflow.execute('b', start='start')
-        workflow.execute('c', start='start')
+        workflow.execute('a')
+        workflow.execute('b')
+        workflow.execute('c')
 
         response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)

@@ -6,7 +6,8 @@ from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from tests.config import test_apps_path, function_api_path
 import core.config.config
 
-
+import logging
+logging.basicConfig()
 class TestLoadWorkflow(unittest.TestCase):
 
     @classmethod
@@ -21,6 +22,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.c = controller.Controller()
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         self.testWorkflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        self.workflow_uid = "c5a7c29a0f844b69a59901bb542e9305"
 
     def test_workflow_loaded(self):
         # Tests that helloWorldWorkflow exists
@@ -32,8 +34,8 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(len(self.testWorkflow.steps), 1)
 
         # Asserts workflow entry point
-        self.assertTrue(self.testWorkflow.steps['start'])
-        step = self.testWorkflow.steps['start']
+        self.assertTrue(self.testWorkflow.steps[self.workflow_uid])
+        step = self.testWorkflow.steps[self.workflow_uid]
 
         # Verify attributes
         self.assertEqual(step.name, 'start')
@@ -42,7 +44,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.device, 'hwTest')
 
     def test_workflow_next_steps(self):
-        next_step = self.testWorkflow.steps['start'].next_steps
+        next_step = self.testWorkflow.steps[self.workflow_uid].next_steps
         self.assertEqual(len(next_step), 1)
 
         next_step = next_step[0]
@@ -50,7 +52,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(next_step.flags)
 
     def test_workflow_next_step_flags(self):
-        flags = self.testWorkflow.steps['start'].next_steps[0].flags
+        flags = self.testWorkflow.steps[self.workflow_uid].next_steps[0].flags
 
         # Verify flags exist
         self.assertTrue(len(flags) == 1)
@@ -60,7 +62,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(flag.filters)
 
     def test_workflow_next_step_filters(self):
-        filters = self.testWorkflow.steps['start'].next_steps[0].flags[0].filters
+        filters = self.testWorkflow.steps[self.workflow_uid].next_steps[0].flags[0].filters
         self.assertEqual(len(filters), 1)
 
         filter_element = filters[0]

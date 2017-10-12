@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "multiactionErrorWorkflow",
-            "start": "start",
+            "start": "93fdd70cdf9b4d1987df5e0cee6b4d37",
             "steps": [
                 {
                     "action": "Buggy",
@@ -26,7 +26,7 @@
                                     "uid": "5c61ec79988d46ca81c626b6bbb180b4"
                                 }
                             ],
-                            "name": "error",
+                            "name": "06bf52b3b0014c4c9da0e6f91a53ce21",
                             "status": "UnhandledException",
                             "uid": "a677a6dc4cfc421593319b011696f83a"
                         }
@@ -63,7 +63,7 @@
                                     "uid": "adddb7838ccf42c4b0615338dd474530"
                                 }
                             ],
-                            "name": "1",
+                            "name": "dc6836d7e42d4e54a43d0acdad3f9728",
                             "status": "Success",
                             "uid": "b5fa5180f239420faf6b6aadc3733251"
                         }

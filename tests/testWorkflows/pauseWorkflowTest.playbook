@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "pauseWorkflow",
-            "start": "start",
+            "start": "e2131c32efe44a83913396a0fbb9f34d",
             "steps": [
                 {
                     "action": "pause",
@@ -19,7 +19,7 @@
                     "next_steps": [
                         {
                             "flags": [],
-                            "name": "2",
+                            "name": "b7725c22c881484ebe2901027f1acd7f",
                             "status": "Success",
                             "uid": "a124b4b7648d48aa9ebc5113a5ec7d47"
                         }
@@ -38,7 +38,7 @@
                     "next_steps": [
                         {
                             "flags": [],
-                            "name": "1",
+                            "name": "6c52b6a75406452a9d85967d80d71bf8",
                             "status": "Success",
                             "uid": "ac08f9b8fee2430595ce94af71e17a6f"
                         }
