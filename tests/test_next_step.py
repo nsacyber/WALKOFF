@@ -70,7 +70,7 @@ class TestNextStep(unittest.TestCase):
                 else:
                     self.assertNotEqual(next_steps[i], next_steps[j])
 
-    def test_call(self):
+    def test_execute(self):
         flags1 = [Flag(action='regMatch', args={'regex': '(.*)'})]
         flags2 = [Flag(action='regMatch', args={'regex': '(.*)'}),
                   Flag(action='regMatch', args={'regex': 'a'})]
@@ -85,6 +85,6 @@ class TestNextStep(unittest.TestCase):
             next_step = NextStep(name=name, flags=flags)
             if expect_name:
                 expected_name = next_step.name
-                self.assertEqual(next_step(input_str, {}), expected_name)
+                self.assertEqual(next_step.execute(input_str, {}), expected_name)
             else:
-                self.assertIsNone(next_step(input_str, {}))
+                self.assertIsNone(next_step.execute(input_str, {}))

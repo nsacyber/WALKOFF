@@ -53,35 +53,36 @@ class TestFilter(unittest.TestCase):
         with self.assertRaises(InvalidInput):
             Filter(action='mod1_filter2', args={'arg1': 'invalid'})
 
-    def test_call_with_no_args_no_conversion(self):
-        self.assertAlmostEqual(Filter(action='Top Filter')(5.4, {}), 5.4)
+    def test_execute_with_no_args_no_conversion(self):
+        self.assertAlmostEqual(Filter(action='Top Filter').execute(5.4, {}), 5.4)
 
-    def test_call_with_no_args_with_conversion(self):
-        self.assertAlmostEqual(Filter(action='Top Filter')('-10.437', {}), -10.437)
+    def test_execute_with_no_args_with_conversion(self):
+        self.assertAlmostEqual(Filter(action='Top Filter').execute('-10.437', {}), -10.437)
 
-    def test_call_with_invalid_input(self):
-        self.assertEqual(Filter(action='Top Filter')('invalid', {}), 'invalid')
+    def test_execute_with_invalid_input(self):
+        self.assertEqual(Filter(action='Top Filter').execute('invalid', {}), 'invalid')
 
-    def test_call_with_filter_which_raises_exception(self):
-        self.assertEqual(Filter(action='sub1_filter3')('anything', {}), 'anything')
+    def test_execute_with_filter_which_raises_exception(self):
+        self.assertEqual(Filter(action='sub1_filter3').execute('anything', {}), 'anything')
 
-    def test_call_with_args_no_conversion(self):
-        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('5.4', {}), 15.7)
+    def test_execute_with_args_no_conversion(self):
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'}).execute('5.4', {}), 15.7)
 
-    def test_call_with_args_with_conversion(self):
-        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})(5.4, {}), 15.7)
+    def test_execute_with_args_with_conversion(self):
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'}).execute(5.4, {}), 15.7)
 
-    def test_call_with_args_with_routing(self):
-        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '@step1'})(5.4, {'step1': 10.3}), 15.7)
+    def test_execute_with_args_with_routing(self):
+        self.assertAlmostEqual(Filter(action='mod1_filter2', args={'arg1': '@step1'}).execute(5.4, {'step1': 10.3}),
+                               15.7)
 
-    def test_call_with_complex_args(self):
+    def test_execute_with_complex_args(self):
         original_filter = Filter(action='sub1_filter1', args={'arg1': {'a': '5.4', 'b': 'string_in'}})
-        self.assertEqual(original_filter(3, {}), '3.0 5.4 string_in')
+        self.assertEqual(original_filter.execute(3, {}), '3.0 5.4 string_in')
 
     def test_call_with_nested_complex_args(self):
         args = {'arg': {'a': '4', 'b': 6, 'c': [1, 2, 3]}}
         original_filter = Filter(action='complex', args=args)
-        self.assertAlmostEqual(original_filter(3, {}), 19.0)
+        self.assertAlmostEqual(original_filter.execute(3, {}), 19.0)
 
     def test_call_with_args_invalid_input(self):
-        self.assertEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'})('invalid', {}), 'invalid')
+        self.assertEqual(Filter(action='mod1_filter2', args={'arg1': '10.3'}).execute('invalid', {}), 'invalid')

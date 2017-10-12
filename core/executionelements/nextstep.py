@@ -33,9 +33,9 @@ class NextStep(ExecutionElement):
     def __eq__(self, other):
         return self.name == other.name and self.status == other.status and set(self.flags) == set(other.flags)
 
-    def __call__(self, data_in, accumulator):
+    def execute(self, data_in, accumulator):
         if data_in is not None and data_in.status == self.status:
-            if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
+            if all(flag.execute(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
                 self.__send_callback("Next Step Taken")
                 logger.debug('NextStep is valid for input {0}'.format(data_in))
 

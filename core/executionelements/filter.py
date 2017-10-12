@@ -42,7 +42,7 @@ class Filter(ExecutionElement):
         data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
 
-    def __call__(self, data_in, accumulator):
+    def execute(self, data_in, accumulator):
         """Executes the flag.
 
         Args:

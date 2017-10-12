@@ -200,7 +200,7 @@ class Step(ExecutionElement):
         """
 
         for next_step in self.next_steps:
-            next_step = next_step(self._output, accumulator)
+            next_step = next_step.execute(self._output, accumulator)
             if next_step is not None:
                 self._next_up = next_step
                 self.__send_callback('Conditionals Executed')

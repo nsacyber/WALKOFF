@@ -42,11 +42,11 @@ class Flag(ExecutionElement):
         data['sender']['uid'] = self.uid
         data_sent.send(None, data=data)
 
-    def __call__(self, data_in, accumulator):
+    def execute(self, data_in, accumulator):
         data = data_in
 
         for filter_element in self.filters:
-            data = filter_element(data, accumulator)
+            data = filter_element.execute(data, accumulator)
         try:
             data = validate_parameter(data, self._data_in_api, 'Flag {0}'.format(self.action))
             args = dereference_step_routing(self.args, accumulator, 'In Flag {0}'.format(self.uid))
