@@ -71,9 +71,9 @@ class Workflow(ExecutionElement):
         """
         if uid in self.steps:
             self.steps.pop(uid)
-            logger.debug('Removed step {0} from workflow {1}'.format(name, self.name))
+            logger.debug('Removed step {0} from workflow {1}'.format(uid, self.name))
             return True
-        logger.warning('Could not remove step {0} from workflow {1}. Step does not exist'.format(name, self.name))
+        logger.warning('Could not remove step {0} from workflow {1}. Step does not exist'.format(uid, self.name))
         return False
 
     def __go_to_next_step(self, current, next_up):
