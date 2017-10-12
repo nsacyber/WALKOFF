@@ -1,7 +1,7 @@
 <div id="main" class="playbookMain">
     <div id="playbookToolbar" class=btn-toolbar role=toolbar>
         <div class="btn-group" role="group">
-            <button id="new-button" type=button class="btn btn-default" data-toggle="tooltip" title="New Workflow">
+            <button id="new-button" type=button class="btn btn-default" data-toggle="tooltip" title="New Workflow" (click)="newWorkflowModal()">
                 <span class="fa fa-file-o"></span>
             </button>
         </div>
@@ -79,10 +79,7 @@
                     <div class="row graphEditorRow">
                         <div class="col-md-2 graphEditorColumn">
                             <div id="palette">
-                                <div id="actionContainer">
-                                    <div id="actionsLabel">Actions</div>
-                                    <div id="actions"></div>
-                                </div>
+                                <!-- <tree-root [nodes]="actionTree"></tree-root> -->
                             </div>
                         </div>
 
@@ -151,17 +148,17 @@
                             <option value="0">-- Create new Playbook --</option>
                             <option *ngFor="let i of getPlaybooks()" [value]="i" [label]="i">{{i}}</option>
                         </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybook === 0 || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
+                        <input type="text" *ngIf="modalParams.selectedPlaybook === '0' || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
                             class="form-control" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
-                        <h6>Enter a Playbook</h6>
-                        <input type="text" [(ngModel)]="modalParams.newPlaybook" class="form-control" placeholder="Enter a new workflow name">
+                        <h6>Enter a Workflow</h6>
+                        <input type="text" [(ngModel)]="modalParams.newWorkflow" class="form-control" placeholder="Enter a new workflow name">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">{{modalParams.submitText}}</button>
+                    <button type="button" class="btn btn-primary" (click)="modalParams.submit()">{{modalParams.submitText}}</button>
                 </div>
             </div>
         </div>

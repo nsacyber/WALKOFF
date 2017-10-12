@@ -10,6 +10,7 @@ import { Select2Module } from 'ng2-select2';
 import { AuthConfig, tokenNotExpired } from 'angular2-jwt';
 import { JwtConfigService, JwtHttp, RefreshConfig } from 'angular2-jwt-refresh';
 import { DateTimePickerModule } from 'ng-pick-datetime';
+// import { TreeModule } from 'angular-tree-component';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -40,6 +41,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		ToastyModule.forRoot(),
 		Select2Module,
 		DateTimePickerModule,
+		// TreeModule,
 	],
 	declarations: [
 		//Main component

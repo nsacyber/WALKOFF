@@ -14,11 +14,11 @@ export class PlaybookService {
 	constructor(private authHttp: JwtHttp) { }
 
 	// TODO: should maybe just return all playbooks and not just names?
-	getPlaybooks(): Promise<{ [key: string]: string[] }> {
+	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get(`/api/playbooks`)
 			.toPromise()
 			.then(this.extractData)
-			// .then(data => data as Playbook)
+			.then(data => data as Playbook[])
 			.catch(this.handleError);
 	}
 
@@ -77,10 +77,11 @@ export class PlaybookService {
 	 * @param newName Name for the new copy to be saved
 	 */
 	// TODO: probably don't need playbook in body, verify on server
-	duplicateWorkflow(playbook: string, oldName: string, newName: string): Promise<void> {
+	duplicateWorkflow(playbook: string, oldName: string, newName: string): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}/copy`, { playbook: playbook, workflow: newName })
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Workflow)
 			.catch(this.handleError);
 	}
 

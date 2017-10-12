@@ -10,11 +10,14 @@ import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty
 // import * as cytoscapeUndoRedo from 'cytoscape-undo-redo';
 // import * as jstree from 'jstree';
 import { UUID } from 'angular2-uuid';
+// import { TreeModel, Ng2TreeSettings, TreeModelSettings } from 'ng2-tree';
+// import { TreeComponent, TreeModel, TreeNode } from 'angular-tree-component';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 
 import { Action, ActionArgument } from '../models/playbook/action';
+import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
@@ -42,7 +45,7 @@ export class PlaybookComponent {
 	currentPlaybook: string;
 	currentWorkflow: string;
 	loadedWorkflow: Workflow;
-	workflowsForPlaybooks: { [key: string]: string[] } = {};
+	workflowsForPlaybooks: Playbook[] = [];
 	cy: any;
 	ur: any;
 	actionsForApps: { [key: string]: { [key: string]: Action } } = {};
@@ -50,19 +53,29 @@ export class PlaybookComponent {
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedNode: any = null; // node being displayed in json editor
 	cyJsonData: string;
+	actionTree: any;
 
 	// Simple bootstrap modal params
-	modalParams = {
+	modalParams: {
+		title: string,
+		submitText: string,
+		shouldShowPlaybook?: boolean,
+		shouldShowExistingPlaybooks?: boolean,
+		selectedPlaybook?: string,
+		newPlaybook?: string,
+		shouldShowWorkflow?: boolean,
+		newWorkflow?: string,
+		submit?: () => any
+	} = {
 		title: '',
 		submitText: '',
-		currentPlaybook: '',
-		currentWorkflow: '',
 		shouldShowPlaybook: false,
 		shouldShowExistingPlaybooks: false,
 		selectedPlaybook: '',
 		newPlaybook: '',
 		shouldShowWorkflow: false,
 		newWorkflow: '',
+		submit: <() => any>(() => {})
 	};
 
 	constructor(private playbookService: PlaybookService, private authService: AuthService, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
@@ -71,7 +84,7 @@ export class PlaybookComponent {
 		this.playbookService.getConditions().then(conditions => this.conditions = conditions);
 		this.playbookService.getTransforms().then(transforms => this.transforms = transforms);
 		this.playbookService.getDevices().then(devices => this.devices = devices);
-		this.playbookService.getActionsForApps().then(actionsForApps => this.actionsForApps = actionsForApps);
+		this.getActionsForApps();
 		this.getWorkflowResultsSSE();
 		this.getPlaybooksWithWorkflows();
 
@@ -85,9 +98,9 @@ export class PlaybookComponent {
 		this._addCytoscapeEventBindings();
 	}
 
-	///------------------------------------
+	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions
-	///------------------------------------
+	///------------------------------------------------------------------------------------------------------
 	getWorkflowResultsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
@@ -269,12 +282,7 @@ export class PlaybookComponent {
 				this.cy.clipboard();
 
 				//Extension for grid and guidelines
-				this.cy.gridGuide({
-					// drawGrid: true,
-					// strokeStyle: '#222'
-					//options...
-				});
-
+				this.cy.gridGuide();
 
 				// Load the data into the graph
 				// If a node does not have a label field, set it to
@@ -407,9 +415,28 @@ export class PlaybookComponent {
 			.then(playbooks => this.workflowsForPlaybooks = playbooks);
 	}
 
-	///------------------------------------
+	getActionsForApps(): void {
+		this.playbookService.getActionsForApps()
+			.then((actionsForApps) => {
+				this.actionsForApps = actionsForApps;
+
+				this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
+					let appObj: any = { name: app, children: [] };
+					
+					Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
+
+					result.push(appObj);
+
+					return result;
+				}, []);
+
+				console.log(this.actionTree);
+			});
+	}
+
+	///------------------------------------------------------------------------------------------------------
 	/// Cytoscape functions
-	///------------------------------------
+	///------------------------------------------------------------------------------------------------------
 	// This function displays a form next to the graph for editing a node when clicked upon
 	onNodeSelect(e: any, self: PlaybookComponent): void {
 		let ele = e.target;
@@ -451,13 +478,10 @@ export class PlaybookComponent {
 	onNodeRemoved(event: any, self: PlaybookComponent): void {
 		let node = event.target;
 		let parameters = node.data("parameters");
-		// If the start node was deleted, set it to one of the roots of the graph
-		if (parameters && node.isNode() && self.startNode == parameters.id) {
-			self.setStartNode(null);
-		}
 
-		if (self.selectedNode == node)
-			self.selectedNode = null;
+		// If the start node was deleted, set it to one of the roots of the graph
+		if (parameters && node.isNode() && self.startNode == parameters.id) self.setStartNode(null);
+		if (self.selectedNode == node) self.selectedNode = null;
 	}
 
 	// This function is called when the user drops a new node onto the graph
@@ -475,7 +499,7 @@ export class PlaybookComponent {
 
 		// The following coordinates is where the user dropped relative to the
 		// top-left of the graph
-		let location = {
+		let location: GraphPosition = {
 			x: event.pageX + this.offset.x,
 			y: event.pageY + this.offset.y
 		}
@@ -588,8 +612,7 @@ export class PlaybookComponent {
 
 	removeSelectedNodes(): void {
 		let selecteds = this.cy.$(":selected");
-		if (selecteds.length > 0)
-			this.ur.do("remove", selecteds);
+		if (selecteds.length > 0) this.ur.do("remove", selecteds);
 	}
 
 	_addCytoscapeEventBindings(): void {
@@ -623,19 +646,144 @@ export class PlaybookComponent {
 		});
 	}
 
-	///------------------------------------
+	///------------------------------------------------------------------------------------------------------
+	/// Simple bootstrap modal stuff
+	///------------------------------------------------------------------------------------------------------
+	renamePlaybookModal(playbook: string): void {
+		this.modalParams = {
+			title: 'Rename Existing Playbook',
+			submitText: 'Rename Playbook',
+			shouldShowPlaybook: true,
+			submit: () => {
+				this.playbookService.renamePlaybook(playbook, this.modalParams.newPlaybook)
+					.then(() => {
+						this.workflowsForPlaybooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
+						this.toastyService.success(`Successfully renamed ${this.modalParams.newPlaybook}.`);
+						this._closeModal();
+					})
+					.catch(e => this.toastyService.error(`Error renaming ${this.modalParams.newPlaybook}: ${e.message}`));
+			}
+		};
+
+		this._openModal();
+	}
+
+	duplicatePlaybookModal(playbook: string): void {
+		this.modalParams = {
+			title: 'Duplicate Existing Playbook',
+			submitText: 'Duplicate Playbook',
+			shouldShowPlaybook: true,
+			submit: () => {
+				this.playbookService.duplicatePlaybook(playbook, this.modalParams.newPlaybook)
+					.then(() => {
+						let duplicatedPb = _.cloneDeep(this.workflowsForPlaybooks.find(pb => pb.name === playbook));
+						duplicatedPb.name = this.modalParams.newPlaybook;
+						this.toastyService.success(`Successfully duplicated ${playbook} as ${this.modalParams.newPlaybook}.`);
+						this._closeModal();
+					})
+					.catch(e => this.toastyService.error(`Error duplicating ${this.modalParams.newPlaybook}: ${e.message}`));
+			}
+		};
+
+		this._openModal();
+	}
+
+	newWorkflowModal(): void {
+		this.modalParams = {
+			title: 'Create New Workflow',
+			submitText: 'Add Workflow',
+			shouldShowExistingPlaybooks: true,
+			shouldShowPlaybook: true,
+			shouldShowWorkflow: true,
+			submit: () => {
+				this.playbookService.newWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow)
+					.then(() => {
+						this.toastyService.success(`Created workflow ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
+						this._closeModal();
+					})
+					.catch(e => this.toastyService.error(`Error creating ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}: ${e.message}`));
+			}
+		};
+
+		this._openModal();
+	}
+
+	renameWorkflowModal(playbook: string, workflow: string): void {
+		this.modalParams = {
+			title: 'Rename Existing Workflow',
+			submitText: 'Rename Workflow',
+			shouldShowWorkflow: true,
+			submit: () => {
+				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
+					.then(() => {
+						this.workflowsForPlaybooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
+						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
+						this._closeModal();
+					})
+					.catch(e => this.toastyService.error(`Error renaming ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}: ${e.message}`));
+			}
+		};
+
+		this._openModal();
+	}
+
+	duplicateWorkflowModal(playbook: string, workflow: string): void {
+		this.modalParams = {
+			title: 'Duplicate Existing Workflow',
+			submitText: 'Duplicate Workflow',
+			shouldShowPlaybook: true,
+			shouldShowExistingPlaybooks: true,
+			selectedPlaybook: playbook,
+			shouldShowWorkflow: true,
+			submit: () => {
+				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
+					.then(duplicatedWorkflow => {
+						let pb = this.workflowsForPlaybooks.find(pb => pb.name === playbook);
+
+						if (!pb) {
+							pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
+							this.workflowsForPlaybooks.push(pb);
+						}
+
+						pb.workflows.push(duplicatedWorkflow);
+						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
+						this._closeModal();
+					})
+					.catch(e => this.toastyService.error(`Error renaming ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}: ${e.message}`));
+			}
+		};
+
+		this._openModal();
+	}
+
+	_openModal(): void {
+		($('#playbookAndWorkflowActionModal') as any).modal('show');
+	}
+
+	_closeModal(): void {
+		($('#playbookAndWorkflowActionModal') as any).modal('hide');
+	}
+	
+	_getModalPlaybookName(): string {
+		if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '0')
+			return this.modalParams.selectedPlaybook;
+
+		return this.modalParams.newPlaybook;
+	}
+
+	///------------------------------------------------------------------------------------------------------
 	/// Utility functions
-	///------------------------------------
+	///------------------------------------------------------------------------------------------------------
 	getPlaybooks(): string[] {
-		return Object.keys(this.workflowsForPlaybooks);
+		return this.workflowsForPlaybooks.map(pb => pb.name);
 	}
 
 	_doesWorkflowExist(playbook: string, workflow: string): boolean {
-		if (this.workflowsForPlaybooks.hasOwnProperty(playbook) &&
-			this.workflowsForPlaybooks[playbook].indexOf(workflow) >= 0)
-			return true;
+		let matchingPB = this.workflowsForPlaybooks.find(pb => pb.name == playbook);
 
-		return false;
+		if (!matchingPB) return false;
+
+		return matchingPB.workflows.findIndex(wf => wf.name === workflow ) >= 0;
 	}
 
 	_doesPlaybookExist(playbook: string): boolean {

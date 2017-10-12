@@ -1,5 +1,6 @@
 /* @import '/client/node_modules/jstree/dist/themes/default/style.min.css'; */
 @import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
+/* @import '/client/node_modules/ng2-tree/styles.css'; */
 
 .playbookMain h3 {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
@@ -69,6 +70,7 @@
 	vertical-align: top;
 	width: 100%;
 	height: 100%;
+	overflow-y: scroll;
 }
 
 #workflows{

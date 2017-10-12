@@ -373,104 +373,8 @@ $(function(){
         });
     }
 
-    function closeCurrentWorkflow() {
-        $("#cy").empty();
-        $("#currentWorkflowText").text("");
-        hideParameters();
-        showInstructions();
-    }
-
     // Download list of workflows for display in the Workflows list
     function getPlaybooksWithWorkflows() {
-
-        function customMenu(node) {
-            if (node.data && node.data.playbook) {
-                var playbookName = node.data.playbook;
-                var workflowName = node.text;
-                var items = {
-                    renameItem: { // The "rename" menu item
-                        label: "Rename Workflow",
-                        action: function () {
-                            var renameCallback = renameWorkflow.bind(null, workflowName);
-                            showDialog("Rename Workflow",
-                                       "Playbook Name",
-                                       playbookName,
-                                       true,
-                                       "Workflow Name",
-                                       workflowName,
-                                       false,
-                                       renameCallback,
-                                       _doesWorkflowExist);
-                        }
-                    },
-                    duplicateItem: { // The "duplicate" menu item
-                        label: "Duplicate Workflow",
-                        action: function () {
-                            var duplicateCallback = duplicateWorkflow.bind(null, workflowName);
-                            showDialog("Duplicate Workflow",
-                                       "Playbook Name",
-                                       playbookName,
-                                       true,
-                                       "Workflow Name",
-                                       workflowName,
-                                       false,
-                                       duplicateCallback,
-                                       _doesWorkflowExist);
-                        }
-                    },
-                    deleteItem: { // The "delete" menu item
-                        label: "Delete Workflow",
-                        action: function () {
-                            deleteWorkflow(playbookName, workflowName);
-                        }
-                    }
-                };
-
-                return items;
-            }
-            else {
-                var playbookName = node.text;
-                var items = {
-                    renameItem: { // The "rename" menu item
-                        label: "Rename Playbook",
-                        action: function() {
-                            var renameCallback = renamePlaybook.bind(null, playbookName);
-                            showDialog("Rename Playbook",
-                                       "Playbook Name",
-                                       playbookName,
-                                       false,
-                                       "",
-                                       "",
-                                       true,
-                                       renameCallback,
-                                       _doesPlaybookExist);
-                        }
-                    },
-                    duplicateItem: { // The "duplicate" menu item
-                        label: "Duplicate Playbook",
-                        action: function() {
-                            var duplicateCallback = duplicatePlaybook.bind(null, playbookName);
-                            showDialog("Duplicate Playbook",
-                                       "Playbook Name",
-                                       playbookName, false,
-                                       "",
-                                       "",
-                                       true,
-                                       duplicateCallback,
-                                       _doesPlaybookExist);
-                        }
-                    },
-                    deleteItem: { // The "delete" menu item
-                        label: "Delete Playbook",
-                        action: function() {
-                            deletePlaybook(playbookName);
-                        }
-                    }
-                };
-
-                return items;
-            }
-        }
 
         refreshJwtAjax({
             'async': true,
@@ -524,83 +428,15 @@ $(function(){
     //-------------------------
     // Configure event handlers
     //-------------------------
-    $("#palette ul li a").each(function() {
-        $(this).attr("href", location.href.toString()+$(this).attr("href"));
-    });
 
     // Handle drops onto graph
     $( "#cy" ).droppable( {
         drop: handleDropEvent
     } );
 
-    // Handle new button press
-    $( "#new-button" ).click(function() {
-        // $("#workflows-tab").tab('show');
-        showDialog("Create New Workflow",
-                   "Playbook Name",
-                   "",
-                   false,
-                   "Workflow Name",
-                   "",
-                   false,
-                   newWorkflow,
-                   _doesWorkflowExist);
-    });
-
-    // Handle save button press
-    $( "#save-button" ).click(function() {
-        if (cy === null)
-            return;
-
-        if ($(".nav-tabs .active").text() === "Graphical Editor") {
-            // If the graphical editor tab is active
-            saveWorkflow(currentPlaybook, currentWorkflow, cy.elements().jsons());
-        } else {
-            // If the JSON tab is active
-            saveWorkflowJson(currentPlaybook, currentWorkflow, document.getElementById('cy-json-data').value);
-        }
-    });
-
-    // The following handler ensures the graph has the focus whenever you click on it so
-    // that the undo/redo works when pressing Ctrl+Z/Ctrl+Y
-    $( "#cy" ).on("mouseup mousedown", function(){
-        $( "#cy" ).focus();
-    });
-
-    // Handle keyboard presses on graph
-    $( "#cy" ).on("keydown", function (e) {
-        if (cy === null)
-            return;
-
-        if(e.which === 46) { // Delete
-            removeSelectedNodes();
-        }
-        else if (e.ctrlKey) {
-            //TODO: re-enable undo/redo once we restructure how next steps / edges are stored
-            // if (e.which === 90) // 'Ctrl+Z', Undo
-            //     ur.undo();
-            // else if (e.which === 89) // 'Ctrl+Y', Redo
-            //     ur.redo();
-            if (e.which == 67) // Ctrl + C, Copy
-                copy();
-            else if (e.which == 86) // Ctrl + V, Paste
-                paste();
-            else if (e.which == 88) // Ctrl + X, Cut
-                cut();
-            // else if (e.which == 65) { // 'Ctrl+A', Select All
-            //     cy.elements().select();
-            //     e.preventDefault();
-            // }
-        }
-    });
-
-
     //---------------------------------
     // Setup Workflows and Actions tree
     //---------------------------------
-
-    // Download all workflows for display in the Workflows tree
-    getPlaybooksWithWorkflows();
 
     // Download all actions in all apps for display in the Actions tree
     refreshJwtAjax({
@@ -615,10 +451,6 @@ $(function(){
                     'data' : formatAppsActionJsonDataForJsTree(data)
                 }
             })
-            //Commented out for now
-            // .bind("ready.jstree", function (event, data) {
-            //     $(this).jstree("open_all"); // Expand all
-            // })
             // handle double click on workflow, add action node to center of canvas
             .bind("dblclick.jstree", function (event, data) {
                 if (cy === null)
@@ -657,69 +489,4 @@ $(function(){
     // Other setup
     //---------------------------------
     showInstructions();
-
-    function getStepTemplate() {
-        return {
-            "classes": "",
-            "data": {},
-            "grabbable": true,
-            "group": "",
-            "locked": false,
-            "position": {},
-            "removed": false,
-            "selectable": true,
-            "selected": false
-        };
-    }
-
-    var executionResultsTable = $("#executionResultsTable").DataTable({
-        columns:[
-            { data: "name", title: "ID" },
-            { data: "timestamp", title: "Timestamp" },
-            { data: "type", title: "Type" },
-            { data: "input", title: "Input" },
-            { data: "result", title: "Result" }
-        ],
-        order: [1, 'desc']
-    });
-
-    function handleStreamStepsEvent(data){
-        var id = data.name;
-        var type = data.type;
-        var elem = cy.elements('node[id="' + id + '"]');
-
-        executionResultsTable.row.add(data);
-        executionResultsTable.draw();
-
-        // var row = executionDialog.find("table").get(0).insertRow(-1);
-        // var id_cell = row.insertCell(0);
-        // id_cell.innerHTML = data.name;
-
-        // var type_cell = row.insertCell(1);
-        // type_cell.innerHTML = data.type;
-
-        // var input_cell = row.insertCell(2);
-        // input_cell.innerHTML = data.input;
-
-        // var result_cell = row.insertCell(3);
-        // result_cell.innerHTML = data.result;
-
-        if(type === "SUCCESS"){
-            elem.addClass('good-highlighted');
-        }
-        else if(type === "ERROR"){
-            elem.addClass('bad-highlighted');
-        }
-
-    }
-
-    window.stepResultsSSE.onmessage = function(message) {
-        var data = JSON.parse(message.data);
-        handleStreamStepsEvent(data);
-    }
-    window.stepResultsSSE.onerror = function(e){
-        console.log("ERROR");
-        console.log(e);
-        stepResultsSSE.close();
-    }
 });
