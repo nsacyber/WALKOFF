@@ -20,9 +20,9 @@ def get_playbooks(full=None):
     @roles_accepted_for_resources('playbooks')
     def __func():
         if full:
-            return running_context.controller.get_all_workflows(with_json=True), SUCCESS
+            return running_context.controller.get_all_workflows(full_representation=True), SUCCESS
         else:
-            return running_context.controller.get_all_workflows(with_json=False), SUCCESS
+            return running_context.controller.get_all_workflows(full_representation=False), SUCCESS
 
     return __func()
 
@@ -35,28 +35,11 @@ def create_playbook():
     def __func():
         data = request.get_json()
         playbook_name = data['name']
-        if playbook_name in running_context.controller.get_all_playbooks():
+        if running_context.controller.is_playbook_registered(playbook_name):
             return {"error": "Playbook already exists."}, OBJECT_EXISTS_ERROR
-        template_playbook = data['playbook_template'] if 'playbook_template' in data else ''
-        if template_playbook:
-            if template_playbook in [os.path.splitext(workflow)[0]
-                                     for workflow in
-                                     helpers.locate_playbooks_in_directory(core.config.paths.templates_path)]:
-                running_context.controller.create_playbook_from_template(playbook_name=playbook_name,
-                                                                         template_playbook=template_playbook)
-                current_app.logger.info('Playbook {0} created from template {1}'.format(playbook_name,
-                                                                                        template_playbook))
-                return running_context.controller.get_all_workflows(), OBJECT_CREATED
-            else:
-                running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
-                current_app.logger.info(
-                    'Playbook {0} cannot be created from template {1} because it doesn\'t exist. '
-                    'Using default template instead'.format(playbook_name, template_playbook))
-                return running_context.controller.get_all_workflows(), SUCCESS_WITH_WARNING
-        else:
-            running_context.controller.create_playbook_from_template(playbook_name=playbook_name)
-            current_app.logger.info('Playbook {0} created from default template'.format(playbook_name))
-            return running_context.controller.get_all_workflows(), OBJECT_CREATED
+        running_context.controller.create_playbook(playbook_name)
+        current_app.logger.info('Playbook {0} created'.format(playbook_name))
+        return running_context.controller.get_all_workflows(), OBJECT_CREATED
 
     return __func()
 
@@ -189,7 +172,7 @@ def get_workflows(playbook_name):
     @roles_accepted_for_resources('playbooks')
     def __func():
         try:
-            workflows = running_context.controller.get_all_workflows(with_json=True)
+            workflows = running_context.controller.get_all_workflows(full_representation=True)
             if playbook_name in workflows:
                 return workflows[playbook_name], SUCCESS
             else:
@@ -209,56 +192,16 @@ def create_workflow(playbook_name):
     def __func():
         data = request.get_json()
         workflow_name = data['name']
-        template_playbook = ''
-        template_workflow = ''
-        if 'playbook_template' in data:
-            template_playbook = data['playbook_template']
-        if 'workflow_template' in data:
-            template_workflow = data['workflow_template']
-
-        # TODO: UNCOMMENT THIS
-        # if not running_context.controller.is_playbook_registered(playbook_name):
-        #     current_app.logger.error('Could not create workflow {0}. Playbook does not exist.'.format(playbook_name))
-        #     return {"error": 'Playbook does not exist.'}, OBJECT_DNE_ERROR
 
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             current_app.logger.warning('Could not create workflow {0}. Workflow already exists.'.format(workflow_name))
             return {"error": "Workflow already exists."}, OBJECT_EXISTS_ERROR
 
-        if template_workflow and template_playbook:
-            if template_playbook in [os.path.splitext(workflow)[0]
-                                     for workflow in
-                                     helpers.locate_playbooks_in_directory(core.config.paths.templates_path)]:
-                res = running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
-                                                                               workflow_name=workflow_name,
-                                                                               template_playbook=template_playbook,
-                                                                               template_name=template_workflow)
-                if not res:
-                    add_default_template(playbook_name, workflow_name)
-                    current_app.logger.warning('Workflow {0}-{1} could not be created from template {2}-{3}. '
-                                               'Using default template'.format(playbook_name, workflow_name,
-                                                                               template_playbook, template_workflow))
-                    workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-                    return workflow.as_json(), SUCCESS_WITH_WARNING
-                else:
-                    current_app.logger.info('Workflow {0}-{1} created from template {2}-{3}. '
-                                            'Using default template'.format(playbook_name, workflow_name,
-                                                                            template_playbook, template_workflow))
-            else:
-                add_default_template(playbook_name, workflow_name)
-                current_app.logger.info('Workflow {0}-{1} could not be created from template playbook {0} '
-                                        'because template playbook is not found. '
-                                        'Using default template'.format(playbook_name,
-                                                                        workflow_name))
-                workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-                return workflow.as_json(), SUCCESS_WITH_WARNING
-        else:
-            add_default_template(playbook_name, workflow_name)
-            current_app.logger.info('Workflow {0}-{1} created from default template'.format(playbook_name,
-                                                                                            workflow_name))
+        running_context.controller.create_workflow(playbook_name, workflow_name)
+        current_app.logger.info('Workflow {0}-{1} created'.format(playbook_name, workflow_name))
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            return workflow.as_json(), OBJECT_CREATED
+            return workflow.read(), OBJECT_CREATED
         else:
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {'error': 'Could not add workflow.'}, INVALID_INPUT_ERROR
@@ -274,7 +217,7 @@ def read_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            return workflow.as_json(), SUCCESS
+            return workflow.read(), SUCCESS
         else:
             current_app.logger.error('Workflow {0}-{1} not found. Cannot be displayed.'.format(playbook_name,
                                                                                                workflow_name))
@@ -307,7 +250,7 @@ def update_workflow(playbook_name):
             workflow = running_context.controller.get_workflow(playbook_name, wf_name)
             if workflow:
                 current_app.logger.info('Updated workflow {0}-{1}'.format(playbook_name, wf_name))
-                return workflow.as_json(), SUCCESS
+                return workflow.read(), SUCCESS
             else:
                 current_app.logger.error('Altered workflow {0}-{1} no longer in controller'.format(playbook_name,
                                                                                                    wf_name))
@@ -406,7 +349,7 @@ def copy_workflow(playbook_name, workflow_name):
                                                                                     new_playbook_name,
                                                                                     new_workflow_name))
                 workflow = running_context.controller.get_workflow(new_playbook_name, new_workflow_name)
-                return workflow.as_json(), OBJECT_CREATED
+                return workflow.read(), OBJECT_CREATED
         else:
             current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot copy it.'.format(playbook_name,
                                                                                                        workflow_name))
@@ -511,8 +454,8 @@ def save_workflow(playbook_name, workflow_name):
 
 def add_default_template(playbook_name, workflow_name):
     from server.context import running_context
-    running_context.controller.create_workflow_from_template(playbook_name=playbook_name,
-                                                             workflow_name=workflow_name)
+    running_context.controller.create_workflow(playbook_name=playbook_name,
+                                               workflow_name=workflow_name)
 
 
 @jwt_required

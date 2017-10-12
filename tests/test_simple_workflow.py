@@ -4,6 +4,7 @@ from core.case import database
 from core.case import subscription
 import core.controller
 import core.loadbalancer
+import core.multiprocessedexecutor
 from core.helpers import import_all_flags, import_all_filters, import_all_apps
 from tests import config
 from tests.util.case_db_help import *
@@ -21,13 +22,13 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
-        core.controller.Controller.initialize_threading = mock_initialize_threading
-        core.controller.Controller.shutdown_pool = mock_shutdown_pool
+        core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
 
     def setUp(self):
         self.controller = core.controller.controller
         self.controller.workflows = {}
-        self.controller.load_all_playbooks_from_directory(path=config.test_workflows_path)
+        self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.start = datetime.utcnow()
 
         self.controller.initialize_threading()

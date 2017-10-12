@@ -4,8 +4,6 @@ Playbook:
     properties:
       name:
         type: string
-      playbook_template:
-        type: string
 
 AllPlaybooksOverview:
   type: array
@@ -76,10 +74,6 @@ AddWorkflow:
     required: [name]
     properties:
       name:
-        type: string
-      workflow_template:
-        type: string
-      playbook_template:
         type: string
 
 WorkflowUpdate:
@@ -171,7 +165,7 @@ Step:
           description: y position
           type: number
           example: -12.036
-    next:
+    next_steps:
       description: The possible next steps
       type: array
       items:

@@ -2,16 +2,24 @@ import unittest
 from core.scheduler import *
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.base import STATE_STOPPED, STATE_RUNNING, STATE_PAUSED
-from functools import partial
 
 
 class MockWorkflow(object):
 
-    def __init__(self, uid):
+    def __init__(self, uid, name=''):
         self.uid = uid
+        self.name = name
+        self.other = 'other'
+        self.children = []
 
     def execute(self):
         pass
+
+    def read(self, reader=None):
+        return {'name': self.name, 'uid': self.uid, 'other': self.other}
+
+    def as_json(self):
+        return {'name': self.name, 'uid': self.uid, 'other': self.other}
 
 
 def execute(playbook_name, workflow_name):

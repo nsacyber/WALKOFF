@@ -48,7 +48,7 @@ def update_configuration(configuration):
                 except (IOError, OSError):
                     current_app.logger.error('Could not commit old playbook {0} to file. '
                                              'Losing uncommitted changes!'.format(playbook))
-            running_context.controller.load_all_playbooks_from_directory()
+            running_context.controller.load_playbooks()
         if not _reset_token_durations(access_token_duration=configuration.get('access_token_duration', None),
                                       refresh_token_duration=configuration.get('refresh_token_duration', None)):
             return {'error': 'Invalid token durations.'}, BAD_REQUEST

@@ -238,7 +238,7 @@ $(function(){
                     enum: [parameters.action]
                 },
                 inputs: _.cloneDeep(actionInputSchema),
-                next: {
+                next_steps: {
                     options: {
                         hidden: true
                     }
@@ -252,9 +252,9 @@ $(function(){
         };
 
 
-        var numSteps = parameters.next.length;
+        var numSteps = parameters.next_steps.length;
         if (numSteps > 0) {
-            schema.properties.next = {
+            schema.properties.next_steps = {
                 type: "array",
                 title: "Next Nodes",
                 options: {
@@ -327,7 +327,7 @@ $(function(){
                 return result;
             }, {});
 
-            _.each(step.next, function (nextStep) {
+            _.each(step.next_steps, function (nextStep) {
                 _.each(nextStep.flags, function (flag) {
                     flag.args = _.reduce(flag.args, function (result, arg) {
                         result[arg.name] = _.clone(arg);
@@ -353,7 +353,7 @@ $(function(){
                 return result;
             }, []);
 
-            _.each(step.next, function (nextStep) {
+            _.each(step.next_steps, function (nextStep) {
                 _.each(nextStep.flags, function (flag) {
                     flag.args = _.reduce(flag.args, function (result, arg) {
                         if (typeof arg !== 'object') return result;

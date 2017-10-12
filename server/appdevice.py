@@ -8,6 +8,7 @@ from core.config.config import secret_key as key
 import core.config.paths
 from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -203,23 +204,40 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
     def __init__(self, name, field_type, value):
         self.name = name
         self.type = field_type if field_type in allowed_device_field_types else 'string'
-        aes = pyaes.AESModeOfOperationCTR(key)
+        if sys.version_info[0] == 2:
+            aes = pyaes.AESModeOfOperationCTR(key)
+        else:
+            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
         self._value = aes.encrypt(str(value))
 
     @hybrid_property
     def value(self):
-        aes = pyaes.AESModeOfOperationCTR(key)
-        val = aes.decrypt(self._value)
-        if val == '' or val is None:
-            return val
-        elif val == 'None':
-            return None
+        if sys.version_info[0] == 2:
+            aes = pyaes.AESModeOfOperationCTR(key)
+            val = aes.decrypt(self._value)
+            if val == '':
+                return val
+            elif val is None or val == 'None':
+                return None
+            else:
+                return convert_primitive_type(val, self.type)
         else:
-            return convert_primitive_type(val, self.type)
+            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
+            val = aes.decrypt(self._value)
+            if val == b'':
+                return ''
+            elif val is None or val == b'None':
+                return None
+            else:
+                return convert_primitive_type(val.decode('utf-8'), self.type)
+
 
     @value.setter
     def value(self, new_value):
-        aes = pyaes.AESModeOfOperationCTR(key)
+        if sys.version_info[0] == 2:
+            aes = pyaes.AESModeOfOperationCTR(key)
+        else:
+            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
         self._value = aes.encrypt(str(new_value))
 
     def as_json(self, export=False):

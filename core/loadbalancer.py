@@ -1,18 +1,21 @@
-import os
-import gevent
-import logging
 import json
-import zmq.green as zmq
-import zmq.auth
-from zmq.utils.strtypes import asbytes, cast_unicode
-from core.workflow import Workflow as wf
-from core.case import callbacks
+import logging
+import os
 import signal
+
+import gevent
+import zmq.auth
+import zmq.green as zmq
+from zmq.utils.strtypes import asbytes, cast_unicode
+from gevent.queue import Queue
 import core.config.paths
+from core.protobuf.build import data_pb2
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+from core.case import callbacks
+from core.executionelements.workflow import Workflow
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
 RESULTS_ADDR = 'tcp://127.0.0.1:5556'
@@ -42,12 +45,10 @@ def recreate_workflow(workflow_json):
         start_input = workflow_json['start_input']
         del workflow_json['start_input']
 
-    workflow = wf.from_json(workflow_json)
+    workflow = Workflow.create(workflow_json)
     workflow.uid = uid
-    workflow.execution_uid = execution_uid
+    workflow.set_execution_uid(execution_uid)
     workflow.start = start
-    if 'breakpoint_steps' in workflow_json:
-        workflow.breakpoint_steps = workflow_json['breakpoint_steps']
 
     return workflow, start_input
 
@@ -140,17 +141,6 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
 
-    def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
-        """Resumes a step in a workflow that was listed as a breakpoint step.
-
-        Args:
-            workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
-        """
-        logger.info('Resuming workflow {0}'.format(workflow_name))
-        if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
-
 
 class Worker:
     def __init__(self, id_, worker_env=None):
@@ -163,6 +153,11 @@ class Worker:
         """
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
+
+        def handle_data_sent(sender, **kwargs):
+            self.on_data_sent(sender, **kwargs)
+        self.handle_data_sent = handle_data_sent
+        callbacks.data_sent.connect(handle_data_sent)
 
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
@@ -198,6 +193,49 @@ class Worker:
         self.setup_worker_env()
         self.execute_workflow_worker()
 
+    def on_data_sent(self, sender, **kwargs):
+        obj_type = kwargs['object_type']
+        packet = data_pb2.Message()
+        if obj_type == 'Workflow':
+            if 'data' in kwargs:
+                packet.type = data_pb2.Message.WORKFLOWPACKETDATA
+                wf_packet = packet.workflow_packet_data
+                wf_packet.additional_data = kwargs['data']
+            else:
+                packet.type = data_pb2.Message.WORKFLOWPACKET
+                wf_packet = packet.workflow_packet
+            wf_packet.sender.name = sender.name
+            wf_packet.sender.uid = sender.uid
+            wf_packet.sender.execution_uid = sender.get_execution_uid()
+            wf_packet.callback_name = kwargs['callback_name']
+        elif obj_type == 'Step':
+            if 'data' in kwargs:
+                packet.type = data_pb2.Message.STEPPACKETDATA
+                step_packet = packet.step_packet_data
+                step_packet.additional_data = kwargs['data']
+            else:
+                packet.type = data_pb2.Message.STEPPACKET
+                step_packet = packet.step_packet
+            step_packet.sender.name = sender.name
+            step_packet.sender.uid = sender.uid
+            step_packet.sender.execution_uid = sender.get_execution_uid()
+            step_packet.sender.app = sender.app
+            step_packet.sender.action = sender.action
+
+            for key, value in sender.input.items():
+                step_packet.sender.input[key] = str(value)
+
+            step_packet.callback_name = kwargs['callback_name']
+        elif obj_type in ['NextStep', 'Flag', 'Filter']:
+            packet.type = data_pb2.Message.GENERALPACKET
+            general_packet = packet.general_packet
+            general_packet.sender.uid = sender.uid
+            if hasattr(sender, 'app'):
+                general_packet.sender.app = sender.app
+            general_packet.callback_name = kwargs['callback_name']
+        packet_bytes = packet.SerializeToString()
+        self.results_sock.send(packet_bytes)
+
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT.
         """
@@ -225,29 +263,28 @@ class Worker:
             workflow_in = self.request_sock.recv()
 
             workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
-            workflow.results_sock = self.results_sock
-            workflow.comm_sock = self.comm_sock
+            workflow.set_comm_sock(self.comm_sock)
 
-            workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
+            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
             self.request_sock.send(b"Done")
 
 
 class Receiver:
     callback_lookup = {
-        'Workflow Execution Start': (callbacks.WorkflowExecutionStart, True),
-        'Next Step Found': (callbacks.NextStepFound, True),
-        'App Instance Created': (callbacks.AppInstanceCreated, True),
+        'Workflow Execution Start': (callbacks.WorkflowExecutionStart, False),
+        'Next Step Found': (callbacks.NextStepFound, False),
+        'App Instance Created': (callbacks.AppInstanceCreated, False),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
-        'Workflow Input Validated': (callbacks.WorkflowInputInvalid, True),
-        'Workflow Input Invalid': (callbacks.WorkflowInputInvalid, True),
-        'Workflow Paused': (callbacks.WorkflowPaused, True),
-        'Workflow Resumed': (callbacks.WorkflowResumed, True),
+        'Workflow Input Validated': (callbacks.WorkflowInputInvalid, False),
+        'Workflow Input Invalid': (callbacks.WorkflowInputInvalid, False),
+        'Workflow Paused': (callbacks.WorkflowPaused, False),
+        'Workflow Resumed': (callbacks.WorkflowResumed, False),
         'Step Execution Success': (callbacks.StepExecutionSuccess, True),
         'Step Execution Error': (callbacks.StepExecutionError, True),
-        'Step Started': (callbacks.StepStarted, True),
+        'Step Started': (callbacks.StepStarted, False),
         'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
-        'Step Input Invalid': (callbacks.StepInputInvalid, True),
-        'Conditionals Executed': (callbacks.ConditionalsExecuted, True),
+        'Step Input Invalid': (callbacks.StepInputInvalid, False),
+        'Conditionals Executed': (callbacks.ConditionalsExecuted, False),
         'Next Step Taken': (callbacks.NextStepTaken, False),
         'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
         'Flag Success': (callbacks.FlagSuccess, False),
@@ -284,8 +321,8 @@ class Receiver:
             sender (dict): The sender information.
             data (dict): The data associated with the callback.
         """
-        if 'data' in data:
-            callback.send(sender, data=data['data'])
+        if data:
+            callback.send(sender, data=data)
         else:
             callback.send(sender)
 
@@ -296,20 +333,33 @@ class Receiver:
             if self.thread_exit:
                 break
             try:
-                message = self.results_sock.recv_json(zmq.NOBLOCK)
+                message_bytes = self.results_sock.recv(zmq.NOBLOCK)
             except zmq.ZMQError:
                 gevent.sleep(0.1)
                 continue
 
-            callback_name = message['callback_name']
-            sender = message['sender']
-            data = message
+            message_outer = data_pb2.Message()
+            message_outer.ParseFromString(message_bytes)
+
+            if message_outer.type == data_pb2.Message.WORKFLOWPACKET:
+                message = message_outer.workflow_packet
+            elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
+                message = message_outer.workflow_packet_data
+            elif message_outer.type == data_pb2.Message.STEPPACKET:
+                message = message_outer.step_packet
+            elif message_outer.type == data_pb2.Message.STEPPACKETDATA:
+                message = message_outer.step_packet_data
+            else:
+                message = message_outer.general_packet
+
+            callback_name = message.callback_name
+            sender = message.sender
             try:
                 callback = self.callback_lookup[callback_name]
-                data = data if callback[1] else {}
+                data = json.loads(message.additional_data) if callback[1] else {}
                 Receiver.send_callback(callback[0], sender, data)
             except KeyError:
-                logger.error('Unknown callabck sent {}'.format(callback_name))
+                logger.error('Unknown callback {} sent'.format(callback_name))
             else:
                 if callback_name == 'Workflow Shutdown':
                     self.workflows_executed += 1

@@ -1,0 +1,236 @@
+{
+    "name": "proctest",
+    "workflows": [
+        {
+            "accumulated_risk": 0.0,
+            "name": "test",
+            "start": "1",
+            "steps": [
+                {
+                    "action": "blame processes for ip connection",
+                    "app": "ProcessUtilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "connection_type",
+                            "value": "inet"
+                        },
+                        {
+                            "name": "ip",
+                            "value": "209.85.144.106"
+                        },
+                        {
+                            "name": "watch_time",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "1",
+                    "next": [
+                        {
+                            "flags": [
+                                {
+                                    "action": "count",
+                                    "args": [
+                                        {
+                                            "name": "operator",
+                                            "value": "ge"
+                                        },
+                                        {
+                                            "name": "threshold",
+                                            "value": 1.0
+                                        }
+                                    ],
+                                    "filters": [
+                                        {
+                                            "action": "length",
+                                            "args": [],
+                                            "uid": "4f512aea7fc54494944e2ce13045c651"
+                                        }
+                                    ],
+                                    "uid": "ac339d7bb0844c3e973065459065de0f"
+                                }
+                            ],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "ecf63459ba1d45d5b92f3e2b021f4b78"
+                        }
+                    ],
+                    "position": {
+                        "x": 390,
+                        "y": 290
+                    },
+                    "risk": 0,
+                    "uid": "4fa4b7edd9cb4e66a3d1e5e82b2377c4",
+                    "widgets": []
+                },
+                {
+                    "action": "get process info",
+                    "app": "ProcessUtilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "pid",
+                            "value": "@2"
+                        }
+                    ],
+                    "name": "3",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "4",
+                            "status": "Success",
+                            "uid": "b3f131eb74a7406eb7013b38994d4c3e"
+                        }
+                    ],
+                    "position": {
+                        "x": 510,
+                        "y": 410
+                    },
+                    "risk": 0,
+                    "uid": "f241f45bd6614f1ab5aa24fe1a852bb8",
+                    "widgets": []
+                },
+                {
+                    "action": "list select",
+                    "app": "Utilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "list_reference",
+                            "value": "@1"
+                        },
+                        {
+                            "name": "index",
+                            "value": 0
+                        }
+                    ],
+                    "name": "2",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "3",
+                            "status": "Success",
+                            "uid": "cb0a8ddaaf16479dbc29dd89e9c00dd0"
+                        }
+                    ],
+                    "position": {
+                        "x": 450,
+                        "y": 350
+                    },
+                    "risk": 0,
+                    "uid": "ca814747e9894a02b2d1a26c57b6b35c",
+                    "widgets": []
+                },
+                {
+                    "action": "get current working directory",
+                    "app": "ProcessUtilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "pid",
+                            "value": "@2"
+                        }
+                    ],
+                    "name": "5",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "6",
+                            "status": "Success",
+                            "uid": "99049f3058634d78bac63a1955afe49d"
+                        }
+                    ],
+                    "position": {
+                        "x": 630,
+                        "y": 530
+                    },
+                    "risk": 0,
+                    "uid": "2c3f2a5d38b046c889f2af848807adad",
+                    "widgets": []
+                },
+                {
+                    "action": "get file arg to cmd line script",
+                    "app": "ProcessUtilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "pid",
+                            "value": "@2"
+                        }
+                    ],
+                    "name": "4",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "5",
+                            "status": "Success",
+                            "uid": "0e60e24ab49c4f45b91c06783149694c"
+                        }
+                    ],
+                    "position": {
+                        "x": 570,
+                        "y": 470
+                    },
+                    "risk": 0,
+                    "uid": "8969a09be06f4b41bd3d97c805eec5cf",
+                    "widgets": []
+                },
+                {
+                    "action": "copy and bitswap",
+                    "app": "FileUtilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "path_from",
+                            "value": "@6"
+                        },
+                        {
+                            "name": "path_to",
+                            "value": ""
+                        }
+                    ],
+                    "name": "7",
+                    "next": [],
+                    "position": {
+                        "x": 750,
+                        "y": 650
+                    },
+                    "risk": 0,
+                    "uid": "a9efa33dcd3b4538bc19b06fa81d59bc",
+                    "widgets": []
+                },
+                {
+                    "action": "join path elements",
+                    "app": "FileUtilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "elements",
+                            "value": [
+                                "@5",
+                                "@4"
+                            ]
+                        }
+                    ],
+                    "name": "6",
+                    "next": [
+                        {
+                            "flags": [],
+                            "name": "7",
+                            "status": "Success",
+                            "uid": "63ceae9b6c7047a6898e03ae03a3397d"
+                        }
+                    ],
+                    "position": {
+                        "x": 690,
+                        "y": 590
+                    },
+                    "risk": 0,
+                    "uid": "5a16c0b2d4b346798fa8e204453557a7",
+                    "widgets": []
+                }
+            ],
+            "uid": "aab2f66e6220437dbc45bdbb6900380e"
+        }
+    ]
+}

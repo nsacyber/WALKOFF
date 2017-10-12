@@ -31,7 +31,7 @@
                         }
                     ],
                     "name": "1",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "63d8ff8922614e4a849497eabec06bc1",
@@ -48,7 +48,7 @@
                         }
                     ],
                     "name": "start",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [
                                 {
@@ -97,7 +97,7 @@
                         }
                     ],
                     "name": "start",
-                    "next": [],
+                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "b1c46db3a2dd446eb284c0fdd99572b7",

@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-
 from flask import render_template, send_from_directory
 from flask_jwt_extended import jwt_required
 
@@ -73,18 +72,19 @@ def write_playbook_to_file(playbook_name):
         with open(playbook_filename) as original_file:
             backup = original_file.read()
         os.remove(playbook_filename)
-    except (IOError, OSError):
-        pass
+    except (IOError, OSError) as e:
+        logger.warning('Cannot read original playbook! Saving without backup! '
+                       'Reason: {}'.format(helpers.format_exception_message(e)))
 
     app.logger.debug('Writing playbook {0} to file'.format(playbook_name))
-    write_format = 'w'
 
     try:
-        with open(playbook_filename, write_format) as workflow_out:
-            playbook_json = running_context.controller.playbook_as_json(playbook_name)
+        with open(playbook_filename, 'w') as workflow_out:
+            playbook_json = running_context.controller.get_playbook_representation(playbook_name)
             workflow_out.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
     except Exception as e:
         logger.error('Could not save playbook to file. Reverting file to original. '
                      'Error: {0}'.format(helpers.format_exception_message(e)))
-        with open(playbook_filename, 'w') as f:
-            f.write(backup)
+        if backup is not None:
+            with open(playbook_filename, 'w') as f:
+                f.write(backup)
