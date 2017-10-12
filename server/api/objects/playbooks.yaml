@@ -59,7 +59,7 @@ Workflow:
       items:
         $ref: "#/definitions/DisplayStep"
     start:
-      description: Name of the starting step
+      description: UID of the starting step
       type: string
       default: start
       example: step1
@@ -236,7 +236,7 @@ NextStep:
   description: Encapsualtion of a list of possible steps to take and conditionals (flags) required to be met before taking that step
   properties:
     name:
-      description: The name of the next step
+      description: The uid of the next step
       type: string
       example: step2
     status:
