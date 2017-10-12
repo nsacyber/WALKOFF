@@ -1,10 +1,9 @@
 import logging
 from core.scheduler import Scheduler
 import core.config.config
-import core.config.paths
-import core.workflowExecutor
+import core.multiprocessedexecutor
 from core.playbookstore import PlaybookStore
-
+from core.multiprocessedexecutor import MultiprocessedExecutor
 logger = logging.getLogger(__name__)
 
 WORKFLOW_RUNNING = 1
@@ -15,16 +14,16 @@ NUM_PROCESSES = core.config.config.num_processes
 
 
 class Controller(object):
-    def __init__(self, workflows_path=core.config.paths.workflows_path):
+    def __init__(self, executor=MultiprocessedExecutor):
         """Initializes a Controller object.
         
         Args:
             workflows_path (str, optional): Path to the workflows.
         """
         self.uid = 'controller'
-        self.playbook_store = PlaybookStore(workflows_path)
+        self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
-        self.executor = core.workflowExecutor.WorkflowExecutor()
+        self.executor = executor()
 
     def initialize_threading(self, worker_env=None):
         self.executor.initialize_threading(worker_env)
@@ -34,7 +33,7 @@ class Controller(object):
 
     def pause_workflow(self, playbook_name, workflow_name, execution_uid):
         workflow = self.get_workflow(playbook_name, workflow_name)
-        self.executor.pause_workflow(playbook_name, workflow_name, execution_uid, workflow)
+        self.executor.pause_workflow(execution_uid, workflow)
 
     def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid):
         """Resumes a workflow that has been paused.
@@ -50,19 +49,7 @@ class Controller(object):
         """
         workflow = self.get_workflow(playbook_name, workflow_name)
         if workflow:
-            self.executor.resume_workflow(playbook_name, workflow_name, workflow_execution_uid, workflow)
-
-    def resume_breakpoint_step(self, playbook_name, workflow_name, uid):
-        """Resumes a step that has been specified as a breakpoint.
-
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
-            uid (str): The UID of the workflow that is being executed.
-        """
-        workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow:
-            self.executor.resume_breakpoint_step(playbook_name, workflow_name, uid, workflow)
+            self.executor.resume_workflow(workflow_execution_uid, workflow)
 
     def load_workflow(self, resource, workflow_name, name_override=None, playbook_override=None):
         """Loads a workflow from a file.
@@ -147,17 +134,17 @@ class Controller(object):
         """
         self.playbook_store.remove_playbook(playbook_name)
 
-    def get_all_workflows(self, with_json=False):
+    def get_all_workflows(self, full_representation=False, reader=None):
         """Gets all of the currently loaded workflows.
 
         Args:
-            with_json (bool, optional): A boolean specifying whether or not to include the JSON representation
+            full_representation (bool, optional): A boolean specifying whether or not to include the JSON representation
                 of all the workflows, or just their names. Defaults to false.
         
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
         """
-        return self.playbook_store.get_all_workflows(with_json)
+        return self.playbook_store.get_all_workflows(full_representation, reader=None)
 
     def get_all_playbooks(self):
         """Gets a list of all playbooks.
@@ -210,16 +197,6 @@ class Controller(object):
         """
         self.playbook_store.update_playbook_name(old_playbook, new_playbook)
 
-    def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
-        """Adds a breakpoint (for debugging purposes) in the specified steps.
-        
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow under which the steps are located.
-            steps (list[str]): The list of step names for which the user would like to pause execution.
-        """
-        self.playbook_store.add_workflow_breakpoint_steps(playbook_name, workflow_name, steps)
-
     def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
         """Executes a workflow.
 
@@ -231,7 +208,7 @@ class Controller(object):
         """
         if self.playbook_store.is_workflow_registered(playbook_name, workflow_name):
             workflow = self.playbook_store.get_workflow(playbook_name, workflow_name)
-            return self.executor.execute_workflow(workflow, playbook_name, workflow_name, start, start_input)
+            return self.executor.execute_workflow(workflow, start, start_input)
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
             return None, 'Attempted to execute playbook which does not exist in controller'
@@ -259,7 +236,7 @@ class Controller(object):
         """
         return self.playbook_store.get_all_workflows_by_playbook(playbook_name)
 
-    def playbook_as_json(self, playbook_name):
+    def get_playbook_representation(self, playbook_name, reader=None):
         """Returns the JSON representation of a playbook.
 
         Args:
@@ -268,7 +245,7 @@ class Controller(object):
         Returns:
             The JSON representation of the playbook if the playbook has any workflows under it, else None.
         """
-        return self.playbook_store.playbook_as_json(playbook_name)
+        return self.playbook_store.get_playbook_representation(playbook_name, reader=reader)
 
     def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
         """Duplicates a workflow into its current playbook, or a different playbook.

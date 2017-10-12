@@ -1,11 +1,13 @@
 import json
 import logging
+import os.path
+
 import core.config.paths
+from core.executionelements.playbook import Playbook
+from core.executionelements.workflow import Workflow
 from core.helpers import (locate_playbooks_in_directory, InvalidInput, UnknownApp, UnknownAppAction,
                           UnknownFilter, UnknownFlag, format_exception_message)
-from core.playbook import Playbook
-from core.workflow import Workflow
-import os.path
+
 logger = logging.getLogger(__name__)
 
 
@@ -38,10 +40,11 @@ class JsonPlaybookLoader(object):
                     if workflow_json is None:
                         logger.warning('Workflow {0} not found in playbook {0}. '
                                        'Cannot load.'.format(workflow_name, playbook_name))
-                    workflow = Workflow.from_json(workflow_json)
+                        return None
+                    workflow = Workflow.create(workflow_json)
                     return playbook_name, workflow
-                except ValueError:
-                    logger.error('Cannot parse {}'.format(resource))
+                except ValueError as e:
+                    logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidInput, UnknownApp, UnknownAppAction, UnknownFilter, UnknownFlag) as e:
                     logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
                                                                                        format_exception_message(e)))
@@ -67,7 +70,7 @@ class JsonPlaybookLoader(object):
                 workflow_loaded = playbook_file.read()
                 try:
                     playbook_json = json.loads(workflow_loaded)
-                    return Playbook.from_json(playbook_json)
+                    return Playbook.create(playbook_json)
                 except ValueError:
                     logger.error('Cannot parse {}'.format(resource))
                 except (InvalidInput, UnknownApp, UnknownAppAction, UnknownFilter, UnknownFlag) as e:

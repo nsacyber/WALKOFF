@@ -1,20 +1,16 @@
-from core.playbook import Playbook
 import logging
-import uuid
 from copy import deepcopy
-import core.config.paths
-from os.path import sep
-from jsonplaybookloader import JsonPlaybookLoader
-from core.helpers import locate_playbooks_in_directory
-from core.workflow import Workflow
-import os.path
+
+from core.executionelements.playbook import Playbook
+from core.executionelements.workflow import Workflow
+from core.jsonplaybookloader import JsonPlaybookLoader
+
 logger = logging.getLogger(__name__)
 
 
 class PlaybookStore(object):
-    def __init__(self, workflows_path=core.config.paths.workflows_path):  # This should be taken out and amde explicit in the initialization
+    def __init__(self):
         self.playbooks = {}
-        self.load_playbooks(resource_collection=workflows_path)
 
     def load_workflow(self, resource, workflow_name, loader=JsonPlaybookLoader):
         """Loads a workflow from a file.
@@ -26,9 +22,11 @@ class PlaybookStore(object):
         Returns:
             True on success, False otherwise.
         """
-        playbook_name, workflow = loader.load_workflow(resource, workflow_name)
-        if workflow is None:
+        loaded = loader.load_workflow(resource, workflow_name)
+        if loaded is None:
             return None
+        else:
+            playbook_name, workflow = loaded
         if playbook_name not in self.playbooks:
             logger.debug(
                 'Playbook name {0} not found while loading workflow {1}. Adding to storage.'.format(playbook_name,
@@ -37,7 +35,6 @@ class PlaybookStore(object):
         else:
             self.playbooks[playbook_name].add_workflow(workflow)
         logger.info('Loaded workflow {} into storage'.format(workflow.uid))
-        self._add_child_workflows()
 
     def load_playbook(self, resource, loader=JsonPlaybookLoader):
         """Loads multiple workloads from a file.
@@ -50,7 +47,6 @@ class PlaybookStore(object):
         playbook = loader.load_playbook(resource)
         if playbook is not None:
             self.add_playbook(playbook)
-            self._add_child_workflows()
 
     def add_playbook(self, playbook):
         if playbook.name in self.playbooks:
@@ -70,17 +66,13 @@ class PlaybookStore(object):
         """Loads all workflows from a directory.
 
         Args:
-            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration workflows_path.
+            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration
+                workflows_path.
             loader (cls): Class used to load the playbooks
 
         """
         for playbook in loader.load_playbooks(resource_collection):
             self.add_playbook(playbook)
-        self._add_child_workflows()
-
-    def _add_child_workflows(self):
-        for playbook in self.playbooks.values():
-            playbook.set_child_workflows()
 
     def create_workflow(self, playbook_name, workflow_name):
         workflow = Workflow(name=workflow_name)
@@ -129,19 +121,18 @@ class PlaybookStore(object):
         else:
             return False
 
-    def get_all_workflows(self, with_json=False):
+    def get_all_workflows(self, full_representations=False, reader=None):
         """Gets all of the currently loaded workflows.
 
         Args:
-            with_json (bool, optional): A boolean specifying whether or not to include the JSON representation
+            full_representations (bool, optional): A boolean specifying whether or not to include the JSON representation
                 of all the workflows, or just their names. Defaults to false.
 
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
         """
-        if with_json:
-            return [{'name': playbook_name, 'workflows': playbook.get_all_workflows_as_json()}
-                    for playbook_name, playbook in self.playbooks.items()]
+        if full_representations:
+            return [playbook.read(reader=reader) for playbook in self.playbooks.values()]
         else:
             return [{'name': playbook_name, 'workflows': playbook.get_all_workflows_as_limited_json()}
                     for playbook_name, playbook in self.playbooks.items()]
@@ -186,11 +177,14 @@ class PlaybookStore(object):
             new_playbook (str): The new name of the playbook.
             new_workflow (str): The new name of the workflow.
         """
-        if old_playbook in self.playbooks:
-            self.playbooks[old_playbook].rename_workflow(old_workflow, new_workflow)
+        if old_playbook in self.playbooks and self.playbooks[old_playbook].has_workflow_name(old_workflow):
             if new_playbook != old_playbook:
-                self.playbooks[new_playbook] = self.playbooks.pop(old_playbook)
-                self.playbooks[new_playbook].name = new_playbook
+                workflow = self.playbooks[old_playbook].get_workflow_by_name(old_workflow)
+                workflow.name = new_workflow
+                self.add_workflow(new_playbook, workflow)
+                self.playbooks[old_playbook].remove_workflow_by_name(old_workflow)
+            else:
+                self.playbooks[old_playbook].rename_workflow(old_workflow, new_workflow)
             logger.debug('updated workflow name from '
                          '{0}-{1} to {2}-{3}'.format(old_playbook, old_workflow, new_playbook, new_workflow))
 
@@ -219,6 +213,9 @@ class PlaybookStore(object):
             return self.playbooks[playbook_name].get_workflow_by_name(workflow_name)
         return None
 
+    def get_playbook(self, playbook_name):
+        return self.playbooks.get(playbook_name, None)
+
     def get_all_workflows_by_playbook(self, playbook_name):
         """Get a list of all workflow objects in a playbook.
 
@@ -233,7 +230,7 @@ class PlaybookStore(object):
         else:
             return []
 
-    def playbook_as_json(self, playbook_name):
+    def get_playbook_representation(self, playbook_name, reader=None):
         """Returns the JSON representation of a playbook.
 
         Args:
@@ -243,7 +240,7 @@ class PlaybookStore(object):
             The JSON representation of the playbook if the playbook has any workflows under it, else None.
         """
         if playbook_name in self.playbooks:
-            return self.playbooks[playbook_name].as_json()
+            return self.playbooks[playbook_name].read(reader=reader)
         else:
             logger.debug('No workflows are registered in controller to convert to JSON')
             return None
@@ -258,16 +255,17 @@ class PlaybookStore(object):
             new_workflow_name (str): The new name of the duplicated workflow.
         """
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
-        workflow_copy = deepcopy(workflow)
-        workflow_copy.name = new_workflow_name
-        workflow_copy.uid = uuid.uuid4().hex
+        if workflow is not None:
+            workflow_copy = deepcopy(workflow)
+            workflow_copy.name = new_workflow_name
+            workflow_copy.regenerate_uids()
 
-        if new_playbook_name in self.playbooks:
-            self.playbooks[new_playbook_name].add_workflow(workflow_copy)
-        else:
-            self.playbooks[new_playbook_name] = Playbook(new_playbook_name, [workflow_copy])
-        logger.info('Workflow copied from {0}-{1} to {2}-{3}'.format(old_playbook_name, old_workflow_name,
-                                                                     new_playbook_name, new_workflow_name))
+            if new_playbook_name in self.playbooks:
+                self.playbooks[new_playbook_name].add_workflow(workflow_copy)
+            else:
+                self.playbooks[new_playbook_name] = Playbook(new_playbook_name, [workflow_copy])
+            logger.info('Workflow copied from {0}-{1} to {2}-{3}'.format(old_playbook_name, old_workflow_name,
+                                                                         new_playbook_name, new_workflow_name))
 
     def copy_playbook(self, old_playbook_name, new_playbook_name):
         """Copies a playbook.
@@ -276,19 +274,9 @@ class PlaybookStore(object):
             old_playbook_name (str): The name of the playbook to be copied.
             new_playbook_name (str): The new name of the duplicated playbook.
         """
-        self.playbooks[new_playbook_name] = deepcopy(self.playbooks[old_playbook_name])
-
-    def add_workflow_breakpoint_steps(self, playbook_name, workflow_name, steps):
-        """Adds a breakpoint (for debugging purposes) in the specified steps.
-
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow under which the steps are located.
-            steps (list[str]): The list of step names for which the user would like to pause execution.
-        """
-        workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow:
-            workflow.breakpoint_steps.extend(steps)
+        if old_playbook_name in self.playbooks:
+            self.playbooks[new_playbook_name] = deepcopy(self.playbooks[old_playbook_name])
+            self.playbooks[new_playbook_name].regenerate_uids()
 
     def get_workflows_by_uid(self, workflow_uids):
         playbook_workflows = {}

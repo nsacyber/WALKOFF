@@ -4,7 +4,7 @@
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
-            "start": "4",
+            "start": "1",
             "steps": [
                 {
                     "action": "helloWorld",
@@ -12,7 +12,7 @@
                     "device": "",
                     "inputs": [],
                     "name": "1",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "2",
@@ -21,8 +21,8 @@
                         }
                     ],
                     "position": {
-                        "x": -450,
-                        "y": -50
+                        "x": -450.0,
+                        "y": -50.0
                     },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
@@ -34,10 +34,17 @@
                     "device": "",
                     "inputs": [],
                     "name": "3",
-                    "next": [],
+                    "next_steps": [
+                        {
+                            "flags": [],
+                            "name": "2",
+                            "status": "Success",
+                            "uid": "55541eee50774accbf70a8d7df17a027"
+                        }
+                    ],
                     "position": {
-                        "x": -50,
-                        "y": 10
+                        "x": -50.0,
+                        "y": 10.0
                     },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
@@ -49,7 +56,7 @@
                     "device": "",
                     "inputs": [],
                     "name": "2",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "3",
@@ -58,51 +65,15 @@
                         }
                     ],
                     "position": {
-                        "x": -230,
-                        "y": -30
+                        "x": -230.0,
+                        "y": -30.0
                     },
                     "risk": 0,
                     "uid": "c5a7c29a0f844b69a59901bb542e9305",
                     "widgets": []
-                },
-                {
-                    "action": "echo object",
-                    "app": "Utilities",
-                    "device": "",
-                    "inputs": [
-                        {
-                            "name": "data",
-                            "value": {
-                                "exe_name": "notavirus.py",
-                                "pcap_name": "test.pcap",
-                                "source_ip": "165.257.22.34",
-                                "source_latitude": -31.32,
-                                "source_longitude": 23.32,
-                                "target_ip": "10.200.255.212",
-                                "target_latitude": 37.618889,
-                                "target_longitude": -122.375
-                            }
-                        }
-                    ],
-                    "name": "4",
-                    "next": [
-                        {
-                            "flags": [],
-                            "name": "1",
-                            "status": "Success",
-                            "uid": "f9d92dea753e4c2589e43c185ed1e524"
-                        }
-                    ],
-                    "position": {
-                        "x": -550,
-                        "y": 10
-                    },
-                    "risk": 0,
-                    "uid": "271ed4790717451caf96f48e835d1f16",
-                    "widgets": []
                 }
             ],
-            "uid": "460700aabde24f078932ab35693a0561"
+            "uid": "3c7f67c8ea6e481eb5d37b488a7b15b3"
         }
     ]
 }

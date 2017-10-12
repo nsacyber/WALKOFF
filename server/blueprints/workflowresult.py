@@ -84,7 +84,7 @@ def __step_error_callback(sender, **kwargs):
 @FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.input)
+    step_input = str(sender.inputs)
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):

@@ -1,0 +1,33 @@
+{
+    "name": "walkoff",
+    "workflows": [
+        {
+            "accumulated_risk": 0.0,
+            "name": "walk",
+            "start": "1",
+            "steps": [
+                {
+                    "action": "connect",
+                    "app": "Walkoff",
+                    "device": "walk",
+                    "inputs": [
+                        {
+                            "name": "timeout",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "1",
+                    "next": [],
+                    "position": {
+                        "x": 430,
+                        "y": 270
+                    },
+                    "risk": 0,
+                    "uid": "3692a7ae559648679c2be1b8e9597303",
+                    "widgets": []
+                }
+            ],
+            "uid": "0efdc4a5da4340d68e3823eb719d4357"
+        }
+    ]
+}

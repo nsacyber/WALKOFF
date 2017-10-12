@@ -11,7 +11,7 @@ SHUTDOWN = 0
 ERROR = -1
 
 
-class Instance(object):
+class AppInstance(object):
     def __init__(self, instance=None, state=1):
         """Initializes a new Instance of an App.
         
@@ -34,7 +34,7 @@ class Instance(object):
             A new Instance object.
         """
         try:
-            return Instance(instance=get_app(app_name)(name=app_name, device=device_name), state=OK)
+            return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name), state=OK)
         except Exception as e:
             logger.error('Cannot create app instance. app: {0}, device: {1}. '
                          'Error: {2}'.format(app_name, device_name, format_exception_message(e)))

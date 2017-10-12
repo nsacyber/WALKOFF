@@ -20,9 +20,9 @@ def get_playbooks(full=None):
     @roles_accepted_for_resources('playbooks')
     def __func():
         if full:
-            return running_context.controller.get_all_workflows(with_json=True), SUCCESS
+            return running_context.controller.get_all_workflows(full_representation=True), SUCCESS
         else:
-            return running_context.controller.get_all_workflows(with_json=False), SUCCESS
+            return running_context.controller.get_all_workflows(full_representation=False), SUCCESS
 
     return __func()
 
@@ -35,7 +35,7 @@ def create_playbook():
     def __func():
         data = request.get_json()
         playbook_name = data['name']
-        if playbook_name in running_context.controller.get_all_playbooks():
+        if running_context.controller.is_playbook_registered(playbook_name):
             return {"error": "Playbook already exists."}, OBJECT_EXISTS_ERROR
         running_context.controller.create_playbook(playbook_name)
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
@@ -172,7 +172,7 @@ def get_workflows(playbook_name):
     @roles_accepted_for_resources('playbooks')
     def __func():
         try:
-            workflows = running_context.controller.get_all_workflows(with_json=True)
+            workflows = running_context.controller.get_all_workflows(full_representation=True)
             if playbook_name in workflows:
                 return workflows[playbook_name], SUCCESS
             else:
@@ -201,7 +201,7 @@ def create_workflow(playbook_name):
         current_app.logger.info('Workflow {0}-{1} created'.format(playbook_name, workflow_name))
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            return workflow.as_json(), OBJECT_CREATED
+            return workflow.read(), OBJECT_CREATED
         else:
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {'error': 'Could not add workflow.'}, INVALID_INPUT_ERROR
@@ -217,7 +217,7 @@ def read_workflow(playbook_name, workflow_name):
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            return workflow.as_json(), SUCCESS
+            return workflow.read(), SUCCESS
         else:
             current_app.logger.error('Workflow {0}-{1} not found. Cannot be displayed.'.format(playbook_name,
                                                                                                workflow_name))
@@ -250,7 +250,7 @@ def update_workflow(playbook_name):
             workflow = running_context.controller.get_workflow(playbook_name, wf_name)
             if workflow:
                 current_app.logger.info('Updated workflow {0}-{1}'.format(playbook_name, wf_name))
-                return workflow.as_json(), SUCCESS
+                return workflow.read(), SUCCESS
             else:
                 current_app.logger.error('Altered workflow {0}-{1} no longer in controller'.format(playbook_name,
                                                                                                    wf_name))
@@ -349,7 +349,7 @@ def copy_workflow(playbook_name, workflow_name):
                                                                                     new_playbook_name,
                                                                                     new_workflow_name))
                 workflow = running_context.controller.get_workflow(new_playbook_name, new_workflow_name)
-                return workflow.as_json(), OBJECT_CREATED
+                return workflow.read(), OBJECT_CREATED
         else:
             current_app.logger.info('Workflow {0}-{1} not found in controller. Cannot copy it.'.format(playbook_name,
                                                                                                        workflow_name))

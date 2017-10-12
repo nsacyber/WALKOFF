@@ -1,19 +1,21 @@
-import os
-import gevent
-import logging
 import json
-import zmq.green as zmq
-import zmq.auth
-from zmq.utils.strtypes import asbytes, cast_unicode
-from core.workflow import Workflow as wf
-from core.case import callbacks
+import logging
+import os
 import signal
+
+import gevent
+import zmq.auth
+import zmq.green as zmq
+from zmq.utils.strtypes import asbytes, cast_unicode
+from gevent.queue import Queue
 import core.config.paths
 from core.protobuf.build import data_pb2
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+from core.case import callbacks
+from core.executionelements.workflow import Workflow
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
 RESULTS_ADDR = 'tcp://127.0.0.1:5556'
@@ -43,12 +45,10 @@ def recreate_workflow(workflow_json):
         start_input = workflow_json['start_input']
         del workflow_json['start_input']
 
-    workflow = wf.from_json(workflow_json)
+    workflow = Workflow.create(workflow_json)
     workflow.uid = uid
-    workflow.execution_uid = execution_uid
+    workflow.set_execution_uid(execution_uid)
     workflow.start = start
-    if 'breakpoint_steps' in workflow_json:
-        workflow.breakpoint_steps = workflow_json['breakpoint_steps']
 
     return workflow, start_input
 
@@ -141,23 +141,6 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
 
-    def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
-        """Resumes a step in a workflow that was listed as a breakpoint step.
-
-        Args:
-            workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
-        """
-        logger.info('Resuming workflow {0}'.format(workflow_name))
-        if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume breakpoint'])
-
-    def send_data_to_trigger(self, data, workflow_uids):
-        for uid in workflow_uids:
-            if uid in self.workflow_comms:
-                self.comm_socket.send_multipart(
-                    [self.workflow_comms[uid], b'', str.encode(json.dumps(data))])
-
 
 class Worker:
     def __init__(self, id_, worker_env=None):
@@ -223,7 +206,7 @@ class Worker:
                 wf_packet = packet.workflow_packet
             wf_packet.sender.name = sender.name
             wf_packet.sender.uid = sender.uid
-            wf_packet.sender.execution_uid = sender.execution_uid
+            wf_packet.sender.execution_uid = sender.get_execution_uid()
             wf_packet.callback_name = kwargs['callback_name']
         elif obj_type == 'Step':
             if 'data' in kwargs:
@@ -235,7 +218,7 @@ class Worker:
                 step_packet = packet.step_packet
             step_packet.sender.name = sender.name
             step_packet.sender.uid = sender.uid
-            step_packet.sender.execution_uid = sender.execution_uid
+            step_packet.sender.execution_uid = sender.get_execution_uid()
             step_packet.sender.app = sender.app
             step_packet.sender.action = sender.action
 
@@ -280,9 +263,9 @@ class Worker:
             workflow_in = self.request_sock.recv()
 
             workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
-            workflow.comm_sock = self.comm_sock
+            workflow.set_comm_sock(self.comm_sock)
 
-            workflow.execute(execution_uid=workflow.execution_uid, start=workflow.start, start_input=start_input)
+            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
             self.request_sock.send(b"Done")
 
 
@@ -376,7 +359,7 @@ class Receiver:
                 data = json.loads(message.additional_data) if callback[1] else {}
                 Receiver.send_callback(callback[0], sender, data)
             except KeyError:
-                logger.error('Unknown callback sent {}'.format(callback_name))
+                logger.error('Unknown callback {} sent'.format(callback_name))
             else:
                 if callback_name == 'Workflow Shutdown':
                     self.workflows_executed += 1
