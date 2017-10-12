@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from core.executionelements.playbook import Playbook
 from core.executionelements.workflow import Workflow
-from jsonplaybookloader import JsonPlaybookLoader
+from core.jsonplaybookloader import JsonPlaybookLoader
 
 logger = logging.getLogger(__name__)
 
