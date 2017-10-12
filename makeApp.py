@@ -19,7 +19,7 @@ def _convert_2_camelcase(input_value):
 
 
 def _separate_camelcase(input_value):
-    out = re.findall('[A-Z][a-z]*', input_value)
+    out = re.findall('[A-Z][a-z0-9]*', input_value)
     return ' '.join(out)
 
 
