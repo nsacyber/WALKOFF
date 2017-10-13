@@ -5,3 +5,7 @@ index.html.bak
 tests/profileVisualizations/*
 *.db
 *.pem
+client/node_modules/*
+client/build/*
+public_keys/*
+private_keys/*
