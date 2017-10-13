@@ -16,15 +16,13 @@ import { UUID } from 'angular2-uuid';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 
-import { Action, ActionArgument } from '../models/playbook/action';
+import { Action, ActionArgument } from '../models/action';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
 import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
-
-// declare function cytoscape(options: any): any;
 
 @Component({
 	selector: 'playbook-component',
@@ -65,7 +63,7 @@ export class PlaybookComponent {
 		newPlaybook?: string,
 		shouldShowWorkflow?: boolean,
 		newWorkflow?: string,
-		submit?: () => any
+		submit: () => any
 	} = {
 		title: '',
 		submitText: '',
@@ -245,9 +243,10 @@ export class PlaybookComponent {
 						// extension. Also add info to edge which is displayed when user clicks on it.
 						for (let i = 0; i < targetNodes.length; i++) {
 							addedEntities[i].data('parameters', {
+								uid: UUID.UUID(),
+								name: targetNodes[i].data().parameters.id,
+								status: 'Success',
 								flags: [],
-								name: targetNodes[i].data().parameters.name,
-								nextStep: targetNodes[i].data().parameters.name,
 								temp: true
 							});
 
@@ -447,7 +446,9 @@ export class PlaybookComponent {
 		// ele.data('parameters', updatedParameters);
 	}
 
-	onEdgeSelect(event: any, self: PlaybookComponent): void {
+	onEdgeSelect(e: any, self: PlaybookComponent): void {
+		let ele = e.target;
+		let parameters = ele.data('parameters');
 		return;
 	}
 
@@ -697,7 +698,8 @@ export class PlaybookComponent {
 			shouldShowWorkflow: true,
 			submit: () => {
 				this.playbookService.newWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow)
-					.then(() => {
+					.then(newWorkflow => {
+						if (!this.loadedWorkflow) this.loadedWorkflow = newWorkflow;
 						this.toastyService.success(`Created workflow ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
 						this._closeModal();
 					})

@@ -6,7 +6,7 @@ import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
-import { Action } from '../models/playbook/action';
+import { Action } from '../models/action';
 import { Device } from '../models/device';
 
 @Injectable()
@@ -102,10 +102,11 @@ export class PlaybookService {
 	 * @param playbook Name of the playbook the new workflow should be added under
 	 * @param workflow Name of the new workflow to be saved
 	 */
-	newWorkflow(playbook: string, workflow: string): Promise<void> {
+	newWorkflow(playbook: string, workflow: string): Promise<Workflow> {
 		return this.authHttp.put(`/api/playbooks/${playbook}/workflows`, { name: workflow })
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Workflow)
 			.catch(this.handleError);
 	}
 
@@ -150,6 +151,7 @@ export class PlaybookService {
 	/**
 	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
 	 */
+	// TODO: update this to be an array of Apps when the backend changes
 	getActionsForApps(): Promise<{
 		[app_name: string]: {
 			[action_name: string]: Action

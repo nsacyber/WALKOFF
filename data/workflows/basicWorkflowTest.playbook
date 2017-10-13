@@ -4,74 +4,8 @@
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
-            "start": "c5a7c29a0f844b69a59901bb542e9305",
+            "start": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
             "steps": [
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "1",
-                    "next_steps": [
-                        {
-                            "flags": [],
-                            "name": "2",
-                            "status": "Success",
-                            "uid": "55541eee50774accbf70a8d7df17a027"
-                        }
-                    ],
-                    "position": {
-                        "x": 0,
-                        "y": 0
-                    },
-                    "risk": 0,
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
-                    "widgets": []
-                },
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "3",
-                    "next_steps": [
-                        {
-                            "flags": [],
-                            "name": "c5a7c29a0f844b69a59901bb542e9305",
-                            "status": "Success",
-                            "uid": "55541eee50774accbf70a8d7df17a027"
-                        }
-                    ],
-                    "position": {
-                        "x": 100,
-                        "y": 100
-                    },
-                    "risk": 0,
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
-                    "widgets": []
-                },
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "2",
-                    "next_steps": [
-                        {
-                            "flags": [],
-                            "name": "c5a7c29a0f844b69a59901bb542e9305",
-                            "status": "Success",
-                            "uid": "55541eee50774accbf70a8d7df17a027"
-                        }
-                    ],
-                    "position": {
-                        "x": 50,
-                        "y": 50
-                    },
-                    "risk": 0,
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
-                    "widgets": []
-                },
                 {
                     "action": "echo object",
                     "app": "Utilities",
@@ -91,13 +25,13 @@
                             }
                         }
                     ],
-                    "name": "4",
+                    "name": "first step",
                     "next": [
                         {
                             "flags": [],
-                            "name": "c5a7c29a0f844b69a59901bb542e9305",
+                            "name": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
                             "status": "Success",
-                            "uid": "f9d92dea753e4c2589e43c185ed1e524"
+                            "uid": "d42ffb92-b01f-11e7-abc4-cec278b6b50a"
                         }
                     ],
                     "position": {
@@ -105,11 +39,70 @@
                         "y": -50
                     },
                     "risk": 0,
-                    "uid": "271ed4790717451caf96f48e835d1f16",
+                    "uid": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "second step",
+                    "next_steps": [
+                        {
+                            "flags": [],
+                            "name": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "d42ffdcc-b01f-11e7-abc4-cec278b6b50a"
+                        }
+                    ],
+                    "position": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "risk": 0,
+                    "uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "third step",
+                    "next_steps": [
+                        {
+                            "flags": [],
+                            "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "d43001b4-b01f-11e7-abc4-cec278b6b50a"
+                        }
+                    ],
+                    "position": {
+                        "x": 50,
+                        "y": 50
+                    },
+                    "risk": 0,
+                    "uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "fourth step",
+                    "next_steps": [],
+                    "position": {
+                        "x": 100,
+                        "y": 100
+                    },
+                    "risk": 0,
+                    "uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
                     "widgets": []
                 }
             ],
-            "uid": "3c7f67c8ea6e481eb5d37b488a7b15b3"
+            "uid": "d43004de-b01f-11e7-abc4-cec278b6b50a"
         }
     ]
 }
