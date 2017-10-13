@@ -231,7 +231,8 @@ class TestDevicesServer(ServerTestCase):
             if device['name'] == 'testDevice':
                 self.assertEqual(len(device['fields']), len(fields))
                 for field in fields:
-                    self.assertIn(field, device['fields'])
+                    # Checks if test field is a subset of the device json fields
+                    self.assertTrue(any(x for x in device['fields'] if set(x) not in set({k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
                 devices_read += 1
         self.assertEqual(devices_read, 1)
 
@@ -263,7 +264,9 @@ class TestDevicesServer(ServerTestCase):
             if device['name'] == 'testDevice':
                 self.assertEqual(len(device['fields']), len(fields))
                 for field in fields:
-                    self.assertIn(field, device['fields'])
+                    #self.assertIn(field, device['fields'])
+                    # Checks if test field is a subset of the device json fields
+                    self.assertTrue(any(x for x in device['fields'] if set(x) not in set({k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
                 devices_read += 1
         self.assertEqual(devices_read, 1)
 
@@ -302,4 +305,6 @@ class TestDevicesServer(ServerTestCase):
                 self.assertEqual(device.app_id, app_id)
                 self.assertEqual(len(device_json['fields']), len(fields))
                 for field in fields:
-                    self.assertIn(field, device_json['fields'])
+                    #self.assertIn(field, device_json['fields'])
+                    #Checks if test field is a subset of the device json fields
+                    self.assertTrue(any(x for x in device_json['fields'] if set(x) not in set({k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
