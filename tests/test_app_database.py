@@ -33,7 +33,7 @@ class TestAppDatabase(unittest.TestCase):
 
     def test_as_json(self):
         app = App('test', devices=self.all_devices)
-        app_json = app.as_json()
+        app_json = app.as_json(with_devices=True)
         self.assertEqual(app_json['name'], 'test')
         expected_devices_json = [device.as_json() for device in app.devices]
         for device in app_json['devices']:

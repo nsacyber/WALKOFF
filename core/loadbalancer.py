@@ -4,7 +4,7 @@ import os
 import signal
 
 import gevent
-import zmq.auth
+import zmq.auth as auth
 import zmq.green as zmq
 from zmq.utils.strtypes import asbytes, cast_unicode
 from gevent.queue import Queue
@@ -67,7 +67,7 @@ class LoadBalancer:
 
         self.ctx = ctx
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
-        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.request_socket = self.ctx.socket(zmq.ROUTER)
         self.request_socket.curve_secretkey = server_secret
@@ -160,9 +160,9 @@ class Worker:
         callbacks.data_sent.connect(handle_data_sent)
 
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
-        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        server_public, server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
-        client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
+        client_public, client_secret = auth.load_certificate(client_secret_file)
 
         self.ctx = zmq.Context()
 
@@ -302,7 +302,7 @@ class Receiver:
         self.workflows_executed = 0
 
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
-        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.ctx = ctx
 

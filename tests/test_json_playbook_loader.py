@@ -1,6 +1,7 @@
 import json
 import os
 import os.path
+import stat
 from unittest import TestCase
 
 from core.executionelements.playbook import Playbook
@@ -19,7 +20,11 @@ class TestJsonPlaybookLoader(TestCase):
     def tearDown(self):
         if os.path.exists(test_data_path):
             for path in os.listdir(test_data_path):
-                os.remove(os.path.join(test_data_path, path))
+                try:
+                    os.remove(os.path.join(test_data_path, path))
+                except WindowsError as we: #Windows sometimes makes files read only when created
+                    os.chmod(os.path.join(test_data_path, path), stat.S_IWRITE)
+                    os.remove(os.path.join(test_data_path, path))
 
     @classmethod
     def tearDownClass(cls):
