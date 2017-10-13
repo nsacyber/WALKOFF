@@ -78,7 +78,7 @@ def read_all_devices(app_name):
             output = []
             if query:
                 for device in query:
-                    if app_name == device.app.name:
+                    if app_name == device.app_id:
                         output.append(device.as_json())
             return output, SUCCESS
         else:
