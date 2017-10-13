@@ -4,7 +4,7 @@ class JsonElementCreator(object):
     @classmethod
     def create(cls, json_in, element_class=None):
         from core.executionelements.playbook import Playbook
-        from core.executionelements.step_2 import Step
+        from core.executionelements.step import Step
         from core.executionelements.appstep import AppStep
         from core.executionelements.triggerstep import TriggerStep
         cls._setup_ordering()
@@ -36,7 +36,7 @@ class JsonElementCreator(object):
         if cls.playbook_class_ordering is None:
             from core.executionelements.playbook import Playbook
             from core.executionelements.workflow import Workflow
-            from core.executionelements.step_2 import Step
+            from core.executionelements.step import Step
             from core.executionelements.nextstep import NextStep
             from core.executionelements.flag import Flag
             from core.executionelements.filter import Filter

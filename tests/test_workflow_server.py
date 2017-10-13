@@ -10,7 +10,7 @@ import core.case.subscription
 import core.config.paths
 from core import helpers
 from core.case.callbacks import WorkflowShutdown
-from core.executionelements.step import Step
+from core.executionelements.appstep import AppStep
 from server import flaskserver as flask_server
 from server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
@@ -217,8 +217,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
-                          position={'x': 0, 'y': 0}).read()
+        added_step = AppStep('HelloWorld', 'pause', name='new_id', inputs={'seconds': 5},
+                             position={'x': 0, 'y': 0}).read()
 
         initial_steps.append(added_step)
         data = {"steps": initial_steps}
@@ -269,7 +269,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step = AppStep(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
                           position={'x': 0, 'y': 0}).read()
         added_step['app'] = 'Invalid'
 
@@ -287,7 +287,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step =AppStep(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
                           position={'x': 0, 'y': 0}).read()
         added_step['action'] = 'Invalid'
 
@@ -305,7 +305,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step =AppStep(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
                           position={'x': 0, 'y': 0}).read()
         added_step['inputs'] = [{'name': 'Invalid', 'value': 5}]
 
@@ -323,7 +323,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step =AppStep(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
                           position={'x': 0, 'y': 0}).read()
         added_step['inputs'][0]['value'] = 'aaaa'
 
@@ -341,7 +341,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step =AppStep(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
                           position={'x': 0, 'y': 0}).read()
 
         initial_steps.append(added_step)

@@ -1,5 +1,5 @@
 import logging
-from core.executionelements.step_2 import Step
+from core.executionelements.step import Step
 from core.executionelements.nextstep import NextStep
 from core.case.callbacks import data_sent
 
@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class TriggerStep(Step):
+
     def __init__(self,
                  name='',
                  uid=None,
@@ -37,10 +38,10 @@ class TriggerStep(Step):
         self.next_steps = [NextStep.create(cond_json) for cond_json in updated_json['next']]
 
     def execute(self, data_in, accumulator):
-        if all(flag(data_in=data_in.result, accumulator=accumulator) for flag in self.flags):
+        self.generate_execution_uid()
+        if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.flags):
             data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
             logger.debug('TriggerStep is valid for input {0}'.format(data_in))
-
             return True
         else:
             logger.debug('TriggerStep is not valid for input {0}'.format(data_in))

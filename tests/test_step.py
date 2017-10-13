@@ -5,7 +5,7 @@ from core.case.callbacks import data_sent
 from core.decorators import ActionResult
 from core.executionelements.flag import Flag
 from core.executionelements.nextstep import NextStep
-from core.executionelements.step_2 import Step
+from core.executionelements.step import Step
 from core.helpers import import_all_apps, import_all_flags, import_all_filters
 from tests.config import test_apps_path, function_api_path
 

@@ -1,13 +1,11 @@
 import unittest
-import uuid
 
-from core.flag import Flag
-
+from core.executionelements.flag import Flag
+from core.case.callbacks import data_sent
 import core.config.config
 import core.config.paths
-from core.decorators import ActionResult
 from core.executionelements.triggerstep import TriggerStep
-from core.executionelements.step_2 import Step
+from core.executionelements.step import Step
 from core.helpers import (import_all_apps, import_all_flags,
                           import_all_filters)
 from tests.config import test_apps_path, function_api_path
@@ -46,29 +44,56 @@ class TestTriggerStep(unittest.TestCase):
         step = TriggerStep()
         self.assertTrue(step.execute(None, {}))
 
+    def test_execute_generates_execution_uid(self):
+        step = TriggerStep()
+        original_execution_uid = step.get_execution_uid()
+        step.execute(None, {})
+        self.assertNotEqual(step.get_execution_uid(), original_execution_uid)
+
     def test_execute_with_flags(self):
         flags = [Flag(action='regMatch', args={'regex': 'aaa'})]
         step = TriggerStep(flags=flags)
-        print(dir(flags[0]))
-        print(flags[0].execute('aaa', {}))
         self.assertTrue(step.execute('aaa', {}))
 
+    def test_execute_with_flags_sends_callbacks(self):
+        flags = [Flag(action='regMatch', args={'regex': 'aaa'})]
+        step = TriggerStep(flags=flags)
 
-    # def test_call(self):
-    #     flags1 = [Flag(action='regMatch', args={'regex': '(.*)'})]
-    #     flags2 = [Flag(action='regMatch', args={'regex': '(.*)'}),
-    #               Flag(action='regMatch', args={'regex': 'a'})]
-    #
-    #     inputs = [('name1', [], ActionResult('aaaa', 'Success'), True),
-    #               ('name2', flags1, ActionResult('anyString', 'Success'), True),
-    #               ('name3', flags2, ActionResult('anyString', 'Success'), True),
-    #               ('name4', flags2, ActionResult('bbbb', 'Success'), False),
-    #               ('name4', flags2, ActionResult('aaaa', 'Custom'), False)]
-    #
-    #     for name, flags, input_str, expect_name in inputs:
-    #         step = TriggerStep(action='helloWorld', flags=flags)
-    #         if expect_name:
-    #             expected_name = step.name
-    #             self.assertEqual(step(input_str, {}), expected_name)
-    #         else:
-    #             self.assertIsNone(step(input_str, {}))
+        result = {'triggered': False}
+
+        @data_sent.connect
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, TriggerStep):
+                self.assertIs(sender, step)
+                self.assertIn('callback_name', kwargs)
+                self.assertEqual(kwargs['callback_name'], 'Trigger Step Taken')
+                self.assertIn('object_type', kwargs)
+                self.assertEqual(kwargs['object_type'], 'Step')
+                result['triggered'] = True
+
+        step.execute('aaa', {})
+        self.assertTrue(result['triggered'])
+
+    def test_execute_with_flags_failed(self):
+        flags = [Flag(action='regMatch', args={'regex': 'aaa'})]
+        step = TriggerStep(flags=flags)
+        self.assertFalse(step.execute('bbb', {}))
+
+    def test_execute_with_flags__failed_sends_callbacks(self):
+        flags = [Flag(action='regMatch', args={'regex': 'aaa'})]
+        step = TriggerStep(flags=flags)
+
+        result = {'triggered': False}
+
+        @data_sent.connect
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, TriggerStep):
+                self.assertIs(sender, step)
+                self.assertIn('callback_name', kwargs)
+                self.assertEqual(kwargs['callback_name'], 'Trigger Step Not Taken')
+                self.assertIn('object_type', kwargs)
+                self.assertEqual(kwargs['object_type'], 'Step')
+                result['triggered'] = True
+
+        step.execute('bbb', {})
+        self.assertTrue(result['triggered'])

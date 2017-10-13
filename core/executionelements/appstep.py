@@ -1,7 +1,7 @@
 import json
 import logging
 from core.decorators import ActionResult
-from core.executionelements.step_2 import Step
+from core.executionelements.step import Step
 from core.helpers import (get_app_action_api, InvalidInput,
                           dereference_step_routing, format_exception_message)
 from core.executionelements.nextstep import NextStep
@@ -19,6 +19,7 @@ class Widget(object):
 
 
 class AppStep(Step):
+
     def __init__(self,
                  app,
                  action,
@@ -59,7 +60,12 @@ class AppStep(Step):
         self.app = app
         self._run, self._input_api = get_app_action_api(self.app, self.action)
         get_app_action(self.app, self._run)
-        inputs = inputs if inputs is not None else {}
+        if isinstance(inputs, list):
+            inputs = {arg['name']: arg['value'] for arg in inputs}
+        elif isinstance(inputs, dict):
+            inputs = inputs
+        else:
+            inputs = {}
         if not self.templated:
             self.inputs = validate_app_action_parameters(self._input_api, inputs, self.app, self.action)
         else:
@@ -80,7 +86,7 @@ class AppStep(Step):
                 self.inputs = inputs
         else:
             self.inputs = validate_app_action_parameters(self._input_api, {}, self.app, self.action)
-        self.conditionals = [NextStep.create(cond_json) for cond_json in updated_json['next']]
+        self.conditionals = [NextStep.create(cond_json) for cond_json in updated_json['next_steps']]
 
     def set_input(self, new_input):
         """Updates the input for a Step Action object.

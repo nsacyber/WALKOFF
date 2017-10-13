@@ -7,7 +7,7 @@ import core.config.config
 import core.config.paths
 from core.decorators import ActionResult
 from core.executionelements.appstep import AppStep
-from core.executionelements.step_2 import Step
+from core.executionelements.step import Step
 from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
                           import_all_filters, get_app_action_api)
 from tests.config import test_apps_path, function_api_path
