@@ -15,8 +15,8 @@ from tests.util.mock_objects import *
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        from apps import cache_apps
+        cache_apps(path=config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -37,6 +37,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def tearDown(self):
         database.case_db.tear_down()
         subscription.clear_subscriptions()
+
+    @classmethod
+    def tearDownClass(cls):
+        from apps import _cache
+        _cache.clear()
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')

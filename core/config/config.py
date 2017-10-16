@@ -133,8 +133,9 @@ def initialize():
     global flags
 
     load_config()
-    from core.helpers import import_all_apps, import_all_filters, import_all_flags
-    import_all_apps()
+    from core.helpers import import_all_filters, import_all_flags
+    from apps import cache_apps
+    cache_apps(core.config.paths.apps_path)
     load_app_apis()
     flags = import_all_flags()
     filters = import_all_filters()

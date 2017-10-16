@@ -10,7 +10,6 @@ from core.helpers import (locate_playbooks_in_directory, InvalidInput, UnknownAp
 
 logger = logging.getLogger(__name__)
 
-
 class JsonPlaybookLoader(object):
 
     @staticmethod
