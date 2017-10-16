@@ -26,11 +26,11 @@
     "actions": {
       "$ref": "#/definitions/actions"
     },
-    "flags": {
-      "$ref": "#/definitions/flags"
+    "conditions": {
+      "$ref": "#/definitions/conditions"
     },
-    "filters": {
-      "$ref": "#/definitions/filters"
+    "transforms": {
+      "$ref": "#/definitions/transforms"
     },
     "devices": {
       "$ref": "#/definitions/devices"
@@ -150,28 +150,28 @@
       },
       "additionalProperties": false
     },
-    "flags": {
+    "conditions": {
       "type": "object",
-      "description": "Flags of this app",
+      "description": "Conditions of this app",
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
         },
         "": {
-          "$ref": "#/definitions/flagItem"
+          "$ref": "#/definitions/conditionItem"
         }
       },
       "additionalProperties": false
     },
-    "filters": {
+    "transforms": {
       "type": "object",
-      "description": "Filters of this app",
+      "description": "Transforms of this app",
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
         },
         "": {
-          "$ref": "#/definitions/filterItem"
+          "$ref": "#/definitions/transformItem"
         }
       },
       "additionalProperties": false
@@ -396,7 +396,7 @@
         }
       }
     },
-    "flagItem": {
+    "conditionItem": {
       "type": "object",
       "additionalProperties": false,
       "required": ["run", "parameters", "dataIn"],
@@ -441,7 +441,7 @@
         }
       }
     },
-    "filterItem": {
+    "transformItem": {
       "type": "object",
       "additionalProperties": false,
       "required": ["run", "parameters", "dataIn"],

@@ -44,8 +44,8 @@ class TestServer(ServerTestCase):
         self.assertEqual(0, len(response['DailyQuote']))
         orderless_list_compare(self, expected['HelloWorld'], response['HelloWorld'])
 
-    def test_read_filters(self):
-        response = self.get_with_status_check('/api/filters', headers=self.headers)
+    def test_read_transforms(self):
+        response = self.get_with_status_check('/api/transforms', headers=self.headers)
         expected = {'sub_top_filter': {'args': []},
                     'mod1_filter2': {'args': [{'required': True, 'type': 'number', 'name': 'arg1'}]},
                     'mod1_filter1': {'args': []},
@@ -56,7 +56,7 @@ class TestServer(ServerTestCase):
                     'length': {'args': [], 'description': 'Returns the length of a collection'},
                     'sub1_filter3': {'args': []},
                     'filter1': {'args': []},
-                    'Top Filter': {'args': []},
+                    'Top Transform': {'args': []},
                     'complex': {'args': [{'required': True, 'name': 'arg',
                                           'schema': {
                                               'type': 'object',
@@ -64,10 +64,10 @@ class TestServer(ServerTestCase):
                                                              'c': {'items': {'type': 'integer'}, 'type': 'array'},
                                                              'b': {'type': 'number'}}}}]},
                     'select json': {'args': [{'required': True, 'type': 'string', 'name': 'element'}]}}
-        self.assertDictEqual(response, {'filters': expected})
+        self.assertDictEqual(response, {'transforms': expected})
 
-    def test_read_flags(self):
-        response = self.get_with_status_check('/api/flags', headers=self.headers)
+    def test_read_conditions(self):
+        response = self.get_with_status_check('/api/conditions', headers=self.headers)
         expected = {
             'count':
                 {'description': 'Compares two numbers',
@@ -81,7 +81,7 @@ class TestServer(ServerTestCase):
                            'required': True,
                            'type': 'number',
                            'description': 'The value with which to compare the input'}]},
-            'Top Flag': {'args': []},
+            'Top Condition': {'args': []},
             'regMatch': {'description': 'Matches an input against a regular expression',
                          'args': [{'name': 'regex',
                                    'required': True,
@@ -94,7 +94,7 @@ class TestServer(ServerTestCase):
                                                 'properties': {'a': {'type': 'integer'}, 'b': {'type': 'integer'}}}}]},
             'mod2_flag1': {'args': []},
             'sub1_top_flag': {'args': []}}
-        self.assertDictEqual(response, {'flags': expected})
+        self.assertDictEqual(response, {'conditions': expected})
 
         # def test_get_all_list_actions(self):
         #     expected_reduced_json = {

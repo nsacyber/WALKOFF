@@ -4,7 +4,7 @@ import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
-from core.helpers import import_all_apps, import_all_flags, import_all_filters
+from core.helpers import import_all_apps, import_all_conditions, import_all_transforms
 from tests.apps import App
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
@@ -49,9 +49,9 @@ class ServerTestCase(unittest.TestCase):
         App.registry = {}
         import_all_apps(path=tests.config.test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
-        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
-        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
-        core.config.config.load_flagfilter_apis(path=tests.config.function_api_path)
+        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
+        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
+        core.config.config.load_condition_transform_apis(path=tests.config.function_api_path)
         core.config.config.num_processes = 2
 
         if cls.patch:

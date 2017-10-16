@@ -33,8 +33,8 @@ class JsonElementCreator(object):
             from core.executionelements.workflow import Workflow
             from core.executionelements.step import Step
             from core.executionelements.nextstep import NextStep
-            from core.executionelements.flag import Flag
-            from core.executionelements.filter import Filter
+            from core.executionelements.condition import Condition
+            from core.executionelements.transform import Transform
             cls.playbook_class_ordering = (
-                (Playbook, 'workflows'), (Workflow, 'steps'), (Step, 'next_steps'), (NextStep, 'flags'),
-                (Flag, 'filters'), (Filter, None))
+                (Playbook, 'workflows'), (Workflow, 'steps'), (Step, 'next_steps'), (NextStep, 'conditions'),
+                (Condition, 'transforms'), (Transform, None))

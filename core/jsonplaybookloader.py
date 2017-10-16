@@ -6,7 +6,7 @@ import core.config.paths
 from core.executionelements.playbook import Playbook
 from core.executionelements.workflow import Workflow
 from core.helpers import (locate_playbooks_in_directory, InvalidInput, UnknownApp, UnknownAppAction,
-                          UnknownFilter, UnknownFlag, format_exception_message)
+                          UnknownTransform, UnknownCondition, format_exception_message)
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class JsonPlaybookLoader(object):
                     return playbook_name, workflow
                 except ValueError as e:
                     logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-                except (InvalidInput, UnknownApp, UnknownAppAction, UnknownFilter, UnknownFlag) as e:
+                except (InvalidInput, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
                                                                                        format_exception_message(e)))
                     return None
@@ -71,9 +71,9 @@ class JsonPlaybookLoader(object):
                 try:
                     playbook_json = json.loads(workflow_loaded)
                     return Playbook.create(playbook_json)
-                except ValueError:
-                    logger.error('Cannot parse {}'.format(resource))
-                except (InvalidInput, UnknownApp, UnknownAppAction, UnknownFilter, UnknownFlag) as e:
+                except ValueError as e:
+                    logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+                except (InvalidInput, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error(
                         'Error constructing playbook from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                     return None

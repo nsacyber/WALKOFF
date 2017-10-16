@@ -68,49 +68,23 @@
         <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
     </div>
 
-    <!-- <div id="top"> -->
-        <!-- <div id="playbookEditorTabs">
+    <div id="top">
+        <div id="playbookEditorTabs">
             <ul class="nav nav-tabs" role="tablist">
                 <li id="cyTab" class="active"><a href="#graphEditor" data-toggle="tab" role="tab">Graphical Editor</a></li>
                 <li id="cyJsonTab"><a href="#cyJson" data-toggle="tab" role="tab">JSON</a></li>
             </ul>
-            <div class="tab-content"> -->
-                <!-- <div id="graphEditor" class="tab-pane fade in active"> -->
+            <div class="tab-content">
+                <div id="graphEditor" class="tab-pane fade in active">
                     <div class="row graphEditorRow">
                         <div class="col-md-2 graphEditorColumn">
-                            <!-- <ngb-accordion *ngFor="let app of apps" #acc="ngbAccordion" activeIds="ngb-panel-0">
-                                <ngb-panel title="{{app.name}}">
-                                    <ng-template ngbPanelContent>
-                                        <ul>
-                                            <li *ngFor="let action of app.actions">{{action.name}}</li>
-                                        </ul>
-                                    </ng-template>
-                                </ngb-panel>
-                            </ngb-accordion> -->
-
-
-                            <div class="panel-group" id="accordion">
-                                <div *ngFor="let app of apps" class="panel panel-default">
-                                    <div class="panel-heading">
-                                    <h4 class="panel-title">
-                                        <a data-toggle="collapse" href="#collapse{{app.name}}">{{app.name}}</a>
-                                    </h4>
-                                    </div>
-                                    <div id="collapse{{app.name}}" class="panel-collapse collapse">
-                                        <div class="panel-body">
-                                            <div *ngFor="let action of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" [dragData]="{ appName: app.name, action: action }">
-                                                <div class="panel-body">
-                                                    <div>{{action.name}}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div id="palette">
+                                <!-- <tree-root [nodes]="actionTree"></tree-root> -->
                             </div>
                         </div>
 
                         <div class="col-md-6 graphEditorColumn">
-                            <div id="cy" #cy dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
+                            <div id="cy" #cy [hidden]="!loadedWorkflow" tabindex="0"></div>
                             <div id="cy-instructions" [hidden]="loadedWorkflow">
                                 <p>Instructions:</p>
                                 <p>
@@ -129,24 +103,13 @@
 
                         <div class="col-md-4 graphEditorColumn">
                             <!-- Editor for AppSteps -->
-                            <div *ngIf="selectedStep && selectedStep.inputs" id="parameters">
-                                <h3>App Step Parameters</h3>
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <label>App:</label>
-                                        <span>{{selectedStep.app}}</span>
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <label>Action:</label>
-                                        <span>{{selectedStep.action}}</span>
-                                    </div>
-                                </div>
+                            <div *ngIf="selectedStep && selectedStep.inputs">
                                 <div class="form-group">
-                                    <button class="btn btn-primary" (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                                    <button class="btn btn-primary" class="form-control" (change)="setStartNode(selectedStep.uid)">Set as Start Step</button>
                                 </div>
                                 <div class="form-group">
                                     <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                                    <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required>
+                                    <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required tabindex="1">
                                 </div>
                                 <div *ngIf="relevantDevices.length" class="form-group">
                                     <label for="device_id">Device</label>
@@ -155,41 +118,18 @@
                                         <option *ngFor="let i of relevantDevices" [value]="i.id" [label]="i.name">{{i.name}}</option>
                                     </select>
                                 </div>
-                                <!-- Inputs -->
-                                <h4>Inputs</h4>
-                                <div *ngFor="let input of selectedStep.inputs; let id = index" class="form-group">
-                                    <label for="{{input.name}}">
-                                        Input {{id+1}}: {{input.name}} ({{inputArgs[input.name].type}})
-                                        <span *ngIf="inputArgs[input.name].required" class="fa fa-asterisk required" title="This field is required."></span>
-                                    </label>
-                                    <div class="row">
-                                        <div class="col-xs-6">
-                                            <select name="playbookSelect" class="form-control" [(ngModel)]="input.reference">
-                                                <option value="" selected="{{!input.reference ? 'selected' : ''}}">-- Set Static Value --</option>
-                                                <option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-xs-6">
-                                            <input type="text" class="form-control" [(ngModel)]="input.value" name="name" [required]="inputArgs[input.name].required" >
-                                        </div>
-                                    </div>
+                                <div *ngFor="let input of selectedStep.inputs; let i = index" class="form-group">
+                                    <label for="{{input.name}}">Input {{i+1}}: {{input.name}} ({{inputArgs.type}}</label>
+                                    <select name="playbookSelect" id="playbookSelect" class="form-control">
+                                        <option value="0">-- Set Static Value --</option>
+                                        <option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
+                                    </select>
                                 </div>
-                            </div>
-                            <!-- Editor for TriggerSteps -->
-                            <div *ngIf="selectedStep && selectedStep.conditions">
-                                <h3>Trigger Step Parameters</h3>
-                                <div class="form-group">
-                                    <button class="btn btn-primary" (change)="setStartNode(selectedStep.uid)">Set as Start Step</button>
-                                </div>
-                            </div>
-                            <!-- Editor for NextSteps (edges) -->
-                            <div *ngIf="selectedNextStep">
-                                <h3>Next Step Parameters</h3>
                             </div>
                         </div>
                     </div>
-                <!-- </div> -->
-<!-- 
+                </div>
+
                 <div id="cyJson" class="tab-pane fade">
                     <div class="row">
                         <div class="col-md-12">
@@ -198,8 +138,8 @@
                     </div>
                 </div>
             </div>
-        </div> -->
-    <!-- </div> -->
+        </div>
+    </div>
 
     <div class="row" id="executionResultsContainer">
         <div class="col-xs-12">
@@ -208,7 +148,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="playbookAndWorkflowActionModal" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
+    <div class="modal fade" id="playbookAndWorkflowActionModal" tabindex="-1" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -242,7 +182,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="workflowsModal" role="dialog" aria-labelledby="workflowModalTitle" aria-hidden="true">
+    <div class="modal fade" id="workflowsModal" tabindex="-1" role="dialog" aria-labelledby="workflowModalTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">

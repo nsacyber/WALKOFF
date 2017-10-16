@@ -2,19 +2,19 @@ from core.decorators import *
 import re
 import json
 
-@datafilter
+@transform
 def top_level_filter(value):
     return value
 
-@flag
+@condition
 def top_level_flag(value):
     return True
 
-@datafilter
+@transform
 def filter1(value):
     pass
 
-@flag
+@condition
 def count(value, operator, threshold):
     if operator == 'g' and value > threshold:
         return True
@@ -33,7 +33,7 @@ def count(value, operator, threshold):
     else:
         return value == threshold
 
-@flag
+@condition
 def regMatch(value, regex):
     """Matches the input using a regular expression matcher. See data/functions.json for argument information
 
@@ -46,7 +46,7 @@ def regMatch(value, regex):
     match_obj = pattern.search(value)
     return bool(match_obj)
 
-@datafilter
+@transform
 def length(value):
     """ Gets the length of the value provided to it.
 
@@ -62,7 +62,7 @@ def length(value):
     except TypeError:
         return None
 
-@datafilter
+@transform
 def json_select(json_in, element):
     return json_in[element]
 

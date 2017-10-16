@@ -5,17 +5,17 @@ def untagged(value):
     pass
 
 
-@datafilter
+@transform
 def filter1(value):
     pass
 
 
-@flag
+@condition
 def flag1(value):
     pass
 
 
-@datafilter
+@transform
 def filter2(value, arg1):
     return value + arg1
 
@@ -23,7 +23,7 @@ def filter2(value, arg1):
 def action1(value):
     pass
 
-@flag
+@condition
 def flag2(value, arg1):
     return (value + arg1) % 2 == 0
 

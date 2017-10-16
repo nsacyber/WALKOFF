@@ -252,10 +252,10 @@ class TestWorkflowServer(ServerTestCase):
             step.uid = ''
             for next_step in step.next_steps:
                 next_step.uid = ''
-                for flag in next_step.flags:
-                    flag.uid = ''
-                    for filter_ in flag.filters:
-                        filter_.uid = ''
+                for condition in next_step.conditions:
+                    condition.uid = ''
+                    for transform in condition.transforms:
+                        transform.uid = ''
 
         for step_name, loaded_step in loaded_workflow.steps.items():
             self.assertIn(step_name, resulting_workflow.steps.keys())

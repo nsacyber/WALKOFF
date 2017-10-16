@@ -10,7 +10,7 @@ import core.case.subscription as case_subscription
 from core import controller
 from tests import config
 from tests.apps import App
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
 import core.config.config
 
 
@@ -20,9 +20,9 @@ class TestExecutionModes(unittest.TestCase):
         App.registry = {}
         import_all_apps(path=config.test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
-        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
-        core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
+        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
+        core.config.config.load_condition_transform_apis(path=config.function_api_path)
 
     def setUp(self):
         case_database.initialize()

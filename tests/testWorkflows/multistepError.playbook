@@ -13,7 +13,7 @@
                     "name": "1",
                     "next_steps": [
                         {
-                            "flags": [
+                            "conditions": [
                                 {
                                     "action": "regMatch",
                                     "args": [
@@ -22,7 +22,7 @@
                                             "value": "(.*)"
                                         }
                                     ],
-                                    "filters": [],
+                                    "transforms": [],
                                     "uid": "5c61ec79988d46ca81c626b6bbb180b4"
                                 }
                             ],
@@ -44,7 +44,7 @@
                     "name": "start",
                     "next_steps": [
                         {
-                            "flags": [
+                            "conditions": [
                                 {
                                     "action": "regMatch",
                                     "args": [
@@ -53,7 +53,7 @@
                                             "value": "(.*)"
                                         }
                                     ],
-                                    "filters": [
+                                    "transforms": [
                                         {
                                             "action": "length",
                                             "args": [],

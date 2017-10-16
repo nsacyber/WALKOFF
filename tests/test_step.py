@@ -4,11 +4,11 @@ import uuid
 import core.config.config
 import core.config.paths
 from core.decorators import ActionResult
-from core.executionelements.flag import Flag
+from core.executionelements.condition import Condition
 from core.executionelements.nextstep import NextStep
 from core.executionelements.step import Step, Widget
-from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
-                          import_all_filters)
+from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_conditions,
+                          import_all_transforms)
 from core.appinstance import AppInstance
 from tests.config import test_apps_path, function_api_path
 
@@ -18,9 +18,9 @@ class TestStep(unittest.TestCase):
     def setUpClass(cls):
         import_all_apps(path=test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
-        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
-        core.config.config.load_flagfilter_apis(path=function_api_path)
+        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
+        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
+        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     def setUp(self):
         self.uid = uuid.uuid4().hex
@@ -222,8 +222,8 @@ class TestStep(unittest.TestCase):
         self.assertIsNone(step.get_next_step({}))
 
     def test_get_next_step(self):
-        flag1 = [Flag(action='mod1_flag2', args={'arg1': '3'}), Flag(action='mod1_flag2', args={'arg1': '-1'})]
-        next_steps = [NextStep(flags=flag1, name='name1'), NextStep(name='name2')]
+        flag1 = [Condition(action='mod1_flag2', args={'arg1': '3'}), Condition(action='mod1_flag2', args={'arg1': '-1'})]
+        next_steps = [NextStep(conditions=flag1, name='name1'), NextStep(name='name2')]
         step = Step(app='HelloWorld', action='helloWorld', next_steps=next_steps)
         step._output = ActionResult(2, 'Success')
         self.assertEqual(step.get_next_step({}), 'name2')

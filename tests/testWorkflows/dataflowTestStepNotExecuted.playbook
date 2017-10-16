@@ -51,7 +51,7 @@
                     "name": "start",
                     "next_steps": [
                         {
-                            "flags": [],
+                            "conditions": [],
                             "name": "0ed91d07f1774d16a991d7815814fff1",
                             "status": "Success",
                             "uid": "3b4fca83078e4eb8881ee5c4e7ac50ed"

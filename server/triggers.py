@@ -1,8 +1,8 @@
 import json
 import logging
 
-from core.executionelements.filter import Filter
-from core.executionelements.flag import Flag
+from core.executionelements.transform import Transform
+from core.executionelements.condition import Condition
 from core.helpers import format_exception_message
 from .database import db
 
@@ -165,12 +165,12 @@ class Triggers(db.Model):
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        filters = [Filter(action=filter_element['action'],
-                          args=Triggers.__to_new_input_format(filter_element['args']))
+        filters = [Transform(action=filter_element['action'],
+                             args=Triggers.__to_new_input_format(filter_element['args']))
                    for filter_element in conditional['filters']]
-        return Flag(action=conditional['action'],
-                    args=Triggers.__to_new_input_format(conditional['args']),
-                    filters=filters).execute(data_in, {})
+        return Condition(action=conditional['action'],
+                         args=Triggers.__to_new_input_format(conditional['args']),
+                         transforms=filters).execute(data_in, {})
 
     def __repr__(self):
         return json.dumps(self.as_json())

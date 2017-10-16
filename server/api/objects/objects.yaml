@@ -42,7 +42,7 @@ AvailableSubscriptions:
     type:
       description: The type of execution element
       type: string
-      example: Flag
+      example: Condition
       enum: [controller, playbook, workflow, step, nextstep, flag, filter]
     events:
       description: Events which can be subscribed to

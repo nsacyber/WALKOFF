@@ -1,7 +1,7 @@
-from core.decorators import datafilter
+from core.decorators import transform
 
 
-@datafilter
+@transform
 def length(value):
     """ Gets the length of the value provided to it.
 

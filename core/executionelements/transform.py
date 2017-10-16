@@ -3,16 +3,16 @@ from copy import deepcopy
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import get_filter, get_filter_api, InvalidInput, InvalidElementConstructed, dereference_step_routing
-from core.validator import validate_filter_parameters, validate_parameter
+from core.helpers import get_transform, get_transform_api, InvalidInput, InvalidElementConstructed, dereference_step_routing
+from core.validator import validate_transform_parameters, validate_parameter
 
 logger = logging.getLogger(__name__)
 
 
-class Filter(ExecutionElement):
+class Transform(ExecutionElement):
 
     def __init__(self, action, args=None, uid=None):
-        """Initializes a new Filter object. A Filter is used to filter input into a workflow.
+        """Initializes a new Transform object. A Transform is used to filter input into a workflow.
         
         Args:
             action (str, optional): The action name for the filter. Defaults to an empty string.
@@ -25,7 +25,7 @@ class Filter(ExecutionElement):
             raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
         ExecutionElement.__init__(self, uid)
         self.action = action
-        self._args_api, self._data_in_api = get_filter_api(self.action)
+        self._args_api, self._data_in_api = get_transform_api(self.action)
         if isinstance(args, list):
             args = {arg['name']: arg['value'] for arg in args}
         elif isinstance(args, dict):
@@ -33,7 +33,7 @@ class Filter(ExecutionElement):
         else:
             args = {}
 
-        self.args = validate_filter_parameters(self._args_api, args, self.action)
+        self.args = validate_transform_parameters(self._args_api, args, self.action)
 
     def execute(self, data_in, accumulator):
         """Executes the flag.
@@ -47,18 +47,18 @@ class Filter(ExecutionElement):
         """
         original_data_in = deepcopy(data_in)
         try:
-            data_in = validate_parameter(data_in, self._data_in_api, 'Filter {0}'.format(self.action))
-            args = dereference_step_routing(self.args, accumulator, 'In Filter {0}'.format(self.uid))
+            data_in = validate_parameter(data_in, self._data_in_api, 'Transform {0}'.format(self.action))
+            args = dereference_step_routing(self.args, accumulator, 'In Transform {0}'.format(self.uid))
             args.update({self._data_in_api['name']: data_in})
-            result = get_filter(self.action)(**args)
-            data_sent.send(self, callback_name="Filter Success", object_type="Filter")
+            result = get_transform(self.action)(**args)
+            data_sent.send(self, callback_name="Transform Success", object_type="Transform")
             return result
         except InvalidInput as e:
-            data_sent.send(self, callback_name="Filter Error", object_type="Filter")
-            logger.error('Filter {0} has invalid input {1}. Error: {2}. '
+            data_sent.send(self, callback_name="Transform Error", object_type="Transform")
+            logger.error('Transform {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action, original_data_in, str(e)))
         except Exception as e:
-            data_sent.send(self, callback_name="Filter Error", object_type="Filter")
-            logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
+            data_sent.send(self, callback_name="Transform Error", object_type="Transform")
+            logger.error('Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
 

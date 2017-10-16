@@ -10,6 +10,9 @@ export class Step {
 	name: string;
 	position: GraphPosition;
 	next_steps: NextStep[] = [];
+}
+
+export class AppStep extends Step {
 	action: string;
 	app: string;
 	device_id: number;
@@ -17,5 +20,8 @@ export class Step {
 	inputs: ActionArgument[] | Argument[] = [];
 	// output: string;
 	widgets: Widget[] = [];
-	triggers: Condition[] = [];
+}
+
+export class TriggerStep extends Step {
+	conditions: Condition[] = [];
 }

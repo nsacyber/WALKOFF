@@ -5,21 +5,21 @@ def untagged(value):
     pass
 
 
-@datafilter
+@transform
 def filter3(value):
     raise ValueError
 
 
-@flag
+@condition
 def flag1(value):
     raise ValueError
 
 
-@datafilter
+@transform
 def filter1(value, arg1):
     return '{0} {1} {2}'.format(value, arg1['a'], arg1['b'])
 
-@datafilter
+@transform
 def complex_filter(data_in, arg):
     return data_in + arg['a'] + arg['b'] + sum(arg['c'])
 
@@ -28,7 +28,7 @@ def action1(value):
     pass
 
 
-@flag
+@condition
 def flag2(value, arg1):
     return (len(value) + arg1['a'] + arg1['b']) > 10
 

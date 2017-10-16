@@ -247,9 +247,9 @@ NextStep:
       description: List of flags to evaluate
       type: array
       items:
-        $ref: '#/definitions/Flag'
+        $ref: '#/definitions/Condition'
 
-Flag:
+Condition:
   type: object
   required: [action]
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
@@ -267,9 +267,9 @@ Flag:
       description: filters for the data before passing it into the flags
       type: array
       items:
-        $ref: '#/definitions/Filter'
+        $ref: '#/definitions/Transform'
 
-Filter:
+Transform:
   type: object
   required: [action]
   description: Filters or otherwise transforms the data given to it

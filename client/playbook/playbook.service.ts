@@ -117,7 +117,7 @@ export class PlaybookService {
 	 * @param workflow Data to be saved under the workflow (steps, etc.)
 	 */
 	saveWorkflow(playbookName: string, workflowName: string, workflow: Workflow): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbookName}/workflows/${workflowName}/save`, workflow)
+		return this.authHttp.post(`/api/playbooks/${playbookName}/workflows/${workflowName}/save`, { data: workflow })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -152,7 +152,7 @@ export class PlaybookService {
 	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
 	 */
 	// TODO: update this to be an array of Apps when the backend changes
-	getAppsAndActions(): Promise<{
+	getActionsForApps(): Promise<{
 		[app_name: string]: {
 			[action_name: string]: Action
 		}
@@ -178,7 +178,7 @@ export class PlaybookService {
 	 * Returns an array of all next step conditions specified within the application and its apps.
 	 */
 	getConditions(): Promise<Condition[]> {
-		return this.authHttp.get(`/api/conditions`)
+		return this.authHttp.get(`/api/flags`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Condition[])
@@ -189,7 +189,7 @@ export class PlaybookService {
 	 * Returns an array of all data transforms specified within the application and its apps.
 	 */
 	getTransforms(): Promise<Transform[]> {
-		return this.authHttp.get(`/api/transforms`)
+		return this.authHttp.get(`/api/filters`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Transform[])

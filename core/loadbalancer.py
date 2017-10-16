@@ -226,7 +226,7 @@ class Worker:
                 step_packet.sender.input[key] = str(value)
 
             step_packet.callback_name = kwargs['callback_name']
-        elif obj_type in ['NextStep', 'Flag', 'Filter']:
+        elif obj_type in ['NextStep', 'Condition', 'Transform']:
             packet.type = data_pb2.Message.GENERALPACKET
             general_packet = packet.general_packet
             general_packet.sender.uid = sender.uid
@@ -287,10 +287,10 @@ class Receiver:
         'Conditionals Executed': (callbacks.ConditionalsExecuted, False),
         'Next Step Taken': (callbacks.NextStepTaken, False),
         'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
-        'Flag Success': (callbacks.FlagSuccess, False),
-        'Flag Error': (callbacks.FlagError, False),
-        'Filter Success': (callbacks.FilterSuccess, False),
-        'Filter Error': (callbacks.FilterError, False)}
+        'Condition Success': (callbacks.FlagSuccess, False),
+        'Condition Error': (callbacks.FlagError, False),
+        'Transform Success': (callbacks.FilterSuccess, False),
+        'Transform Error': (callbacks.FilterError, False)}
 
     def __init__(self, ctx):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.

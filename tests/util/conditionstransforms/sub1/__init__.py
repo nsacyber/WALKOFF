@@ -1,11 +1,11 @@
 from core.decorators import *
 
 
-@datafilter
+@transform
 def sub1_top_filter(value):
     pass
 
 
-@flag
+@condition
 def sub1_top_flag(value):
     pass

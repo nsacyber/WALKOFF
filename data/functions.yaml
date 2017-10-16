@@ -7,7 +7,7 @@ info:
     name: Walkoff Team
   license:
     name: Creative Commons
-flags:
+conditions:
   regMatch:
     run: regMatch.regMatch
     description: Matches an input against a regular expression
@@ -40,7 +40,7 @@ flags:
           description: The value with which to compare the input
           required: true
           type: number
-filters:
+transforms:
   length:
     run: length.length
     description: Returns the length of a collection

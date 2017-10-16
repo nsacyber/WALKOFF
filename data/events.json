@@ -32,12 +32,12 @@
     "Next Step Taken",
     "Next Step Not Taken"
   ],
-  "flag": [
-    "Flag Success",
-    "Flag Error"
+  "condition": [
+    "Condition Success",
+    "Condition Error"
   ],
-  "filter": [
-    "Filter Success",
-    "Filter Error"
+  "transform": [
+    "Transform Success",
+    "Transform Error"
   ]
 }

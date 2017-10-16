@@ -1,8 +1,8 @@
 import re
-from core.decorators import flag
+from core.decorators import condition
 
 
-@flag
+@condition
 def regMatch(value, regex):
     """Matches the input using a regular expression matcher. See data/functions.json for argument information
 

@@ -97,27 +97,27 @@ def event(event_, timeout=300):
     return _event
 
 
-def flag(func):
+def condition(func):
     """
-    Decorator used to tag a method or function as a flag
+    Decorator used to tag a method or function as a condition
 
     Args:
         func (func): Function to tag
     Returns:
         (func) Tagged function
     """
-    tag(func, 'flag')
+    tag(func, 'condition')
     return func
 
 
-def datafilter(func):
+def transform(func):
     """
-    Decorator used to tag a method or function as a filter
+    Decorator used to tag a method or function as a transform
 
     Args:
         func (func): Function to tag
     Returns:
         (func) Tagged function
     """
-    tag(func, 'filter')
+    tag(func, 'transform')
     return func

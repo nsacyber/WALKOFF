@@ -7,8 +7,8 @@ info:
     name: Walkoff Team
   license:
     name: Creative Commons
-flags:
-  'Top Flag':
+conditions:
+  'Top Condition':
     run: top_level_flag
     dataIn: value
     parameters:
@@ -94,8 +94,8 @@ flags:
           description: The value with which to compare the input
           required: true
           type: number
-filters:
-  'Top Filter':
+transforms:
+  'Top Transform':
     run: top_level_filter
     dataIn: value
     parameters:

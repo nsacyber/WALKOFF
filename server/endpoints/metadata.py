@@ -4,8 +4,8 @@ from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
-import core.filters
-import core.flags
+import core.transforms
+import core.conditions
 from core import helpers
 from server.returncodes import SUCCESS
 
@@ -20,12 +20,12 @@ def read_all_possible_subscriptions():
     return __func()
 
 
-def read_all_filters():
+def read_all_transforms():
 
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
-        filter_api = core.config.config.function_apis['filters']
+        filter_api = core.config.config.function_apis['transforms']
         filters = {}
         for filter_name, filter_body in filter_api.items():
             ret = {}
@@ -42,17 +42,17 @@ def read_all_filters():
                 args.append(arg)
             ret['args'] = args
             filters[filter_name] = ret
-        return {'filters': filters}, SUCCESS
+        return {'transforms': filters}, SUCCESS
 
     return __func()
 
 
-def read_all_flags():
+def read_all_conditions():
 
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
-        flag_api = core.config.config.function_apis['flags']
+        flag_api = core.config.config.function_apis['conditions']
         flags = {}
         for flag_name, flag in flag_api.items():
             ret = {}
@@ -69,7 +69,7 @@ def read_all_flags():
                 args.append(arg)
             ret['args'] = args
             flags[flag_name] = ret
-        return {"flags": flags}, SUCCESS
+        return {"conditions": flags}, SUCCESS
 
     return __func()
 

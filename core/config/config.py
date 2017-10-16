@@ -106,19 +106,19 @@ except (IOError, OSError) as e:
     __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
     possible_events = []
 
-filters = {}
-flags = {}
+transforms = {}
+conditions = {}
 function_apis = {}
 
 
-def load_flagfilter_apis(path=None):
+def load_condition_transform_apis(path=None):
     path = path if path is not None else core.config.paths.function_api_path
     global function_apis
     try:
         with open(path) as function_file:
             api = yaml.load(function_file.read())
-            from core.validator import validate_flagfilter_spec
-            validate_flagfilter_spec(api)
+            from core.validator import validate_condition_transform_spec
+            validate_condition_transform_spec(api)
             function_apis = api
     except (IOError, OSError) as e:
         __logger.fatal('Cannot open flagfilter api: Error {0}'.format(str(e)))
@@ -129,13 +129,13 @@ def load_flagfilter_apis(path=None):
 
 
 def initialize():
-    global filters
-    global flags
+    global transforms
+    global conditions
 
     load_config()
-    from core.helpers import import_all_apps, import_all_filters, import_all_flags
+    from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
     import_all_apps()
     load_app_apis()
-    flags = import_all_flags()
-    filters = import_all_filters()
-    load_flagfilter_apis()
+    conditions = import_all_conditions()
+    transforms = import_all_transforms()
+    load_condition_transform_apis()

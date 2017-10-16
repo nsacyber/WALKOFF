@@ -31,7 +31,7 @@
                     "name": "start",
                     "next_steps": [
                         {
-                            "flags": [
+                            "conditions": [
                                 {
                                     "action": "regMatch",
                                     "args": [
@@ -40,7 +40,7 @@
                                             "value": "(.*)"
                                         }
                                     ],
-                                    "filters": [
+                                    "transforms": [
                                         {
                                             "action": "length",
                                             "args": [],

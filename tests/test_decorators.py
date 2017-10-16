@@ -39,19 +39,19 @@ class TestDecorators(unittest.TestCase):
 
     def test_flag_decorator_is_tagged(self):
 
-        @flag
+        @condition
         def is_even(x):
             return x % 2 == 0
 
-        self.assertTrue(getattr(is_even, 'flag'))
+        self.assertTrue(getattr(is_even, 'condition'))
         self.assertTrue(is_even(2))
 
     def test_filter_decorator_is_tagged(self):
-        @datafilter
+        @transform
         def add_one(x):
             return x+1
 
-        self.assertTrue(getattr(add_one, 'filter'))
+        self.assertTrue(getattr(add_one, 'transform'))
         self.assertEqual(add_one(1), 2)
 
 

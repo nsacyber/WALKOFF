@@ -1,7 +1,7 @@
-from core.decorators import flag
+from core.decorators import condition
 
 
-@flag
+@condition
 def count(value, operator, threshold):
     if operator == 'g' and value > threshold:
         return True

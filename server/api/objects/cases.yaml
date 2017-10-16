@@ -75,7 +75,7 @@ Event:
       description: The type of event
       type: string
       readOnly: true
-      enum: [System, Workflow, Step, 'Next Step', Flag, Filter]
+      enum: [System, Workflow, Step, 'Next Step', Condition, Transform]
       example: Step
     originator:
       description: The UID of the execution element which caused this event

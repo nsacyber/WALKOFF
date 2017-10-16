@@ -18,7 +18,7 @@
                     "name": "1",
                     "next_steps": [
                         {
-                            "flags": [],
+                            "conditions": [],
                             "name": "b7725c22c881484ebe2901027f1acd7f",
                             "status": "Success",
                             "uid": "a124b4b7648d48aa9ebc5113a5ec7d47"
@@ -37,7 +37,7 @@
                     "name": "start",
                     "next_steps": [
                         {
-                            "flags": [],
+                            "conditions": [],
                             "name": "6c52b6a75406452a9d85967d80d71bf8",
                             "status": "Success",
                             "uid": "ac08f9b8fee2430595ce94af71e17a6f"

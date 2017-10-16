@@ -117,7 +117,7 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
     validate_devices_api(devices, app_name)
 
 
-def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
+def validate_condition_transform_spec(spec, spec_url='', http_handlers=None):
     walkoff_resolver = validate_spec_json(
         spec,
         os.path.join(core.config.paths.walkoff_schema_path),
@@ -125,10 +125,10 @@ def validate_flagfilter_spec(spec, spec_url='', http_handlers=None):
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
     dereferenced_spec = dereference(spec)
-    flag_spec = dereference(dereferenced_spec['flags'])
-    filter_spec = dereference(dereferenced_spec['filters'])
-    validate_flagfilter_params(flag_spec, 'Flag', core.config.config.flags, dereference)
-    validate_flagfilter_params(filter_spec, 'Filter', core.config.config.filters, dereference)
+    condition_spec = dereference(dereferenced_spec['conditions'])
+    transform_spec = dereference(dereferenced_spec['transforms'])
+    validate_condition_transform_params(condition_spec, 'Condition', core.config.config.conditions, dereference)
+    validate_condition_transform_params(transform_spec, 'Transform', core.config.config.transforms, dereference)
 
 
 def validate_data_in_param(params, data_in_param_name, message_prefix):
@@ -145,7 +145,7 @@ def validate_data_in_param(params, data_in_param_name, message_prefix):
                                                                              data_in_param_name))
 
 
-def validate_flagfilter_params(spec, action_type, defined_actions, dereferencer):
+def validate_condition_transform_params(spec, action_type, defined_actions, dereferencer):
     seen = set()
     for action_name, action in spec.items():
         action = dereferencer(action)
@@ -384,12 +384,12 @@ def validate_app_action_parameters(api, inputs, app, action):
     return validate_parameters(api, inputs, message_prefix)
 
 
-def validate_flag_parameters(api, inputs, flag):
-    return validate_parameters(api, inputs, 'flag {0}'.format(flag))
+def validate_condition_parameters(api, inputs, condition):
+    return validate_parameters(api, inputs, 'condition {0}'.format(condition))
 
 
-def validate_filter_parameters(api, inputs, filter_name):
-    return validate_parameters(api, inputs, 'filter {0}'.format(filter_name))
+def validate_transform_parameters(api, inputs, transform):
+    return validate_parameters(api, inputs, 'transform {0}'.format(transform))
 
 
 def validate_device_field(field_api, value, message_prefix):

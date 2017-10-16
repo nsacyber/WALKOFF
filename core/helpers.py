@@ -325,36 +325,36 @@ def __split_api_params(api):
     return args, data_param
 
 
-def get_flag_api(flag):
+def get_condition_api(condition):
     try:
-        api = core.config.config.function_apis['flags'][flag]
+        api = core.config.config.function_apis['conditions'][condition]
         return __split_api_params(api)
     except (KeyError, ValueError):
-        raise UnknownFlag(flag)
+        raise UnknownCondition(condition)
 
 
-def get_flag(flag):
+def get_condition(condition):
     try:
-        runnable = core.config.config.function_apis['flags'][flag]['run']
-        return core.config.config.flags[runnable]
+        runnable = core.config.config.function_apis['conditions'][condition]['run']
+        return core.config.config.conditions[runnable]
     except KeyError:
-        raise UnknownFlag(flag)
+        raise UnknownCondition(condition)
 
 
-def get_filter_api(filter_name):
+def get_transform_api(transform):
     try:
-        api = core.config.config.function_apis['filters'][filter_name]
+        api = core.config.config.function_apis['transforms'][transform]
         return __split_api_params(api)
     except (KeyError, ValueError):
-        raise UnknownFilter(filter_name)
+        raise UnknownTransform(transform)
 
 
-def get_filter(filter_name):
+def get_transform(transform):
     try:
-        runnable = core.config.config.function_apis['filters'][filter_name]['run']
-        return core.config.config.filters[runnable]
+        runnable = core.config.config.function_apis['transforms'][transform]['run']
+        return core.config.config.transforms[runnable]
     except KeyError:
-        raise UnknownFilter(filter_name)
+        raise UnknownTransform(transform)
 
 
 class InvalidAppStructure(Exception):
@@ -387,18 +387,18 @@ class InvalidInput(Exception):
         super(InvalidInput, self).__init__(self.message)
 
 
-class UnknownFlag(Exception):
-    def __init__(self, flag):
-        self.message = 'Unknown flag {0}'.format(flag)
-        super(UnknownFlag, self).__init__(self.message)
-        self.flag = flag
+class UnknownCondition(Exception):
+    def __init__(self, condition):
+        self.message = 'Unknown condition {0}'.format(condition)
+        super(UnknownCondition, self).__init__(self.message)
+        self.condition = condition
 
 
-class UnknownFilter(Exception):
-    def __init__(self, filter_name):
-        self.message = 'Unknown filter {0}'.format(filter_name)
-        super(UnknownFilter, self).__init__(self.message)
-        self.filter = filter_name
+class UnknownTransform(Exception):
+    def __init__(self, transform):
+        self.message = 'Unknown transform {0}'.format(transform)
+        super(UnknownTransform, self).__init__(self.message)
+        self.transform = transform
 
 
 class InvalidElementConstructed(Exception):
@@ -445,12 +445,12 @@ def import_and_find_tags(package, tag, prefix=None, recursive=True):
     return tagged
 
 
-def import_all_flags(package='core.flags'):
-    return import_and_find_tags(package, 'flag')
+def import_all_conditions(package='core.conditions'):
+    return import_and_find_tags(package, 'condition')
 
 
-def import_all_filters(package='core.filters'):
-    return import_and_find_tags(package, 'filter')
+def import_all_transforms(package='core.transforms'):
+    return import_and_find_tags(package, 'transform')
 
 
 def __get_step_from_reference(reference, accumulator, message_prefix):

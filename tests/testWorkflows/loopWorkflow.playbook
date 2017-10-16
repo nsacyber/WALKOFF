@@ -36,7 +36,7 @@
                     "name": "start",
                     "next_steps": [
                         {
-                            "flags": [
+                            "conditions": [
                                 {
                                     "action": "regMatch",
                                     "args": [
@@ -45,7 +45,7 @@
                                             "value": "1|2|3|4"
                                         }
                                     ],
-                                    "filters": [],
+                                    "transforms": [],
                                     "uid": "4e25a14eb2db41a1bc10f6d158fb4a76"
                                 }
                             ],
@@ -54,7 +54,7 @@
                             "uid": "a29e786e457f4f57beb14eb7d8ed40ed"
                         },
                         {
-                            "flags": [
+                            "conditions": [
                                 {
                                     "action": "regMatch",
                                     "args": [
@@ -63,7 +63,7 @@
                                             "value": "5"
                                         }
                                     ],
-                                    "filters": [],
+                                    "transforms": [],
                                     "uid": "b72d98aa7a8e417e98becddc9a1e7297"
                                 }
                             ],

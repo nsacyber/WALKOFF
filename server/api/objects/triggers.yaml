@@ -6,10 +6,10 @@ Trigger:
       type: string
       example: triggerOne
     conditions:
-      description: String representation of a list of Flag objects
+      description: String representation of a list of Condition objects
       type: array
       items:
-        $ref: '#/definitions/Flag'
+        $ref: '#/definitions/Condition'
     playbook:
       description: The name of the playbook that relates to this trigger
       type: string

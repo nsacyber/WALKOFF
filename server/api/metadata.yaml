@@ -15,13 +15,13 @@
           type: array
           items:
             $ref: '#/definitions/AvailableSubscriptions'
-/api/filters:
+/api/transforms:
   get:
     tags:
       - System
-    summary: Read all filters
+    summary: Read all transforms
     description: ''
-    operationId: server.endpoints.metadata.read_all_filters
+    operationId: server.endpoints.metadata.read_all_transforms
     produces:
       - application/json
     responses:
@@ -29,19 +29,19 @@
         description: Success
         schema:
           type: object
-          required: [filters]
+          required: [transforms]
           properties:
-            filters:
-              description: All the available filters. Form of '{filter_name -> Action}'
+            transforms:
+              description: All the available transforms. Form of '{transform_name -> Action}'
               type: object
 
-/api/flags:
+/api/conditions:
   get:
     tags:
       - System
-    summary: Read all flags
+    summary: Read all conditions
     description: ''
-    operationId: server.endpoints.metadata.read_all_flags
+    operationId: server.endpoints.metadata.read_all_conditions
     produces:
       - application/json
     responses:
@@ -49,10 +49,10 @@
         description: Success
         schema:
           type: object
-          required: [flags]
+          required: [conditions]
           properties:
             filters:
-              description: All the available flags. Form of '{flag_name -> Action}'
+              description: All the available conditions. Form of '{condition_name -> Action}'
               type: object
 
 /api/devicetypes:

@@ -1,7 +1,7 @@
 import unittest
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.helpers import import_all_flags, import_all_filters, import_all_apps
+from core.helpers import import_all_conditions, import_all_transforms, import_all_apps
 from tests import config
 import core.config.config
 from tests.apps import App
@@ -17,9 +17,9 @@ class TestExecutionEvents(unittest.TestCase):
         App.registry = {}
         import_all_apps(path=config.test_apps_path, reload=True)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
-        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
-        core.config.config.load_flagfilter_apis(path=config.function_api_path)
+        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
+        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
+        core.config.config.load_condition_transform_apis(path=config.function_api_path)
         core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
 
@@ -73,10 +73,10 @@ class TestExecutionEvents(unittest.TestCase):
         subs = {step.uid: ['Function Execution Success', 'Step Started', 'Conditionals Executed']}
         next_step = next(conditional for conditional in step.next_steps if conditional.name == '1')
         subs[next_step.uid] = ['Next Step Taken', 'Next Step Not Taken']
-        flag = next(flag for flag in next_step.flags if flag.action == 'regMatch')
-        subs[flag.uid] = ['Flag Success', 'Flag Error']
-        filter_ = next(filter_elem for filter_elem in flag.filters if filter_elem.action == 'length')
-        subs[filter_.uid] = ['Filter Success', 'Filter Error']
+        condition = next(condition for condition in next_step.conditions if condition.action == 'regMatch')
+        subs[condition.uid] = ['Condition Success', 'Condition Error']
+        transform = next(transform for transform in condition.transforms if transform.action == 'length')
+        subs[transform.uid] = ['Transform Success', 'Transform Error']
 
         case_subscription.set_subscriptions({'case1': subs})
 

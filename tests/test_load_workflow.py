@@ -2,21 +2,20 @@ import unittest
 from core import controller
 from core.config.config import initialize
 from tests import config
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
 from tests.config import test_apps_path, function_api_path
 import core.config.config
 
-import logging
-logging.basicConfig()
+
 class TestLoadWorkflow(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         import_all_apps(path=test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
-        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
-        core.config.config.load_flagfilter_apis(path=function_api_path)
+        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
+        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
+        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     def setUp(self):
         self.c = controller.Controller()
@@ -49,25 +48,25 @@ class TestLoadWorkflow(unittest.TestCase):
 
         next_step = next_step[0]
         self.assertEqual(next_step.name, '1')
-        self.assertTrue(next_step.flags)
+        self.assertTrue(next_step.conditions)
 
-    def test_workflow_next_step_flags(self):
-        flags = self.testWorkflow.steps[self.workflow_uid].next_steps[0].flags
+    def test_workflow_next_step_conditions(self):
+        conditions = self.testWorkflow.steps[self.workflow_uid].next_steps[0].conditions
 
-        # Verify flags exist
-        self.assertTrue(len(flags) == 1)
+        # Verify conditions exist
+        self.assertTrue(len(conditions) == 1)
 
-        flag = flags[0]
-        self.assertEqual(flag.action, 'regMatch')
-        self.assertTrue(flag.filters)
+        condition = conditions[0]
+        self.assertEqual(condition.action, 'regMatch')
+        self.assertTrue(condition.transforms)
 
-    def test_workflow_next_step_filters(self):
-        filters = self.testWorkflow.steps[self.workflow_uid].next_steps[0].flags[0].filters
-        self.assertEqual(len(filters), 1)
+    def test_workflow_next_step_transforms(self):
+        transforms = self.testWorkflow.steps[self.workflow_uid].next_steps[0].conditions[0].transforms
+        self.assertEqual(len(transforms), 1)
 
-        filter_element = filters[0]
-        self.assertEqual(filter_element.action, 'length')
-        self.assertEqual(filter_element.args, {})
+        transform = transforms[0]
+        self.assertEqual(transform.action, 'length')
+        self.assertEqual(transform.args, {})
 
     def test_load_workflow_invalid_app(self):
         original_workflows = self.c.get_all_workflows()

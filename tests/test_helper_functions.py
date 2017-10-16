@@ -15,9 +15,9 @@ class TestHelperFunctions(unittest.TestCase):
     def setUpClass(cls):
         import_all_apps(path=test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.flags = import_all_flags('tests.util.flagsfilters')
-        core.config.config.filters = import_all_filters('tests.util.flagsfilters')
-        core.config.config.load_flagfilter_apis(path=function_api_path)
+        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
+        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
+        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     def setUp(self):
         self.original_apps_path = core.config.paths.apps_path
@@ -158,47 +158,47 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
     def test_import_and_find_tags(self):
-        import tests.util.flagsfilters
-        from tests.util.flagsfilters import sub1, mod1
-        from tests.util.flagsfilters.sub1 import mod2
-        filter_tags = import_and_find_tags('tests.util.flagsfilters', 'filter')
-        expected_filters = {'top_level_filter': tests.util.flagsfilters.top_level_filter,
-                            'filter1': tests.util.flagsfilters.filter1,
-                            'length': tests.util.flagsfilters.length,
-                            'json_select': tests.util.flagsfilters.json_select,
-                            'mod1.filter1': tests.util.flagsfilters.mod1.filter1,
-                            'mod1.filter2': tests.util.flagsfilters.mod1.filter2,
-                            'sub1.sub1_top_filter': tests.util.flagsfilters.sub1.sub1_top_filter,
-                            'sub1.mod2.filter1': tests.util.flagsfilters.sub1.mod2.filter1,
-                            'sub1.mod2.complex_filter': tests.util.flagsfilters.sub1.mod2.complex_filter,
-                            'sub1.mod2.filter3': tests.util.flagsfilters.sub1.mod2.filter3}
-        flag_tags = import_and_find_tags('tests.util.flagsfilters', 'flag')
-        expected_flags = {'top_level_flag': tests.util.flagsfilters.top_level_flag,
-                          'regMatch': tests.util.flagsfilters.regMatch,
-                          'count': tests.util.flagsfilters.count,
-                          'mod1.flag1': tests.util.flagsfilters.mod1.flag1,
-                          'mod1.flag2': tests.util.flagsfilters.mod1.flag2,
-                          'sub1.sub1_top_flag': tests.util.flagsfilters.sub1.sub1_top_flag,
-                          'sub1.mod2.flag1': tests.util.flagsfilters.sub1.mod2.flag1,
-                          'sub1.mod2.flag2': tests.util.flagsfilters.sub1.mod2.flag2}
+        import tests.util.conditionstransforms
+        from tests.util.conditionstransforms import sub1, mod1
+        from tests.util.conditionstransforms.sub1 import mod2
+        filter_tags = import_and_find_tags('tests.util.conditionstransforms', 'transform')
+        expected_filters = {'top_level_filter': tests.util.conditionstransforms.top_level_filter,
+                            'filter1': tests.util.conditionstransforms.filter1,
+                            'length': tests.util.conditionstransforms.length,
+                            'json_select': tests.util.conditionstransforms.json_select,
+                            'mod1.filter1': tests.util.conditionstransforms.mod1.filter1,
+                            'mod1.filter2': tests.util.conditionstransforms.mod1.filter2,
+                            'sub1.sub1_top_filter': tests.util.conditionstransforms.sub1.sub1_top_filter,
+                            'sub1.mod2.filter1': tests.util.conditionstransforms.sub1.mod2.filter1,
+                            'sub1.mod2.complex_filter': tests.util.conditionstransforms.sub1.mod2.complex_filter,
+                            'sub1.mod2.filter3': tests.util.conditionstransforms.sub1.mod2.filter3}
+        flag_tags = import_and_find_tags('tests.util.conditionstransforms', 'condition')
+        expected_flags = {'top_level_flag': tests.util.conditionstransforms.top_level_flag,
+                          'regMatch': tests.util.conditionstransforms.regMatch,
+                          'count': tests.util.conditionstransforms.count,
+                          'mod1.flag1': tests.util.conditionstransforms.mod1.flag1,
+                          'mod1.flag2': tests.util.conditionstransforms.mod1.flag2,
+                          'sub1.sub1_top_flag': tests.util.conditionstransforms.sub1.sub1_top_flag,
+                          'sub1.mod2.flag1': tests.util.conditionstransforms.sub1.mod2.flag1,
+                          'sub1.mod2.flag2': tests.util.conditionstransforms.sub1.mod2.flag2}
         self.assertDictEqual(filter_tags, expected_filters)
         self.assertDictEqual(flag_tags, expected_flags)
 
     def test_import_all_flags(self):
-        self.assertDictEqual(import_all_flags('tests.util.flagsfilters'),
-                             import_and_find_tags('tests.util.flagsfilters', 'flag'))
+        self.assertDictEqual(import_all_conditions('tests.util.conditionstransforms'),
+                             import_and_find_tags('tests.util.conditionstransforms', 'condition'))
 
     def test_import_all_flags_invalid_flag_package(self):
         with self.assertRaises(ImportError):
-            import_all_flags('invalid.package')
+            import_all_conditions('invalid.package')
 
     def test_import_all_filters(self):
-        self.assertDictEqual(import_all_filters('tests.util.flagsfilters'),
-                             import_and_find_tags('tests.util.flagsfilters', 'filter'))
+        self.assertDictEqual(import_all_transforms('tests.util.conditionstransforms'),
+                             import_and_find_tags('tests.util.conditionstransforms', 'transform'))
 
     def test_import_all_filters_invalid_filter_package(self):
         with self.assertRaises(ImportError):
-            import_all_flags('invalid.package')
+            import_all_conditions('invalid.package')
 
     def test_get_app_action_api_valid(self):
         api = get_app_action_api('HelloWorld', 'pause')
@@ -229,7 +229,7 @@ class TestHelperFunctions(unittest.TestCase):
             self.assertIn(actual_param, expected[0])
 
     def test_get_flag_api_valid(self):
-        api = get_flag_api('regMatch')
+        api = get_condition_api('regMatch')
         expected = (
             [{'required': True, 'type': 'string', 'name': 'regex', 'description': 'The regular expression to match'}],
             {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input value'}
@@ -237,34 +237,34 @@ class TestHelperFunctions(unittest.TestCase):
         self.assert_params_tuple_equal(api, expected)
 
     def test_get_flag_api_invalid(self):
-        with self.assertRaises(UnknownFlag):
-            get_flag_api('invalid')
+        with self.assertRaises(UnknownCondition):
+            get_condition_api('invalid')
 
     def test_get_filter_api_valid(self):
-        api = get_filter_api('length')
+        api = get_transform_api('length')
         expected = ([], {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input collection'})
 
         self.assert_params_tuple_equal(api, expected)
 
     def test_get_filter_api_invalid(self):
-        with self.assertRaises(UnknownFilter):
-            get_filter_api('invalid')
+        with self.assertRaises(UnknownTransform):
+            get_transform_api('invalid')
 
     def test_get_flag_valid(self):
-        from tests.util.flagsfilters import count
-        self.assertEqual(get_flag('count'), count)
+        from tests.util.conditionstransforms import count
+        self.assertEqual(get_condition('count'), count)
 
     def test_get_flag_invalid(self):
-        with self.assertRaises(UnknownFlag):
-            get_flag('invalid')
+        with self.assertRaises(UnknownCondition):
+            get_condition('invalid')
 
     def test_get_filter_valid(self):
-        from tests.util.flagsfilters import length
-        self.assertEqual(get_filter('length'), length)
+        from tests.util.conditionstransforms import length
+        self.assertEqual(get_transform('length'), length)
 
     def test_get_filter_invalid(self):
-        with self.assertRaises(UnknownFilter):
-            get_filter('invalid')
+        with self.assertRaises(UnknownTransform):
+            get_transform('invalid')
 
     def test_dereference_step_routing(self):
         inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}
