@@ -26,7 +26,7 @@
                         }
                     ],
                     "name": "first step",
-                    "next": [
+                    "next_steps": [
                         {
                             "flags": [],
                             "name": "d42ff390-b01f-11e7-abc4-cec278b6b50a",

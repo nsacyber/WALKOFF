@@ -9,8 +9,6 @@ import { Component } from '@angular/core';
 
 import { TriggersService } from './triggers.service';
 
-import { Trigger } from '../models/trigger';
-
 @Component({
 	selector: 'triggers-component',
 	templateUrl: 'client/triggers/triggers.html',

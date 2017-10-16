@@ -102,10 +102,28 @@
                         </div>
 
                         <div class="col-md-4 graphEditorColumn">
-                            <div *ngIf="selectedNode && selectedNodeType === 'node'">
+                            <!-- Editor for AppSteps -->
+                            <div *ngIf="selectedStep && selectedStep.inputs">
+                                <div class="form-group">
+                                    <button class="btn btn-primary" class="form-control" (change)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                                </div>
                                 <div class="form-group">
                                     <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                                    <input type="text" class="form-control" [(ngModel)]="selectedNode.name" name="name" required tabindex="1">
+                                    <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required tabindex="1">
+                                </div>
+                                <div *ngIf="relevantDevices.length" class="form-group">
+                                    <label for="device_id">Device</label>
+                                    <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
+                                        <option value=""></option>
+                                        <option *ngFor="let i of relevantDevices" [value]="i.id" [label]="i.name">{{i.name}}</option>
+                                    </select>
+                                </div>
+                                <div *ngFor="let input of selectedStep.inputs; let i = index" class="form-group">
+                                    <label for="{{input.name}}">Input {{i+1}}: {{input.name}} ({{inputArgs.type}}</label>
+                                    <select name="playbookSelect" id="playbookSelect" class="form-control">
+                                        <option value="0">-- Set Static Value --</option>
+                                        <option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

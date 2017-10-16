@@ -19,10 +19,12 @@ import { AuthService } from '../auth/auth.service';
 import { Action, ActionArgument } from '../models/action';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
+import { Step, AppStep, TriggerStep } from '../models/playbook/step';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
 import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
+import { Argument } from '../models/playbook/argument';
 
 @Component({
 	selector: 'playbook-component',
@@ -39,6 +41,7 @@ export class PlaybookComponent {
 	conditions: Condition[] = [];
 	transforms: Transform[] = [];
 	devices: Device[] = [];
+	relevantDevices: Device[] = [];
 
 	currentPlaybook: string;
 	currentWorkflow: string;
@@ -49,7 +52,7 @@ export class PlaybookComponent {
 	actionsForApps: { [key: string]: { [key: string]: Action } } = {};
 	startNode: string;
 	offset: GraphPosition = { x: -330, y: -170 };
-	selectedNode: any = null; // node being displayed in json editor
+	selectedStep: Step; // node being displayed in json editor
 	cyJsonData: string;
 	actionTree: any;
 
@@ -234,8 +237,8 @@ export class PlaybookComponent {
 					toggleOffOnLeave: true,
 					complete: function (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
 						let sourceParameters = sourceNode.data().parameters;
-						if (!sourceParameters.hasOwnProperty("next"))
-							sourceParameters.next = [];
+						if (!sourceParameters.hasOwnProperty("next_steps"))
+							sourceParameters.next_steps = [];
 
 						// The edge handles extension is not integrated into the undo/redo extension.
 						// So in order that adding edges is contained in the undo stack,
@@ -251,12 +254,12 @@ export class PlaybookComponent {
 							});
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
-							if (sourceParameters.next.find((next: any) => { return next.name === targetNodes[i].data().id })) {
+							if (sourceParameters.next_steps.find((next: any) => { return next.name === targetNodes[i].data().id })) {
 								self.cy.remove(addedEntities);
 								return;
 							}
 
-							sourceParameters.next.push({
+							sourceParameters.next_steps.push({
 								flags: [],
 								status: 'Success',
 								name: targetNodes[i].data().id // Note use id, not name since name can be changed
@@ -291,7 +294,7 @@ export class PlaybookComponent {
 					var ret: any = { group: "nodes", position: _.clone(value.position) };
 					ret.data = { id: value.uid, parameters: _.cloneDeep(value), label: value.name, isStartNode: value.uid === workflow.start };
 					self._setNodeDisplayProperties(ret);
-					value.next.forEach((nextStep) => {
+					value.next_steps.forEach((nextStep) => {
 						edges.push({
 							group: "edges",
 							data: {
@@ -328,37 +331,40 @@ export class PlaybookComponent {
 	}
 
 	save(): void {
-		if ($(".nav-tabs .active").text() === "Graphical Editor") {
-			// If the graphical editor tab is active
-			this.saveWorkflow(this.cy.elements().jsons());
-		}
-		else {
-			// If the JSON tab is active
-			this.saveWorkflowJson(this.cyJsonData);
-		}
+		// if ($(".nav-tabs .active").text() === "Graphical Editor") {
+		// 	// If the graphical editor tab is active
+		// 	this.saveWorkflow(this.cy.elements().jsons());
+		// }
+		// else {
+		// 	// If the JSON tab is active
+		// 	this.saveWorkflowJson(this.cyJsonData);
+		// }
+		this.saveWorkflow(this.cy.elements().jsons());
 	}
 
-	saveWorkflow(workflowData: any): void {
+	saveWorkflow(cyData: any): void {
 		if (!this.startNode) {
 			this.toastyService.warning(`Workflow cannot be saved without a starting step.`);
 			return;
 		}
 
-		workflowData = _.filter(workflowData, function (data: any) { return data.group === "nodes"; });
+		cyData = _.filter(cyData, function (data: any) { return data.group === "nodes"; });
 
-		let steps = _.map(workflowData, function (step: any) {
+		let steps: Step[] = _.map(cyData, function (step: any) {
 			let ret = _.cloneDeep(step.data.parameters);
 			ret.position = _.clone(step.position);
 			return ret;
 		});
 
+		this.loadedWorkflow.start = this.startNode;
+		this.loadedWorkflow.steps = steps;
+
 		// this._transformInputsToSave(steps);
 
-		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, { start: this.startNode, steps: steps })
+		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, this.loadedWorkflow)
 			.then(() => this.toastyService.success(`Successfully saved workflow ${this.currentPlaybook} - ${this.currentWorkflow}.`))
 			.catch(e => this.toastyService.error(`Error saving workflow ${this.currentPlaybook} - ${this.currentWorkflow}: ${e.message}`));
 	}
-
 
 	saveWorkflowJson(workflowJSONString: string): void {
 		// // Convert data in string format under JSON tab to a dictionary
@@ -441,7 +447,11 @@ export class PlaybookComponent {
 		let ele = e.target;
 		let parameters = ele.data('parameters');
 
-		self.selectedNode = ele;
+		if (parameters.inputs) self.selectedStep = <AppStep>parameters;
+		else self.selectedStep = <TriggerStep>parameters;
+
+		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
+		self.relevantDevices = self.devices.filter(d => d.app === parameters.app);
 
 		// ele.data('parameters', updatedParameters);
 	}
@@ -453,7 +463,7 @@ export class PlaybookComponent {
 	}
 
 	onUnselect(event: any, self: PlaybookComponent): void {
-		if (!self.cy.$('node:selected').length) self.selectedNode = null;
+		if (!self.cy.$('node:selected').length) self.selectedStep = null;
 	}
 
 	// when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
@@ -465,7 +475,7 @@ export class PlaybookComponent {
 		let parentNode = event.target.source();
 		let parentData = _.cloneDeep(parentNode.data());
 
-		parentData.parameters.next = _.reject(parentData.parameters.next, (next: any) => { return next.name === event.target.data().target; });
+		parentData.parameters.next_steps = parentData.parameters.next_steps.filter((next: any) => { return next.name !== event.target.data().target; });
 		parentNode.data(parentData);
 	}
 
@@ -482,7 +492,7 @@ export class PlaybookComponent {
 
 		// If the start node was deleted, set it to one of the roots of the graph
 		if (parameters && node.isNode() && self.startNode == parameters.id) self.setStartNode(null);
-		if (self.selectedNode == node) self.selectedNode = null;
+		if (self.selectedStep && self.selectedStep.uid == parameters.uid) self.selectedStep = null;
 	}
 
 	// This function is called when the user drops a new node onto the graph
@@ -512,7 +522,7 @@ export class PlaybookComponent {
 		// Grab a new UUID for both the ID of the node and the ID of the step in the workflow
 		let id = UUID.UUID();
 
-		let inputs: { [key: string]: { name: string, value: string } } = {};
+		let inputs: Argument[] = [];
 		let actionInfo = this.actionsForApps[app][action];
 		actionInfo.args.forEach((input) => {
 			// let defaultValue;
@@ -523,10 +533,10 @@ export class PlaybookComponent {
 			// else
 			// 	defaultValue = input.default || 0;
 
-			inputs[input.name] = {
+			inputs.push({
 				name: input.name,
 				value: input.default
-			};
+			});
 		});
 
 		// Add the node with the id just found to the graph in the location dropped
@@ -544,7 +554,7 @@ export class PlaybookComponent {
 					inputs: inputs,
 					uid: id,
 					name: action,
-					next: <any[]>[],
+					next_steps: <any[]>[],
 				}
 			},
 			renderedPosition: <GraphPosition>null,
@@ -583,7 +593,7 @@ export class PlaybookComponent {
 		for (let i = 0; i < newNodes.length; ++i) {
 			let parameters = newNodes[i].data("parameters");
 			parameters.name = newNodes[i].data("id");
-			parameters.next = [];
+			parameters.next_steps = [];
 			newNodes[i].data("parameters", parameters);
 		}
 	}
@@ -719,6 +729,7 @@ export class PlaybookComponent {
 				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(() => {
 						this.workflowsForPlaybooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
+						//TODO: rename loaded workflow
 						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
 						this._closeModal();
 					})
@@ -790,5 +801,13 @@ export class PlaybookComponent {
 
 	_doesPlaybookExist(playbook: string): boolean {
 		return this.workflowsForPlaybooks.hasOwnProperty(playbook);
+	}
+
+	getInputArgParamsForSelectedStep() {
+		return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
+	}
+
+	getPreviousSteps() {
+		return <Step[]>[];
 	}
 }

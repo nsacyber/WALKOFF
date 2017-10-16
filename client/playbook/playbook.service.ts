@@ -112,12 +112,12 @@ export class PlaybookService {
 
 	/**
 	 * Saves the data of a given workflow specified under a given playbook.
-	 * @param playbook Name of the playbook the workflow exists under
-	 * @param workflow Name of the workflow to be saved
-	 * @param workflowData Data to be saved under the workflow (steps, etc.)
+	 * @param playbookName Name of the playbook the workflow exists under
+	 * @param workflowName Name of the workflow to be saved
+	 * @param workflow Data to be saved under the workflow (steps, etc.)
 	 */
-	saveWorkflow(playbook: string, workflow: string, workflowData: Object): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${workflow}/save`, { data: workflowData })
+	saveWorkflow(playbookName: string, workflowName: string, workflow: Workflow): Promise<void> {
+		return this.authHttp.post(`/api/playbooks/${playbookName}/workflows/${workflowName}/save`, { data: workflow })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

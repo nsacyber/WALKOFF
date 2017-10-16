@@ -12,7 +12,6 @@ import { SchedulerService } from './scheduler.service';
 
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Case } from '../models/case';
-import { Workflow } from '../models/workflow';
 import { ScheduledTask } from '../models/scheduledTask';
 
 @Component({
@@ -72,13 +71,6 @@ export class SchedulerComponent {
 				if (newStatus) this.schedulerStatus = newStatus;
 			})
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
-	}
-
-	executeWorkflow(workflow: Workflow): void {
-		this.schedulerService
-			.executeWorkflow(workflow.name, workflow.name)
-			.then(() => this.toastyService.success(`Workflow ${workflow.name} has been scheduled to execute.`))
-			.catch(e => this.toastyService.error(`Error executing workflow: ${e.message}`));
 	}
 
 	getScheduledTasks(): void {

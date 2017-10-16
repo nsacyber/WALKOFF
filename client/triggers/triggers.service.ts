@@ -2,8 +2,6 @@ import { Injectable } from '@angular/core';
 import { Http, Response, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
-import { Trigger } from '../models/trigger'
-
 @Injectable()
 export class TriggersService {
 	constructor (private authHttp: JwtHttp) {
