@@ -137,10 +137,11 @@ class Device(Device_Base):
             updated_plaintext_fields, updated_encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
 
             for curr_field in self.encrypted_fields:
+                self.encrypted_fields.remove(curr_field)
                 for updated_field in updated_encrypted_fields:
                     if updated_field.name == curr_field.name:
                         self.encrypted_fields.remove(curr_field)
-                        self.encrypted_fields.append(updated_field)
+                    self.encrypted_fields.append(updated_field)
 
             self.plaintext_fields = updated_plaintext_fields
         if 'type' in json_in:
@@ -189,7 +190,7 @@ class DeviceField(Device_Base, DeviceFieldMixin):
         self._value = str(value)
 
     def as_json(self):
-        return {"name": self.name, "value": self.value}
+        return {"name": self.name, "type": self.type, "value": self.value, "encrypted":False}
 
     @staticmethod
     def from_json(data):
@@ -241,9 +242,9 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
         self._value = aes.encrypt(str(new_value))
 
     def as_json(self, export=False):
-        field = {"name": self.name, "encrypted": True}
+        field = {"name": self.name, "type": self.type, "encrypted": True}
         if export:
-            field = {"name": self.name, "value": self.value}
+            field = {"name": self.name, "type": self.type, "value": self.value}
         return field
 
     @staticmethod

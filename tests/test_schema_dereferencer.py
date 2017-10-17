@@ -1,69 +1,69 @@
-import unittest
-from core.schemas.dereference import *
-from core.helpers import InvalidApi
-
-
-class TestSchemaDereferencer(unittest.TestCase):
-    def test_dereference_basic(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        self.assertEqual(dereference('#/a', schema, set(), ''), 4)
-
-    def test_dereference_deep(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        self.assertEqual(dereference('#/b/c', schema, set(), ''), 5)
-
-    def test_dereference_invalid_path(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        with self.assertRaises(InvalidApi):
-            dereference('#/b/invalid', schema, set(), '')
-
-    def test_dereference_invalid_path_no_hash(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        with self.assertRaises(InvalidApi):
-            dereference('/b/invalid', schema, set(), '')
-
-    def test_dereference_invalid_path_empty(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        with self.assertRaises(InvalidApi):
-            dereference('', schema, set(), '')
-
-    def test_dereference_invalid_path_empty_with_has(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        with self.assertRaises(InvalidApi):
-            dereference('#/', schema, set(), '')
-
-    def test_dereference_with_seen(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        self.assertEqual(dereference('#/b/c', schema, {'#/a'}, ''), 5)
-
-    def test_dereference_with_already_seen(self):
-        schema = {
-            'a': 4,
-            'b': {'c': 5, 'd': 6}
-        }
-        with self.assertRaises(InvalidApi):
-            dereference('#/b/c', schema, {'#/a', '#/b/c'}, '')
+# import unittest
+# from core.schemas.dereference import *
+# from core.helpers import InvalidApi
+#
+#
+# class TestSchemaDereferencer(unittest.TestCase):
+#     def test_dereference_basic(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         self.assertEqual(dereference('#/a', schema, set(), ''), 4)
+#
+#     def test_dereference_deep(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         self.assertEqual(dereference('#/b/c', schema, set(), ''), 5)
+#
+#     def test_dereference_invalid_path(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         with self.assertRaises(InvalidApi):
+#             dereference('#/b/invalid', schema, set(), '')
+#
+#     def test_dereference_invalid_path_no_hash(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         with self.assertRaises(InvalidApi):
+#             dereference('/b/invalid', schema, set(), '')
+#
+#     def test_dereference_invalid_path_empty(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         with self.assertRaises(InvalidApi):
+#             dereference('', schema, set(), '')
+#
+#     def test_dereference_invalid_path_empty_with_has(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         with self.assertRaises(InvalidApi):
+#             dereference('#/', schema, set(), '')
+#
+#     def test_dereference_with_seen(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         self.assertEqual(dereference('#/b/c', schema, {'#/a'}, ''), 5)
+#
+#     def test_dereference_with_already_seen(self):
+#         schema = {
+#             'a': 4,
+#             'b': {'c': 5, 'd': 6}
+#         }
+#         with self.assertRaises(InvalidApi):
+#             dereference('#/b/c', schema, {'#/a', '#/b/c'}, '')
     #
     # def test_flatten_to_primitive(self):
     #     schema = {

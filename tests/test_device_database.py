@@ -160,6 +160,7 @@ class TestDeviceDatabase(unittest.TestCase):
         self.assertEqual(device.type, 'type')
         self.assertEqual(device.description, 'desc')
         self.assertSetEqual({field.name for field in device.plaintext_fields}, {'new_test_name', 'new_test2'})
+        print({field.name for field in device.encrypted_fields})
         self.assertSetEqual({field.name for field in device.encrypted_fields}, set())
 
     def test_update_from_json_with_encrypted_fields(self):
@@ -178,4 +179,5 @@ class TestDeviceDatabase(unittest.TestCase):
         self.assertEqual(device.type, 'type')
         self.assertEqual(device.description, 'desc')
         self.assertSetEqual({field.name for field in device.plaintext_fields}, set())
+        print({field.name for field in device.encrypted_fields})
         self.assertSetEqual({field.name for field in device.encrypted_fields}, {'new_test3', 'new_test4'})

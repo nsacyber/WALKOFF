@@ -46,7 +46,7 @@ def __workflow_ended_callback(sender, **kwargs):
 
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.inputs)
+    step_input = str(sender.input)
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
@@ -64,12 +64,12 @@ def __step_ended_callback(sender, **kwargs):
 
 def __step_error_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.inputs)
+    step_input = str(sender.input)
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.inputs,
+    result = {'name': sender.input,
               'timestamp': str(datetime.utcnow()),
               'type': "ERROR",
               'input': step_input,
@@ -84,7 +84,7 @@ def __step_error_callback(sender, **kwargs):
 @FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
-    step_input = str(sender.inputs)
+    step_input = str(sender.input)
     if 'data' in kwargs:
         data = kwargs['data']
         if not isinstance(data, str):

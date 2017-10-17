@@ -2,9 +2,9 @@ import json
 import logging
 import os
 import signal
-
+import threading
 import gevent
-import zmq.auth
+import zmq.auth as auth
 import zmq.green as zmq
 from zmq.utils.strtypes import asbytes, cast_unicode
 from gevent.queue import Queue
@@ -53,6 +53,50 @@ def recreate_workflow(workflow_json):
     return workflow, start_input
 
 
+def convert_to_protobuf(sender, **kwargs):
+    obj_type = kwargs['object_type']
+    packet = data_pb2.Message()
+    if obj_type == 'Workflow':
+        if 'data' in kwargs:
+            packet.type = data_pb2.Message.WORKFLOWPACKETDATA
+            wf_packet = packet.workflow_packet_data
+            wf_packet.additional_data = kwargs['data']
+        else:
+            packet.type = data_pb2.Message.WORKFLOWPACKET
+            wf_packet = packet.workflow_packet
+        wf_packet.sender.name = sender.name
+        wf_packet.sender.uid = sender.uid
+        wf_packet.sender.execution_uid = sender.get_execution_uid()
+        wf_packet.callback_name = kwargs['callback_name']
+    elif obj_type == 'Step':
+        if 'data' in kwargs:
+            packet.type = data_pb2.Message.STEPPACKETDATA
+            step_packet = packet.step_packet_data
+            step_packet.additional_data = kwargs['data']
+        else:
+            packet.type = data_pb2.Message.STEPPACKET
+            step_packet = packet.step_packet
+        step_packet.sender.name = sender.name
+        step_packet.sender.uid = sender.uid
+        step_packet.sender.execution_uid = sender.get_execution_uid()
+        step_packet.sender.app = sender.app
+        step_packet.sender.action = sender.action
+
+        for key, value in sender.inputs.items():
+            step_packet.sender.input[key] = str(value)
+
+        step_packet.callback_name = kwargs['callback_name']
+    elif obj_type in ['NextStep', 'Flag', 'Filter']:
+        packet.type = data_pb2.Message.GENERALPACKET
+        general_packet = packet.general_packet
+        general_packet.sender.uid = sender.uid
+        if hasattr(sender, 'app'):
+            general_packet.sender.app = sender.app
+        general_packet.callback_name = kwargs['callback_name']
+    packet_bytes = packet.SerializeToString()
+    return packet_bytes
+
+
 class LoadBalancer:
     def __init__(self, ctx):
         """Initialize a LoadBalancer object, which manages workflow execution.
@@ -67,7 +111,7 @@ class LoadBalancer:
 
         self.ctx = ctx
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
-        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.request_socket = self.ctx.socket(zmq.ROUTER)
         self.request_socket.curve_secretkey = server_secret
@@ -139,7 +183,7 @@ class LoadBalancer:
         """
         logger.info('Resuming workflow {0}'.format(workflow_name))
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
 
 class Worker:
@@ -159,10 +203,13 @@ class Worker:
         self.handle_data_sent = handle_data_sent
         callbacks.data_sent.connect(handle_data_sent)
 
+        self.thread_exit = False
+        self.workflow = None
+
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
-        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        server_public, server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "client.key_secret")
-        client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
+        client_public, client_secret = auth.load_certificate(client_secret_file)
 
         self.ctx = zmq.Context()
 
@@ -187,58 +234,21 @@ class Worker:
         self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(RESULTS_ADDR)
 
+        self.comm_thread = threading.Thread(target=self.receive_data)
+        self.comm_thread.start()
+
         if worker_env:
             Worker.setup_worker_env = worker_env
 
         self.setup_worker_env()
         self.execute_workflow_worker()
 
-    def on_data_sent(self, sender, **kwargs):
-        obj_type = kwargs['object_type']
-        packet = data_pb2.Message()
-        if obj_type == 'Workflow':
-            if 'data' in kwargs:
-                packet.type = data_pb2.Message.WORKFLOWPACKETDATA
-                wf_packet = packet.workflow_packet_data
-                wf_packet.additional_data = kwargs['data']
-            else:
-                packet.type = data_pb2.Message.WORKFLOWPACKET
-                wf_packet = packet.workflow_packet
-            wf_packet.sender.name = sender.name
-            wf_packet.sender.uid = sender.uid
-            wf_packet.sender.execution_uid = sender.get_execution_uid()
-            wf_packet.callback_name = kwargs['callback_name']
-        elif obj_type == 'Step':
-            if 'data' in kwargs:
-                packet.type = data_pb2.Message.STEPPACKETDATA
-                step_packet = packet.step_packet_data
-                step_packet.additional_data = kwargs['data']
-            else:
-                packet.type = data_pb2.Message.STEPPACKET
-                step_packet = packet.step_packet
-            step_packet.sender.name = sender.name
-            step_packet.sender.uid = sender.uid
-            step_packet.sender.execution_uid = sender.get_execution_uid()
-            step_packet.sender.app = sender.app
-            step_packet.sender.action = sender.action
-
-            for key, value in sender.input.items():
-                step_packet.sender.input[key] = str(value)
-
-            step_packet.callback_name = kwargs['callback_name']
-        elif obj_type in ['NextStep', 'Flag', 'Filter']:
-            packet.type = data_pb2.Message.GENERALPACKET
-            general_packet = packet.general_packet
-            general_packet.sender.uid = sender.uid
-            if hasattr(sender, 'app'):
-                general_packet.sender.app = sender.app
-            general_packet.callback_name = kwargs['callback_name']
-        packet_bytes = packet.SerializeToString()
-        self.results_sock.send(packet_bytes)
-
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT.
         """
+        self.thread_exit = True
+        if self.comm_thread:
+            self.comm_thread.join()
         if self.request_sock:
             self.request_sock.close()
         if self.results_sock:
@@ -262,11 +272,36 @@ class Worker:
         while True:
             workflow_in = self.request_sock.recv()
 
-            workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
-            workflow.set_comm_sock(self.comm_sock)
+            self.workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
 
-            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
+            self.workflow.execute(execution_uid=self.workflow.get_execution_uid(), start=self.workflow.start, start_input=start_input)
             self.request_sock.send(b"Done")
+
+    def receive_data(self):
+        while True:
+            if self.thread_exit:
+                break
+            try:
+                message = self.comm_sock.recv(zmq.NOBLOCK)
+            except zmq.ZMQError:
+                gevent.sleep(0.1)
+                continue
+
+            if message == b'Pause':
+                self.workflow.pause()
+                self.comm_sock.send(b"Paused")
+            elif message == b'Resume':
+                self.workflow.resume()
+                self.comm_sock.send(b"Resumed")
+            else:
+                self.workflow.send_data_to_step(message)
+
+            gevent.sleep(0.1)
+        return
+
+    def on_data_sent(self, sender, **kwargs):
+        packet_bytes = convert_to_protobuf(sender, **kwargs)
+        self.results_sock.send(packet_bytes)
 
 
 class Receiver:
@@ -302,7 +337,7 @@ class Receiver:
         self.workflows_executed = 0
 
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
-        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.ctx = ctx
 
@@ -354,6 +389,7 @@ class Receiver:
 
             callback_name = message.callback_name
             sender = message.sender
+
             try:
                 callback = self.callback_lookup[callback_name]
                 data = json.loads(message.additional_data) if callback[1] else {}

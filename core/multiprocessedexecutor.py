@@ -44,8 +44,8 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = None
 
     def __remove_workflow_status(self, sender, **kwargs):
-        if sender.get_execution_uid() in self.workflow_status:
-            self.workflow_status.pop(sender.get_execution_uid(), None)
+        if sender.execution_uid in self.workflow_status:
+            self.workflow_status.pop(sender.execution_uid, None)
 
     def initialize_threading(self, worker_env=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.

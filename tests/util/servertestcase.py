@@ -12,6 +12,7 @@ import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
 import os
+import stat
 import json
 
 
@@ -104,7 +105,12 @@ class ServerTestCase(unittest.TestCase):
         shutil.copytree(tests.config.test_workflows_backup_path, core.config.paths.workflows_path)
         shutil.rmtree(tests.config.test_workflows_backup_path)
         for data_file in os.listdir(tests.config.test_data_path):
-            os.remove(os.path.join(tests.config.test_data_path, data_file))
+            try:
+                os.remove(os.path.join(tests.config.test_data_path, data_file))
+            except WindowsError as we: #Windows sometimes makes files read only when created
+                os.chmod(os.path.join(tests.config.test_data_path, data_file), stat.S_IWRITE)
+                os.remove(os.path.join(tests.config.test_data_path, data_file))
+
 
     def preTearDown(self):
         """

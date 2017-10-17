@@ -1,4 +1,5 @@
 import logging.config
+import sys, traceback
 import ssl
 import os
 from os.path import isfile
@@ -7,10 +8,9 @@ from apps import *
 from gevent.wsgi import WSGIServer
 from gevent import monkey
 
-try:
-    from server import app
-except Exception as e:
-    print(e)
+
+from server import app
+
 
 logger = logging.getLogger('startserver')
 
@@ -86,6 +86,9 @@ if __name__ == "__main__":
         run()
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
+    except Exception as e:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_exc()
     finally:
         from server import flaskserver
         flaskserver.running_context.controller.shutdown_pool()
