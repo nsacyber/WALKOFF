@@ -2,9 +2,6 @@ import json
 import logging
 import uuid
 from copy import deepcopy
-
-import zmq.green as zmq
-
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.step import Step
@@ -34,7 +31,6 @@ class Workflow(ExecutionElement):
         self._total_risk = float(sum([step.risk for step in self.steps.values() if step.risk > 0]))
         self._is_paused = False
         self._accumulator = {}
-        self._comm_sock = None
         self._execution_uid = 'default'
 
     def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, risk=0):
@@ -123,20 +119,11 @@ class Workflow(ExecutionElement):
         first = True
         for step in steps:
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.name))
-            if self._comm_sock:
-                try:
-                    data = self._comm_sock.recv(flags=zmq.NOBLOCK)
-                    if data == b'Pause':
-                        self._comm_sock.send(b"Paused")
-                        data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
-                        res = self._comm_sock.recv()
-                        if res != b'resume':
-                            logger.warning('Did not receive correct resume message for workflow {0}'.format(self.name))
-                        else:
-                            self._comm_sock.send(b"Resumed")
-                            data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
-                except zmq.ZMQError:
-                    pass
+            if self._is_paused:
+                data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
+                while self._is_paused:
+                    continue
+                data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
             if step is not None:
                 data_sent.send(self, callback_name="Next Step Found", object_type="Workflow")
                 device_id = (step.app, step.device)
@@ -219,12 +206,6 @@ class Workflow(ExecutionElement):
             data_json = str(data)
         data_sent.send(self, callback_name="Workflow Shutdown", object_type="Workflow", data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
-
-    def get_comm_sock(self):
-        return self._comm_sock
-
-    def set_comm_sock(self, comm_sock):
-        self._comm_sock = comm_sock
 
     def update_from_json(self, json_in):
         """Reconstruct a Workflow object based on JSON data.

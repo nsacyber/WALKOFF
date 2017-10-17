@@ -17,7 +17,7 @@ except ImportError:
     from imp import reload
 
 
-class TestZMQCommuncation(unittest.TestCase):
+class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         App.registry = {}
