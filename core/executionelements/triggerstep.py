@@ -1,4 +1,5 @@
 import logging
+from gevent.event import AsyncResult
 from core.executionelements.step import Step
 from core.executionelements.nextstep import NextStep
 from core.case.callbacks import data_sent
@@ -31,19 +32,24 @@ class TriggerStep(Step):
         """
         Step.__init__(self, name, uid, next_steps, position, risk, templated, raw_representation)
         self.flags = flags if flags is not None else []
+        self._incoming_data = AsyncResult()
 
     def _update_json(self, updated_json):
         self.device = updated_json['device'] if 'device' in updated_json else ''
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         self.next_steps = [NextStep.create(cond_json) for cond_json in updated_json['next']]
 
-    def execute(self, data_in, accumulator):
+    def execute(self, accumulator):
         self.generate_execution_uid()
-        if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.flags):
-            data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
-            logger.debug('TriggerStep is valid for input {0}'.format(data_in))
-            return True
-        else:
-            logger.debug('TriggerStep is not valid for input {0}'.format(data_in))
-            data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")
-            return False
+
+        while True:
+            data_in = self._incoming_data.get()
+
+            if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.flags):
+                data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
+                logger.debug('TriggerStep is valid for input {0}'.format(data_in))
+                accumulator[self.name] = data_in
+                return True
+            else:
+                logger.debug('TriggerStep is not valid for input {0}'.format(data_in))
+                data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")

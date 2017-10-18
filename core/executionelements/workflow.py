@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import gevent
 from copy import deepcopy
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
@@ -118,30 +119,41 @@ class Workflow(ExecutionElement):
         total_steps = []
         steps = self.__steps(start=start)
         first = True
-        for step in steps:
+        for step in (step_ for step_ in steps if step_ is not None):
+            self._executing_step = step
             logger.debug('Executing step {0} of workflow {1}'.format(step, self.name))
+            data_sent.send(self, callback_name="Next Step Found", object_type="Workflow")
+
             if self._is_paused:
                 data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
                 while self._is_paused:
+                    gevent.sleep(1)
                     continue
                 data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
-            if step is not None:
-                data_sent.send(self, callback_name="Next Step Found", object_type="Workflow")
-                device_id = (step.app, step.device)
-                if device_id not in instances:
-                    instances[device_id] = AppInstance.create(step.app, step.device)
-                    data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
-                    logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
-                step.render_step(steps=total_steps)
-                if first:
-                    first = False
-                    if start_input:
-                        self.__swap_step_input(step, start_input)
-                self.__execute_step(step, instances[device_id])
-                total_steps.append(step)
-                self._accumulator[step.name] = step.get_output().result
+
+            step.render_step(steps=total_steps)
+            device_id = self.__setup_app_instance(instances, step)
+
+            if first:
+                first = False
+                if start_input:
+                    self.__swap_step_input(step, start_input)
+            self.__execute_step(step, instances[device_id])
+            total_steps.append(step)
+            self._accumulator[step.name] = step.get_output().result
         self.__shutdown(instances)
         yield
+
+    def __setup_app_instance(self, instances, step):
+        device_id = (step.app, step.device)
+        if device_id not in instances:
+            instances[device_id] = AppInstance.create(step.app, step.device)
+            data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
+            logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
+        return device_id
+
+    def send_data_to_step(self, data):
+        self._executing_step.send_data_to_trigger(data)
 
     def __steps(self, start):
         initial_step_name = start

@@ -185,6 +185,12 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
+    def send_data_to_trigger(self, data, workflow_uids):
+        for uid in workflow_uids:
+            if uid in self.workflow_comms:
+                self.comm_socket.send_multipart(
+                    [self.workflow_comms[uid], b'', str.encode(json.dumps(data))])
+
 
 class Worker:
     def __init__(self, id_, worker_env=None):
@@ -294,7 +300,7 @@ class Worker:
                 self.workflow.resume()
                 self.comm_sock.send(b"Resumed")
             else:
-                self.workflow.send_data_to_step(message)
+                self.workflow.send_data_to_step(json.loads(message))
 
             gevent.sleep(0.1)
         return
