@@ -73,14 +73,14 @@
 	overflow-y: scroll;
 }
 
-#workflows{
+#workflows {
 	min-height: 200px;
 	max-height: 500px;
 	overflow-y:scroll;
 	width:100%;
 }
 
-#actionContainer{
+#actionContainer {
 	width:100%;
 	height: 100%;
 }
@@ -125,13 +125,9 @@
 	resize: none;
 }
 
-#parameters {
-	width: 100%;
-	height: 100%;
-	display: inline-block;
-	vertical-align: top;
-	overflow-y:auto;
-	background-color:#f5f5f5;
+.playbookMain .required {
+	color: crimson;
+	margin-left: 5px;
 }
 
 .playbookMain .panel-default>.panel-heading {
@@ -156,26 +152,3 @@ ul.vakata-context,
 .ui-dialog {
 	z-index: 1051;
 }
-
-/*Bootstrap / Jquery UI overrides for the JSON editor*/
-/* h3 {
-	margin-top: 5px;
-}
-h3 span {
-	font-size: 16px;
-}
-.json-editor-btn-collapse {
-	font-size: 14px !important;
-}
-.well.well-sm {
-	margin-bottom: 0px;
-}
-.json-editor-btn-moveup,
-.json-editor-btn-movedown,
-.json-editor-btn-delete,
-.json-editor-btn-add {
-	font-size: initial !important;
-}
-div.cy-panzoom {
-	z-index: 999;
-} */

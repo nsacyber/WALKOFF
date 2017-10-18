@@ -117,7 +117,7 @@ export class PlaybookService {
 	 * @param workflow Data to be saved under the workflow (steps, etc.)
 	 */
 	saveWorkflow(playbookName: string, workflowName: string, workflow: Workflow): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbookName}/workflows/${workflowName}/save`, { data: workflow })
+		return this.authHttp.post(`/api/playbooks/${playbookName}/workflows/${workflowName}/save`, workflow)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -152,7 +152,7 @@ export class PlaybookService {
 	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
 	 */
 	// TODO: update this to be an array of Apps when the backend changes
-	getActionsForApps(): Promise<{
+	getAppsAndActions(): Promise<{
 		[app_name: string]: {
 			[action_name: string]: Action
 		}

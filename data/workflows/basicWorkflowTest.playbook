@@ -1,11 +1,71 @@
 {
     "name": "basicWorkflowTest",
+    "uid": "3b9a6ea4-e67c-46a4-9e63-c5407c72d761",
     "workflows": [
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
             "start": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
             "steps": [
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "fourth step",
+                    "next_steps": [],
+                    "position": {
+                        "x": 230,
+                        "y": 70
+                    },
+                    "risk": 0,
+                    "uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "second step",
+                    "next_steps": [
+                        {
+                            "flags": [],
+                            "name": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "d42ffdcc-b01f-11e7-abc4-cec278b6b50a"
+                        }
+                    ],
+                    "position": {
+                        "x": -30,
+                        "y": 70
+                    },
+                    "risk": 0,
+                    "uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "third step",
+                    "next_steps": [
+                        {
+                            "flags": [],
+                            "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "d43001b4-b01f-11e7-abc4-cec278b6b50a"
+                        }
+                    ],
+                    "position": {
+                        "x": 70,
+                        "y": 70
+                    },
+                    "risk": 0,
+                    "uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                    "widgets": []
+                },
                 {
                     "action": "echo object",
                     "app": "Utilities",
@@ -35,70 +95,11 @@
                         }
                     ],
                     "position": {
-                        "x": -50,
-                        "y": -50
+                        "x": -110,
+                        "y": 70
                     },
                     "risk": 0,
                     "uid": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
-                    "widgets": []
-                },
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "second step",
-                    "next_steps": [
-                        {
-                            "flags": [],
-                            "name": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
-                            "status": "Success",
-                            "uid": "d42ffdcc-b01f-11e7-abc4-cec278b6b50a"
-                        }
-                    ],
-                    "position": {
-                        "x": 0,
-                        "y": 0
-                    },
-                    "risk": 0,
-                    "uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
-                    "widgets": []
-                },
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "third step",
-                    "next_steps": [
-                        {
-                            "flags": [],
-                            "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
-                            "status": "Success",
-                            "uid": "d43001b4-b01f-11e7-abc4-cec278b6b50a"
-                        }
-                    ],
-                    "position": {
-                        "x": 50,
-                        "y": 50
-                    },
-                    "risk": 0,
-                    "uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
-                    "widgets": []
-                },
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "fourth step",
-                    "next_steps": [],
-                    "position": {
-                        "x": 100,
-                        "y": 100
-                    },
-                    "risk": 0,
-                    "uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
                     "widgets": []
                 }
             ],

@@ -16,10 +16,12 @@ import { UUID } from 'angular2-uuid';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 
+import { App } from '../models/app';
 import { Action, ActionArgument } from '../models/action';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Step, AppStep, TriggerStep } from '../models/playbook/step';
+import { NextStep } from '../models/playbook/nextStep';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
 import { GraphPosition } from '../models/playbook/graphPosition';
@@ -46,13 +48,14 @@ export class PlaybookComponent {
 	currentPlaybook: string;
 	currentWorkflow: string;
 	loadedWorkflow: Workflow;
-	workflowsForPlaybooks: Playbook[] = [];
+	playbooks: Playbook[] = [];
 	cy: any;
 	ur: any;
-	actionsForApps: { [key: string]: { [key: string]: Action } } = {};
-	startNode: string;
+	apps: App[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
+	selectedNextStep: NextStep;
+	inputArgs: { [key: string]: ActionArgument } = {};
 	cyJsonData: string;
 	actionTree: any;
 
@@ -85,7 +88,7 @@ export class PlaybookComponent {
 		this.playbookService.getConditions().then(conditions => this.conditions = conditions);
 		this.playbookService.getTransforms().then(transforms => this.transforms = transforms);
 		this.playbookService.getDevices().then(devices => this.devices = devices);
-		this.getActionsForApps();
+		this.getAppsAndActions();
 		this.getWorkflowResultsSSE();
 		this.getPlaybooksWithWorkflows();
 
@@ -120,7 +123,6 @@ export class PlaybookComponent {
 						// add to a table
 					},
 					error: (err: Error) => {
-
 						// This function removes selected nodes and edges
 						this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 						console.error(err);
@@ -179,6 +181,13 @@ export class PlaybookComponent {
 							css: {
 								'shape': 'star',
 								'background-color': '#edbd21',
+							}
+						},
+						{
+							selector: 'node[?isStartNode]',
+							css: {
+								'border-width': '2px',
+								'border-color': 'crimson',
 							}
 						},
 						{
@@ -284,7 +293,29 @@ export class PlaybookComponent {
 				this.cy.clipboard();
 
 				//Extension for grid and guidelines
-				this.cy.gridGuide();
+				this.cy.gridGuide({
+					snapToGridDuringDrag: true,
+					zoomDash: true,
+					panGrid: true,
+					centerToEdgeAlignment: true,
+					// Guidelines
+					guidelinesStackOrder: 4, // z-index of guidelines
+					guidelinesTolerance: 2.00, // Tolerance distance for rendered positions of nodes' interaction.
+					guidelinesStyle: { // Set ctx properties of line. Properties are here:
+						strokeStyle: "#8b7d6b", // color of geometric guidelines
+						geometricGuidelineRange: 400, // range of geometric guidelines
+						range: 100, // max range of distribution guidelines
+						minDistRange: 10, // min range for distribution guidelines
+						distGuidelineOffset: 10, // shift amount of distribution guidelines
+						horizontalDistColor: "#ff0000", // color of horizontal distribution alignment
+						verticalDistColor: "#00ff00", // color of vertical distribution alignment
+						initPosAlignmentColor: "#0000ff", // color of alignment to initial mouse location
+						lineDash: [0, 0], // line style of geometric guidelines
+						horizontalDistLine: [0, 0], // line style of horizontal distribution guidelines
+						verticalDistLine: [0, 0], // line style of vertical distribution guidelines
+						initPosAlignmentLine: [0, 0], // line style of alignment to initial mouse position
+					},
+				});
 
 				// Load the data into the graph
 				// If a node does not have a label field, set it to
@@ -300,7 +331,7 @@ export class PlaybookComponent {
 							data: {
 								id: nextStep.uid,
 								source: value.uid,
-								target: nextStep.uid,
+								target: nextStep.name,
 								parameters: _.clone(nextStep)
 							}
 						});
@@ -343,21 +374,26 @@ export class PlaybookComponent {
 	}
 
 	saveWorkflow(cyData: any): void {
-		if (!this.startNode) {
+		if (!this.loadedWorkflow.start) {
 			this.toastyService.warning(`Workflow cannot be saved without a starting step.`);
 			return;
 		}
 
-		cyData = _.filter(cyData, function (data: any) { return data.group === "nodes"; });
+		// cyData = _.filter(cyData, function (data: any) { return data.group === "nodes"; });
 
-		let steps: Step[] = _.map(cyData, function (step: any) {
-			let ret = _.cloneDeep(step.data.parameters);
-			ret.position = _.clone(step.position);
-			return ret;
+		// Set the new cytoscape positions on our loadedworkflow
+		this.loadedWorkflow.steps.forEach(s => {
+			s.position = cyData.find((cyStep: any) => cyStep.data.parameters.uid === s.uid).position;
 		});
 
-		this.loadedWorkflow.start = this.startNode;
-		this.loadedWorkflow.steps = steps;
+		// let steps: Step[] = _.map(cyData, function (step: any) {
+		// 	let ret = _.cloneDeep(step.data.parameters);
+		// 	ret.position = _.clone(step.position);
+		// 	return ret;
+		// });
+
+		// this.loadedWorkflow.start = this.startNode;
+		// this.loadedWorkflow.steps = steps;
 
 		// this._transformInputsToSave(steps);
 
@@ -417,13 +453,21 @@ export class PlaybookComponent {
 
 	getPlaybooksWithWorkflows(): void {
 		this.playbookService.getPlaybooks()
-			.then(playbooks => this.workflowsForPlaybooks = playbooks);
+			.then(playbooks => this.playbooks = playbooks);
 	}
 
-	getActionsForApps(): void {
-		this.playbookService.getActionsForApps()
+	getAppsAndActions(): void {
+		this.playbookService.getAppsAndActions()
 			.then((actionsForApps) => {
-				this.actionsForApps = actionsForApps;
+				this.apps = _.map(actionsForApps, function (app: { [key: string] : Action }, appName: string) {
+					return <App>{ name: appName, actions: _.map(app, function (action: Action, actionName: string) {
+						action.name = actionName;
+
+						return action;
+					})};
+				})
+
+				this.apps.filter(a => a.actions.length);
 
 				this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
 					let appObj: any = { name: app, children: [] };
@@ -444,26 +488,47 @@ export class PlaybookComponent {
 	///------------------------------------------------------------------------------------------------------
 	// This function displays a form next to the graph for editing a node when clicked upon
 	onNodeSelect(e: any, self: PlaybookComponent): void {
-		let ele = e.target;
-		let parameters = ele.data('parameters');
+		self.selectedNextStep = null;
 
-		if (parameters.inputs) self.selectedStep = <AppStep>parameters;
-		else self.selectedStep = <TriggerStep>parameters;
+		let parameters = e.target.data('parameters');
+
+		self.inputArgs = self._getAction(parameters.app, parameters.action).args.reduce((result: { [key:string]: ActionArgument }, a) => {
+			result[a.name] = a;
+
+			// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
+			if (!result[a.name].type && (<any>result[a.name]).schema) result[a.name].type = (<any>result[a.name]).schema.type;
+			return result;
+		}, {});
+		
+		console.log(self.inputArgs);
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app === parameters.app);
 
+		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === parameters.uid);
+		// if (parameters.inputs) self.selectedStep = <AppStep>parameters;
+		// else self.selectedStep = <TriggerStep>parameters;
 		// ele.data('parameters', updatedParameters);
 	}
 
 	onEdgeSelect(e: any, self: PlaybookComponent): void {
-		let ele = e.target;
-		let parameters = ele.data('parameters');
-		return;
+		self.selectedStep = null;
+		self.selectedNextStep = null;
+
+		let uid = e.target.data('parameters').uid;
+
+		self.loadedWorkflow.steps.forEach(s => {
+			if (self.selectedNextStep) return;
+
+			self.selectedNextStep = s.next_steps.find(ns => ns.uid === uid);
+		});
 	}
 
 	onUnselect(event: any, self: PlaybookComponent): void {
-		if (!self.cy.$('node:selected').length) self.selectedStep = null;
+		if (!self.cy.$(':selected').length) {
+			self.selectedStep = null;
+			self.selectedNextStep = null;
+		}
 	}
 
 	// when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
@@ -491,7 +556,7 @@ export class PlaybookComponent {
 		let parameters = node.data("parameters");
 
 		// If the start node was deleted, set it to one of the roots of the graph
-		if (parameters && node.isNode() && self.startNode == parameters.id) self.setStartNode(null);
+		if (parameters && node.isNode() && self.loadedWorkflow.start == parameters.id) self.setStartNode(null);
 		if (self.selectedStep && self.selectedStep.uid == parameters.uid) self.selectedStep = null;
 	}
 
@@ -523,8 +588,7 @@ export class PlaybookComponent {
 		let id = UUID.UUID();
 
 		let inputs: Argument[] = [];
-		let actionInfo = this.actionsForApps[app][action];
-		actionInfo.args.forEach((input) => {
+		this._getAction(app, action).args.forEach((input) => {
 			// let defaultValue;
 			// if (input.type === "string")
 			// 	defaultValue = input.default || "";
@@ -535,7 +599,8 @@ export class PlaybookComponent {
 
 			inputs.push({
 				name: input.name,
-				value: input.default
+				value: input.default,
+				reference: null
 			});
 		});
 
@@ -600,7 +665,7 @@ export class PlaybookComponent {
 
 	_setNodeDisplayProperties(step: any): void {
 		//add a type field to handle node styling
-		if (this.actionsForApps[step.data.parameters.app][step.data.parameters.action].event) step.data.type = 'eventAction';
+		if (this._getAction(step.data.parameters.app, step.data.parameters.action).event) step.data.type = 'eventAction';
 		else step.data.type = 'action';
 	}
 
@@ -611,14 +676,19 @@ export class PlaybookComponent {
 	setStartNode(start: string): void {
 		// If no start was given set it to one of the root nodes
 		if (start) {
-			this.startNode = start;
+			this.loadedWorkflow.start = start;
 		}
 		else {
 			let roots = this.cy.nodes().roots();
 			if (roots.size() > 0) {
-				this.startNode = roots[0].data("parameters").id;
+				this.loadedWorkflow.start = roots[0].data("parameters").id;
 			}
 		}
+
+		// Clear start node highlighting of the previous start node(s)
+		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
+		// Apply start node highlighting to the new start node.
+		this.cy.elements(`node[id="${start}"]`).data('isStartNode', true);
 	}
 
 	removeSelectedNodes(): void {
@@ -668,7 +738,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.renamePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
-						this.workflowsForPlaybooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
+						this.playbooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
 						this.toastyService.success(`Successfully renamed ${this.modalParams.newPlaybook}.`);
 						this._closeModal();
 					})
@@ -687,7 +757,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.duplicatePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
-						let duplicatedPb = _.cloneDeep(this.workflowsForPlaybooks.find(pb => pb.name === playbook));
+						let duplicatedPb = _.cloneDeep(this.playbooks.find(pb => pb.name === playbook));
 						duplicatedPb.name = this.modalParams.newPlaybook;
 						this.toastyService.success(`Successfully duplicated ${playbook} as ${this.modalParams.newPlaybook}.`);
 						this._closeModal();
@@ -728,7 +798,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(() => {
-						this.workflowsForPlaybooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
+						this.playbooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
 						//TODO: rename loaded workflow
 						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
 						this._closeModal();
@@ -751,11 +821,11 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(duplicatedWorkflow => {
-						let pb = this.workflowsForPlaybooks.find(pb => pb.name === playbook);
+						let pb = this.playbooks.find(pb => pb.name === playbook);
 
 						if (!pb) {
 							pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
-							this.workflowsForPlaybooks.push(pb);
+							this.playbooks.push(pb);
 						}
 
 						pb.workflows.push(duplicatedWorkflow);
@@ -788,11 +858,11 @@ export class PlaybookComponent {
 	/// Utility functions
 	///------------------------------------------------------------------------------------------------------
 	getPlaybooks(): string[] {
-		return this.workflowsForPlaybooks.map(pb => pb.name);
+		return this.playbooks.map(pb => pb.name);
 	}
 
 	_doesWorkflowExist(playbook: string, workflow: string): boolean {
-		let matchingPB = this.workflowsForPlaybooks.find(pb => pb.name == playbook);
+		let matchingPB = this.playbooks.find(pb => pb.name == playbook);
 
 		if (!matchingPB) return false;
 
@@ -800,14 +870,18 @@ export class PlaybookComponent {
 	}
 
 	_doesPlaybookExist(playbook: string): boolean {
-		return this.workflowsForPlaybooks.hasOwnProperty(playbook);
+		return this.playbooks.hasOwnProperty(playbook);
 	}
 
-	getInputArgParamsForSelectedStep() {
-		return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
-	}
+	// getInputArgParamsForSelectedStep() {
+	// 	return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
+	// }
 
 	getPreviousSteps() {
 		return <Step[]>[];
+	}
+
+	_getAction(appName: string, actionName: string): Action {
+		return this.apps.find(a => a.name === appName).actions.find(a => a.name === actionName);
 	}
 }
