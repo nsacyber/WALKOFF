@@ -52,7 +52,7 @@ class Workflow(ExecutionElement):
         """
         arg_input = arg_input if arg_input is not None else {}
         next_steps = next_steps if next_steps is not None else []
-        self.steps[name] = AppStep(name=name, action=action, app=app, device=device, inputs=arg_input,
+        self.steps[name] = Step(name=name, action=action, app=app, device=device, inputs=arg_input,
                                 next_steps=next_steps, risk=risk)
         self._total_risk += risk
         logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[name].read()))

@@ -4,9 +4,6 @@ class JsonElementCreator(object):
     @classmethod
     def create(cls, json_in, element_class=None):
         from core.executionelements.playbook import Playbook
-        from core.executionelements.step import Step
-        from core.executionelements.appstep import AppStep
-        from core.executionelements.triggerstep import TriggerStep
         cls._setup_ordering()
         if element_class is None:
             element_class = Playbook
@@ -24,8 +21,6 @@ class JsonElementCreator(object):
                 json_in[current_subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
                 if hasattr(current_class, '_templatable'):
                     json_in['raw_representation'] = dict(json_in)
-                if current_class == Step:
-                    current_class = AppStep if 'app' in json_in else TriggerStep
             return current_class(**json_in)
         except (KeyError, TypeError) as e:
             from core.helpers import format_exception_message

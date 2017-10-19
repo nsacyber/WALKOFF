@@ -27,12 +27,12 @@ class Step(ExecutionElement):
     _templatable = True
 
     def __init__(self,
+                 app,
+                 action,
                  name='',
-                 action='',
-                 app='',
                  device='',
                  inputs=None,
-                 flags=None,
+                 triggers=None,
                  next_steps=None,
                  position=None,
                  widgets=None,
@@ -62,15 +62,12 @@ class Step(ExecutionElement):
         """
         ExecutionElement.__init__(self, uid)
 
-        self.flags = flags if flags is not None else []
+        self.triggers = triggers if triggers is not None else []
         self._incoming_data = AsyncResult()
 
-        if action == '' or app == '':
-            raise InvalidElementConstructed('Either both action and app or xml must be '
-                                            'specified in step constructor')
         self.name = name
-        self.action = action
         self.app = app
+        self.action = action
         self._run, self._input_api = get_app_action_api(self.app, self.action)
         get_app_action(self.app, self._run)
         if isinstance(inputs, list):
@@ -159,11 +156,12 @@ class Step(ExecutionElement):
         self._execution_uid = uuid.uuid4().hex
         data_sent.send(self, callback_name="Step Started", object_type="Step")
 
-        if self.flags:
+        if self.triggers:
+            print("Trigger step now waiting for input")
             while True:
                 data_in = self._incoming_data.get()
 
-                if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.flags):
+                if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
                     data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
                     logger.debug('Trigger is valid for input {0}'.format(data_in))
                     accumulator[self.name] = data_in

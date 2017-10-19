@@ -9,7 +9,7 @@ import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
 from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
-from core.executionelements.appstep import AppStep
+from core.executionelements.step import Step
 from core.executionelements.workflow import Workflow
 from core.helpers import import_all_apps, import_all_filters, import_all_flags
 from core.appinstance import AppInstance
@@ -67,9 +67,9 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_accumulated_risk_with_error(self):
         workflow = Workflow(name='workflow')
         workflow._execution_uid = 'some_uid'
-        step1 = AppStep(name="step_one", app='HelloWorld', action='Buggy', risk=1)
-        step2 = AppStep(name="step_two", app='HelloWorld', action='Buggy', risk=2)
-        step3 = AppStep(name="step_three", app='HelloWorld', action='Buggy', risk=3.5)
+        step1 = Step(name="step_one", app='HelloWorld', action='Buggy', risk=1)
+        step2 = Step(name="step_two", app='HelloWorld', action='Buggy', risk=2)
+        step3 = Step(name="step_three", app='HelloWorld', action='Buggy', risk=3.5)
         workflow.steps = {'step_one': step1, 'step_two': step2, 'step_three': step3}
         workflow._total_risk = 6.5
 
