@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import gevent
 from gevent.event import AsyncResult
 import core.config.config
 from apps import get_app_action
@@ -157,7 +158,6 @@ class Step(ExecutionElement):
         data_sent.send(self, callback_name="Step Started", object_type="Step")
 
         if self.triggers:
-            print("Trigger step now waiting for input")
             while True:
                 data_in = self._incoming_data.get()
 
@@ -169,6 +169,8 @@ class Step(ExecutionElement):
                 else:
                     logger.debug('Trigger is not valid for input {0}'.format(data_in))
                     data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")
+
+                gevent.sleep(0)
 
         try:
             args = dereference_step_routing(self.inputs, accumulator, 'In step {0}'.format(self.name))

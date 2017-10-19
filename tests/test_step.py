@@ -3,7 +3,7 @@ import unittest
 import core.config.config
 import core.config.paths
 from core.appinstance import AppInstance
-from core.case.callbacks import data_sent
+from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelements.flag import Flag
 from core.executionelements.nextstep import NextStep
@@ -22,7 +22,8 @@ class TestStep(unittest.TestCase):
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
 
-    def __compare_init(self, elem, name, action, app, device, inputs, next_steps=None, widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
+    def __compare_init(self, elem, name, action, app, device, inputs, triggers=None, next_steps=None,
+                       widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
@@ -35,6 +36,9 @@ class TestStep(unittest.TestCase):
         self.assertEqual(len(elem.widgets), len(widgets))
         for widget in elem.widgets:
             self.assertIn((widget.app, widget.name), widgets)
+        if triggers:
+            self.assertEqual(len(elem.triggers), len(triggers))
+            self.assertSetEqual({trigger.action for trigger in elem.triggers}, set(triggers))
         position = position if position is not None else {}
         self.assertDictEqual(elem.position, position)
         if templated:
@@ -99,7 +103,7 @@ class TestStep(unittest.TestCase):
 
         result = {'triggered': False}
 
-        @data_sent.connect
+        @callbacks.data_sent.connect
         def validate_sent_data(sender, **kwargs):
             if isinstance(sender, Step):
                 self.assertIs(sender, step)
@@ -158,6 +162,12 @@ class TestStep(unittest.TestCase):
         with self.assertRaises(InvalidInput):
             Step('HelloWorld', 'returnPlusOne', inputs={'number': 'invalid'})
 
+    def test_init_with_flags(self):
+        triggers = [Flag(action='regMatch', args={'regex': '(.*)'}),
+                 Flag(action='regMatch', args={'regex': 'a'})]
+        step = Step('HelloWorld', 'helloWorld', triggers=triggers)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
+
     def test_init_with_widgets(self):
         widget_tuples = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
         widgets = [{'app': widget[0], 'name': widget[1]} for widget in widget_tuples]
@@ -191,7 +201,7 @@ class TestStep(unittest.TestCase):
 
         result = {'started_triggered': False, 'result_triggered': False}
 
-        @data_sent.connect
+        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Step):
                 self.assertIs(sender, step)
@@ -246,7 +256,7 @@ class TestStep(unittest.TestCase):
 
         result = {'started_triggered': False, 'result_triggered': False}
 
-        @data_sent.connect
+        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Step):
                 self.assertIs(sender, step)
@@ -289,7 +299,7 @@ class TestStep(unittest.TestCase):
 
         result = {'started_triggered': False}
 
-        @data_sent.connect
+        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Step):
                 self.assertIs(sender, step)
@@ -339,3 +349,40 @@ class TestStep(unittest.TestCase):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
         with self.assertRaises(InvalidInput):
             step.set_input({'num1': '-5.62', 'num2': '5', 'num3': 'invalid'})
+
+    def test_execute_with_triggers(self):
+        triggers = [Flag(action='regMatch', args={'regex': 'aaa'})]
+        step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        step.send_data_to_trigger('aaa')
+
+        result = {'triggered': False}
+
+        @callbacks.data_sent.connect
+        def callback_is_sent(sender, **kwargs):
+            if kwargs['callback_name'] == "Trigger Step Taken":
+                result['triggered'] = True
+
+        step.execute(instance.instance, {})
+        self.assertTrue(result['triggered'])
+
+    def test_execute_multiple_triggers(self):
+        triggers = [Flag(action='regMatch', args={'regex': 'aaa'})]
+        step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        step.send_data_to_trigger('a')
+
+        trigger_taken = {'triggered': 0}
+        trigger_not_taken = {'triggered': 0}
+
+        @callbacks.data_sent.connect
+        def callback_is_sent(sender, **kwargs):
+            if kwargs['callback_name'] == "Trigger Step Taken":
+                trigger_taken['triggered'] += 1
+            elif kwargs['callback_name'] == "Trigger Step Not Taken":
+                step.send_data_to_trigger('aaa')
+                trigger_not_taken['triggered'] += 1
+
+        step.execute(instance.instance, {})
+        self.assertEqual(trigger_taken['triggered'], 1)
+        self.assertEqual(trigger_not_taken['triggered'], 1)

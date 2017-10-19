@@ -331,7 +331,10 @@ class Receiver:
         'Flag Success': (callbacks.FlagSuccess, False),
         'Flag Error': (callbacks.FlagError, False),
         'Filter Success': (callbacks.FilterSuccess, False),
-        'Filter Error': (callbacks.FilterError, False)}
+        'Filter Error': (callbacks.FilterError, False),
+        'Trigger Step Taken': (callbacks.TriggerStepTaken, False),
+        'Trigger Step Not Taken': (callbacks.TriggerStepNotTaken, False)
+    }
 
     def __init__(self, ctx):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.

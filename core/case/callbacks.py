@@ -148,3 +148,7 @@ FilterError, __filter_error_callback = __construct_logging_signal('Filter', 'Fil
 
 # Load Balancer callbacks
 data_sent = Signal('sent')
+
+# Trigger Step callbacks
+TriggerStepTaken, __trigger_step_taken = __construct_logging_signal('Trigger', 'Trigger Step Taken', 'Trigger Step Taken')
+TriggerStepNotTaken, __trigger_step_not_taken = __construct_logging_signal('Trigger', 'Trigger Step Not Taken', 'Trigger Step Not Taken')
