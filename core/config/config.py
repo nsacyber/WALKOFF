@@ -121,10 +121,10 @@ def load_condition_transform_apis(path=None):
             validate_condition_transform_spec(api)
             function_apis = api
     except (IOError, OSError) as e:
-        __logger.fatal('Cannot open flagfilter api: Error {0}'.format(str(e)))
+        __logger.fatal('Cannot open conditions and transforms api: Error {0}'.format(str(e)))
         sys.exit(1)
     except yaml.YAMLError:
-        __logger.fatal('flagfilter api is invalid yaml')
+        __logger.fatal('conditions&transforms api is invalid yaml')
         sys.exit(1)
 
 

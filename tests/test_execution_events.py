@@ -66,7 +66,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(3, len(execution_events)))
 
-    def test_flag_filters_execution_events(self):
+    def test_condition_transform_execution_events(self):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step = workflow.steps['c5a7c29a0f844b69a59901bb542e9305']

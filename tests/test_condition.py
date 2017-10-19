@@ -16,37 +16,37 @@ class TestCondition(unittest.TestCase):
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.load_condition_transform_apis(path=function_api_path)
 
-    def __compare_init(self, flag, action, transforms, args, uid=None):
-        self.assertEqual(flag.action, action)
-        self.assertEqual(len(flag.transforms), len(transforms))
-        for actual_transform, expected_transform in zip(flag.transforms, transforms):
+    def __compare_init(self, condition, action, transforms, args, uid=None):
+        self.assertEqual(condition.action, action)
+        self.assertEqual(len(condition.transforms), len(transforms))
+        for actual_transform, expected_transform in zip(condition.transforms, transforms):
             self.assertDictEqual(actual_transform.read(), expected_transform.read())
-        self.assertDictEqual(flag.args, args)
+        self.assertDictEqual(condition.args, args)
         if uid is None:
-            self.assertIsNotNone(flag.uid)
+            self.assertIsNotNone(condition.uid)
         else:
-            self.assertEqual(flag.uid, uid)
+            self.assertEqual(condition.uid, uid)
 
     def test_init_no_args_action_only(self):
-        flag = Condition(action='Top Condition')
-        self.__compare_init(flag, 'Top Condition', [], {})
+        condition = Condition(action='Top Condition')
+        self.__compare_init(condition , 'Top Condition', [], {})
 
     def test_init_with_uid(self):
         uid = uuid.uuid4().hex
-        flag = Condition(action='Top Condition', uid=uid)
-        self.__compare_init(flag, 'Top Condition', [], {}, uid=uid)
+        condition = Condition(action='Top Condition', uid=uid)
+        self.__compare_init(condition , 'Top Condition', [], {}, uid=uid)
 
     def test_init_with_args_with_conversion(self):
-        flag = Condition(action='mod1_flag2', args={'arg1': '3'})
-        self.__compare_init(flag, 'mod1_flag2', [], {'arg1': 3})
+        condition = Condition(action='mod1_flag2', args={'arg1': '3'})
+        self.__compare_init(condition , 'mod1_flag2', [], {'arg1': 3})
 
     def test_init_with_args_no_conversion(self):
-        flag = Condition(action='mod1_flag2', args={'arg1': 3})
-        self.__compare_init(flag, 'mod1_flag2', [], {'arg1': 3})
+        condition = Condition(action='mod1_flag2', args={'arg1': 3})
+        self.__compare_init(condition , 'mod1_flag2', [], {'arg1': 3})
 
     def test_init_with_args_with_routing(self):
-        flag = Condition(action='mod1_flag2', args={'arg1': '@step2'})
-        self.__compare_init(flag, 'mod1_flag2', [], {'arg1': '@step2'})
+        condition = Condition(action='mod1_flag2', args={'arg1': '@step2'})
+        self.__compare_init(condition , 'mod1_flag2', [], {'arg1': '@step2'})
 
     def test_init_with_args_invalid_arg_name(self):
         with self.assertRaises(InvalidInput):
@@ -58,8 +58,8 @@ class TestCondition(unittest.TestCase):
 
     def test_init_with_transforms(self):
         transforms = [Transform(action='mod1_filter2', args={'arg1': '5.4'}), Transform(action='Top Transform')]
-        flag = Condition(action='Top Condition', transforms=transforms)
-        self.__compare_init(flag, 'Top Condition', transforms, {})
+        condition = Condition(action='Top Condition', transforms=transforms)
+        self.__compare_init(condition , 'Top Condition', transforms, {})
 
     def test_execute_action_only_no_args_valid_data_no_conversion(self):
         self.assertTrue(Condition(action='Top Condition').execute(3.4, {}))

@@ -36,13 +36,13 @@ class Condition(ExecutionElement):
     def execute(self, data_in, accumulator):
         data = data_in
 
-        for filter_element in self.transforms:
-            data = filter_element.execute(data, accumulator)
+        for transform in self.transforms:
+            data = transform.execute(data, accumulator)
         try:
             data = validate_parameter(data, self._data_in_api, 'Condition {}'.format(self.action))
             args = dereference_step_routing(self.args, accumulator, 'In Condition {}'.format(self.uid))
             data_sent.send(self, callback_name="Condition Success", object_type="Condition")
-            logger.debug('Arguments passed to flag {} are valid'.format(self.uid))
+            logger.debug('Arguments passed to condition {} are valid'.format(self.uid))
             args.update({self._data_in_api['name']: data})
             return get_condition(self.action)(**args)
         except InvalidInput as e:
@@ -52,7 +52,7 @@ class Condition(ExecutionElement):
             return False
         except Exception as e:
             logger.error('Error encountered executing '
-                         'flag {0} with arguments {1} and value {2}: '
+                         'condition {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action, self.args, data, format_exception_message(e)))
             data_sent.send(self, callback_name="Condition Error", object_type="Condition")
             return False

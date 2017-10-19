@@ -287,10 +287,10 @@ class Receiver:
         'Conditionals Executed': (callbacks.ConditionalsExecuted, False),
         'Next Step Taken': (callbacks.NextStepTaken, False),
         'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
-        'Condition Success': (callbacks.FlagSuccess, False),
-        'Condition Error': (callbacks.FlagError, False),
-        'Transform Success': (callbacks.FilterSuccess, False),
-        'Transform Error': (callbacks.FilterError, False)}
+        'Condition Success': (callbacks.ConditionSuccess, False),
+        'Condition Error': (callbacks.ConditionError, False),
+        'Transform Success': (callbacks.TransformSuccess, False),
+        'Transform Error': (callbacks.TransformError, False)}
 
     def __init__(self, ctx):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.

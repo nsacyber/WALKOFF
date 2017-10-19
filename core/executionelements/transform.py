@@ -12,17 +12,15 @@ logger = logging.getLogger(__name__)
 class Transform(ExecutionElement):
 
     def __init__(self, action, args=None, uid=None):
-        """Initializes a new Transform object. A Transform is used to filter input into a workflow.
+        """Initializes a new Transform object. A Transform is used to transform input into a workflow.
         
         Args:
-            action (str, optional): The action name for the filter. Defaults to an empty string.
+            action (str, optional): The action name for the transform. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4() in Python
         """
-        if action is None:
-            raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
         ExecutionElement.__init__(self, uid)
         self.action = action
         self._args_api, self._data_in_api = get_transform_api(self.action)
@@ -36,14 +34,14 @@ class Transform(ExecutionElement):
         self.args = validate_transform_parameters(self._args_api, args, self.action)
 
     def execute(self, data_in, accumulator):
-        """Executes the flag.
+        """Executes the transform.
 
         Args:
-            data_in: The input to the flag. Typically from the last step of the workflow or the input to a trigger.
+            data_in: The input to the condition. Typically from the last step of the workflow or the input to a trigger.
             accumulator (dict): A record of executed steps and their results. Of form {step_name: result}.
 
         Returns:
-            (bool): Is the flag true for the given data and accumulator
+            (obj): The transformed data
         """
         original_data_in = deepcopy(data_in)
         try:

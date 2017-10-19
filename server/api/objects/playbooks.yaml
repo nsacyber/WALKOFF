@@ -233,7 +233,7 @@ DisplayStep:
 NextStep:
   type: object
   required: [name]
-  description: Encapsualtion of a list of possible steps to take and conditionals (flags) required to be met before taking that step
+  description: Encapsualtion of a list of possible steps to take and conditionals required to be met before taking that step
   properties:
     name:
       description: The uid of the next step
@@ -243,8 +243,8 @@ NextStep:
       description: The status return code to use
       type: string
       example: Success
-    flags:
-      description: List of flags to evaluate
+    conditions:
+      description: List of conditions to evaluate
       type: array
       items:
         $ref: '#/definitions/Condition'
@@ -255,16 +255,16 @@ Condition:
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
   properties:
     action:
-      description: The action encapsulated by this flag
+      description: The action encapsulated by this condition
       type: string
       example: regMatch
     args:
-      description: The inputs to the flag
+      description: The inputs to the condition
       type: array
       items:
         $ref: '#/definitions/Argument'
-    filters:
-      description: filters for the data before passing it into the flags
+    transforms:
+      description: transforms for the data before passing it into the condition
       type: array
       items:
         $ref: '#/definitions/Transform'
@@ -275,11 +275,11 @@ Transform:
   description: Filters or otherwise transforms the data given to it
   properties:
     action:
-      description: The action encapsulated by this filter
+      description: The action encapsulated by this transform
       type: string
       example: count
     args:
-      description: The inputs to the filter
+      description: The inputs to the transform
       type: array
       items:
         $ref: '#/definitions/Argument'

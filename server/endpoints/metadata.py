@@ -25,15 +25,15 @@ def read_all_transforms():
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
-        filter_api = core.config.config.function_apis['transforms']
-        filters = {}
-        for filter_name, filter_body in filter_api.items():
+        transform_api = core.config.config.function_apis['transforms']
+        transforms = {}
+        for transform_name, transform_body in transform_api.items():
             ret = {}
-            if 'description' in filter_body:
-                ret['description'] = filter_body['description']
-            data_in_param = filter_body['dataIn']
+            if 'description' in transform_body:
+                ret['description'] = transform_body['description']
+            data_in_param = transform_body['dataIn']
             args = []
-            for arg in (x for x in filter_body['parameters'] if x['name'] != data_in_param):
+            for arg in (x for x in transform_body['parameters'] if x['name'] != data_in_param):
                 arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
                 if 'description' in arg:
                     arg_ret['description'] = arg['description']
@@ -41,8 +41,8 @@ def read_all_transforms():
                     arg_ret['required'] = arg['required']
                 args.append(arg)
             ret['args'] = args
-            filters[filter_name] = ret
-        return {'transforms': filters}, SUCCESS
+            transforms[transform_name] = ret
+        return {'transforms': transforms}, SUCCESS
 
     return __func()
 
@@ -52,15 +52,15 @@ def read_all_conditions():
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
-        flag_api = core.config.config.function_apis['conditions']
-        flags = {}
-        for flag_name, flag in flag_api.items():
+        conditions_api = core.config.config.function_apis['conditions']
+        conditions = {}
+        for condition_name, condition_body in conditions_api.items():
             ret = {}
-            if 'description' in flag:
-                ret['description'] = flag['description']
-            data_in_param = flag['dataIn']
+            if 'description' in condition_body:
+                ret['description'] = condition_body['description']
+            data_in_param = condition_body['dataIn']
             args = []
-            for arg in (x for x in flag['parameters'] if x['name'] != data_in_param):
+            for arg in (x for x in condition_body['parameters'] if x['name'] != data_in_param):
                 arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
                 if 'description' in arg:
                     arg_ret['description'] = arg['description']
@@ -68,8 +68,8 @@ def read_all_conditions():
                     arg_ret['required'] = arg['required']
                 args.append(arg)
             ret['args'] = args
-            flags[flag_name] = ret
-        return {"conditions": flags}, SUCCESS
+            conditions[condition_name] = ret
+        return {"conditions": conditions}, SUCCESS
 
     return __func()
 

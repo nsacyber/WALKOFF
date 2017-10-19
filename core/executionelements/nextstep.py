@@ -26,7 +26,7 @@ class NextStep(ExecutionElement):
 
     def execute(self, data_in, accumulator):
         if data_in is not None and data_in.status == self.status:
-            if all(flag.execute(data_in=data_in.result, accumulator=accumulator) for flag in self.conditions):
+            if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
                 data_sent.send(self, callback_name="Next Step Taken", object_type="NextStep")
                 logger.debug('NextStep is valid for input {0}'.format(data_in))
 

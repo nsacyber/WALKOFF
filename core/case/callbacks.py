@@ -137,15 +137,15 @@ NextStepNotTaken, __next_step_not_taken_callback = __construct_logging_signal('N
                                                                               'Next step not taken')
 
 # Condition callbacks
-FlagSuccess, __flag_success_callback = __construct_logging_signal('Condition',
+ConditionSuccess, __condition_success_callback = __construct_logging_signal('Condition',
                                                                   'Condition Success',
                                                                   'Condition executed without error')
-FlagError, __flag_error_callback = __construct_logging_signal('Condition', 'Condition Error', 'Condition executed with error')
+ConditionError, __condition_error_callback = __construct_logging_signal('Condition', 'Condition Error', 'Condition executed with error')
 
 # Transform callbacks
-FilterSuccess, __filter_success_callback = __construct_logging_signal('Transform', 'Transform Success',
+TransformSuccess, __transform_success_callback = __construct_logging_signal('Transform', 'Transform Success',
                                                                       'Transform success')
-FilterError, __filter_error_callback = __construct_logging_signal('Transform', 'Transform Error', 'Transform error')
+TransformError, __transform_error_callback = __construct_logging_signal('Transform', 'Transform Error', 'Transform error')
 
 # Load Balancer callbacks
 data_sent = Signal('sent')

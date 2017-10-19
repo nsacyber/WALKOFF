@@ -11,7 +11,7 @@
       200:
         description: Success
         schema:
-          description: List of available subscriptions in hierarchical order from controller to filter
+          description: List of available subscriptions in hierarchical order from controller to transform
           type: array
           items:
             $ref: '#/definitions/AvailableSubscriptions'
