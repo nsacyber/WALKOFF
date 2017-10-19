@@ -14,8 +14,8 @@ import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
 
-const types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
-const childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
+const types = ['playbook', 'workflow', 'step', 'nextstep', 'condition', 'transform'];
+const childrenTypes = ['workflows', 'steps', 'next', 'conditions', 'transforms'];
 
 @Component({
 	selector: 'cases-component',
@@ -207,14 +207,14 @@ export class CasesComponent {
 
 	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
 		let self = this;
-		// types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
-		// childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
+		// types = ['playbook', 'workflow', 'step', 'nextstep', 'condition', 'transform'];
+		// childrenTypes = ['workflows', 'steps', 'next', 'conditions', 'transforms'];
 
 		let nodeName = '';
 		if (prefix) nodeName = prefix + ': ';
 		//For higher level nodes, use the name
 		if (target.name) nodeName += target.name;
-		//For lower level nodes such as flag and filter, use action
+		//For lower level nodes such as condition/transform, use action
 		else if (target.action) nodeName += target.action;
 		else nodeName = '(name unknown)';
 
@@ -236,11 +236,11 @@ export class CasesComponent {
 				case 'next':
 					prefix = 'Next Step';
 					break;
-				case 'flags':
-					prefix = 'Flag';
+				case 'conditions':
+					prefix = 'Condition';
 					break;
-				case 'filters':
-					prefix = 'Filter';
+				case 'transforms':
+					prefix = 'Transform';
 					break;
 			}
 

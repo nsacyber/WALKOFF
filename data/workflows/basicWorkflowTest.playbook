@@ -15,8 +15,8 @@
                     "name": "fourth step",
                     "next_steps": [],
                     "position": {
-                        "x": 230,
-                        "y": 70
+                        "x": 210,
+                        "y": 210
                     },
                     "risk": 0,
                     "uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
@@ -38,7 +38,7 @@
                     ],
                     "position": {
                         "x": -30,
-                        "y": 70
+                        "y": 130
                     },
                     "risk": 0,
                     "uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
@@ -59,8 +59,8 @@
                         }
                     ],
                     "position": {
-                        "x": 70,
-                        "y": 70
+                        "x": 90,
+                        "y": 170
                     },
                     "risk": 0,
                     "uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
@@ -95,8 +95,8 @@
                         }
                     ],
                     "position": {
-                        "x": -110,
-                        "y": 70
+                        "x": 230,
+                        "y": 90
                     },
                     "risk": 0,
                     "uid": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",

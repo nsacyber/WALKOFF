@@ -178,7 +178,7 @@ export class PlaybookService {
 	 * Returns an array of all next step conditions specified within the application and its apps.
 	 */
 	getConditions(): Promise<Condition[]> {
-		return this.authHttp.get(`/api/flags`)
+		return this.authHttp.get(`/api/conditions`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Condition[])
@@ -189,7 +189,7 @@ export class PlaybookService {
 	 * Returns an array of all data transforms specified within the application and its apps.
 	 */
 	getTransforms(): Promise<Transform[]> {
-		return this.authHttp.get(`/api/filters`)
+		return this.authHttp.get(`/api/transforms`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Transform[])

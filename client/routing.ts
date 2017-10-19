@@ -5,7 +5,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 import { DevicesComponent } from './devices/devices.component';
-import { TriggersComponent } from './triggers/triggers.component';
+// import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 import { AppsComponent } from './apps/apps.component';
@@ -17,7 +17,7 @@ const routes: Routes = [
 	{ path: 'playbook', component: PlaybookComponent },
 	{ path: 'scheduler', component: SchedulerComponent },
 	{ path: 'devices', component: DevicesComponent },
-	{ path: 'triggers', component: TriggersComponent },
+	// { path: 'triggers', component: TriggersComponent },
 	{ path: 'cases', component: CasesComponent },
 	{ path: 'settings', component: SettingsComponent },
 	{ path: 'apps/:app', component: AppsComponent },

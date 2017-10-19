@@ -68,17 +68,17 @@
         <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
     </div>
 
-    <div id="top">
+    <!-- <div id="top"> -->
         <!-- <div id="playbookEditorTabs">
             <ul class="nav nav-tabs" role="tablist">
                 <li id="cyTab" class="active"><a href="#graphEditor" data-toggle="tab" role="tab">Graphical Editor</a></li>
                 <li id="cyJsonTab"><a href="#cyJson" data-toggle="tab" role="tab">JSON</a></li>
             </ul>
             <div class="tab-content"> -->
-                <div id="graphEditor" class="tab-pane fade in active">
+                <!-- <div id="graphEditor" class="tab-pane fade in active"> -->
                     <div class="row graphEditorRow">
                         <div class="col-md-2 graphEditorColumn">
-                            <ngb-accordion *ngFor="let app of apps" #acc="ngbAccordion" activeIds="ngb-panel-0">
+                            <!-- <ngb-accordion *ngFor="let app of apps" #acc="ngbAccordion" activeIds="ngb-panel-0">
                                 <ngb-panel title="{{app.name}}">
                                     <ng-template ngbPanelContent>
                                         <ul>
@@ -86,11 +86,31 @@
                                         </ul>
                                     </ng-template>
                                 </ngb-panel>
-                            </ngb-accordion>
+                            </ngb-accordion> -->
+
+
+                            <div class="panel-group" id="accordion">
+                                <div *ngFor="let app of apps" class="panel panel-default">
+                                    <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" href="#collapse{{app.name}}">{{app.name}}</a>
+                                    </h4>
+                                    </div>
+                                    <div id="collapse{{app.name}}" class="panel-collapse collapse">
+                                        <div class="panel-body">
+                                            <div *ngFor="let action of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" [dragData]="{ appName: app.name, action: action }">
+                                                <div class="panel-body">
+                                                    <div>{{action.name}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6 graphEditorColumn">
-                            <div id="cy" #cy [hidden]="!loadedWorkflow" tabindex="0"></div>
+                            <div id="cy" #cy dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
                             <div id="cy-instructions" [hidden]="loadedWorkflow">
                                 <p>Instructions:</p>
                                 <p>
@@ -135,6 +155,8 @@
                                         <option *ngFor="let i of relevantDevices" [value]="i.id" [label]="i.name">{{i.name}}</option>
                                     </select>
                                 </div>
+                                <!-- Inputs -->
+                                <h4>Inputs</h4>
                                 <div *ngFor="let input of selectedStep.inputs; let id = index" class="form-group">
                                     <label for="{{input.name}}">
                                         Input {{id+1}}: {{input.name}} ({{inputArgs[input.name].type}})
@@ -166,7 +188,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                <!-- </div> -->
 <!-- 
                 <div id="cyJson" class="tab-pane fade">
                     <div class="row">
@@ -177,7 +199,7 @@
                 </div>
             </div>
         </div> -->
-    </div>
+    <!-- </div> -->
 
     <div class="row" id="executionResultsContainer">
         <div class="col-xs-12">

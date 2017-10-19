@@ -29,7 +29,7 @@ def client_app_folder(filename):
 @app.route('/playbook')
 @app.route('/scheduler')
 @app.route('/devices')
-@app.route('/triggers')
+# @app.route('/triggers')
 @app.route('/cases')
 @app.route('/settings')
 def default():

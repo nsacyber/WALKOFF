@@ -33,7 +33,7 @@
 		'cytoscape-undo-redo': 'npm:cytoscape-undo-redo/cytoscape-undo-redo.js',
 		'jstree': 'npm:jstree/dist',
 		'angular2-uuid': 'npm:angular2-uuid/index.js',
-		// 'angular-tree-component': 'npm:angular-tree-component/dist/angular-tree-component.umd.js',
+		'ng2-dnd': 'npm:ng2-dnd/bundles/index.umd.js'
 	};
 
 	// packages tells the System loader how to load when no filename and/or no extension

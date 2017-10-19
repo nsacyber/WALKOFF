@@ -10,7 +10,7 @@ import { Select2Module } from 'ng2-select2';
 import { AuthConfig, tokenNotExpired } from 'angular2-jwt';
 import { JwtConfigService, JwtHttp, RefreshConfig } from 'angular2-jwt-refresh';
 import { DateTimePickerModule } from 'ng-pick-datetime';
-// import { TreeModule } from 'angular-tree-component';
+import { DndModule } from 'ng2-dnd';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -18,7 +18,7 @@ import { MainComponent } from './main/main.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
-import { TriggersComponent } from './triggers/triggers.component';
+// import { TriggersComponent } from './triggers/triggers.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -41,7 +41,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		ToastyModule.forRoot(),
 		Select2Module,
 		DateTimePickerModule,
-		// TreeModule,
+		DndModule.forRoot()
 	],
 	declarations: [
 		//Main component
@@ -51,7 +51,7 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		DashboardComponent,
 		SchedulerComponent,
 		DevicesComponent,
-		TriggersComponent,
+		// TriggersComponent,
 		CasesComponent,
 		SettingsComponent,
 		AppsComponent,

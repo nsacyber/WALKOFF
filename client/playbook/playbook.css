@@ -1,6 +1,6 @@
 /* @import '/client/node_modules/jstree/dist/themes/default/style.min.css'; */
 @import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
-/* @import '/client/node_modules/ng2-tree/styles.css'; */
+@import '/client/node_modules/ng2-dnd/bundles/style.css';
 
 .playbookMain h3 {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
@@ -57,15 +57,12 @@
 	font-size: 18px;
 }
 
-.playbookMain .tab-content > div{
-	height:80vh;
+.playbookMain .graphEditorRow, .playbookMain .graphEditorColumn {
+	height: 80vh;
+	overflow: auto;
 }
 
-.graphEditorRow, .graphEditorColumn {
-	height: 100%;
-}
-
-#palette{
+#palette {
 	display: inline-block;
 	vertical-align: top;
 	width: 100%;
@@ -85,17 +82,17 @@
 	height: 100%;
 }
 
-#actionsLabel{
+#actionsLabel {
 	height:30px;
 }
 
-#actions{
+#actions {
 	overflow-y:scroll;
 	height: 90%;
 	width: 100%;
 }
 
-#playbookEditorTabs{
+#playbookEditorTabs {
 	display: inline-block;
 	vertical-align: top;
 	height: 100%;
