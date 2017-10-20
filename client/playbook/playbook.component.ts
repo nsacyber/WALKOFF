@@ -262,6 +262,8 @@ export class PlaybookComponent {
 								temp: true
 							});
 
+							console.log(addedEntities[i]);
+
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
 							if (sourceStep.next_steps.find(n => n.name === targetNodes[i].data('uid'))) {
 								self.cy.remove(addedEntities);
@@ -343,6 +345,7 @@ export class PlaybookComponent {
 						edges.push({
 							group: "edges",
 							data: {
+								id: nextStep.uid,
 								uid: nextStep.uid,
 								source: step.uid,
 								target: nextStep.name,

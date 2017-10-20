@@ -30,7 +30,7 @@
                     "name": "second step",
                     "next_steps": [
                         {
-                            "flags": [],
+                            "conditions": [],
                             "name": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
                             "status": "Success",
                             "uid": "d42ffdcc-b01f-11e7-abc4-cec278b6b50a"
@@ -81,7 +81,7 @@
                     "name": "third step",
                     "next_steps": [
                         {
-                            "flags": [],
+                            "conditions": [],
                             "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
                             "status": "Success",
                             "uid": "d43001b4-b01f-11e7-abc4-cec278b6b50a"
@@ -117,7 +117,7 @@
                     "name": "first step",
                     "next_steps": [
                         {
-                            "flags": [],
+                            "conditions": [],
                             "name": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
                             "status": "Success",
                             "uid": "d42ffb92-b01f-11e7-abc4-cec278b6b50a"
