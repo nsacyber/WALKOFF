@@ -199,6 +199,14 @@ class TestStep(unittest.TestCase):
         with self.assertRaises(CustomException):
             step.execute(instance.instance, {})
 
+    def test_execute_global_action(self):
+        step = Step(app='HelloWorld', action='global2', inputs={'arg1': 'something'})
+        instance = AppInstance.create(app_name='HelloWorld', device_name='')
+        result = step.execute(instance.instance, {})
+        self.assertAlmostEqual(result.result, 'something')
+        self.assertEqual(result.status, 'Success')
+        self.assertEqual(step._output, result)
+
     def test_execute_event(self):
         step = Step(app='HelloWorld', action='Sample Event', inputs={'arg1': 1})
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')

@@ -8,6 +8,31 @@ info:
   license:
     name: Creative Commons
 actions:
+  global1:
+    run: global1
+    description: example of a global action
+    parameters:
+        - name: arg1
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+  global2:
+    run: global2
+    description: example of a global action
+    parameters:
+        - name: arg1
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+
   helloWorld:
     run: helloWorld
     description: Returns an introductory message

@@ -3,7 +3,7 @@ import logging
 import uuid
 
 import core.config.config
-from apps import get_app_action
+from apps import get_app_action, is_app_action_bound
 from core import contextdecorator
 from core.case.callbacks import data_sent
 from core.decorators import ActionResult
@@ -156,7 +156,11 @@ class Step(ExecutionElement):
             args = dereference_step_routing(self.inputs, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self._input_api, args, self.app, self.action)
             action = get_app_action(self.app, self._run)
-            result = action(instance, **args)
+            if is_app_action_bound(self.app, self._run):
+                result = action(instance, **args)
+            else:
+                result = action(**args)
+
             data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
                            data=json.dumps({"result": result.as_json()}))
         except InvalidInput as e:

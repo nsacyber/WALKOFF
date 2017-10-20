@@ -8,6 +8,7 @@ from core.validator import *
 from tests.apps import *
 import apps
 from tests.config import basic_app_api, test_apps_path
+from core.helpers import UnknownApp
 
 
 class TestAppApiValidation(unittest.TestCase):
