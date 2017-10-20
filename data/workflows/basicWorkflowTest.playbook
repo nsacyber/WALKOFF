@@ -45,6 +45,35 @@
                     "widgets": []
                 },
                 {
+                    "action": "echo object",
+                    "app": "Utilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "data",
+                            "value": {
+                                "exe_name": "notavirus.py",
+                                "pcap_name": "test.pcap",
+                                "source_ip": "165.257.22.34",
+                                "source_latitude": -31.32,
+                                "source_longitude": 23.32,
+                                "target_ip": "10.200.255.212",
+                                "target_latitude": 37.618889,
+                                "target_longitude": -122.375
+                            }
+                        }
+                    ],
+                    "name": "first step",
+                    "next_steps": [],
+                    "position": {
+                        "x": 290,
+                        "y": 150
+                    },
+                    "risk": 0,
+                    "uid": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
+                    "widgets": []
+                },
+                {
                     "action": "helloWorld",
                     "app": "HelloWorld",
                     "device": "",

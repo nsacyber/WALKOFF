@@ -329,7 +329,8 @@ export class PlaybookComponent {
 				let edges: any[] = [];
 				let stepNodes = workflow.steps.map(function (step) {
 					var stepNode: any = { group: "nodes", position: _.clone(step.position) };
-					stepNode.data = { 
+					stepNode.data = {
+						id: step.uid,
 						uid: step.uid,
 						// parameters: _.cloneDeep(value), 
 						label: step.name, 
@@ -506,6 +507,8 @@ export class PlaybookComponent {
 
 		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.uid);
 
+		console.log(self.selectedStep);
+
 		if (!self.selectedStep) return;
 
 		self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ActionArgument }, a) => {
@@ -635,6 +638,7 @@ export class PlaybookComponent {
 		let nodeToBeAdded = {
 			group: 'nodes',
 			data: {
+				id: uid,
 				uid: uid,
 				label: action,
 				// parameters: {
@@ -679,10 +683,11 @@ export class PlaybookComponent {
 			// Get a copy of the step we just copied
 			let pastedStep: Step = _.clone(this.loadedWorkflow.steps.find(s => s.uid === n.data('uid')));
 
-			// Get a new UID for this step as well as update the node with the new uid
+			// Note: we just grab the new uid from the pasted object. Looks like the clipboard plugin uses the same sort of UUIDs we use...
 			// Also delete the next field since user needs to explicitly
 			// create new edges for the new node.
-			let uid = UUID.UUID();
+			let uid = n.data('id');
+
 			pastedStep.uid = uid;
 			pastedStep.next_steps = [];
 
@@ -693,7 +698,6 @@ export class PlaybookComponent {
 				isStartNode: false
 			});
 
-			console.log(n);
 			this.loadedWorkflow.steps.push(pastedStep);
 		});
 	}
