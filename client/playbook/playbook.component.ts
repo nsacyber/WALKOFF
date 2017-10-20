@@ -16,10 +16,12 @@ import { UUID } from 'angular2-uuid';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 
+import { App } from '../models/app';
 import { Action, ActionArgument } from '../models/action';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
-import { Step, AppStep, TriggerStep } from '../models/playbook/step';
+import { Step } from '../models/playbook/step';
+import { NextStep } from '../models/playbook/nextStep';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
 import { GraphPosition } from '../models/playbook/graphPosition';
@@ -46,13 +48,14 @@ export class PlaybookComponent {
 	currentPlaybook: string;
 	currentWorkflow: string;
 	loadedWorkflow: Workflow;
-	workflowsForPlaybooks: Playbook[] = [];
+	playbooks: Playbook[] = [];
 	cy: any;
 	ur: any;
-	actionsForApps: { [key: string]: { [key: string]: Action } } = {};
-	startNode: string;
+	apps: App[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
+	selectedNextStep: NextStep;
+	inputArgs: { [key: string]: ActionArgument } = {};
 	cyJsonData: string;
 	actionTree: any;
 
@@ -85,7 +88,7 @@ export class PlaybookComponent {
 		this.playbookService.getConditions().then(conditions => this.conditions = conditions);
 		this.playbookService.getTransforms().then(transforms => this.transforms = transforms);
 		this.playbookService.getDevices().then(devices => this.devices = devices);
-		this.getActionsForApps();
+		this.getAppsAndActions();
 		this.getWorkflowResultsSSE();
 		this.getPlaybooksWithWorkflows();
 
@@ -120,7 +123,6 @@ export class PlaybookComponent {
 						// add to a table
 					},
 					error: (err: Error) => {
-
 						// This function removes selected nodes and edges
 						this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 						console.error(err);
@@ -182,6 +184,13 @@ export class PlaybookComponent {
 							}
 						},
 						{
+							selector: 'node[?isStartNode]',
+							css: {
+								'border-width': '2px',
+								'border-color': 'crimson',
+							}
+						},
+						{
 							selector: 'node:selected',
 							css: {
 								'background-color': '#45F'
@@ -236,46 +245,52 @@ export class PlaybookComponent {
 					preview: false,
 					toggleOffOnLeave: true,
 					complete: function (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
-						let sourceParameters = sourceNode.data().parameters;
-						if (!sourceParameters.hasOwnProperty("next_steps"))
-							sourceParameters.next_steps = [];
+						let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('uid'));
+						if (!sourceStep.next_steps) sourceStep.next_steps = [];
 
 						// The edge handles extension is not integrated into the undo/redo extension.
 						// So in order that adding edges is contained in the undo stack,
 						// remove the edge just added and add back in again using the undo/redo
 						// extension. Also add info to edge which is displayed when user clicks on it.
 						for (let i = 0; i < targetNodes.length; i++) {
-							addedEntities[i].data('parameters', {
-								uid: UUID.UUID(),
-								name: targetNodes[i].data().parameters.id,
-								status: 'Success',
-								flags: [],
+							let uid = UUID.UUID();
+
+							addedEntities[i].data({
+								uid: uid,
+								// We set temp because this actually triggers onEdgeRemove since we manually remove and re-add the edge later
+								// There is logic in onEdgeRemove to bypass that logic if temp is true
 								temp: true
 							});
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
-							if (sourceParameters.next_steps.find((next: any) => { return next.name === targetNodes[i].data().id })) {
+							if (sourceStep.next_steps.find(n => n.name === targetNodes[i].data('uid'))) {
 								self.cy.remove(addedEntities);
 								return;
 							}
 
-							sourceParameters.next_steps.push({
-								flags: [],
-								status: 'Success',
-								name: targetNodes[i].data().id // Note use id, not name since name can be changed
-							});
+							// addedEntities[i].data('parameters', {
+							// 	uid: UUID.UUID(),
+							// 	name: targetNodes[i].data().parameters.uid,
+							// 	status: 'Success',
+							// 	conditions: [],
+							// 	temp: true
+							// });
 
-							sourceNode.data('parameters', sourceParameters);
+							// Add our next step to the actual loadedWorkflow model
+							sourceStep.next_steps.push({
+								uid: uid,
+								name: targetNodes[i].data('uid'),
+								status: 'Success',
+								conditions: [],
+							});
 						}
 
 						self.cy.remove(addedEntities);
 
-						addedEntities.forEach((ae: any) => {
-							let data = ae.data();
-							delete data.parameters.temp;
-							ae.data(data);
-						});
+						// Get rid of our temp flag
+						addedEntities.forEach(ae => ae.data('temp', false));
 
+						// Re-add with the undo-redo extension.
 						let newEdges = self.ur.do('add', addedEntities); // Added back in using undo/redo extension
 					},
 				});
@@ -284,32 +299,61 @@ export class PlaybookComponent {
 				this.cy.clipboard();
 
 				//Extension for grid and guidelines
-				this.cy.gridGuide();
+				this.cy.gridGuide({
+					snapToGridDuringDrag: true,
+					zoomDash: true,
+					panGrid: true,
+					centerToEdgeAlignment: true,
+					// Guidelines
+					guidelinesStackOrder: 4, // z-index of guidelines
+					guidelinesTolerance: 2.00, // Tolerance distance for rendered positions of nodes' interaction.
+					guidelinesStyle: { // Set ctx properties of line. Properties are here:
+						strokeStyle: "#8b7d6b", // color of geometric guidelines
+						geometricGuidelineRange: 400, // range of geometric guidelines
+						range: 100, // max range of distribution guidelines
+						minDistRange: 10, // min range for distribution guidelines
+						distGuidelineOffset: 10, // shift amount of distribution guidelines
+						horizontalDistColor: "#ff0000", // color of horizontal distribution alignment
+						verticalDistColor: "#00ff00", // color of vertical distribution alignment
+						initPosAlignmentColor: "#0000ff", // color of alignment to initial mouse location
+						lineDash: [0, 0], // line style of geometric guidelines
+						horizontalDistLine: [0, 0], // line style of horizontal distribution guidelines
+						verticalDistLine: [0, 0], // line style of vertical distribution guidelines
+						initPosAlignmentLine: [0, 0], // line style of alignment to initial mouse position
+					},
+				});
 
 				// Load the data into the graph
 				// If a node does not have a label field, set it to
 				// the action. The label is what is displayed in the graph.
 				let edges: any[] = [];
-				let steps = workflow.steps.map(function (value) {
-					var ret: any = { group: "nodes", position: _.clone(value.position) };
-					ret.data = { id: value.uid, parameters: _.cloneDeep(value), label: value.name, isStartNode: value.uid === workflow.start };
-					self._setNodeDisplayProperties(ret);
-					value.next_steps.forEach((nextStep) => {
+				let stepNodes = workflow.steps.map(function (step) {
+					var stepNode: any = { group: "nodes", position: _.clone(step.position) };
+					stepNode.data = { 
+						uid: step.uid,
+						// parameters: _.cloneDeep(value), 
+						label: step.name, 
+						isStartNode: step.uid === workflow.start
+					};
+					self._setNodeDisplayProperties(stepNode, step);
+
+					// For each next step, create an edge and push it to our master edge array
+					step.next_steps.forEach((nextStep) => {
 						edges.push({
 							group: "edges",
 							data: {
-								id: nextStep.uid,
-								source: value.uid,
-								target: nextStep.uid,
-								parameters: _.clone(nextStep)
+								uid: nextStep.uid,
+								source: step.uid,
+								target: nextStep.name,
+								// parameters: _.clone(nextStep)
 							}
 						});
 					});
-					return ret;
+					return stepNode;
 				});
 
-				steps = steps.concat(edges);
-				this.cy.add(steps);
+				stepNodes = stepNodes.concat(edges);
+				this.cy.add(stepNodes);
 
 				this.cy.fit(null, 50);
 
@@ -342,22 +386,27 @@ export class PlaybookComponent {
 		this.saveWorkflow(this.cy.elements().jsons());
 	}
 
-	saveWorkflow(cyData: any): void {
-		if (!this.startNode) {
+	saveWorkflow(cyData: any[]): void {
+		if (!this.loadedWorkflow.start) {
 			this.toastyService.warning(`Workflow cannot be saved without a starting step.`);
 			return;
 		}
 
-		cyData = _.filter(cyData, function (data: any) { return data.group === "nodes"; });
+		// cyData = _.filter(cyData, function (data: any) { return data.group === "nodes"; });
 
-		let steps: Step[] = _.map(cyData, function (step: any) {
-			let ret = _.cloneDeep(step.data.parameters);
-			ret.position = _.clone(step.position);
-			return ret;
+		// Set the new cytoscape positions on our loadedworkflow
+		this.loadedWorkflow.steps.forEach(s => {
+			s.position = cyData.find(cyStep => cyStep.data.uid === s.uid).position;
 		});
 
-		this.loadedWorkflow.start = this.startNode;
-		this.loadedWorkflow.steps = steps;
+		// let steps: Step[] = _.map(cyData, function (step: any) {
+		// 	let ret = _.cloneDeep(step.data.parameters);
+		// 	ret.position = _.clone(step.position);
+		// 	return ret;
+		// });
+
+		// this.loadedWorkflow.start = this.startNode;
+		// this.loadedWorkflow.steps = steps;
 
 		// this._transformInputsToSave(steps);
 
@@ -377,13 +426,13 @@ export class PlaybookComponent {
 		// // step ID and the values are the index of the step in workflowData
 		// let ids: { [key: string]: string } = {};
 		// for (let step = 0; step < workflowData.length; step++) {
-		// 	ids[workflowData[step].data.id] = step.toString();
+		// 	ids[workflowData[step].data.uid] = step.toString();
 		// }
 
 		// // Compare current list of steps with updated list and modify current list
 		// let stepsJson = dataJson.steps; // Get updated list of steps
 		// stepsJson.forEach(function (stepJson: any) {
-		// 	let idJson = stepJson.data.id;
+		// 	let idJson = stepJson.data.uid;
 		// 	if (idJson in ids) {
 		// 		// If step already exists, then just update its fields
 		// 		let step = Number(ids[idJson])
@@ -417,114 +466,143 @@ export class PlaybookComponent {
 
 	getPlaybooksWithWorkflows(): void {
 		this.playbookService.getPlaybooks()
-			.then(playbooks => this.workflowsForPlaybooks = playbooks);
+			.then(playbooks => this.playbooks = playbooks);
 	}
 
-	getActionsForApps(): void {
-		this.playbookService.getActionsForApps()
+	getAppsAndActions(): void {
+		this.playbookService.getAppsAndActions()
 			.then((actionsForApps) => {
-				this.actionsForApps = actionsForApps;
+				this.apps = _.map(actionsForApps, function (app: { [key: string] : Action }, appName: string) {
+					return <App>{ name: appName, actions: _.map(app, function (action: Action, actionName: string) {
+						action.name = actionName;
 
-				this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
-					let appObj: any = { name: app, children: [] };
+						return action;
+					})};
+				})
+
+				this.apps.filter(a => a.actions.length);
+
+				// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
+				// 	let appObj: any = { name: app, children: [] };
 					
-					Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
+				// 	Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
 
-					result.push(appObj);
+				// 	result.push(appObj);
 
-					return result;
-				}, []);
-
-				console.log(this.actionTree);
+				// 	return result;
+				// }, []);
 			});
 	}
 
 	///------------------------------------------------------------------------------------------------------
 	/// Cytoscape functions
 	///------------------------------------------------------------------------------------------------------
+
 	// This function displays a form next to the graph for editing a node when clicked upon
 	onNodeSelect(e: any, self: PlaybookComponent): void {
-		let ele = e.target;
-		let parameters = ele.data('parameters');
+		self.selectedNextStep = null;
 
-		if (parameters.inputs) self.selectedStep = <AppStep>parameters;
-		else self.selectedStep = <TriggerStep>parameters;
+		let data = e.target.data();
+
+		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.uid);
+
+		if (!self.selectedStep) return;
+
+		self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ActionArgument }, a) => {
+			result[a.name] = a;
+
+			// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
+			if (!result[a.name].type && (<any>result[a.name]).schema) result[a.name].type = (<any>result[a.name]).schema.type;
+			return result;
+		}, {});
+		
+		console.log(self.inputArgs);
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
-		self.relevantDevices = self.devices.filter(d => d.app === parameters.app);
-
-		// ele.data('parameters', updatedParameters);
+		self.relevantDevices = self.devices.filter(d => d.app === data.app);
 	}
 
 	onEdgeSelect(e: any, self: PlaybookComponent): void {
-		let ele = e.target;
-		let parameters = ele.data('parameters');
-		return;
+		self.selectedStep = null;
+		self.selectedNextStep = null;
+
+		let uid = e.target.data('uid');
+
+		self.loadedWorkflow.steps.forEach(s => {
+			if (self.selectedNextStep) return;
+
+			self.selectedNextStep = s.next_steps.find(ns => ns.uid === uid);
+		});
 	}
 
 	onUnselect(event: any, self: PlaybookComponent): void {
-		if (!self.cy.$('node:selected').length) self.selectedStep = null;
+		if (!self.cy.$(':selected').length) {
+			self.selectedStep = null;
+			self.selectedNextStep = null;
+		}
 	}
 
 	// when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
 	onEdgeRemove(event: any, self: PlaybookComponent): void {
 		let edgeData = event.target.data();
 		// Do nothing if this is a temporary edge (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
-		if (!edgeData.parameters || edgeData.parameters.temp) return;
+		if (!edgeData || edgeData.temp) return;
 
-		let parentNode = event.target.source();
-		let parentData = _.cloneDeep(parentNode.data());
+		let sourceUid = event.target.source().data('uid');
+		let targetUid = edgeData.target;
 
-		parentData.parameters.next_steps = parentData.parameters.next_steps.filter((next: any) => { return next.name !== event.target.data().target; });
-		parentNode.data(parentData);
+		let stepWithThisNextStep = this.loadedWorkflow.steps.find(s => s.uid = sourceUid);
+		stepWithThisNextStep.next_steps.filter(ns => ns.name === targetUid);
 	}
 
+	// The logic to add a step to the workflow is in insertNode, maybe move it here instead?
 	onNodeAdded(event: any, self: PlaybookComponent): void {
 		let node = event.target;
 
 		// If the number of nodes in the graph is one, set the start node to it.
-		if (node.isNode() && self.cy.nodes().size() === 1) self.setStartNode(node.data("parameters").id);
+		if (node.isNode() && self.cy.nodes().size() === 1) self.setStartNode(node.data('uid'));
 	}
 
 	onNodeRemoved(event: any, self: PlaybookComponent): void {
 		let node = event.target;
-		let parameters = node.data("parameters");
+		let data = node.data();
 
 		// If the start node was deleted, set it to one of the roots of the graph
-		if (parameters && node.isNode() && self.startNode == parameters.id) self.setStartNode(null);
-		if (self.selectedStep && self.selectedStep.uid == parameters.uid) self.selectedStep = null;
+		if (data && node.isNode() && self.loadedWorkflow.start == data.uid) self.setStartNode(null);
+		if (self.selectedStep && self.selectedStep.uid == data.uid) self.selectedStep = null;
+
+		// Delete the step from the workflow and delete any next steps that reference this step
+		this.loadedWorkflow.steps = this.loadedWorkflow.steps.filter(s => s.uid !== data.uid);
+		this.loadedWorkflow.steps.forEach(s => {
+			if (!s.next_steps || !s.next_steps.length) return;
+			s.next_steps = s.next_steps.filter(ns => ns.name !== data.uid);
+		});
 	}
 
 	// This function is called when the user drops a new node onto the graph
-	handleDropEvent(event: any, ui: any): void {
+	handleDropEvent(e: any, ui: any): void {
 		if (this.cy === null) return;
 
-		let draggable = ui.draggable;
-		let draggableId = draggable.attr('id');
-		// let draggableNode = $('#actions').jstree(true).get_node(draggableId);
-		let draggableNode: any = {};
-		if (!draggableNode.data)
-			return;
-		let app = draggableNode.data.app;
-		let action = draggableNode.text;
+		let appName: string = e.dragData.appName;
+		let action: Action = e.dragData.action;
+		console.log(e, action);
 
 		// The following coordinates is where the user dropped relative to the
 		// top-left of the graph
-		let location: GraphPosition = {
-			x: event.pageX + this.offset.x,
-			y: event.pageY + this.offset.y
+		let dropPosition: GraphPosition = {
+			x: e.mouseEvent.layerX,
+			y: e.mouseEvent.layerY
 		}
 
-		this.insertNode(app, action, location, true);
+		this.insertNode(appName, action.name, dropPosition, true);
 	}
 
 	insertNode(app: string, action: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
 		// Grab a new UUID for both the ID of the node and the ID of the step in the workflow
-		let id = UUID.UUID();
+		let uid = UUID.UUID();
 
 		let inputs: Argument[] = [];
-		let actionInfo = this.actionsForApps[app][action];
-		actionInfo.args.forEach((input) => {
+		this._getAction(app, action).args.forEach((input) => {
 			// let defaultValue;
 			// if (input.type === "string")
 			// 	defaultValue = input.default || "";
@@ -535,33 +613,46 @@ export class PlaybookComponent {
 
 			inputs.push({
 				name: input.name,
-				value: input.default
+				value: input.default,
+				reference: null
 			});
 		});
 
-		// Add the node with the id just found to the graph in the location dropped
+		let stepToBeAdded: Step;
+		
+		if (app && action) stepToBeAdded = <Step>{
+			uid: uid,
+			name: action,
+			app: app,
+			action: action,
+			inputs: inputs
+		};
+
+		this.loadedWorkflow.steps.push(stepToBeAdded);
+
+		// Add the node with the uid just found to the graph in the location dropped
 		// into by the mouse.
 		let nodeToBeAdded = {
 			group: 'nodes',
 			data: {
-				id: id,
+				uid: uid,
 				label: action,
-				parameters: {
-					action: action,
-					app: app,
-					device_id: 0,
-					errors: <any[]>[],
-					inputs: inputs,
-					uid: id,
-					name: action,
-					next_steps: <any[]>[],
-				}
+				// parameters: {
+				// 	action: action,
+				// 	app: app,
+				// 	device_id: 0,
+				// 	errors: <any[]>[],
+				// 	inputs: inputs,
+				// 	uid: uid,
+				// 	name: action,
+				// 	next_steps: <any[]>[],
+				// }
 			},
 			renderedPosition: <GraphPosition>null,
 			position: <GraphPosition>null,
 		};
 
-		this._setNodeDisplayProperties(nodeToBeAdded);
+		this._setNodeDisplayProperties(nodeToBeAdded, stepToBeAdded);
 
 		if (shouldUseRenderedPosition) nodeToBeAdded.renderedPosition = location;
 		else nodeToBeAdded.position = location;
@@ -584,24 +675,33 @@ export class PlaybookComponent {
 	paste(): void {
 		let newNodes = this.ur.do("paste");
 
-		// Change the names of these new nodes so that they are the
-		// same as the id. This is needed since only the name is
-		// stored on the server and serves as the unique id of the
-		// node. It therefore must be the same as the Cytoscape id.
-		// Also delete the next field since user needs to explicitely
-		// create new edges for the new node.
-		for (let i = 0; i < newNodes.length; ++i) {
-			let parameters = newNodes[i].data("parameters");
-			parameters.name = newNodes[i].data("id");
-			parameters.next_steps = [];
-			newNodes[i].data("parameters", parameters);
-		}
+		newNodes.forEach((n: any) => {
+			// Get a copy of the step we just copied
+			let pastedStep: Step = _.clone(this.loadedWorkflow.steps.find(s => s.uid === n.data('uid')));
+
+			// Get a new UID for this step as well as update the node with the new uid
+			// Also delete the next field since user needs to explicitly
+			// create new edges for the new node.
+			let uid = UUID.UUID();
+			pastedStep.uid = uid;
+			pastedStep.next_steps = [];
+
+			console.log(pastedStep);
+
+			n.data({
+				uid: uid,
+				isStartNode: false
+			});
+
+			console.log(n);
+			this.loadedWorkflow.steps.push(pastedStep);
+		});
 	}
 
-	_setNodeDisplayProperties(step: any): void {
+	_setNodeDisplayProperties(stepNode: any, step: Step): void {
 		//add a type field to handle node styling
-		if (this.actionsForApps[step.data.parameters.app][step.data.parameters.action].event) step.data.type = 'eventAction';
-		else step.data.type = 'action';
+		if (this._getAction(step.app, step.action).event) stepNode.type = 'eventAction';
+		else stepNode.type = 'action';
 	}
 
 	clearExecutionHighlighting(): void {
@@ -611,14 +711,19 @@ export class PlaybookComponent {
 	setStartNode(start: string): void {
 		// If no start was given set it to one of the root nodes
 		if (start) {
-			this.startNode = start;
+			this.loadedWorkflow.start = start;
 		}
 		else {
 			let roots = this.cy.nodes().roots();
 			if (roots.size() > 0) {
-				this.startNode = roots[0].data("parameters").id;
+				this.loadedWorkflow.start = roots[0].data('uid');
 			}
 		}
+
+		// Clear start node highlighting of the previous start node(s)
+		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
+		// Apply start node highlighting to the new start node.
+		this.cy.elements(`node[uid="${start}"]`).data('isStartNode', true);
 	}
 
 	removeSelectedNodes(): void {
@@ -668,7 +773,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.renamePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
-						this.workflowsForPlaybooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
+						this.playbooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
 						this.toastyService.success(`Successfully renamed ${this.modalParams.newPlaybook}.`);
 						this._closeModal();
 					})
@@ -687,7 +792,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.duplicatePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
-						let duplicatedPb = _.cloneDeep(this.workflowsForPlaybooks.find(pb => pb.name === playbook));
+						let duplicatedPb = _.cloneDeep(this.playbooks.find(pb => pb.name === playbook));
 						duplicatedPb.name = this.modalParams.newPlaybook;
 						this.toastyService.success(`Successfully duplicated ${playbook} as ${this.modalParams.newPlaybook}.`);
 						this._closeModal();
@@ -728,7 +833,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(() => {
-						this.workflowsForPlaybooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
+						this.playbooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
 						//TODO: rename loaded workflow
 						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
 						this._closeModal();
@@ -751,11 +856,11 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(duplicatedWorkflow => {
-						let pb = this.workflowsForPlaybooks.find(pb => pb.name === playbook);
+						let pb = this.playbooks.find(pb => pb.name === playbook);
 
 						if (!pb) {
 							pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
-							this.workflowsForPlaybooks.push(pb);
+							this.playbooks.push(pb);
 						}
 
 						pb.workflows.push(duplicatedWorkflow);
@@ -788,11 +893,11 @@ export class PlaybookComponent {
 	/// Utility functions
 	///------------------------------------------------------------------------------------------------------
 	getPlaybooks(): string[] {
-		return this.workflowsForPlaybooks.map(pb => pb.name);
+		return this.playbooks.map(pb => pb.name);
 	}
 
 	_doesWorkflowExist(playbook: string, workflow: string): boolean {
-		let matchingPB = this.workflowsForPlaybooks.find(pb => pb.name == playbook);
+		let matchingPB = this.playbooks.find(pb => pb.name == playbook);
 
 		if (!matchingPB) return false;
 
@@ -800,14 +905,18 @@ export class PlaybookComponent {
 	}
 
 	_doesPlaybookExist(playbook: string): boolean {
-		return this.workflowsForPlaybooks.hasOwnProperty(playbook);
+		return this.playbooks.hasOwnProperty(playbook);
 	}
 
-	getInputArgParamsForSelectedStep() {
-		return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
-	}
+	// getInputArgParamsForSelectedStep() {
+	// 	return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
+	// }
 
 	getPreviousSteps() {
 		return <Step[]>[];
+	}
+
+	_getAction(appName: string, actionName: string): Action {
+		return this.apps.find(a => a.name === appName).actions.find(a => a.name === actionName);
 	}
 }

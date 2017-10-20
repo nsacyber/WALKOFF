@@ -1,6 +1,6 @@
 import { UUID } from 'angular2-uuid';
 
-import { Step, AppStep, TriggerStep } from './step';
+import { Step } from './step';
 
 export class Workflow {
 	uid: string = UUID.UUID();
