@@ -253,7 +253,8 @@ export class PlaybookComponent {
 						// remove the edge just added and add back in again using the undo/redo
 						// extension. Also add info to edge which is displayed when user clicks on it.
 						for (let i = 0; i < targetNodes.length; i++) {
-							let uid = UUID.UUID();
+							// Get the ID from the added node and use it; uses the same UUID method seemingluy
+							let uid = addedEntities[i].data('id');
 
 							addedEntities[i].data({
 								uid: uid,
@@ -374,6 +375,8 @@ export class PlaybookComponent {
 				this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e, this));
 
 				this.cyJsonData = JSON.stringify(workflow, null, 2);
+
+				this._closeWorkflowsModal();
 			})
 			.catch(e => this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`));
 	}
@@ -604,7 +607,9 @@ export class PlaybookComponent {
 	}
 
 	insertNode(app: string, action: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
-		// Grab a new UUID for both the ID of the node and the ID of the step in the workflow
+		// Grab a new uid for both the ID of the node and the ID of the step in the workflow
+		// TODO: other aspects of the playbook editor use the uids generated in cytoscape
+		// Should we change this logic to do a similar thing?
 		let uid = UUID.UUID();
 
 		let inputs: Argument[] = [];
@@ -773,6 +778,8 @@ export class PlaybookComponent {
 	/// Simple bootstrap modal stuff
 	///------------------------------------------------------------------------------------------------------
 	renamePlaybookModal(playbook: string): void {
+		this._closeWorkflowsModal();
+
 		this.modalParams = {
 			title: 'Rename Existing Playbook',
 			submitText: 'Rename Playbook',
@@ -781,10 +788,10 @@ export class PlaybookComponent {
 				this.playbookService.renamePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
 						this.playbooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
-						this.toastyService.success(`Successfully renamed ${this.modalParams.newPlaybook}.`);
+						this.toastyService.success(`Successfully renamed playbook "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error renaming ${this.modalParams.newPlaybook}: ${e.message}`));
+					.catch(e => this.toastyService.error(`Error renaming playbook "${this.modalParams.newPlaybook}": ${e.message}`));
 			}
 		};
 
@@ -792,6 +799,8 @@ export class PlaybookComponent {
 	}
 
 	duplicatePlaybookModal(playbook: string): void {
+		this._closeWorkflowsModal();
+
 		this.modalParams = {
 			title: 'Duplicate Existing Playbook',
 			submitText: 'Duplicate Playbook',
@@ -799,19 +808,35 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.duplicatePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
-						let duplicatedPb = _.cloneDeep(this.playbooks.find(pb => pb.name === playbook));
+						let duplicatedPb: Playbook = _.cloneDeep(this.playbooks.find(pb => pb.name === playbook));
 						duplicatedPb.name = this.modalParams.newPlaybook;
-						this.toastyService.success(`Successfully duplicated ${playbook} as ${this.modalParams.newPlaybook}.`);
+						this.playbooks.push(duplicatedPb);
+						this.toastyService.success(`Successfully duplicated playbook "${playbook}" as "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error duplicating ${this.modalParams.newPlaybook}: ${e.message}`));
+					.catch(e => this.toastyService.error(`Error duplicating playbook "${this.modalParams.newPlaybook}": ${e.message}`));
 			}
 		};
 
 		this._openModal();
 	}
 
+	deletePlaybook(playbook: string): void {
+		if (!confirm(`Are you sure you want to delete playbook "${playbook}"?`)) return;
+
+		this.playbookService
+			.deletePlaybook(playbook)
+			.then(() => {
+				this.playbooks = this.playbooks.filter(p => p.name !== playbook);
+				
+				this.toastyService.success(`Successfully deleted playbook "${playbook}".`);
+			})
+			.catch(e => this.toastyService.error(`Error deleting playbook "${playbook}": ${e.message}`));
+	}
+
 	newWorkflowModal(): void {
+		this._closeWorkflowsModal();
+
 		this.modalParams = {
 			title: 'Create New Workflow',
 			submitText: 'Add Workflow',
@@ -822,10 +847,10 @@ export class PlaybookComponent {
 				this.playbookService.newWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow)
 					.then(newWorkflow => {
 						if (!this.loadedWorkflow) this.loadedWorkflow = newWorkflow;
-						this.toastyService.success(`Created workflow ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
+						this.toastyService.success(`Created workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error creating ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}: ${e.message}`));
+					.catch(e => this.toastyService.error(`Error creating workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			}
 		};
 
@@ -833,6 +858,8 @@ export class PlaybookComponent {
 	}
 
 	renameWorkflowModal(playbook: string, workflow: string): void {
+		this._closeWorkflowsModal();
+
 		this.modalParams = {
 			title: 'Rename Existing Workflow',
 			submitText: 'Rename Workflow',
@@ -842,10 +869,10 @@ export class PlaybookComponent {
 					.then(() => {
 						this.playbooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
 						//TODO: rename loaded workflow
-						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
+						this.toastyService.success(`Successfully renamed workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error renaming ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}: ${e.message}`));
+					.catch(e => this.toastyService.error(`Error renaming workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			}
 		};
 
@@ -853,12 +880,14 @@ export class PlaybookComponent {
 	}
 
 	duplicateWorkflowModal(playbook: string, workflow: string): void {
+		this._closeWorkflowsModal();
+
 		this.modalParams = {
 			title: 'Duplicate Existing Workflow',
 			submitText: 'Duplicate Workflow',
-			shouldShowPlaybook: true,
-			shouldShowExistingPlaybooks: true,
-			selectedPlaybook: playbook,
+			// shouldShowPlaybook: true,
+			// shouldShowExistingPlaybooks: true,
+			// selectedPlaybook: playbook,
 			shouldShowWorkflow: true,
 			submit: () => {
 				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
@@ -871,14 +900,30 @@ export class PlaybookComponent {
 						}
 
 						pb.workflows.push(duplicatedWorkflow);
-						this.toastyService.success(`Successfully renamed ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}.`);
+						this.toastyService.success(`Successfully duplicated workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error renaming ${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}: ${e.message}`));
+					.catch(e => this.toastyService.error(`Error duplicating workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			}
 		};
 
 		this._openModal();
+	}
+
+	deleteWorkflow(playbook: string, workflow: string): void {
+		if (!confirm(`Are you sure you want to delete workflow "${playbook} - ${workflow}"?`)) return;
+
+		this.playbookService
+			.deleteWorkflow(playbook, workflow)
+			.then(() => {
+				let pb = this.playbooks.find(p => p.name === playbook);
+				pb.workflows = pb.workflows.filter(w => w.name !== workflow);
+
+				if (!pb.workflows.length) this.playbooks = this.playbooks.filter(p => p.name !== pb.name);
+				
+				this.toastyService.success(`Successfully deleted workflow "${playbook} - ${workflow}".`);
+			})
+			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook} - ${workflow}": ${e.message}`));
 	}
 
 	_openModal(): void {
@@ -888,9 +933,13 @@ export class PlaybookComponent {
 	_closeModal(): void {
 		($('#playbookAndWorkflowActionModal') as any).modal('hide');
 	}
+
+	_closeWorkflowsModal(): void {
+		($('#workflowsModal') as any).modal('hide');
+	}
 	
 	_getModalPlaybookName(): string {
-		if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '0')
+		if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '')
 			return this.modalParams.selectedPlaybook;
 
 		return this.modalParams.newPlaybook;

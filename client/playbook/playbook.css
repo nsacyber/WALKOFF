@@ -149,3 +149,7 @@ ul.vakata-context,
 .ui-dialog {
 	z-index: 1051;
 }
+
+#workflowsModal .workflowPanel {
+	cursor: pointer;
+}

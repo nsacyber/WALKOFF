@@ -6,8 +6,7 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="load-button" type=button class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow"
-                (click)="loadWorkflow('basicWorkflowTest', 'helloWorldWorkflow')">
+            <button id="load-button" type=button class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow">
                 <span class="fa fa-folder-open-o"></span>
             </button>
         </div>
@@ -223,10 +222,10 @@
                         <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
                         <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect" [(ngModel)]="modalParams.selectedPlaybook"
                             class="form-control">
-                            <option value="0">-- Create new Playbook --</option>
+                            <option value="">-- Create new Playbook --</option>
                             <option *ngFor="let i of getPlaybooks()" [value]="i" [label]="i">{{i}}</option>
                         </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybook === '0' || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
+                        <input type="text" *ngIf="modalParams.selectedPlaybook === '' || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
                             class="form-control" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
@@ -252,7 +251,42 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div id="workflows"></div>
+                    <div class="panel-group" id="workflowAccordion">
+                        <div *ngFor="let playbook of playbooks" class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" href="#collapse{{playbook.name}}">{{playbook.name}}</a>
+                                    <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
+                                        <span class="fa fa-font"></span>
+                                    </button>
+                                    <button (click)="duplicatePlaybookModal(playbook.name)" class="btn btn-primary" title="Duplicate Playbook">
+                                        <span class="fa fa-copy"></span>
+                                    </button>
+                                    <button (click)="deletePlaybook(playbook.name)" class="btn btn-danger" title="Delete Playbook">
+                                        <span class="fa fa-times"></span>
+                                    </button>
+                                </h4>
+                            </div>
+                            <div id="collapse{{playbook.name}}" class="panel-collapse collapse in">
+                                <div class="panel-body">
+                                    <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
+                                        <div class="panel-body">
+                                            <a (click)="loadWorkflow(playbook.name, workflow.name)">{{workflow.name}}</a>
+                                            <button (click)="renameWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Rename Workflow">
+                                                <span class="fa fa-font"></span>
+                                            </button>
+                                            <button (click)="duplicateWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Duplicate Workflow">
+                                                <span class="fa fa-copy"></span>
+                                            </button>
+                                            <button (click)="deleteWorkflow(playbook.name, workflow.name)" class="btn btn-danger" title="Delete Workflow">
+                                                <span class="fa fa-times"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -40,7 +40,7 @@ export class PlaybookService {
 	 * @param newName Name of the new copy to be saved
 	 */
 	duplicatePlaybook(oldName: string, newName: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${oldName}`, { playbook: newName })
+		return this.authHttp.post(`/api/playbooks/${oldName}/copy`, { playbook: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
