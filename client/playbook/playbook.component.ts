@@ -245,7 +245,7 @@ export class PlaybookComponent {
 					preview: false,
 					toggleOffOnLeave: true,
 					complete: function (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
-						let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('id'));
+						let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('uid'));
 						if (!sourceStep.next_steps) sourceStep.next_steps = [];
 
 						// The edge handles extension is not integrated into the undo/redo extension.
@@ -256,21 +256,21 @@ export class PlaybookComponent {
 							let uid = UUID.UUID();
 
 							addedEntities[i].data({
-								id: uid,
+								uid: uid,
 								// We set temp because this actually triggers onEdgeRemove since we manually remove and re-add the edge later
 								// There is logic in onEdgeRemove to bypass that logic if temp is true
 								temp: true
 							});
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
-							if (sourceStep.next_steps.find(n => n.name === targetNodes[i].data('id'))) {
+							if (sourceStep.next_steps.find(n => n.name === targetNodes[i].data('uid'))) {
 								self.cy.remove(addedEntities);
 								return;
 							}
 
 							// addedEntities[i].data('parameters', {
 							// 	uid: UUID.UUID(),
-							// 	name: targetNodes[i].data().parameters.id,
+							// 	name: targetNodes[i].data().parameters.uid,
 							// 	status: 'Success',
 							// 	conditions: [],
 							// 	temp: true
@@ -279,7 +279,7 @@ export class PlaybookComponent {
 							// Add our next step to the actual loadedWorkflow model
 							sourceStep.next_steps.push({
 								uid: uid,
-								name: targetNodes[i].data().id,
+								name: targetNodes[i].data('uid'),
 								status: 'Success',
 								conditions: [],
 							});
@@ -330,8 +330,6 @@ export class PlaybookComponent {
 				let stepNodes = workflow.steps.map(function (step) {
 					var stepNode: any = { group: "nodes", position: _.clone(step.position) };
 					stepNode.data = { 
-						id: step.uid,
-						// Note: we need this mainly for pasting as otherwise it just gives a random UUID
 						uid: step.uid,
 						// parameters: _.cloneDeep(value), 
 						label: step.name, 
@@ -344,7 +342,7 @@ export class PlaybookComponent {
 						edges.push({
 							group: "edges",
 							data: {
-								id: nextStep.uid,
+								uid: nextStep.uid,
 								source: step.uid,
 								target: nextStep.name,
 								// parameters: _.clone(nextStep)
@@ -398,7 +396,7 @@ export class PlaybookComponent {
 
 		// Set the new cytoscape positions on our loadedworkflow
 		this.loadedWorkflow.steps.forEach(s => {
-			s.position = cyData.find(cyStep => cyStep.data.id === s.uid).position;
+			s.position = cyData.find(cyStep => cyStep.data.uid === s.uid).position;
 		});
 
 		// let steps: Step[] = _.map(cyData, function (step: any) {
@@ -428,13 +426,13 @@ export class PlaybookComponent {
 		// // step ID and the values are the index of the step in workflowData
 		// let ids: { [key: string]: string } = {};
 		// for (let step = 0; step < workflowData.length; step++) {
-		// 	ids[workflowData[step].data.id] = step.toString();
+		// 	ids[workflowData[step].data.uid] = step.toString();
 		// }
 
 		// // Compare current list of steps with updated list and modify current list
 		// let stepsJson = dataJson.steps; // Get updated list of steps
 		// stepsJson.forEach(function (stepJson: any) {
-		// 	let idJson = stepJson.data.id;
+		// 	let idJson = stepJson.data.uid;
 		// 	if (idJson in ids) {
 		// 		// If step already exists, then just update its fields
 		// 		let step = Number(ids[idJson])
@@ -484,17 +482,15 @@ export class PlaybookComponent {
 
 				this.apps.filter(a => a.actions.length);
 
-				this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
-					let appObj: any = { name: app, children: [] };
+				// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
+				// 	let appObj: any = { name: app, children: [] };
 					
-					Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
+				// 	Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
 
-					result.push(appObj);
+				// 	result.push(appObj);
 
-					return result;
-				}, []);
-
-				console.log(this.actionTree);
+				// 	return result;
+				// }, []);
 			});
 	}
 
@@ -508,7 +504,7 @@ export class PlaybookComponent {
 
 		let data = e.target.data();
 
-		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.id);
+		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.uid);
 
 		if (!self.selectedStep) return;
 
@@ -530,7 +526,7 @@ export class PlaybookComponent {
 		self.selectedStep = null;
 		self.selectedNextStep = null;
 
-		let uid = e.target.data().id;
+		let uid = e.target.data('uid');
 
 		self.loadedWorkflow.steps.forEach(s => {
 			if (self.selectedNextStep) return;
@@ -552,7 +548,7 @@ export class PlaybookComponent {
 		// Do nothing if this is a temporary edge (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
 		if (!edgeData || edgeData.temp) return;
 
-		let sourceUid = event.target.source().data('id');
+		let sourceUid = event.target.source().data('uid');
 		let targetUid = edgeData.target;
 
 		let stepWithThisNextStep = this.loadedWorkflow.steps.find(s => s.uid = sourceUid);
@@ -564,7 +560,7 @@ export class PlaybookComponent {
 		let node = event.target;
 
 		// If the number of nodes in the graph is one, set the start node to it.
-		if (node.isNode() && self.cy.nodes().size() === 1) self.setStartNode(node.data().id);
+		if (node.isNode() && self.cy.nodes().size() === 1) self.setStartNode(node.data('uid'));
 	}
 
 	onNodeRemoved(event: any, self: PlaybookComponent): void {
@@ -572,14 +568,14 @@ export class PlaybookComponent {
 		let data = node.data();
 
 		// If the start node was deleted, set it to one of the roots of the graph
-		if (data && node.isNode() && self.loadedWorkflow.start == data.id) self.setStartNode(null);
-		if (self.selectedStep && self.selectedStep.uid == data.id) self.selectedStep = null;
+		if (data && node.isNode() && self.loadedWorkflow.start == data.uid) self.setStartNode(null);
+		if (self.selectedStep && self.selectedStep.uid == data.uid) self.selectedStep = null;
 
 		// Delete the step from the workflow and delete any next steps that reference this step
-		this.loadedWorkflow.steps = this.loadedWorkflow.steps.filter(s => s.uid !== data.id);
+		this.loadedWorkflow.steps = this.loadedWorkflow.steps.filter(s => s.uid !== data.uid);
 		this.loadedWorkflow.steps.forEach(s => {
 			if (!s.next_steps || !s.next_steps.length) return;
-			s.next_steps = s.next_steps.filter(ns => ns.name !== data.id);
+			s.next_steps = s.next_steps.filter(ns => ns.name !== data.uid);
 		});
 	}
 
@@ -603,7 +599,7 @@ export class PlaybookComponent {
 
 	insertNode(app: string, action: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
 		// Grab a new UUID for both the ID of the node and the ID of the step in the workflow
-		let id = UUID.UUID();
+		let uid = UUID.UUID();
 
 		let inputs: Argument[] = [];
 		this._getAction(app, action).args.forEach((input) => {
@@ -625,7 +621,7 @@ export class PlaybookComponent {
 		let stepToBeAdded: Step;
 		
 		if (app && action) stepToBeAdded = <Step>{
-			uid: id,
+			uid: uid,
 			name: action,
 			app: app,
 			action: action,
@@ -634,13 +630,12 @@ export class PlaybookComponent {
 
 		this.loadedWorkflow.steps.push(stepToBeAdded);
 
-		// Add the node with the id just found to the graph in the location dropped
+		// Add the node with the uid just found to the graph in the location dropped
 		// into by the mouse.
 		let nodeToBeAdded = {
 			group: 'nodes',
 			data: {
-				id: id,
-				uid: id,
+				uid: uid,
 				label: action,
 				// parameters: {
 				// 	action: action,
@@ -648,7 +643,7 @@ export class PlaybookComponent {
 				// 	device_id: 0,
 				// 	errors: <any[]>[],
 				// 	inputs: inputs,
-				// 	uid: id,
+				// 	uid: uid,
 				// 	name: action,
 				// 	next_steps: <any[]>[],
 				// }
@@ -681,10 +676,8 @@ export class PlaybookComponent {
 		let newNodes = this.ur.do("paste");
 
 		newNodes.forEach((n: any) => {
-			console.log(n);
 			// Get a copy of the step we just copied
 			let pastedStep: Step = _.clone(this.loadedWorkflow.steps.find(s => s.uid === n.data('uid')));
-
 
 			// Get a new UID for this step as well as update the node with the new uid
 			// Also delete the next field since user needs to explicitly
@@ -694,10 +687,13 @@ export class PlaybookComponent {
 			pastedStep.next_steps = [];
 
 			console.log(pastedStep);
-			
-			n.data("id", n.data().uid);
-			n.data("isStartNode", false);
 
+			n.data({
+				uid: uid,
+				isStartNode: false
+			});
+
+			console.log(n);
 			this.loadedWorkflow.steps.push(pastedStep);
 		});
 	}
@@ -720,14 +716,14 @@ export class PlaybookComponent {
 		else {
 			let roots = this.cy.nodes().roots();
 			if (roots.size() > 0) {
-				this.loadedWorkflow.start = roots[0].data('id');
+				this.loadedWorkflow.start = roots[0].data('uid');
 			}
 		}
 
 		// Clear start node highlighting of the previous start node(s)
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
-		this.cy.elements(`node[id="${start}"]`).data('isStartNode', true);
+		this.cy.elements(`node[uid="${start}"]`).data('isStartNode', true);
 	}
 
 	removeSelectedNodes(): void {
