@@ -16,6 +16,7 @@ try:
 except ImportError:
     from imp import reload
 
+
 class TestWorkflowServer(ServerTestCase):
     patch = False
 

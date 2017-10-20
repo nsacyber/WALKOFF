@@ -2,6 +2,7 @@ import socket
 import unittest
 from os import path
 
+import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
@@ -11,10 +12,9 @@ import core.multiprocessedexecutor
 from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.executionelements.step import Step
 from core.executionelements.workflow import Workflow
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_filters, import_all_flags
 from core.appinstance import AppInstance
 from tests import config
-from tests.apps import App
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 
@@ -27,8 +27,7 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -55,6 +54,10 @@ class TestWorkflowManipulation(unittest.TestCase):
         case_subscription.clear_subscriptions()
         self.controller.shutdown_pool(0)
         reload(socket)
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')

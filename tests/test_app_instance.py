@@ -2,15 +2,18 @@ import unittest
 
 from core import appinstance
 from tests.config import test_apps_path
-from tests.apps import App
-from core.helpers import import_all_apps
+import apps
 import importlib
+
 
 class TestInstance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=test_apps_path, reload=True)
+        apps.cache_apps(test_apps_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_create_instance(self):
         # extra janky way to import this because we still need a more predictable and consistent way to import modules

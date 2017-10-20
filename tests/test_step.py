@@ -7,16 +7,16 @@ from core.decorators import ActionResult
 from core.executionelements.flag import Flag
 from core.executionelements.nextstep import NextStep
 from core.executionelements.step import Step, Widget
-from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
-                          import_all_filters)
+from core.helpers import UnknownApp, UnknownAppAction, InvalidInput, import_all_flags, import_all_filters
 from core.appinstance import AppInstance
 from tests.config import test_apps_path, function_api_path
+import apps
 
 
 class TestStep(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -41,6 +41,10 @@ class TestStep(unittest.TestCase):
                                  'position': {},
                                  'inputs': [],
                                  'uid': self.uid}
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def __compare_init(self, elem, name, action, app, device, inputs, next_steps,
                        widgets, risk=0., position=None, uid=None):

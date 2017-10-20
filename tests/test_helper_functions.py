@@ -4,6 +4,7 @@ import types
 import sys
 from os.path import join
 from os import sep
+import apps
 from tests.config import test_workflows_path, test_apps_path, function_api_path
 import core.config.paths
 from core.config.config import initialize
@@ -13,7 +14,7 @@ from tests.util.assertwrappers import orderless_list_compare
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -25,6 +26,10 @@ class TestHelperFunctions(unittest.TestCase):
 
     def tearDown(self):
         core.config.paths.apps_path = self.original_apps_path
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     # TODO: Figure out replacement test
     # def test_load_app_function(self):
@@ -133,29 +138,6 @@ class TestHelperFunctions(unittest.TestCase):
         for name in expected_names:
             self.assertIn(name, results.keys())
             self.assertIn(name, sys.modules.keys())
-
-    def test_subclass_registry(self):
-        from six import with_metaclass
-
-        class Sub(with_metaclass(SubclassRegistry, object)):
-            pass
-
-        self.assertDictEqual(Sub.registry, {'Sub': Sub})
-
-        class Sub1(Sub):
-            pass
-
-        class Sub2(Sub):
-            pass
-
-        class Sub3(Sub):
-            pass
-
-        class Sub1(Sub):
-            pass
-
-        orderless_list_compare(self, Sub.registry.keys(), ['Sub', 'Sub1', 'Sub2', 'Sub3'])
-        orderless_list_compare(self, Sub.registry.values(), [Sub, Sub1, Sub2, Sub3])
 
     def test_format_db_path(self):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')

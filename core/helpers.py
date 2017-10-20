@@ -239,12 +239,12 @@ def combine_dicts(x, y):
 
 def import_submodules(package, recursive=False):
     """Imports the submodules from a given package.
-    
+
     Args:
         package (str): The name of the package from which to import the submodules.
-        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules. 
+        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
             Defaults to False.
-                        
+
     Returns:
         A dictionary containing the imported module objects.
     """
@@ -259,30 +259,8 @@ def import_submodules(package, recursive=False):
     return results
 
 
-class SubclassRegistry(type):
-    """
-    Metaclass which registers its subclasses in a dict of {name: cls}
-    """
-    def __init__(cls, name, bases, nmspc):
-        super(SubclassRegistry, cls).__init__(name, bases, nmspc)
-        if not hasattr(cls, 'registry'):
-            cls.registry = dict()
-        cls.registry[name] = cls
-
-
 def format_db_path(db_type, path):
     return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
-
-
-def import_all_apps(path=None, reload=False):
-    for app_name in list_apps(path):
-        try:
-            importlib.import_module('apps.{0}'.format(app_name))
-            import_app_main(app_name, path=path, reload=reload)
-        except ImportError:
-            logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
-        except InvalidApi as e:
-            logger.error('App {0} has an invalid API: {0}'.format(format_exception_message(e)))
 
 
 def get_app_action_api(app, action):

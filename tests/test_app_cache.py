@@ -16,11 +16,11 @@ class TestAppCacheCreation(TestCase):
         self.assertDictEqual(self.cache._cache, {})
 
     def test_get_qualified_function_name(self):
-        self.assertEqual(AppCache._get_qualified_function_name(f1), 'tests.test_app_cache_creation.f1')
+        self.assertEqual(AppCache._get_qualified_function_name(f1), 'tests.test_app_cache.f1')
 
     def test_get_qualified_class_name(self):
         self.assertEqual(AppCache._get_qualified_class_name(TestAppCacheCreation),
-                         'tests.test_app_cache_creation.TestAppCacheCreation')
+                         'tests.test_app_cache.TestAppCacheCreation')
 
     def test_cache_action_empty_cache(self):
         def x(): pass

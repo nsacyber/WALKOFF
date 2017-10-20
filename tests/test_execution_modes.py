@@ -9,16 +9,15 @@ import core.case.database as case_database
 import core.case.subscription as case_subscription
 from core import controller
 from tests import config
-from tests.apps import App
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+import apps
+from core.helpers import import_all_filters, import_all_flags
 import core.config.config
 
 
 class TestExecutionModes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -29,6 +28,10 @@ class TestExecutionModes(unittest.TestCase):
 
     def tearDown(self):
         case_database.tear_down()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_start_stop_execution_loop(self):
         c = controller.Controller()

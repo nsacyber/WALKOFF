@@ -5,10 +5,9 @@ from core.case import subscription
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-from core.helpers import import_all_flags, import_all_filters, import_all_apps
+from core.helpers import import_all_flags, import_all_filters
 from tests import config
 from tests.util.case_db_help import *
-from tests.apps import App
 from tests.util.mock_objects import *
 
 
@@ -40,8 +39,8 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        from apps import _cache
-        _cache.clear()
+        import apps
+        apps.clear_cache()
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')

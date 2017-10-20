@@ -4,9 +4,9 @@ import yaml
 from jsonschema.exceptions import RefResolutionError
 
 from core.config.paths import walkoff_schema_path
-from core.helpers import import_all_apps
 from core.validator import *
 from tests.apps import *
+import apps
 from tests.config import basic_app_api, test_apps_path
 
 
@@ -17,12 +17,15 @@ class TestAppApiValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=test_apps_path, reload=True)
+        apps.cache_apps(path=test_apps_path)
 
     def setUp(self):
         with open(basic_app_api, 'r') as f:
             self.basicapi = yaml.load(f.read())
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def __generate_resolver_dereferencer(self, spec, expected_success=True):
         try:

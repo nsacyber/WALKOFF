@@ -1,10 +1,10 @@
 import unittest
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.helpers import import_all_flags, import_all_filters, import_all_apps
+from core.helpers import import_all_flags, import_all_filters
 from tests import config
 import core.config.config
-from tests.apps import App
+import apps
 import core.controller
 from tests.util.mock_objects import *
 import core.loadbalancer
@@ -14,8 +14,7 @@ import core.multiprocessedexecutor
 class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -30,6 +29,10 @@ class TestExecutionEvents(unittest.TestCase):
 
     def tearDown(self):
         case_database.case_db.tear_down()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_workflow_execution_events(self):
 

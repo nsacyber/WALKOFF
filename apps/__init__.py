@@ -1,4 +1,4 @@
-from six import add_metaclass, string_types
+from six import string_types
 import logging
 import importlib
 from core.decorators import *  # Change namespace of action
@@ -14,56 +14,6 @@ from core.helpers import UnknownApp, UnknownAppAction
 _logger = logging.getLogger(__name__)
 
 
-class AppRegistry(type):
-    """
-    Metaclass which registers metadata about all the apps
-    Assumes apps are in module with <dir>.<app_name> structure
-    """
-    def __init__(cls, name, bases, nmspc):
-        super(AppRegistry, cls).__init__(name, bases, nmspc)
-        if not hasattr(cls, 'registry'):
-            cls.registry = dict()
-        app_name = cls._get_app_name()
-        if app_name is not None:
-            cls.registry[app_name] = {'main': cls,
-                                      'display': cls.__get_display_function(),
-                                      'actions': cls.__get_actions(nmspc)}
-
-    def _get_app_name(cls):
-        try:
-            return cls.__module__.split('.')[1]
-        except IndexError:
-            return None
-
-    def __get_display_function(cls):
-        try:
-            module_name = cls.__module__.rsplit('.', 1)[0]
-            display_module = importlib.import_module('{0}.display'.format(module_name))
-        except ImportError:
-            # _logger.warning('App {0} has no module "display"'.format(cls._get_app_name()))
-            return None
-        else:
-            try:
-                load_function = getattr(display_module, 'load')
-            except AttributeError:
-                _logger.warning('App {0}.display has no property called "load"'.format(cls._get_app_name()))
-                return None
-            else:
-                if callable(load_function):
-                    return load_function
-                else:
-                    _logger.warning('App {0}.display.load is not callable'.format(cls._get_app_name()))
-                    return None
-
-    def __get_actions(cls, nmspc):
-        actions = {}
-        for property_name, property_value in nmspc.items():
-            if callable(property_value) and getattr(property_value, 'action', False):
-                actions[property_name] = getattr(cls, property_name)
-        return actions
-
-
-@add_metaclass(AppRegistry)
 class App(object):
     def __init__(self, app, device):
         self.app = app
@@ -272,6 +222,10 @@ def get_app_action(app_name, action_name):
 
 def cache_apps(path):
     _cache.cache_apps(path)
+
+
+def clear_cache():
+    _cache.clear()
 
 
 class AppWidgetBlueprint(object):

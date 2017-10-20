@@ -2,16 +2,17 @@ import unittest
 from core import controller
 from core.config.config import initialize
 from tests import config
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_filters, import_all_flags
 from tests.config import test_apps_path, function_api_path
 import core.config.config
+import apps
 
 
 class TestLoadWorkflow(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -21,6 +22,10 @@ class TestLoadWorkflow(unittest.TestCase):
         self.c = controller.Controller()
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         self.testWorkflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_workflow_loaded(self):
         # Tests that helloWorldWorkflow exists

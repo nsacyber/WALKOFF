@@ -4,8 +4,7 @@ import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
-from core.helpers import import_all_apps, import_all_flags, import_all_filters
-from tests.apps import App
+from core.helpers import import_all_flags, import_all_filters
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 import core.controller
@@ -14,7 +13,7 @@ import core.multiprocessedexecutor
 import os
 import stat
 import json
-
+import apps
 
 class ServerTestCase(unittest.TestCase):
     test_workflows_path = tests.config.test_workflows_path_with_generated
@@ -45,9 +44,7 @@ class ServerTestCase(unittest.TestCase):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
-
-        App.registry = {}
-        import_all_apps(path=tests.config.test_apps_path, reload=True)
+        apps.cache_apps(path=tests.config.test_apps_path)
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -72,6 +69,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             else:
                 shutil.rmtree(tests.config.test_data_path)
+        apps.clear_cache()
 
     def setUp(self):
         core.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
