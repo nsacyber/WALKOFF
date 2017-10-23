@@ -51,10 +51,6 @@ class App(Device_Base):
         if not any(device_.name == device.name for device_ in self.devices):
             self.devices.append(device)
 
-    def as_json(self):
-        return {"name": self.name,
-                "devices": [device.as_json() for device in self.devices]}
-
     def as_json(self, with_devices=False):
         """Gets the JSON representation of an App object.
 

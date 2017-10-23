@@ -35,3 +35,18 @@ actions:
       Success:
         schema:
           type: string
+devices:
+  SkeletonDeviceType:
+    description: a skeleton device type
+    fields:
+      - name: username
+        type: string
+        minLength: 5
+        maxLength: 20
+        required: true
+        placeholder: enter a username
+      - name: password
+        type: string
+        encrypted: true
+        minLength: 5
+        placeholder: enter a password

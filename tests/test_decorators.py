@@ -67,7 +67,7 @@ class TestEventDecorator(unittest.TestCase):
 
         self.assertTrue(getattr(TestClass.ev, 'action'))
 
-    def test_event_has_arg_names(self):
+    def test_event_has_arg_names_in_method(self):
         event1 = Event()
 
         class TestClass(object):
@@ -77,13 +77,29 @@ class TestEventDecorator(unittest.TestCase):
 
         self.assertListEqual(getattr(TestClass.ev, '__arg_names'), ['self', 'data', 'a'])
 
-    def test_event_raises_with_too_few_args(self):
+    def test_event_has_arg_names_global_method(self):
+        event1 = Event()
+
+        @event(event1)
+        def ev(data, a):
+            return data
+
+        self.assertListEqual(getattr(ev, '__arg_names'), ['data', 'a'])
+
+    def test_event_raises_with_too_few_args_in_method(self):
         event1 = Event()
         with self.assertRaises(InvalidApi):
             class TestClass(object):
                 @event(event1)
                 def ev(self):
                     return 1
+
+    def test_event_raises_with_too_few_args_global_method(self):
+        event1 = Event()
+        with self.assertRaises(InvalidApi):
+            @event(event1)
+            def ev():
+                return 1
 
     def test_event_execution(self):
         event1 = Event('Event1')

@@ -57,6 +57,7 @@ actions:
     returns:
       Success:
         description: successfully paused
+
 devices:
   Test Device Type:
     description: a test type
