@@ -1,6 +1,5 @@
 import json
 import logging
-import uuid
 from copy import deepcopy
 
 import zmq.green as zmq
@@ -247,6 +246,18 @@ class Workflow(ExecutionElement):
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.steps = backup_steps
             raise
+
+    def regenerate_uids(self):
+        start_step = deepcopy(self.steps.pop(self.start, None))
+        if start_step is not None:
+            start_step = deepcopy(start_step)
+            super(Workflow, self).regenerate_uids()
+            self.steps = {step.uid: step for step in self.steps.values()}
+            start_step.regenerate_uids()
+            self.start = start_step.uid
+            self.steps[self.start] = start_step
+        else:
+            super(Workflow, self).regenerate_uids()
 
     def set_execution_uid(self, execution_uid):
         self._execution_uid = execution_uid

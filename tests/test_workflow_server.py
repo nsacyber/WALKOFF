@@ -457,13 +457,13 @@ class TestWorkflowServer(ServerTestCase):
         original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
+        self.assertNotEqual(original_workflow_json['start'], copy_workflow_json['start'])
+        copy_workflow_json.pop('start', None)
+        original_workflow_json.pop('start', None)
         TestWorkflowServer.strip_uids(copy_workflow_json)
         TestWorkflowServer.strip_uids(original_workflow_json)
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
         self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
-        for step in workflow_copy.steps:
-            self.assertEqual(len(workflow_original.steps[step].next_steps),
-                             len(workflow_copy.steps[step].next_steps))
 
     def test_copy_workflow_invalid_name(self):
         data = {"workflow": "helloWorldWorkflow"}
@@ -497,15 +497,15 @@ class TestWorkflowServer(ServerTestCase):
         original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
+        self.assertNotEqual(original_workflow_json['start'], copy_workflow_json['start'])
+        copy_workflow_json.pop('start', None)
+        original_workflow_json.pop('start', None)
         TestWorkflowServer.strip_uids(copy_workflow_json)
         TestWorkflowServer.strip_uids(original_workflow_json)
 
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
 
         self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
-        for step in workflow_copy.steps:
-            self.assertEqual(len(workflow_original.steps[step].next_steps),
-                             len(workflow_copy.steps[step].next_steps))
 
     def test_copy_playbook(self):
         self.post_with_status_check('/api/playbooks/test/copy',
