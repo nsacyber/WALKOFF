@@ -135,14 +135,14 @@ class TestZMQCommuncation(unittest.TestCase):
         @WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            self.controller.resume_workflow(uid)
 
         @WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
 
         def pause_resume_thread():
-            self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            self.controller.pause_workflow(uid)
             return
 
         @WorkflowExecutionStart.connect

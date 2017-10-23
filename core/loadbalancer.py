@@ -119,25 +119,23 @@ class LoadBalancer:
         """
         self.pending_workflows.put(workflow_json)
 
-    def pause_workflow(self, workflow_execution_uid, workflow_name):
+    def pause_workflow(self, workflow_execution_uid):
         """Pauses a workflow currently executing.
 
         Args:
             workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
         """
-        logger.info('Pausing workflow {0}'.format(workflow_name))
+        logger.info('Pausing workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
 
-    def resume_workflow(self, workflow_execution_uid, workflow_name):
+    def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has previously been paused.
 
         Args:
             workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
         """
-        logger.info('Resuming workflow {0}'.format(workflow_name))
+        logger.info('Resuming workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'resume'])
 

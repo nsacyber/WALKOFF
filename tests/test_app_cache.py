@@ -242,11 +242,6 @@ class TestAppCacheCreation(TestCase):
                                                'global2': {'run': global2, 'bound': False}}}}
         self.assertDictEqual(self.cache._cache, expected)
 
-    def test_list_apps(self):
-        listed_apps = AppCache.list_apps('./tests/apps')
-        self.assertEqual(len(listed_apps), 2)
-        self.assertSetEqual(set(listed_apps), {'HelloWorld', 'DailyQuote'})
-
     def test_path_to_module_no_slashes(self):
         self.assertEqual(AppCache._path_to_module('apppath'), 'apppath')
 

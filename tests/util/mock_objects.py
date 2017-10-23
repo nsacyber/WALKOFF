@@ -74,17 +74,13 @@ class MockLoadBalancer(object):
 
             workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
 
-    def pause_workflow(self, workflow_execution_uid, workflow_name):
+    def pause_workflow(self, workflow_execution_uid):
         if workflow_execution_uid in self.workflow_comms:
             self.comm_queue.status = b"Pause"
 
-    def resume_workflow(self, workflow_execution_uid, workflow_name):
+    def resume_workflow(self, workflow_execution_uid):
         if workflow_execution_uid in self.workflow_comms:
             self.comm_queue.status = b"resume"
-
-    def resume_breakpoint_step(self, workflow_execution_uid, workflow_name):
-        if workflow_execution_uid in self.workflow_comms:
-            self.comm_queue.status = b"Resume breakpoint"
 
 
 class MockCommQueue(object):

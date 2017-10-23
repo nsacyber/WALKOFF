@@ -55,7 +55,7 @@ class JsonPlaybookLoader(object):
 
     @staticmethod
     def load_playbook(resource):
-        """Loads multiple workloads from a file.
+        """Loads a playbook from a file.
 
         Args:
             resource (str): Path to the workflow.
@@ -80,7 +80,7 @@ class JsonPlaybookLoader(object):
 
     @staticmethod
     def load_playbooks(resource_collection=None):
-        """Loads all workflows from a directory.
+        """Loads all playbooks from a directory.
 
         Args:
             resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration workflows_path.

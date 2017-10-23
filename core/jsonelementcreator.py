@@ -1,8 +1,21 @@
 class JsonElementCreator(object):
+    """
+    Creates an ExecutionElement from JSON
+    """
     playbook_class_ordering = None
 
     @classmethod
     def create(cls, json_in, element_class=None):
+        """
+        Creates an ExecutionElement from json
+
+        Args:
+            json_in (dict): The JSON to convert to an ExecutionElement
+            element_class (cls): The class of the ExecutionElement to convert
+
+        Returns:
+            (ExecutionElement) The constructed ExecutionElement
+        """
         from core.executionelements.playbook import Playbook
         cls._setup_ordering()
         if element_class is None:

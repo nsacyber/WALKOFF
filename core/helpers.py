@@ -260,10 +260,30 @@ def import_submodules(package, recursive=False):
 
 
 def format_db_path(db_type, path):
+    """
+    Formats the path to the database
+
+    Args:
+        db_type (str): Type of database being used
+        path (str): Path to the database
+
+    Returns:
+        (str): The path of the database formatted for SqlAlchemy
+    """
     return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
 
 
 def get_app_action_api(app, action):
+    """
+    Gets the api for a given app and action
+
+    Args:
+        app (str): Name of the app
+        action (str): Name of the action
+
+    Returns:
+        (tuple(str, dict)) The name of the function to execute and its parameters
+    """
     try:
         app_api = core.config.config.app_apis[app]
     except KeyError:

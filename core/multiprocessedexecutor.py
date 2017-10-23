@@ -165,35 +165,38 @@ class MultiprocessedExecutor(object):
         # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
         return uid
 
-    def pause_workflow(self, execution_uid, workflow):
+    def pause_workflow(self, execution_uid):
         """Pauses a workflow that is currently executing.
 
         Args:
             execution_uid (str): The execution uid of the workflow.
-            workflow (Workflow): The workflow to pause.
         """
-        if (workflow and execution_uid in self.workflow_status
+        if (execution_uid in self.workflow_status
                 and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
-            self.load_balancer.pause_workflow(execution_uid, workflow.name)
+            self.load_balancer.pause_workflow(execution_uid)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
-    def resume_workflow(self, workflow_execution_uid, workflow):
+    def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has been paused.
 
         Args:
             workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
                 pause_workflow(). This is needed to resume a workflow for security purposes.
-            workflow (Workflow): The workflow to resume.
 
         Returns:
             True if successful, false otherwise.
         """
-        if workflow:
-            if (workflow_execution_uid in self.workflow_status
-                    and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
-                self.load_balancer.resume_workflow(workflow_execution_uid, workflow.name)
-                self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
-                return True
-            else:
-                logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
-                return False
+        if (workflow_execution_uid in self.workflow_status
+                and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
+            self.load_balancer.resume_workflow(workflow_execution_uid)
+            self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
+            return True
+        else:
+            logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow_execution_uid))
+            return False
+
+    def get_workflow_status(self, workflow_execution_uid):
+        try:
+            return self.workflow_status[workflow_execution_uid]
+        except KeyError:
+            return 0
