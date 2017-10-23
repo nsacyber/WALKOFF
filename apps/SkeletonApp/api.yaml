@@ -8,6 +8,18 @@ info:
   license:
     name: Creative Commons
 actions:
+
+  global action:
+    run: test_global
+    description: Basic global function
+    parameters:
+      - name: data
+        required: true
+        type: string
+    returns:
+      Success:
+        schema:
+          type: string
   basic:
     run: test_function
     description: Basic function which does not take in paramaters

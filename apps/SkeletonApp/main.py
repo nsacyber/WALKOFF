@@ -5,6 +5,11 @@ from apps import App, action
 logger = logging.getLogger(__name__)
 
 
+@action
+def test_global_action(data):
+    return data
+
+
 class Main(App):
     """
        Skeleton example app to build other apps off of
