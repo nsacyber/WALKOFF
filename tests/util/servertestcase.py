@@ -6,7 +6,6 @@ import tests.config
 import server.flaskserver
 from core.helpers import import_all_flags, import_all_filters
 from tests.util.mock_objects import *
-from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
@@ -54,8 +53,6 @@ class ServerTestCase(unittest.TestCase):
         if cls.patch:
             core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-
-        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()

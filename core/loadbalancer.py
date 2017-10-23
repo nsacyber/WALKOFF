@@ -143,7 +143,7 @@ class LoadBalancer:
 
 
 class Worker:
-    def __init__(self, id_, worker_env=None):
+    def __init__(self, id_):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
@@ -187,10 +187,6 @@ class Worker:
         self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(RESULTS_ADDR)
 
-        if worker_env:
-            Worker.setup_worker_env = worker_env
-
-        self.setup_worker_env()
         self.execute_workflow_worker()
 
     def on_data_sent(self, sender, **kwargs):

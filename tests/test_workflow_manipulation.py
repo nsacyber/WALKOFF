@@ -16,7 +16,6 @@ from core.helpers import import_all_filters, import_all_flags
 from core.appinstance import AppInstance
 from tests import config
 from tests.util.mock_objects import *
-from tests.util.thread_control import *
 
 try:
     from importlib import reload
@@ -86,7 +85,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
