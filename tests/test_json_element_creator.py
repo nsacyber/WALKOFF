@@ -1,5 +1,6 @@
 from core.jsonelementcreator import JsonElementCreator
 from unittest import TestCase
+from collections import OrderedDict
 
 
 class Base(object):
@@ -29,12 +30,23 @@ class C(Base):
         self.d = d
 
 
+class D(Base):
+    def __init__(self, d):
+        Base.__init__(self)
+        self.d = d
+
+
 class TestJsonElementReader(TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.original_class_order = JsonElementCreator.playbook_class_ordering
-        JsonElementCreator.playbook_class_ordering = ((A, 'bs'), (B, 'cs'), (C, None))
+
+    def setUp(self):
+        JsonElementCreator.playbook_class_ordering = OrderedDict([(A, {'bs': B}), (B, {'cs': C}), (C, None)])
+
+    def tearDown(self):
+        JsonElementCreator.playbook_class_ordering = self.original_class_order
 
     @classmethod
     def tearDownClass(cls):
@@ -83,6 +95,20 @@ class TestJsonElementReader(TestCase):
                                       {'b': 'something3', 'invalid': [{'c': 1, 'd': 2}, {'c': 2, 'd': 3}]}]}
         with self.assertRaises(ValueError):
             A.create(json_in)
+
+    def test_multiple_in_class(self):
+        JsonElementCreator.playbook_class_ordering = OrderedDict([(A, {'bs': B}), (B, {'cs': C, 'b': D}), (C, None), (D, None)])
+        json_in = {'b': [{'d': 1}, {'d': 3}], 'cs': [{'c': 1, 'd': 2}, {'c': 2, 'd': 3}]}
+        b = B.create(json_in)
+        self.assertEqual(len(b.cs), 2)
+        self.assertEqual(b.cs[0].c, 1)
+        self.assertEqual(b.cs[0].d, 2)
+        self.assertEqual(b.cs[1].c, 2)
+        self.assertEqual(b.cs[1].d, 3)
+        self.assertEqual(len(b.b), 2)
+        self.assertEqual(b.b[0].d, 1)
+        self.assertEqual(b.b[1].d, 3)
+
 
     def test_invalid_class(self):
         class D(Base): pass
