@@ -17,7 +17,6 @@ from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.servertestcase import ServerTestCase
 
-logging.basicConfig()
 
 class TestWorkflowServer(ServerTestCase):
     def setUp(self):

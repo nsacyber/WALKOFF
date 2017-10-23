@@ -129,7 +129,8 @@ class AppCache(object):
 
     def _cache_module(self, module, app_name):
         for field, obj in inspect.getmembers(module):
-            if inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False):
+            if (inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False)
+                    and AppCache._get_qualified_class_name(obj) != 'apps.App'):
                 self._cache_app(obj, app_name)
             elif inspect.isfunction(obj) and hasattr(obj, 'action'):
                 self._cache_action(field, obj, app_name)
@@ -145,7 +146,9 @@ class AppCache(object):
                     AppCache._get_qualified_class_name(app_class)))
             self._clear_existing_bound_functions(app_name)
         self._cache[app_name]['main'] = app_class
-        app_actions = inspect.getmembers(app_class, (lambda field: inspect.ismethod(field) and hasattr(field, 'action')))
+        app_actions = inspect.getmembers(app_class,
+                                         (lambda field: (inspect.ismethod(field) or inspect.isfunction(field))
+                                                        and hasattr(field, 'action')))
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
         if app_actions:
@@ -169,9 +172,12 @@ class AppCache(object):
 
     def _clear_existing_bound_functions(self, app_name):
         if 'actions' in self._cache[app_name]:
-            for action_name, action_ in self._cache[app_name]['actions'].items():
-                if action_['bound']:
-                    self._cache[app_name]['actions'].pop(action_name)
+            self._cache[app_name]['actions'] = {
+                action_name: action for action_name, action in self._cache[app_name]['actions'].items()
+                if not action['bound']}
+            # for action_name, action_ in self._cache[app_name]['actions'].items():
+            #     if action_['bound']:
+            #         self._cache[app_name]['actions'].pop(action_name)
 
     @staticmethod
     def _get_qualified_class_name(obj):
