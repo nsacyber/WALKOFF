@@ -1,27 +1,12 @@
 {
     "name": "basicWorkflowTest",
-    "uid": "3b9a6ea4-e67c-46a4-9e63-c5407c72d761",
+    "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
     "workflows": [
         {
             "accumulated_risk": 0.0,
-            "name": "helloWorldWorkflow",
+            "name": "test",
             "start": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
             "steps": [
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "fourth step",
-                    "next_steps": [],
-                    "position": {
-                        "x": 210,
-                        "y": 210
-                    },
-                    "risk": 0,
-                    "uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
-                    "widgets": []
-                },
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
@@ -33,7 +18,7 @@
                             "conditions": [],
                             "name": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
                             "status": "Success",
-                            "uid": "d42ffdcc-b01f-11e7-abc4-cec278b6b50a"
+                            "uid": "3b61db33-dae7-4c2d-8847-3c8295824804"
                         }
                     ],
                     "position": {
@@ -41,7 +26,29 @@
                         "y": 130
                     },
                     "risk": 0,
-                    "uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
+                    "uid": "facaa3c3-0aac-4268-8569-9e269e566de1",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "fourth step",
+                    "next_steps": [
+                        {
+                            "conditions": [],
+                            "name": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
+                            "status": "Success",
+                            "uid": "ad629457-99d5-4e66-ba43-c01726f71fd6"
+                        }
+                    ],
+                    "position": {
+                        "x": 210,
+                        "y": 210
+                    },
+                    "risk": 0,
+                    "uid": "28c6d4a9-1f2b-4c2e-91e3-c953cc6d66ac",
                     "widgets": []
                 },
                 {
@@ -70,29 +77,7 @@
                         "y": 150
                     },
                     "risk": 0,
-                    "uid": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
-                    "widgets": []
-                },
-                {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "",
-                    "inputs": [],
-                    "name": "third step",
-                    "next_steps": [
-                        {
-                            "conditions": [],
-                            "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
-                            "status": "Success",
-                            "uid": "d43001b4-b01f-11e7-abc4-cec278b6b50a"
-                        }
-                    ],
-                    "position": {
-                        "x": 90,
-                        "y": 170
-                    },
-                    "risk": 0,
-                    "uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                    "uid": "d8511ddf-294f-4821-8e76-dac7f6009bf8",
                     "widgets": []
                 },
                 {
@@ -120,7 +105,7 @@
                             "conditions": [],
                             "name": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
                             "status": "Success",
-                            "uid": "d42ffb92-b01f-11e7-abc4-cec278b6b50a"
+                            "uid": "1a2c08ef-56c0-43db-9013-8c9d55d53de1"
                         }
                     ],
                     "position": {
@@ -128,11 +113,172 @@
                         "y": 90
                     },
                     "risk": 0,
-                    "uid": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
+                    "uid": "ac8c7a4f-83db-4e27-a5b6-ecf18de3937d",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "third step",
+                    "next_steps": [
+                        {
+                            "conditions": [],
+                            "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "4d263de5-8a91-402d-90e6-fa561806212d"
+                        }
+                    ],
+                    "position": {
+                        "x": 90,
+                        "y": 170
+                    },
+                    "risk": 0,
+                    "uid": "093fdb92-33bd-4bcc-9653-dfed6563d4a7",
                     "widgets": []
                 }
             ],
-            "uid": "d43004de-b01f-11e7-abc4-cec278b6b50a"
+            "uid": "2030ae36-633f-4499-a258-2913fa46d388"
+        },
+        {
+            "accumulated_risk": 0.0,
+            "name": "helloWorldWorkflow",
+            "start": "d42fedfa-b01f-11e7-abc4-cec278b6b50a",
+            "steps": [
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "second step",
+                    "next_steps": [
+                        {
+                            "conditions": [],
+                            "name": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "8dbd8c0f-8226-479e-ac8b-1b54e6772294"
+                        }
+                    ],
+                    "position": {
+                        "x": -30,
+                        "y": 130
+                    },
+                    "risk": 0,
+                    "uid": "580374f6-bd03-46e1-8262-49bb2c0faff1",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "fourth step",
+                    "next_steps": [
+                        {
+                            "conditions": [],
+                            "name": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
+                            "status": "Success",
+                            "uid": "9a745d77-54cd-4abf-bc72-21fea66e2b98"
+                        }
+                    ],
+                    "position": {
+                        "x": 210,
+                        "y": 210
+                    },
+                    "risk": 0,
+                    "uid": "b94fd6ff-88ad-4484-818e-004594bf3b20",
+                    "widgets": []
+                },
+                {
+                    "action": "helloWorld",
+                    "app": "HelloWorld",
+                    "device": "",
+                    "inputs": [],
+                    "name": "third step",
+                    "next_steps": [
+                        {
+                            "conditions": [],
+                            "name": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "ee13f5d7-b063-4071-a937-01fdf0067c4f"
+                        }
+                    ],
+                    "position": {
+                        "x": 90,
+                        "y": 170
+                    },
+                    "risk": 0,
+                    "uid": "d151e29b-6a7f-4da6-91c4-de4b555b8169",
+                    "widgets": []
+                },
+                {
+                    "action": "echo object",
+                    "app": "Utilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "data",
+                            "value": {
+                                "exe_name": "notavirus.py",
+                                "pcap_name": "test.pcap",
+                                "source_ip": "165.257.22.34",
+                                "source_latitude": -31.32,
+                                "source_longitude": 23.32,
+                                "target_ip": "10.200.255.212",
+                                "target_latitude": 37.618889,
+                                "target_longitude": -122.375
+                            }
+                        }
+                    ],
+                    "name": "first step",
+                    "next_steps": [
+                        {
+                            "conditions": [],
+                            "name": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
+                            "status": "Success",
+                            "uid": "1e9a3ec7-9b8a-4080-985e-9a435bb0fc1c"
+                        }
+                    ],
+                    "position": {
+                        "x": 230,
+                        "y": 90
+                    },
+                    "risk": 0,
+                    "uid": "a6f7a8dc-e626-4f10-894d-7d4c19d0e7cb",
+                    "widgets": []
+                },
+                {
+                    "action": "echo object",
+                    "app": "Utilities",
+                    "device": "",
+                    "inputs": [
+                        {
+                            "name": "data",
+                            "value": {
+                                "exe_name": "notavirus.py",
+                                "pcap_name": "test.pcap",
+                                "source_ip": "165.257.22.34",
+                                "source_latitude": -31.32,
+                                "source_longitude": 23.32,
+                                "target_ip": "10.200.255.212",
+                                "target_latitude": 37.618889,
+                                "target_longitude": -122.375
+                            }
+                        }
+                    ],
+                    "name": "first step",
+                    "next_steps": [],
+                    "position": {
+                        "x": 290,
+                        "y": 150
+                    },
+                    "risk": 0,
+                    "uid": "19096d0c-8ac6-4d96-b1d3-419dcb17b357",
+                    "widgets": []
+                }
+            ],
+            "uid": "4faf9d28-3631-44bd-838e-81501978714f"
         }
     ]
 }

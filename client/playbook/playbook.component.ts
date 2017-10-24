@@ -27,6 +27,7 @@ import { Transform } from '../models/playbook/transform';
 import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
 import { Argument } from '../models/playbook/argument';
+import { WorkflowResult } from '../models/playbook/workflowResult';
 
 @Component({
 	selector: 'playbook-component',
@@ -58,6 +59,7 @@ export class PlaybookComponent {
 	inputArgs: { [key: string]: ActionArgument } = {};
 	cyJsonData: string;
 	actionTree: any;
+	workflowResults: WorkflowResult[] = [];
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -119,8 +121,13 @@ export class PlaybookComponent {
 				});
 
 				observable.subscribe({
-					next: (workflowResult: Object) => {
-						// add to a table
+					next: (workflowResult: WorkflowResult) => {
+						let matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
+
+						if (workflowResult.type === "SUCCESS") matchingNode.addClass('good-highlighted');
+						else matchingNode.addClass('bad-highlighted');
+
+						this.workflowResults.push(workflowResult);
 					},
 					error: (err: Error) => {
 						// This function removes selected nodes and edges
@@ -589,7 +596,7 @@ export class PlaybookComponent {
 	}
 
 	// This function is called when the user drops a new node onto the graph
-	handleDropEvent(e: any, ui: any): void {
+	handleDropEvent(e: any): void {
 		if (this.cy === null) return;
 
 		let appName: string = e.dragData.appName;
@@ -606,14 +613,25 @@ export class PlaybookComponent {
 		this.insertNode(appName, action.name, dropPosition, true);
 	}
 
-	insertNode(app: string, action: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
+	handleDoubleClickEvent(appName: string, actionName: string): void {
+		if (this.cy === null) return;
+
+		let extent = this.cy.extent();
+
+		function avg(a: number, b: number) { return (a + b) / 2; }
+
+		let centerGraphPosition = { x: avg(extent.x1, extent.x2), y: avg(extent.y1, extent.y2) };
+		this.insertNode(appName, actionName, centerGraphPosition, false);
+	}
+
+	insertNode(appName: string, actionName: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
 		// Grab a new uid for both the ID of the node and the ID of the step in the workflow
 		// TODO: other aspects of the playbook editor use the uids generated in cytoscape
 		// Should we change this logic to do a similar thing?
 		let uid = UUID.UUID();
 
 		let inputs: Argument[] = [];
-		this._getAction(app, action).args.forEach((input) => {
+		this._getAction(appName, actionName).args.forEach((input) => {
 			// let defaultValue;
 			// if (input.type === "string")
 			// 	defaultValue = input.default || "";
@@ -625,17 +643,21 @@ export class PlaybookComponent {
 			inputs.push({
 				name: input.name,
 				value: input.default,
-				reference: null
+				reference: ""
 			});
 		});
 
 		let stepToBeAdded: Step;
-		
-		if (app && action) stepToBeAdded = <Step>{
+		let numExistingActions = 0;
+		this.loadedWorkflow.steps.forEach(s => s.action === actionName ? numExistingActions++ : null);
+		// Set our name to be something like "action 2" if "action" already exists
+		let stepName = numExistingActions ? `${actionName} ${numExistingActions + 1}` : actionName;
+
+		if (appName && actionName) stepToBeAdded = <Step>{
 			uid: uid,
-			name: action,
-			app: app,
-			action: action,
+			name: stepName,
+			app: appName,
+			action: actionName,
 			inputs: inputs
 		};
 
@@ -648,7 +670,7 @@ export class PlaybookComponent {
 			data: {
 				id: uid,
 				uid: uid,
-				label: action,
+				label: stepName,
 				// parameters: {
 				// 	action: action,
 				// 	app: app,
@@ -887,7 +909,7 @@ export class PlaybookComponent {
 			submitText: 'Duplicate Workflow',
 			// shouldShowPlaybook: true,
 			// shouldShowExistingPlaybooks: true,
-			// selectedPlaybook: playbook,
+			selectedPlaybook: playbook,
 			shouldShowWorkflow: true,
 			submit: () => {
 				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
@@ -968,11 +990,32 @@ export class PlaybookComponent {
 	// 	return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
 	// }
 
+	// TODO: maybe somehow recursively find steps that may occur before. Right now it just returns all of them.
 	getPreviousSteps() {
-		return <Step[]>[];
+		return this.loadedWorkflow.steps;
 	}
 
 	_getAction(appName: string, actionName: string): Action {
 		return this.apps.find(a => a.name === appName).actions.find(a => a.name === actionName);
+	}
+
+	/**
+	 * Gets the minimum value to check against for JSON Schema minimum / exclusiveMinimum parameters
+	 * @param field JSON Schema object
+	 */
+	getMin(field: any) {
+		if (field.minimum === undefined) return null;
+		if (field.exclusiveMinimum) return field.minimum + 1;
+		return field.minimum;
+	}
+
+	/**
+	 * Gets the maximum value to check against for JSON Schema maximum / exclusiveMaximum parameters
+	 * @param field JSON Schema Object
+	 */
+	getMax(field: any) {
+		if (field.maximum === undefined) return null;
+		if (field.exclusiveMaximum) return field.maximum - 1;
+		return field.maximum;
 	}
 }

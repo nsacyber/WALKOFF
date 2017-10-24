@@ -19,19 +19,19 @@
         <div class="btn-group" role="group">
             <button id="remove-button" type=button class="btn btn-default" data-toggle="tooltip" title="Delete Selected Nodes" [disabled]="!loadedWorkflow"
                 (click)="removeSelectedNodes()">
-                <span class="glyphicon glyphicon-trash"></span>
+                <span class="fa fa-trash-o"></span>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="undo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Undo" [disabled]="!loadedWorkflow || (ur && ur.isUndoStackEmpty())"
                 (click)="ur.undo()">
-                <span class="glyphicon glyphicon-repeat" style="transform: scale(-1, 1);"></span>
+                <span class="fa fa-undo"></span>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="redo-button" type=button class="btn btn-default" data-toggle="tooltip" title="Redo" [disabled]="!loadedWorkflow || (ur && ur.isRedoStackEmpty())"
                 (click)="ur.redo()">
-                <span class="glyphicon glyphicon-repeat"></span>
+                <span class="fa fa-repeat"></span>
             </button>
         </div>
         <div class="btn-group" role="group">
@@ -55,13 +55,13 @@
         <div class="btn-group" role="group">
             <button id="execute-button" type=button class="btn btn-default" data-toggle="tooltip" title="Execute Workflow" [disabled]="!loadedWorkflow"
                 (click)="executeWorkflow()">
-                <i class="fa fa-play-circle"></i>
+                <span class="fa fa-play-circle"></span>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="clear-execution-highlighting-button" type=button class="btn btn-default" data-toggle="tooltip" title="Clear Execution Results Highlighting"
                 [disabled]="!loadedWorkflow" (click)="clearExecutionHighlighting()">
-                <i class="fa fa-undo"></i>
+                <span class="fa fa-undo"></span>
             </button>
         </div>
         <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
@@ -97,9 +97,11 @@
                                     </div>
                                     <div id="collapse{{app.name}}" class="panel-collapse collapse">
                                         <div class="panel-body">
-                                            <div *ngFor="let action of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" [dragData]="{ appName: app.name, action: action }">
+                                            <div *ngFor="let action of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
+                                             [dragData]="{ appName: app.name, action: action }" (dblclick)="handleDoubleClickEvent(app.name, action.name)">
                                                 <div class="panel-body">
-                                                    <div>{{action.name}}</div>
+                                                    <span class="fa fa-bars pull-right"></span>
+                                                    <span>{{action.name}}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -157,19 +159,52 @@
                                 <!-- Inputs -->
                                 <h4>Inputs</h4>
                                 <div *ngFor="let input of selectedStep.inputs; let id = index" class="form-group">
+                                    <!-- Label for input with optional required icon -->
                                     <label for="{{input.name}}">
                                         Input {{id+1}}: {{input.name}} ({{inputArgs[input.name].type}})
                                         <span *ngIf="inputArgs[input.name].required" class="fa fa-asterisk required" title="This field is required."></span>
                                     </label>
+
+                                    <!-- Columns for allowing users to specify outputs of other steps as inputs for this one -->
                                     <div class="row">
-                                        <div class="col-xs-6">
+                                        <div class="col-xs-4">
                                             <select name="playbookSelect" class="form-control" [(ngModel)]="input.reference">
-                                                <option value="" selected="{{!input.reference ? 'selected' : ''}}">-- Set Static Value --</option>
+                                                <option value="">-- Set Static Value --</option>
                                                 <option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
                                             </select>
                                         </div>
-                                        <div class="col-xs-6">
-                                            <input type="text" class="form-control" [(ngModel)]="input.value" name="name" [required]="inputArgs[input.name].required" >
+                                        <div class="col-xs-8">
+                                            <input *ngIf="input.reference" type="text" class="form-control" [(ngModel)]="input.value" name="value"
+                                             placeholder="(Optional) Selector for object-based outputs">
+                                            <ng-container *ngIf="!input.reference">
+                                                <!-- <input type="text" class="form-control" [(ngModel)]="input.value" name="name" [required]="inputArgs[input.name].required" > -->
+
+                                                <!-- Normal string text entries -->
+                                                <input *ngIf="inputArgs[input.name].type === 'string' && !inputArgs[input.name].enum" class="form-control"
+                                                 name="{{input.name}}" [(ngModel)]="input.value"
+                                                 [attr.minlength]="inputArgs[input.name].minLength > 0 ? inputArgs[input.name].minLength : null"
+                                                 [attr.maxlength]="inputArgs[input.name].maxLength > 0 ? inputArgs[input.name].maxLength : null"
+                                                 [attr.pattern]="inputArgs[input.name].pattern ? inputArgs[input.name].pattern : null"
+                                                 [attr.required]="inputArgs[input.name].required"
+                                                 [attr.placeholder]="inputArgs[input.name].placeholder">
+
+                                                <!-- Enum types, make a select box -->
+                                                <select *ngIf="inputArgs[input.name].enum" class="form-control" name="{{input.name}}" [(ngModel)]="input.value" 
+                                                 [attr.required]="inputArgs[input.name].required">
+                                                    <option *ngIf="!inputArgs[input.name].required" value=""></option>
+                                                    <option *ngFor="let i of inputArgs[input.name].enum" [value]="i" [label]="i">{{i}}</option>
+                                                </select>
+
+                                                <!-- For numbers enter number info -->
+                                                <input *ngIf="inputArgs[input.name].type === 'number' || inputArgs[input.name].type === 'integer'" class="form-control"
+                                                 name="{{input.name}}" [(ngModel)]="input.value"
+                                                 type="number" [attr.min]="getMin(inputArgs[input.name])" [attr.max]="getMax(inputArgs[input.name])"
+                                                 [attr.step]="inputArgs[input.name].multipleOf > 0 ? inputArgs[input.name].multipleOf : null"
+                                                 [attr.required]="inputArgs[input.name].required" [attr.placeholder]="inputArgs[input.name].placeholder">
+
+                                                <!-- Checkbox for boolean values -->
+                                                <input *ngIf="inputArgs[input.name].type === 'boolean'" type="checkbox" class="form-control" name="{{input.name}}" [(ngModel)]="input.value">
+                                            </ng-container>
                                         </div>
                                     </div>
                                 </div>
@@ -200,12 +235,41 @@
         </div> -->
     <!-- </div> -->
 
-    <div class="row" id="executionResultsContainer">
-        <div class="col-xs-12">
-            <h4>Execution Results</h4>
-            <table id="executionResultsTable" class="table table-bordered table-hover"></table>
-        </div>
-    </div>
+    <h4>Execution Results</h4>
+    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]='workflowResults' [sortType]="'multi'"
+     [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
+        <!-- Column Templates -->
+        <ngx-datatable-column name="UID" [flexGrow]="1">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{row.step_uid}}
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Name" [flexGrow]="1">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{row.name}}
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Timestamp" [flexGrow]="1">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{row.timestamp}}
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Type" [flexGrow]="1">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{row.type}}
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Input" [sortable]="false" [flexGrow]="2">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{getFriendlyObject(row.input)}}
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{getFriendlyObject(row.result)}}
+            </ng-template>
+        </ngx-datatable-column>
+    </ngx-datatable>
 
     <div class="modal fade" id="playbookAndWorkflowActionModal" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
         aria-hidden="true">
@@ -256,15 +320,17 @@
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                     <a data-toggle="collapse" href="#collapse{{playbook.name}}">{{playbook.name}}</a>
-                                    <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
-                                        <span class="fa fa-font"></span>
-                                    </button>
-                                    <button (click)="duplicatePlaybookModal(playbook.name)" class="btn btn-primary" title="Duplicate Playbook">
-                                        <span class="fa fa-copy"></span>
-                                    </button>
-                                    <button (click)="deletePlaybook(playbook.name)" class="btn btn-danger" title="Delete Playbook">
-                                        <span class="fa fa-times"></span>
-                                    </button>
+                                    <div class="pull-right">
+                                        <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
+                                            <span class="fa fa-i-cursor"></span>
+                                        </button>
+                                        <button (click)="duplicatePlaybookModal(playbook.name)" class="btn btn-primary" title="Duplicate Playbook">
+                                            <span class="fa fa-copy"></span>
+                                        </button>
+                                        <button (click)="deletePlaybook(playbook.name)" class="btn btn-danger" title="Delete Playbook">
+                                            <span class="fa fa-times"></span>
+                                        </button>
+                                    </div>
                                 </h4>
                             </div>
                             <div id="collapse{{playbook.name}}" class="panel-collapse collapse in">
@@ -272,15 +338,17 @@
                                     <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
                                         <div class="panel-body">
                                             <a (click)="loadWorkflow(playbook.name, workflow.name)">{{workflow.name}}</a>
-                                            <button (click)="renameWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Rename Workflow">
-                                                <span class="fa fa-font"></span>
-                                            </button>
-                                            <button (click)="duplicateWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Duplicate Workflow">
-                                                <span class="fa fa-copy"></span>
-                                            </button>
-                                            <button (click)="deleteWorkflow(playbook.name, workflow.name)" class="btn btn-danger" title="Delete Workflow">
-                                                <span class="fa fa-times"></span>
-                                            </button>
+                                            <div class="pull-right">
+                                                <button (click)="renameWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Rename Workflow">
+                                                    <span class="fa fa-i-cursor"></span>
+                                                </button>
+                                                <button (click)="duplicateWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Duplicate Workflow">
+                                                    <span class="fa fa-copy"></span>
+                                                </button>
+                                                <button (click)="deleteWorkflow(playbook.name, workflow.name)" class="btn btn-danger" title="Delete Workflow">
+                                                    <span class="fa fa-times"></span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

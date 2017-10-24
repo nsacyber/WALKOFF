@@ -144,12 +144,20 @@
 	display: none;
 }
 
-/*Ensures context menus and jquery ui dialogs appear above the bootstrap modal*/
-ul.vakata-context,
-.ui-dialog {
-	z-index: 1051;
+.playbookMain #parameters input[type=checkbox].form-control {
+	width: 34px;
+	margin: 0 5px;
 }
 
-#workflowsModal .workflowPanel {
+.playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+	white-space: initial;
+}
+
+#workflowsModal .workflowPanel a {
 	cursor: pointer;
+}
+
+
+#workflowsModal .panel-heading h4 {
+	min-height: 30px;
 }
