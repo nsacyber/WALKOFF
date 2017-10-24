@@ -45,4 +45,4 @@ class Main(App):
            Basic function that calls an instance variable.  In this case, a device name. 
         """
         # password = self.get_device().get_encrypted_field('password'); do not store this variable in cache
-        return self.get_device().get_plaintext_fields()['username']
+        return self.device_fields['username']

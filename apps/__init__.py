@@ -13,18 +13,20 @@ class App(object):
     _is_walkoff_app = True
 
     def __init__(self, app, device):
-        self.app = app
-        self.device = device
+        from server.appdevice import get_app
+        self.app = get_app(app)
+        self.device = self.app.get_device(device) if self.app is not None else None
+        if self.device is not None:
+            self.device_fields = self.device.get_plaintext_fields()
+            self.device_type = self.device.type
+        else:
+            self.device_fields = {}
+            self.device_type = None
+        self.device_id = device
 
     def get_all_devices(self):
         """ Gets all the devices associated with this app """
-        from server.appdevice import App as _App
-        return _App.get_all_devices_for_app(self.app)
-
-    def get_device(self):
-        """ Gets the device associated with this app """
-        from server.appdevice import App as _App
-        return _App.get_device(self.app, self.device)
+        return list(self.app.devices) if self.app is not None else []
 
     def shutdown(self):
         """ When implemented, this method performs shutdown procedures for the app """
