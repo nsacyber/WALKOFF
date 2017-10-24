@@ -166,15 +166,16 @@ class AppCache(object):
             package = import_module(package)
         if package != sys.modules[__name__]:
             for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-                full_name = '{0}.{1}'.format(package.__name__, name)
-                try:
-                    module = import_module(full_name)
-                except ImportError as e:
-                    _logger.error('Cannot import {0}. Reason: {1}. Skipping.'.format(full_name, format_exception_message(e)))
-                else:
-                    self._cache_module(module, app_name)
-                    if recursive and is_package:
-                        self._import_and_cache_submodules(full_name, app_name, recursive=True)
+                if name != 'setup':
+                    full_name = '{0}.{1}'.format(package.__name__, name)
+                    try:
+                        module = import_module(full_name)
+                    except ImportError as e:
+                        _logger.error('Cannot import {0}. Reason: {1}. Skipping.'.format(full_name, format_exception_message(e)))
+                    else:
+                        self._cache_module(module, app_name)
+                        if recursive and is_package:
+                            self._import_and_cache_submodules(full_name, app_name, recursive=True)
 
     def _cache_module(self, module, app_name):
         """
