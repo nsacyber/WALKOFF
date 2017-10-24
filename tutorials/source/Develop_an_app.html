@@ -2,9 +2,13 @@
   <div class="w3-content">
     <div class="w3-twothird">
       <h1>Develop an app</h1>
+        <p>There are two ways to add actions to an app -- either though global functions or through a class with
+        methods. We'll start with making some global functions.</p>
         <h4><b>1. Create a Python package in the apps directory with the name of the app you want to create.</b></h4>
         <p>In this example we will be recreating the some of the functions of the HelloWorld App in the apps directory,
-            so we'll call our package HelloWorld. The <code>apps</code> directory should look like this:</p>
+            but we'll create them as global actions. We'll call our package HelloWorld. Inside this package we will
+            create a file called <code>actions.py</code> which will contain our actions. The <code>apps</code> directory
+            should look like this:</p>
         <pre><code class="console">
 WALKOFF
 |-- apps
@@ -13,88 +17,54 @@ WALKOFF
     |-- __init__.py
   |-- [Other apps]
         </code></pre>
-        <p>The <code>__init__.py</code> can just be an empty file</p>
-
-        <h4><b>2. Create a basic Main class inside of <code>main.py</code></b></h4>
-        <p>Inside of the HelloWorld package, we need to create a <code>main.py</code> module. Inside of this module,
-        we will define a class called <code>Main</code> which will extend the <code>App</code> class from the
-            <code>apps.__init__</code> module. This class is the primary interface to the WALKOFF orchestrator.
-        There are only two requirements for this class: </p>
-        <ol>
-            <li>The <code>__init__</code> function must take a name and a device as parameters</li>
-            <li>A method named shutdown must be implemented</li>
-        </ol>
-        <p>The first requirement is needed to initialize the App's base class. If we expect any cleanup would be necessary
-            to terminate a session with the app, we need to override a method called "shutdown". In our example,
-            we won't need any so the only code we'll put in that function will be the keyword <code>pass</code></p>
-
-        <pre><code class="python">
-from apps import App
-
-class Main(App):
-    def __init__(self, name, device):
-        App.__init__(self, name, device)
-        </code></pre>
-
-        <h4><b>3. Write some methods</b></h4>
-        <p>Each method you write in this class can be turned into an action.  We are going to start with the standard
-            "Hello World" action,  an action which takes an argument called "number" and increments it by one, an
-            action which returns a specific letter of a string at a given index, and an action which prints a message to
-            the console.
-            </p>
+        <p>The <code>__init__.py</code> file can be empty.</p>
+        <h4><b>2. Write some functions</b></h4>
+        <p>Each function you write in any module in this app can be turned into an action.  We are going to start with
+            the standard "Hello World" action,  an action which takes an argument called "number" and increments it by
+            one, an action which returns a specific letter of a string at a given index, and an action which prints a
+            message to the console.</p>
             <pre><code class="python">
-from apps import App
+def hello_world(self):
+    return self.introMessage
 
-class Main(App):
-    def __init__(self, name, device):
-        App.__init__(self, name, device)
+def returnPlusOne(self, number):
+    return number + 1
 
-    def hello_world(self):
-        return self.introMessage
+def get_letter(self, string_in, index):
+    return string_in[index]
 
-    def returnPlusOne(self, number):
-        return number + 1
-
-    def get_letter(self, string_in, index):
-        return string_in[index]
-
-    def print_message(self, message):
-        print(message)
-        return 'success'
+def print_message(self, message):
+    print(message)
+    return 'success'
 
             </code></pre>
-        <h4><b>4. Convert the methods to actions</b></h4>
-        <p>To mark a method in your class as an action, you decorate the method with the <code>action</code> decorator
-            from the apps package. Also note you cannot use <code>@staticmethod</code> or <code>@classmethod</code>
-            decorators in combination with the <code>@action</code> decorator, so your actions must be ordinary methods</p>
+        <h4><b>3. Convert the methods to actions</b></h4>
+        <p>To mark a function as an action, you decorate the method with the <code>action</code> decorator
+            from the <code>apps</code> package.</p>
             <pre><code class="python">
-from apps import App, action
+from apps import action
 
-class Main(App):
-    def __init__(self, name, device):
-        App.__init__(self, name, device)
+@action
+def hello_world(self):
+    return self.introMessage
 
-    @action
-    def hello_world(self):
-        return self.introMessage
+@action
+def returnPlusOne(self, number):
+    return number + 1
 
-    @action
-    def returnPlusOne(self, number):
-        return number + 1
+@action
+def get_letter(self, string_in, index):
+    return string_in[index]
 
-    @action
-    def get_letter(self, string_in, index):
-        return string_in[index]
-
-    @action
-    def print_message(self, message):
-        print(message)
-        return 'success'
+@action
+def print_message(self, message):
+    print(message)
+    return 'success'
 
             </code></pre>
-        <h4><b>5. Create the <code>api.yaml</code> YAML metadata file to convert the methods to actions</b></h4>
-        <p>For WALKOFF to recognize a method as an action, it must have an entry in the apps's api.yaml file,
-            which is located in the app directory. The minimum required entry of the <code>api.yaml</code>
+        <h4><b>4. Create the <code>api.yaml</code> YAML metadata file to convert the methods to actions</b></h4>
+        <p>For WALKOFF to recognize a function as an action, it must have an entry in the apps's api.yaml file,
+            which must located in the app directory. The minimum required entry of the <code>api.yaml</code>
             is as follows:</p>
         <pre><code class="yaml">
 walkoff: '0.1'
@@ -103,7 +73,7 @@ info:
   version: 1.0.0
 actions:
   hello world:
-    run: hello_world
+    run: actions.hello_world
     returns:
       Success:
         schema:
@@ -112,7 +82,7 @@ actions:
             message:
               type: string
   plus one:
-    run: returnPlusOne
+    run: actions.returnPlusOne
     parameters:
       - name: number
         type: number
@@ -122,7 +92,7 @@ actions:
         schema:
           type: number
   get letter:
-    run: get_letter
+    run: actions.get_letter
     parameters:
       - name: string_in
         type: string
@@ -135,7 +105,7 @@ actions:
         schema:
           type: string
   print message:
-    run: print_message
+    run: actions.print_message
     parameters:
       - name: message
         type: string
@@ -150,6 +120,9 @@ actions:
             <li>The top-level name of the action does not necessarily match the "run" field of the action. This name
                 will be displayed on web interface, so it can and should be human-readable. The "run" must be the same
                 name as the method which describes the action.</li>
+            <li>Each "run" field is prefixed with "actions." which reflects the module containing the actions. If we had
+                other actions in a different module we would prefix the "run" field with that module's name. The "run"
+                field omits the "apps.HelloWorld" portion of the full path to the action.</li>
             <li>The name of the parameter must match the name of the argument in the action.</li>
             <li>When your action is executed, inputs of different types will be cast into the appropriate types if
                 possible, so there should be no reason to cast your arguments into the correct types in the action</li>
@@ -178,7 +151,7 @@ info:
     name: Creative Commons
 actions:
   hello world:
-    run: hello_world
+    run: actions.hello_world
     description: Says hello
     returns:
       Success:
@@ -191,7 +164,7 @@ actions:
               type: string
               enum: [Hello World]
   plus one:
-    run: returnPlusOne
+    run: actions.returnPlusOne
     description: Adds one to a number
     parameters:
       - name: number
@@ -205,7 +178,7 @@ actions:
         schema:
           type: number
   get letter:
-    run: get_letter
+    run: actions.get_letter
     description: Gets a letter at a specified index from a string
     parameters:
       - name: string_in
@@ -225,7 +198,7 @@ actions:
           type: string
           example: s
   print message:
-    run: print_message
+    run: actions.print_message
     description: Prints a message to teh screen
     parameters:
       - name: message
@@ -239,23 +212,11 @@ actions:
           type: string
           enum: [success]
         </code></pre>
-        <p>If you are concerned about whether or not your app API is correct, you can do a quick scan by running the
-            <code>validateappfunctions.py</code> script included at the root of the WALKOFF repository.</p>
-            <pre><code class="console">
-python validateappfunctions.py --apps HelloWorld
-            </code></pre>
-        <p>You can see more options using </p>
-        <pre><code class="console">
-python validateappfunctions.py --help
-        </code></pre>
-        <p>Note that this script only validates some aspects of the app API, and does not guarantee correctness. It is
-                possible that you may have some runtime or other errors in your app API.</p>
         <h4><b>Congratulations! You now have made your first WALKOFF app.</b></h4>
-        <p>Go have a look in the webapp and see the name of your app included in the "Installed Apps" portion of the
-            dashboard and see the actions you defined included in the workflow editor. Next you'll learn how to manage
-            your app's dependencies. </p>
+        <p>Go have a look in the webapp and see the name of your app included in the Workflow Editor and see the actions
+            you defined included in the workflow editor. Next you'll learn how to use classes for your apps.</p>
         <div align="center" style="border:1px solid blue">
-            <h5><a href="Manage_app_dependencies.html">Next >></a></h5>
+            <h5><a href="Develop_an_app_with_class.html">Next >></a></h5>
         </div>
         <h4><b>More</b></h4>
         <h5><a href="Event_driven_app_actions.html">Event-driven app actions</a></h5>

@@ -1,0 +1,304 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Develop an app with a class</h1>
+        <p>Classes are useful for managing state in your apps. You can use fields to keep track of the state of an app
+            as different actions are taken. They can also be used with devices to pass configurations to an app. We are
+            going to develop an app to send a basic text email using Python's <code>email</code> and
+            <code>smtplib</code> modules and another app which communicates with some RESTful API over HTTP using
+            Python's. <code>requests</code> module.</p>
+        <h4><b>1. Create the app structure</b></h4>
+        <p>We'll create a package named EmailSender inside of the <code>apps</code> module just as we did for the
+            HelloWorld app.The <code>apps</code> directory should look like this:</p>
+        <pre><code class="console">
+WALKOFF
+|-- apps
+  |-- __init__.py
+  |-- EmailSender
+    |-- __init__.py
+  |-- [Other apps]
+        </code></pre></p>
+        <h4><b>2. Create an EmailSender class inside of an <code>app.py module</code></b></h4>
+        <p>Inside of the EmailSender package, we'll create an <code>app.py</code> module. Inside of this module,
+            we will define a class called <code>EmailSender</code> which will extend the <code>App</code> class from the
+            <code>apps.__init__</code> module. <b>Each app can have only one class which ex.tends App.</b> If there is
+                more than one class which extends App, one will be overwritten by the other.
+            The are only other requirement for this class is that The <code>__init__</code> method must take a name and
+                a device name as parameters.</p>
+        <pre><code class="python">
+from apps import App
+
+class EmailSender(App):
+    def __init__(self, name, device):
+        App.__init__(self, name, device)
+
+        </code></pre>
+        <h4><b>2. Create our device</b></h4>
+        <p>We'll be using a device to pass in our configuration parameters, but we need to tell WALKOFF which fields are
+        needed for this app. For this app, we'll need to know the IP address and port of the email server we're
+            connecting to as well as a username and password for authentication. Furthermore, we want to make sure that
+            our password is stored encrypted in our device database. We specify all this in our api.yaml file</p>
+        <pre><code class="yaml">
+walkoff: '0.1'
+info:
+  title: EmailSender
+  version: 1.0.0
+devices:
+  SMTP:
+    description: SMTP server configuration
+    fields:
+      - name: ip
+        type: string
+        required: true
+      - name: port
+        type: integer
+        minimum: 1
+        maximum: 65535
+        required: true
+      - name: username
+        type: string
+        required: true
+      - name: password
+        type: string
+        required: true
+        encrypted: true
+        </code></pre>
+        <p>Here we call our device type "SMTP" because we are using an SMTP server. You can define multiple device types
+        for an app which can have different configuration sets. You can also determine which device type this app was
+            passed using teh <code>App</code> base class's <code>device_type</code> field.</p>
+        <h4><b>3. Initialize some fields</b></h4>
+        <p>We'll use our device's IP address and port to initialize our SMTP client.</p>
+        <pre><code class="python">
+from apps import App, action
+import smtplib
+
+
+class EmailSender(App):
+    def __init__(self, name=None, device=None):
+        App.__init__(self, name, device)
+        self.server = smtplib.SMTP('{0}:{1}'.format(self.device_fields['ip'], self.device_fields['port']))
+
+        </code></pre>
+        <p>The <code>device_fields</code> field is contained in the App base class and is populated on initialization.
+            It contains all of the unencrypted fields specified in your device.</p>
+        <h4><b>4. Write some methods</b></h4>
+        <p>Each method you write in this class can be turned into an action in the same way that global actions can be
+            converted. We'll make two actions -- a <code>connect</code> action and a <code>send_email</code> action. </p>
+            <pre><code class="python">
+from apps import App, action
+import smtplib
+import email.utils
+from email.mime.text import MIMEText
+
+
+class EmailSender(App):
+    def __init__(self, name=None, device=None):
+        App.__init__(self, name, device)
+        self.server = smtplib.SMTP('{0}:{1}'.format(self.device_fields['ip'], self.device_fields['port']))
+        self.is_connected = False
+
+    @action
+    def connect(self):
+        try:
+            self.server.set_debuglevel(False)
+            self.server.ehlo()
+            if self.server.has_extn('STARTTLS'):
+                self.server.starttls()
+                self.server.ehlo()  # re-identify ourselves over TLS connection
+            self.server.login(self.device_fields['username'], self.device.get_encrypted_field('password'))
+            self.is_connected = True
+            return 'Success', 'Connected'
+        except Exception as e:
+            return 'Failed', 'NotConnected'
+
+    @action
+    def send_email(self, sender, receivers, subject, message, html, sender_name):
+        if not self.is_connected:
+            return 'Failure', 'NotConnected'
+        message_format = 'html' if html else 'plain'
+        msg = MIMEText(message, message_format)
+        msg.set_unixfrom('author')
+        msg['To'] = email.utils.formataddr(('Recipient', receivers))
+        msg['From'] = email.utils.formataddr((sender_name, sender))
+        msg['Subject'] = subject
+        self.server.sendmail(sender, receivers, msg.as_string())
+        return 'success'
+
+    def shutdown(self):
+        self.server.quit()
+
+            </code></pre>
+        <p>You might notice a few of things about these actions. First is that all but one of the return statements
+            return a tuple. The first element of the tuple is the actual return value, and the second element is the
+            returned status code. Status codes allow easier control of your workflow. You can read more about them
+        <a href="Actions_with_multiple_return_codes.html">here</a>.</p>
+        <p>You might also notice that to get the password, we had to call
+            <code>self.device.get_encrypted_field('password')</code>. This is to minimize the time that encrypted fields
+            are stored unencrypted on the stack, and it is advised that you not keep these values unencrypted as fields
+            in your app. This does come with a performance penalty from both IO operations and decrypting the field.</p>
+        <p>We also overrode the <code>shutdown</code> method from the base class. This is called to cleanup the resources
+            when a workflow is finished executing</p>
+        <p>Finally, on a more technical note, you cannot use <code>@staticmethod</code> or <code>@classmethod</code>
+            decorators in combination with the <code>@action</code> decorator, so your actions must be ordinary methods.</p>
+
+        <h4><b>5. Register your actions in the api.yaml</b></h4>
+        <p>As with all actions, your class's actions need to be registered in the api. Our final api.yaml file will
+            look like this: </p>
+        <pre><code class="yaml">
+walkoff: '0.1'
+info:
+  title: EmailSender
+  version: 1.0.0
+actions:
+  connect:
+    run: app.EmailSender.connect
+    description: Connects to the SMTP server
+    returns:
+      Connected:
+        description: Connected successfully
+        schema:
+          type: string
+          enum: [Success]
+      NotConnected:
+        description: Could not connect
+        schema:
+          type: string
+          enum: [Failure]
+  send email:
+    run: app.EmailSender.send_email
+    description: Sends an email
+    parameters:
+      - name: sender
+        description: The sender's email address
+        required: true
+        type: string
+      - name: receivers
+        description: The receivers' email addresses
+        required: true
+        type: array
+        items:
+          type: string
+      - name: subject
+        description: The email's subject
+        required: true
+        type: string
+      - name: message
+        description: The email's message
+        required: true
+        type: string
+      - name: html
+        description: 'Is the message in HTML?'
+        type: boolean
+        default: false
+      - name: sender_name
+        description: Displayed name of the sender
+        type: string
+        default: WALKOFF
+    returns:
+      Success:
+        description: status message
+        schema:
+          type: string
+          enum: [success]
+      NotConnected:
+        description: Could not send. Not connected.
+        schema:
+          type: string
+          enum: [Failure]
+devices:
+  SMTP:
+    description: SMTP server configuration
+    fields:
+      - name: ip
+        type: string
+        required: true
+      - name: port
+        type: integer
+        minimum: 1
+        maximum: 65535
+        required: true
+      - name: username
+        type: string
+        required: true
+      - name: password
+        type: string
+        required: true
+        encrypted: true
+        </code></pre>
+        <h3><b>Another example using a RESTful service</b></h3>
+        <p>As another example, let's make an app which connects to a RESTful service over HTTP. Let's call the service
+            WidgetMakerPro, which makes professional widgets for all your widget needs. It'll be at the address
+            "http://www.widgetpro.com" and will have serer endpoints to create, read, update, and delete widgets.
+            Each widget has three fields: "name", "type", and "value". Let's also assume that they're using something like
+            OAuth or JWT authentication which is grabbed from a "/api/token" endpoint and passed with each request in the
+            header. Our app might look something like this:</p>
+        <pre><code class="python">
+from apps import App, action
+import requests
+
+
+class WidgetPro(App):
+    def __init__(self, name=None, device=None):
+        App.__init__(self, name, device)
+        self.address = 'http://www.widgetmakerpro.com'
+
+    def make_header(self):
+        return {'Authorization': 'Bearer {}'.format(self.device.get_encrypted_field('key'))}
+
+    @action
+    def get_all_widgets(self):
+        response = requests.get('{}/api/widgets'.format(self.address), headers=self.make_header())
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.json(), 'Failed'
+
+    @action
+    def get_widget(self, widget_id):
+        response = requests.get('{0}/api/widgets/{1}'.format(self.address, widget_id), headers=self.make_header())
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.json(), 'Failed'
+
+    @action
+    def make_widget(self, widget):
+        response = requests.put('{0}/api/widgets'.format(self.address, widget_id),
+                                headers=self.make_header(), json=widget)
+        if response.status_code == 201:
+            return response.json()
+        else:
+            return response.json(), 'Failed'
+
+    @action
+    def update_widget(self, widget):
+        response = requests.post('{0}/api/widgets'.format(self.address, widget_id),
+                                 headers=self.make_header(), json=widget)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.json(), 'Failed'
+
+    @action
+    def delete_widget(self, widget_id):
+        response = requests.delete('{0}/api/widgets/{1}'.format(self.address, widget_id), headers=self.make_header())
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.json(), 'Failed'
+        </code></pre>
+        <p>And our api.yaml might look something like this:</p>
+        <div align="center" style="border:1px solid blue">
+            <h5><a href="Manage_app_dependencies.html">Next >></a></h5>
+        </div>
+        <h4><b>More</b></h4>
+        <h5><a href="Event_driven_app_actions.html">Event-driven app actions</a></h5>
+        <h5><a href="Actions_with_multiple_return_codes.html">Action return codes</a></h5>
+        <h5><a href="App_api_schema.html">App Api Schemas</a></h5>
+    </div>
+
+   <div class="w3-third w3-center">
+      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
+  </div>
+</div>
