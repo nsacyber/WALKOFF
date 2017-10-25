@@ -37,6 +37,18 @@ class WorkflowResult(Case_Base):
             ret["completed_at"] = str(self.completed_at)
         return ret
 
+    def paused(self):
+        self.status = 'paused'
+
+    def resumed(self):
+        self.status = 'running'
+
+    def trigger_step_awaiting_data(self):
+        self.status = 'awaiting_data'
+
+    def trigger_step_executing(self):
+        self.status = 'running'
+
 
 class StepResult(Case_Base):
     """ORM for an Event in the events database

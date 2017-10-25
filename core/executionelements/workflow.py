@@ -5,7 +5,6 @@ import gevent
 from copy import deepcopy
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.executionelements.appstep import AppStep
 from core.executionelements.step import Step
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 from core.appinstance import AppInstance
@@ -226,7 +225,9 @@ class Workflow(ExecutionElement):
                Args:
                    json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
                """
-        backup_steps = deepcopy(self.steps)
+
+        # backup_steps = deepcopy(self.steps)
+        backup_steps = self.strip_async_result(with_deepcopy=True)
         self.steps = {}
         if 'name' in json_in:
             self.name = json_in['name']
@@ -240,7 +241,7 @@ class Workflow(ExecutionElement):
                 step = Step.create(step_json)
                 self.steps[step_json['name']] = step
         except (UnknownApp, UnknownAppAction, InvalidInput):
-            self.steps = backup_steps
+            self.reload_async_result(backup_steps, with_deepcopy=True)
             raise
 
     def set_execution_uid(self, execution_uid):
@@ -248,3 +249,29 @@ class Workflow(ExecutionElement):
 
     def get_execution_uid(self):
         return self._execution_uid
+
+    def strip_async_result(self, with_deepcopy=False):
+        steps = {}
+        for step in self.steps.values():
+            async_result = step._incoming_data
+            step._incoming_data = None
+            if with_deepcopy:
+                steps[step.uid] = (deepcopy(step), async_result)
+            else:
+                steps[step.uid] = async_result
+        return steps
+
+    def reload_async_result(self, steps, with_deepcopy=False):
+        if with_deepcopy:
+            for step in steps.values():
+                step_obj = step[0]
+                step_obj._incoming_data = step[1]
+                self.steps[step_obj.name] = step_obj
+        else:
+            for step in self.steps.values():
+                step._incoming_data = steps[step.uid]
+
+    def reset_async_result(self):
+        from gevent.event import AsyncResult
+        for step in self.steps.values():
+            step._incoming_data = AsyncResult()

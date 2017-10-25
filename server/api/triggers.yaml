@@ -1,3 +1,35 @@
+/api/triggers/send_data:
+  post:
+    summary: Send data to one or more workflows with trigger steps awaiting data before continuing execution
+    description: ''
+    operationId: server.endpoints.triggers.send_data_to_trigger
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [execution_uids, data_in]
+          properties:
+            execution_uids:
+              description: Execution UIDs of currently paused workflows
+              type: array
+              items:
+                type: string
+            data_in:
+              description: Data to send to workflows awaiting data
+              type: object
+            inputs:
+              description: Updated inputs to send to the trigger step
+              type: object
+    responses:
+      200:
+        description: Success
+
 /execution/listener/triggers:
   get:
     tags:

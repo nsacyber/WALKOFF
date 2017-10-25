@@ -354,7 +354,7 @@ class TestStep(unittest.TestCase):
         triggers = [Flag(action='regMatch', args={'regex': 'aaa'})]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        step.send_data_to_trigger('aaa')
+        step.send_data_to_trigger({"data_in": {"data": 'aaa'}})
 
         result = {'triggered': False}
 
@@ -370,7 +370,7 @@ class TestStep(unittest.TestCase):
         triggers = [Flag(action='regMatch', args={'regex': 'aaa'})]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        step.send_data_to_trigger('a')
+        step.send_data_to_trigger({"data_in": {"data": 'a'}})
 
         trigger_taken = {'triggered': 0}
         trigger_not_taken = {'triggered': 0}
@@ -380,7 +380,7 @@ class TestStep(unittest.TestCase):
             if kwargs['callback_name'] == "Trigger Step Taken":
                 trigger_taken['triggered'] += 1
             elif kwargs['callback_name'] == "Trigger Step Not Taken":
-                step.send_data_to_trigger('aaa')
+                step.send_data_to_trigger({"data_in": {"data": 'aaa'}})
                 trigger_not_taken['triggered'] += 1
 
         step.execute(instance.instance, {})

@@ -2,10 +2,8 @@ from core import loadbalancer
 from core.protobuf.build import data_pb2
 import json
 import threading
-import zmq.green as zmq
 from zmq.utils.strtypes import cast_unicode
 from core.case.callbacks import data_sent
-import time
 
 try:
     from Queue import Queue
@@ -27,17 +25,13 @@ def mock_initialize_threading(self, worker_env=None):
 
 
 def mock_shutdown_pool(self, num_workflows=0):
-    shutdown = 5
-    timed = 0
-    while timed < shutdown:
+    while True:
         if (num_workflows == 0) or (num_workflows != 0 and num_workflows == workflows_executed):
-            if self.manager_thread and self.manager_thread.is_alive():
-                self.load_balancer.pending_workflows.put("Exit")
-                self.manager_thread.join()
-            self.threading_is_initialized = False
             break
-        timed += 0.1
-        time.sleep(0.1)
+    if self.manager_thread and self.manager_thread.is_alive():
+        self.load_balancer.pending_workflows.put("Exit")
+        self.manager_thread.join()
+    self.threading_is_initialized = False
     data_sent.receivers = {}
     self.cleanup_threading()
     return
@@ -49,6 +43,7 @@ class MockLoadBalancer(object):
         # self.comm_queue = MockCommQueue()
         self.results_queue = MockReceiveQueue()
         self.workflow_comms = {}
+        self.exec_uid = ''
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
@@ -57,7 +52,10 @@ class MockLoadBalancer(object):
             data_sent.connect(handle_data_sent)
 
     def on_data_sent(self, sender, **kwargs):
-        packet_bytes = loadbalancer.convert_to_protobuf(sender, **kwargs)
+        if self.exec_uid or not hasattr(sender, "_execution_uid"):
+            packet_bytes = loadbalancer.convert_to_protobuf(sender, self.exec_uid, **kwargs)
+        else:
+            packet_bytes = loadbalancer.convert_to_protobuf(sender, sender.get_execution_uid(), **kwargs)
         message_outer = data_pb2.Message()
         message_outer.ParseFromString(packet_bytes)
 
@@ -89,7 +87,10 @@ class MockLoadBalancer(object):
             workflow, start_input = loadbalancer.recreate_workflow(workflow_json)
             self.workflow_comms[exec_uid] = workflow
 
+            self.exec_uid = exec_uid
+
             workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
+            self.exec_uid = ''
 
     def pause_workflow(self, workflow_execution_uid, workflow_name):
         if workflow_execution_uid in self.workflow_comms:
@@ -99,24 +100,13 @@ class MockLoadBalancer(object):
         if workflow_execution_uid in self.workflow_comms:
             self.workflow_comms[workflow_execution_uid].resume()
 
-
-# class MockCommQueue(object):
-#     def __init__(self):
-#         self.status = b"Running"
-#
-#     def recv(self, flags=None):
-#         if flags == zmq.NOBLOCK:
-#             if self.status == b"Pause":
-#                 return self.status
-#             else:
-#                 raise zmq.ZMQError
-#         else:
-#             while self.status != b"Resume":
-#                 pass
-#             return self.status
-#
-#     def send(self, data):
-#         pass
+    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+        data = dict()
+        data['data_in'] = data_in
+        data['inputs'] = inputs
+        for uid in workflow_uids:
+            if uid in self.workflow_comms:
+                self.workflow_comms[uid].send_data_to_step(data)
 
 
 class MockReceiveQueue(loadbalancer.Receiver):

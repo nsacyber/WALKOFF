@@ -4,6 +4,7 @@ from datetime import datetime
 from server import flaskserver as flask_server
 import core.case.subscription
 import core.case.database as case_database
+from core.case import callbacks
 import core.config.paths
 from threading import Event
 from core.case.callbacks import WorkflowShutdown
@@ -11,10 +12,12 @@ from server.returncodes import *
 import core.controller
 from gevent import monkey
 import socket
+import json
 try:
     from importlib import reload
 except ImportError:
     from imp import reload
+
 
 class TestWorkflowServer(ServerTestCase):
     patch = False
@@ -33,7 +36,10 @@ class TestWorkflowServer(ServerTestCase):
     def tearDown(self):
         flask_server.running_context.controller.shutdown_pool(0)
         core.controller.workflows = {}
-        case_database.case_db.tear_down()
+        core.case.subscription.clear_subscriptions()
+        for case in core.case.database.case_db.session.query(core.case.database.Case).all():
+            core.case.database.case_db.session.delete(case)
+        core.case.database.case_db.session.commit()
         reload(socket)
 
     def test_execute_workflow(self):
@@ -63,6 +69,42 @@ class TestWorkflowServer(ServerTestCase):
         step = steps[0]
         result = step['data']
         self.assertEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
+
+    def test_trigger_multiple_workflows(self):
+        flask_server.running_context.controller.initialize_threading()
+
+        ids = []
+
+        response=self.post_with_status_check(
+            '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+            headers=self.headers, status_code=SUCCESS_ASYNC)
+        ids.append(response['id'])
+
+        response = self.post_with_status_check(
+            '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+            headers=self.headers, status_code=SUCCESS_ASYNC)
+        ids.append(response['id'])
+
+        data = {"execution_uids": ids,
+                "data_in": {"data": "1"}}
+
+        result = {"result": 0,
+                  "num_trigs": 0}
+
+        @callbacks.TriggerStepAwaitingData.connect
+        def send_data(sender, **kwargs):
+            if result["num_trigs"] == 1:
+                self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
+                                            status_code=SUCCESS, content_type='application/json')
+            else:
+                result["num_trigs"] += 1
+
+        @callbacks.TriggerStepTaken.connect
+        def trigger_taken(sender, **kwargs):
+            result['result'] += 1
+
+        flask_server.running_context.controller.shutdown_pool(2)
+        self.assertEqual(result['result'], 2)
 
     def test_read_all_results(self):
         flask_server.running_context.controller.initialize_threading()

@@ -1,8 +1,5 @@
 from collections import OrderedDict
-from future.utils import iteritems
-import logging
-
-logging.basicConfig()
+from six import iteritems
 
 
 class JsonElementCreator(object):

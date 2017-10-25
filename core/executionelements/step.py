@@ -158,19 +158,32 @@ class Step(ExecutionElement):
         data_sent.send(self, callback_name="Step Started", object_type="Step")
 
         if self.triggers:
+            data_sent.send(self, callback_name="Trigger Step Awaiting Data", object_type="Step")
+            logger.debug('Trigger Step {} is awaiting data'.format(self.name))
+
             while True:
-                data_in = self._incoming_data.get()
+                try:
+                    data = self._incoming_data.get(timeout=1)
+                    self._incoming_data = AsyncResult()
+                except gevent.Timeout:
+                    gevent.sleep(0.1)
+                    continue
+                data_in = data['data_in']
+                inputs = data['inputs'] if 'inputs' in data else {}
 
                 if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
                     data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
                     logger.debug('Trigger is valid for input {0}'.format(data_in))
                     accumulator[self.name] = data_in
+
+                    if inputs:
+                        self.inputs.update(inputs)
                     break
                 else:
                     logger.debug('Trigger is not valid for input {0}'.format(data_in))
                     data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")
 
-                gevent.sleep(0)
+                gevent.sleep(0.1)
 
         try:
             args = dereference_step_routing(self.inputs, accumulator, 'In step {0}'.format(self.name))

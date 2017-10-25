@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='data.proto',
   package='core',
   syntax='proto2',
-  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x81\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12-\n\x0fworkflow_packet\x18\x02 \x01(\x0b\x32\x14.core.WorkflowPacket\x12\x36\n\x14workflow_packet_data\x18\x03 \x01(\x0b\x32\x18.core.WorkflowPacketData\x12%\n\x0bstep_packet\x18\x04 \x01(\x0b\x32\x10.core.StepPacket\x12.\n\x10step_packet_data\x18\x05 \x01(\x0b\x32\x14.core.StepPacketData\x12+\n\x0egeneral_packet\x18\x06 \x01(\x0b\x32\x13.core.GeneralPacket\"i\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x0e\n\nSTEPPACKET\x10\x03\x12\x12\n\x0eSTEPPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\"\xa0\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1a\x42\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\"y\n\x12WorkflowPacketData\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\x93\x02\n\nStepPacket\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1a\xc0\x01\n\nStepSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x0b\n\x03\x61pp\x18\x04 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x05 \x01(\t\x12\x35\n\x05input\x18\x06 \x03(\x0b\x32&.core.StepPacket.StepSender.InputEntry\x1a,\n\nInputEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"m\n\x0eStepPacketData\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\x84\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1a)\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0b\n\x03\x61pp\x18\x02 \x01(\t')
+  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x81\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12-\n\x0fworkflow_packet\x18\x02 \x01(\x0b\x32\x14.core.WorkflowPacket\x12\x36\n\x14workflow_packet_data\x18\x03 \x01(\x0b\x32\x18.core.WorkflowPacketData\x12%\n\x0bstep_packet\x18\x04 \x01(\x0b\x32\x10.core.StepPacket\x12.\n\x10step_packet_data\x18\x05 \x01(\x0b\x32\x14.core.StepPacketData\x12+\n\x0egeneral_packet\x18\x06 \x01(\x0b\x32\x13.core.GeneralPacket\"i\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x0e\n\nSTEPPACKET\x10\x03\x12\x12\n\x0eSTEPPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\"\xa9\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aK\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"y\n\x12WorkflowPacketData\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xb3\x02\n\nStepPacket\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1a\xe0\x01\n\nStepSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x0b\n\x03\x61pp\x18\x04 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x05 \x01(\t\x12\x35\n\x05input\x18\x06 \x03(\x0b\x32&.core.StepPacket.StepSender.InputEntry\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\x1a,\n\nInputEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"m\n\x0eStepPacketData\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xa4\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aI\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0b\n\x03\x61pp\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t')
 )
 
 
@@ -148,7 +148,7 @@ _WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='execution_uid', full_name='core.WorkflowPacket.WorkflowSender.execution_uid', index=2,
+      name='workflow_execution_uid', full_name='core.WorkflowPacket.WorkflowSender.workflow_execution_uid', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -167,7 +167,7 @@ _WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=503,
-  serialized_end=569,
+  serialized_end=578,
 )
 
 _WORKFLOWPACKET = _descriptor.Descriptor(
@@ -204,7 +204,7 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=409,
-  serialized_end=569,
+  serialized_end=578,
 )
 
 
@@ -248,8 +248,8 @@ _WORKFLOWPACKETDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=571,
-  serialized_end=692,
+  serialized_start=580,
+  serialized_end=701,
 )
 
 
@@ -286,8 +286,8 @@ _STEPPACKET_STEPSENDER_INPUTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=926,
-  serialized_end=970,
+  serialized_start=967,
+  serialized_end=1011,
 )
 
 _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
@@ -339,6 +339,13 @@ _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='workflow_execution_uid', full_name='core.StepPacket.StepSender.workflow_execution_uid', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -351,8 +358,8 @@ _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=778,
-  serialized_end=970,
+  serialized_start=787,
+  serialized_end=1011,
 )
 
 _STEPPACKET = _descriptor.Descriptor(
@@ -388,8 +395,8 @@ _STEPPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=695,
-  serialized_end=970,
+  serialized_start=704,
+  serialized_end=1011,
 )
 
 
@@ -433,8 +440,8 @@ _STEPPACKETDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=972,
-  serialized_end=1081,
+  serialized_start=1013,
+  serialized_end=1122,
 )
 
 
@@ -459,6 +466,13 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='workflow_execution_uid', full_name='core.GeneralPacket.GeneralSender.workflow_execution_uid', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -471,8 +485,8 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1175,
-  serialized_end=1216,
+  serialized_start=1216,
+  serialized_end=1289,
 )
 
 _GENERALPACKET = _descriptor.Descriptor(
@@ -508,8 +522,8 @@ _GENERALPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1084,
-  serialized_end=1216,
+  serialized_start=1125,
+  serialized_end=1289,
 )
 
 _MESSAGE.fields_by_name['type'].enum_type = _MESSAGE_TYPE

@@ -53,7 +53,7 @@ def recreate_workflow(workflow_json):
     return workflow, start_input
 
 
-def convert_to_protobuf(sender, **kwargs):
+def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
     obj_type = kwargs['object_type']
     packet = data_pb2.Message()
     if obj_type == 'Workflow':
@@ -66,7 +66,7 @@ def convert_to_protobuf(sender, **kwargs):
             wf_packet = packet.workflow_packet
         wf_packet.sender.name = sender.name
         wf_packet.sender.uid = sender.uid
-        wf_packet.sender.execution_uid = sender.get_execution_uid()
+        wf_packet.sender.workflow_execution_uid = workflow_execution_uid
         wf_packet.callback_name = kwargs['callback_name']
     elif obj_type == 'Step':
         if 'data' in kwargs:
@@ -78,6 +78,7 @@ def convert_to_protobuf(sender, **kwargs):
             step_packet = packet.step_packet
         step_packet.sender.name = sender.name
         step_packet.sender.uid = sender.uid
+        step_packet.sender.workflow_execution_uid = workflow_execution_uid
         step_packet.sender.execution_uid = sender.get_execution_uid()
         step_packet.sender.app = sender.app
         step_packet.sender.action = sender.action
@@ -90,6 +91,7 @@ def convert_to_protobuf(sender, **kwargs):
         packet.type = data_pb2.Message.GENERALPACKET
         general_packet = packet.general_packet
         general_packet.sender.uid = sender.uid
+        general_packet.sender.workflow_execution_uid = workflow_execution_uid
         if hasattr(sender, 'app'):
             general_packet.sender.app = sender.app
         general_packet.callback_name = kwargs['callback_name']
@@ -185,7 +187,10 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
-    def send_data_to_trigger(self, data, workflow_uids):
+    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+        data = dict()
+        data['data_in'] = data_in
+        data['inputs'] = inputs
         for uid in workflow_uids:
             if uid in self.workflow_comms:
                 self.comm_socket.send_multipart(
@@ -280,7 +285,8 @@ class Worker:
 
             self.workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
 
-            self.workflow.execute(execution_uid=self.workflow.get_execution_uid(), start=self.workflow.start, start_input=start_input)
+            self.workflow.execute(execution_uid=self.workflow.get_execution_uid(), start=self.workflow.start,
+                                  start_input=start_input)
             self.request_sock.send(b"Done")
 
     def receive_data(self):
@@ -300,13 +306,13 @@ class Worker:
                 self.workflow.resume()
                 self.comm_sock.send(b"Resumed")
             else:
-                self.workflow.send_data_to_step(json.loads(message))
+                self.workflow.send_data_to_step(json.loads(message.decode("utf-8")))
 
             gevent.sleep(0.1)
         return
 
     def on_data_sent(self, sender, **kwargs):
-        packet_bytes = convert_to_protobuf(sender, **kwargs)
+        packet_bytes = convert_to_protobuf(sender, self.workflow.get_execution_uid(), **kwargs)
         self.results_sock.send(packet_bytes)
 
 
@@ -333,7 +339,8 @@ class Receiver:
         'Filter Success': (callbacks.FilterSuccess, False),
         'Filter Error': (callbacks.FilterError, False),
         'Trigger Step Taken': (callbacks.TriggerStepTaken, False),
-        'Trigger Step Not Taken': (callbacks.TriggerStepNotTaken, False)
+        'Trigger Step Not Taken': (callbacks.TriggerStepNotTaken, False),
+        'Trigger Step Awaiting Data': (callbacks.TriggerStepAwaitingData, False)
     }
 
     def __init__(self, ctx):

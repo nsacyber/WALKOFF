@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 WORKFLOW_RUNNING = 1
 WORKFLOW_PAUSED = 2
 WORKFLOW_COMPLETED = 4
+WORKFLOW_AWAITING_DATA = 5
 
 NUM_PROCESSES = core.config.config.num_processes
 
@@ -29,6 +30,16 @@ class MultiprocessedExecutor(object):
         self.pids = []
         self.workflow_status = {}
         self.workflows_executed = 0
+
+        def handle_workflow_wait(sender, **kwargs):
+            self.__trigger_workflow_status_wait(sender, **kwargs)
+        self.handle_workflow_wait = handle_workflow_wait
+        callbacks.TriggerStepAwaitingData.connect(handle_workflow_wait)
+
+        def handle_workflow_continue(sender, **kwargs):
+            self.__trigger_workflow_status_continue(sender, **kwargs)
+        self.handle_workflow_continue = handle_workflow_continue
+        callbacks.TriggerStepTaken.connect(handle_workflow_continue)
 
         def handle_workflow_shutdown(sender, **kwargs):
             self.__remove_workflow_status(sender, **kwargs)
@@ -43,9 +54,15 @@ class MultiprocessedExecutor(object):
         self.receiver = None
         self.receiver_thread = None
 
+    def __trigger_workflow_status_wait(self, sender, **kwargs):
+        self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_AWAITING_DATA
+
+    def __trigger_workflow_status_continue(self, sender, **kwargs):
+        self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_RUNNING
+
     def __remove_workflow_status(self, sender, **kwargs):
-        if sender.execution_uid in self.workflow_status:
-            self.workflow_status.pop(sender.execution_uid, None)
+        if sender.workflow_execution_uid in self.workflow_status:
+            self.workflow_status.pop(sender.workflow_execution_uid, None)
 
     def initialize_threading(self, worker_env=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
@@ -198,3 +215,8 @@ class MultiprocessedExecutor(object):
                 logger.warning('Cannot resume workflow {0}. Invalid key'.format(workflow.name))
                 return False
 
+    def get_waiting_workflows(self):
+        return [uid for uid, status in self.workflow_status.items() if status == WORKFLOW_AWAITING_DATA]
+
+    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+        self.load_balancer.send_data_to_trigger(data_in, workflow_uids, inputs)

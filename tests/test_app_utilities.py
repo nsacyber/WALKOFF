@@ -6,6 +6,15 @@ import server.flaskserver
 
 class TestAppUtilities(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        app = device_db.session.query(App).filter(App.name == 'TestApp').first()
+        if app is not None:
+            device_db.session.delete(app)
+        for device in device_db.session.query(Device).all():
+            device_db.session.delete(device)
+        device_db.session.commit()
+
     def setUp(self):
         self.app_name = 'TestApp'
         self.app = server.flaskserver.app.test_client(self)
@@ -26,7 +35,7 @@ class TestAppUtilities(unittest.TestCase):
             device_db.session.delete(app)
         for device in device_db.session.query(Device).all():
             device_db.session.delete(device)
-            device_db.session.commit()
+        device_db.session.commit()
 
     def add_test_app(self, devices=None):
         devices = devices if devices is not None else []

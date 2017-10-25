@@ -107,7 +107,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         @WorkflowExecutionStart.connect
         def step_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
-            time.sleep(0)
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
         self.controller.shutdown_pool(1)

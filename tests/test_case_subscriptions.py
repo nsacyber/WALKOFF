@@ -6,6 +6,7 @@ import copy
 
 class TestCases(unittest.TestCase):
     def setUp(self):
+        subs.clear_subscriptions()
         self.cases1 = {'case1': {'uid1': ['e1', 'e2', 'e3'],
                                  'uid2': ['e1']},
                        'case2': {'uid1': ['e2', 'e3']}}
@@ -18,7 +19,9 @@ class TestCases(unittest.TestCase):
 
     def tearDown(self):
         subs.clear_subscriptions()
-        db.case_db.session.query(db.Case).delete()
+        # db.case_db.session.query(db.Case).delete()
+        for case in db.case_db.session.query(db.Case).all():
+            db.case_db.session.delete(case)
         db.case_db.session.commit()
 
     @staticmethod

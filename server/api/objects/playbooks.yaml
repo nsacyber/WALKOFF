@@ -120,6 +120,11 @@ Step:
       description: The app to which the action belongs
       type: string
       example: CyberAnalytics
+    triggers:
+      description: String representation of a list of Trigger objects
+      type: array
+      items:
+        $ref: '#/definitions/Flag'
     device:
       description: Name of the device to use
       type: string
@@ -135,7 +140,7 @@ Step:
       items:
         $ref: '#/definitions/Argument'
     output:
-      description: The output of teh step after it has been executed
+      description: The output of the step after it has been executed
       type: string
       example: result_from_step
     widgets:
@@ -188,6 +193,11 @@ DisplayStep:
       description: The app to which the action belongs
       type: string
       example: CyberAnalytics
+    triggers:
+      description: String representation of a list of Trigger objects
+      type: array
+      items:
+        $ref: '#/definitions/Flag'
     device:
       description: Name of the device to use
       type: string
