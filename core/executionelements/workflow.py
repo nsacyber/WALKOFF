@@ -151,7 +151,7 @@ class Workflow(ExecutionElement):
                         self.__swap_step_input(step, start_input)
                 self.__execute_step(step, instances[device_id])
                 total_steps.append(step)
-                self._accumulator[step.name] = step.get_output().result
+                self._accumulator[step.name] = step.get_output().result if step.get_output() is not None else None
         self.__shutdown(instances)
         yield
 
@@ -184,11 +184,11 @@ class Workflow(ExecutionElement):
                 "input": step.inputs}
         try:
             step.execute(instance=instance(), accumulator=self._accumulator)
-            data['result'] = step.get_output().as_json()
+            data['result'] = step.get_output().as_json() if step.get_output() is not None else None
             data['execution_uid'] = step.get_execution_uid()
             data_sent.send(self, callback_name="Step Execution Success", object_type="Workflow", data=json.dumps(data))
         except Exception as e:
-            data['result'] = step.get_output().as_json()
+            data['result'] = step.get_output().as_json() if step.get_output() is not None else None
             data['execution_uid'] = step.get_execution_uid()
             data_sent.send(self, callback_name="Step Execution Error", object_type="Workflow", data=json.dumps(data))
             if self._total_risk > 0:

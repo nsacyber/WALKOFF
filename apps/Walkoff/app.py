@@ -24,7 +24,7 @@ class NotConnected(Exception):
 DEFAULT_TIMEOUT = 2
 
 
-class Main(App):
+class Walkoff(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         self.is_connected = False

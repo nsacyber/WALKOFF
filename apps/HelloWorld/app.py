@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 # There is an associated Hello world test workflow which can be executed
-class Main(App):
+class HelloWorld(App):
     def __init__(self, name=None, device=None):
         # The parent app constructor looks for a device configuration and returns that as a dict called self.config
         App.__init__(self, name, device)

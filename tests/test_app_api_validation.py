@@ -157,7 +157,7 @@ class TestAppApiValidation(unittest.TestCase):
             validate_actions(self.basicapi['actions'], self.dereferencer, 'InvalidApp')
 
     def test_validate_action_params_no_duplicate_params_matches_signature(self):
-        self.basicapi['actions']['Add Three'] = {'run': 'addThree',
+        self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
                                                                 {'name': 'num2',
@@ -169,10 +169,10 @@ class TestAppApiValidation(unittest.TestCase):
                                self.dereferencer,
                                'HelloWorld',
                                'Add Three',
-                               get_app_action('HelloWorld', 'addThree'))
+                               get_app_action('HelloWorld', 'main.Main.addThree'))
 
     def test_validate_action_params_duplicate_param_name(self):
-        self.basicapi['actions']['Add Three'] = {'run': 'addThree',
+        self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
                                                                 {'name': 'num1',
@@ -185,10 +185,10 @@ class TestAppApiValidation(unittest.TestCase):
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'addThree'))
+                                   get_app_action('HelloWorld', 'main.Main.addThree'))
 
     def test_validate_action_params_too_many_params_in_api(self):
-        self.basicapi['actions']['Add Three'] = {'run': 'addThree',
+        self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
                                                                 {'name': 'num2',
@@ -203,10 +203,10 @@ class TestAppApiValidation(unittest.TestCase):
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'addThree'))
+                                   get_app_action('HelloWorld', 'main.Main.addThree'))
 
     def test_validate_action_params_too_few_params_in_api(self):
-        self.basicapi['actions']['Add Three'] = {'run': 'addThree',
+        self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
                                                                 {'name': 'num2',
@@ -217,10 +217,10 @@ class TestAppApiValidation(unittest.TestCase):
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'addThree'))
+                                   get_app_action('HelloWorld', 'main.Main.addThree'))
 
     def test_validate_action_params_different_params_in_api(self):
-        self.basicapi['actions']['Add Three'] = {'run': 'addThree',
+        self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
                                                  'parameters': [{'name': 'num1',
                                                                  'type': 'number'},
                                                                 {'name': 'num2',
@@ -233,10 +233,10 @@ class TestAppApiValidation(unittest.TestCase):
                                    self.dereferencer,
                                    'HelloWorld',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'addThree'))
+                                   get_app_action('HelloWorld', 'main.Main.addThree'))
 
     def test_validate_action_params_event(self):
-        self.basicapi['actions']['Sample Event'] = {'run': 'sample_event',
+        self.basicapi['actions']['Sample Event'] = {'run': 'main.Main.sample_event',
                                                     'event': 'Event1',
                                                     'parameters': [{'name': 'arg1',
                                                                     'type': 'number'},
@@ -246,7 +246,7 @@ class TestAppApiValidation(unittest.TestCase):
                                self.dereferencer,
                                'HelloWorld',
                                'Sample Event',
-                               get_app_action('HelloWorld', 'sample_event'),
+                               get_app_action('HelloWorld', 'main.Main.sample_event'),
                                event='event1')
 
     def test_validate_return_codes(self):

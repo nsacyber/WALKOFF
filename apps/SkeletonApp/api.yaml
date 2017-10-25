@@ -10,7 +10,7 @@ info:
 actions:
 
   global action:
-    run: test_global
+    run: app.test_global
     description: Basic global function
     parameters:
       - name: data
@@ -21,14 +21,14 @@ actions:
         schema:
           type: string
   basic:
-    run: test_function
+    run: app.SkeletonApp.test_function
     description: Basic function which does not take in paramaters
     returns:
       Success:
         schema:
           type: object
   'action with params':
-    run: test_function_with_param
+    run: app.SkeletonApp.test_function_with_param
     description: Basic function which takes in parameter and returns it
     parameters:
     - name: test_param
@@ -41,7 +41,7 @@ actions:
         schema:
           type: string
   'action using device':
-    run: test_function_with_device_reference
+    run: app.SkeletonApp.test_function_with_device_reference
     description: Basic function which uses the connexted device
     returns:
       Success:

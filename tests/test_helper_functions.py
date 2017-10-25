@@ -188,7 +188,7 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_get_app_action_api_valid(self):
         api = get_app_action_api('HelloWorld', 'pause')
-        expected = ('pause',
+        expected = ('main.Main.pause',
                     [{'required': True,
                       'type': 'number',
                       'name': 'seconds',

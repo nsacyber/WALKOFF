@@ -9,7 +9,7 @@ info:
     name: Creative Commons
 actions:
   echo object:
-    run: echo_object
+    run: actions.echo_object
     description: returns the same object passed into it
     parameters:
         - name: data
@@ -22,7 +22,7 @@ actions:
         schema:
           type: object
   'json select':
-    run: json_select
+    run: actions.json_select
     description: Gets a selected sub element of a json
     parameters:
         - name: json_reference
@@ -38,7 +38,7 @@ actions:
         schema:
           type: object
   'list select':
-    run: list_select
+    run: actions.list_select
     description: Gets an element from a list
     parameters:
         - name: list_reference
@@ -54,7 +54,7 @@ actions:
         schema:
           type: object
   'linearly scale':
-    run: linear_scale
+    run: actions.linear_scale
     description: Linearly scales a value which is limited to some min and max value to a number between a low and high value
     parameters:
         - name: value
@@ -84,7 +84,7 @@ actions:
         schema:
           type: number
   'divide':
-    run: divide
+    run: actions.divide
     description: Divides a number
     parameters:
         - name: value
@@ -100,7 +100,7 @@ actions:
         schema:
           type: number
   'multiply':
-    run: multiply
+    run: actions.multiply
     description: Multiplies a number
     parameters:
         - name: value
@@ -116,7 +116,7 @@ actions:
         schema:
           type: number
   'add':
-    run: add
+    run: actions.add
     description: Adds two numbers
     parameters:
         - name: num1
@@ -132,7 +132,7 @@ actions:
         schema:
           type: number
   'subtract':
-    run: subtract
+    run: actions.subtract
     description: Subtracts a number from another number
     parameters:
         - name: value
@@ -148,7 +148,7 @@ actions:
         schema:
           type: number
   'pause':
-    run: pause
+    run: actions.pause
     description: Pauses execution of a workflow for a given amount of time
     parameters:
         - name: seconds
@@ -160,7 +160,7 @@ actions:
         schema:
           type: string
   write IPs to CSV:
-    run: write_ips_to_csv
+    run: actions.write_ips_to_csv
     description: Writes a list of IPs to a CSV file
     parameters:
         - name: ips_reference
@@ -176,7 +176,7 @@ actions:
         schema:
           type: string
   wait for event:
-    run: wait_for_event
+    run: actions.wait_for_event
     description: waits for a post to the endpoint /apps/Utilities/resume
     event: Wait
     returns:

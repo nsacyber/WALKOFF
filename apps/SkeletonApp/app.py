@@ -10,7 +10,7 @@ def test_global_action(data):
     return data
 
 
-class Main(App):
+class SkeletonApp(App):
     """
        Skeleton example app to build other apps off of
     

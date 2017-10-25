@@ -5,7 +5,7 @@ import os.path
 from six import string_types
 import sys
 import logging
-from core.helpers import UnknownApp, UnknownAppAction, format_exception_message
+from core.helpers import UnknownApp, UnknownAppAction
 
 _logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class AppCache(object):
         else:
             apps = [info[1] for info in pkgutil.walk_packages(module.__path__)]
             for app in apps:
-                 self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app)
+                 self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):
         """
@@ -154,7 +154,7 @@ class AppCache(object):
         path = path.rstrip('.')
         return path.lstrip('.')
 
-    def _import_and_cache_submodules(self, package, app_name, recursive=True):
+    def _import_and_cache_submodules(self, package, app_name, app_path, recursive=True):
         """Imports and caches the submodules from a given package.
 
             Args:
@@ -162,22 +162,27 @@ class AppCache(object):
                 recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
                     Defaults to True.
             """
+        successful_import = True
         if isinstance(package, string_types):
-            package = import_module(package)
-        if package != sys.modules[__name__]:
+            try:
+                package = import_module(package)
+            except ImportError:
+                _logger.exception('Cannot import {}. Skipping.'.format(package))
+                successful_import = False
+        if successful_import and package != sys.modules[__name__]:
             for loader, name, is_package in pkgutil.walk_packages(package.__path__):
                 if name != 'setup':
                     full_name = '{0}.{1}'.format(package.__name__, name)
                     try:
                         module = import_module(full_name)
-                    except ImportError as e:
-                        _logger.error('Cannot import {0}. Reason: {1}. Skipping.'.format(full_name, format_exception_message(e)))
+                    except ImportError:
+                        _logger.exception('Cannot import {}. Skipping.'.format(full_name))
                     else:
-                        self._cache_module(module, app_name)
+                        self._cache_module(module, app_name, app_path)
                         if recursive and is_package:
-                            self._import_and_cache_submodules(full_name, app_name, recursive=True)
+                            self._import_and_cache_submodules(full_name, app_name, app_path, recursive=True)
 
-    def _cache_module(self, module, app_name):
+    def _cache_module(self, module, app_name, app_path):
         """
         Caches a module
 
@@ -185,14 +190,15 @@ class AppCache(object):
             module (module): The module to cache
             app_name (str): The name of the app associated with the module
         """
+        base_path = '.'.join([app_path, app_name])
         for field, obj in inspect.getmembers(module):
             if (inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False)
                     and AppCache._get_qualified_class_name(obj) != 'apps.App'):
-                self._cache_app(obj, app_name)
+                self._cache_app(obj, app_name, base_path)
             elif inspect.isfunction(obj) and hasattr(obj, 'action'):
-                self._cache_action(field, obj, app_name)
+                self._cache_action(obj, app_name, base_path)
 
-    def _cache_app(self, app_class, app_name):
+    def _cache_app(self, app_class, app_name, app_path):
         """
         Caches an app
 
@@ -216,15 +222,18 @@ class AppCache(object):
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
         if app_actions:
-            self._cache[app_name]['actions'].update({action_name: {'run': action_method, 'bound': True}
-                                                     for action_name, action_method in dict(app_actions).items()})
+            new_actions = {}
+            for _, action_method in app_actions:
+                qualified_name = AppCache._get_qualified_function_name(action_method, cls=app_class)
+                qualified_name = AppCache._strip_base_module_from_qualified_name(qualified_name, app_path)
+                new_actions[qualified_name] = {'run': action_method, 'bound': True}
+            self._cache[app_name]['actions'].update(new_actions)
 
-    def _cache_action(self, action_name, action_method, app_name):
+    def _cache_action(self, action_method, app_name, app_path, cls=None):
         """
         Caches an action
 
         Args:
-            action_name (str): The name of the action
             action_method (func): The action to cache
             app_name (str): The name of the app associated with the action
         """
@@ -232,15 +241,17 @@ class AppCache(object):
             self._cache[app_name] = {}
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
-        if action_name in self._cache[app_name]['actions']:
+        qualified_action_name = AppCache._get_qualified_function_name(action_method, cls=cls)
+        qualified_action_name = AppCache._strip_base_module_from_qualified_name(qualified_action_name, app_path)
+        if qualified_action_name in self._cache[app_name]['actions']:
             _logger.warning(
                 'App {0} already has unbound action {1} defined as {2}. Overwriting it with {3}'.format(
                     app_name,
-                    action_name,
-                    AppCache._get_qualified_function_name(self._cache[app_name]['actions'][action_name]['run']),
-                    AppCache._get_qualified_function_name(action_method)))
+                    qualified_action_name,
+                    AppCache._get_qualified_function_name(self._cache[app_name]['actions'][qualified_action_name]['run']),
+                    qualified_action_name))
 
-        self._cache[app_name]['actions'][action_name] = {'run': action_method, 'bound': False}
+        self._cache[app_name]['actions'][qualified_action_name] = {'run': action_method, 'bound': False}
 
     def _clear_existing_bound_functions(self, app_name):
         """
@@ -268,14 +279,33 @@ class AppCache(object):
         return '{0}.{1}'.format(obj.__module__, obj.__name__)
 
     @staticmethod
-    def _get_qualified_function_name(method):
+    def _get_qualified_function_name(method, cls=None):
         """
         Gets the qualified name of a function or method
 
         Args:
             method (func): The function or method to get the name
+            cls (cls, optional): The class containing this function or method is any
 
         Returns:
             (str) The qualified name of the function or method
         """
-        return '{0}.{1}'.format(method.__module__, method.__name__)
+        if cls:
+            return '{0}.{1}.{2}'.format(method.__module__, cls.__name__, method.__name__)
+        else:
+            return '{0}.{1}'.format(method.__module__, method.__name__)
+
+    @staticmethod
+    def _strip_base_module_from_qualified_name(qualified_name, base_module):
+        """
+        Strips a base module from a qualified name
+
+        Args:
+            qualified_name (str): The qualified name to strip
+            base_module (str): The base module path to strip from the qualified name
+
+        Returns:
+            (str) The stripped qualified name
+        """
+        base_module += '.'
+        return qualified_name[len(base_module):] if qualified_name.startswith(base_module) else qualified_name

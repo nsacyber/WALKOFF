@@ -253,7 +253,10 @@ def import_submodules(package, recursive=False):
     results = {}
     for loader, name, is_package in pkgutil.walk_packages(package.__path__):
         full_name = '{0}.{1}'.format(package.__name__, name)
-        results[full_name] = importlib.import_module(full_name)
+        try:
+            results[full_name] = importlib.import_module(full_name)
+        except ImportError:
+            logger.warning('Could not imporrt {}. Skipping.'.format(full_name), exc_info=True)
         if recursive and is_package:
             results.update(import_submodules(full_name))
     return results
