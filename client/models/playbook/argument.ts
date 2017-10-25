@@ -13,4 +13,5 @@ export class Argument {
 	 * Reference to a Step UID to use the output of
 	 */
 	reference: string;
+	selector: string;
 }

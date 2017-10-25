@@ -411,6 +411,12 @@ export class PlaybookComponent {
 		// Set the new cytoscape positions on our loadedworkflow
 		this.loadedWorkflow.steps.forEach(s => {
 			s.position = cyData.find(cyStep => cyStep.data.uid === s.uid).position;
+			
+			// Properly format the inputs, if "reference" is used, set "value" to "selector"
+			s.inputs.forEach(i => {
+				if (i.reference) i.value = i.selector;
+				i.selector = undefined;
+			});
 		});
 
 		// let steps: Step[] = _.map(cyData, function (step: any) {
@@ -552,6 +558,9 @@ export class PlaybookComponent {
 	}
 
 	onUnselect(event: any, self: PlaybookComponent): void {
+		// Update our labels if possible
+		if (self.selectedStep) this.cy.elements(`node[uid="${self.selectedStep.uid}"]`).data('label', self.selectedStep.name);
+
 		if (!self.cy.$(':selected').length) {
 			self.selectedStep = null;
 			self.selectedNextStep = null;
@@ -643,7 +652,8 @@ export class PlaybookComponent {
 			inputs.push({
 				name: input.name,
 				value: input.default,
-				reference: ""
+				reference: "",
+				selector: ""
 			});
 		});
 
