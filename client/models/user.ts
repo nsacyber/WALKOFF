@@ -42,7 +42,6 @@ export class WorkingUser {
 		//TODO: update once we merge the pw-fix branch in, need to submit current password as well
 		returnUser.old_password = workingUser.currentPassword;
 		returnUser.password = workingUser.newPassword;
-		console.log(returnUser);
 		return returnUser;
 	}
 }

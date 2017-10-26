@@ -24,8 +24,8 @@
 				</div>
 			</div>
 
-			<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [rows]='displayCaseEvents' [sortType]="'multi'"
-			 [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
+			<ngx-datatable #eventsTable class='material expandable' [columnMode]="'flex'" [rows]="displayCaseEvents" [sortType]="'multi'"
+			 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
 				<!-- Column Templates -->
 				<ngx-datatable-column name="ID" [flexGrow]="1">
 					<ng-template let-row="row" ngx-datatable-cell-template>
@@ -50,8 +50,7 @@
 				</ngx-datatable-column>
 				<ngx-datatable-column name="Data" [sortable]="false" [flexGrow]="4">
 					<ng-template let-row="row" ngx-datatable-cell-template>
-						<!--{{getFriendlyObject(row.data)}}-->
-						{{row.data}}
+						{{getFriendlyObject(row.data)}}
 					</ng-template>
 				</ngx-datatable-column>
 				<ngx-datatable-column name="Message" [flexGrow]="3">
@@ -78,8 +77,8 @@
 				</div>
 			</div>
 
-			<ngx-datatable #casesTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
-			 [rows]='displayCases' [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
+			<ngx-datatable #casesTable class='material expandable' [columnMode]="'flex'" [rows]='displayCases'
+			 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
 				<!-- Column Templates -->
 				<ngx-datatable-column name="Name" [flexGrow]="1">
 					<ng-template let-row="row" ngx-datatable-cell-template>
@@ -93,8 +92,8 @@
 				</ngx-datatable-column>
 				<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 					<ng-template let-row="row" ngx-datatable-cell-template>
-						<button (click)="editCase(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit Case</button>
-						<button (click)="deleteCase(row)" class="btn btn-danger"><span class="fa fa-times"></span>Delete Case</button>
+						<button (click)="editCase(row)" class="btn btn-primary" title="Edit Case"><span class="fa fa-edit"></span></button>
+						<button (click)="deleteCase(row)" class="btn btn-danger" title="Delete Case"><span class="fa fa-times"></span></button>
 					</ng-template>
 				</ngx-datatable-column>
 			</ngx-datatable>

@@ -128,8 +128,6 @@ export class DevicesModalComponent {
 					(typeof(field.value) === 'number' && !field.value)) array.splice(index, 1);
 			});
 
-			console.log(toSubmit);
-
 			this.devicesService
 				.editDevice(toSubmit)
 				.then(device => this.activeModal.close({

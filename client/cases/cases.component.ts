@@ -14,8 +14,14 @@ import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
 
+/**
+ * Types as the backend calls them for adding a new CaseEvent.
+ */
 const types = ['playbook', 'workflow', 'step', 'nextstep', 'flag', 'filter'];
-const childrenTypes = ['workflows', 'steps', 'next', 'flags', 'filters'];
+/**
+ * Types that are used to recursively check for the next level. E.g. next_steps have flags.
+ */
+const childrenTypes = ['workflows', 'steps', 'next_steps', 'flags', 'filters'];
 
 @Component({
 	selector: 'cases-component',
@@ -233,7 +239,7 @@ export class CasesComponent {
 				case 'steps':
 					prefix = 'Step';
 					break;
-				case 'next':
+				case 'next_steps':
 					prefix = 'Next Step';
 					break;
 				case 'flags':
@@ -259,6 +265,8 @@ export class CasesComponent {
 	}
 
 	getFriendlyObject(input: Object): string {
-		return JSON.stringify(input, undefined, 2);
+		let out = JSON.stringify(input, null, 1);
+		out = out.substr(1, out.length - 2).replace(/"/g, '');
+		return out;
 	}
 }
