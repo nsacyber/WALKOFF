@@ -1,10 +1,6 @@
 {
     "name": "basicWorkflowTest",
-<<<<<<< HEAD
     "uid": "4f0bf21d093f4627849b0acaaaf92810",
-=======
-    "uid": "5551fc09b3e249e1bd3ded0a25d57788",
->>>>>>> fixes to datatables and other minor updates
     "workflows": [
         {
             "accumulated_risk": 0.0,
@@ -74,11 +70,7 @@
                     "widgets": []
                 }
             ],
-<<<<<<< HEAD
             "uid": "98e356f6fd1b41b487ab992852903bc4"
-=======
-            "uid": "5f1c00fb0d374dc5b00d23ac760c3580"
->>>>>>> fixes to datatables and other minor updates
         }
     ]
 }

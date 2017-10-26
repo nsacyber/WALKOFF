@@ -145,7 +145,7 @@ button, input, select, textarea {
 /*Ensures context menus and jquery ui dialogs appear above the bootstrap modal*/
 ul.vakata-context,
 .ui-dialog {
-	z-index: 1051;
+	z-index: 1051 !important;
 }
 #executionModal{
 	text-align:center;
