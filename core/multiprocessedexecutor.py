@@ -49,7 +49,7 @@ class MultiprocessedExecutor(object):
         self.ctx = None
         self.auth = None
 
-        self.load_balancer = None
+        self.manager = None
         self.manager_thread = None
         self.receiver = None
         self.receiver_thread = None
@@ -89,13 +89,13 @@ class MultiprocessedExecutor(object):
         self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
 
-        self.load_balancer = loadbalancer.LoadBalancer(self.ctx)
+        self.manager = loadbalancer.LoadBalancer(self.ctx)
         self.receiver = loadbalancer.Receiver(self.ctx)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
 
-        self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
+        self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
         self.manager_thread.start()
 
         self.threading_is_initialized = True
@@ -116,7 +116,7 @@ class MultiprocessedExecutor(object):
                     (num_workflows != 0 and self.receiver is not None
                      and num_workflows == self.receiver.workflows_executed):
                 if self.manager_thread:
-                    self.load_balancer.thread_exit = True
+                    self.manager.thread_exit = True
                     self.manager_thread.join()
                 if len(self.pids) > 0:
                     for p in self.pids:
@@ -149,7 +149,7 @@ class MultiprocessedExecutor(object):
         self.manager_thread = None
         self.workflows_executed = 0
         self.threading_is_initialized = False
-        self.load_balancer = None
+        self.manager = None
         self.receiver = None
 
     def execute_workflow(self, workflow, start=None, start_input=None):
@@ -176,7 +176,7 @@ class MultiprocessedExecutor(object):
         if start_input:
             workflow_json['start_input'] = start_input
         workflow_json['execution_uid'] = uid
-        self.load_balancer.add_workflow(workflow_json)
+        self.manager.add_workflow(workflow_json)
 
         callbacks.SchedulerJobExecuted.send(self)
         # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
@@ -191,7 +191,7 @@ class MultiprocessedExecutor(object):
         """
         if (workflow and execution_uid in self.workflow_status
                 and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
-            self.load_balancer.pause_workflow(execution_uid, workflow.name)
+            self.manager.pause_workflow(execution_uid, workflow.name)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
     def resume_workflow(self, workflow_execution_uid, workflow):
@@ -208,7 +208,7 @@ class MultiprocessedExecutor(object):
         if workflow:
             if (workflow_execution_uid in self.workflow_status
                     and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
-                self.load_balancer.resume_workflow(workflow_execution_uid, workflow.name)
+                self.manager.resume_workflow(workflow_execution_uid, workflow.name)
                 self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
                 return True
             else:
@@ -219,4 +219,4 @@ class MultiprocessedExecutor(object):
         return [uid for uid, status in self.workflow_status.items() if status == WORKFLOW_AWAITING_DATA]
 
     def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
-        self.load_balancer.send_data_to_trigger(data_in, workflow_uids, inputs)
+        self.manager.send_data_to_trigger(data_in, workflow_uids, inputs)

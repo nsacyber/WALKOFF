@@ -17,8 +17,8 @@ def mock_initialize_threading(self, worker_env=None):
     global workflows_executed
     workflows_executed = 0
 
-    self.load_balancer = MockLoadBalancer()
-    self.manager_thread = threading.Thread(target=self.load_balancer.manage_workflows)
+    self.manager = MockLoadBalancer()
+    self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
     self.manager_thread.start()
 
     self.threading_is_initialized = True
@@ -29,7 +29,7 @@ def mock_shutdown_pool(self, num_workflows=0):
         if (num_workflows == 0) or (num_workflows != 0 and num_workflows == workflows_executed):
             break
     if self.manager_thread and self.manager_thread.is_alive():
-        self.load_balancer.pending_workflows.put("Exit")
+        self.manager.pending_workflows.put("Exit")
         self.manager_thread.join()
     self.threading_is_initialized = False
     data_sent.receivers = {}

@@ -33,7 +33,7 @@ class TestTriggers(ServerTestCase):
             Triggers.query.filter_by(name="{0}rename".format(self.test_trigger_name)).delete()
             server.database.db.session.commit()
             server.running_context.controller.workflows = {}
-            server.running_context.controller.shutdown_pool(0)
+            # server.running_context.controller.shutdown_pool(0)
 
     def test_trigger_execute(self):
         server.running_context.controller.initialize_threading()
@@ -113,30 +113,30 @@ class TestTriggers(ServerTestCase):
         self.assertDictEqual(result['value'],
                              {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
 
-    def test_trigger_execute_with_change_input_invalid_input(self):
-        server.running_context.controller.initialize_threading()
-
-        response = self.post_with_status_check(
-            '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
-
-        data = {"execution_uids": [response['id']],
-                "data_in": {"data": "1"},
-                "inputs": {"invalid": "CHANGE INPUT"}}
-
-        result = {"result": False}
-
-        @callbacks.StepInputInvalid.connect
-        def step_input_invalids(sender, **kwargs):
-            result['result'] = True
-
-        @callbacks.TriggerStepAwaitingData.connect
-        def send_data(sender, **kwargs):
-            self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
-                                        status_code=SUCCESS, content_type='application/json')
-
-        server.running_context.controller.shutdown_pool(1)
-        self.assertTrue(result['result'])
+    # def test_trigger_execute_with_change_input_invalid_input(self):
+    #     server.running_context.controller.initialize_threading()
+    #
+    #     response = self.post_with_status_check(
+    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         headers=self.headers, status_code=SUCCESS_ASYNC)
+    #
+    #     data = {"execution_uids": [response['id']],
+    #             "data_in": {"data": "1"},
+    #             "inputs": {"invalid": "CHANGE INPUT"}}
+    #
+    #     result = {"result": False}
+    #
+    #     @callbacks.StepInputInvalid.connect
+    #     def step_input_invalids(sender, **kwargs):
+    #         result['result'] = True
+    #
+    #     @callbacks.TriggerStepAwaitingData.connect
+    #     def send_data(sender, **kwargs):
+    #         self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
+    #                                     status_code=SUCCESS, content_type='application/json')
+    #
+    #     server.running_context.controller.shutdown_pool(1)
+    #     self.assertTrue(result['result'])
 
     # Old Trigger tests
 
@@ -238,6 +238,9 @@ class TestTriggers(ServerTestCase):
                                                headers=self.headers,
                                                data=json.dumps({"data": "hellohellohello"}),
                                                status_code=SUCCESS_ASYNC, content_type='application/json')
+
+        server.running_context.controller.shutdown_pool(1)
+
         self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
         self.assertEqual(len(response['executed']), 1)
         self.assertIn('id', response['executed'][0])
@@ -270,7 +273,6 @@ class TestTriggers(ServerTestCase):
         self.post_with_status_check('/api/triggers/execute',
                                     headers=self.headers, data=json.dumps({"data": "bbb"}), status_code=SUCCESS_WITH_WARNING, content_type='application/json')
 
-
     def test_trigger_execute_change_input_old(self):
         server.running_context.controller.initialize_threading()
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}
@@ -293,6 +295,7 @@ class TestTriggers(ServerTestCase):
         response = self.post_with_status_check('/api/triggers/execute',
                                                headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC,
                                                content_type='application/json')
+
         server.running_context.controller.shutdown_pool(1)
 
         self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
@@ -318,8 +321,7 @@ class TestTriggers(ServerTestCase):
         response = self.post_with_status_check('/api/triggers/execute',
                                                headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
 
-        with server.running_context.flask_app.app_context():
-            server.running_context.controller.shutdown_pool(1)
+        server.running_context.controller.shutdown_pool(1)
 
         self.assertSetEqual(set(response.keys()), {'errors', 'executed'})
         self.assertEqual(len(response['executed']), 1)
@@ -350,8 +352,8 @@ class TestTriggers(ServerTestCase):
 
         response = self.post_with_status_check('/api/triggers/execute?name=execute_me',
                                                headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-        with server.running_context.flask_app.app_context():
-            server.running_context.controller.shutdown_pool(1)
+
+        server.running_context.controller.shutdown_pool(1)
 
         self.assertEqual(1, result['value'])
         self.assertEqual(len(response['executed']), 1)
@@ -401,8 +403,8 @@ class TestTriggers(ServerTestCase):
 
         response = self.post_with_status_check('/api/triggers/execute',
                                                headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
-        with server.running_context.flask_app.app_context():
-            server.running_context.controller.shutdown_pool(2)
+
+        server.running_context.controller.shutdown_pool(2)
 
         self.assertEqual(2, result['value'])
         self.assertEqual(len(response['executed']), 2)
@@ -441,8 +443,7 @@ class TestTriggers(ServerTestCase):
         response = self.post_with_status_check('/api/triggers/execute',
                                                headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
 
-        with server.running_context.flask_app.app_context():
-            server.running_context.controller.shutdown_pool(2)
+        server.running_context.controller.shutdown_pool(2)
 
         self.assertEqual(2, result['value'])
         executed_names = {executed['name'] for executed in response['executed']}
@@ -478,7 +479,9 @@ class TestTriggers(ServerTestCase):
         response = self.post_with_status_check(
             '/api/triggers/execute',
             headers=self.headers, data=json.dumps(data), status_code=SUCCESS_ASYNC, content_type='application/json')
+
         server.running_context.controller.shutdown_pool(5)
+
         executed_names = {executed['name'] for executed in response['executed']}
         self.assertSetEqual(executed_names, {'execute_one', 'execute_two', 'execute_three', 'execute_four', 'testTrigger'})
         self.assertEqual(5, len(response["executed"]))

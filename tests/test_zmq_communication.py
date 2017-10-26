@@ -1,6 +1,5 @@
 import unittest
 import time
-import socket
 from os import path
 import core.controller
 import core.config.config
@@ -11,10 +10,6 @@ from tests import config
 from tests.apps import App
 from tests.util.thread_control import *
 import threading
-try:
-    from importlib import reload
-except ImportError:
-    from imp import reload
 
 
 class TestZMQCommunication(unittest.TestCase):
@@ -43,7 +38,6 @@ class TestZMQCommunication(unittest.TestCase):
         self.controller.workflows = None
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
-        reload(socket)
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 

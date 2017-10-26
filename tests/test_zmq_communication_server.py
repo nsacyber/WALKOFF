@@ -6,8 +6,6 @@ import core.case.subscription
 import core.case.database as case_database
 from core.case import callbacks
 import core.config.paths
-from threading import Event
-from core.case.callbacks import WorkflowShutdown
 from server.returncodes import *
 import core.controller
 from gevent import monkey
@@ -17,24 +15,18 @@ try:
     from importlib import reload
 except ImportError:
     from imp import reload
+import logging
 
 
 class TestWorkflowServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        # This looks awful, I know
-        self.empty_workflow_json = \
-            {'steps': [],
-             'name': 'test_name',
-             'start': 'start',
-             'accumulated_risk': 0.0}
+        monkey.patch_socket()
         core.case.subscription.subscriptions = {}
         case_database.initialize()
-        monkey.patch_socket()
 
     def tearDown(self):
-        flask_server.running_context.controller.shutdown_pool(0)
         core.controller.workflows = {}
         core.case.subscription.clear_subscriptions()
         for case in core.case.database.case_db.session.query(core.case.database.Case).all():
@@ -44,24 +36,16 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow(self):
         flask_server.running_context.controller.initialize_threading()
-        sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
         setup_subscriptions_for_step(workflow.uid, step_uids)
         start = datetime.utcnow()
-
-        @WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
-
-        WorkflowShutdown.connect(wait_for_completion)
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
         flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
-        sync.wait(timeout=10)
         steps = []
         for uid in step_uids:
             steps.extend(executed_steps(uid, start, datetime.utcnow()))
