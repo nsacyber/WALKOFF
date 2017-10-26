@@ -190,8 +190,8 @@ class ThreadAuthenticator(object):
         """Stop the authentication thread"""
         if self.pipe:
             self.pipe.send(b'TERMINATE')
-            # if self.is_alive():
-            #     self.thread.join()
+            if self.is_alive():
+                self.thread.join(timeout=5)
             self.thread = None
             self.pipe.close()
             self.pipe = None

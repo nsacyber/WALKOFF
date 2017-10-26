@@ -4,6 +4,7 @@ import json
 import threading
 from zmq.utils.strtypes import cast_unicode
 from core.case.callbacks import data_sent
+import time
 
 try:
     from Queue import Queue
@@ -25,12 +26,16 @@ def mock_initialize_threading(self, worker_env=None):
 
 
 def mock_shutdown_pool(self, num_workflows=0):
-    while True:
+    timeout = 0
+    shutdown = 10
+    while timeout < shutdown:
         if (num_workflows == 0) or (num_workflows != 0 and num_workflows == workflows_executed):
             break
+        timeout += 0.1
+        time.sleep(0.1)
     if self.manager_thread and self.manager_thread.is_alive():
         self.manager.pending_workflows.put("Exit")
-        self.manager_thread.join()
+        self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
     data_sent.receivers = {}
     self.cleanup_threading()

@@ -109,31 +109,38 @@ class MultiprocessedExecutor(object):
             num_workflows (int, optional): The number of workflows that should be executed before the pool
                 is shutdown.
         """
-        gevent.sleep(0)
+        gevent.sleep(0.1)
 
-        while True:
+        timeout = 0
+        shutdown = 10
+
+        while timeout < shutdown:
             if (num_workflows == 0) or \
                     (num_workflows != 0 and self.receiver is not None
                      and num_workflows == self.receiver.workflows_executed):
-                if self.manager_thread:
-                    self.manager.thread_exit = True
-                    self.manager_thread.join()
-                if len(self.pids) > 0:
-                    for p in self.pids:
-                        if p.is_alive():
-                            os.kill(p.pid, signal.SIGABRT)
-                            p.join(timeout=3)
-                            try:
-                                os.kill(p.pid, signal.SIGKILL)
-                            except (OSError, AttributeError):
-                                pass
-                if self.receiver_thread:
-                    self.receiver.thread_exit = True
-                    self.receiver_thread.join()
-                self.threading_is_initialized = False
-                logger.debug('Controller thread pool shutdown')
                 break
+            if num_workflows > 0:
+                timeout += 0.1
             gevent.sleep(0.1)
+
+        if self.manager_thread:
+            self.manager.thread_exit = True
+            self.manager_thread.join(timeout=1)
+        if len(self.pids) > 0:
+            for p in self.pids:
+                if p.is_alive():
+                    os.kill(p.pid, signal.SIGABRT)
+                    p.join(timeout=3)
+                    try:
+                        os.kill(p.pid, signal.SIGKILL)
+                    except (OSError, AttributeError):
+                        pass
+        if self.receiver_thread:
+            self.receiver.thread_exit = True
+            self.receiver_thread.join(timeout=1)
+        self.threading_is_initialized = False
+        logger.debug('Controller thread pool shutdown')
+
         if self.auth:
             self.auth.stop()
         if self.ctx:

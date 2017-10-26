@@ -251,7 +251,7 @@ class Worker:
         """
         self.thread_exit = True
         if self.comm_thread:
-            self.comm_thread.join()
+            self.comm_thread.join(timeout=2)
         if self.request_sock:
             self.request_sock.close()
         if self.results_sock:
