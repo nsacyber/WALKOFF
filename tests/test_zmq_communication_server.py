@@ -15,8 +15,6 @@ try:
     from importlib import reload
 except ImportError:
     from imp import reload
-import logging
-
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -88,6 +86,8 @@ class TestWorkflowServer(ServerTestCase):
         def trigger_taken(sender, **kwargs):
             result['result'] += 1
 
+        import time
+        time.sleep(1)
         flask_server.running_context.controller.shutdown_pool(2)
         self.assertEqual(result['result'], 2)
 
