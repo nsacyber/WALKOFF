@@ -459,18 +459,20 @@ def add_default_template(playbook_name, workflow_name):
 
 
 @jwt_required
-@roles_accepted_for_resources('playbooks')
 def read_results():
-    ret = []
-    completed_workflows = [workflow.as_json() for workflow in
-                           case_database.case_db.session.query(WorkflowResult).filter(
-                               WorkflowResult.status == 'completed').all()]
-    for result in completed_workflows:
-        if result['status'] == 'completed':
-            ret.append({'name': result['name'],
-                        'timestamp': result['completed_at'],
-                        'result': json.dumps(result['results'])})
-    return ret, SUCCESS
+    @roles_accepted_for_resources('playbooks')
+    def __func():
+        ret = []
+        completed_workflows = [workflow.as_json() for workflow in
+                               case_database.case_db.session.query(WorkflowResult).filter(
+                                   WorkflowResult.status == 'completed').all()]
+        for result in completed_workflows:
+            if result['status'] == 'completed':
+                ret.append({'name': result['name'],
+                            'timestamp': result['completed_at'],
+                            'result': json.dumps(result['results'])})
+        return ret, SUCCESS
+    return __func()
 
 
 @jwt_required
