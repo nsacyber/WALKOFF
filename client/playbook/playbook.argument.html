@@ -1,0 +1,43 @@
+<div class="form-group">
+	<!-- Label for input with optional required icon -->
+	<label for="{{argument.name}}">
+		Input {{id+1}}: {{argument.name}} ({{action.type}})
+		<span *ngIf="action.required" class="fa fa-asterisk required" title="This field is required."></span>
+	</label>
+
+	<!-- Columns for allowing users to specify outputs of other steps as inputs for this one -->
+	<div class="row">
+		<div class="col-xs-4">
+			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.reference">
+				<option value="">-- Set Static Value --</option>
+				<option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
+			</select>
+		</div>
+		<div class="col-xs-8">
+			<input *ngIf="argument.reference" type="text" class="form-control" [(ngModel)]="argument.selector" name="selector"
+			 placeholder="(Optional) Selector for object-based outputs">
+			<ng-container *ngIf="!argument.reference">
+				<!-- Normal string text entries -->
+				<input *ngIf="action.type === 'string' && !action.enum" class="form-control" name="{{argument.name}}"
+				 [(ngModel)]="argument.value" [attr.minlength]="action.minLength > 0 ? action.minLength : null"
+				 [attr.maxlength]="action.maxLength > 0 ? action.maxLength : null" [attr.pattern]="action.pattern ? action.pattern : null"
+				 [attr.required]="action.required" [attr.placeholder]="action.placeholder">
+
+				<!-- Enum types, make a select box -->
+				<select *ngIf="action.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="action.required">
+					<option *ngIf="!action.required" value=""></option>
+					<option *ngFor="let i of action.enum" [value]="i" [label]="i">{{i}}</option>
+				</select>
+
+				<!-- For numbers enter number info -->
+				<input *ngIf="action.type === 'number' || action.type === 'integer'" class="form-control" name="{{argument.name}}"
+				 [(ngModel)]="argument.value" type="number" [attr.min]="getMin(action)" [attr.max]="getMax(action)"
+				 [attr.step]="action.multipleOf > 0 ? action.multipleOf : null" [attr.required]="action.required"
+				 [attr.placeholder]="action.placeholder">
+
+				<!-- Checkbox for boolean values -->
+				<input *ngIf="action.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
+			</ng-container>
+		</div>
+	</div>
+</div>

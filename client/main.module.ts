@@ -29,6 +29,8 @@ import { DevicesModalComponent } from './devices/devices.modal.component';
 import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 
+import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
+
 @NgModule({
 	imports: [
 		BrowserModule,
@@ -60,6 +62,8 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 		DevicesModalComponent,
 		CasesModalComponent,
 		SettingsUserModalComponent,
+		// Other subcomponents
+		PlaybookArgumentComponent,
 	],
 	providers: [{
 		provide: JwtHttp,

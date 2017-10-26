@@ -4,9 +4,10 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
-import { Condition } from '../models/playbook/condition';
-import { Transform } from '../models/playbook/transform';
-import { Action } from '../models/action';
+import { App } from '../models/api/app';
+import { ActionApi } from '../models/api/actionApi';
+import { ConditionApi } from '../models/api/conditionApi';
+import { TransformApi } from '../models/api/transformApi';
 import { Device } from '../models/device';
 
 @Injectable()
@@ -147,22 +148,7 @@ export class PlaybookService {
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
-
-	/**
-	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
-	 */
-	// TODO: update this to be an array of Apps when the backend changes
-	getAppsAndActions(): Promise<{
-		[app_name: string]: {
-			[action_name: string]: Action
-		}
-	}> {
-		return this.authHttp.get(`/api/apps/actions`, {})
-			.toPromise()
-			.then(this.extractData)
-			.catch(this.handleError);
-	}
-
+	
 	/**
 	 * Returns an array of all devices within the DB.
 	 */
@@ -174,25 +160,84 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
+	// TODO: not actually used and doesn't currently exist in the backend; should replace the actions/conditions/triggers calls with this...
+	getApis(): Promise<App[]> {
+		return this.authHttp.get(`/api/apps/apis`)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as App[])
+			.catch(this.handleError);
+	}
+
+	/**
+	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
+	 */
+	getAppsAndActions(): Promise<App[]> {
+		return this.authHttp.get(`/api/apps/actions`)
+			.toPromise()
+			.then(this.extractData)
+			// TODO: should remove this step once the backend gives the data in this form
+			.then(a => {
+				let apps: App[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
+						action.name = actionName;
+
+						return action;
+					})};
+				})
+
+				apps.filter(a => a.actionApis.length);
+
+				return apps;
+			})
+			.catch(this.handleError);
+	}
+
 	/**
 	 * Returns an array of all next step conditions specified within the application and its apps.
 	 */
-	getConditions(): Promise<Condition[]> {
+	getConditions(): Promise<App[]> {
 		return this.authHttp.get(`/api/conditions`)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Condition[])
+			// TODO: should remove this step once the backend gives the data in this form
+			.then(a => {
+				let apps: App[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <App>{ name: appName, conditionApis: _.map(app, function (condition: ConditionApi, conditionName: string) {
+						condition.name = conditionName;
+
+						return condition;
+					})};
+				})
+
+				apps.filter(a => a.conditionApis.length);
+
+				return apps;
+			})
 			.catch(this.handleError);
 	}
 
 	/**
 	 * Returns an array of all data transforms specified within the application and its apps.
 	 */
-	getTransforms(): Promise<Transform[]> {
+	getTransforms(): Promise<App[]> {
 		return this.authHttp.get(`/api/transforms`)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Transform[])
+			// TODO: should remove this step once the backend gives the data in this form
+			.then(a => {
+				let apps: App[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <App>{ name: appName, transformApis: _.map(app, function (transform: TransformApi, transformName: string) {
+						transform.name = transformName;
+
+						return transform;
+					})};
+				})
+
+				apps.filter(a => a.transformApis.length);
+
+				return apps;
+			})
 			.catch(this.handleError);
 	}
 

@@ -158,56 +158,10 @@
                                 </div>
                                 <!-- Inputs -->
                                 <h4>Inputs</h4>
-                                <div *ngFor="let input of selectedStep.inputs; let id = index" class="form-group">
-                                    <!-- Label for input with optional required icon -->
-                                    <label for="{{input.name}}">
-                                        Input {{id+1}}: {{input.name}} ({{inputArgs[input.name].type}})
-                                        <span *ngIf="inputArgs[input.name].required" class="fa fa-asterisk required" title="This field is required."></span>
-                                    </label>
-
-                                    <!-- Columns for allowing users to specify outputs of other steps as inputs for this one -->
-                                    <div class="row">
-                                        <div class="col-xs-4">
-                                            <select name="playbookSelect" class="form-control" [(ngModel)]="input.reference">
-                                                <option value="">-- Set Static Value --</option>
-                                                <option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-xs-8">
-                                            <input *ngIf="input.reference" type="text" class="form-control" [(ngModel)]="input.selector" name="selector"
-                                             placeholder="(Optional) Selector for object-based outputs">
-                                            <ng-container *ngIf="!input.reference">
-                                                <!-- <input type="text" class="form-control" [(ngModel)]="input.value" name="name" [required]="inputArgs[input.name].required" > -->
-
-                                                <!-- Normal string text entries -->
-                                                <input *ngIf="inputArgs[input.name].type === 'string' && !inputArgs[input.name].enum" class="form-control"
-                                                 name="{{input.name}}" [(ngModel)]="input.value"
-                                                 [attr.minlength]="inputArgs[input.name].minLength > 0 ? inputArgs[input.name].minLength : null"
-                                                 [attr.maxlength]="inputArgs[input.name].maxLength > 0 ? inputArgs[input.name].maxLength : null"
-                                                 [attr.pattern]="inputArgs[input.name].pattern ? inputArgs[input.name].pattern : null"
-                                                 [attr.required]="inputArgs[input.name].required"
-                                                 [attr.placeholder]="inputArgs[input.name].placeholder">
-
-                                                <!-- Enum types, make a select box -->
-                                                <select *ngIf="inputArgs[input.name].enum" class="form-control" name="{{input.name}}" [(ngModel)]="input.value" 
-                                                 [attr.required]="inputArgs[input.name].required">
-                                                    <option *ngIf="!inputArgs[input.name].required" value=""></option>
-                                                    <option *ngFor="let i of inputArgs[input.name].enum" [value]="i" [label]="i">{{i}}</option>
-                                                </select>
-
-                                                <!-- For numbers enter number info -->
-                                                <input *ngIf="inputArgs[input.name].type === 'number' || inputArgs[input.name].type === 'integer'" class="form-control"
-                                                 name="{{input.name}}" [(ngModel)]="input.value"
-                                                 type="number" [attr.min]="getMin(inputArgs[input.name])" [attr.max]="getMax(inputArgs[input.name])"
-                                                 [attr.step]="inputArgs[input.name].multipleOf > 0 ? inputArgs[input.name].multipleOf : null"
-                                                 [attr.required]="inputArgs[input.name].required" [attr.placeholder]="inputArgs[input.name].placeholder">
-
-                                                <!-- Checkbox for boolean values -->
-                                                <input *ngIf="inputArgs[input.name].type === 'boolean'" type="checkbox" class="form-control" name="{{input.name}}" [(ngModel)]="input.value">
-                                            </ng-container>
-                                        </div>
-                                    </div>
-                                </div>
+                                <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
+                                 [argument]="argument" [action]="inputArgs[argument.name]" [id]="id"></playbook-argument-component>
+                                <h4>Triggers</h4>
+                                
                             </div>
                             <!-- Editor for TriggerSteps -->
                             <div *ngIf="selectedStep && selectedStep.conditions">

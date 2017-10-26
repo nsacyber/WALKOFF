@@ -3,7 +3,6 @@ import { Widget } from './widget';
 import { GraphPosition } from './graphPosition';
 import { NextStep } from './nextStep';
 import { Condition } from './condition';
-import { ActionArgument } from '../action';
 
 export class Step {
 	uid: string;

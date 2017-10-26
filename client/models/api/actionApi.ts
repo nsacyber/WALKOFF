@@ -1,15 +1,10 @@
-export class Action {
+import { ArgumentSchema } from './argumentSchema';
+
+export class ActionApi {
 	name: string;
 	description: string;
-	args: ActionArgument[];
+	args: ArgumentSchema[];
 	returns: string[];
 	// Name of event in the case of a triggered action, null or whitespace to indicate no event
 	event: string; 
-}
-
-export class ActionArgument {
-	name: string;
-	type: string;
-	required: boolean;
-	default: any;
 }

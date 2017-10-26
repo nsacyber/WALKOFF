@@ -16,8 +16,9 @@ import { UUID } from 'angular2-uuid';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 
-import { App } from '../models/app';
-import { Action, ActionArgument } from '../models/action';
+import { App } from '../models/api/app';
+import { ActionApi } from '../models/api/actionApi';
+import { ArgumentSchema } from '../models/api/argumentSchema';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Step } from '../models/playbook/step';
@@ -56,7 +57,7 @@ export class PlaybookComponent {
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
 	selectedNextStep: NextStep;
-	inputArgs: { [key: string]: ActionArgument } = {};
+	inputArgs: { [key: string]: ArgumentSchema } = {};
 	cyJsonData: string;
 	actionTree: any;
 	workflowResults: WorkflowResult[] = [];
@@ -87,8 +88,9 @@ export class PlaybookComponent {
 	constructor(private playbookService: PlaybookService, private authService: AuthService, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
-		this.playbookService.getConditions().then(conditions => this.conditions = conditions);
-		this.playbookService.getTransforms().then(transforms => this.transforms = transforms);
+		// TODO: update this to add them to the apps from getAppsAndActions, or just use getApis when that's implemented
+		// this.playbookService.getConditions().then(conditions => this.conditions = conditions);
+		// this.playbookService.getTransforms().then(transforms => this.transforms = transforms);
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.getAppsAndActions();
 		this.getWorkflowResultsSSE();
@@ -492,15 +494,15 @@ export class PlaybookComponent {
 	getAppsAndActions(): void {
 		this.playbookService.getAppsAndActions()
 			.then((actionsForApps) => {
-				this.apps = _.map(actionsForApps, function (app: { [key: string] : Action }, appName: string) {
-					return <App>{ name: appName, actions: _.map(app, function (action: Action, actionName: string) {
+				this.apps = _.map(actionsForApps, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
 						action.name = actionName;
 
 						return action;
 					})};
 				})
 
-				this.apps.filter(a => a.actions.length);
+				this.apps.filter(a => a.actionApis.length);
 
 				// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
 				// 	let appObj: any = { name: app, children: [] };
@@ -530,7 +532,7 @@ export class PlaybookComponent {
 
 		if (!self.selectedStep) return;
 
-		self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ActionArgument }, a) => {
+		self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ArgumentSchema }, a) => {
 			result[a.name] = a;
 
 			// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
@@ -609,7 +611,7 @@ export class PlaybookComponent {
 		if (this.cy === null) return;
 
 		let appName: string = e.dragData.appName;
-		let action: Action = e.dragData.action;
+		let action: ActionApi = e.dragData.action;
 		console.log(e, action);
 
 		// The following coordinates is where the user dropped relative to the
@@ -1005,8 +1007,8 @@ export class PlaybookComponent {
 		return this.loadedWorkflow.steps;
 	}
 
-	_getAction(appName: string, actionName: string): Action {
-		return this.apps.find(a => a.name === appName).actions.find(a => a.name === actionName);
+	_getAction(appName: string, actionName: string): ActionApi {
+		return this.apps.find(a => a.name === appName).actionApis.find(a => a.name === actionName);
 	}
 
 	/**
