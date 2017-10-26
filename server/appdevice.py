@@ -51,10 +51,6 @@ class App(Device_Base):
         if not any(device_.name == device.name for device_ in self.devices):
             self.devices.append(device)
 
-    def as_json(self):
-        return {"name": self.name,
-                "devices": [device.as_json() for device in self.devices]}
-
     def as_json(self, with_devices=False):
         """Gets the JSON representation of an App object.
 
@@ -301,6 +297,22 @@ def get_device(app_name, device_name):
     else:
         logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
         return None
+
+def get_app(app_name):
+    """ Gets the app associated with an app name
+
+    Args:
+        app_name (str): The name of the app
+    Returns:
+        (App): The desired device. Returns None if app or device not found.
+    """
+    app = device_db.session.query(App).filter(App.name == app_name).first()
+    if app is not None:
+        return app
+    else:
+        logger.warning('Cannot get app {}. App does not exist'.format(app_name))
+        return None
+
 
 
 class DeviceDatabase(object):

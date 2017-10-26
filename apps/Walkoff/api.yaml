@@ -1,0 +1,409 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Walkoff App
+  description: An app to communicate with another Walkoff instance
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  connect:
+    run: app.Walkoff.connect
+    description: Connect to walkoff
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: [Success]
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      WalkoffNotFound:
+        schema:
+          type: string
+          enum: [Could not locate Walkoff instance]
+      AuthenticationError:
+        schema:
+          type: string
+          enum: [Invalid login]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  disconnect:
+    run: app.Walkoff.disconnect
+    description: Disconnect from walkoff
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: [Success]
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+  is connected:
+    run: app.Walkoff.is_connected
+    description: Is Walkoff connected?
+    returns:
+      Success:
+        schema:
+          type: boolean
+  get all workflows:
+    run: app.Walkoff.get_all_workflows
+    description: Gets the names and uids of all the workflows loaded on the system
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: name of the playbook
+            workflows:
+              description: the workflows associated with this playbook
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: name of the workflow
+                  uid:
+                    type: string
+                    description: UID of the workflow
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  get workflow uid:
+    run: app.Walkoff.get_workflow_uid
+    description: Gets the uid of a workflow
+    parameters:
+      - name: playbook_name
+        description: name of the playbook
+        type: string
+        required: true
+      - name: workflow_name
+        description: name of the workflow
+        type: string
+        required: true
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: string
+      WorkflowNotFound:
+        schema:
+          type: string
+          enum: [Playbook not found, Workflow not found]
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  trigger:
+    run: app.Walkoff.trigger
+    description: Trigger a workflow
+    parameters:
+      - name: names
+        description: names of triggers to execute
+        type: array
+        items:
+          type: string
+      - name: inputs
+        description: Inputs into the starting step as key-value pairs
+        schema:
+          type: object
+          additionalProperties: true
+      - name: data
+        description: Data to send to the trigger
+        type: string
+      - name: tags
+        description: names of trigger tags to execute
+        type: array
+        items:
+          type: string
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            errors:
+              description: The errors executed. Array of the form [{trigger_name -> error message}]
+              type: array
+            executed:
+              description: The executed workflows
+              type: array
+              items:
+                type: object
+                required: [id, name]
+                properties:
+                  id:
+                    type: string
+                    description: The Execution UID of the workflow executing
+                    readOnly: true
+                  name:
+                    type: string
+                    description: The name of the trigger executing
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  get workflow results:
+    run: app.Walkoff.get_workflow_results
+    description: gets the results of all workflows
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [id]
+          properties:
+            id:
+              description: execution uid of the workflow
+              type: object
+              required: [name, started_at, status, results, uid]
+              properties:
+                uid:
+                  description: The UID of the workflow
+                  type: string
+                name:
+                  description: The name of the workflow. Contains both playbook and workflow information
+                  type: string
+                  example: PlaybookName-WorkflowName
+                started_at:
+                  description: The timestamp of when the workflow completed
+                  type: string
+                  example: '2017-05-24 00:42:22.934058'
+                completed_at:
+                  description: The timestamp of when the workflow completed
+                  type: string
+                  example: '2017-05-24 00:43:26.930892'
+                status:
+                  description: The status of the workflow
+                  type: string
+                  enum: [completed, running]
+                results:
+                  description: The results of the workflow steps
+                  type: array
+                  items:
+                    type: object
+                    required: [name, result, input, type, timestamp]
+                    description: A result of a step execution
+                    properties:
+                      name:
+                        description: The name of the step
+                        type: string
+                        example: 'This One step'
+                      result:
+                        description: The result of the step
+                        type: object
+                      type:
+                        description: Success or failure of the step
+                        type: string
+                        example: SUCCESS
+                        enum: [SUCCESS, ERROR]
+                      timestamp:
+                        description: The timestamp of when the step completed
+                        type: string
+                        example: '2017-05-24 00:43:26.930892'
+                      input:
+                        description: The input to the step. Of form {input_name -> value}
+                        type: object
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  wait for workflow completion:
+    run: app.Walkoff.wait_for_workflow_completion
+    description: Waits for an executing workflow to complete and gets the results
+    parameters:
+      - name: execution_uid
+        description: The execution UID of the workflow to wait upon
+        type: string
+        required: true
+      - name: timeout
+        description: Timeout on the action (in seconds)
+        type: number
+        default: 300
+      - name: request_timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+      - name: wait_between_requests
+        description: time to wait in between subsequent requests (in seconds)
+        type: number
+        default: 0.1
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [name, started_at, status, results, uid]
+          properties:
+            uid:
+              description: The UID of the workflow
+              type: string
+            name:
+              description: The name of the workflow. Contains both playbook and workflow information
+              type: string
+              example: PlaybookName-WorkflowName
+            started_at:
+              description: The timestamp of when the workflow completed
+              type: string
+              example: '2017-05-24 00:42:22.934058'
+            completed_at:
+              description: The timestamp of when the workflow completed
+              type: string
+              example: '2017-05-24 00:43:26.930892'
+            status:
+              description: The status of the workflow
+              type: string
+              enum: [completed, running]
+            results:
+              description: The results of the workflow steps
+              type: array
+              items:
+                type: object
+                required: [name, result, input, type, timestamp]
+                description: A result of a step execution
+                properties:
+                  name:
+                    description: The name of the step
+                    type: string
+                    example: 'This One step'
+                  result:
+                    description: The result of the step
+                    type: object
+                  type:
+                    description: Success or failure of the step
+                    type: string
+                    example: SUCCESS
+                    enum: [SUCCESS, ERROR]
+                  timestamp:
+                    description: The timestamp of when the step completed
+                    type: string
+                    example: '2017-05-24 00:43:26.930892'
+                  input:
+                    description: The input to the step. Of form {input_name -> value}
+                    type: object
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+devices:
+  Walkoff:
+    - name: username
+      type: string
+      description: Username for Walkoff instance
+      placeholder: username
+      required: true
+    - name: password
+      type: string
+      description: Password for Walkoff instance
+      encrypted: true
+      placeholder: password
+      required: true
+    - name: ip
+      description: IP address of Walkoff instance
+      type: string
+      placehold: ip address
+      required: true
+    - name: port
+      description: Port of Walkoff instance
+      type: integer
+      minimum: 1
+      maximum: 65355
+      required: true
+

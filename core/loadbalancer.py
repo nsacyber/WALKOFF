@@ -165,25 +165,23 @@ class LoadBalancer:
         """
         self.pending_workflows.put(workflow_json)
 
-    def pause_workflow(self, workflow_execution_uid, workflow_name):
+    def pause_workflow(self, workflow_execution_uid):
         """Pauses a workflow currently executing.
 
         Args:
             workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
         """
-        logger.info('Pausing workflow {0}'.format(workflow_name))
+        logger.info('Pausing workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
 
-    def resume_workflow(self, workflow_execution_uid, workflow_name):
+    def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has previously been paused.
 
         Args:
             workflow_execution_uid (str): The execution UID of the workflow.
-            workflow_name (str): The name of the workflow.
         """
-        logger.info('Resuming workflow {0}'.format(workflow_name))
+        logger.info('Resuming workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
@@ -198,13 +196,11 @@ class LoadBalancer:
 
 
 class Worker:
-    def __init__(self, id_, worker_env=None):
+    def __init__(self, id_):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
             id_ (str): The ID of the worker. Needed for ZMQ socket communication.
-            worker_env (function, optional): The optional custom function to setup the worker environment. Defaults
-                to None.
         """
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
@@ -248,10 +244,6 @@ class Worker:
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
 
-        if worker_env:
-            Worker.setup_worker_env = worker_env
-
-        self.setup_worker_env()
         self.execute_workflow_worker()
 
     def exit_handler(self, signum, frame):
@@ -267,12 +259,6 @@ class Worker:
         if self.comm_sock:
             self.comm_sock.close()
         os._exit(0)
-
-    def setup_worker_env(self):
-        """Sets up the worker environment, as the Worker executes in a new process.
-        """
-        import core.config.config
-        core.config.config.initialize()
 
     def execute_workflow_worker(self):
         """Keep executing workflows as they come in over the ZMQ socket from the manager.

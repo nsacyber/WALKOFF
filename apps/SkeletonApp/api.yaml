@@ -8,15 +8,27 @@ info:
   license:
     name: Creative Commons
 actions:
+
+  global action:
+    run: app.test_global_action
+    description: Basic global function
+    parameters:
+      - name: data
+        required: true
+        type: string
+    returns:
+      Success:
+        schema:
+          type: string
   basic:
-    run: test_function
+    run: app.SkeletonApp.test_function
     description: Basic function which does not take in paramaters
     returns:
       Success:
         schema:
           type: object
   'action with params':
-    run: test_function_with_param
+    run: app.SkeletonApp.test_function_with_param
     description: Basic function which takes in parameter and returns it
     parameters:
     - name: test_param
@@ -29,9 +41,24 @@ actions:
         schema:
           type: string
   'action using device':
-    run: test_function_with_device_reference
+    run: app.SkeletonApp.test_function_with_device_reference
     description: Basic function which uses the connexted device
     returns:
       Success:
         schema:
           type: string
+devices:
+  SkeletonDeviceType:
+    description: a skeleton device type
+    fields:
+      - name: username
+        type: string
+        minLength: 5
+        maxLength: 20
+        required: true
+        placeholder: enter a username
+      - name: password
+        type: string
+        encrypted: true
+        minLength: 5
+        placeholder: enter a password

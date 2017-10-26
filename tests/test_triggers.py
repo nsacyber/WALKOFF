@@ -2,19 +2,17 @@ from tests.util.servertestcase import ServerTestCase
 from server import flaskserver as server
 from server.triggers import Triggers
 from server.returncodes import *
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
-from tests.apps import App
+from core.helpers import import_all_filters, import_all_flags
 from tests import config
 import core.config.config
 from core.case import callbacks
 import json
-
+import apps
 
 class TestTriggers(ServerTestCase):
 
     def setUp(self):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -139,6 +137,10 @@ class TestTriggers(ServerTestCase):
     #     self.assertTrue(result['result'])
 
     # Old Trigger tests
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_add_and_display_and_remove_trigger(self):
         condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "filters": []}

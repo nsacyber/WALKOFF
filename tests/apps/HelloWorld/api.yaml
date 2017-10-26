@@ -8,8 +8,33 @@ info:
   license:
     name: Creative Commons
 actions:
+  global1:
+    run: main.global1
+    description: example of a global action
+    parameters:
+        - name: arg1
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+  global2:
+    run: actions.global2
+    description: example of a global action
+    parameters:
+        - name: arg1
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+
   helloWorld:
-    run: helloWorld
+    run: main.Main.helloWorld
     description: Returns an introductory message
     returns:
       Success:
@@ -17,7 +42,7 @@ actions:
         schema:
           type: string
   'Hello World':
-    run: helloWorld
+    run: main.Main.helloWorld
     description: Returns an introductory message
     returns:
       Success:
@@ -25,7 +50,7 @@ actions:
         schema:
           type: string
   repeatBackToMe:
-    run: repeatBackToMe
+    run: main.Main.repeatBackToMe
     description: Repeats the call argument
     parameters:
         - name: call
@@ -38,7 +63,7 @@ actions:
         schema:
           type: string
   returnPlusOne:
-    run: returnPlusOne
+    run: main.Main.returnPlusOne
     description: Increments a given number by 1
     parameters:
         - name: number
@@ -51,7 +76,7 @@ actions:
         schema:
           type: number
   pause:
-    run: pause
+    run: main.Main.pause
     description: Pauses execution
     parameters:
         - name: seconds
@@ -64,7 +89,7 @@ actions:
         schema:
           type: number
   Buggy:
-    run: buggy_action
+    run: main.Main.buggy_action
     description: raises an exception
     returns:
       Success:
@@ -72,7 +97,7 @@ actions:
         schema:
           type: integer
   'Add Three':
-    run: addThree
+    run: main.Main.addThree
     description: Adds three numbers
     parameters:
         - name: num1
@@ -90,7 +115,7 @@ actions:
         schema:
           type: number
   'Json Sample':
-    run: json_sample
+    run: main.Main.json_sample
     description: Example of using a json input
     parameters:
         - name: json_in
@@ -127,7 +152,7 @@ actions:
           type: number
 
   Sample Event:
-    run: sample_event
+    run: main.Main.sample_event
     parameters:
         - name: arg1
           required: true

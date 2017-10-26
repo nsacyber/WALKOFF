@@ -1,22 +1,20 @@
 import unittest
 import time
 from os import path
+import apps
 import core.controller
 import core.config.config
 from core.case.callbacks import WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_filters, import_all_flags
 from tests.util.case_db_help import *
 from tests import config
-from tests.apps import App
-from tests.util.thread_control import *
 import threading
 
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -31,13 +29,17 @@ class TestZMQCommunication(unittest.TestCase):
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
         self.testWorkflow.set_execution_uid('some_uid')
         self.start = datetime.utcnow()
-        self.controller.initialize_threading(modified_setup_worker_env)
+        self.controller.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):
         self.controller.workflows = None
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 
@@ -127,14 +129,14 @@ class TestZMQCommunication(unittest.TestCase):
         @WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            self.controller.resume_workflow(uid)
 
         @WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
 
         def pause_resume_thread():
-            self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            self.controller.pause_workflow(uid)
             return
 
         @WorkflowExecutionStart.connect

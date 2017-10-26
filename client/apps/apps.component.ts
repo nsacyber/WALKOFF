@@ -42,7 +42,7 @@ export class AppsComponent {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				var xhr= new XMLHttpRequest();
-				xhr.open('GET', `apps/${this.appName}/`, true);
+				xhr.open('GET', `appinterface/${this.appName}/`, true);
 				xhr.onreadystatechange= function() {
 					if (this.readyState!==4) return;
 					if (this.status!==200) return;

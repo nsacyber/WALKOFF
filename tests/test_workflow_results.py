@@ -3,7 +3,7 @@ from server import flaskserver
 from core.case.workflowresults import WorkflowResult
 from tests import config
 from tests.util.servertestcase import ServerTestCase
-from tests.util.thread_control import modified_setup_worker_env
+
 
 class TestWorkflowResults(ServerTestCase):
     def setUp(self):

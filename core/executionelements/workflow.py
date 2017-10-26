@@ -130,8 +130,8 @@ class Workflow(ExecutionElement):
                     continue
                 data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
 
-            step.render_step(steps=total_steps)
             device_id = self.__setup_app_instance(instances, step)
+            step.render_step(steps=total_steps)
 
             if first:
                 first = False
@@ -183,11 +183,11 @@ class Workflow(ExecutionElement):
                 "input": step.inputs}
         try:
             step.execute(instance=instance(), accumulator=self._accumulator)
-            data['result'] = step.get_output().as_json()
+            data['result'] = step.get_output().as_json() if step.get_output() is not None else None
             data['execution_uid'] = step.get_execution_uid()
             data_sent.send(self, callback_name="Step Execution Success", object_type="Workflow", data=json.dumps(data))
         except Exception as e:
-            data['result'] = step.get_output().as_json()
+            data['result'] = step.get_output().as_json() if step.get_output() is not None else None
             data['execution_uid'] = step.get_execution_uid()
             data_sent.send(self, callback_name="Step Execution Error", object_type="Workflow", data=json.dumps(data))
             if self._total_risk > 0:

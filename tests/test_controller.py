@@ -1,17 +1,16 @@
 import unittest
 from core.controller import Controller
+import apps
 from tests import config
 import os
 from core import helpers
 import core.config.config
-from tests.apps import App
 
 
 class TestController(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        helpers.import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = helpers.import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = helpers.import_all_filters('tests.util.flagsfilters')
@@ -19,6 +18,10 @@ class TestController(unittest.TestCase):
 
     def setUp(self):
         self.controller = Controller()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_create_controller(self):
         self.assertEqual(self.controller.uid, "controller")

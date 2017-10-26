@@ -92,11 +92,11 @@ class MockLoadBalancer(object):
             workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
             self.exec_uid = ''
 
-    def pause_workflow(self, workflow_execution_uid, workflow_name):
+    def pause_workflow(self, workflow_execution_uid):
         if workflow_execution_uid in self.workflow_comms:
             self.workflow_comms[workflow_execution_uid].pause()
 
-    def resume_workflow(self, workflow_execution_uid, workflow_name):
+    def resume_workflow(self, workflow_execution_uid):
         if workflow_execution_uid in self.workflow_comms:
             self.workflow_comms[workflow_execution_uid].resume()
 

@@ -5,20 +5,23 @@ import core.config.config
 from core.decorators import ActionResult
 from core.executionelements.flag import Flag
 from core.executionelements.nextstep import NextStep
-from core.helpers import import_all_filters, import_all_flags, import_all_apps
-from tests.apps import App
+from core.helpers import import_all_filters, import_all_flags
 from tests.config import test_apps_path, function_api_path
+import apps
 
 
 class TestNextStep(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=test_apps_path, reload=True)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def __compare_init(self, elem, name, flags, status='Success', uid=None):
         self.assertEqual(elem.status, status)

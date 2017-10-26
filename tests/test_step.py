@@ -2,25 +2,29 @@ import json
 import unittest
 import core.config.config
 import core.config.paths
-from core.appinstance import AppInstance
 from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelements.flag import Flag
 from core.executionelements.nextstep import NextStep
 from core.executionelements.step import Step
-from core.helpers import (import_all_apps, UnknownApp, UnknownAppAction, InvalidInput, import_all_flags,
-                          import_all_filters)
+from core.helpers import UnknownApp, UnknownAppAction, InvalidInput, import_all_flags, import_all_filters
+from core.appinstance import AppInstance
 from tests.config import test_apps_path, function_api_path
+import apps
 
 
 class TestStep(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
         core.config.config.load_flagfilter_apis(path=function_api_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def __compare_init(self, elem, name, action, app, device, inputs, triggers=None, next_steps=None,
                        widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
@@ -313,6 +317,15 @@ class TestStep(unittest.TestCase):
             step.execute(instance.instance, {})
 
         self.assertTrue(result['started_triggered'])
+
+    def test_execute_global_action(self):
+        step = Step(app='HelloWorld', action='global2', inputs={'arg1': 'something'})
+        instance = AppInstance.create(app_name='HelloWorld', device_name='')
+        result = step.execute(instance.instance, {})
+        self.assertAlmostEqual(result.result, 'something')
+        self.assertEqual(result.status, 'Success')
+        self.assertEqual(step._output, result)
+
 
     def test_execute_event(self):
         step = Step(app='HelloWorld', action='Sample Event', inputs={'arg1': 1})

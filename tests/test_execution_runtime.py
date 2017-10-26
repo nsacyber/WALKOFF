@@ -1,24 +1,22 @@
 from datetime import datetime
 import unittest
-from core.helpers import import_all_apps, import_all_filters, import_all_flags
+from core.helpers import import_all_filters, import_all_flags
 from tests import config
 from core.case import subscription
 import core.config.config
 import core.case.database as case_database
 from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
 from tests.util.mock_objects import *
-from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-from tests.apps import App
+import apps
 
 
 class TestExecutionRuntime(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.flags = import_all_flags('tests.util.flagsfilters')
         core.config.config.filters = import_all_filters('tests.util.flagsfilters')
@@ -32,10 +30,13 @@ class TestExecutionRuntime(unittest.TestCase):
         self.controller = core.controller.controller
         self.controller.workflows = {}
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
 
     def tearDown(self):
         subscription.clear_subscriptions()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_templated_workflow(self):
         step_names = ['start', '1']

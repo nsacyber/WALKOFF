@@ -37,7 +37,7 @@ class PlaybookStore(object):
         logger.info('Loaded workflow {} into storage'.format(workflow.uid))
 
     def load_playbook(self, resource, loader=JsonPlaybookLoader):
-        """Loads multiple workloads from a file.
+        """Loads a playbook from a file.
 
         Args:
             resource (str): Path to the workflow.
@@ -49,12 +49,25 @@ class PlaybookStore(object):
             self.add_playbook(playbook)
 
     def add_playbook(self, playbook):
+        """
+        Adds a playbook to the store
+
+        Args:
+            playbook (Playbook): The playbook to add
+        """
         if playbook.name in self.playbooks:
             logger.warning('Playbook wih name {} already exists in storage. Overwriting.'.format(playbook.name))
         self.playbooks[playbook.name] = playbook
         logger.info('Loaded playbook {} into storage'.format(playbook.name))
 
     def add_workflow(self, playbook_name, workflow):
+        """
+        Adds a workflow to the store
+
+        Args:
+            playbook_name (str): Playbook to add the workflow to
+            workflow (Workflow): Workflow to add
+        """
         if playbook_name in self.playbooks:
             self.playbooks[playbook_name].add_workflow(workflow)
         else:
@@ -63,7 +76,7 @@ class PlaybookStore(object):
         logger.info('Loaded workflow {0} into playbook {1} in storage'.format(workflow.name, playbook_name))
 
     def load_playbooks(self, resource_collection=None, loader=JsonPlaybookLoader):
-        """Loads all workflows from a directory.
+        """Loads all playbooks from a directory.
 
         Args:
             resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration
@@ -75,6 +88,15 @@ class PlaybookStore(object):
             self.add_playbook(playbook)
 
     def create_workflow(self, playbook_name, workflow_name):
+        """
+        Creates an empty workflow
+
+        Args:
+            playbook_name (str): Name of the playbook to add
+        :param playbook_name:
+        :param workflow_name:
+        :return:
+        """
         workflow = Workflow(name=workflow_name)
         self.add_workflow(playbook_name, workflow)
 

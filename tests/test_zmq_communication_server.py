@@ -18,6 +18,7 @@ except ImportError:
 import logging
 
 
+
 class TestWorkflowServer(ServerTestCase):
     patch = False
 
