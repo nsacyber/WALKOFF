@@ -27,30 +27,20 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self,
-                 app,
-                 action,
-                 name='',
-                 device='',
-                 inputs=None,
-                 triggers=None,
-                 next_steps=None,
-                 position=None,
-                 widgets=None,
-                 risk=0,
-                 uid=None,
-                 templated=False,
-                 raw_representation=None):
+    def __init__(self, app, action, name='', device='', inputs=None, triggers=None, next_steps=None, position=None,
+                 widgets=None, risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 
         Args:
+            app (str): The name of the app associated with the Step
+            action (str): The name of the action associated with a Step
             name (str, optional): The name of the Step object. Defaults to an empty string.
-            action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
-            app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
             device (str, optional): The name of the device associated with the app associated with the Step. Defaults
                 to an empty string.
             inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
                 to None.
+            triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data
+                before continuing, then include these Trigger objects in the Step init. Defaults to None.
             next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
             position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
                 for UI display purposes. Defaults to None.
@@ -59,7 +49,8 @@ class Step(ExecutionElement):
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
-            raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating
+            templated (bool, optional): Whether or not the Step is templated. Used for Jinja templating.
+            raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating.
         """
         ExecutionElement.__init__(self, uid)
 
@@ -95,18 +86,45 @@ class Step(ExecutionElement):
         self._execution_uid = 'default'
 
     def get_output(self):
+        """Gets the output of a Step (the result)
+
+        Returns:
+            The result of the Step
+        """
         return self._output
 
     def get_next_up(self):
+        """Gets the next step to be executed
+
+        Returns:
+            The next step to be executed
+        """
         return self._next_up
 
     def set_next_up(self, next_up):
+        """Sets the next step to be executed
+
+        Returns:
+            The next step to be executed
+        """
         self._next_up = next_up
 
     def get_execution_uid(self):
+        """Gets the execution UID of the Step
+
+        Returns:
+            The execution UID
+        """
         return self._execution_uid
 
     def send_data_to_trigger(self, data):
+        """Sends data to the Step if it has triggers associated with it, and is currently awaiting data
+
+        Args:
+            data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
+                to be sent to the triggers, and 'inputs', which is an optional parameter to change the inputs to the
+                current Step
+        """
         self._incoming_data.set(data)
 
     def _update_json(self, updated_json):
@@ -139,6 +157,7 @@ class Step(ExecutionElement):
 
     def set_input(self, new_input):
         """Updates the input for a Step object.
+
         Args:
             new_input (dict): The new inputs for the Step object.
         """

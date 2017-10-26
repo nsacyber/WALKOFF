@@ -22,6 +22,8 @@ class Workflow(ExecutionElement):
             uid (str, optional): Optional UID to pass in for the workflow. Defaults to None.
             steps (dict, optional): Optional Step objects. Defaults to None.
             start (str, optional): Optional name of the starting Step. Defaults to None.
+            accumulated_risk (float, optional): The amount of risk that the execution of this Workflow has
+                accrued. Defaults to 0.0.
         """
         ExecutionElement.__init__(self, uid)
         self.name = name
@@ -42,9 +44,9 @@ class Workflow(ExecutionElement):
             action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
             app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
             device (str, optional): The name of the device associated with the app associated with the Step. Defaults
-            to an empty string.
+                to an empty string.
             arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
-            to None.
+                to None.
             next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             
@@ -56,7 +58,7 @@ class Workflow(ExecutionElement):
         self._total_risk += risk
         logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[name].read()))
 
-    def remove_step(self, name=''):
+    def remove_step(self, name):
         """Removes a Step object from the Workflow's list of Steps given the Step name.
         
         Args:
@@ -103,7 +105,7 @@ class Workflow(ExecutionElement):
 
         Args:
             execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
-            start (str, optional): The name of the first Step. Defaults to "start".
+            start (str, optional): The name of the first Step. Defaults to None.
             start_input (str, optional): Input into the first Step. Defaults to an empty string.
         """
         self._execution_uid = execution_uid
@@ -152,6 +154,13 @@ class Workflow(ExecutionElement):
         return device_id
 
     def send_data_to_step(self, data):
+        """Sends data to a Step if it has triggers associated with it, and is currently awaiting data
+
+        Args:
+            data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
+                to be sent to the triggers, and 'inputs', which is an optional parameter to change the inputs to the
+                current Step
+        """
         self._executing_step.send_data_to_trigger(data)
 
     def __steps(self, start):
@@ -222,9 +231,9 @@ class Workflow(ExecutionElement):
     def update_from_json(self, json_in):
         """Reconstruct a Workflow object based on JSON data.
 
-               Args:
-                   json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
-               """
+           Args:
+               json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
+        """
 
         # backup_steps = deepcopy(self.steps)
         backup_steps = self.strip_async_result(with_deepcopy=True)
@@ -245,12 +254,31 @@ class Workflow(ExecutionElement):
             raise
 
     def set_execution_uid(self, execution_uid):
+        """Sets the execution UID for the Workflow
+
+        Args:
+            execution_uid (str): The execution UID
+        """
         self._execution_uid = execution_uid
 
     def get_execution_uid(self):
+        """Gets the execution UID for the Workflow
+
+        Returns:
+            The execution UID of the Workflow
+        """
         return self._execution_uid
 
     def strip_async_result(self, with_deepcopy=False):
+        """Removes the AsyncResult object from all of the Steps, necessary to deepcopy a Workflow
+
+        Args:
+            with_deepcopy (bool, optional): Whether or not to deepcopy the Step, or just return the AsyncResult.
+                Defaults to False.
+
+        Returns:
+            A dict of step_uid: async_result, or step_uid to (step, async_result)
+        """
         steps = {}
         for step in self.steps.values():
             async_result = step._incoming_data
@@ -262,6 +290,13 @@ class Workflow(ExecutionElement):
         return steps
 
     def reload_async_result(self, steps, with_deepcopy=False):
+        """Reloads the AsyncResult object for all of the Steps, necessary to restore a Workflow
+
+        Args:
+            steps (dict): A dict of step_uid: async_result, or step_uid to (step, async_result)
+            with_deepcopy (bool, optional): Whether or not the Step was deepcopied (i.e. what format the steps dict
+                is in). Defaults to False
+        """
         if with_deepcopy:
             for step in steps.values():
                 step_obj = step[0]
@@ -272,6 +307,8 @@ class Workflow(ExecutionElement):
                 step._incoming_data = steps[step.uid]
 
     def reset_async_result(self):
+        """Reinitialize an AsyncResult object for all of the Steps when a Workflow is copied
+        """
         from gevent.event import AsyncResult
         for step in self.steps.values():
             step._incoming_data = AsyncResult()
