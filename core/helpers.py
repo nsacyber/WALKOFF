@@ -248,18 +248,25 @@ def import_submodules(package, recursive=False):
     Returns:
         A dictionary containing the imported module objects.
     """
+    successful_base_import = True
     if isinstance(package, str):
-        package = importlib.import_module(package)
-    results = {}
-    for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-        full_name = '{0}.{1}'.format(package.__name__, name)
         try:
-            results[full_name] = importlib.import_module(full_name)
+            package = importlib.import_module(package)
         except ImportError:
-            logger.warning('Could not imporrt {}. Skipping.'.format(full_name), exc_info=True)
-        if recursive and is_package:
-            results.update(import_submodules(full_name))
-    return results
+            successful_base_import = False
+            logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
+    if successful_base_import:
+        results = {}
+        for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+            full_name = '{0}.{1}'.format(package.__name__, name)
+            try:
+                results[full_name] = importlib.import_module(full_name)
+            except ImportError:
+                logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
+            if recursive and is_package:
+                results.update(import_submodules(full_name))
+        return results
+    return {}
 
 
 def format_db_path(db_type, path):
@@ -433,17 +440,27 @@ def import_and_find_tags(package, tag, prefix=None, recursive=True):
     """
 
     tagged = {}
+    successful_base_import = True
     if isinstance(package, str):
         prefix = package if prefix is None else prefix
-        package = importlib.import_module(package)
+        try:
+            package = importlib.import_module(package)
+        except ImportError:
+            successful_base_import = False
+            logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
         tagged.update(__get_tagged_functions(package, tag, prefix))
-    for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-        full_name = '{0}.{1}'.format(package.__name__, name)
-        module = importlib.import_module(full_name)
-        tagged.update(__get_tagged_functions(module, tag, prefix))
-        if recursive and is_package:
-            tagged.update(import_and_find_tags(full_name, tag, prefix=prefix))
-    return tagged
+    if successful_base_import:
+        for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+            full_name = '{0}.{1}'.format(package.__name__, name)
+            try:
+                module = importlib.import_module(full_name)
+            except ImportError:
+                logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
+            else:
+                tagged.update(__get_tagged_functions(module, tag, prefix))
+                if recursive and is_package:
+                    tagged.update(import_and_find_tags(full_name, tag, prefix=prefix))
+        return tagged
 
 
 def import_all_flags(package='core.flags'):
