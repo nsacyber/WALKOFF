@@ -171,7 +171,7 @@ class AppCache(object):
                 successful_import = False
         if successful_import and package != sys.modules[__name__]:
             for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-                if name != 'setup':
+                if name != 'setup' and not name.startswith('tests'):
                     full_name = '{0}.{1}'.format(package.__name__, name)
                     try:
                         module = import_module(full_name)
