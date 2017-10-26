@@ -29,7 +29,7 @@ def compose_yamls():
                 indentation = split_line[0].count('  ')
                 try:
                     final_yaml.extend(read_and_indent(os.path.join(paths.api_path, reference), indentation))
-                    final_yaml.append('\n')
+                    final_yaml.append(os.linesep)
                 except (IOError, OSError):
                     logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
                                                                                                       line_num))
@@ -121,11 +121,9 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
 
 def create_app():
     from .blueprints.events import setup_case_stream
-    from flask import Flask
     import core.config
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
-    compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
     _app.config.update(
         # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
@@ -140,15 +138,7 @@ def create_app():
         JWT_BLACKLIST_ENABLED=True,
         JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
-    # _app.jinja_options = Flask.jinja_options.copy()
-    # _app.jinja_options.update(dict(
-    #     variable_start_string='<%',
-    #     variable_end_string='%>'
-    # ))
-    # _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
-
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'
 
     from server.database import db
