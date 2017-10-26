@@ -174,17 +174,9 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertDictEqual(import_all_flags('tests.util.flagsfilters'),
                              import_and_find_tags('tests.util.flagsfilters', 'flag'))
 
-    def test_import_all_flags_invalid_flag_package(self):
-        with self.assertRaises(ImportError):
-            import_all_flags('invalid.package')
-
     def test_import_all_filters(self):
         self.assertDictEqual(import_all_filters('tests.util.flagsfilters'),
                              import_and_find_tags('tests.util.flagsfilters', 'filter'))
-
-    def test_import_all_filters_invalid_filter_package(self):
-        with self.assertRaises(ImportError):
-            import_all_flags('invalid.package')
 
     def test_get_app_action_api_valid(self):
         api = get_app_action_api('HelloWorld', 'pause')

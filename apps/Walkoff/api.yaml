@@ -384,26 +384,28 @@ actions:
           description: Unknown HTTP response from server
 devices:
   Walkoff:
-    - name: username
-      type: string
-      description: Username for Walkoff instance
-      placeholder: username
-      required: true
-    - name: password
-      type: string
-      description: Password for Walkoff instance
-      encrypted: true
-      placeholder: password
-      required: true
-    - name: ip
-      description: IP address of Walkoff instance
-      type: string
-      placehold: ip address
-      required: true
-    - name: port
-      description: Port of Walkoff instance
-      type: integer
-      minimum: 1
-      maximum: 65355
-      required: true
+    description: Walkoff instance
+    fields:
+      - name: username
+        type: string
+        description: Username for Walkoff instance
+        placeholder: username
+        required: true
+      - name: password
+        type: string
+        description: Password for Walkoff instance
+        encrypted: true
+        placeholder: password
+        required: true
+      - name: ip
+        description: IP address of Walkoff instance
+        type: string
+        placeholder: ip address
+        required: true
+      - name: port
+        description: Port of Walkoff instance
+        type: integer
+        minimum: 1
+        maximum: 65355
+        required: true
 
