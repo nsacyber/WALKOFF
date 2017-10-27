@@ -25,6 +25,8 @@ NUM_PROCESSES = core.config.config.num_processes
 
 class MultiprocessedExecutor(object):
     def __init__(self):
+        """Initializes a multiprocessedexecutor, which will handle the execution of workflows.
+        """
         self.threading_is_initialized = False
         self.uid = "executor"
         self.pids = []
@@ -66,6 +68,7 @@ class MultiprocessedExecutor(object):
 
     def initialize_threading(self, worker_env=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
+
         Args:
             worker_env (function, optional): Optional alternative worker setup environment function.
         """
@@ -163,8 +166,12 @@ class MultiprocessedExecutor(object):
         """Executes a workflow.
 
         Args:
-            start (str, optional): The name of the first, or starting step. Defaults to "start".
-            start_input (dict, optional): The input to the starting step of the workflow
+            workflow (Workflow): The Workflow to be executed.
+            start (str, optional): The name of the first, or starting step. Defaults to None.
+            start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.
+
+        Returns:
+            The execution UID of the Workflow.
         """
         uid = uuid.uuid4().hex
 
@@ -220,13 +227,34 @@ class MultiprocessedExecutor(object):
             return False
 
     def get_waiting_workflows(self):
+        """Gets a list of the execution UIDs of workflows currently awaiting data to be sent to a trigger.
+
+        Returns:
+            A list of execution UIDs of workflows currently awaiting data to be sent to a trigger.
+        """
         return [uid for uid, status in self.workflow_status.items() if status == WORKFLOW_AWAITING_DATA]
 
     def get_workflow_status(self, workflow_execution_uid):
+        """Gets the current status of a workflow by its execution UID
+
+        Args:
+            workflow_execution_uid (str): The execution UID of the workflow
+
+        Returns:
+            The status of the workflow
+        """
         try:
             return self.workflow_status[workflow_execution_uid]
         except KeyError:
             return 0
 
     def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+        """Sends the data_in to the workflows specified in workflow_uids.
+
+        Args:
+            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
+                Defaults to None.
+        """
         self.manager.send_data_to_trigger(data_in, workflow_uids, inputs)

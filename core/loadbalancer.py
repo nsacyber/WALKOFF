@@ -54,6 +54,18 @@ def recreate_workflow(workflow_json):
 
 
 def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
+    """Converts an execution element and its data to a protobuf message.
+
+    Args:
+        sender (execution element): The execution element object that is sending the data.
+        workflow_execution_uid (str, optional): The execution UID of the Workflow under which this execution
+            element falls. It is not required and defaults to an empty string, but it is highly recommended
+            so that the LoadBalancer can keep track of the Workflow's execution.
+        kwargs (dict, optional): A dict of extra fields, such as data, callback_name, etc.
+
+    Returns:
+        The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
+    """
     obj_type = kwargs['object_type']
     packet = data_pb2.Message()
     if obj_type == 'Workflow':
@@ -186,6 +198,14 @@ class LoadBalancer:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
     def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+        """Sends the data_in to the workflows specified in workflow_uids.
+
+        Args:
+            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
+                Defaults to None.
+        """
         data = dict()
         data['data_in'] = data_in
         data['inputs'] = inputs
@@ -276,6 +296,8 @@ class Worker:
             self.request_sock.send(b"Done")
 
     def receive_data(self):
+        """Constantly receives data from the ZMQ socket and handles it accordingly.
+        """
         while True:
             if self.thread_exit:
                 break
@@ -298,6 +320,13 @@ class Worker:
         return
 
     def on_data_sent(self, sender, **kwargs):
+        """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
+                callback in the main thread.
+
+            Args:
+                sender (execution element): The execution element that sent the signal.
+                kwargs (dict): Any extra data to send.
+        """
         packet_bytes = convert_to_protobuf(sender, self.workflow.get_execution_uid(), **kwargs)
         self.results_sock.send(packet_bytes)
 
