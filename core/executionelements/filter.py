@@ -61,4 +61,3 @@ class Filter(ExecutionElement):
             data_sent.send(self, callback_name="Filter Error", object_type="Filter")
             logger.error('Filter {0} encountered an error: {1}. Returning unmodified data'.format(self.action, str(e)))
         return original_data_in
-

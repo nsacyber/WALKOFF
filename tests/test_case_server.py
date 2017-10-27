@@ -1,16 +1,17 @@
 import json
 import os
-import tests.config
+from collections import OrderedDict
+from os.path import join
+
 import core.case.database as case_database
-from core.case.subscription import set_subscriptions, clear_subscriptions, delete_cases
 import core.case.subscription as case_subs
 import core.config.paths
-from os.path import join
-from tests.util.servertestcase import ServerTestCase
-from tests.util.assertwrappers import orderless_list_compare
 import server.flaskserver as server
+import tests.config
+from core.case.subscription import set_subscriptions, clear_subscriptions, delete_cases
 from server.returncodes import *
-from collections import OrderedDict
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.servertestcase import ServerTestCase
 
 
 class TestCaseServer(ServerTestCase):

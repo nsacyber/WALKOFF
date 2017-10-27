@@ -1,13 +1,16 @@
 import importlib
 import json
-import sys
 import logging
+import sys
+from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join, splitext
+
+import yaml
+
 import core.config.paths
 from core.config.paths import keywords_path
-from collections import OrderedDict
-import yaml
+
 __logger = logging.getLogger(__name__)
 
 
@@ -26,7 +29,7 @@ def load_config():
                             setattr(core.config.paths, key, value)
                         elif hasattr(self, key):
                             setattr(self, key, value)
-        except Exception:
+        except (IOError, OSError, ValueError):
             __logger.warning('Could not read config file.', exc_info=True)
 
 

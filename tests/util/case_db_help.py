@@ -1,6 +1,7 @@
 from datetime import datetime
-import core.case.subscription as case_subscription
+
 import core.case.database as case_database
+import core.case.subscription as case_subscription
 
 
 def setup_subscriptions_for_step(workflow_uids, step_uids, step_events=None, workflow_events=None):

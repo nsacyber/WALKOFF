@@ -9,7 +9,6 @@ from server.database import add_user, db, User
 
 
 class TestAuthorization(unittest.TestCase):
-
     def setUp(self):
         import server.flaskserver
         self.app = server.flaskserver.app.test_client(self)
@@ -34,12 +33,12 @@ class TestAuthorization(unittest.TestCase):
 
     def test_login_authorization_has_correct_return_code(self):
         response = self.app.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='admin', password='admin')))
+                                 data=json.dumps(dict(username='admin', password='admin')))
         self.assertEqual(response.status_code, OBJECT_CREATED)
 
     def test_login_authorization_has_correct_structure(self):
         response = self.app.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='admin', password='admin')))
+                                 data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
         self.assertSetEqual(set(key.keys()), {'access_token', 'refresh_token'})
 
@@ -70,7 +69,7 @@ class TestAuthorization(unittest.TestCase):
 
     def test_login_authorization_invalid_username(self):
         response = self.app.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='invalid', password='admin')))
+                                 data=json.dumps(dict(username='invalid', password='admin')))
         self.assertEqual(response.status_code, UNAUTHORIZED_ERROR)
 
     def test_login_authorization_invalid_password(self):
@@ -206,5 +205,5 @@ class TestAuthorization(unittest.TestCase):
         refresh_token = key['refresh_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
         self.app.post('/api/auth/logout', headers=headers, content_type="application/json",
-                                 data=json.dumps(dict(refresh_token=refresh_token)))
+                      data=json.dumps(dict(refresh_token=refresh_token)))
         self.assertEqual(user.login_count, 0)

@@ -1,12 +1,15 @@
 from functools import wraps
+
+from flask import request
 from flask_jwt_extended import get_jwt_claims
+from flask_jwt_extended.config import config
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.jwt_manager import JWTManager
 from flask_jwt_extended.tokens import decode_jwt
-from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.view_decorators import _load_user
+
 from server.database import User
-from flask_jwt_extended.config import config
-from flask import request
+
 try:
     from flask import _app_ctx_stack as ctx_stack
 except ImportError:  # pragma: no cover
@@ -90,12 +93,13 @@ def jwt_required_in_query(query_name):
             ctx_stack.top.jwt = jwt_data
             _load_user(jwt_data[config.identity_claim])
             return fn(*args, **kwargs)
+
         return wrapper
+
     return wrapped
 
 
 def _decode_jwt_from_query_string(param_name):
-
     # Verify we have the query string
     token = request.args.get(param_name, None)
     if not token:

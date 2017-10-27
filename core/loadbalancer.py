@@ -3,14 +3,17 @@ import logging
 import os
 import signal
 import threading
+
 import gevent
 import zmq.auth as auth
 import zmq.green as zmq
-from zmq.utils.strtypes import asbytes, cast_unicode
 from gevent.queue import Queue
-import core.config.paths
+from zmq.utils.strtypes import asbytes, cast_unicode
+
 import core.config.config
+import core.config.paths
 from core.protobuf.build import data_pb2
+
 try:
     from Queue import Queue
 except ImportError:

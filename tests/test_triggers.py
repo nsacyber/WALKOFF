@@ -1,13 +1,15 @@
-from tests.util.servertestcase import ServerTestCase
-from server import flaskserver as server
-from server.triggers import Triggers
-from server.returncodes import *
-from core.helpers import import_all_filters, import_all_flags
-from tests import config
+import json
+
+import apps
 import core.config.config
 from core.case import callbacks
-import json
-import apps
+from core.helpers import import_all_filters, import_all_flags
+from server import flaskserver as server
+from server.returncodes import *
+from server.triggers import Triggers
+from tests import config
+from tests.util.servertestcase import ServerTestCase
+
 
 class TestTriggers(ServerTestCase):
 

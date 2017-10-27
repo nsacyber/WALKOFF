@@ -1,4 +1,5 @@
 import uuid
+
 from core.jsonelementcreator import JsonElementCreator
 from core.jsonelementreader import JsonElementReader
 
@@ -8,7 +9,6 @@ class ExecutionElement(object):
         """Initializes a new ExecutionElement object. This is the parent class.
         
         Args:
-            name (str, optional): The name of the ExecutionElement. Defaults to an empty string.
             uid (str, optional): The UID of this ExecutionElement. Constructed from a UUID4 hex string
         """
         self.uid = uuid.uuid4().hex if uid is None else uid
@@ -51,7 +51,7 @@ class ExecutionElement(object):
                              if not callable(getattr(self, field))):
             if isinstance(value, list):
                 for list_element in (list_element_ for list_element_ in value
-                        if isinstance(list_element_, ExecutionElement)):
+                                     if isinstance(list_element_, ExecutionElement)):
                     list_element.regenerate_uids()
             elif isinstance(value, dict):
                 for dict_element in (element for element in value.values() if isinstance(element, ExecutionElement)):
@@ -71,4 +71,3 @@ class ExecutionElement(object):
                 out += ', {0}={1}'.format(key, value)
         out += '>'
         return out
-

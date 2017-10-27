@@ -1,10 +1,10 @@
 import unittest
-from core.controller import Controller
+
 import apps
-from tests import config
-import os
-from core import helpers
 import core.config.config
+from core import helpers
+from core.controller import Controller
+from tests import config
 
 
 class TestController(unittest.TestCase):

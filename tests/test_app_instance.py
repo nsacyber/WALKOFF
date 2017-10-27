@@ -1,9 +1,9 @@
+import importlib
 import unittest
 
+import apps
 from core import appinstance
 from tests.config import test_apps_path
-import apps
-import importlib
 
 
 class TestInstance(unittest.TestCase):

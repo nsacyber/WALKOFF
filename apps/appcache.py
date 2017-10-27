@@ -1,10 +1,12 @@
 import inspect
-import pkgutil
-from importlib import import_module
-import os.path
-from six import string_types
-import sys
 import logging
+import os.path
+import pkgutil
+import sys
+from importlib import import_module
+
+from six import string_types
+
 from core.helpers import UnknownApp, UnknownAppAction
 
 _logger = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ class AppCache(object):
         else:
             apps = [info[1] for info in pkgutil.walk_packages(module.__path__)]
             for app in apps:
-                 self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
+                self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):
         """
@@ -193,7 +195,7 @@ class AppCache(object):
         base_path = '.'.join([app_path, app_name])
         for field, obj in inspect.getmembers(module):
             if (inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False)
-                    and AppCache._get_qualified_class_name(obj) != 'apps.App'):
+                and AppCache._get_qualified_class_name(obj) != 'apps.App'):
                 self._cache_app(obj, app_name, base_path)
             elif inspect.isfunction(obj) and hasattr(obj, 'action'):
                 self._cache_action(obj, app_name, base_path)
@@ -216,9 +218,9 @@ class AppCache(object):
                     AppCache._get_qualified_class_name(app_class)))
             self._clear_existing_bound_functions(app_name)
         self._cache[app_name]['main'] = app_class
-        app_actions = inspect.getmembers(app_class,
-                                         (lambda field: (inspect.ismethod(field) or inspect.isfunction(field))
-                                                        and hasattr(field, 'action')))
+        app_actions = inspect.getmembers(
+            app_class, (lambda field: (inspect.ismethod(field) or inspect.isfunction(field))
+                                      and hasattr(field, 'action')))
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
         if app_actions:
@@ -248,7 +250,8 @@ class AppCache(object):
                 'App {0} already has unbound action {1} defined as {2}. Overwriting it with {3}'.format(
                     app_name,
                     qualified_action_name,
-                    AppCache._get_qualified_function_name(self._cache[app_name]['actions'][qualified_action_name]['run']),
+                    AppCache._get_qualified_function_name(
+                        self._cache[app_name]['actions'][qualified_action_name]['run']),
                     qualified_action_name))
 
         self._cache[app_name]['actions'][qualified_action_name] = {'run': action_method, 'bound': False}

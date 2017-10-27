@@ -1,10 +1,12 @@
 import json
-from tests.util.assertwrappers import orderless_list_compare
-import core.config.paths
-import core.config.config
-from tests.util.servertestcase import ServerTestCase
-from server.returncodes import *
+
 from flask import current_app
+
+import core.config.config
+import core.config.paths
+from server.returncodes import *
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.servertestcase import ServerTestCase
 
 
 class TestServer(ServerTestCase):

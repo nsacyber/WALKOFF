@@ -1,5 +1,5 @@
-import unittest
 import json
+import unittest
 
 import core.case.database as case_database
 from core.case.subscription import *

@@ -1,6 +1,6 @@
 import core.case.database as case_database
-from server import flaskserver
 from core.case.workflowresults import WorkflowResult
+from server import flaskserver
 from tests import config
 from tests.util.servertestcase import ServerTestCase
 

@@ -1,10 +1,11 @@
 import unittest
+
 import core.config.config
-from core.case import database
-from core.case import subscription
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
+from core.case import database
+from core.case import subscription
 from core.helpers import import_all_flags, import_all_filters
 from tests import config
 from tests.util.case_db_help import *

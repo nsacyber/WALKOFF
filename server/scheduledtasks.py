@@ -14,7 +14,6 @@ class ScheduledWorkflow(db.Model):
 
 
 class ScheduledTask(db.Model, TrackModificationsMixIn):
-
     __tablename__ = 'scheduled_task'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)

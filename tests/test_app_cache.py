@@ -1,9 +1,11 @@
+import os.path
+from importlib import import_module
 from unittest import TestCase
+
 from apps import AppCache
 from core.decorators import action
-from importlib import import_module
 from core.helpers import UnknownApp, UnknownAppAction
-import os.path
+
 
 def f1(): pass
 

@@ -14,32 +14,6 @@ from core.helpers import format_db_path
 logger = logging.getLogger(__name__)
 
 
-def read_and_indent(filename, indent):
-    indent = '  ' * indent
-    with open(filename, 'r') as file_open:
-        return ['{0}{1}'.format(indent, line) for line in file_open]
-
-
-def compose_yamls():
-    with open(os.path.join(paths.api_path, 'api.yaml'), 'r') as api_yaml:
-        final_yaml = []
-        for line_num, line in enumerate(api_yaml):
-            if line.lstrip().startswith('$ref:'):
-                split_line = line.split('$ref:')
-                reference = split_line[1].strip()
-                indentation = split_line[0].count('  ')
-                try:
-                    final_yaml.extend(read_and_indent(os.path.join(paths.api_path, reference), indentation))
-                    final_yaml.append(os.linesep)
-                except (IOError, OSError):
-                    logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
-                                                                                                      line_num))
-            else:
-                final_yaml.append(line)
-    with open(os.path.join(paths.api_path, 'composed_api.yaml'), 'w') as composed_yaml:
-        composed_yaml.writelines(final_yaml)
-
-
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
     from server.blueprints import events, widgets, workflowresult
@@ -170,7 +144,8 @@ def create_user():
 
     running_context.db.create_all()
     if not User.query.all():
-        admin_role = running_context.Role(name='admin', description='administrator', resources=server.database.default_resources)
+        admin_role = running_context.Role(
+            name='admin', description='administrator', resources=server.database.default_resources)
         running_context.db.session.add(admin_role)
         admin_user = add_user(username='admin', password='admin')
         admin_user.roles.append(admin_role)
@@ -183,33 +158,6 @@ def create_user():
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
         device_db.session.add(App(name=app_name, devices=[]))
-    running_context.db.session.commit()
-    device_db.session.commit()
-    running_context.CaseSubscription.sync_to_subscriptions()
-
-    app.logger.handlers = logging.getLogger('server').handlers
-
-
-def create_test_data():
-    from server.context import running_context
-    from . import database
-
-    running_context.db.create_all()
-
-    if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=server.database.default_resources)
-
-        u = running_context.User.add_user(username='admin', password='admin')
-        running_context.user_datastore.add_role_to_user(u, admin_role)
-        running_context.db.session.commit()
-
-    apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in device_db.session.query(App).all()])
-    app.logger.debug('Found apps: {0}'.format(apps))
-    for app_name in apps:
-        device_db.session.add(App(app=app_name, devices=[]))
     running_context.db.session.commit()
     device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()

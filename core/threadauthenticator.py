@@ -1,12 +1,12 @@
-import gevent
 import logging
-import zmq.green as zmq
+from threading import Thread
+
+import gevent
 import zmq.auth
+import zmq.green as zmq
 from zmq.auth.base import Authenticator
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import b, u
-from threading import Thread
-
 
 logger = logging.getLogger(__name__)
 

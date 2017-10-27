@@ -1,17 +1,19 @@
 import logging
-import os
-import sys
-import signal
-import gevent
-import uuid
 import multiprocessing
+import os
+import signal
+import sys
 import threading
+import uuid
+
+import gevent
 import zmq.green as zmq
-from core import loadbalancer
-from core.threadauthenticator import ThreadAuthenticator
+
 import core.config.config
 import core.config.paths
+from core import loadbalancer
 from core.case import callbacks
+from core.threadauthenticator import ThreadAuthenticator
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ NUM_PROCESSES = core.config.config.num_processes
 
 class MultiprocessedExecutor(object):
     def __init__(self):
-        """Initializes a multiprocessedexecutor, which will handle the execution of workflows.
+        """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
         self.uid = "executor"
@@ -246,7 +248,7 @@ class MultiprocessedExecutor(object):
         except KeyError:
             return 0
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+    def send_data_to_trigger(self, data_in, workflow_uids, inputs=None):
         """Sends the data_in to the workflows specified in workflow_uids.
 
         Args:
@@ -255,4 +257,5 @@ class MultiprocessedExecutor(object):
             inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
                 Defaults to None.
         """
+        inputs = inputs if inputs is not None else {}
         self.manager.send_data_to_trigger(data_in, workflow_uids, inputs)

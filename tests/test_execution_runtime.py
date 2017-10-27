@@ -1,16 +1,17 @@
-from datetime import datetime
 import unittest
-from core.helpers import import_all_filters, import_all_flags
-from tests import config
-from core.case import subscription
-import core.config.config
+from datetime import datetime
+
+import apps
 import core.case.database as case_database
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
-from tests.util.mock_objects import *
+import core.config.config
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-import apps
+from core.case import subscription
+from core.helpers import import_all_filters, import_all_flags
+from tests import config
+from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.mock_objects import *
 
 
 class TestExecutionRuntime(unittest.TestCase):

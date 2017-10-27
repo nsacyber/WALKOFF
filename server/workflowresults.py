@@ -1,8 +1,9 @@
+import json
+
+import core.case.database as case_database
 from core.case.callbacks import (WorkflowShutdown, WorkflowExecutionStart, StepExecutionError, StepExecutionSuccess,
                                  TriggerStepTaken, TriggerStepAwaitingData, WorkflowPaused, WorkflowResumed)
-import core.case.database as case_database
 from core.case.workflowresults import WorkflowResult, StepResult
-import json
 
 
 @WorkflowShutdown.connect

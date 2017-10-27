@@ -1,12 +1,14 @@
 import importlib
-import sys
-import os
-from six import string_types
-import pkgutil
-import logging
-import core.config.paths
-import core.config.config
 import json
+import logging
+import os
+import pkgutil
+import sys
+
+from six import string_types
+
+import core.config.config
+import core.config.paths
 
 try:
     from importlib import reload as reload_module

@@ -1,11 +1,13 @@
-from tests.util.servertestcase import ServerTestCase
-from server import flaskserver as server
-from tests import config
-from tests.util.assertwrappers import orderless_list_compare
-import server.metrics as metrics
-from server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 import json
 from datetime import timedelta
+
+import server.metrics as metrics
+from server import flaskserver as server
+from server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
+from tests import config
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.servertestcase import ServerTestCase
+
 
 class MetricsServerTest(ServerTestCase):
     def setUp(self):

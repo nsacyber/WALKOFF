@@ -1,20 +1,19 @@
 import json
+import logging
 from datetime import datetime
+
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-from core.config.paths import case_db_path
 import core.config.config
+from core.config.paths import case_db_path
 from core.helpers import format_db_path
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 Case_Base = declarative_base()
-
-logger = logging.getLogger(__name__)
 
 
 class _CaseEventLink(Case_Base):

@@ -5,13 +5,13 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
+import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core import controller
-from tests import config
-import apps
-from core.helpers import import_all_filters, import_all_flags
 import core.config.config
+from core import controller
+from core.helpers import import_all_filters, import_all_flags
+from tests import config
 
 
 class TestExecutionModes(unittest.TestCase):

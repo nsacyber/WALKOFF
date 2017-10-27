@@ -1,6 +1,6 @@
+from server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from server.returncodes import *
 
 
 class TestAppBlueprint(ServerTestCase):

@@ -9,11 +9,11 @@ import core.config.config
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
+from core.appinstance import AppInstance
 from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.executionelements.step import Step
 from core.executionelements.workflow import Workflow
 from core.helpers import import_all_filters, import_all_flags
-from core.appinstance import AppInstance
 from tests import config
 from tests.util.mock_objects import *
 

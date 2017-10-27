@@ -3,7 +3,7 @@ import unittest
 import yaml
 
 from core.config.paths import walkoff_schema_path
-from core.helpers import import_all_flags, import_all_filters, InvalidApi
+from core.helpers import import_all_flags, import_all_filters
 from core.validator import *
 from tests.config import basic_app_api
 

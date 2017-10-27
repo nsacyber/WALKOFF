@@ -1,8 +1,8 @@
-from tests.util.servertestcase import ServerTestCase
+import server.metrics as metrics
 from server import flaskserver as server
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
-import server.metrics as metrics
+from tests.util.servertestcase import ServerTestCase
 
 
 class MetricsTest(ServerTestCase):

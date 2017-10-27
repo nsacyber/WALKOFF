@@ -1,6 +1,7 @@
-from core.jsonelementcreator import JsonElementCreator
-from unittest import TestCase
 from collections import OrderedDict
+from unittest import TestCase
+
+from core.jsonelementcreator import JsonElementCreator
 
 
 class Base(object):

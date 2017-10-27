@@ -1,13 +1,15 @@
 import json
 import logging
 import uuid
-import gevent
 from copy import deepcopy
+
+import gevent
+
+from core.appinstance import AppInstance
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.step import Step
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
-from core.appinstance import AppInstance
 
 logger = logging.getLogger(__name__)
 
@@ -112,8 +114,8 @@ class Workflow(ExecutionElement):
         logger.info('Executing workflow {0}'.format(self.name))
         data_sent.send(self, callback_name="Workflow Execution Start", object_type="Workflow")
         start = start if start is not None else self.start
-        self.executor = self.__execute(start, start_input)
-        next(self.executor)
+        executor = self.__execute(start, start_input)
+        next(executor)
 
     def __execute(self, start, start_input):
         instances = {}
@@ -223,7 +225,7 @@ class Workflow(ExecutionElement):
         data = dict(self._accumulator)
         try:
             data_json = json.dumps(data)
-        except:
+        except TypeError:
             data_json = str(data)
         data_sent.send(self, callback_name="Workflow Shutdown", object_type="Workflow", data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))

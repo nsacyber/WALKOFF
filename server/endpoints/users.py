@@ -1,7 +1,8 @@
 from flask import request, current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
+
 from server.returncodes import *
+from server.security import roles_accepted_for_resources
 
 
 def read_all_users():

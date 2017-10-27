@@ -1,14 +1,15 @@
 import unittest
+
+import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.helpers import import_all_flags, import_all_filters
-from tests import config
 import core.config.config
-import apps
 import core.controller
-from tests.util.mock_objects import *
 import core.loadbalancer
 import core.multiprocessedexecutor
+from core.helpers import import_all_flags, import_all_filters
+from tests import config
+from tests.util.mock_objects import *
 
 
 class TestExecutionEvents(unittest.TestCase):

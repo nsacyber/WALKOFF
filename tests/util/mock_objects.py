@@ -1,10 +1,12 @@
-from core import loadbalancer
-from core.protobuf.build import data_pb2
 import json
 import threading
-from zmq.utils.strtypes import cast_unicode
-from core.case.callbacks import data_sent
 import time
+
+from zmq.utils.strtypes import cast_unicode
+
+from core import loadbalancer
+from core.case.callbacks import data_sent
+from core.protobuf.build import data_pb2
 
 try:
     from Queue import Queue

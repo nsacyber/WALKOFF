@@ -1,9 +1,9 @@
 import json
 import logging
 
-from .database import db, TrackModificationsMixIn
 import core.case.subscription
 from core.case.subscription import convert_from_event_names, convert_to_event_names
+from .database import db, TrackModificationsMixIn
 
 
 class CaseSubscription(db.Model, TrackModificationsMixIn):

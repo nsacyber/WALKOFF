@@ -52,4 +52,3 @@ def stream_case_events():
     def inner():
         return Response(__case_event_generator(), mimetype='text/event-stream')
     return inner()
-

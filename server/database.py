@@ -1,8 +1,9 @@
-import flask_sqlalchemy
-from sqlalchemy.ext.hybrid import hybrid_property
-from passlib.hash import pbkdf2_sha512
-from datetime import datetime
 import logging
+from datetime import datetime
+
+import flask_sqlalchemy
+from passlib.hash import pbkdf2_sha512
+from sqlalchemy.ext.hybrid import hybrid_property
 
 logger = logging.getLogger(__name__)
 

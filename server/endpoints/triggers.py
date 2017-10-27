@@ -1,8 +1,9 @@
 from flask import request, current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
-from server.returncodes import *
+
 from server.database import db
+from server.returncodes import *
+from server.security import roles_accepted_for_resources
 
 
 def send_data_to_trigger():

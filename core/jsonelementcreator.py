@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from six import iteritems
 
 
@@ -42,7 +43,8 @@ class JsonElementCreator(object):
             return current_class(**json_in)
         except (KeyError, TypeError) as e:
             from core.helpers import format_exception_message
-            raise ValueError('Improperly formatted JSON for ExecutionElement object {}'.format(format_exception_message(e)))
+            raise ValueError(
+                'Improperly formatted JSON for ExecutionElement object {}'.format(format_exception_message(e)))
 
     @classmethod
     def _setup_ordering(cls):

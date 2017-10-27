@@ -1,7 +1,8 @@
 import unittest
-from server.database import db, User, Role, add_user, remove_user
 from datetime import datetime, timedelta
+
 import server.flaskserver
+from server.database import db, User, Role, add_user, remove_user
 
 
 class TestUserRolesDatabase(unittest.TestCase):

@@ -36,7 +36,8 @@ class JsonPlaybookLoader(object):
                     playbook_json = json.loads(workflow_loaded)
                     playbook_name = playbook_json['name']
                     workflow_json = next(
-                        (workflow for workflow in playbook_json['workflows'] if workflow['name'] == workflow_name), None)
+                        (workflow for workflow in playbook_json['workflows']
+                         if workflow['name'] == workflow_name), None)
                     if workflow_json is None:
                         logger.warning('Workflow {0} not found in playbook {0}. '
                                        'Cannot load.'.format(workflow_name, playbook_name))
@@ -75,7 +76,8 @@ class JsonPlaybookLoader(object):
                     logger.error('Cannot parse {}'.format(resource))
                 except (InvalidInput, UnknownApp, UnknownAppAction, UnknownFilter, UnknownFlag) as e:
                     logger.error(
-                        'Error constructing playbook from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+                        'Error constructing playbook from {0}. '
+                        'Reason: {1}'.format(resource, format_exception_message(e)))
                     return None
 
     @staticmethod
@@ -83,7 +85,8 @@ class JsonPlaybookLoader(object):
         """Loads all playbooks from a directory.
 
         Args:
-            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration workflows_path.
+            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration
+                workflows_path.
         """
 
         if resource_collection is None:

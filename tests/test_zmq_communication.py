@@ -1,15 +1,16 @@
-import unittest
+import threading
 import time
+import unittest
 from os import path
+
 import apps
-import core.controller
 import core.config.config
+import core.controller
 from core.case.callbacks import WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.helpers import import_all_filters, import_all_flags
+from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
-from tests import config
-import threading
 
 
 class TestZMQCommunication(unittest.TestCase):

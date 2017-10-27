@@ -1,8 +1,9 @@
 from flask import current_app, request
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
-from server.returncodes import *
+
 from core.scheduler import InvalidTriggerArgs
+from server.returncodes import *
+from server.security import roles_accepted_for_resources
 
 
 def get_scheduler_status():

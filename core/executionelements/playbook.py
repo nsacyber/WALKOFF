@@ -127,4 +127,3 @@ class Playbook(ExecutionElement):
         """
         if workflow_name in self.workflows:
             self.workflows.pop(workflow_name)
-

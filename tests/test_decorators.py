@@ -1,9 +1,10 @@
-import unittest
-from core.decorators import *
-from apps import Event
 import threading
 import time
+import unittest
 from timeit import default_timer
+
+from apps import Event
+from core.decorators import *
 
 
 class TestDecorators(unittest.TestCase):

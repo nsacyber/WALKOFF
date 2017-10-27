@@ -1,13 +1,13 @@
-import unittest
-from core.helpers import *
 import types
-import sys
-from os.path import join
+import unittest
 from os import sep
+from os.path import join
+
 import apps
-from tests.config import test_workflows_path, test_apps_path, function_api_path
 import core.config.paths
 from core.config.config import initialize
+from core.helpers import *
+from tests.config import test_workflows_path, test_apps_path, function_api_path
 from tests.util.assertwrappers import orderless_list_compare
 
 

@@ -1,11 +1,12 @@
 import unittest
+
+import apps
+import core.config.config
 from core import controller
 from core.config.config import initialize
-from tests import config
 from core.helpers import import_all_filters, import_all_flags
+from tests import config
 from tests.config import test_apps_path, function_api_path
-import core.config.config
-import apps
 
 
 class TestLoadWorkflow(unittest.TestCase):

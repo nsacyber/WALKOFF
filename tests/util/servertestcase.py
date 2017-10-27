@@ -1,18 +1,19 @@
-import unittest
+import json
+import os
 import shutil
+import stat
+import unittest
+
+import apps
 import core.config.config
 import core.config.paths
-import tests.config
-import server.flaskserver
-from core.helpers import import_all_flags, import_all_filters
-from tests.util.mock_objects import *
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-import os
-import stat
-import json
-import apps
+import server.flaskserver
+import tests.config
+from core.helpers import import_all_flags, import_all_filters
+from tests.util.mock_objects import *
 
 
 class ServerTestCase(unittest.TestCase):

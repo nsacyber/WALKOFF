@@ -313,12 +313,10 @@ class PlaybookStore(object):
             new_playbook_name (str): The new name of the duplicated playbook.
         """
         if old_playbook_name in self.playbooks:
-            workflows = {}
             self.create_playbook(new_playbook_name)
             for workflow in self.playbooks[old_playbook_name].workflows.values():
                 self.copy_workflow(old_playbook_name, new_playbook_name, workflow.name, workflow.name)
 
-            # self.playbooks[new_playbook_name] = deepcopy(self.playbooks[old_playbook_name])
             self.playbooks[new_playbook_name].regenerate_uids()
 
     def get_workflows_by_uid(self, workflow_uids):

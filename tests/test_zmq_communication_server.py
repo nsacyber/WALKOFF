@@ -1,15 +1,18 @@
-from tests.util.servertestcase import ServerTestCase
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
-from datetime import datetime
-from server import flaskserver as flask_server
-import core.case.subscription
-import core.case.database as case_database
-import core.config.paths
-from server.returncodes import *
-import core.controller
-from gevent import monkey
 import socket
+from datetime import datetime
+
+from gevent import monkey
+
+import core.case.database as case_database
+import core.case.subscription
+import core.config.paths
+import core.controller
+from server import flaskserver as flask_server
+from server.returncodes import *
+from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.servertestcase import ServerTestCase
 from tests.util.thread_control import modified_setup_worker_env
+
 try:
     from importlib import reload
 except ImportError:

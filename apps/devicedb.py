@@ -1,14 +1,16 @@
-from sqlalchemy.ext.declarative import declared_attr, declarative_base
-import pyaes
 import logging
-from core.helpers import format_db_path
-from sqlalchemy.ext.hybrid import hybrid_property
-from core.validator import convert_primitive_type
-from core.config.config import secret_key as key
-import core.config.paths
-from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 import sys
+
+import pyaes
+from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
+from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+
+import core.config.paths
+from core.config.config import secret_key as key
+from core.helpers import format_db_path
+from core.validator import convert_primitive_type
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +149,8 @@ class Device(Device_Base):
     def from_json(json_in):
         description = json_in['description'] if 'description' in json_in else ''
         plaintext_fields, encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
-        return Device(json_in['name'], plaintext_fields, encrypted_fields, device_type=json_in['type'], description=description)
+        return Device(
+            json_in['name'], plaintext_fields, encrypted_fields, device_type=json_in['type'], description=description)
 
 
 allowed_device_field_types = ('string', 'number', 'boolean', 'integer')

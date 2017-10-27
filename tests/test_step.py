@@ -1,16 +1,17 @@
 import json
 import unittest
+
+import apps
 import core.config.config
 import core.config.paths
+from core.appinstance import AppInstance
 from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelements.flag import Flag
 from core.executionelements.nextstep import NextStep
 from core.executionelements.step import Step
 from core.helpers import UnknownApp, UnknownAppAction, InvalidInput, import_all_flags, import_all_filters
-from core.appinstance import AppInstance
 from tests.config import test_apps_path, function_api_path
-import apps
 
 
 class TestStep(unittest.TestCase):

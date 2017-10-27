@@ -1,15 +1,17 @@
 import json
 import os
+
 from flask import request, current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
-from core import helpers
-from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
+
 import core.case.database as case_database
-from core.case.workflowresults import WorkflowResult
 import core.config.config
 import core.config.paths
+from core import helpers
+from core.case.workflowresults import WorkflowResult
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from server.returncodes import *
+from server.security import roles_accepted_for_resources
 import server.workflowresults  # do not delete needed to register callbacks
 
 
