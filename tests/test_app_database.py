@@ -1,5 +1,6 @@
 import unittest
-from server.appdevice import App, Device
+
+from apps.devicedb import App, Device
 
 
 class TestAppDatabase(unittest.TestCase):

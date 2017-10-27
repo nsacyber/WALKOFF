@@ -1,11 +1,12 @@
 from flask import current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
+
 import core.config.config
 import core.config.paths
+from apps.devicedb import Device, device_db
 from core import helpers
 from server.returncodes import *
-from server.appdevice import Device, device_db
+from server.security import roles_accepted_for_resources
 
 
 def read_all_apps(interfaces_only=None, has_device_types=None):

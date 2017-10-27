@@ -1,5 +1,6 @@
 import unittest
-from server.appdevice import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField
+
+from apps.devicedb import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField
 
 
 class TestDeviceDatabase(unittest.TestCase):

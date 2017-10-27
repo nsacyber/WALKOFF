@@ -290,14 +290,14 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step._output, result)
 
     def test_execute_action_which_raises_exception(self):
-        from tests.apps.HelloWorld.exceptions import CustomException
+        from tests.testapps.HelloWorld.exceptions import CustomException
         step = Step(app='HelloWorld', action='Buggy')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(CustomException):
             step.execute(instance.instance, {})
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
-        from tests.apps.HelloWorld.exceptions import CustomException
+        from tests.testapps.HelloWorld.exceptions import CustomException
         step = Step(app='HelloWorld', action='Buggy')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
@@ -326,13 +326,12 @@ class TestStep(unittest.TestCase):
         self.assertEqual(result.status, 'Success')
         self.assertEqual(step._output, result)
 
-
     def test_execute_event(self):
         step = Step(app='HelloWorld', action='Sample Event', inputs={'arg1': 1})
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
         import time
-        from tests.apps.HelloWorld.events import event1
+        from tests.testapps.HelloWorld.events import event1
         import threading
 
         def sender():

@@ -1,6 +1,7 @@
 import logging
 from core.decorators import *
 from apps.appcache import AppCache
+from apps.devicedb import get_app as get_db_app
 
 _logger = logging.getLogger(__name__)
 
@@ -13,8 +14,7 @@ class App(object):
     _is_walkoff_app = True
 
     def __init__(self, app, device):
-        from server.appdevice import get_app
-        self.app = get_app(app)
+        self.app = get_db_app(app)
         self.device = self.app.get_device(device) if self.app is not None else None
         if self.device is not None:
             self.device_fields = self.device.get_plaintext_fields()

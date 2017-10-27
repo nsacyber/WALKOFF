@@ -4,7 +4,7 @@
       - System
     summary: Gets all apps
     description: ''
-    operationId: server.endpoints.apps.read_all_apps
+    operationId: server.endpoints.appapi.read_all_apps
     produces:
       - application/json
     parameters:
@@ -33,7 +33,7 @@
       - System
     summary: Gets all apps and all actions
     description: ''
-    operationId: server.endpoints.apps.read_all_app_actions
+    operationId: server.endpoints.appapi.read_all_app_actions
     produces:
       - application/json
     responses:
@@ -48,7 +48,7 @@
       - Apps
     summary: Get app actions
     description: ''
-    operationId: server.endpoints.apps.list_app_actions
+    operationId: server.endpoints.appapi.list_app_actions
     produces:
       - application/json
     parameters:
@@ -77,7 +77,7 @@
       - Apps
     summary: Get app devices
     description: ''
-    operationId: server.endpoints.apps.read_all_devices
+    operationId: server.endpoints.appapi.read_all_devices
     produces:
       - application/json
     parameters:

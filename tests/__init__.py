@@ -51,4 +51,4 @@ __all__ = ['test_app_api_validation',
            'test_workflow_results',
            'test_zmq_communication',
            'test_zmq_communication_server',
-           'apps']
+           'testapps']

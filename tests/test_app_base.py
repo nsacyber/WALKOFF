@@ -1,6 +1,7 @@
 from unittest import TestCase
+
 from apps import App as AppBase
-from server.appdevice import App, Device, DeviceField, EncryptedDeviceField, device_db
+from apps.devicedb import App, Device, DeviceField, EncryptedDeviceField, device_db
 
 
 class TestAppBase(TestCase):

@@ -7,6 +7,7 @@ import core.config.config
 from core.case.callbacks import WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.helpers import import_all_filters, import_all_flags
 from tests.util.case_db_help import *
+from tests.util.thread_control import modified_setup_worker_env
 from tests import config
 import threading
 
@@ -29,7 +30,7 @@ class TestZMQCommunication(unittest.TestCase):
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
         self.testWorkflow.set_execution_uid('some_uid')
         self.start = datetime.utcnow()
-        self.controller.initialize_threading()
+        self.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         case_database.initialize()
 
     def tearDown(self):

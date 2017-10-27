@@ -66,11 +66,11 @@ class MultiprocessedExecutor(object):
         if sender.workflow_execution_uid in self.workflow_status:
             self.workflow_status.pop(sender.workflow_execution_uid, None)
 
-    def initialize_threading(self, worker_env=None):
+    def initialize_threading(self, worker_environment_setup=None):
         """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
 
         Args:
-            worker_env (function, optional): Optional alternative worker setup environment function.
+            worker_environment_setup (function, optional): Optional alternative worker setup environment function.
         """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
                 os.path.exists(core.config.paths.zmq_private_keys_path)):
@@ -78,9 +78,7 @@ class MultiprocessedExecutor(object):
             sys.exit(0)
 
         for i in range(NUM_PROCESSES):
-            args = (i,)
-            if worker_env:
-                args = (i, worker_env,)
+            args = (i, worker_environment_setup) if worker_environment_setup else (i, )
 
             pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
             pid.start()

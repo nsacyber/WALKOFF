@@ -1,14 +1,15 @@
-import os
 import logging
+import os
+
+import connexion
 from jinja2 import Environment, FileSystemLoader
 
+import core.config.config
 import server.database
+from apps.devicedb import App, device_db
 from core import helpers
 from core.config import paths
-import core.config.config
-import connexion
 from core.helpers import format_db_path
-from server.appdevice import App, device_db
 
 logger = logging.getLogger(__name__)
 

@@ -86,7 +86,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(list_widgets('JunkApp'), [])
 
     def test_import_py_file(self):
-        module_name = 'tests.apps.HelloWorld'
+        module_name = 'tests.testapps.HelloWorld'
         imported_module = import_py_file(module_name,
                                          os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
         self.assertIsInstance(imported_module, types.ModuleType)
@@ -100,7 +100,7 @@ class TestHelperFunctions(unittest.TestCase):
             import_py_file('some.module.name', os.path.join(core.config.paths.apps_path, 'InvalidAppName', 'main.py'))
 
     def test_import_app_main(self):
-        module_name = 'tests.apps.HelloWorld.main'
+        module_name = 'tests.testapps.HelloWorld.main'
         imported_module = import_app_main('HelloWorld')
         self.assertIsInstance(imported_module, types.ModuleType)
         self.assertEqual(imported_module.__name__, module_name)

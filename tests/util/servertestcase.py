@@ -14,6 +14,7 @@ import stat
 import json
 import apps
 
+
 class ServerTestCase(unittest.TestCase):
     test_workflows_path = tests.config.test_workflows_path_with_generated
     patch = True

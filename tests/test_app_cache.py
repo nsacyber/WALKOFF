@@ -3,7 +3,7 @@ from apps import AppCache
 from core.decorators import action
 from importlib import import_module
 from core.helpers import UnknownApp, UnknownAppAction
-
+import os.path
 
 def f1(): pass
 
@@ -219,9 +219,9 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {'z': {'run': z, 'bound': False}}}})
 
     def test_cache_module(self):
-        module = import_module('tests.apps.HelloWorld.main')
-        from tests.apps.HelloWorld.main import Main, global1
-        self.cache._cache_module(module, 'HelloWorld', 'tests.apps')
+        module = import_module('tests.testapps.HelloWorld.main')
+        from tests.testapps.HelloWorld.main import Main, global1
+        self.cache._cache_module(module, 'HelloWorld', 'tests.testapps')
         self.maxDiff = None
         expected = {'HelloWorld': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
@@ -236,21 +236,21 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_cache_module_nothing_found(self):
-        module = import_module('tests.apps.HelloWorld.events')
-        self.cache._cache_module(module, 'HelloWorld', 'tests.apps')
+        module = import_module('tests.testapps.HelloWorld.events')
+        self.cache._cache_module(module, 'HelloWorld', 'tests.testapps')
         self.assertDictEqual(self.cache._cache, {})
 
     def test_cache_module_no_class(self):
-        module = import_module('tests.apps.HelloWorld.actions')
-        self.cache._cache_module(module, 'HelloWorld', 'tests.apps')
-        from tests.apps.HelloWorld.actions import global2
+        module = import_module('tests.testapps.HelloWorld.actions')
+        self.cache._cache_module(module, 'HelloWorld', 'tests.testapps')
+        from tests.testapps.HelloWorld.actions import global2
         self.assertDictEqual(self.cache._cache,
                              {'HelloWorld': {'actions': {'actions.global2': {'run': global2, 'bound': False}}}})
 
     def test_import_and_cache_submodules_from_string(self):
-        self.cache._import_and_cache_submodules('tests.apps.HelloWorld', 'HelloWorld', 'tests.apps')
-        from tests.apps.HelloWorld.main import Main, global1
-        from tests.apps.HelloWorld.actions import global2
+        self.cache._import_and_cache_submodules('tests.testapps.HelloWorld', 'HelloWorld', 'tests.testapps')
+        from tests.testapps.HelloWorld.main import Main, global1
+        from tests.testapps.HelloWorld.actions import global2
         expected = {'HelloWorld': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
@@ -265,10 +265,10 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_import_and_cache_submodules_from_module(self):
-        module = import_module('tests.apps.HelloWorld')
-        self.cache._import_and_cache_submodules(module, 'HelloWorld', 'tests.apps')
-        from tests.apps.HelloWorld.main import Main, global1
-        from tests.apps.HelloWorld.actions import global2
+        module = import_module('tests.testapps.HelloWorld')
+        self.cache._import_and_cache_submodules(module, 'HelloWorld', 'tests.testapps')
+        from tests.testapps.HelloWorld.main import Main, global1
+        from tests.testapps.HelloWorld.actions import global2
         expected = {'HelloWorld': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
@@ -286,19 +286,19 @@ class TestAppCache(TestCase):
         self.assertEqual(AppCache._path_to_module('apppath'), 'apppath')
 
     def test_path_to_module_trailing_slashes(self):
-        self.assertEqual(AppCache._path_to_module('apppath/'), 'apppath')
+        self.assertEqual(AppCache._path_to_module('apppath' + os.path.sep), 'apppath')
 
     def test_path_to_module_leading_slashes(self):
-        self.assertEqual(AppCache._path_to_module('./apppath'), 'apppath')
+        self.assertEqual(AppCache._path_to_module('.' + os.path.sep + 'apppath'), 'apppath')
 
     def test_path_to_module_strange_path(self):
-        self.assertEqual(AppCache._path_to_module('../apppath/'), 'apppath')
+        self.assertEqual(AppCache._path_to_module('..' + os.path.sep + 'apppath' + os.path.sep), 'apppath')
 
     def test_cache_apps(self):
-        self.cache.cache_apps('./tests/apps')
-        from tests.apps.HelloWorld.main import Main, global1
-        from tests.apps.HelloWorld.actions import global2
-        from tests.apps.DailyQuote.main import Main as DailyMain
+        self.cache.cache_apps(os.path.join('.', 'tests', 'testapps'))
+        from tests.testapps.HelloWorld.main import Main, global1
+        from tests.testapps.HelloWorld.actions import global2
+        from tests.testapps.DailyQuote.main import Main as DailyMain
         self.maxDiff = None
         expected = {'HelloWorld': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},

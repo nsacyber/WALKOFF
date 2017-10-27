@@ -4,13 +4,12 @@ from datetime import datetime
 from server import flaskserver as flask_server
 import core.case.subscription
 import core.case.database as case_database
-from core.case import callbacks
 import core.config.paths
 from server.returncodes import *
 import core.controller
 from gevent import monkey
 import socket
-import json
+from tests.util.thread_control import modified_setup_worker_env
 try:
     from importlib import reload
 except ImportError:
@@ -34,7 +33,7 @@ class TestWorkflowServer(ServerTestCase):
         reload(socket)
 
     def test_execute_workflow(self):
-        flask_server.running_context.controller.initialize_threading()
+        flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
         setup_subscriptions_for_step(workflow.uid, step_uids)
@@ -55,7 +54,7 @@ class TestWorkflowServer(ServerTestCase):
 
     # TODO: Uncomment this test.
     # def test_trigger_multiple_workflows(self):
-    #     flask_server.running_context.controller.initialize_threading()
+    #     flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
     #
     #     ids = []
     #
@@ -93,7 +92,7 @@ class TestWorkflowServer(ServerTestCase):
     #     self.assertEqual(result['result'], 2)
 
     def test_read_all_results(self):
-        flask_server.running_context.controller.initialize_threading()
+        flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)

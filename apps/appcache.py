@@ -169,7 +169,7 @@ class AppCache(object):
             except ImportError:
                 _logger.exception('Cannot import {}. Skipping.'.format(package))
                 successful_import = False
-        if successful_import and package != sys.modules[__name__]:
+        if successful_import and package != sys.modules[__name__] and hasattr(package, '__path__'):
             for loader, name, is_package in pkgutil.walk_packages(package.__path__):
                 if name != 'setup' and not name.startswith('tests'):
                     full_name = '{0}.{1}'.format(package.__name__, name)

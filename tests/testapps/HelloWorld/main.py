@@ -1,7 +1,7 @@
 import time
-from tests.apps import App, action, event
-from tests.apps.HelloWorld.exceptions import CustomException
-from tests.apps.HelloWorld.events import event1
+from apps import App, action, event
+from tests.testapps.HelloWorld.exceptions import CustomException
+from tests.testapps.HelloWorld.events import event1
 
 @action
 def global1(arg1):

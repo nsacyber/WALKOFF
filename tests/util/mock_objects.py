@@ -14,7 +14,7 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, worker_env=None):
+def mock_initialize_threading(self, worker_environment_setup=None):
     global workflows_executed
     workflows_executed = 0
 

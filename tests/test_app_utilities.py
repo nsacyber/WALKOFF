@@ -1,7 +1,8 @@
 import unittest
-from server.appdevice import get_device, get_all_devices_for_app, \
-    get_all_devices_of_type_from_app, App, Device, device_db
+
 import server.flaskserver
+from apps.devicedb import get_device, get_all_devices_for_app, \
+    get_all_devices_of_type_from_app, App, Device, device_db
 
 
 class TestAppUtilities(unittest.TestCase):

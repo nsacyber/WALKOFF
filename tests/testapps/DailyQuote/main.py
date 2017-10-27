@@ -1,4 +1,4 @@
-from tests.apps import App, action
+from apps import App, action
 import requests
 import json
 

@@ -1,6 +1,7 @@
 import unittest
-from server.appdevice import EncryptedDeviceField, DeviceField, DeviceFieldMixin
-from core.validator import convert_primitive_type
+
+from apps.devicedb import EncryptedDeviceField, DeviceField
+
 
 class TestDeviceField(unittest.TestCase):
 

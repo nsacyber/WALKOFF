@@ -9,6 +9,7 @@ import zmq.green as zmq
 from zmq.utils.strtypes import asbytes, cast_unicode
 from gevent.queue import Queue
 import core.config.paths
+import core.config.config
 from core.protobuf.build import data_pb2
 try:
     from Queue import Queue
@@ -216,11 +217,12 @@ class LoadBalancer:
 
 
 class Worker:
-    def __init__(self, id_):
+    def __init__(self, id_, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
             id_ (str): The ID of the worker. Needed for ZMQ socket communication.
+            worker_environment_setup (func, optional): Function to setup globals in the worker.
         """
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
@@ -260,6 +262,11 @@ class Worker:
         self.results_sock.curve_publickey = client_public
         self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(RESULTS_ADDR)
+
+        if worker_environment_setup:
+            worker_environment_setup()
+        else:
+            core.config.config.initialize()
 
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
