@@ -681,10 +681,10 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + oldPlaybookName,
+            'url': "/api/playbooks",
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
-            'data': JSON.stringify({'new_name': newPlaybookName}),
+            'data': JSON.stringify({'name': oldPlaybookName, 'new_name': newPlaybookName}),
             'success': function (data) {
                 downloadWorkflowList();
                 $.notify('Playbook ' + newPlaybookName + ' renamed successfully.', 'success');
@@ -704,7 +704,8 @@ $(function(){
             'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + oldPlaybookName + "/copy",
             'dataType': 'json',
-            'data': {playbook: newPlaybookName},
+            'contentType': 'application/json',
+            'data': JSON.stringify({playbook: newPlaybookName}),
             'success': function (data) {
                 downloadWorkflowList();
                 $.notify('Playbook ' + newPlaybookName + ' duplicated successfully.', 'success');
@@ -744,10 +745,10 @@ $(function(){
             'type': "POST",
             'global': false,
             'headers':{"Authorization": 'Bearer ' + authToken},
-            'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName,
+            'url': "/api/playbooks/" + playbookName + "/workflows",
             'dataType': 'json',
             'contentType': 'application/json; charset=utf-8',
-            'data': JSON.stringify({'new_name': newWorkflowName}),
+            'data': JSON.stringify({'name': oldWorkflowName, 'new_name': newWorkflowName}),
             'success': function (data) {
                 downloadWorkflowList();
                 $.notify('Workflow ' + newWorkflowName + ' renamed successfully.', 'success');
@@ -767,7 +768,8 @@ $(function(){
             'headers':{"Authorization": 'Bearer ' + authToken},
             'url': "/api/playbooks/" + playbookName + "/workflows/" + oldWorkflowName + "/copy",
             'dataType': 'json',
-            'data': {playbook: playbookName, workflow: newWorkflowName},
+            'contentType': 'application/json',
+            'data': JSON.stringify({playbook: playbookName, workflow: newWorkflowName}),
             'success': function (data) {
                 downloadWorkflowList();
                 $.notify('Workflow ' + newWorkflowName + ' duplicated successfully.', 'success');
