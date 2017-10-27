@@ -315,11 +315,6 @@ $(function(){
                     options: {
                         hidden: true
                     }
-                },
-                errors: {
-                    options: {
-                        hidden: true
-                    }
                 }
             }
         };
@@ -583,7 +578,6 @@ $(function(){
                     action: action,
                     app: app,
                     device: "",
-                    errors: [],
                     inputs: inputs,
                     name: id.toString(),
                     next_steps: [],
