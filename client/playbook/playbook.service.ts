@@ -29,7 +29,7 @@ export class PlaybookService {
 	 * @param newName New name for the updated playbook
 	 */
 	renamePlaybook(oldName: string, newName: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${oldName}`, { new_name: newName })
+		return this.authHttp.post(`/api/playbooks`, { name: oldName, new_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -65,7 +65,7 @@ export class PlaybookService {
 	 * @param newName New name for the updated workflow
 	 */
 	renameWorkflow(playbook: string, oldName: string, newName: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}`, { new_name: newName })
+		return this.authHttp.post(`/api/playbooks/${playbook}/workflows`, { name: oldName, new_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

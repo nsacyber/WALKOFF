@@ -18,7 +18,9 @@ import { AuthService } from '../auth/auth.service';
 
 import { App } from '../models/api/app';
 import { ActionApi } from '../models/api/actionApi';
-import { ArgumentSchema } from '../models/api/argumentSchema';
+import { ArgumentApi } from '../models/api/argumentApi';
+import { ConditionApi } from '../models/api/conditionApi';
+import { TransformApi } from '../models/api/transformApi';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Step } from '../models/playbook/step';
@@ -57,7 +59,7 @@ export class PlaybookComponent {
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
 	selectedNextStep: NextStep;
-	inputArgs: { [key: string]: ArgumentSchema } = {};
+	inputArgs: { [key: string]: ArgumentApi } = {};
 	cyJsonData: string;
 	actionTree: any;
 	workflowResults: WorkflowResult[] = [];
@@ -494,15 +496,16 @@ export class PlaybookComponent {
 	getAppsAndActions(): void {
 		this.playbookService.getAppsAndActions()
 			.then((actionsForApps) => {
-				this.apps = _.map(actionsForApps, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
-						action.name = actionName;
+				// this.apps = _.map(actionsForApps, function (app: { [key: string] : ActionApi }, appName: string) {
+				// 	return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
+				// 		action.name = actionName;
 
-						return action;
-					})};
-				})
+				// 		return action;
+				// 	})};
+				// })
 
-				this.apps.filter(a => a.actionApis.length);
+				// this.apps.filter(a => a.actionApis.length);
+				this.apps = actionsForApps;
 
 				// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
 				// 	let appObj: any = { name: app, children: [] };
@@ -532,15 +535,15 @@ export class PlaybookComponent {
 
 		if (!self.selectedStep) return;
 
-		self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ArgumentSchema }, a) => {
-			result[a.name] = a;
+		// self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ArgumentApi }, a) => {
+		// 	result[a.name] = a;
 
-			// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
-			if (!result[a.name].type && (<any>result[a.name]).schema) result[a.name].type = (<any>result[a.name]).schema.type;
-			return result;
-		}, {});
+		// 	// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
+		// 	if (!result[a.name].type && (<any>result[a.name]).schema) result[a.name].type = (<any>result[a.name]).schema.type;
+		// 	return result;
+		// }, {});
 		
-		console.log(self.inputArgs);
+		// console.log(self.inputArgs);
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app === data.app);
@@ -1011,23 +1014,15 @@ export class PlaybookComponent {
 		return this.apps.find(a => a.name === appName).actionApis.find(a => a.name === actionName);
 	}
 
-	/**
-	 * Gets the minimum value to check against for JSON Schema minimum / exclusiveMinimum parameters
-	 * @param field JSON Schema object
-	 */
-	getMin(field: any) {
-		if (field.minimum === undefined) return null;
-		if (field.exclusiveMinimum) return field.minimum + 1;
-		return field.minimum;
+	getConditionApis(appName: string): ConditionApi[] {
+		return this.apps.find(a => a.name === appName).conditionApis;
 	}
 
-	/**
-	 * Gets the maximum value to check against for JSON Schema maximum / exclusiveMaximum parameters
-	 * @param field JSON Schema Object
-	 */
-	getMax(field: any) {
-		if (field.maximum === undefined) return null;
-		if (field.exclusiveMaximum) return field.maximum - 1;
-		return field.maximum;
+	getTransformApis(appName: string): TransformApi[] {
+		return this.apps.find(a => a.name === appName).transformApis;
+	}
+
+	getInputApiArgs(appName: string, actionName: string, inputName: string): ArgumentApi {
+		return this._getAction(appName, actionName).args.find(a => a.name === inputName);
 	}
 }

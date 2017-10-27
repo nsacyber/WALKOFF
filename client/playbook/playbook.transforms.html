@@ -1,0 +1,21 @@
+<div>
+	<div class="row">
+		<div class="col-xs-6">
+			<select class="form-control" [(ngModel)]="selectedTransformApi">
+				<option *ngFor="let i of transformApis" [value]="i.name" [label]="i.name">{{i.name}}</option>
+			</select>
+		</div>
+		<div class="col-xs-6">
+			<div class="form-group">
+				<button class="btn btn-primary" (click)="addTransform()"><span class="fa fa-plus"></span>Add Transform</button>
+			</div>
+		</div>
+	</div>
+	<div *ngFor="let transform of transforms; let id = index">
+		<label>
+			Transform {{id+1}}: {{transform.name}}
+		</label>
+		<playbook-argument-component *ngFor="let argument of transform.args; let id = index" [loadedWorkflow]="loadedWorkflow"
+		 [argument]="argument" [argumentApi]="getTransformApiArgs(transform.name)" [id]="id"></playbook-argument-component>
+	</div>
+</div>

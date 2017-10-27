@@ -30,6 +30,8 @@ import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
+import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
+import { PlaybookTransformsComponent } from './playbook/playbook.transforms.component';
 
 @NgModule({
 	imports: [
@@ -64,6 +66,8 @@ import { PlaybookArgumentComponent } from './playbook/playbook.argument.componen
 		SettingsUserModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
+		PlaybookConditionsComponent,
+		PlaybookTransformsComponent,
 	],
 	providers: [{
 		provide: JwtHttp,

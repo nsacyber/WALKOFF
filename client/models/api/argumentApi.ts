@@ -1,4 +1,4 @@
-export class ArgumentSchema {
+export class ArgumentApi {
 	name: string;
 	type: string;
 	// required: boolean;

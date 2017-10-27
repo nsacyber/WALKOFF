@@ -159,9 +159,12 @@
                                 <!-- Inputs -->
                                 <h4>Inputs</h4>
                                 <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                                 [argument]="argument" [action]="inputArgs[argument.name]" [id]="id"></playbook-argument-component>
+                                 [argument]="argument" [argumentApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
+                                 [id]="id"></playbook-argument-component>
                                 <h4>Triggers</h4>
-                                
+                                <playbook-conditions-component [conditions]="selectedStep.conditions" [conditionApis]="getConditionApis(selectedStep.app)"
+                                 [transformApis]="getTransformApis(selectedStep.app)" [loadedWorkflow]="loadedWorkflow"
+                                 [appName]="selectedStep.app"></playbook-conditions-component>
                             </div>
                             <!-- Editor for TriggerSteps -->
                             <div *ngIf="selectedStep && selectedStep.conditions">

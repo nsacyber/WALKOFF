@@ -1,0 +1,23 @@
+<div>
+	<div class="row">
+		<div class="col-xs-6">
+			<select class="form-control" [(ngModel)]="selectedConditionApi">
+				<option *ngFor="let i of conditionApis" [value]="i.name" [label]="i.name">{{i.name}}</option>
+			</select>
+		</div>
+		<div class="col-xs-6">
+			<div class="form-group">
+				<button class="btn btn-primary" (click)="addCondition()"><span class="fa fa-plus"></span>Add Condition</button>
+			</div>
+		</div>
+	</div>
+	<div *ngFor="let condition of conditions; let id = index">
+		<label>
+			Condition {{id+1}}: {{condition.name}}
+		</label>
+		<playbook-argument-component *ngFor="let argument of condition.args; let id = index" [loadedWorkflow]="loadedWorkflow"
+		 [argument]="argument" [argumentApi]="getConditionApiArgs(condition.name)" [id]="id"></playbook-argument-component>
+		<playbook-transforms-component [transforms]="condition.transforms" [transformApis]="transformApis"
+		 [appName]="selectedStep.app" [loadedWorkflow]="loadedWorkflow"></playbook-transforms-component>
+	</div>
+</div>

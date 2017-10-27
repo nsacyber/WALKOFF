@@ -1,7 +1,7 @@
-import { ArgumentSchema } from './argumentSchema';
+import { ArgumentApi } from './argumentApi';
 
 export class ConditionApi {
 	name: string;
 	description: string;
-	args: ArgumentSchema[];
+	args: ArgumentApi[];
 }

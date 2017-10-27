@@ -1,8 +1,8 @@
-import { ArgumentSchema } from './argumentSchema';
+import { ArgumentApi } from './argumentApi';
 
 export class TransformApi {
 	name: string;
 	description: string;
-	args: ArgumentSchema[];
+	args: ArgumentApi[];
 	// return?
 }

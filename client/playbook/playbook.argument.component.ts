@@ -4,7 +4,7 @@ import { PlaybookService } from './playbook.service';
 
 import { Workflow } from '../models/playbook/workflow';
 import { ActionApi } from '../models/api/actionApi';
-import { ArgumentSchema } from '../models/api/argumentSchema';
+import { ArgumentApi } from '../models/api/argumentApi';
 import { Argument } from '../models/playbook/argument';
 import { Condition } from '../models/playbook/condition';
 import { Transform } from '../models/playbook/transform';
@@ -19,10 +19,11 @@ import { Transform } from '../models/playbook/transform';
 export class PlaybookArgumentComponent {
 	@Input() id: number;
 	@Input() argument: Argument;
-	@Input() action: ActionApi;
-	@Input() condition: Condition;
-	@Input() transform: Transform;
+	@Input() argumentApi: ArgumentApi;
 	@Input() loadedWorkflow: Workflow;
+	// @Input() action: ActionApi;
+	// @Input() condition: Condition;
+	// @Input() transform: Transform;
 
 	constructor() { }
 
