@@ -49,6 +49,7 @@ Workflow:
   type: object
   required: [name]
   description: A workflow object
+  additionalProperties: false
   properties:
     name:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
@@ -107,6 +108,7 @@ Step:
   type: object
   required: [name, action, app]
   description: Encapsulation of executing an action in an app
+  additionalProperties: false
   properties:
     name:
       description: Name of the step
@@ -245,6 +247,7 @@ NextStep:
   type: object
   required: [name]
   description: Encapsualtion of a list of possible steps to take and conditionals (flags) required to be met before taking that step
+  additionalProperties: false
   properties:
     name:
       description: The name of the next step
@@ -264,6 +267,7 @@ Flag:
   type: object
   required: [action]
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
+  additionalProperties: false
   properties:
     action:
       description: The action encapsulated by this flag
@@ -284,6 +288,7 @@ Filter:
   type: object
   required: [action]
   description: Filters or otherwise transforms the data given to it
+  additionalProperties: false
   properties:
     action:
       description: The action encapsulated by this filter
