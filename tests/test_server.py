@@ -144,8 +144,11 @@ class TestConfiguration(ServerTestCase):
                                                              in ['str', 'unicode'])]
         self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
         self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
-        with open(core.config.paths.config_path) as config_file:
-            self.original_config_file = config_file.read()
+        try:
+            with open(core.config.paths.config_path) as config_file:
+                self.original_config_file = config_file.read()
+        except:
+            self.original_config_file = '{}'
 
     def preTearDown(self):
         for key, value in self.original_paths.items():

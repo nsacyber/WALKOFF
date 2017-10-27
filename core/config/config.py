@@ -16,14 +16,18 @@ def load_config():
     """
     global https
     self = sys.modules[__name__]
-    with open(core.config.paths.config_path) as config_file:
-        config = json.loads(config_file.read())
-        for key, value in config.items():
-            if value:
-                if hasattr(core.config.paths, key):
-                    setattr(core.config.paths, key, value)
-                elif hasattr(self, key):
-                    setattr(self, key, value)
+    if isfile(core.config.paths.config_path):
+        try:
+            with open(core.config.paths.config_path) as config_file:
+                config = json.loads(config_file.read())
+                for key, value in config.items():
+                    if value:
+                        if hasattr(core.config.paths, key):
+                            setattr(core.config.paths, key, value)
+                        elif hasattr(self, key):
+                            setattr(self, key, value)
+        except Exception:
+            __logger.warning('Could not read config file.', exc_info=True)
 
 
 def write_values_to_file(keys=None):
