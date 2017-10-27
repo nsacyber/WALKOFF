@@ -1,6 +1,5 @@
-print('HERE')
-from api import compose_yamls
-compose_yamls()
+from compose_api import compose_api
+compose_api()
 
 import unittest
 import sys

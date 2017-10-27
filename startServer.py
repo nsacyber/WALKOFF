@@ -58,8 +58,8 @@ def run():
     # The order of these imports matter for initialization (should probably be fixed)
     from server import flaskserver
     import core.case.database as case_database
-    from api import compose_yamls
-    compose_yamls()
+    from compose_api import compose_api
+    compose_api()
     case_database.initialize()
     ssl_context = get_ssl_context()
     flaskserver.running_context.controller.initialize_threading()

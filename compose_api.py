@@ -13,7 +13,7 @@ def read_and_indent(filename, indent):
         return ['{0}{1}'.format(indent, line) for line in file_open]
 
 
-def compose_yamls():
+def compose_api():
     with open(os.path.join(paths.api_path, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
         for line_num, line in enumerate(api_yaml):
@@ -31,3 +31,7 @@ def compose_yamls():
                 final_yaml.append(line)
     with open(os.path.join(paths.api_path, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
+
+
+if __name__ == '__main__':
+    compose_api()

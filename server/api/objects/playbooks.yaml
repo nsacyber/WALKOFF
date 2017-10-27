@@ -110,6 +110,9 @@ Step:
   description: Encapsulation of executing an action in an app
   additionalProperties: false
   properties:
+    uid:
+      description: UID of this step
+      type: string
     name:
       description: Name of the step
       type: string
@@ -136,7 +139,7 @@ Step:
       type: number
       default: 0
       example: 20
-    input:
+    inputs:
       description: The input arguments to the action
       type: array
       items:
@@ -249,6 +252,9 @@ NextStep:
   description: Encapsualtion of a list of possible steps to take and conditionals (flags) required to be met before taking that step
   additionalProperties: false
   properties:
+    uid:
+      description: UID of this step
+      type: string
     name:
       description: The name of the next step
       type: string
@@ -269,6 +275,9 @@ Flag:
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
   additionalProperties: false
   properties:
+    uid:
+      description: UID of this step
+      type: string
     action:
       description: The action encapsulated by this flag
       type: string
@@ -290,6 +299,9 @@ Filter:
   description: Filters or otherwise transforms the data given to it
   additionalProperties: false
   properties:
+    uid:
+      description: UID of this step
+      type: string
     action:
       description: The action encapsulated by this filter
       type: string
