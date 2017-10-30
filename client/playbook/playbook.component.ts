@@ -44,8 +44,6 @@ import { WorkflowResult } from '../models/playbook/workflowResult';
 export class PlaybookComponent {
 	@ViewChild('cyRef') cyRef: ElementRef;
 
-	conditions: Condition[] = [];
-	transforms: Transform[] = [];
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
 
@@ -58,7 +56,12 @@ export class PlaybookComponent {
 	apps: App[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
-	selectedNextStep: NextStep;
+	selectedNextStepParams: {
+		nextStep: NextStep;
+		returnTypes: string[];
+		app: string;
+		action: string;
+	};
 	inputArgs: { [key: string]: ArgumentApi } = {};
 	cyJsonData: string;
 	actionTree: any;
@@ -91,8 +94,8 @@ export class PlaybookComponent {
 		this.toastyConfig.theme = 'bootstrap';
 
 		// TODO: update this to add them to the apps from getAppsAndActions, or just use getApis when that's implemented
-		// this.playbookService.getConditions().then(conditions => this.conditions = conditions);
-		// this.playbookService.getTransforms().then(transforms => this.transforms = transforms);
+		// this.playbookService.getConditions().then(apps => apps.forEach(a => this.apps.find(x => x.name === a.name).conditionApis = a.conditionApis));
+		// this.playbookService.getTransforms().then(apps => apps.forEach(a => this.apps.find(x => x.name === a.name).transformApis = a.transformApis));
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.getAppsAndActions();
 		this.getWorkflowResultsSSE();
@@ -504,8 +507,26 @@ export class PlaybookComponent {
 				// 	})};
 				// })
 
+				// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
+				actionsForApps.forEach(app => {
+					app.actionApis.forEach(actionApi => {
+						actionApi.args.forEach(arg => {
+							if (!arg.type && (<any>arg).schema) arg.type = (<any>arg).schema.type;
+						});
+					});
+				});
+
 				// this.apps.filter(a => a.actionApis.length);
 				this.apps = actionsForApps;
+
+				// TODO: these lines just add the global conditions/transforms to each of the apps.
+				// Shouldn't be necessary when app-specific flags/filters is implemented
+				// Also should just rely on the global get api function.
+				this.playbookService.getConditions().then(c => {
+					this.apps.forEach(a => a.conditionApis = _.cloneDeep(c[0].conditionApis));
+					console.log(this.apps, c);
+				});
+				this.playbookService.getTransforms().then(t => this.apps.forEach(a => a.transformApis = _.cloneDeep(t[0].transformApis)));
 
 				// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
 				// 	let appObj: any = { name: app, children: [] };
@@ -525,7 +546,7 @@ export class PlaybookComponent {
 
 	// This function displays a form next to the graph for editing a node when clicked upon
 	onNodeSelect(e: any, self: PlaybookComponent): void {
-		self.selectedNextStep = null;
+		self.selectedNextStepParams = null;
 
 		let data = e.target.data();
 
@@ -534,6 +555,9 @@ export class PlaybookComponent {
 		console.log(self.selectedStep);
 
 		if (!self.selectedStep) return;
+
+		// Add data to the selectedStep if it does not exist
+		if (!self.selectedStep.triggers) self.selectedStep.triggers = [];
 
 		// self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ArgumentApi }, a) => {
 		// 	result[a.name] = a;
@@ -551,14 +575,23 @@ export class PlaybookComponent {
 
 	onEdgeSelect(e: any, self: PlaybookComponent): void {
 		self.selectedStep = null;
-		self.selectedNextStep = null;
+		self.selectedNextStepParams = null;
 
 		let uid = e.target.data('uid');
 
 		self.loadedWorkflow.steps.forEach(s => {
-			if (self.selectedNextStep) return;
+			if (self.selectedNextStepParams) return;
 
-			self.selectedNextStep = s.next_steps.find(ns => ns.uid === uid);
+			let ns = s.next_steps.find(ns => ns.uid === uid);
+
+			if (!ns) return;
+
+			self.selectedNextStepParams = {
+				nextStep: ns,
+				returnTypes: this._getAction(s.app, s.action).returns,
+				app: s.app,
+				action: s.action
+			};
 		});
 	}
 
@@ -568,7 +601,7 @@ export class PlaybookComponent {
 
 		if (!self.cy.$(':selected').length) {
 			self.selectedStep = null;
-			self.selectedNextStep = null;
+			self.selectedNextStepParams = null;
 		}
 	}
 

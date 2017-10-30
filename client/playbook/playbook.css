@@ -149,6 +149,10 @@
 	margin: 0 5px;
 }
 
+.playbookMain .actionAddBar button {
+	margin-top: 25px;
+}
+
 .playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
 	white-space: initial;
 }

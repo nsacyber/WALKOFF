@@ -1,23 +1,31 @@
 <div>
-	<div class="row">
-		<div class="col-xs-6">
-			<select class="form-control" [(ngModel)]="selectedConditionApi">
-				<option *ngFor="let i of conditionApis" [value]="i.name" [label]="i.name">{{i.name}}</option>
+	<div class="row actionAddBar">
+		<div class="col-xs-4">
+			<label>App</label>
+			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetConditionSelection($event.target.value)">
+				<option *ngFor="let i of getAppsFromApis()" [value]="i" [label]="i">{{i}}</option>
 			</select>
 		</div>
-		<div class="col-xs-6">
+		<div class="col-xs-4">
+			<label>Action</label>
+			<select class="form-control" [(ngModel)]="selectedConditionApi">
+				<option *ngFor="let i of getConditionNamesForApp()" [value]="i" [label]="i">{{i}}</option>
+			</select>
+		</div>
+		<div class="col-xs-4">
 			<div class="form-group">
 				<button class="btn btn-primary" (click)="addCondition()"><span class="fa fa-plus"></span>Add Condition</button>
 			</div>
 		</div>
 	</div>
 	<div *ngFor="let condition of conditions; let id = index">
-		<label>
-			Condition {{id+1}}: {{condition.name}}
-		</label>
+		<label>Condition {{id+1}}: {{condition.app}} - {{condition.action}}</label>
 		<playbook-argument-component *ngFor="let argument of condition.args; let id = index" [loadedWorkflow]="loadedWorkflow"
-		 [argument]="argument" [argumentApi]="getConditionApiArgs(condition.name)" [id]="id"></playbook-argument-component>
-		<playbook-transforms-component [transforms]="condition.transforms" [transformApis]="transformApis"
-		 [appName]="selectedStep.app" [loadedWorkflow]="loadedWorkflow"></playbook-transforms-component>
+		[argument]="argument" [argumentApi]="getConditionApiArgs(condition.app, condition.action, argument.name)" [id]="id"></playbook-argument-component>
+		<div>
+			<h4>Transforms</h4>
+			<playbook-transforms-component [transforms]="condition.transforms" [apps]="apps"
+			[selectedAppName]="selectedAppName" [loadedWorkflow]="loadedWorkflow"></playbook-transforms-component>
+		</div>
 	</div>
 </div>

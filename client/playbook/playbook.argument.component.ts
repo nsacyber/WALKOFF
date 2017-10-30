@@ -21,9 +21,6 @@ export class PlaybookArgumentComponent {
 	@Input() argument: Argument;
 	@Input() argumentApi: ArgumentApi;
 	@Input() loadedWorkflow: Workflow;
-	// @Input() action: ActionApi;
-	// @Input() condition: Condition;
-	// @Input() transform: Transform;
 
 	constructor() { }
 

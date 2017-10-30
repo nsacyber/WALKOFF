@@ -1,21 +1,26 @@
 <div>
-	<div class="row">
-		<div class="col-xs-6">
-			<select class="form-control" [(ngModel)]="selectedTransformApi">
-				<option *ngFor="let i of transformApis" [value]="i.name" [label]="i.name">{{i.name}}</option>
+	<div class="row actionAddBar">
+		<div class="col-xs-4">
+			<label>App</label>
+			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetTransformSelection($event.target.value)">
+				<option *ngFor="let i of getAppsFromApis()" [value]="i" [label]="i">{{i}}</option>
 			</select>
 		</div>
-		<div class="col-xs-6">
+		<div class="col-xs-4">
+			<label>Action</label>
+			<select class="form-control" [(ngModel)]="selectedTransformApi">
+				<option *ngFor="let i of getTransformNamesForApp()" [value]="i" [label]="i">{{i}}</option>
+			</select>
+			</div>
+		<div class="col-xs-4">
 			<div class="form-group">
 				<button class="btn btn-primary" (click)="addTransform()"><span class="fa fa-plus"></span>Add Transform</button>
 			</div>
 		</div>
 	</div>
 	<div *ngFor="let transform of transforms; let id = index">
-		<label>
-			Transform {{id+1}}: {{transform.name}}
-		</label>
+		<h5>Transform {{id+1}}: {{transform.app}} - {{transform.action}}</h5>
 		<playbook-argument-component *ngFor="let argument of transform.args; let id = index" [loadedWorkflow]="loadedWorkflow"
-		 [argument]="argument" [argumentApi]="getTransformApiArgs(transform.name)" [id]="id"></playbook-argument-component>
+		 [argument]="argument" [argumentApi]="getTransformApiArgs(transform.app, transform.action, argument.name)" [id]="id"></playbook-argument-component>
 	</div>
 </div>

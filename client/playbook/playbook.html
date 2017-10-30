@@ -130,7 +130,7 @@
 
                         <div class="col-md-4 graphEditorColumn">
                             <!-- Editor for AppSteps -->
-                            <div *ngIf="selectedStep && selectedStep.inputs" id="parameters">
+                            <div *ngIf="selectedStep" id="parameters">
                                 <h3>App Step Parameters</h3>
                                 <div class="row">
                                     <div class="col-xs-6">
@@ -157,25 +157,33 @@
                                     </select>
                                 </div>
                                 <!-- Inputs -->
-                                <h4>Inputs</h4>
-                                <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                                 [argument]="argument" [argumentApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
-                                 [id]="id"></playbook-argument-component>
-                                <h4>Triggers</h4>
-                                <playbook-conditions-component [conditions]="selectedStep.conditions" [conditionApis]="getConditionApis(selectedStep.app)"
-                                 [transformApis]="getTransformApis(selectedStep.app)" [loadedWorkflow]="loadedWorkflow"
-                                 [appName]="selectedStep.app"></playbook-conditions-component>
-                            </div>
-                            <!-- Editor for TriggerSteps -->
-                            <div *ngIf="selectedStep && selectedStep.conditions">
-                                <h3>Trigger Step Parameters</h3>
-                                <div class="form-group">
-                                    <button class="btn btn-primary" (change)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                                <div *ngIf="selectedStep.inputs.length">
+                                    <h4>Inputs</h4>
+                                    <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
+                                    [argument]="argument" [argumentApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
+                                    [id]="id"></playbook-argument-component>
+                                </div>
+                                <!-- Triggers -->
+                                <div>
+                                    <h4>Trigger Conditions</h4>
+                                    <playbook-conditions-component [conditions]="selectedStep.triggers" [apps]="apps"
+                                    [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedStep.app"></playbook-conditions-component>
                                 </div>
                             </div>
                             <!-- Editor for NextSteps (edges) -->
-                            <div *ngIf="selectedNextStep">
+                            <div *ngIf="selectedNextStepParams && selectedNextStepParams.nextStep">
                                 <h3>Next Step Parameters</h3>
+                                <div class="form-group">
+                                    <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                                    <select class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.status" name="status">
+                                        <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i" [label]="i">{{i}}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <h4>Conditions</h4>
+                                    <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [apps]="apps"
+                                    [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedNextStepParams.app"></playbook-conditions-component>
+                                </div>
                             </div>
                         </div>
                     </div>
