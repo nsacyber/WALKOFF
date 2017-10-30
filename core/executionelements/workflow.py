@@ -271,6 +271,19 @@ class Workflow(ExecutionElement):
         """
         return self._execution_uid
 
+    def regenerate_uids(self):
+        start_step = deepcopy(self.steps.pop(self.start, None))
+        if start_step is not None:
+            start_step = deepcopy(start_step)
+            super(Workflow, self).regenerate_uids()
+            self.steps = {step.uid: step for step in self.steps.values()}
+            start_step.regenerate_uids()
+            self.start = start_step.uid
+            self.steps[self.start] = start_step
+        else:
+            super(Workflow, self).regenerate_uids()
+
+
     def strip_async_result(self, with_deepcopy=False):
         """Removes the AsyncResult object from all of the Steps, necessary to deepcopy a Workflow
 
