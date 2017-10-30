@@ -2,27 +2,24 @@ import logging
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import (get_flag, get_flag_api, InvalidElementConstructed, InvalidInput,
-                          dereference_step_routing, format_exception_message)
+from core.helpers import get_flag, get_flag_api, InvalidInput, dereference_step_routing, format_exception_message
 from core.validator import validate_flag_parameters, validate_parameter
 
 logger = logging.getLogger(__name__)
 
 
 class Flag(ExecutionElement):
-    def __init__(self, action=None, args=None, filters=None, uid=None):
+    def __init__(self, action, args=None, filters=None, uid=None):
         """Initializes a new Flag object. 
         
         Args:
-            action (str, optional): The action name for the Flag. Defaults to an empty string.
+            action (str): The action name for the Flag. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             filters(list[Filter], optional): A list of Filter objects for the Flag object. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
         """
-        if action is None:
-            raise InvalidElementConstructed('Action or xml must be specified in flag constructor')
         ExecutionElement.__init__(self, uid)
         self.action = action
         if isinstance(args, list):

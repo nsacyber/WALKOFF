@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import get_filter, get_filter_api, InvalidInput, InvalidElementConstructed, dereference_step_routing
+from core.helpers import get_filter, get_filter_api, InvalidInput, dereference_step_routing
 from core.validator import validate_filter_parameters, validate_parameter
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,6 @@ class Filter(ExecutionElement):
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
         """
-        if action is None:
-            raise InvalidElementConstructed('Action or xml must be specified in filter constructor')
         ExecutionElement.__init__(self, uid)
         self.action = action
         self._args_api, self._data_in_api = get_filter_api(self.action)

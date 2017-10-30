@@ -4,8 +4,7 @@ import uuid
 import core.config.config
 from core.executionelements.filter import Filter
 from core.executionelements.flag import Flag
-from core.helpers import (import_all_filters, import_all_flags, InvalidInput,
-                          InvalidElementConstructed)
+from core.helpers import import_all_filters, import_all_flags, InvalidInput
 from tests.config import function_api_path
 
 
@@ -60,10 +59,6 @@ class TestFlag(unittest.TestCase):
         filters = [Filter(action='mod1_filter2', args={'arg1': '5.4'}), Filter(action='Top Filter')]
         flag = Flag(action='Top Flag', filters=filters)
         self.__compare_init(flag, 'Top Flag', filters, {})
-
-    def test_init_with_no_action_no_xml(self):
-        with self.assertRaises(InvalidElementConstructed):
-            Flag()
 
     def test_execute_action_only_no_args_valid_data_no_conversion(self):
         self.assertTrue(Flag(action='Top Flag').execute(3.4, {}))

@@ -411,12 +411,6 @@ class UnknownFilter(Exception):
         self.filter = filter_name
 
 
-class InvalidElementConstructed(Exception):
-    def __init__(self, message):
-        self.message = message
-        super(InvalidElementConstructed, self).__init__(self.message)
-
-
 def __get_tagged_functions(module, tag, prefix):
     tagged = {}
     start_index = len(prefix)+1
