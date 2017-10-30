@@ -5,6 +5,42 @@
         <ul type="1" class="media-list imageList">
             <li class="media">
                 <div class="media-body">
+                    <p>Here we'll add a device for the Walkoff app, which provides interactions with another Walkoff
+                        instance. The devices are defined in the app's api.yaml file</p>
+                    <pre><code class="yaml">
+walkoff: '0.1'
+info:
+  title: Walkoff
+  version: 1.0.0
+devices:
+  Walkoff:
+    description: Walkoff instance
+    fields:
+      - name: username
+        description: Username for Walkoff instance
+        placeholder: username
+        type: string
+        required: true
+      - name: password
+        description: Password for Walkoff instance
+        placeholder: password
+        type: string
+        required: true
+        encrypted: true
+      - name: ip
+        description: IP Address of the Walkoff instance
+        placeholder: ip address
+        type: string
+        required: true
+      - name: port
+        description: Port of the Walkoff instance
+        placeholder: port
+        type: integer
+        minimum: 1
+        maximum: 65535
+        required: true
+                    </code></pre>
+
                     <h6>Open the Devices tab</h6>
                     <div class="media-left media-middle">
                         <a href="images/deviceManagement/starting_page.png">
@@ -19,10 +55,7 @@
                                  alt="...">
                         </a>
                     </div>
-                    <h6>Select an app and fill out any fields needed. Not all the fields need to be filled out, and if
-                        you need to use a field for something other than its intended use,
-                        for example putting an API key into the password field, then you can do that too.
-                        (Custom device fields coming soon...) </h6>
+                    <h6>Select an app and fill out any fields needed.</h6>
                     <div class="media-left media-middle">
                         <a href="images/deviceManagement/Add_a_device_form_filled_in.png">
                             <img class="media-object image"

@@ -6,19 +6,15 @@
                 The app framework allows WALKOFF to easily integrate with other software. If it has an API, it can be
                 integrated into WALKOFF. The team at WALKOFF have strived to make writing apps as
                 quick and painless as possible. Developing an app is as simple as writing a Python module in the apps
-                directory. There are 2 requirements for the app:
+                directory. Any functions you write in Python can be converted into an action just by adding a decorator
+                and a lightweight entry into a YAML file located inside the app. You can make a class which persists
+                state and is connected to a device, and evn make your own custom interface on the webapp. It's all up to
+                you.
             </p>
-            <ul>
-                <li>A python module called main.py which contains a class called Main which extends a common base class</li>
-                <li>A YAML metadata file named api.yaml to describe the actions you create</li>
-            </ul>
-            <p>
-                The rest of the module is up to you. You can even incorporate custom interfaces, turning your app into
-                its own website.
-            </p>
-            <p>The WALKOFF repository comes with three apps -- a HelloWorld app which demonstrates basic capabilities, a
-                SkeletonApp which can be copy and pasted to quickly start building your own app, and a Utilities app
-                which provides generic capabilities. Other apps can be found in the
+            <p>The WALKOFF repository comes with four apps -- a HelloWorld app which demonstrates basic capabilities, a
+                SkeletonApp which can be copy and pasted to quickly start building your own app, a Utilities app
+                which provides generic capabilities, and a Walkoff app which allows one instance of WALKOFF to interact
+                with another instance of WALKOFF. Other apps can be found in the
                 <a href="http://www.github.com/iadgov/walkoff-apps">WALKOFF-Apps</a> repository</p>
         </div>
 
