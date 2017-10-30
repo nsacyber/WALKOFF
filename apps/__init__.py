@@ -15,7 +15,7 @@ class App(object):
 
     def __init__(self, app, device):
         self.app = get_db_app(app)
-        self.device = self.app.get_device(device) if self.app is not None else None
+        self.device = self.app.get_device(device) if (self.app is not None and device) else None
         if self.device is not None:
             self.device_fields = self.device.get_plaintext_fields()
             self.device_type = self.device.type
