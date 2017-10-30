@@ -1,0 +1,17 @@
+core\.protobuf package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    core.protobuf.build
+
+Module contents
+---------------
+
+.. automodule:: core.protobuf
+    :members:
+    :undoc-members:
+    :show-inheritance:

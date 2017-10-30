@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>server.endpoints package &#8212; WALKOFF  documentation</title>
-    
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -33,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -46,26 +43,26 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-server.endpoints.apps">
-<span id="server-endpoints-apps-module"></span><h2>server.endpoints.apps module<a class="headerlink" href="#module-server.endpoints.apps" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-server.endpoints.appapi">
+<span id="server-endpoints-appapi-module"></span><h2>server.endpoints.appapi module<a class="headerlink" href="#module-server.endpoints.appapi" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.apps.list_app_actions">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">list_app_actions</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.list_app_actions" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.list_app_actions">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">list_app_actions</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.list_app_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.apps.read_all_app_actions">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">read_all_app_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_all_app_actions" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.read_all_app_actions">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_app_actions</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_app_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.apps.read_all_apps">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">read_all_apps</code><span class="sig-paren">(</span><em>interfaces_only=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_all_apps" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.read_all_apps">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_apps</code><span class="sig-paren">(</span><em>interfaces_only=None</em>, <em>has_device_types=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_apps" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.apps.read_all_devices">
-<code class="descclassname">server.endpoints.apps.</code><code class="descname">read_all_devices</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.apps.read_all_devices" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.read_all_devices">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_devices</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_devices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -88,7 +85,7 @@
 
 <dl class="function">
 <dt id="server.endpoints.auth.refresh">
-<code class="descclassname">server.endpoints.auth.</code><code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.auth.refresh" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.auth.</code><code class="descname">refresh</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.auth.refresh" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -151,6 +148,11 @@
 <div class="section" id="module-server.endpoints.devices">
 <span id="server-endpoints-devices-module"></span><h2>server.endpoints.devices module<a class="headerlink" href="#module-server.endpoints.devices" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="server.endpoints.devices.add_configuration_keys_to_device_json">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">add_configuration_keys_to_device_json</code><span class="sig-paren">(</span><em>device_fields</em>, <em>device_fields_api</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.add_configuration_keys_to_device_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="server.endpoints.devices.create_device">
 <code class="descclassname">server.endpoints.devices.</code><code class="descname">create_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.create_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -163,6 +165,11 @@
 <dl class="function">
 <dt id="server.endpoints.devices.export_devices">
 <code class="descclassname">server.endpoints.devices.</code><code class="descname">export_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.export_devices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.devices.get_device_json_with_app_name">
+<code class="descclassname">server.endpoints.devices.</code><code class="descname">get_device_json_with_app_name</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.devices.get_device_json_with_app_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -201,6 +208,11 @@
 </div>
 <div class="section" id="module-server.endpoints.metadata">
 <span id="server-endpoints-metadata-module"></span><h2>server.endpoints.metadata module<a class="headerlink" href="#module-server.endpoints.metadata" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="server.endpoints.metadata.read_all_device_types">
+<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_device_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_device_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="function">
 <dt id="server.endpoints.metadata.read_all_filters">
 <code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_filters" title="Permalink to this definition">¶</a></dt>
@@ -313,7 +325,7 @@ filename (str): The given filename</div></blockquote>
 
 <dl class="function">
 <dt id="server.endpoints.playbooks.read_all_results">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_all_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_all_results" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_all_results</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_all_results" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -322,8 +334,13 @@ filename (str): The given filename</div></blockquote>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="server.endpoints.playbooks.read_result">
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_result</code><span class="sig-paren">(</span><em>uid</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="server.endpoints.playbooks.read_results">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_results" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_results</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_results" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -456,6 +473,11 @@ filename (str): The given filename</div></blockquote>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="server.endpoints.triggers.send_data_to_trigger">
+<code class="descclassname">server.endpoints.triggers.</code><code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="server.endpoints.triggers.update_trigger">
 <code class="descclassname">server.endpoints.triggers.</code><code class="descname">update_trigger</code><span class="sig-paren">(</span><em>trigger_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.update_trigger" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -504,7 +526,7 @@ filename (str): The given filename</div></blockquote>
   <ul>
 <li><a class="reference internal" href="#">server.endpoints package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-server.endpoints.apps">server.endpoints.apps module</a></li>
+<li><a class="reference internal" href="#module-server.endpoints.appapi">server.endpoints.appapi module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.auth">server.endpoints.auth module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.cases">server.endpoints.cases module</a></li>
 <li><a class="reference internal" href="#module-server.endpoints.configuration">server.endpoints.configuration module</a></li>
@@ -553,7 +575,7 @@ filename (str): The given filename</div></blockquote>
       &copy;2017, IADGOV.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

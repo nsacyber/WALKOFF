@@ -20,14 +20,6 @@ server\.app module
     :undoc-members:
     :show-inheritance:
 
-server\.appdevice module
-------------------------
-
-.. automodule:: server.appdevice
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 server\.casesubscription module
 -------------------------------
 

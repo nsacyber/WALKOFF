@@ -1,0 +1,22 @@
+core\.protobuf\.build package
+=============================
+
+Submodules
+----------
+
+core\.protobuf\.build\.data\_pb2 module
+---------------------------------------
+
+.. automodule:: core.protobuf.build.data_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: core.protobuf.build
+    :members:
+    :undoc-members:
+    :show-inheritance:

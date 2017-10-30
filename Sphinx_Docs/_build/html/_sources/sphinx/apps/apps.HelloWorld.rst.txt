@@ -6,32 +6,23 @@ Subpackages
 
 .. toctree::
 
-    apps.HelloWorld.tests
     apps.HelloWorld.widgets
 
 Submodules
 ----------
 
+apps\.HelloWorld\.app module
+----------------------------
+
+.. automodule:: apps.HelloWorld.app
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 apps\.HelloWorld\.display module
 --------------------------------
 
 .. automodule:: apps.HelloWorld.display
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-apps\.HelloWorld\.main module
------------------------------
-
-.. automodule:: apps.HelloWorld.main
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-apps\.HelloWorld\.setup module
-------------------------------
-
-.. automodule:: apps.HelloWorld.setup
     :members:
     :undoc-members:
     :show-inheritance:

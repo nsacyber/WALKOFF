@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>server package &#8212; WALKOFF  documentation</title>
-    
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -33,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -58,7 +55,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="server.endpoints.html">server.endpoints package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.apps">server.endpoints.apps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.appapi">server.endpoints.appapi module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.auth">server.endpoints.auth module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.cases">server.endpoints.cases module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.endpoints.html#module-server.endpoints.configuration">server.endpoints.configuration module</a></li>
@@ -83,18 +80,8 @@
 <div class="section" id="module-server.app">
 <span id="server-app-module"></span><h2>server.app module<a class="headerlink" href="#module-server.app" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.app.compose_yamls">
-<code class="descclassname">server.app.</code><code class="descname">compose_yamls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.compose_yamls" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.app.create_app">
 <code class="descclassname">server.app.</code><code class="descname">create_app</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.create_app" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.app.create_test_data">
-<code class="descclassname">server.app.</code><code class="descname">create_test_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.app.create_test_data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -103,207 +90,9 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.app.read_and_indent">
-<code class="descclassname">server.app.</code><code class="descname">read_and_indent</code><span class="sig-paren">(</span><em>filename</em>, <em>indent</em><span class="sig-paren">)</span><a class="headerlink" href="#server.app.read_and_indent" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.app.register_blueprints">
 <code class="descclassname">server.app.</code><code class="descname">register_blueprints</code><span class="sig-paren">(</span><em>flaskapp</em><span class="sig-paren">)</span><a class="headerlink" href="#server.app.register_blueprints" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</div>
-<div class="section" id="module-server.appdevice">
-<span id="server-appdevice-module"></span><h2>server.appdevice module<a class="headerlink" href="#module-server.appdevice" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="server.appdevice.App">
-<em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">App</code><span class="sig-paren">(</span><em>app=None</em>, <em>devices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
-<dl class="method">
-<dt id="server.appdevice.App.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_devices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of an App object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The JSON representation of an App object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.App.created_at">
-<code class="descname">created_at</code><a class="headerlink" href="#server.appdevice.App.created_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.App.devices">
-<code class="descname">devices</code><a class="headerlink" href="#server.appdevice.App.devices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="server.appdevice.App.get_all_devices_for_app">
-<em class="property">static </em><code class="descname">get_all_devices_for_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_all_devices_for_app" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets all the devices associated with an app.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>app_name (str): The name of the app.</dd>
-<dt>Returns:</dt>
-<dd>(list[Device]): A list of devices associated with this app. Returns empty list if app is not in database.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="server.appdevice.App.get_device">
-<em class="property">static </em><code class="descname">get_device</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.get_device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the device associated with the app.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>app_name (str): The name of the app.
-device_name (str): The name of the device.</dd>
-<dt>Returns:</dt>
-<dd>(Device): The desired device. Returns None if app or device not found.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.App.id">
-<code class="descname">id</code><a class="headerlink" href="#server.appdevice.App.id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.appdevice.App.initialize">
-<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.initialize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.App.modified_at">
-<code class="descname">modified_at</code><a class="headerlink" href="#server.appdevice.App.modified_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.App.name">
-<code class="descname">name</code><a class="headerlink" href="#server.appdevice.App.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.appdevice.App.shutdown">
-<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.App.shutdown" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="server.appdevice.Device">
-<em class="property">class </em><code class="descclassname">server.appdevice.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>name</em>, <em>app_id</em>, <em>username=''</em>, <em>password=None</em>, <em>ip='0.0.0.0'</em>, <em>port=0</em>, <em>extra_fields=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code>, <a class="reference internal" href="#server.database.TrackModificationsMixIn" title="server.database.TrackModificationsMixIn"><code class="xref py py-class docutils literal"><span class="pre">server.database.TrackModificationsMixIn</span></code></a></p>
-<dl class="staticmethod">
-<dt id="server.appdevice.Device.add_device">
-<em class="property">static </em><code class="descname">add_device</code><span class="sig-paren">(</span><em>name</em>, <em>app_id</em>, <em>username</em>, <em>password</em>, <em>ip</em>, <em>port</em>, <em>extra_fields</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.add_device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a new Device object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>name (str, optional): The name of the Device object. Defaults to an empty string.
-app_id (str): The ID of the App object to which this Device is associated.
-username (str, optional): The username for the Device object. Defaults to an empty string.
-password (str, optional): The password for the Device object. Defaults to an empty string.
-ip (str, optional): The IP address for for the Device object. Defaults to &#8220;0.0.0.0&#8221;.
-port (int, optional): The port for the Device object. Defaults to 0.
-extra_fields (str, optional): The string representation of a dictionary that holds various custom
-extra fields for the Device object. Defaults to an empty string.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.app">
-<code class="descname">app</code><a class="headerlink" href="#server.appdevice.Device.app" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.app_id">
-<code class="descname">app_id</code><a class="headerlink" href="#server.appdevice.Device.app_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.appdevice.Device.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><em>with_apps=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of a Device object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt>with_apps (bool, optional): A boolean to determine whether or not to include the App to which the Device</dt>
-<dd>is associated in the JSON output. Defaults to True.</dd>
-</dl>
-</dd>
-<dt>Returns:</dt>
-<dd>The JSON representation of a Device object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.created_at">
-<code class="descname">created_at</code><a class="headerlink" href="#server.appdevice.Device.created_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.appdevice.Device.edit_device">
-<code class="descname">edit_device</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.edit_device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Edits various fields of the Device object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>data (dict): The data object containing the fields that the user wishes to change.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.extra_fields">
-<code class="descname">extra_fields</code><a class="headerlink" href="#server.appdevice.Device.extra_fields" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.appdevice.Device.get_password">
-<code class="descname">get_password</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.appdevice.Device.get_password" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves the password for a device.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The decrypted password.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.id">
-<code class="descname">id</code><a class="headerlink" href="#server.appdevice.Device.id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.ip">
-<code class="descname">ip</code><a class="headerlink" href="#server.appdevice.Device.ip" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.modified_at">
-<code class="descname">modified_at</code><a class="headerlink" href="#server.appdevice.Device.modified_at" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.name">
-<code class="descname">name</code><a class="headerlink" href="#server.appdevice.Device.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.password">
-<code class="descname">password</code><a class="headerlink" href="#server.appdevice.Device.password" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.port">
-<code class="descname">port</code><a class="headerlink" href="#server.appdevice.Device.port" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.appdevice.Device.username">
-<code class="descname">username</code><a class="headerlink" href="#server.appdevice.Device.username" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
 
 </div>
 <div class="section" id="module-server.casesubscription">
@@ -451,7 +240,7 @@ value (any): The value of the attribute to set.</dd>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>with_roles</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>with_roles</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -539,12 +328,12 @@ value (any): The value of the attribute to set.</dd>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="attribute">
 <dt id="server.database.TrackModificationsMixIn.created_at">
-<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x75129b0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.created_at" title="Permalink to this definition">¶</a></dt>
+<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f09696e3310; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.created_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.TrackModificationsMixIn.modified_at">
-<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7512cf8; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7512be0; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.modified_at" title="Permalink to this definition">¶</a></dt>
+<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f09696e3650; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f09696e3510; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.modified_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -758,12 +547,12 @@ resources (list[str]): The list of resources for which this role should have acc
 
 <dl class="function">
 <dt id="server.flaskserver.display_possible_subscriptions">
-<code class="descclassname">server.flaskserver.</code><code class="descname">display_possible_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.display_possible_subscriptions" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.flaskserver.</code><code class="descname">display_possible_subscriptions</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.display_possible_subscriptions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.flaskserver.list_all_widgets">
-<code class="descclassname">server.flaskserver.</code><code class="descname">list_all_widgets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.list_all_widgets" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.flaskserver.</code><code class="descname">list_all_widgets</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.list_all_widgets" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -788,16 +577,16 @@ resources (list[str]): The list of resources for which this role should have acc
 <dt id="server.metrics.app_metrics">
 <code class="descclassname">server.metrics.</code><code class="descname">app_metrics</code><em class="property"> = {}</em><a class="headerlink" href="#server.metrics.app_metrics" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt>form of {&lt;app&gt;: {&#8216;actions&#8217;: {&lt;action&gt;: {&#8220;success&#8221; <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;count&#8217;: &lt;count&gt;</span></dt>
+<dt>form of {&lt;app&gt;: {‘actions’: {&lt;action&gt;: {“success” <span class="classifier-delimiter">:</span> <span class="classifier">{‘count’: &lt;count&gt;</span></dt>
 <dd><blockquote class="first">
 <div><blockquote>
-<div>&#8216;avg_time&#8217;: &lt;average_execution_time&gt;}</div></blockquote>
+<div>‘avg_time’: &lt;average_execution_time&gt;}</div></blockquote>
 <dl class="docutils">
-<dt>&#8220;error&#8221;: {&#8216;count&#8217;: &lt;count&gt;</dt>
-<dd>&#8216;avg_time&#8217;: &lt;average_execution_time&gt;}</dd>
+<dt>“error”: {‘count’: &lt;count&gt;</dt>
+<dd>‘avg_time’: &lt;average_execution_time&gt;}</dd>
 </dl>
 </div></blockquote>
-<p class="last">&#8216;count&#8217;: &lt;count&gt;}}</p>
+<p class="last">‘count’: &lt;count&gt;}}</p>
 </dd>
 </dl>
 </dd></dl>
@@ -805,7 +594,7 @@ resources (list[str]): The list of resources for which this role should have acc
 <dl class="data">
 <dt id="server.metrics.workflow_metrics">
 <code class="descclassname">server.metrics.</code><code class="descname">workflow_metrics</code><em class="property"> = {}</em><a class="headerlink" href="#server.metrics.workflow_metrics" title="Permalink to this definition">¶</a></dt>
-<dd><p>form  of {&lt;workflow-name&gt;: {&#8216;count&#8217;: &lt;count&gt;, &#8216;avg_time&#8217;: &lt;average_execution_time&gt;}}</p>
+<dd><p>form  of {&lt;workflow-name&gt;: {‘count’: &lt;count&gt;, ‘avg_time’: &lt;average_execution_time&gt;}}</p>
 </dd></dl>
 
 </div>
@@ -994,7 +783,7 @@ resources (list[str]): The list of resources for which this role should have acc
 <code class="descclassname">server.tokens.</code><code class="descname">is_token_revoked</code><span class="sig-paren">(</span><em>decoded_token</em><span class="sig-paren">)</span><a class="headerlink" href="#server.tokens.is_token_revoked" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the given token is revoked or not. Because we are adding all the
 tokens that we create into this database, if the token is not present
-in the database we are going to consider it revoked, as we don&#8217;t know where
+in the database we are going to consider it revoked, as we don’t know where
 it was created.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
@@ -1065,7 +854,7 @@ inputs (list): The input to the first step of the workflow
 triggers (list[str], optional): List of names of the specific trigger to execute
 tags (list[str], optional): A list of tags to find the specific triggers to execute</dd>
 <dt>Returns:</dt>
-<dd>Dictionary of {&#8220;status&#8221;: &lt;status string&gt;}</dd>
+<dd>Dictionary of {“status”: &lt;status string&gt;}</dd>
 </dl>
 </dd></dl>
 
@@ -1139,7 +928,6 @@ new_workflow (str): The new name of the workflow.</dd>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-server.app">server.app module</a></li>
-<li><a class="reference internal" href="#module-server.appdevice">server.appdevice module</a></li>
 <li><a class="reference internal" href="#module-server.casesubscription">server.casesubscription module</a></li>
 <li><a class="reference internal" href="#module-server.context">server.context module</a></li>
 <li><a class="reference internal" href="#module-server.database">server.database module</a></li>
@@ -1187,7 +975,7 @@ new_workflow (str): The new name of the workflow.</dd>
       &copy;2017, IADGOV.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

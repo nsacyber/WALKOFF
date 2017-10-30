@@ -1,36 +1,21 @@
 apps\.SkeletonApp package
 =========================
 
-Subpackages
------------
-
-.. toctree::
-
-    apps.SkeletonApp.tests
-
 Submodules
 ----------
+
+apps\.SkeletonApp\.app module
+-----------------------------
+
+.. automodule:: apps.SkeletonApp.app
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 apps\.SkeletonApp\.display module
 ---------------------------------
 
 .. automodule:: apps.SkeletonApp.display
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-apps\.SkeletonApp\.main module
-------------------------------
-
-.. automodule:: apps.SkeletonApp.main
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-apps\.SkeletonApp\.setup module
--------------------------------
-
-.. automodule:: apps.SkeletonApp.setup
     :members:
     :undoc-members:
     :show-inheritance:

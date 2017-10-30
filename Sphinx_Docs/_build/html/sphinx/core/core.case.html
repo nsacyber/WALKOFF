@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>core.case package &#8212; WALKOFF  documentation</title>
-    
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -33,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -152,7 +149,7 @@ cases (list[str]): The names of the cases to add the event to</dd>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>event_id (int): The id of the event
-note (str): The event&#8217;s note</dd>
+note (str): The event’s note</dd>
 </dl>
 </dd></dl>
 
@@ -173,7 +170,7 @@ note (str): The event&#8217;s note</dd>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>old_case_name (str): The case to rename
-new_case_name (str): The case&#8217;s new name</dd>
+new_case_name (str): The case’s new name</dd>
 </dl>
 </dd></dl>
 
@@ -277,7 +274,7 @@ new_case_name (str): The case&#8217;s new name</dd>
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt>cases (dict({str: {str: [list(str}): The cases to add</dt>
-<dd>Takes the form of &#8220;{case_name: {uid: [events]}&#8221;</dd>
+<dd>Takes the form of “{case_name: {uid: [events]}”</dd>
 </dl>
 </dd>
 </dl>
@@ -344,7 +341,7 @@ events (list[str,int]): The new events to which it is subscribed to</dd>
 <dl class="function">
 <dt id="core.case.subscription.remove_subscription_node">
 <code class="descclassname">core.case.subscription.</code><code class="descname">remove_subscription_node</code><span class="sig-paren">(</span><em>case</em>, <em>originator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.remove_subscription_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove a case&#8217;s subscription to an ancestry</p>
+<dd><p>Remove a case’s subscription to an ancestry</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>case (str): The case to remove a subscription from
@@ -359,7 +356,7 @@ originator (str): The uid of the element from which the event originated</dd>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>old_case_name (str): Old Case name
-new_case_name (str): Case&#8217;s new name</dd>
+new_case_name (str): Case’s new name</dd>
 </dl>
 </dd></dl>
 
@@ -371,7 +368,7 @@ new_case_name (str): Case&#8217;s new name</dd>
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt>new_subscriptions (dict({str: {str: [list(str}): The new subscriptions.</dt>
-<dd>Takes the form of &#8220;{case_name: {uid: [events]}&#8221;</dd>
+<dd>Takes the form of “{case_name: {uid: [events]}”</dd>
 </dl>
 </dd>
 </dl>
@@ -382,9 +379,19 @@ new_case_name (str): Case&#8217;s new name</dd>
 <span id="core-case-workflowresults-module"></span><h2>core.case.workflowresults module<a class="headerlink" href="#module-core.case.workflowresults" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="core.case.workflowresults.StepResult">
-<em class="property">class </em><code class="descclassname">core.case.workflowresults.</code><code class="descname">StepResult</code><span class="sig-paren">(</span><em>name</em>, <em>result</em>, <em>step_input</em>, <em>step_type</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.StepResult" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">core.case.workflowresults.</code><code class="descname">StepResult</code><span class="sig-paren">(</span><em>name</em>, <em>result</em>, <em>step_input</em>, <em>step_type</em>, <em>app</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.StepResult" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
 <p>ORM for an Event in the events database</p>
+<dl class="attribute">
+<dt id="core.case.workflowresults.StepResult.action">
+<code class="descname">action</code><a class="headerlink" href="#core.case.workflowresults.StepResult.action" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.workflowresults.StepResult.app">
+<code class="descname">app</code><a class="headerlink" href="#core.case.workflowresults.StepResult.app" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="core.case.workflowresults.StepResult.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.StepResult.as_json" title="Permalink to this definition">¶</a></dt>
@@ -457,9 +464,19 @@ new_case_name (str): Case&#8217;s new name</dd>
 <code class="descname">name</code><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="core.case.workflowresults.WorkflowResult.paused">
+<code class="descname">paused</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.paused" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="attribute">
 <dt id="core.case.workflowresults.WorkflowResult.results">
 <code class="descname">results</code><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.case.workflowresults.WorkflowResult.resumed">
+<code class="descname">resumed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.resumed" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -470,6 +487,16 @@ new_case_name (str): Case&#8217;s new name</dd>
 <dl class="attribute">
 <dt id="core.case.workflowresults.WorkflowResult.status">
 <code class="descname">status</code><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.case.workflowresults.WorkflowResult.trigger_step_awaiting_data">
+<code class="descname">trigger_step_awaiting_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.trigger_step_awaiting_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.case.workflowresults.WorkflowResult.trigger_step_executing">
+<code class="descname">trigger_step_executing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.trigger_step_executing" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -535,7 +562,7 @@ new_case_name (str): Case&#8217;s new name</dd>
       &copy;2017, IADGOV.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

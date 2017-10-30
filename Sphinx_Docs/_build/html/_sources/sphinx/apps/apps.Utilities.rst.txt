@@ -1,0 +1,30 @@
+apps\.Utilities package
+=======================
+
+Submodules
+----------
+
+apps\.Utilities\.actions module
+-------------------------------
+
+.. automodule:: apps.Utilities.actions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.Utilities\.events module
+------------------------------
+
+.. automodule:: apps.Utilities.events
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apps.Utilities
+    :members:
+    :undoc-members:
+    :show-inheritance:

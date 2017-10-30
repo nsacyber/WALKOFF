@@ -4,10 +4,10 @@ server\.endpoints package
 Submodules
 ----------
 
-server\.endpoints\.apps module
-------------------------------
+server\.endpoints\.appapi module
+--------------------------------
 
-.. automodule:: server.endpoints.apps
+.. automodule:: server.endpoints.appapi
     :members:
     :undoc-members:
     :show-inheritance:

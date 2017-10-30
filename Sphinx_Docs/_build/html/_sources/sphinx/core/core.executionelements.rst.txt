@@ -1,0 +1,70 @@
+core\.executionelements package
+===============================
+
+Submodules
+----------
+
+core\.executionelements\.executionelement module
+------------------------------------------------
+
+.. automodule:: core.executionelements.executionelement
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.executionelements\.filter module
+--------------------------------------
+
+.. automodule:: core.executionelements.filter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.executionelements\.flag module
+------------------------------------
+
+.. automodule:: core.executionelements.flag
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.executionelements\.nextstep module
+----------------------------------------
+
+.. automodule:: core.executionelements.nextstep
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.executionelements\.playbook module
+----------------------------------------
+
+.. automodule:: core.executionelements.playbook
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.executionelements\.step module
+------------------------------------
+
+.. automodule:: core.executionelements.step
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.executionelements\.workflow module
+----------------------------------------
+
+.. automodule:: core.executionelements.workflow
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: core.executionelements
+    :members:
+    :undoc-members:
+    :show-inheritance:

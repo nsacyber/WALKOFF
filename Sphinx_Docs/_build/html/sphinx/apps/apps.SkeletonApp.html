@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>apps.SkeletonApp package &#8212; WALKOFF  documentation</title>
-    
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -33,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -43,36 +40,14 @@
             
   <div class="section" id="apps-skeletonapp-package">
 <h1>apps.SkeletonApp package<a class="headerlink" href="#apps-skeletonapp-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="apps.SkeletonApp.tests.html">apps.SkeletonApp.tests package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apps.SkeletonApp.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apps.SkeletonApp.tests.html#module-apps.SkeletonApp.tests.testMain">apps.SkeletonApp.tests.testMain module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apps.SkeletonApp.tests.html#module-contents">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-apps.SkeletonApp.display">
-<span id="apps-skeletonapp-display-module"></span><h2>apps.SkeletonApp.display module<a class="headerlink" href="#module-apps.SkeletonApp.display" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="apps.SkeletonApp.display.load">
-<code class="descclassname">apps.SkeletonApp.display.</code><code class="descname">load</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.display.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Entry point for server side interface code</p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-apps.SkeletonApp.main">
-<span id="apps-skeletonapp-main-module"></span><h2>apps.SkeletonApp.main module<a class="headerlink" href="#module-apps.SkeletonApp.main" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-apps.SkeletonApp.app">
+<span id="apps-skeletonapp-app-module"></span><h2>apps.SkeletonApp.app module<a class="headerlink" href="#module-apps.SkeletonApp.app" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="apps.SkeletonApp.main.Main">
-<em class="property">class </em><code class="descclassname">apps.SkeletonApp.main.</code><code class="descname">Main</code><span class="sig-paren">(</span><em>name=None</em>, <em>device=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.main.Main" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.SkeletonApp.app.SkeletonApp">
+<em class="property">class </em><code class="descclassname">apps.SkeletonApp.app.</code><code class="descname">SkeletonApp</code><span class="sig-paren">(</span><em>name=None</em>, <em>device=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.app.SkeletonApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="apps.html#apps.App" title="apps.App"><code class="xref py py-class docutils literal"><span class="pre">apps.App</span></code></a></p>
 <p>Skeleton example app to build other apps off of</p>
 <dl class="docutils">
@@ -81,20 +56,20 @@
 device (list[str]): List of associated device names</dd>
 </dl>
 <dl class="method">
-<dt id="apps.SkeletonApp.main.Main.test_function">
-<code class="descname">test_function</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.main.Main.test_function" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.SkeletonApp.app.SkeletonApp.test_function">
+<code class="descname">test_function</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.app.SkeletonApp.test_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basic self contained function</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="apps.SkeletonApp.main.Main.test_function_with_object_reference">
-<code class="descname">test_function_with_object_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.main.Main.test_function_with_object_reference" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.SkeletonApp.app.SkeletonApp.test_function_with_device_reference">
+<code class="descname">test_function_with_device_reference</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.app.SkeletonApp.test_function_with_device_reference" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basic function that calls an instance variable.  In this case, a device name.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="apps.SkeletonApp.main.Main.test_function_with_param">
-<code class="descname">test_function_with_param</code><span class="sig-paren">(</span><em>args={}</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.main.Main.test_function_with_param" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.SkeletonApp.app.SkeletonApp.test_function_with_param">
+<code class="descname">test_function_with_param</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.app.SkeletonApp.test_function_with_param" title="Permalink to this definition">¶</a></dt>
 <dd><p>Basic function that takes in a parameter</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -104,9 +79,20 @@ device (list[str]): List of associated device names</dd>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="apps.SkeletonApp.app.test_global_action">
+<code class="descclassname">apps.SkeletonApp.app.</code><code class="descname">test_global_action</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.app.test_global_action" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="apps-skeletonapp-setup-module">
-<h2>apps.SkeletonApp.setup module<a class="headerlink" href="#apps-skeletonapp-setup-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-apps.SkeletonApp.display">
+<span id="apps-skeletonapp-display-module"></span><h2>apps.SkeletonApp.display module<a class="headerlink" href="#module-apps.SkeletonApp.display" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="apps.SkeletonApp.display.load">
+<code class="descclassname">apps.SkeletonApp.display.</code><code class="descname">load</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.SkeletonApp.display.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for server side interface code</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-apps.SkeletonApp">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-apps.SkeletonApp" title="Permalink to this headline">¶</a></h2>
@@ -122,11 +108,9 @@ device (list[str]): List of associated device names</dd>
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">apps.SkeletonApp package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-apps.SkeletonApp.app">apps.SkeletonApp.app module</a></li>
 <li><a class="reference internal" href="#module-apps.SkeletonApp.display">apps.SkeletonApp.display module</a></li>
-<li><a class="reference internal" href="#module-apps.SkeletonApp.main">apps.SkeletonApp.main module</a></li>
-<li><a class="reference internal" href="#apps-skeletonapp-setup-module">apps.SkeletonApp.setup module</a></li>
 <li><a class="reference internal" href="#module-apps.SkeletonApp">Module contents</a></li>
 </ul>
 </li>
@@ -163,7 +147,7 @@ device (list[str]): List of associated device names</dd>
       &copy;2017, IADGOV.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

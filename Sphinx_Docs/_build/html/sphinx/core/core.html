@@ -1,16 +1,13 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>core package &#8212; WALKOFF  documentation</title>
-    
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -33,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body role="document">
+  <body>
   
 
     <div class="document">
@@ -63,6 +60,18 @@
 <li class="toctree-l2"><a class="reference internal" href="core.config.html#module-core.config">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="core.executionelements.html">core.executionelements package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.executionelement">core.executionelements.executionelement module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.filter">core.executionelements.filter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.flag">core.executionelements.flag module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.nextstep">core.executionelements.nextstep module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.playbook">core.executionelements.playbook module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.step">core.executionelements.step module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements.workflow">core.executionelements.workflow module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.executionelements.html#module-core.executionelements">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="core.filters.html">core.filters package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="core.filters.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.filters.html#module-core.filters.length">core.filters.length module</a></li>
@@ -84,11 +93,58 @@
 <li class="toctree-l2"><a class="reference internal" href="core.keywords.html#module-core.keywords">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="core.protobuf.html">core.protobuf package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.protobuf.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="core.protobuf.build.html">core.protobuf.build package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="core.protobuf.build.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.protobuf.build.html#module-core.protobuf.build.data_pb2">core.protobuf.build.data_pb2 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.protobuf.build.html#module-core.protobuf.build">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core.protobuf.html#module-core.protobuf">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-core.appinstance">
+<span id="core-appinstance-module"></span><h2>core.appinstance module<a class="headerlink" href="#module-core.appinstance" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.appinstance.AppInstance">
+<em class="property">class </em><code class="descclassname">core.appinstance.</code><code class="descname">AppInstance</code><span class="sig-paren">(</span><em>instance=None</em>, <em>state=1</em><span class="sig-paren">)</span><a class="headerlink" href="#core.appinstance.AppInstance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="staticmethod">
+<dt id="core.appinstance.AppInstance.create">
+<em class="property">static </em><code class="descname">create</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.appinstance.AppInstance.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Instance object from an app name and a device name.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): The name of the app from which to import the main module.
+device_name (str): A device pertaining to the App.</dd>
+<dt>Returns:</dt>
+<dd>A new Instance object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.appinstance.AppInstance.shutdown">
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.appinstance.AppInstance.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuts down the Instance object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="core.appinstance.logger">
+<code class="descclassname">core.appinstance.</code><code class="descname">logger</code><em class="property"> = &lt;logging.Logger object&gt;</em><a class="headerlink" href="#core.appinstance.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>States</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-core.contextdecorator">
 <span id="core-contextdecorator-module"></span><h2>core.contextdecorator module<a class="headerlink" href="#module-core.contextdecorator" title="Permalink to this headline">¶</a></h2>
@@ -102,31 +158,8 @@
 <span id="core-controller-module"></span><h2>core.controller module<a class="headerlink" href="#module-core.controller" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="core.controller.Controller">
-<em class="property">class </em><code class="descclassname">core.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>workflows_path='.\data\workflows'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">core.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>executor=&lt;class 'core.multiprocessedexecutor.MultiprocessedExecutor'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="core.controller.Controller.add_child_workflows">
-<code class="descname">add_child_workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.add_child_workflows" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="core.controller.Controller.add_workflow_breakpoint_steps">
-<code class="descname">add_workflow_breakpoint_steps</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>steps</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.add_workflow_breakpoint_steps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a breakpoint (for debugging purposes) in the specified steps.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>playbook_name (str): Playbook name under which the workflow is located.
-workflow_name (str): The name of the workflow under which the steps are located.
-steps (list[str]): The list of step names for which the user would like to pause execution.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.controller.Controller.cleanup_threading">
-<code class="descname">cleanup_threading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.cleanup_threading" title="Permalink to this definition">¶</a></dt>
-<dd><p>Once the threadpool has been shutdown, clear out all of the data structures used in the pool.</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="core.controller.Controller.copy_playbook">
 <code class="descname">copy_playbook</code><span class="sig-paren">(</span><em>old_playbook_name</em>, <em>new_playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.copy_playbook" title="Permalink to this definition">¶</a></dt>
@@ -152,26 +185,27 @@ new_workflow_name (str): The new name of the duplicated workflow.</dd>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.controller.Controller.create_playbook_from_template">
-<code class="descname">create_playbook_from_template</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>template_playbook='emptyWorkflow'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.create_playbook_from_template" title="Permalink to this definition">¶</a></dt>
+<dt id="core.controller.Controller.create_playbook">
+<code class="descname">create_playbook</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflows=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.create_playbook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a playbook from a playbook template.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>playbook_name (str): The name of the new playbook.
-template_playbook (str, optional): The name of the playbook template to load. Default is &#8220;emptyWorkflow&#8221;.</dd>
+<dd><p class="first">playbook_name (str): The name of the new playbook.
+workflows (list[Workflow], optional): An optional list of Workflows to be associated with this</p>
+<blockquote class="last">
+<div>Playbook. Defaults to None.</div></blockquote>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.controller.Controller.create_workflow_from_template">
-<code class="descname">create_workflow_from_template</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>template_playbook='emptyWorkflow'</em>, <em>template_name='emptyWorkflow'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.create_workflow_from_template" title="Permalink to this definition">¶</a></dt>
+<dt id="core.controller.Controller.create_workflow">
+<code class="descname">create_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.create_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a workflow from a workflow template.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>playbook_name (str): The name of the new playbook. 
-workflow_name (str): The name of the new workflow.
-template_playbook (str, optional): The name of the playbook template to load. Default is &#8220;emptyWorkflow&#8221;.
-template_name (str, optional): The name of the workflow template to load. Default is &#8220;emptyWorkflow&#8221;.</dd>
+workflow_name (str): The name of the new workflow.</dd>
 <dt>Returns:</dt>
 <dd>True on success, False if otherwise.</dd>
 </dl>
@@ -185,8 +219,10 @@ template_name (str, optional): The name of the workflow template to load. Defaul
 <dt>Args:</dt>
 <dd>playbook_name (str): Playbook name under which the workflow is located.
 workflow_name (str): Workflow to execute.
-start (str, optional): The name of the first, or starting step. Defaults to &#8220;start&#8221;.
-start_input (dict, optional): The input to the starting step of the workflow</dd>
+start (str, optional): The name of the first, or starting step. Defaults to None.
+start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.</dd>
+<dt>Returns:</dt>
+<dd>The execution UID if successful, None otherwise.</dd>
 </dl>
 </dd></dl>
 
@@ -202,13 +238,15 @@ start_input (dict, optional): The input to the starting step of the workflow</dd
 
 <dl class="method">
 <dt id="core.controller.Controller.get_all_workflows">
-<code class="descname">get_all_workflows</code><span class="sig-paren">(</span><em>with_json=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_all_workflows" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_all_workflows</code><span class="sig-paren">(</span><em>full_representation=False</em>, <em>reader=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_all_workflows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all of the currently loaded workflows.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt>with_json (bool, optional): A boolean specifying whether or not to include the JSON representation</dt>
-<dd>of all the workflows, or just their names. Defaults to false.</dd>
+<dt>full_representation (bool, optional): A boolean specifying whether or not to include the JSON representation</dt>
+<dd>of all the workflows, or just their names. Defaults to False.</dd>
+<dt>reader (cls): The reader to specify how to display the Workflows. Defaults to None, which will show</dt>
+<dd>basic JSON representation of the Workflows.</dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
@@ -229,6 +267,27 @@ start_input (dict, optional): The input to the starting step of the workflow</dd
 </dd></dl>
 
 <dl class="method">
+<dt id="core.controller.Controller.get_playbook_representation">
+<code class="descname">get_playbook_representation</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>reader=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_playbook_representation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the JSON representation of a playbook.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">playbook_name: The name of the playbook.
+reader (cls, optional): An optional different way to represent the Playbook. Defaults to None,</p>
+<blockquote class="last">
+<div>meaning that it will show basic JSON representation.</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd>The JSON representation of the playbook if the playbook has any workflows under it, else None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.get_waiting_workflows">
+<code class="descname">get_waiting_workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_waiting_workflows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="core.controller.Controller.get_workflow">
 <code class="descname">get_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a workflow object.</p>
@@ -243,17 +302,20 @@ workflow_name (str): The name of the workflow.</dd>
 
 <dl class="method">
 <dt id="core.controller.Controller.get_workflow_status">
-<code class="descname">get_workflow_status</code><span class="sig-paren">(</span><em>uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_workflow_status" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">get_workflow_status</code><span class="sig-paren">(</span><em>execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.get_workflow_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the status of an executing workflow</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>execution_uid (str): Execution UID of the executing workflow</dd>
+<dt>Returns:</dt>
+<dd>(int) Status code of the executing workflow</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="core.controller.Controller.initialize_threading">
-<code class="descname">initialize_threading</code><span class="sig-paren">(</span><em>worker_env=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.initialize_threading" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize the multiprocessing pool, allowing for parallel execution of workflows.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>worker_env (function, optional): Optional alternative worker setup environment function.</dd>
-</dl>
+<code class="descname">initialize_threading</code><span class="sig-paren">(</span><em>worker_environment_setup=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.initialize_threading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes threading in the executor</p>
 </dd></dl>
 
 <dl class="method">
@@ -282,37 +344,37 @@ workflow_name (str): The name of the workflow.</dd>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.controller.Controller.load_all_playbooks_from_directory">
-<code class="descname">load_all_playbooks_from_directory</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.load_all_playbooks_from_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads all workflows from a directory.</p>
+<dt id="core.controller.Controller.load_playbook">
+<code class="descname">load_playbook</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.load_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads playbook from a file.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>path (str, optional): Path to the directory to load from. Defaults to the configuration workflows_path.</dd>
+<dd>resource (str): Path to the workflow.</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.controller.Controller.load_playbook_from_file">
-<code class="descname">load_playbook_from_file</code><span class="sig-paren">(</span><em>path</em>, <em>name_override=None</em>, <em>playbook_override=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.load_playbook_from_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads multiple workloads from a file.</p>
+<dt id="core.controller.Controller.load_playbooks">
+<code class="descname">load_playbooks</code><span class="sig-paren">(</span><em>resource_collection=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.load_playbooks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all playbooks from a directory.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>path (str): Path to the workflow.
-name_override (str, optional): Name that the workflow should be changed to. 
-playbook_override (str, optional): Name that the playbook should be changed to.</dd>
+<dd><dl class="first last docutils">
+<dt>resource_collection (str, optional): Path to the directory to load from. Defaults to the</dt>
+<dd>configuration workflows_path.</dd>
+</dl>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.controller.Controller.load_workflow_from_file">
-<code class="descname">load_workflow_from_file</code><span class="sig-paren">(</span><em>path</em>, <em>workflow_name</em>, <em>name_override=None</em>, <em>playbook_override=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.load_workflow_from_file" title="Permalink to this definition">¶</a></dt>
+<dt id="core.controller.Controller.load_workflow">
+<code class="descname">load_workflow</code><span class="sig-paren">(</span><em>resource</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.load_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads a workflow from a file.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>path (str): Path to the workflow.
-workflow_name (str): Name of the workflow to load.
-name_override (str, optional): Name that the workflow should be changed to.
-playbook_override (str, optional): Name that the playbook should be changed to.</dd>
+<dd>resource (str): Path to the workflow.
+workflow_name (str): Name of the workflow to load.</dd>
 <dt>Returns:</dt>
 <dd>True on success, False otherwise.</dd>
 </dl>
@@ -320,25 +382,11 @@ playbook_override (str, optional): Name that the playbook should be changed to.<
 
 <dl class="method">
 <dt id="core.controller.Controller.pause_workflow">
-<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.pause_workflow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pauses a workflow that is currently executing.</p>
+<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.pause_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses a workflow.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>playbook_name (str): Playbook name under which the workflow is located.
-workflow_name (str): The name of the workflow.
-execution_uid (str): The execution uid of the workflow.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.controller.Controller.playbook_as_json">
-<code class="descname">playbook_as_json</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.playbook_as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the JSON representation of a playbook.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>playbook_name: The name of the playbook.</dd>
-<dt>Returns:</dt>
-<dd>The JSON representation of the playbook if the playbook has any workflows under it, else None.</dd>
+<dd>execution_uid (str): The execution UID of the workflow to pause</dd>
 </dl>
 </dd></dl>
 
@@ -368,55 +416,59 @@ workflow_name (str): The name of the workflow to remove.</dd>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.controller.Controller.resume_breakpoint_step">
-<code class="descname">resume_breakpoint_step</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.resume_breakpoint_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resumes a step that has been specified as a breakpoint.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>playbook_name (str): Playbook name under which the workflow is located.
-workflow_name (str): The name of the workflow.
-uid (str): The UID of the workflow that is being executed.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="core.controller.Controller.resume_workflow">
-<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em>, <em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.resume_workflow" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.resume_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resumes a workflow that has been paused.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd><p class="first">playbook_name (str): Playbook name under which the workflow is located.
-workflow_name (str): The name of the workflow.
-workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from</p>
-<blockquote class="last">
-<div>pause_workflow(). This is needed to resume a workflow for security purposes.</div></blockquote>
+<dd><dl class="first last docutils">
+<dt>workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from</dt>
+<dd>pause_workflow(). This is needed to resume a workflow for security purposes.</dd>
+</dl>
 </dd>
 <dt>Returns:</dt>
-<dd>True if successful, false otherwise.</dd>
+<dd>(bool) True if successful, False otherwise.</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="core.controller.Controller.schedule_workflows">
 <code class="descname">schedule_workflows</code><span class="sig-paren">(</span><em>task_id</em>, <em>workflow_uids</em>, <em>trigger</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.schedule_workflows" title="Permalink to this definition">¶</a></dt>
-<dd><p>Schedules one or more workflows to be run.</p>
+<dd><p>Schedules workflows to be run by the scheduler</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>task_id (str|int): The task ID for this scheduled execution.
-workflow_uids (list[str]): A list of workflow UIDs to be executed.
-trigger (str): The name of the trigger that will trigger the execution of the workflows.</dd>
+<dd>task_id (str|int): Id of the task to run
+workflow_uids (list[str]): UIDs of the workflows to schedule
+trigger: The type of scheduler trigger to use</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.controller.Controller.send_data_to_trigger">
+<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data_in</em>, <em>workflow_uids</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to match the data in against the conditionals of all the triggers registered in the database.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.</p>
+<blockquote class="last">
+<div>Defaults to {}.</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd>Dictionary of {“status”: &lt;status string&gt;}</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="core.controller.Controller.shutdown_pool">
 <code class="descname">shutdown_pool</code><span class="sig-paren">(</span><em>num_workflows=0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.controller.Controller.shutdown_pool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shuts down the threadpool.</p>
+<dd><p>Shuts down the executor</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt>num_workflows (int, optional): The number of workflows that should be executed before the pool</dt>
-<dd>is shutdown.</dd>
+<dt>num_workflows (int, optional): Number of workflows to wait to complete before shutting down. Defaults to 0,</dt>
+<dd>meaning that it will immediately shutdown the pool upon receiving this command.</dd>
 </dl>
 </dd>
 </dl>
@@ -522,137 +574,54 @@ timeout (int, optional): Seconds to wait for the event to occur. Defaults to 300
 <dd></dd></dl>
 
 </div>
-<div class="section" id="module-core.executionelement">
-<span id="core-executionelement-module"></span><h2>core.executionelement module<a class="headerlink" href="#module-core.executionelement" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.executionelement.ExecutionElement">
-<em class="property">class </em><code class="descclassname">core.executionelement.</code><code class="descname">ExecutionElement</code><span class="sig-paren">(</span><em>name=''</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelement.ExecutionElement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="core.executionelement.ExecutionElement.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelement.ExecutionElement.as_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-core.filter">
-<span id="core-filter-module"></span><h2>core.filter module<a class="headerlink" href="#module-core.filter" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.filter.Filter">
-<em class="property">class </em><code class="descclassname">core.filter.</code><code class="descname">Filter</code><span class="sig-paren">(</span><em>action=None</em>, <em>args=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filter.Filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.filter.Filter.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.filter.Filter.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of a Filter object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The JSON representation of a Filter object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="core.filter.Filter.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.filter.Filter.from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Forms a Filter object from the provided JSON object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>json_in (JSON object): The JSON object to convert from.</dd>
-<dt>Returns:</dt>
-<dd>The Filter object parsed from the JSON object.</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-core.flag">
-<span id="core-flag-module"></span><h2>core.flag module<a class="headerlink" href="#module-core.flag" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.flag.Flag">
-<em class="property">class </em><code class="descclassname">core.flag.</code><code class="descname">Flag</code><span class="sig-paren">(</span><em>action=None</em>, <em>args=None</em>, <em>filters=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.flag.Flag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.flag.Flag.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.flag.Flag.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of a Flag object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The JSON representation of a Flag object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="core.flag.Flag.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.flag.Flag.from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Forms a Flag object from the provided JSON object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>json_in (JSON object): The JSON object to convert from.</dd>
-<dt>Returns:</dt>
-<dd>The Flag object parsed from the JSON object.</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
 <div class="section" id="module-core.helpers">
 <span id="core-helpers-module"></span><h2>core.helpers module<a class="headerlink" href="#module-core.helpers" title="Permalink to this headline">¶</a></h2>
 <dl class="exception">
 <dt id="core.helpers.InvalidApi">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">InvalidApi</code><a class="headerlink" href="#core.helpers.InvalidApi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="core.helpers.InvalidAppStructure">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">InvalidAppStructure</code><a class="headerlink" href="#core.helpers.InvalidAppStructure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
-</dd></dl>
-
-<dl class="exception">
-<dt id="core.helpers.InvalidElementConstructed">
-<em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">InvalidElementConstructed</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.InvalidElementConstructed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="core.helpers.InvalidInput">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">InvalidInput</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.InvalidInput" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
-</dd></dl>
-
-<dl class="class">
-<dt id="core.helpers.SubclassRegistry">
-<em class="property">class </em><code class="descclassname">core.helpers.</code><code class="descname">SubclassRegistry</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>nmspc</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.SubclassRegistry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">type</span></code></p>
-<p>Metaclass which registers its subclasses in a dict of {name: cls}</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="core.helpers.UnknownApp">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">UnknownApp</code><span class="sig-paren">(</span><em>app</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.UnknownApp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="core.helpers.UnknownAppAction">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">UnknownAppAction</code><span class="sig-paren">(</span><em>app</em>, <em>action_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.UnknownAppAction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.helpers.UnknownDevice">
+<em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">UnknownDevice</code><span class="sig-paren">(</span><em>app</em>, <em>device_type</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.UnknownDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="core.helpers.UnknownFilter">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">UnknownFilter</code><span class="sig-paren">(</span><em>filter_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.UnknownFilter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="core.helpers.UnknownFlag">
 <em class="property">exception </em><code class="descclassname">core.helpers.</code><code class="descname">UnknownFlag</code><span class="sig-paren">(</span><em>flag</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.UnknownFlag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -688,7 +657,15 @@ y (dict): The other dictionary to be merged with x.</dd>
 <dl class="function">
 <dt id="core.helpers.format_db_path">
 <code class="descclassname">core.helpers.</code><code class="descname">format_db_path</code><span class="sig-paren">(</span><em>db_type</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.format_db_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Formats the path to the database</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>db_type (str): Type of database being used
+path (str): Path to the database</dd>
+<dt>Returns:</dt>
+<dd>(str): The path of the database formatted for SqlAlchemy</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="core.helpers.format_exception_message">
@@ -698,6 +675,19 @@ y (dict): The other dictionary to be merged with x.</dd>
 <dl class="function">
 <dt id="core.helpers.get_app_action_api">
 <code class="descclassname">core.helpers.</code><code class="descname">get_app_action_api</code><span class="sig-paren">(</span><em>app</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.get_app_action_api" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the api for a given app and action</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app (str): Name of the app
+action (str): Name of the action</dd>
+<dt>Returns:</dt>
+<dd>(tuple(str, dict)) The name of the function to execute and its parameters</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.helpers.get_app_device_api">
+<code class="descclassname">core.helpers.</code><code class="descname">get_app_device_api</code><span class="sig-paren">(</span><em>app</em>, <em>device_type</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.get_app_device_api" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -736,11 +726,6 @@ y (dict): The other dictionary to be merged with x.</dd>
 <dd>A list of workflow names from the specified file, if the file exists.</dd>
 </dl>
 </dd></dl>
-
-<dl class="function">
-<dt id="core.helpers.import_all_apps">
-<code class="descclassname">core.helpers.</code><code class="descname">import_all_apps</code><span class="sig-paren">(</span><em>path=None</em>, <em>reload=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.import_all_apps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="function">
 <dt id="core.helpers.import_all_filters">
@@ -838,6 +823,11 @@ recursive (bool, optional): A boolean to determine whether or not to recursively
 </dd></dl>
 
 <dl class="function">
+<dt id="core.helpers.list_apps_with_device_types">
+<code class="descclassname">core.helpers.</code><code class="descname">list_apps_with_device_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.list_apps_with_device_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="core.helpers.list_apps_with_interfaces">
 <code class="descclassname">core.helpers.</code><code class="descname">list_apps_with_interfaces</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.helpers.list_apps_with_interfaces" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -880,37 +870,99 @@ app_path (str, optional): The path to the widgets folder. Default is None.</dd>
 </dd></dl>
 
 </div>
-<div class="section" id="module-core.instance">
-<span id="core-instance-module"></span><h2>core.instance module<a class="headerlink" href="#module-core.instance" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-core.jsonelementcreator">
+<span id="core-jsonelementcreator-module"></span><h2>core.jsonelementcreator module<a class="headerlink" href="#module-core.jsonelementcreator" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="core.instance.Instance">
-<em class="property">class </em><code class="descclassname">core.instance.</code><code class="descname">Instance</code><span class="sig-paren">(</span><em>instance=None</em>, <em>state=1</em><span class="sig-paren">)</span><a class="headerlink" href="#core.instance.Instance" title="Permalink to this definition">¶</a></dt>
+<dt id="core.jsonelementcreator.JsonElementCreator">
+<em class="property">class </em><code class="descclassname">core.jsonelementcreator.</code><code class="descname">JsonElementCreator</code><a class="headerlink" href="#core.jsonelementcreator.JsonElementCreator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="staticmethod">
-<dt id="core.instance.Instance.create">
-<em class="property">static </em><code class="descname">create</code><span class="sig-paren">(</span><em>app_name</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.instance.Instance.create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new Instance object from an app name and a device name.</p>
+<p>Creates an ExecutionElement from JSON</p>
+<dl class="classmethod">
+<dt id="core.jsonelementcreator.JsonElementCreator.create">
+<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>json_in</em>, <em>element_class=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.jsonelementcreator.JsonElementCreator.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an ExecutionElement from json</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>app_name (str): The name of the app from which to import the main module.
-device_name (str): A device pertaining to the App.</dd>
+<dd>json_in (dict): The JSON to convert to an ExecutionElement
+element_class (cls): The class of the ExecutionElement to convert</dd>
 <dt>Returns:</dt>
-<dd>A new Instance object.</dd>
+<dd>(ExecutionElement) The constructed ExecutionElement</dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="core.instance.Instance.shutdown">
-<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.instance.Instance.shutdown" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shuts down the Instance object.</p>
+<dl class="attribute">
+<dt id="core.jsonelementcreator.JsonElementCreator.playbook_class_ordering">
+<code class="descname">playbook_class_ordering</code><em class="property"> = None</em><a class="headerlink" href="#core.jsonelementcreator.JsonElementCreator.playbook_class_ordering" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.jsonelementreader">
+<span id="core-jsonelementreader-module"></span><h2>core.jsonelementreader module<a class="headerlink" href="#module-core.jsonelementreader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.jsonelementreader.JsonElementReader">
+<em class="property">class </em><code class="descclassname">core.jsonelementreader.</code><code class="descname">JsonElementReader</code><a class="headerlink" href="#core.jsonelementreader.JsonElementReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Reads an ExecutionElement and converts it to JSON</p>
+<dl class="staticmethod">
+<dt id="core.jsonelementreader.JsonElementReader.read">
+<em class="property">static </em><code class="descname">read</code><span class="sig-paren">(</span><em>element</em><span class="sig-paren">)</span><a class="headerlink" href="#core.jsonelementreader.JsonElementReader.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads an ExecutionElement and converts it to JSON</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>element (ExecutionElement): The ExecutionElement</dd>
+<dt>Returns:</dt>
+<dd>(dict) The JSON representation of the ExecutionElement</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="data">
-<dt id="core.instance.logger">
-<code class="descclassname">core.instance.</code><code class="descname">logger</code><em class="property"> = &lt;Logger core.instance (WARNING)&gt;</em><a class="headerlink" href="#core.instance.logger" title="Permalink to this definition">¶</a></dt>
-<dd><p>States</p>
+</div>
+<div class="section" id="module-core.jsonplaybookloader">
+<span id="core-jsonplaybookloader-module"></span><h2>core.jsonplaybookloader module<a class="headerlink" href="#module-core.jsonplaybookloader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.jsonplaybookloader.JsonPlaybookLoader">
+<em class="property">class </em><code class="descclassname">core.jsonplaybookloader.</code><code class="descname">JsonPlaybookLoader</code><a class="headerlink" href="#core.jsonplaybookloader.JsonPlaybookLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="staticmethod">
+<dt id="core.jsonplaybookloader.JsonPlaybookLoader.load_playbook">
+<em class="property">static </em><code class="descname">load_playbook</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="headerlink" href="#core.jsonplaybookloader.JsonPlaybookLoader.load_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a playbook from a file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>resource (str): Path to the workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.jsonplaybookloader.JsonPlaybookLoader.load_playbooks">
+<em class="property">static </em><code class="descname">load_playbooks</code><span class="sig-paren">(</span><em>resource_collection=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.jsonplaybookloader.JsonPlaybookLoader.load_playbooks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all playbooks from a directory.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration</dt>
+<dd>workflows_path.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.jsonplaybookloader.JsonPlaybookLoader.load_workflow">
+<em class="property">static </em><code class="descname">load_workflow</code><span class="sig-paren">(</span><em>resource</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.jsonplaybookloader.JsonPlaybookLoader.load_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a workflow from a file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>resource (str): Path to the workflow.
+workflow_name (str): Name of the workflow to load.</dd>
+<dt>Returns:</dt>
+<dd>True on success, False otherwise.</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -919,8 +971,7 @@ device_name (str): A device pertaining to the App.</dd>
 <dl class="class">
 <dt id="core.loadbalancer.LoadBalancer">
 <em class="property">class </em><code class="descclassname">core.loadbalancer.</code><code class="descname">LoadBalancer</code><span class="sig-paren">(</span><em>ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="method">
+<dd><dl class="method">
 <dt id="core.loadbalancer.LoadBalancer.add_workflow">
 <code class="descname">add_workflow</code><span class="sig-paren">(</span><em>workflow_json</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.add_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a workflow to the queue to be executed.</p>
@@ -943,34 +994,36 @@ execute a workflow, and then passes the workflow off to an available worker, onc
 
 <dl class="method">
 <dt id="core.loadbalancer.LoadBalancer.pause_workflow">
-<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.pause_workflow" title="Permalink to this definition">¶</a></dt>
+<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.pause_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pauses a workflow currently executing.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>workflow_execution_uid (str): The execution UID of the workflow.
-workflow_name (str): The name of the workflow.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.loadbalancer.LoadBalancer.resume_breakpoint_step">
-<code class="descname">resume_breakpoint_step</code><span class="sig-paren">(</span><em>workflow_execution_uid</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.resume_breakpoint_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resumes a step in a workflow that was listed as a breakpoint step.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>workflow_execution_uid (str): The execution UID of the workflow.
-workflow_name (str): The name of the workflow.</dd>
+<dd>workflow_execution_uid (str): The execution UID of the workflow.</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="core.loadbalancer.LoadBalancer.resume_workflow">
-<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.resume_workflow" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.resume_workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resumes a workflow that has previously been paused.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>workflow_execution_uid (str): The execution UID of the workflow.
-workflow_name (str): The name of the workflow.</dd>
+<dd>workflow_execution_uid (str): The execution UID of the workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.loadbalancer.LoadBalancer.send_data_to_trigger">
+<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data_in</em>, <em>workflow_uids</em>, <em>inputs={}</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.LoadBalancer.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the data_in to the workflows specified in workflow_uids.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.</p>
+<blockquote class="last">
+<div>Defaults to None.</div></blockquote>
+</dd>
 </dl>
 </dd></dl>
 
@@ -979,10 +1032,9 @@ workflow_name (str): The name of the workflow.</dd>
 <dl class="class">
 <dt id="core.loadbalancer.Receiver">
 <em class="property">class </em><code class="descclassname">core.loadbalancer.</code><code class="descname">Receiver</code><span class="sig-paren">(</span><em>ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Receiver" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="attribute">
+<dd><dl class="attribute">
 <dt id="core.loadbalancer.Receiver.callback_lookup">
-<code class="descname">callback_lookup</code><em class="property"> = {'Workflow Execution Start': (&lt;blinker.base.Signal object&gt;, True), 'Next Step Found': (&lt;blinker.base.Signal object&gt;, True), 'App Instance Created': (&lt;blinker.base.Signal object&gt;, True), 'Workflow Shutdown': (&lt;blinker.base.Signal object&gt;, True), 'Workflow Input Validated': (&lt;blinker.base.Signal object&gt;, True), 'Workflow Input Invalid': (&lt;blinker.base.Signal object&gt;, True), 'Workflow Paused': (&lt;blinker.base.Signal object&gt;, True), 'Workflow Resumed': (&lt;blinker.base.Signal object&gt;, True), 'Step Execution Success': (&lt;blinker.base.Signal object&gt;, True), 'Step Execution Error': (&lt;blinker.base.Signal object&gt;, True), 'Step Started': (&lt;blinker.base.Signal object&gt;, True), 'Function Execution Success': (&lt;blinker.base.Signal object&gt;, True), 'Step Input Invalid': (&lt;blinker.base.Signal object&gt;, True), 'Conditionals Executed': (&lt;blinker.base.Signal object&gt;, True), 'Next Step Taken': (&lt;blinker.base.Signal object&gt;, False), 'Next Step Not Taken': (&lt;blinker.base.Signal object&gt;, False), 'Flag Success': (&lt;blinker.base.Signal object&gt;, False), 'Flag Error': (&lt;blinker.base.Signal object&gt;, False), 'Filter Success': (&lt;blinker.base.Signal object&gt;, False), 'Filter Error': (&lt;blinker.base.Signal object&gt;, False)}</em><a class="headerlink" href="#core.loadbalancer.Receiver.callback_lookup" title="Permalink to this definition">¶</a></dt>
+<code class="descname">callback_lookup</code><em class="property"> = {'Function Execution Success': (&lt;blinker.base.Signal object&gt;, True), 'Workflow Paused': (&lt;blinker.base.Signal object&gt;, False), 'Step Input Invalid': (&lt;blinker.base.Signal object&gt;, False), 'Workflow Input Invalid': (&lt;blinker.base.Signal object&gt;, False), 'Workflow Resumed': (&lt;blinker.base.Signal object&gt;, False), 'Step Execution Error': (&lt;blinker.base.Signal object&gt;, True), 'Trigger Step Taken': (&lt;blinker.base.Signal object&gt;, False), 'Filter Error': (&lt;blinker.base.Signal object&gt;, False), 'Workflow Input Validated': (&lt;blinker.base.Signal object&gt;, False), 'Step Execution Success': (&lt;blinker.base.Signal object&gt;, True), 'Filter Success': (&lt;blinker.base.Signal object&gt;, False), 'Trigger Step Not Taken': (&lt;blinker.base.Signal object&gt;, False), 'App Instance Created': (&lt;blinker.base.Signal object&gt;, False), 'Workflow Execution Start': (&lt;blinker.base.Signal object&gt;, False), 'Flag Error': (&lt;blinker.base.Signal object&gt;, False), 'Next Step Not Taken': (&lt;blinker.base.Signal object&gt;, False), 'Conditionals Executed': (&lt;blinker.base.Signal object&gt;, False), 'Trigger Step Awaiting Data': (&lt;blinker.base.Signal object&gt;, False), 'Flag Success': (&lt;blinker.base.Signal object&gt;, False), 'Next Step Found': (&lt;blinker.base.Signal object&gt;, False), 'Workflow Shutdown': (&lt;blinker.base.Signal object&gt;, True), 'Step Started': (&lt;blinker.base.Signal object&gt;, False), 'Next Step Taken': (&lt;blinker.base.Signal object&gt;, False)}</em><a class="headerlink" href="#core.loadbalancer.Receiver.callback_lookup" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1007,9 +1059,8 @@ data (dict): The data associated with the callback.</dd>
 
 <dl class="class">
 <dt id="core.loadbalancer.Worker">
-<em class="property">class </em><code class="descclassname">core.loadbalancer.</code><code class="descname">Worker</code><span class="sig-paren">(</span><em>id_</em>, <em>worker_env=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Worker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="method">
+<em class="property">class </em><code class="descclassname">core.loadbalancer.</code><code class="descname">Worker</code><span class="sig-paren">(</span><em>id_</em>, <em>worker_environment_setup=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Worker" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
 <dt id="core.loadbalancer.Worker.execute_workflow_worker">
 <code class="descname">execute_workflow_worker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Worker.execute_workflow_worker" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keep executing workflows as they come in over the ZMQ socket from the manager.</p>
@@ -1022,11 +1073,41 @@ data (dict): The data associated with the callback.</dd>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.loadbalancer.Worker.setup_worker_env">
-<code class="descname">setup_worker_env</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Worker.setup_worker_env" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets up the worker environment, as the Worker executes in a new process.</p>
+<dt id="core.loadbalancer.Worker.on_data_sent">
+<code class="descname">on_data_sent</code><span class="sig-paren">(</span><em>sender</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Worker.on_data_sent" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Listens for the data_sent callback, which signifies that an execution element needs to trigger a</dt>
+<dd>callback in the main thread.</dd>
+<dt>Args:</dt>
+<dd>sender (execution element): The execution element that sent the signal.
+kwargs (dict): Any extra data to send.</dd>
+</dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="core.loadbalancer.Worker.receive_data">
+<code class="descname">receive_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.Worker.receive_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constantly receives data from the ZMQ socket and handles it accordingly.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.loadbalancer.convert_to_protobuf">
+<code class="descclassname">core.loadbalancer.</code><code class="descname">convert_to_protobuf</code><span class="sig-paren">(</span><em>sender</em>, <em>workflow_execution_uid=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.loadbalancer.convert_to_protobuf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an execution element and its data to a protobuf message.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">sender (execution element): The execution element object that is sending the data.
+workflow_execution_uid (str, optional): The execution UID of the Workflow under which this execution</p>
+<blockquote>
+<div>element falls. It is not required and defaults to an empty string, but it is highly recommended
+so that the LoadBalancer can keep track of the Workflow’s execution.</div></blockquote>
+<p class="last">kwargs (dict, optional): A dict of extra fields, such as data, callback_name, etc.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>The newly formed protobuf object, serialized as a string to send over the ZMQ socket.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -1046,31 +1127,399 @@ data (dict): The data associated with the callback.</dd>
 </dd></dl>
 
 </div>
-<div class="section" id="module-core.nextstep">
-<span id="core-nextstep-module"></span><h2>core.nextstep module<a class="headerlink" href="#module-core.nextstep" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-core.multiprocessedexecutor">
+<span id="core-multiprocessedexecutor-module"></span><h2>core.multiprocessedexecutor module<a class="headerlink" href="#module-core.multiprocessedexecutor" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="core.nextstep.NextStep">
-<em class="property">class </em><code class="descclassname">core.nextstep.</code><code class="descname">NextStep</code><span class="sig-paren">(</span><em>status='Success'</em>, <em>name=''</em>, <em>flags=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.nextstep.NextStep" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.</code><code class="descname">MultiprocessedExecutor</code><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="method">
-<dt id="core.nextstep.NextStep.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.nextstep.NextStep.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of a NextStep object.</p>
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.cleanup_threading">
+<code class="descname">cleanup_threading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.cleanup_threading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Once the threadpool has been shutdown, clear out all of the data structures used in the pool.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.execute_workflow">
+<code class="descname">execute_workflow</code><span class="sig-paren">(</span><em>workflow</em>, <em>start=None</em>, <em>start_input=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.execute_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a workflow.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow (Workflow): The Workflow to be executed.
+start (str, optional): The name of the first, or starting step. Defaults to None.
+start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.</dd>
 <dt>Returns:</dt>
-<dd>The JSON representation of a NextStep object.</dd>
+<dd>The execution UID of the Workflow.</dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="core.nextstep.NextStep.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json</em><span class="sig-paren">)</span><a class="headerlink" href="#core.nextstep.NextStep.from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Forms a NextStep object from the provided JSON object.</p>
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.get_waiting_workflows">
+<code class="descname">get_waiting_workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.get_waiting_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of the execution UIDs of workflows currently awaiting data to be sent to a trigger.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A list of execution UIDs of workflows currently awaiting data to be sent to a trigger.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.get_workflow_status">
+<code class="descname">get_workflow_status</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.get_workflow_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the current status of a workflow by its execution UID</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>json (JSON object): The JSON object to convert from.</dd>
+<dd>workflow_execution_uid (str): The execution UID of the workflow</dd>
 <dt>Returns:</dt>
-<dd>The NextStep object parsed from the JSON object.</dd>
+<dd>The status of the workflow</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading">
+<code class="descname">initialize_threading</code><span class="sig-paren">(</span><em>worker_environment_setup=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the multiprocessing pool, allowing for parallel execution of workflows.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>worker_environment_setup (function, optional): Optional alternative worker setup environment function.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.pause_workflow">
+<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.pause_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses a workflow that is currently executing.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>execution_uid (str): The execution uid of the workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.resume_workflow">
+<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.resume_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resumes a workflow that has been paused.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from</dt>
+<dd>pause_workflow(). This is needed to resume a workflow for security purposes.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>True if successful, false otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.send_data_to_trigger">
+<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data_in</em>, <em>workflow_uids</em>, <em>inputs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the data_in to the workflows specified in workflow_uids.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.</p>
+<blockquote class="last">
+<div>Defaults to None.</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool">
+<code class="descname">shutdown_pool</code><span class="sig-paren">(</span><em>num_workflows=0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuts down the threadpool.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>num_workflows (int, optional): The number of workflows that should be executed before the pool</dt>
+<dd>is shutdown.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.playbookstore">
+<span id="core-playbookstore-module"></span><h2>core.playbookstore module<a class="headerlink" href="#module-core.playbookstore" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.playbookstore.PlaybookStore">
+<em class="property">class </em><code class="descclassname">core.playbookstore.</code><code class="descname">PlaybookStore</code><a class="headerlink" href="#core.playbookstore.PlaybookStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.add_playbook">
+<code class="descname">add_playbook</code><span class="sig-paren">(</span><em>playbook</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.add_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a playbook to the store</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook (Playbook): The playbook to add</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.add_workflow">
+<code class="descname">add_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.add_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a workflow to the store</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): Playbook to add the workflow to
+workflow (Workflow): Workflow to add</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.copy_playbook">
+<code class="descname">copy_playbook</code><span class="sig-paren">(</span><em>old_playbook_name</em>, <em>new_playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.copy_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies a playbook.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_playbook_name (str): The name of the playbook to be copied.
+new_playbook_name (str): The new name of the duplicated playbook.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.copy_workflow">
+<code class="descname">copy_workflow</code><span class="sig-paren">(</span><em>old_playbook_name</em>, <em>new_playbook_name</em>, <em>old_workflow_name</em>, <em>new_workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.copy_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Duplicates a workflow into its current playbook, or a different playbook.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_playbook_name (str): Playbook name under which the workflow is located.
+new_playbook_name (str): The new playbook name for the duplicated workflow.
+old_workflow_name (str): The name of the workflow to be copied.
+new_workflow_name (str): The new name of the duplicated workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.create_playbook">
+<code class="descname">create_playbook</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflows=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.create_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a playbook from a playbook template.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">playbook_name (str): The name of the new playbook.
+workflows (list[Workflow], optional): The list of workflows to be associated with the playbook. Defaults to</p>
+<blockquote class="last">
+<div>None</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.create_workflow">
+<code class="descname">create_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.create_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an empty workflow</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): Name of the playbook to add
+workflow_name (str): The name of the workflow to add</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_all_playbooks">
+<code class="descname">get_all_playbooks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_all_playbooks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of all playbooks.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A list containing all currently loaded playbook names.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_all_workflows">
+<code class="descname">get_all_workflows</code><span class="sig-paren">(</span><em>full_representations=False</em>, <em>reader=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_all_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all of the currently loaded workflows.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>full_representations (bool, optional): A boolean specifying whether or not to include the JSON</dt>
+<dd>representation of all the workflows, or just their names. Defaults to false.</dd>
+<dt>reader (cls, None): An optional reader class that will represent the Workflows differently.</dt>
+<dd>Defaults to None.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A dict with key being the playbook, mapping to a list of workflow names for each playbook.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_all_workflows_by_playbook">
+<code class="descname">get_all_workflows_by_playbook</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_all_workflows_by_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all workflow objects in a playbook.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name: The name of the playbook.</dd>
+<dt>Returns:</dt>
+<dd>A list of all workflow objects in a playbook.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_playbook">
+<code class="descname">get_playbook</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a playbook</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): The name of the playbook</dd>
+<dt>Returns:</dt>
+<dd>The Playbook from the playbook name</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_playbook_representation">
+<code class="descname">get_playbook_representation</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>reader=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_playbook_representation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the JSON representation of a playbook.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name: The name of the playbook.
+reader (cls, optional): An optional class to show the playbooks differently. Defaults to None.</dd>
+<dt>Returns:</dt>
+<dd>The JSON representation of the playbook if the playbook has any workflows under it, else None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_workflow">
+<code class="descname">get_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a workflow object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): Playbook name under which the workflow is located.
+workflow_name (str): The name of the workflow.</dd>
+<dt>Returns:</dt>
+<dd>The workflow object if found, else None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.get_workflows_by_uid">
+<code class="descname">get_workflows_by_uid</code><span class="sig-paren">(</span><em>workflow_uids</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.get_workflows_by_uid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of workflows from their UIDs</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow_uids (list[str]): The list of workflow UIDs</dd>
+<dt>Returns:</dt>
+<dd>A list of workflows</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.is_playbook_registered">
+<code class="descname">is_playbook_registered</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.is_playbook_registered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether or not a playbook is currently registered in the system.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): The name of the playbook.</dd>
+<dt>Returns:</dt>
+<dd>True if the playbook is registered, false otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.is_workflow_registered">
+<code class="descname">is_workflow_registered</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.is_workflow_registered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether or not a workflow is currently registered in the system.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): Playbook name under which the workflow is located.
+workflow_name (str): The name of the workflow.</dd>
+<dt>Returns:</dt>
+<dd>True if the workflow is registered, false otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.load_playbook">
+<code class="descname">load_playbook</code><span class="sig-paren">(</span><em>resource</em>, <em>loader=&lt;class 'core.jsonplaybookloader.JsonPlaybookLoader'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.load_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a playbook from a file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>resource (str): Path to the workflow.
+loader (cls): Class used to load the playbook</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.load_playbooks">
+<code class="descname">load_playbooks</code><span class="sig-paren">(</span><em>resource_collection=None</em>, <em>loader=&lt;class 'core.jsonplaybookloader.JsonPlaybookLoader'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.load_playbooks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all playbooks from a directory.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration</dt>
+<dd>workflows_path.</dd>
+</dl>
+<p class="last">loader (cls): Class used to load the playbooks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.load_workflow">
+<code class="descname">load_workflow</code><span class="sig-paren">(</span><em>resource</em>, <em>workflow_name</em>, <em>loader=&lt;class 'core.jsonplaybookloader.JsonPlaybookLoader'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.load_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a workflow from a file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>resource (str): Path to the workflow.
+workflow_name (str): Name of the workflow to load.
+loader (cls): Class used to load the workflow</dd>
+<dt>Returns:</dt>
+<dd>True on success, False otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.remove_playbook">
+<code class="descname">remove_playbook</code><span class="sig-paren">(</span><em>playbook_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.remove_playbook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a playbook and all workflows within it.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): The name of the playbook to remove.</dd>
+<dt>Returns:</dt>
+<dd>True on success, False otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.remove_workflow">
+<code class="descname">remove_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.remove_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a workflow.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>playbook_name (str): Playbook name under which the workflow is located.
+workflow_name (str): The name of the workflow to remove.</dd>
+<dt>Returns:</dt>
+<dd>True on success, False otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.update_playbook_name">
+<code class="descname">update_playbook_name</code><span class="sig-paren">(</span><em>old_playbook</em>, <em>new_playbook</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.update_playbook_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the name of a playbook.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_playbook (str): Name of the current playbook.
+new_playbook (str): The new name of the playbook.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.playbookstore.PlaybookStore.update_workflow_name">
+<code class="descname">update_workflow_name</code><span class="sig-paren">(</span><em>old_playbook</em>, <em>old_workflow</em>, <em>new_playbook</em>, <em>new_workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#core.playbookstore.PlaybookStore.update_workflow_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the name of a workflow.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>old_playbook (str): Name of the current playbook.
+old_workflow (str): Name of the current workflow.
+new_playbook (str): The new name of the playbook.
+new_workflow (str): The new name of the workflow.</dd>
 </dl>
 </dd></dl>
 
@@ -1082,7 +1531,7 @@ data (dict): The data associated with the callback.</dd>
 <dl class="exception">
 <dt id="core.scheduler.InvalidTriggerArgs">
 <em class="property">exception </em><code class="descclassname">core.scheduler.</code><code class="descname">InvalidTriggerArgs</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#core.scheduler.InvalidTriggerArgs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
 <dl class="class">
@@ -1117,7 +1566,7 @@ data (dict): The data associated with the callback.</dd>
 <dd><p>Pauses active execution.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
-<dd>The state of the scheduler if successful, error message if scheduler is not in the &#8220;running&#8221; state.</dd>
+<dd>The state of the scheduler if successful, error message if scheduler is not in the “running” state.</dd>
 </dl>
 </dd></dl>
 
@@ -1138,7 +1587,7 @@ workflow_uids (list[str]): The list of workflow UIDs to pause</dd>
 <dd><p>Resumes active execution.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
-<dd>The state of the scheduler if successful, error message if scheduler is not in the &#8220;paused&#8221; state.</dd>
+<dd>The state of the scheduler if successful, error message if scheduler is not in the “paused” state.</dd>
 </dl>
 </dd></dl>
 
@@ -1160,7 +1609,7 @@ workflow_uids (list[str]): The list of workflow UIDs to resume</dd>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>task_id (int): Id of the scheduled task
-executable (func): A callable to execute must take in two arguments &#8211; a playbook name and a workflow name
+executable (func): A callable to execute must take in two arguments – a playbook name and a workflow name
 workflows (tuple(str)): A tuple of playbook name, workflow name, and workflow uid
 trigger (Trigger): The trigger to use for this scheduled task</dd>
 </dl>
@@ -1172,7 +1621,7 @@ trigger (Trigger): The trigger to use for this scheduled task</dd>
 <dd><p>Starts the scheduler for active execution. This function must be called before any workflows are executed.</p>
 <dl class="docutils">
 <dt>Returns:</dt>
-<dd>The state of the scheduler if successful, error message if scheduler is in &#8220;stopped&#8221; state.</dd>
+<dd>The state of the scheduler if successful, error message if scheduler is in “stopped” state.</dd>
 </dl>
 </dd></dl>
 
@@ -1188,7 +1637,7 @@ trigger (Trigger): The trigger to use for this scheduled task</dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
-<dd>The state of the scheduler if successful, error message if scheduler is already in &#8220;stopped&#8221; state.</dd>
+<dd>The state of the scheduler if successful, error message if scheduler is already in “stopped” state.</dd>
 </dl>
 </dd></dl>
 
@@ -1244,78 +1693,6 @@ workflow_uid (str): UUID of the workflow to execute</dd>
 <dt>Returns:</dt>
 <dd>(list[str]) A list in which the first two elements are the scheduled task id and the workflow id respectively</dd>
 </dl>
-</dd></dl>
-
-</div>
-<div class="section" id="module-core.step">
-<span id="core-step-module"></span><h2>core.step module<a class="headerlink" href="#module-core.step" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.step.Step">
-<em class="property">class </em><code class="descclassname">core.step.</code><code class="descname">Step</code><span class="sig-paren">(</span><em>name=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>inputs=None</em>, <em>next_steps=None</em>, <em>position=None</em>, <em>widgets=None</em>, <em>risk=0</em>, <em>uid=None</em>, <em>templated=False</em>, <em>raw_json=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.step.Step.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of a Step object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The JSON representation of a Step object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.step.Step.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>instance</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a Step by calling the associated app function.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>instance (App): The instance of an App object to be used to execute the associated function.
-accumulator (dict): Dict containing the results of the previous steps</dd>
-<dt>Returns:</dt>
-<dd>The result of the executed function.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="core.step.Step.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em>, <em>position</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Forms a Step object from the provided JSON object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>json_in (dict): The JSON object to convert from.
-position (dict): position of the step node of the form {&#8216;x&#8217;: &lt;x position&gt;, &#8216;y&#8217;: &lt;y position&gt;}</dd>
-<dt>Returns:</dt>
-<dd>The Step object parsed from the JSON object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.step.Step.get_next_step">
-<code class="descname">get_next_step</code><span class="sig-paren">(</span><em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.get_next_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the NextStep object to be executed after the current Step.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>accumulator (dict): A record of teh previously-executed steps. Of form {step_name: result}</dd>
-<dt>Returns:</dt>
-<dd>The NextStep object to be executed.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.step.Step.render_step">
-<code class="descname">render_step</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.render_step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="core.step.Step.set_input">
-<code class="descname">set_input</code><span class="sig-paren">(</span><em>new_input</em><span class="sig-paren">)</span><a class="headerlink" href="#core.step.Step.set_input" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates the input for a Step object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>new_input (dict): The new inputs for the Step object.</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -1484,6 +1861,21 @@ position (dict): position of the step node of the form {&#8216;x&#8217;: &lt;x p
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="core.validator.validate_device_field">
+<code class="descclassname">core.validator.</code><code class="descname">validate_device_field</code><span class="sig-paren">(</span><em>field_api</em>, <em>value</em>, <em>message_prefix</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validator.validate_device_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.validator.validate_device_fields">
+<code class="descclassname">core.validator.</code><code class="descname">validate_device_fields</code><span class="sig-paren">(</span><em>device_fields_api</em>, <em>device_fields</em>, <em>device_type</em>, <em>app</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validator.validate_device_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="core.validator.validate_devices_api">
+<code class="descclassname">core.validator.</code><code class="descname">validate_devices_api</code><span class="sig-paren">(</span><em>devices_api</em>, <em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validator.validate_devices_api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="core.validator.validate_filter_parameters">
 <code class="descclassname">core.validator.</code><code class="descname">validate_filter_parameters</code><span class="sig-paren">(</span><em>api</em>, <em>inputs</em>, <em>filter_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validator.validate_filter_parameters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1515,7 +1907,7 @@ position (dict): position of the step node of the form {&#8216;x&#8217;: &lt;x p
 
 <dl class="function">
 <dt id="core.validator.validate_primitive_parameter">
-<code class="descclassname">core.validator.</code><code class="descname">validate_primitive_parameter</code><span class="sig-paren">(</span><em>value</em>, <em>param</em>, <em>parameter_type</em>, <em>message_prefix</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validator.validate_primitive_parameter" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">core.validator.</code><code class="descname">validate_primitive_parameter</code><span class="sig-paren">(</span><em>value</em>, <em>param</em>, <em>parameter_type</em>, <em>message_prefix</em>, <em>hide_input=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validator.validate_primitive_parameter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1551,115 +1943,6 @@ widget_name (str): The widget name</dd>
 </dd></dl>
 
 </div>
-<div class="section" id="module-core.workflow">
-<span id="core-workflow-module"></span><h2>core.workflow module<a class="headerlink" href="#module-core.workflow" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.workflow.Workflow">
-<em class="property">class </em><code class="descclassname">core.workflow.</code><code class="descname">Workflow</code><span class="sig-paren">(</span><em>name=''</em>, <em>children=None</em>, <em>uid=None</em>, <em>steps=None</em>, <em>start_step=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelement.ExecutionElement" title="core.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.workflow.Workflow.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of a Step object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The JSON representation of a Step object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.assign_child">
-<code class="descname">assign_child</code><span class="sig-paren">(</span><em>name=''</em>, <em>workflow=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.assign_child" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.create_step">
-<code class="descname">create_step</code><span class="sig-paren">(</span><em>name=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>arg_input=None</em>, <em>next_steps=None</em>, <em>risk=0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.create_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new Step object and adds it to the Workflow&#8217;s list of Steps.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>name (str, optional): The name of the Step object. Defaults to an empty string.
-action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
-app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
-device (str, optional): The name of the device associated with the app associated with the Step. Defaults
-to an empty string.
-arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
-to None.
-next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
-risk (int, optional): The risk associated with the Step. Defaults to 0.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>execution_uid</em>, <em>start=None</em>, <em>start_input=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a Workflow by executing all Steps in the Workflow list of Step objects.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
-start (str, optional): The name of the first Step. Defaults to &#8220;start&#8221;.
-start_input (str, optional): Input into the first Step. Defaults to an empty string.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="core.workflow.Workflow.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstruct a Workflow object based on JSON data.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.pause">
-<code class="descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.pause" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Step.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.remove_step">
-<code class="descname">remove_step</code><span class="sig-paren">(</span><em>name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.remove_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Removes a Step object from the Workflow&#8217;s list of Steps given the Step name.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>name (str): The name of the Step object to be removed.</dd>
-<dt>Returns:</dt>
-<dd>True on success, False otherwise.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.resume">
-<code class="descname">resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.resume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resumes a Workflow that has previously been paused.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.resume_breakpoint_step">
-<code class="descname">resume_breakpoint_step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.resume_breakpoint_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resumes a Workflow that has hit a breakpoint at a Step. This is used for debugging purposes.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.set_children">
-<code class="descname">set_children</code><span class="sig-paren">(</span><em>workflow_pairs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.set_children" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="core.workflow.Workflow.update_from_json">
-<code class="descname">update_from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#core.workflow.Workflow.update_from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstruct a Workflow object based on JSON data.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
 <div class="section" id="module-core">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -1676,22 +1959,21 @@ start_input (str, optional): Input into the first Step. Defaults to an empty str
 <li><a class="reference internal" href="#">core package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-core.appinstance">core.appinstance module</a></li>
 <li><a class="reference internal" href="#module-core.contextdecorator">core.contextdecorator module</a></li>
 <li><a class="reference internal" href="#module-core.controller">core.controller module</a></li>
 <li><a class="reference internal" href="#module-core.decorators">core.decorators module</a></li>
-<li><a class="reference internal" href="#module-core.executionelement">core.executionelement module</a></li>
-<li><a class="reference internal" href="#module-core.filter">core.filter module</a></li>
-<li><a class="reference internal" href="#module-core.flag">core.flag module</a></li>
 <li><a class="reference internal" href="#module-core.helpers">core.helpers module</a></li>
-<li><a class="reference internal" href="#module-core.instance">core.instance module</a></li>
+<li><a class="reference internal" href="#module-core.jsonelementcreator">core.jsonelementcreator module</a></li>
+<li><a class="reference internal" href="#module-core.jsonelementreader">core.jsonelementreader module</a></li>
+<li><a class="reference internal" href="#module-core.jsonplaybookloader">core.jsonplaybookloader module</a></li>
 <li><a class="reference internal" href="#module-core.loadbalancer">core.loadbalancer module</a></li>
-<li><a class="reference internal" href="#module-core.nextstep">core.nextstep module</a></li>
+<li><a class="reference internal" href="#module-core.multiprocessedexecutor">core.multiprocessedexecutor module</a></li>
+<li><a class="reference internal" href="#module-core.playbookstore">core.playbookstore module</a></li>
 <li><a class="reference internal" href="#module-core.scheduler">core.scheduler module</a></li>
-<li><a class="reference internal" href="#module-core.step">core.step module</a></li>
 <li><a class="reference internal" href="#module-core.threadauthenticator">core.threadauthenticator module</a></li>
 <li><a class="reference internal" href="#module-core.validator">core.validator module</a></li>
 <li><a class="reference internal" href="#module-core.widgetsignals">core.widgetsignals module</a></li>
-<li><a class="reference internal" href="#module-core.workflow">core.workflow module</a></li>
 <li><a class="reference internal" href="#module-core">Module contents</a></li>
 </ul>
 </li>
@@ -1728,7 +2010,7 @@ start_input (str, optional): Input into the first Step. Defaults to an empty str
       &copy;2017, IADGOV.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

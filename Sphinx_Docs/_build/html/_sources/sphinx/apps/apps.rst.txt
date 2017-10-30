@@ -6,16 +6,26 @@ Subpackages
 
 .. toctree::
 
-    apps.ARDrone
-    apps.CyberAnalytic
-    apps.DailyQuote
-    apps.EthereumBlockchain
-    apps.FacebookUserPost
-    apps.HelloWorld
-    apps.SkeletonApp
-    apps.Tesla
-    apps.WatsonVisualRecognition
-    apps.Webcam
+
+Submodules
+----------
+
+apps\.appcache module
+---------------------
+
+.. automodule:: apps.appcache
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.devicedb module
+---------------------
+
+.. automodule:: apps.devicedb
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
