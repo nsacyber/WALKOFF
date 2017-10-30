@@ -1,61 +1,52 @@
-from tests.util.servertestcase import ServerTestCase
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
-from datetime import datetime
-from server import flaskserver as flask_server
-import core.case.subscription
-import core.case.database as case_database
-import core.config.paths
-from threading import Event
-from core.case.callbacks import WorkflowShutdown
-from server.returncodes import *
-import core.controller
-from gevent import monkey
 import socket
+from datetime import datetime
+
+from gevent import monkey
+
+import core.case.database as case_database
+import core.case.subscription
+import core.config.paths
+import core.controller
+from server import flaskserver as flask_server
+from server.returncodes import *
+from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.servertestcase import ServerTestCase
+from tests.util.thread_control import modified_setup_worker_env
+
 try:
     from importlib import reload
 except ImportError:
     from imp import reload
 
+
 class TestWorkflowServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        # This looks awful, I know
-        self.empty_workflow_json = \
-            {'steps': [],
-             'name': 'test_name',
-             'start': 'start',
-             'accumulated_risk': 0.0}
+        monkey.patch_socket()
         core.case.subscription.subscriptions = {}
         case_database.initialize()
-        monkey.patch_socket()
 
     def tearDown(self):
-        flask_server.running_context.controller.shutdown_pool(0)
         core.controller.workflows = {}
-        case_database.case_db.tear_down()
+        core.case.subscription.clear_subscriptions()
+        for case in core.case.database.case_db.session.query(core.case.database.Case).all():
+            core.case.database.case_db.session.delete(case)
+        core.case.database.case_db.session.commit()
         reload(socket)
 
     def test_execute_workflow(self):
-        flask_server.running_context.controller.initialize_threading()
-        sync = Event()
+        flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
         setup_subscriptions_for_step(workflow.uid, step_uids)
         start = datetime.utcnow()
-
-        @WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
-
-        WorkflowShutdown.connect(wait_for_completion)
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
         flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
-        sync.wait(timeout=10)
         steps = []
         for uid in step_uids:
             steps.extend(executed_steps(uid, start, datetime.utcnow()))
@@ -64,8 +55,47 @@ class TestWorkflowServer(ServerTestCase):
         result = step['data']
         self.assertEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
+    # TODO: Uncomment this test.
+    # def test_trigger_multiple_workflows(self):
+    #     flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
+    #
+    #     ids = []
+    #
+    #     response=self.post_with_status_check(
+    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         headers=self.headers, status_code=SUCCESS_ASYNC)
+    #     ids.append(response['id'])
+    #
+    #     response = self.post_with_status_check(
+    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         headers=self.headers, status_code=SUCCESS_ASYNC)
+    #     ids.append(response['id'])
+    #
+    #     data = {"execution_uids": ids,
+    #             "data_in": {"data": "1"}}
+    #
+    #     result = {"result": 0,
+    #               "num_trigs": 0}
+    #
+    #     @callbacks.TriggerStepAwaitingData.connect
+    #     def send_data(sender, **kwargs):
+    #         if result["num_trigs"] == 1:
+    #             self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
+    #                                         status_code=SUCCESS, content_type='application/json')
+    #         else:
+    #             result["num_trigs"] += 1
+    #
+    #     @callbacks.TriggerStepTaken.connect
+    #     def trigger_taken(sender, **kwargs):
+    #         result['result'] += 1
+    #
+    #     import time
+    #     time.sleep(1)
+    #     flask_server.running_context.controller.shutdown_pool(2)
+    #     self.assertEqual(result['result'], 2)
+
     def test_read_all_results(self):
-        flask_server.running_context.controller.initialize_threading()
+        flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)

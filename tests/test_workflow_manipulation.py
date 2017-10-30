@@ -2,6 +2,7 @@ import socket
 import unittest
 from os import path
 
+import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
@@ -11,12 +12,10 @@ import core.multiprocessedexecutor
 from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.executionelements.step import Step
 from core.executionelements.workflow import Workflow
-from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
+from core.helpers import import_all_transforms, import_all_conditions
 from core.appinstance import AppInstance
 from tests import config
-from tests.apps import App
 from tests.util.mock_objects import *
-from tests.util.thread_control import *
 
 try:
     from importlib import reload
@@ -27,8 +26,7 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -55,6 +53,10 @@ class TestWorkflowManipulation(unittest.TestCase):
         case_subscription.clear_subscriptions()
         self.controller.shutdown_pool(0)
         reload(socket)
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')
@@ -83,7 +85,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
+        self.controller.initialize_threading()
         self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
@@ -94,20 +96,19 @@ class TestWorkflowManipulation(unittest.TestCase):
         @WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            self.controller.resume_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            self.controller.resume_workflow(uid)
 
         @WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
 
         def pause_resume_thread():
-            self.controller.pause_workflow('pauseWorkflowTest', 'pauseWorkflow', uid)
+            self.controller.pause_workflow(uid)
             return
 
         @WorkflowExecutionStart.connect
         def step_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
-            time.sleep(0)
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
         self.controller.shutdown_pool(1)

@@ -36,7 +36,8 @@ class JsonPlaybookLoader(object):
                     playbook_json = json.loads(workflow_loaded)
                     playbook_name = playbook_json['name']
                     workflow_json = next(
-                        (workflow for workflow in playbook_json['workflows'] if workflow['name'] == workflow_name), None)
+                        (workflow for workflow in playbook_json['workflows']
+                         if workflow['name'] == workflow_name), None)
                     if workflow_json is None:
                         logger.warning('Workflow {0} not found in playbook {0}. '
                                        'Cannot load.'.format(workflow_name, playbook_name))
@@ -55,7 +56,7 @@ class JsonPlaybookLoader(object):
 
     @staticmethod
     def load_playbook(resource):
-        """Loads multiple workloads from a file.
+        """Loads a playbook from a file.
 
         Args:
             resource (str): Path to the workflow.
@@ -75,15 +76,17 @@ class JsonPlaybookLoader(object):
                     logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidInput, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error(
-                        'Error constructing playbook from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+                        'Error constructing playbook from {0}. '
+                        'Reason: {1}'.format(resource, format_exception_message(e)))
                     return None
 
     @staticmethod
     def load_playbooks(resource_collection=None):
-        """Loads all workflows from a directory.
+        """Loads all playbooks from a directory.
 
         Args:
-            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration workflows_path.
+            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration
+                workflows_path.
         """
 
         if resource_collection is None:

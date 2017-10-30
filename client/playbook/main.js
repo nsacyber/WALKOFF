@@ -242,11 +242,6 @@ $(function(){
                     options: {
                         hidden: true
                     }
-                },
-                errors: {
-                    options: {
-                        hidden: true
-                    }
                 }
             }
         };

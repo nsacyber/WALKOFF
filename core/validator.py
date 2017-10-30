@@ -195,9 +195,9 @@ def validate_actions(actions, dereferencer, app_name):
                                    action_name, get_app_action(app_name, action['run']), event=event)
         validate_app_action_return_codes(action.get('returns', []), app_name, action_name)
         seen.add(action['run'])
-    if seen != set(defined_actions.keys()):
+    if seen != set(defined_actions):
         logger.warning('App {0} has defined the following actions which do not have a corresponding API: '
-                       '{1}'.format(app_name, (set(defined_actions.keys()) - seen)))
+                       '{1}'.format(app_name, (set(defined_actions) - seen)))
 
 
 def validate_action_params(parameters, dereferencer, app_name, action_name, action_func, event=''):

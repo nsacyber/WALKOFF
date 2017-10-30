@@ -1,10 +1,12 @@
 import json
-from tests.util.assertwrappers import orderless_list_compare
-import core.config.paths
-import core.config.config
-from tests.util.servertestcase import ServerTestCase
-from server.returncodes import *
+
 from flask import current_app
+
+import core.config.config
+import core.config.paths
+from server.returncodes import *
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.servertestcase import ServerTestCase
 
 
 class TestServer(ServerTestCase):
@@ -144,8 +146,11 @@ class TestConfiguration(ServerTestCase):
                                                              in ['str', 'unicode'])]
         self.original_configs = {key: getattr(core.config.config, key) for key in config_fields}
         self.original_paths = {key: getattr(core.config.paths, key) for key in path_fields}
-        with open(core.config.paths.config_path) as config_file:
-            self.original_config_file = config_file.read()
+        try:
+            with open(core.config.paths.config_path) as config_file:
+                self.original_config_file = config_file.read()
+        except:
+            self.original_config_file = '{}'
 
     def preTearDown(self):
         for key, value in self.original_paths.items():

@@ -1,6 +1,8 @@
 import unittest
-from core.widgetsignals import create_widget_signal_name, get_widget_signal, _widget_signals
+
 from blinker import NamedSignal
+
+from core.widgetsignals import create_widget_signal_name, get_widget_signal, _widget_signals
 
 
 class TestWidgetSignals(unittest.TestCase):

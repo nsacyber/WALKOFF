@@ -1,7 +1,8 @@
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
+
 import server.metrics as metrics
 from server.returncodes import *
+from server.security import roles_accepted_for_resources
 
 
 def read_app_metrics():

@@ -1,4 +1,5 @@
 import unittest
+
 from core.validator import validate_device_fields, InvalidInput
 
 

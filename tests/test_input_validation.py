@@ -1,7 +1,8 @@
 import unittest
+
 from core.config.config import initialize
-from core.validator import validate_parameter, validate_parameters, convert_json
 from core.helpers import InvalidInput
+from core.validator import validate_parameter, validate_parameters, convert_json
 
 
 class TestInputValidation(unittest.TestCase):

@@ -27,7 +27,7 @@ WorkflowResult:
     status:
       description: The status of the workflow
       type: string
-      enum: [completed, running]
+      enum: [completed, running, 'awaiting_data', 'paused']
       readOnly: true
     results:
       description: The results of the workflow steps

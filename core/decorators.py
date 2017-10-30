@@ -1,7 +1,8 @@
-from threading import Condition
-from core.helpers import get_function_arg_names, InvalidApi
-from functools import wraps
 import json
+from functools import wraps
+from threading import Condition
+
+from core.helpers import get_function_arg_names, InvalidApi
 
 
 class ActionResult(object):
@@ -61,9 +62,9 @@ def event(event_, timeout=300):
     """
     def _event(func):
         arg_names = get_function_arg_names(func)
-        if len(arg_names) < 2:
+        if not arg_names or (arg_names[0] == 'self' and len(arg_names) < 2):
             raise InvalidApi('Event action has too few parameters. '
-                             'There must be a "self" and a second parameter to receive data from the event.')
+                             'There must be at least one parameter to receive data from the event.')
 
         @wraps(func)
         def wrapper(*args, **kwargs):

@@ -1,19 +1,24 @@
-import unittest
+import os
 import shutil
+import stat
+import unittest
+
+import apps
 import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
-from core.helpers import import_all_apps, import_all_conditions, import_all_transforms
-from tests.apps import App
-from tests.util.mock_objects import *
+from core.helpers import import_all_conditions, import_all_transforms
 from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-import os
-import stat
-import json
+import server.flaskserver
+import tests.config
+from tests.util.mock_objects import *
+
+if not getattr(__builtins__, 'WindowsError', None):
+    class WindowsError(OSError): pass
 
 
 class ServerTestCase(unittest.TestCase):
@@ -45,9 +50,7 @@ class ServerTestCase(unittest.TestCase):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
-
-        App.registry = {}
-        import_all_apps(path=tests.config.test_apps_path, reload=True)
+        apps.cache_apps(path=tests.config.test_apps_path)
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -57,8 +60,6 @@ class ServerTestCase(unittest.TestCase):
         if cls.patch:
             core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-
-        core.loadbalancer.Worker.setup_worker_env = modified_setup_worker_env
 
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
@@ -72,6 +73,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             else:
                 shutil.rmtree(tests.config.test_data_path)
+        apps.clear_cache()
 
     def setUp(self):
         core.config.paths.workflows_path = tests.config.test_workflows_path_with_generated

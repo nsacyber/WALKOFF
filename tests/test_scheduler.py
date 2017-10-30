@@ -1,7 +1,9 @@
 import unittest
-from core.scheduler import *
-from apscheduler.triggers.date import DateTrigger
+
 from apscheduler.schedulers.base import STATE_STOPPED, STATE_RUNNING, STATE_PAUSED
+from apscheduler.triggers.date import DateTrigger
+
+from core.scheduler import *
 
 
 class MockWorkflow(object):

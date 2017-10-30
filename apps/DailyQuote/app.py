@@ -1,11 +1,11 @@
-from tests.apps import App, action
+from apps import App, action
 import requests
 import json
 
 
 # There is an associated Daily Quote test workflow which can be executed
 
-class Main(App):
+class DailyQuote(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         self.introMessage = {"message": "Quote App"}

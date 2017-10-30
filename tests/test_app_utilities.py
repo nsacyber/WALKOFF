@@ -1,10 +1,20 @@
 import unittest
-from server.appdevice import get_device, get_all_devices_for_app, \
-    get_all_devices_of_type_from_app, App, Device, device_db
+
 import server.flaskserver
+from apps.devicedb import get_device, get_all_devices_for_app, \
+    get_all_devices_of_type_from_app, App, Device, device_db
 
 
 class TestAppUtilities(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        app = device_db.session.query(App).filter(App.name == 'TestApp').first()
+        if app is not None:
+            device_db.session.delete(app)
+        for device in device_db.session.query(Device).all():
+            device_db.session.delete(device)
+        device_db.session.commit()
 
     def setUp(self):
         self.app_name = 'TestApp'
@@ -26,7 +36,7 @@ class TestAppUtilities(unittest.TestCase):
             device_db.session.delete(app)
         for device in device_db.session.query(Device).all():
             device_db.session.delete(device)
-            device_db.session.commit()
+        device_db.session.commit()
 
     def add_test_app(self, devices=None):
         devices = devices if devices is not None else []

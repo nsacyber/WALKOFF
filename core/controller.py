@@ -1,9 +1,11 @@
 import logging
-from core.scheduler import Scheduler
+
 import core.config.config
 import core.multiprocessedexecutor
-from core.playbookstore import PlaybookStore
 from core.multiprocessedexecutor import MultiprocessedExecutor
+from core.playbookstore import PlaybookStore
+from core.scheduler import Scheduler
+
 logger = logging.getLogger(__name__)
 
 WORKFLOW_RUNNING = 1
@@ -18,72 +20,84 @@ class Controller(object):
         """Initializes a Controller object.
         
         Args:
-            workflows_path (str, optional): Path to the workflows.
+            executor (cls, optional): The executor to use in the controller. Defaults to MultiprocessedExecutor
         """
         self.uid = 'controller'
         self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
         self.executor = executor()
 
-    def initialize_threading(self, worker_env=None):
-        self.executor.initialize_threading(worker_env)
+    def initialize_threading(self, worker_environment_setup=None):
+        """Initializes threading in the executor
+        """
+        self.executor.initialize_threading(worker_environment_setup=worker_environment_setup)
 
     def shutdown_pool(self, num_workflows=0):
+        """Shuts down the executor
+
+        Args:
+            num_workflows (int, optional): Number of workflows to wait to complete before shutting down. Defaults to 0,
+                meaning that it will immediately shutdown the pool upon receiving this command.
+        """
         self.executor.shutdown_pool(num_workflows=num_workflows)
 
-    def pause_workflow(self, playbook_name, workflow_name, execution_uid):
-        workflow = self.get_workflow(playbook_name, workflow_name)
-        self.executor.pause_workflow(execution_uid, workflow)
+    def pause_workflow(self, execution_uid):
+        """Pauses a workflow.
 
-    def resume_workflow(self, playbook_name, workflow_name, workflow_execution_uid):
+        Args:
+            execution_uid (str): The execution UID of the workflow to pause
+        """
+        self.executor.pause_workflow(execution_uid)
+
+    def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has been paused.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
             workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
                 pause_workflow(). This is needed to resume a workflow for security purposes.
 
         Returns:
-            True if successful, false otherwise.
+            (bool) True if successful, False otherwise.
         """
-        workflow = self.get_workflow(playbook_name, workflow_name)
-        if workflow:
-            self.executor.resume_workflow(workflow_execution_uid, workflow)
+        return self.executor.resume_workflow(workflow_execution_uid)
 
-    def load_workflow(self, resource, workflow_name, name_override=None, playbook_override=None):
+    def load_workflow(self, resource, workflow_name):
         """Loads a workflow from a file.
 
         Args:
             resource (str): Path to the workflow.
             workflow_name (str): Name of the workflow to load.
-            name_override (str, optional): Name that the workflow should be changed to.
-            playbook_override (str, optional): Name that the playbook should be changed to.
 
         Returns:
             True on success, False otherwise.
         """
         return self.playbook_store.load_workflow(resource, workflow_name)
 
-    def load_playbook(self, resource, name_override=None, playbook_override=None):
-        """Loads multiple workloads from a file.
+    def load_playbook(self, resource):
+        """Loads playbook from a file.
 
         Args:
             resource (str): Path to the workflow.
-            name_override (str, optional): Name that the workflow should be changed to.
-            playbook_override (str, optional): Name that the playbook should be changed to.
         """
         return self.playbook_store.load_playbook(resource)
 
     def load_playbooks(self, resource_collection=None):
-        """Loads all workflows from a directory.
+        """Loads all playbooks from a directory.
 
         Args:
-            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration workflows_path.
+            resource_collection (str, optional): Path to the directory to load from. Defaults to the
+                configuration workflows_path.
         """
         return self.playbook_store.load_playbooks(resource_collection)
 
     def schedule_workflows(self, task_id, workflow_uids, trigger):
+        """Schedules workflows to be run by the scheduler
+
+        Args:
+            task_id (str|int): Id of the task to run
+            workflow_uids (list[str]): UIDs of the workflows to schedule
+            trigger: The type of scheduler trigger to use
+        """
         playbook_workflows = self.playbook_store.get_workflows_by_uid(workflow_uids)
         schedule_workflows = []
         for playbook_name, workflows in playbook_workflows.items():
@@ -108,6 +122,8 @@ class Controller(object):
 
         Args:
             playbook_name (str): The name of the new playbook.
+            workflows (list[Workflow], optional): An optional list of Workflows to be associated with this
+                Playbook. Defaults to None.
         """
         return self.playbook_store.create_playbook(playbook_name, workflows)
 
@@ -139,12 +155,14 @@ class Controller(object):
 
         Args:
             full_representation (bool, optional): A boolean specifying whether or not to include the JSON representation
-                of all the workflows, or just their names. Defaults to false.
+                of all the workflows, or just their names. Defaults to False.
+            reader (cls): The reader to specify how to display the Workflows. Defaults to None, which will show
+                basic JSON representation of the Workflows.
         
         Returns:
             A dict with key being the playbook, mapping to a list of workflow names for each playbook.
         """
-        return self.playbook_store.get_all_workflows(full_representation, reader=None)
+        return self.playbook_store.get_all_workflows(full_representation, reader=reader)
 
     def get_all_playbooks(self):
         """Gets a list of all playbooks.
@@ -203,8 +221,11 @@ class Controller(object):
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
-            start (str, optional): The name of the first, or starting step. Defaults to "start".
-            start_input (dict, optional): The input to the starting step of the workflow
+            start (str, optional): The name of the first, or starting step. Defaults to None.
+            start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.
+
+        Returns:
+            The execution UID if successful, None otherwise.
         """
         if self.playbook_store.is_workflow_registered(playbook_name, workflow_name):
             workflow = self.playbook_store.get_workflow(playbook_name, workflow_name)
@@ -212,6 +233,9 @@ class Controller(object):
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
             return None, 'Attempted to execute playbook which does not exist in controller'
+
+    def get_waiting_workflows(self):
+        return self.executor.get_waiting_workflows()
 
     def get_workflow(self, playbook_name, workflow_name):
         """Get a workflow object.
@@ -241,6 +265,8 @@ class Controller(object):
 
         Args:
             playbook_name: The name of the playbook.
+            reader (cls, optional): An optional different way to represent the Playbook. Defaults to None,
+                meaning that it will show basic JSON representation.
 
         Returns:
             The JSON representation of the playbook if the playbook has any workflows under it, else None.
@@ -267,9 +293,31 @@ class Controller(object):
         """
         self.playbook_store.copy_playbook(old_playbook_name, new_playbook_name)
 
-    #TODO: This method needs to be implemented somewhere
-    def get_workflow_status(self, uid):
-        pass
-        # return self.workflow_status.get(uid, None)
+    def send_data_to_trigger(self, data_in, workflow_uids, inputs=None):
+        """Tries to match the data in against the conditionals of all the triggers registered in the database.
+
+        Args:
+            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
+                Defaults to {}.
+
+        Returns:
+            Dictionary of {"status": <status string>}
+        """
+        inputs = inputs if inputs is not None else {}
+        if workflow_uids is not None:
+            self.executor.send_data_to_trigger(data_in, workflow_uids, inputs)
+
+    def get_workflow_status(self, execution_uid):
+        """Gets the status of an executing workflow
+
+        Args:
+            execution_uid (str): Execution UID of the executing workflow
+
+        Returns:
+            (int) Status code of the executing workflow
+        """
+        return self.executor.get_workflow_status(execution_uid)
 
 controller = Controller()

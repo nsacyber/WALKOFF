@@ -1,8 +1,10 @@
-from core.case import database
+import logging
+
 from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
                                 EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
                                 EVENT_SCHEDULER_RESUMED)
-import logging
+
+from core.case import database
 
 subscriptions = {}
 

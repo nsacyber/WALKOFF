@@ -1,14 +1,16 @@
-from sqlalchemy.ext.declarative import declared_attr, declarative_base
-import pyaes
 import logging
-from core.helpers import format_db_path
-from sqlalchemy.ext.hybrid import hybrid_property
-from core.validator import convert_primitive_type
-from core.config.config import secret_key as key
-import core.config.paths
-from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 import sys
+
+import pyaes
+from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
+from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+
+import core.config.paths
+from core.config.config import secret_key as key
+from core.helpers import format_db_path
+from core.validator import convert_primitive_type
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +52,6 @@ class App(Device_Base):
     def add_device(self, device):
         if not any(device_.name == device.name for device_ in self.devices):
             self.devices.append(device)
-
-    def as_json(self):
-        return {"name": self.name,
-                "devices": [device.as_json() for device in self.devices]}
 
     def as_json(self, with_devices=False):
         """Gets the JSON representation of an App object.
@@ -151,7 +149,8 @@ class Device(Device_Base):
     def from_json(json_in):
         description = json_in['description'] if 'description' in json_in else ''
         plaintext_fields, encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
-        return Device(json_in['name'], plaintext_fields, encrypted_fields, device_type=json_in['type'], description=description)
+        return Device(
+            json_in['name'], plaintext_fields, encrypted_fields, device_type=json_in['type'], description=description)
 
 
 allowed_device_field_types = ('string', 'number', 'boolean', 'integer')
@@ -301,6 +300,22 @@ def get_device(app_name, device_name):
     else:
         logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
         return None
+
+def get_app(app_name):
+    """ Gets the app associated with an app name
+
+    Args:
+        app_name (str): The name of the app
+    Returns:
+        (App): The desired device. Returns None if app or device not found.
+    """
+    app = device_db.session.query(App).filter(App.name == app_name).first()
+    if app is not None:
+        return app
+    else:
+        logger.warning('Cannot get app {}. App does not exist'.format(app_name))
+        return None
+
 
 
 class DeviceDatabase(object):

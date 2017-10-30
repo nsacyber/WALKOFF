@@ -1,11 +1,13 @@
+import datetime
 import unittest
-from core.scheduler import *
+
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.cron import CronTrigger
 from apscheduler.util import convert_to_datetime
-import datetime
 from tzlocal import get_localzone
+
+from core.scheduler import *
 
 
 class TestSchedulerUtils(unittest.TestCase):

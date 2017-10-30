@@ -1,3 +1,6 @@
+from compose_api import compose_api
+compose_api()
+
 import unittest
 import sys
 from tests import suites as test_suites
@@ -5,8 +8,10 @@ import logging
 import server.context
 
 
+
 def run_tests():
     logging.disable(logging.CRITICAL)
+
     ret = True
     print('Testing Workflows:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite).wasSuccessful()

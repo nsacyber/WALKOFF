@@ -2,7 +2,7 @@ import logging
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import (get_condition, get_condition_api, InvalidElementConstructed, InvalidInput,
+from core.helpers import (get_condition, get_condition_api, InvalidInput,
                           dereference_step_routing, format_exception_message)
 from core.validator import validate_condition_parameters, validate_parameter
 

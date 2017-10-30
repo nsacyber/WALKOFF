@@ -1,118 +1,117 @@
-from six import add_metaclass
 import logging
-import importlib
-from core.decorators import *  # Change namespace of action
-from blinker import NamedSignal
-
-from core.helpers import UnknownApp, UnknownAppAction
+from core.decorators import *
+from apps.appcache import AppCache
+from apps.devicedb import get_app as get_db_app
 
 _logger = logging.getLogger(__name__)
 
 
-class AppRegistry(type):
-    """
-    Metaclass which registers metadata about all the apps
-    Assumes apps are in module with <dir>.<app_name> structure
-    """
-    def __init__(cls, name, bases, nmspc):
-        super(AppRegistry, cls).__init__(name, bases, nmspc)
-        if not hasattr(cls, 'registry'):
-            cls.registry = dict()
-        app_name = cls._get_app_name()
-        if app_name is not None:
-            cls.registry[app_name] = {'main': cls,
-                                      'display': cls.__get_display_function(),
-                                      'actions': cls.__get_actions(nmspc)}
-
-    def _get_app_name(cls):
-        try:
-            return cls.__module__.split('.')[1]
-        except IndexError:
-            return None
-
-    def __get_display_function(cls):
-        try:
-            module_name = cls.__module__.rsplit('.', 1)[0]
-            display_module = importlib.import_module('{0}.display'.format(module_name))
-        except ImportError:
-            # _logger.warning('App {0} has no module "display"'.format(cls._get_app_name()))
-            return None
-        else:
-            try:
-                load_function = getattr(display_module, 'load')
-            except AttributeError:
-                _logger.warning('App {0}.display has no property called "load"'.format(cls._get_app_name()))
-                return None
-            else:
-                if callable(load_function):
-                    return load_function
-                else:
-                    _logger.warning('App {0}.display.load is not callable'.format(cls._get_app_name()))
-                    return None
-
-    def __get_actions(cls, nmspc):
-        actions = {}
-        for property_name, property_value in nmspc.items():
-            if callable(property_value) and getattr(property_value, 'action', False):
-                actions[property_name] = getattr(cls, property_name)
-        return actions
-
-
-@add_metaclass(AppRegistry)
 class App(object):
+    """
+    Base class for apps
+    """
+
+    _is_walkoff_app = True
+
     def __init__(self, app, device):
-        self.app = app
-        self.device = device
+        self.app = get_db_app(app)
+        self.device = self.app.get_device(device) if (self.app is not None and device) else None
+        if self.device is not None:
+            self.device_fields = self.device.get_plaintext_fields()
+            self.device_type = self.device.type
+        else:
+            self.device_fields = {}
+            self.device_type = None
+        self.device_id = device
 
     def get_all_devices(self):
         """ Gets all the devices associated with this app """
-        from server.appdevice import App as _App
-        return _App.get_all_devices_for_app(self.app)
-
-    def get_device(self):
-        """ Gets the device associated with this app """
-        from server.appdevice import App as _App
-        return _App.get_device(self.app, self.device)
+        return list(self.app.devices) if self.app is not None else []
 
     def shutdown(self):
         """ When implemented, this method performs shutdown procedures for the app """
         pass
 
 
+_cache = AppCache()
+
+
 def get_app(app_name):
-    try:
-        return App.registry[app_name]['main']
-    except KeyError:
-        raise UnknownApp(app_name)
+    """
+    Gets the app class for a given app from the global cache. If app has only global actions or is not found,
+    raises an UnknownApp exception.
+
+    Args:
+        app_name (str): Name of the app to get
+
+    Returns:
+        (cls) The app's class
+    """
+    return _cache.get_app(app_name)
 
 
 def get_all_actions_for_app(app_name):
-    try:
-        return App.registry[app_name]['actions']
-    except KeyError:
-        raise UnknownApp(app_name)
+    """
+    Gets all the names of the actions for a given app from the global cache
+
+    Args:
+        app_name (str): Name of the app
+
+    Returns:
+        (list[str]): The actions associated with the app
+    """
+    return _cache.get_app_action_names(app_name)
 
 
 def get_app_action(app_name, action_name):
-    try:
-        app = App.registry[app_name]
-    except KeyError:
-        raise UnknownApp(app_name)
-    else:
-        try:
-            return app['actions'][action_name]
-        except:
-            raise UnknownAppAction(app_name, action_name)
+    """
+    Gets the action function for a given app and action name from the global cache
+
+    Args:
+        app_name (str): Name of the app
+        action_name(str): Name of the action
+
+    Returns:
+        (func) The action
+    """
+    return _cache.get_app_action(app_name, action_name)
 
 
-def get_app_display(app_name):
-    try:
-        return App.registry[app_name]['display']
-    except KeyError:
-        raise UnknownApp(app_name)
+def cache_apps(path):
+    """
+    Cache apps from a given path into the global cache
+
+    Args:
+        path (str): Path to apps module
+    """
+    _cache.cache_apps(path)
+
+
+def clear_cache():
+    """
+    Clears the global cache
+    """
+    _cache.clear()
+
+
+def is_app_action_bound(app_name, action_name):
+    """
+    Determines if the action in the global cache is bound (meaning it's inside a class) or not
+
+    Args:
+        app_name (str): Name of the app
+        action_name(str): Name of the action
+
+    Returns:
+        (bool) Is the action bound?
+    """
+    return _cache.is_app_action_bound(app_name, action_name)
 
 
 class AppWidgetBlueprint(object):
+    """
+    Class to create blueprints for custom server endpoints in apps
+    """
     def __init__(self, blueprint, rule=''):
         self.blueprint = blueprint
         self.rule = rule

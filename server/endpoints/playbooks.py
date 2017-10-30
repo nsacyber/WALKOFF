@@ -1,15 +1,17 @@
 import json
 import os
+
 from flask import request, current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
-from core import helpers
-from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
+
 import core.case.database as case_database
-from core.case.workflowresults import WorkflowResult
 import core.config.config
 import core.config.paths
+from core import helpers
+from core.case.workflowresults import WorkflowResult
+from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
 from server.returncodes import *
+from server.security import roles_accepted_for_resources
 import server.workflowresults  # do not delete needed to register callbacks
 
 
@@ -459,18 +461,20 @@ def add_default_template(playbook_name, workflow_name):
 
 
 @jwt_required
-@roles_accepted_for_resources('playbooks')
 def read_results():
-    ret = []
-    completed_workflows = [workflow.as_json() for workflow in
-                           case_database.case_db.session.query(WorkflowResult).filter(
-                               WorkflowResult.status == 'completed').all()]
-    for result in completed_workflows:
-        if result['status'] == 'completed':
-            ret.append({'name': result['name'],
-                        'timestamp': result['completed_at'],
-                        'result': json.dumps(result['results'])})
-    return ret, SUCCESS
+    @roles_accepted_for_resources('playbooks')
+    def __func():
+        ret = []
+        completed_workflows = [workflow.as_json() for workflow in
+                               case_database.case_db.session.query(WorkflowResult).filter(
+                                   WorkflowResult.status == 'completed').all()]
+        for result in completed_workflows:
+            if result['status'] == 'completed':
+                ret.append({'name': result['name'],
+                            'timestamp': result['completed_at'],
+                            'result': json.dumps(result['results'])})
+        return ret, SUCCESS
+    return __func()
 
 
 @jwt_required

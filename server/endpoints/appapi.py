@@ -1,11 +1,12 @@
 from flask import current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
+
 import core.config.config
 import core.config.paths
+from apps.devicedb import Device, device_db
 from core import helpers
 from server.returncodes import *
-from server.appdevice import Device, device_db
+from server.security import roles_accepted_for_resources
 
 
 def read_all_apps(interfaces_only=None, has_device_types=None):
@@ -78,7 +79,7 @@ def read_all_devices(app_name):
             output = []
             if query:
                 for device in query:
-                    if app_name == device.app.name:
+                    if app_name == device.app_id:
                         output.append(device.as_json())
             return output, SUCCESS
         else:

@@ -1,13 +1,16 @@
 import importlib
 import json
-import sys
 import logging
+import sys
+from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join, splitext
+
+import yaml
+
 import core.config.paths
 from core.config.paths import keywords_path
-from collections import OrderedDict
-import yaml
+
 __logger = logging.getLogger(__name__)
 
 
@@ -16,14 +19,18 @@ def load_config():
     """
     global https
     self = sys.modules[__name__]
-    with open(core.config.paths.config_path) as config_file:
-        config = json.loads(config_file.read())
-        for key, value in config.items():
-            if value:
-                if hasattr(core.config.paths, key):
-                    setattr(core.config.paths, key, value)
-                elif hasattr(self, key):
-                    setattr(self, key, value)
+    if isfile(core.config.paths.config_path):
+        try:
+            with open(core.config.paths.config_path) as config_file:
+                config = json.loads(config_file.read())
+                for key, value in config.items():
+                    if value:
+                        if hasattr(core.config.paths, key):
+                            setattr(core.config.paths, key, value)
+                        elif hasattr(self, key):
+                            setattr(self, key, value)
+        except (IOError, OSError, ValueError):
+            __logger.warning('Could not read config file.', exc_info=True)
 
 
 def write_values_to_file(keys=None):
@@ -133,8 +140,9 @@ def initialize():
     global conditions
 
     load_config()
-    from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
-    import_all_apps()
+    from core.helpers import import_all_transforms, import_all_conditions
+    from apps import cache_apps
+    cache_apps(core.config.paths.apps_path)
     load_app_apis()
     conditions = import_all_conditions()
     transforms = import_all_transforms()

@@ -1,21 +1,21 @@
 import unittest
+
+import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
-from core.helpers import import_all_conditions, import_all_transforms, import_all_apps
-from tests import config
+from core.helpers import import_all_conditions, import_all_transforms
 import core.config.config
-from tests.apps import App
 import core.controller
-from tests.util.mock_objects import *
 import core.loadbalancer
 import core.multiprocessedexecutor
+from tests import config
+from tests.util.mock_objects import *
 
 
 class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -30,6 +30,10 @@ class TestExecutionEvents(unittest.TestCase):
 
     def tearDown(self):
         case_database.case_db.tear_down()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_workflow_execution_events(self):
 

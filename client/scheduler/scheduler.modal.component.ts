@@ -119,8 +119,6 @@ export class SchedulerModalComponent {
 				this.workingScheduledTask.task_trigger.args = null;
 				break;
 		}
-
-		console.log(this.workingScheduledTask);
 	}
 
 	workflowsSelectChanged(e: any): void {

@@ -1,29 +1,33 @@
 import unittest
 import uuid
 
+import apps
 import core.config.config
 from core.decorators import ActionResult
 from core.executionelements.condition import Condition
 from core.executionelements.nextstep import NextStep
-from core.helpers import import_all_transforms, import_all_conditions, import_all_apps
-from tests.apps import App
+from core.helpers import import_all_transforms, import_all_conditions
 from tests.config import test_apps_path, function_api_path
 
 
 class TestNextStep(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=test_apps_path, reload=True)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
         core.config.config.load_condition_transform_apis(path=function_api_path)
 
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
+
     def __compare_init(self, elem, name, conditions, status='Success', uid=None):
         self.assertEqual(elem.status, status)
         self.assertEqual(elem.name, name)
-        self.assertListEqual([condition.action for condition in elem.conditions], [condition['action'] for condition in conditions])
+        self.assertListEqual([condition.action for condition in elem.conditions],
+                             [condition['action'] for condition in conditions])
         if uid is None:
             self.assertIsNotNone(elem.uid)
         else:

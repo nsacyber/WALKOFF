@@ -165,12 +165,12 @@ class Triggers(db.Model):
 
     @staticmethod
     def __execute_trigger(conditional, data_in):
-        filters = [Transform(action=filter_element['action'],
+        transforms = [Transform(action=filter_element['action'],
                              args=Triggers.__to_new_input_format(filter_element['args']))
-                   for filter_element in conditional['filters']]
+                   for filter_element in conditional['transforms']]
         return Condition(action=conditional['action'],
                          args=Triggers.__to_new_input_format(conditional['args']),
-                         transforms=filters).execute(data_in, {})
+                         transforms=transforms).execute(data_in, {})
 
     def __repr__(self):
         return json.dumps(self.as_json())

@@ -4,7 +4,13 @@ from apps import App, action
 
 logger = logging.getLogger(__name__)
 
-class Main(App):
+
+@action
+def test_global_action(data):
+    return data
+
+
+class SkeletonApp(App):
     """
        Skeleton example app to build other apps off of
     
@@ -38,5 +44,5 @@ class Main(App):
         """
            Basic function that calls an instance variable.  In this case, a device name. 
         """
-        # password = self.get_device().get_password(); do not store this as a variable if at all possible
-        return self.get_device().username
+        # password = self.get_device().get_encrypted_field('password'); do not store this variable in cache
+        return self.device_fields['username']

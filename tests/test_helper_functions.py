@@ -1,19 +1,20 @@
-import unittest
-from core.helpers import *
 import types
-import sys
-from os.path import join
+import unittest
 from os import sep
-from tests.config import test_workflows_path, test_apps_path, function_api_path
+from os.path import join
+
+import apps
 import core.config.paths
 from core.config.config import initialize
+from core.helpers import *
+from tests.config import test_workflows_path, test_apps_path, function_api_path
 from tests.util.assertwrappers import orderless_list_compare
 
 
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import_all_apps(path=test_apps_path)
+        apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -25,6 +26,10 @@ class TestHelperFunctions(unittest.TestCase):
 
     def tearDown(self):
         core.config.paths.apps_path = self.original_apps_path
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     # TODO: Figure out replacement test
     # def test_load_app_function(self):
@@ -77,7 +82,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(list_widgets('JunkApp'), [])
 
     def test_import_py_file(self):
-        module_name = 'tests.apps.HelloWorld'
+        module_name = 'tests.testapps.HelloWorld'
         imported_module = import_py_file(module_name,
                                          os.path.join(core.config.paths.apps_path, 'HelloWorld', 'main.py'))
         self.assertIsInstance(imported_module, types.ModuleType)
@@ -91,7 +96,7 @@ class TestHelperFunctions(unittest.TestCase):
             import_py_file('some.module.name', os.path.join(core.config.paths.apps_path, 'InvalidAppName', 'main.py'))
 
     def test_import_app_main(self):
-        module_name = 'tests.apps.HelloWorld.main'
+        module_name = 'tests.testapps.HelloWorld.main'
         imported_module = import_app_main('HelloWorld')
         self.assertIsInstance(imported_module, types.ModuleType)
         self.assertEqual(imported_module.__name__, module_name)
@@ -130,29 +135,6 @@ class TestHelperFunctions(unittest.TestCase):
             self.assertIn(name, results.keys())
             self.assertIn(name, sys.modules.keys())
 
-    def test_subclass_registry(self):
-        from six import with_metaclass
-
-        class Sub(with_metaclass(SubclassRegistry, object)):
-            pass
-
-        self.assertDictEqual(Sub.registry, {'Sub': Sub})
-
-        class Sub1(Sub):
-            pass
-
-        class Sub2(Sub):
-            pass
-
-        class Sub3(Sub):
-            pass
-
-        class Sub1(Sub):
-            pass
-
-        orderless_list_compare(self, Sub.registry.keys(), ['Sub', 'Sub1', 'Sub2', 'Sub3'])
-        orderless_list_compare(self, Sub.registry.values(), [Sub, Sub1, Sub2, Sub3])
-
     def test_format_db_path(self):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
         self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
@@ -184,25 +166,17 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertDictEqual(filter_tags, expected_filters)
         self.assertDictEqual(flag_tags, expected_flags)
 
-    def test_import_all_flags(self):
+    def test_import_all_conditions(self):
         self.assertDictEqual(import_all_conditions('tests.util.conditionstransforms'),
                              import_and_find_tags('tests.util.conditionstransforms', 'condition'))
 
-    def test_import_all_flags_invalid_flag_package(self):
-        with self.assertRaises(ImportError):
-            import_all_conditions('invalid.package')
-
-    def test_import_all_filters(self):
+    def test_import_all_transforms(self):
         self.assertDictEqual(import_all_transforms('tests.util.conditionstransforms'),
                              import_and_find_tags('tests.util.conditionstransforms', 'transform'))
 
-    def test_import_all_filters_invalid_filter_package(self):
-        with self.assertRaises(ImportError):
-            import_all_conditions('invalid.package')
-
     def test_get_app_action_api_valid(self):
         api = get_app_action_api('HelloWorld', 'pause')
-        expected = ('pause',
+        expected = ('main.Main.pause',
                     [{'required': True,
                       'type': 'number',
                       'name': 'seconds',

@@ -1,5 +1,5 @@
-from core.helpers import list_apps, list_widgets
 import core.config.paths
+from core.helpers import list_apps, list_widgets
 
 
 class Context(object):

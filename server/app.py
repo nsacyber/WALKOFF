@@ -1,48 +1,23 @@
-import os
 import logging
+import os
+
+import connexion
 from jinja2 import Environment, FileSystemLoader
 
+import core.config.config
 import server.database
+from apps.devicedb import App, device_db
 from core import helpers
 from core.config import paths
-import core.config.config
-import connexion
 from core.helpers import format_db_path
-from server.appdevice import App, device_db
 
 logger = logging.getLogger(__name__)
-
-
-def read_and_indent(filename, indent):
-    indent = '  ' * indent
-    with open(filename, 'r') as file_open:
-        return ['{0}{1}'.format(indent, line) for line in file_open]
-
-
-def compose_yamls():
-    with open(os.path.join(paths.api_path, 'api.yaml'), 'r') as api_yaml:
-        final_yaml = []
-        for line_num, line in enumerate(api_yaml):
-            if line.lstrip().startswith('$ref:'):
-                split_line = line.split('$ref:')
-                reference = split_line[1].strip()
-                indentation = split_line[0].count('  ')
-                try:
-                    final_yaml.extend(read_and_indent(os.path.join(paths.api_path, reference), indentation))
-                    final_yaml.append('\n')
-                except (IOError, OSError):
-                    logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
-                                                                                                      line_num))
-            else:
-                final_yaml.append(line)
-    with open(os.path.join(paths.api_path, 'composed_api.yaml'), 'w') as composed_yaml:
-        composed_yaml.writelines(final_yaml)
 
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
     from server.blueprints import events, widgets, workflowresult
-    flaskapp.register_blueprint(app.app_page, url_prefix='/apps/<app>')
+    flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
     flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
@@ -121,11 +96,9 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
 
 def create_app():
     from .blueprints.events import setup_case_stream
-    from flask import Flask
     import core.config
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
-    compose_yamls()
     _app.jinja_loader = FileSystemLoader(['server/templates'])
     _app.config.update(
         # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
@@ -140,15 +113,7 @@ def create_app():
         JWT_BLACKLIST_ENABLED=True,
         JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
     )
-    # _app.jinja_options = Flask.jinja_options.copy()
-    # _app.jinja_options.update(dict(
-    #     variable_start_string='<%',
-    #     variable_end_string='%>'
-    # ))
-    # _app.config["SECURITY_LOGIN_USER_TEMPLATE"] = "login_user.html"
-
     _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     _app.config['JWT_TOKEN_LOCATION'] = 'headers'
 
     from server.database import db
@@ -179,7 +144,8 @@ def create_user():
 
     running_context.db.create_all()
     if not User.query.all():
-        admin_role = running_context.Role(name='admin', description='administrator', resources=server.database.default_resources)
+        admin_role = running_context.Role(
+            name='admin', description='administrator', resources=server.database.default_resources)
         running_context.db.session.add(admin_role)
         admin_user = add_user(username='admin', password='admin')
         admin_user.roles.append(admin_role)
@@ -192,33 +158,6 @@ def create_user():
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
         device_db.session.add(App(name=app_name, devices=[]))
-    running_context.db.session.commit()
-    device_db.session.commit()
-    running_context.CaseSubscription.sync_to_subscriptions()
-
-    app.logger.handlers = logging.getLogger('server').handlers
-
-
-def create_test_data():
-    from server.context import running_context
-    from . import database
-
-    running_context.db.create_all()
-
-    if not database.User.query.first():
-        admin_role = running_context.user_datastore.create_role(name='admin',
-                                                                description='administrator',
-                                                                pages=server.database.default_resources)
-
-        u = running_context.User.add_user(username='admin', password='admin')
-        running_context.user_datastore.add_role_to_user(u, admin_role)
-        running_context.db.session.commit()
-
-    apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in device_db.session.query(App).all()])
-    app.logger.debug('Found apps: {0}'.format(apps))
-    for app_name in apps:
-        device_db.session.add(App(app=app_name, devices=[]))
     running_context.db.session.commit()
     device_db.session.commit()
     running_context.CaseSubscription.sync_to_subscriptions()

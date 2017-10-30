@@ -1,14 +1,16 @@
 import datetime
-from six import string_types
 import json
 from functools import partial
-from blinker import Signal
-import core.case.subscription as case_subscription
-from core.case import database
-from core.case.database import Event
+
 from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
                                 EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
                                 EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED)
+from blinker import Signal
+from six import string_types
+
+import core.case.subscription as case_subscription
+from core.case import database
+from core.case.database import Event
 
 
 def __add_entry_to_case_wrapper(sender, data, event_type, entry_message, message_name):
@@ -149,3 +151,14 @@ TransformError, __transform_error_callback = __construct_logging_signal('Transfo
 
 # Load Balancer callbacks
 data_sent = Signal('sent')
+
+# Trigger Step callbacks
+TriggerStepAwaitingData, __trigger_step_awaiting_data = __construct_logging_signal('Trigger',
+                                                                                   'Trigger Step Awaiting Data',
+                                                                                   'Trigger step awaiting data')
+TriggerStepTaken, __trigger_step_taken = __construct_logging_signal('Trigger',
+                                                                    'Trigger Step Taken',
+                                                                    'Trigger step taken')
+TriggerStepNotTaken, __trigger_step_not_taken = __construct_logging_signal('Trigger',
+                                                                           'Trigger Step Not Taken',
+                                                                           'Trigger step not taken')

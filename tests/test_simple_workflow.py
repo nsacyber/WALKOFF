@@ -1,22 +1,22 @@
 import unittest
+
 import core.config.config
-from core.case import database
-from core.case import subscription
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-from core.helpers import import_all_conditions, import_all_transforms, import_all_apps
+from core.helpers import import_all_conditions, import_all_transforms
+from core.case import database
+from core.case import subscription
 from tests import config
 from tests.util.case_db_help import *
-from tests.apps import App
 from tests.util.mock_objects import *
 
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        from apps import cache_apps
+        cache_apps(path=config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -37,6 +37,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def tearDown(self):
         database.case_db.tear_down()
         subscription.clear_subscriptions()
+
+    @classmethod
+    def tearDownClass(cls):
+        import apps
+        apps.clear_cache()
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')

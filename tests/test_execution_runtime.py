@@ -1,24 +1,24 @@
-from datetime import datetime
 import unittest
-from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
-from tests import config
-from core.case import subscription
+from core.helpers import import_all_transforms, import_all_conditions
 import core.config.config
+from datetime import datetime
+
+import apps
 import core.case.database as case_database
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
-from tests.util.mock_objects import *
-from tests.util.thread_control import *
+import core.config.config
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-from tests.apps import App
+from core.case import subscription
+from tests import config
+from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.mock_objects import *
 
 
 class TestExecutionRuntime(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -32,10 +32,13 @@ class TestExecutionRuntime(unittest.TestCase):
         self.controller = core.controller.controller
         self.controller.workflows = {}
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
-        self.controller.initialize_threading(worker_env=modified_setup_worker_env)
 
     def tearDown(self):
         subscription.clear_subscriptions()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_templated_workflow(self):
         step_names = ['start', '1']

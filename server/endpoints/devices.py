@@ -1,13 +1,15 @@
 import json
+
 from flask import current_app, request
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
+
 import core.config.config
 import core.config.paths
-from server.returncodes import *
-from core.validator import validate_device_fields
+from apps.devicedb import Device, App, device_db
 from core.helpers import get_app_device_api, InvalidInput, UnknownDevice, UnknownApp, format_exception_message
-from server.appdevice import Device, App, device_db
+from core.validator import validate_device_fields
+from server.returncodes import *
+from server.security import roles_accepted_for_resources
 
 
 def get_device_json_with_app_name(device):

@@ -1,10 +1,12 @@
+from datetime import timedelta
+
 from flask import current_app
-from server.security import roles_accepted_for_resources
 from flask_jwt_extended import jwt_required
+
 import core.config.config
 import core.config.paths
 from server.returncodes import *
-from datetime import timedelta
+from server.security import roles_accepted_for_resources
 
 
 def __get_current_configuration():

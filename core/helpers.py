@@ -1,12 +1,14 @@
 import importlib
-import sys
-import os
-from six import string_types
-import pkgutil
-import logging
-import core.config.paths
-import core.config.config
 import json
+import logging
+import os
+import pkgutil
+import sys
+
+from six import string_types
+
+import core.config.config
+import core.config.paths
 
 try:
     from importlib import reload as reload_module
@@ -239,56 +241,61 @@ def combine_dicts(x, y):
 
 def import_submodules(package, recursive=False):
     """Imports the submodules from a given package.
-    
+
     Args:
         package (str): The name of the package from which to import the submodules.
-        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules. 
+        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
             Defaults to False.
-                        
+
     Returns:
         A dictionary containing the imported module objects.
     """
+    successful_base_import = True
     if isinstance(package, str):
-        package = importlib.import_module(package)
-    results = {}
-    for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-        full_name = '{0}.{1}'.format(package.__name__, name)
         try:
-            results[full_name] = importlib.import_module(full_name)
-        except ImportError as e:
-            logger.error('Could not import {0}. Reason: {1}'.format(full_name, format_exception_message(e)))
-        if recursive and is_package:
-            results.update(import_submodules(full_name))
-    return results
-
-
-class SubclassRegistry(type):
-    """
-    Metaclass which registers its subclasses in a dict of {name: cls}
-    """
-    def __init__(cls, name, bases, nmspc):
-        super(SubclassRegistry, cls).__init__(name, bases, nmspc)
-        if not hasattr(cls, 'registry'):
-            cls.registry = dict()
-        cls.registry[name] = cls
+            package = importlib.import_module(package)
+        except ImportError:
+            successful_base_import = False
+            logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
+    if successful_base_import:
+        results = {}
+        for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+            full_name = '{0}.{1}'.format(package.__name__, name)
+            try:
+                results[full_name] = importlib.import_module(full_name)
+            except ImportError:
+                logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
+            if recursive and is_package:
+                results.update(import_submodules(full_name))
+        return results
+    return {}
 
 
 def format_db_path(db_type, path):
+    """
+    Formats the path to the database
+
+    Args:
+        db_type (str): Type of database being used
+        path (str): Path to the database
+
+    Returns:
+        (str): The path of the database formatted for SqlAlchemy
+    """
     return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
 
 
-def import_all_apps(path=None, reload=False):
-    for app_name in list_apps(path):
-        try:
-            importlib.import_module('apps.{0}'.format(app_name))
-            import_app_main(app_name, path=path, reload=reload)
-        except ImportError:
-            logger.error('Directory {0} in apps path is not a python package. Cannot load.'.format(app_name))
-        except InvalidApi as e:
-            logger.error('App {0} has an invalid API: {0}'.format(format_exception_message(e)))
-
-
 def get_app_action_api(app, action):
+    """
+    Gets the api for a given app and action
+
+    Args:
+        app (str): Name of the app
+        action (str): Name of the action
+
+    Returns:
+        (tuple(str, dict)) The name of the function to execute and its parameters
+    """
     try:
         app_api = core.config.config.app_apis[app]
     except KeyError:
@@ -404,12 +411,6 @@ class UnknownTransform(Exception):
         self.transform = transform
 
 
-class InvalidElementConstructed(Exception):
-    def __init__(self, message):
-        self.message = message
-        super(InvalidElementConstructed, self).__init__(self.message)
-
-
 def __get_tagged_functions(module, tag, prefix):
     tagged = {}
     start_index = len(prefix)+1
@@ -435,17 +436,27 @@ def import_and_find_tags(package, tag, prefix=None, recursive=True):
     """
 
     tagged = {}
+    successful_base_import = True
     if isinstance(package, str):
         prefix = package if prefix is None else prefix
-        package = importlib.import_module(package)
+        try:
+            package = importlib.import_module(package)
+        except ImportError:
+            successful_base_import = False
+            logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
         tagged.update(__get_tagged_functions(package, tag, prefix))
-    for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-        full_name = '{0}.{1}'.format(package.__name__, name)
-        module = importlib.import_module(full_name)
-        tagged.update(__get_tagged_functions(module, tag, prefix))
-        if recursive and is_package:
-            tagged.update(import_and_find_tags(full_name, tag, prefix=prefix))
-    return tagged
+    if successful_base_import:
+        for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+            full_name = '{0}.{1}'.format(package.__name__, name)
+            try:
+                module = importlib.import_module(full_name)
+            except ImportError:
+                logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
+            else:
+                tagged.update(__get_tagged_functions(module, tag, prefix))
+                if recursive and is_package:
+                    tagged.update(import_and_find_tags(full_name, tag, prefix=prefix))
+        return tagged
 
 
 def import_all_conditions(package='core.conditions'):

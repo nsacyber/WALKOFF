@@ -1,9 +1,19 @@
 class JsonElementReader(object):
-
-
+    """
+    Reads an ExecutionElement and converts it to JSON
+    """
 
     @staticmethod
     def read(element):
+        """
+        Reads an ExecutionElement and converts it to JSON
+
+        Args:
+            element (ExecutionElement): The ExecutionElement
+
+        Returns:
+            (dict) The JSON representation of the ExecutionElement
+        """
         from core.executionelements.executionelement import ExecutionElement
         accumulator = {}
         for field, value in ((field, getattr(element, field)) for field in dir(element)
@@ -26,7 +36,6 @@ class JsonElementReader(object):
         accumulator[field_name] = [JsonElementReader.read(list_value)
                                    if type(list_value) not in (float, str, int, bool) else list_value
                                    for list_value in list_ if list_value is not None]
-
 
     @staticmethod
     def _read_dict(field_name, dict_, accumulator):

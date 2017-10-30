@@ -26,7 +26,7 @@ message WorkflowPacket {
     message WorkflowSender {
         optional string name = 1;
         optional string uid = 2;
-        optional string execution_uid = 3;
+        optional string workflow_execution_uid = 3;
     }
 
     optional WorkflowSender sender = 1;
@@ -48,6 +48,7 @@ message StepPacket {
         optional string app = 4;
         optional string action = 5;
         map<string, string> input = 6;
+        optional string workflow_execution_uid = 7;
     }
 
     optional StepSender sender = 1;
@@ -66,6 +67,7 @@ message GeneralPacket {
     message GeneralSender {
         optional string uid = 1;
         optional string app = 2;
+        optional string workflow_execution_uid = 3;
     }
 
     optional GeneralSender sender = 1;

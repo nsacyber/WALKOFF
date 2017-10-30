@@ -1,9 +1,8 @@
-import json
-from core.case.subscription import set_subscriptions, clear_subscriptions
 import core.case.subscription as case_subs
+from core.case.subscription import set_subscriptions, clear_subscriptions
+from server import flaskserver as server
 from server.casesubscription import CaseSubscription
 from tests.util.servertestcase import ServerTestCase
-from server import flaskserver as server
 
 
 class TestCaseConfigDatabase(ServerTestCase):

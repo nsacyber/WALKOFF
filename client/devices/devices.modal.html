@@ -17,8 +17,8 @@
 					</div>
 					<div class="form-group">
 						<label for="app">Associated App<span class="fa fa-asterisk required" title="This field is required."></span></label>
-						<select class="form-control" [ngModel]="workingDevice.app" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" name="app"
-						 tabindex="3" required>
+						<select class="form-control" [ngModel]="workingDevice.app" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" 
+						 [disabled]="workingDevice.id" name="app" tabindex="3" required>
 							<option value=""></option>
 							<option *ngFor="let i of appNames" [value]="i" [label]="i">{{i}}</option>
 						</select>

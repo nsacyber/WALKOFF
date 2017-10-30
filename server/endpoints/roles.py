@@ -1,8 +1,9 @@
 from flask import request, current_app
-from server.security import roles_accepted
 from flask_jwt_extended import jwt_required
-from server.returncodes import *
+
 from server.database import set_resources_for_role, clear_resources_for_role
+from server.returncodes import *
+from server.security import roles_accepted
 
 
 def read_all_roles():

@@ -105,8 +105,8 @@
                 </div>
             </div>
 
-            <ngx-datatable #userTable class='material expandable' [columnMode]="'flex'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="50"
-                [rows]='displayUsers' [sortType]="'multi'" [sorts]="[{prop: 'username', dir: 'asc'}]" [limit]="10">
+            <ngx-datatable #userTable class='material expandable' [columnMode]="'flex'" [rows]='displayUsers'
+             [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sortType]="'multi'" [sorts]="[{prop: 'username', dir: 'asc'}]" [limit]="10">
                 <!-- Column Templates -->
                 <ngx-datatable-column name="Username" [flexGrow]="3">
                     <ng-template let-row="row" ngx-datatable-cell-template>
@@ -125,8 +125,8 @@
                 </ngx-datatable-column>
                 <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <button (click)="editUser(row)" class="btn btn-primary"><span class="fa fa-edit"></span>Edit User</button>
-                        <button (click)="deleteUser(row)" class="btn btn-danger"><span class="fa fa-times"></span>Delete User</button>
+                        <button (click)="editUser(row)" class="btn btn-primary" title="Edit User"><span class="fa fa-edit"></span></button>
+                        <button (click)="deleteUser(row)" class="btn btn-danger" title="Delete User"><span class="fa fa-times"></span></button>
                     </ng-template>
                 </ngx-datatable-column>
             </ngx-datatable>

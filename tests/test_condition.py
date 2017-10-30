@@ -4,8 +4,7 @@ import uuid
 import core.config.config
 from core.executionelements.transform import Transform
 from core.executionelements.condition import Condition
-from core.helpers import (import_all_transforms, import_all_conditions, InvalidInput,
-                          InvalidElementConstructed)
+from core.helpers import import_all_transforms, import_all_conditions, InvalidInput
 from tests.config import function_api_path
 
 

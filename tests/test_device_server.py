@@ -1,11 +1,12 @@
-from tests.util.servertestcase import ServerTestCase
 import json
-from server.appdevice import Device, App, DeviceField, device_db
-from server.returncodes import *
-import core.config.config
 import os
-import tests.config
+
+import core.config.config
 import core.config.paths
+import tests.config
+from apps.devicedb import Device, App, DeviceField, device_db
+from server.returncodes import *
+from tests.util.servertestcase import ServerTestCase
 
 
 class TestDevicesServer(ServerTestCase):

@@ -1,8 +1,9 @@
-from server.security import roles_accepted_for_resources
+from flask import request
 from flask_jwt_extended import jwt_required
+
 import core.case.database as case_database
 from server.returncodes import *
-from flask import request
+from server.security import roles_accepted_for_resources
 
 
 def update_event_note():

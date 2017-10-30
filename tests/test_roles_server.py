@@ -1,9 +1,9 @@
-from server.database import Role, db, initialize_resource_roles_from_cleared_database
-import server.database
-from tests.util import servertestcase
-from server.returncodes import *
-
 import json
+
+import server.database
+from server.database import Role, db, initialize_resource_roles_from_cleared_database
+from server.returncodes import *
+from tests.util import servertestcase
 
 
 class TestRolesServer(servertestcase.ServerTestCase):

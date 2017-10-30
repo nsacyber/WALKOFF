@@ -5,20 +5,20 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_AD
     EVENT_SCHEDULER_START, \
     EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 
+import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
+import core.config.config
 from core import controller
 from tests import config
-from tests.apps import App
-from core.helpers import import_all_apps, import_all_transforms, import_all_conditions
+from core.helpers import import_all_transforms, import_all_conditions
 import core.config.config
 
 
 class TestExecutionModes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        App.registry = {}
-        import_all_apps(path=config.test_apps_path, reload=True)
+        apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
@@ -29,6 +29,10 @@ class TestExecutionModes(unittest.TestCase):
 
     def tearDown(self):
         case_database.tear_down()
+
+    @classmethod
+    def tearDownClass(cls):
+        apps.clear_cache()
 
     def test_start_stop_execution_loop(self):
         c = controller.Controller()

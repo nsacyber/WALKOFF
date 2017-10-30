@@ -1,13 +1,13 @@
+from server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from server.returncodes import *
 
 
 class TestAppBlueprint(ServerTestCase):
 
     def test_list_functions(self):
         expected_actions = ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
-                            'returnPlusOne', 'helloWorld', 'Hello World', 'Json Sample', 'Sample Event']
+                            'returnPlusOne', 'helloWorld', 'Hello World', 'Json Sample', 'Sample Event', 'global1', 'global2']
         response = self.get_with_status_check('/api/apps/HelloWorld/actions', headers=self.headers)
         self.assertIn('actions', response)
         orderless_list_compare(self, response['actions'], expected_actions)

@@ -1,9 +1,10 @@
 import unittest
+
+import server.database
+import server.flaskserver
 from server.database import (initialize_resource_roles_from_cleared_database, set_resources_for_role,
                              clear_resources_for_role, Role, ResourcePermission, db,
                              initialize_resource_roles_from_database, default_resources)
-import server.database
-import server.flaskserver
 
 
 class TestRolesPagesCache(unittest.TestCase):

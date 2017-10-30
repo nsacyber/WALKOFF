@@ -26,7 +26,10 @@
     "Input Invalid",
     "Conditionals Executed",
     "Step Execution Success",
-    "Step Execution Error"
+    "Step Execution Error",
+    "Trigger Step Awaiting Data",
+    "Trigger Step Taken",
+    "Trigger Step Not Taken"
   ],
   "nextstep": [
     "Next Step Taken",

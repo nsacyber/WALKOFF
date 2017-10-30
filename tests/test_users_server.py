@@ -1,8 +1,9 @@
-from tests.util.servertestcase import ServerTestCase
-from server.database import db, User, Role, add_user
-import server.database
-from server.returncodes import *
 import json
+
+import server.database
+from server.database import db, User, Role, add_user
+from server.returncodes import *
+from tests.util.servertestcase import ServerTestCase
 
 
 class TestUserServer(ServerTestCase):

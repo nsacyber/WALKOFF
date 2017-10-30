@@ -1,4 +1,5 @@
 import os
+
 from flask import Blueprint, render_template, g
 from flask_jwt_extended import jwt_required
 

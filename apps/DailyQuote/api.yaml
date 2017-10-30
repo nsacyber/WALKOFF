@@ -9,7 +9,7 @@ info:
     name: Creative Commons
 actions:
   quoteIntro:
-    run: quoteIntro
+    run: app.DailyQuote.quoteIntro
     description: Prints an introductry string
     returns:
       Success:
@@ -17,7 +17,7 @@ actions:
         schema:
           type: string
   repeatBackToMe:
-    run: repeatBackToMe
+    run: app.DailyQuote.repeatBackToMe
     description: Repeats the call argument
     parameters:
         - name: call
@@ -30,7 +30,7 @@ actions:
         schema:
           type: string
   forismaticQuote:
-    run: forismaticQuote
+    run: app.DailyQuote.forismaticQuote
     description: Gets a quote
     parameters:
         - name: url
@@ -43,7 +43,7 @@ actions:
         schema:
           type: integer
   getQuote:
-    run: getQuote
+    run: app.DailyQuote.getQuote
     description: gets a quote
     returns:
       Success:

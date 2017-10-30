@@ -1,9 +1,9 @@
 import json
-from os import path
-from tests.util.servertestcase import ServerTestCase
-from server.scheduledtasks import ScheduledTask, ScheduledWorkflow
+
 from server import flaskserver as flask_server
 from server.returncodes import *
+from server.scheduledtasks import ScheduledTask, ScheduledWorkflow
+from tests.util.servertestcase import ServerTestCase
 
 
 class TestScheduledTasksServer(ServerTestCase):
