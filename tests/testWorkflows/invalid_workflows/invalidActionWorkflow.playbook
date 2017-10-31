@@ -14,6 +14,7 @@
                             "value": "Hello World"
                         }
                     ],
+                    "uid": "1",
                     "name": "1",
                     "next_steps": [],
                     "position": {},
@@ -26,6 +27,7 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
+                    "uid": "2",
                     "next_steps": [
                         {
                             "conditions": [

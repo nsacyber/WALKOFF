@@ -3,6 +3,7 @@ import logging
 from copy import deepcopy
 
 import gevent
+from sortedcontainers import SortedList
 
 from core.appinstance import AppInstance
 from core.case.callbacks import data_sent
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, steps=None, start=None, accumulated_risk=0.0):
+    def __init__(self, name='', uid=None, steps=None, next_steps=None, start=None, accumulated_risk=0.0):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Steps
             within it that get executed.
             
@@ -22,13 +23,22 @@ class Workflow(ExecutionElement):
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
             uid (str, optional): Optional UID to pass in for the workflow. Defaults to uuid.uuid4().
             steps (dict, optional): Optional Step objects. Defaults to None.
-            start (str, optional): Optional name of the starting Step. Defaults to None.
+            next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
+            start (str, optional): Optional UID of the starting Step. Defaults to None.
             accumulated_risk (float, optional): The amount of risk that the execution of this Workflow has
                 accrued. Defaults to 0.0.
         """
         ExecutionElement.__init__(self, uid)
         self.name = name
         self.steps = {step.uid: step for step in steps} if steps is not None else {}
+        for step in steps:
+            self.next_steps[step.uid] = SortedList()
+
+        self.next_steps = {}
+        for next_step in next_steps:
+            if next_step.src in self.next_steps:
+                self.next_steps[next_step.src].add(next_step)
+
         self.start = start if start is not None else 'start'
         self.accumulated_risk = accumulated_risk
 
@@ -37,7 +47,7 @@ class Workflow(ExecutionElement):
         self._accumulator = {}
         self._execution_uid = 'default'
 
-    def create_step(self, name='', action='', app='', device='', arg_input=None, next_steps=None, risk=0):
+    def create_step(self, name='', action='', app='', device='', arg_input=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
         
         Args:
@@ -48,15 +58,13 @@ class Workflow(ExecutionElement):
                 to an empty string.
             arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
                 to None.
-            next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             
         """
         arg_input = arg_input if arg_input is not None else {}
-        next_steps = next_steps if next_steps is not None else []
-        step = Step(
-            name=name, action=action, app=app, device=device, inputs=arg_input, next_steps=next_steps, risk=risk)
+        step = Step(name=name, action=action, app=app, device=device, inputs=arg_input, risk=risk)
         self.steps[step.uid] = step
+        self.next_steps[step.uid] = SortedList()
         self._total_risk += risk
         logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[step.uid].read()))
 
@@ -64,25 +72,24 @@ class Workflow(ExecutionElement):
         """Removes a Step object from the Workflow's list of Steps given the Step name.
         
         Args:
-            name (str): The name of the Step object to be removed.
+            uid (str): The UID of the Step object to be removed.
             
         Returns:
             True on success, False otherwise.
         """
         if uid in self.steps:
             self.steps.pop(uid)
+
+            self.next_steps.pop(uid)
+            for step in self.next_steps.keys():
+                for next_step in list(self.next_steps[step]):
+                    if next_step.dst == uid:
+                        self.next_steps[step].remove(next_step)
+
             logger.debug('Removed step {0} from workflow {1}'.format(uid, self.name))
             return True
         logger.warning('Could not remove step {0} from workflow {1}. Step does not exist'.format(uid, self.name))
         return False
-
-    def __go_to_next_step(self, current, next_up):
-        if next_up not in self.steps:
-            self.steps[current].set_next_up(None)
-            current = None
-        else:
-            current = next_up
-        return current
 
     def pause(self):
         """Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Step.
@@ -164,16 +171,30 @@ class Workflow(ExecutionElement):
         self._executing_step.send_data_to_trigger(data)
 
     def __steps(self, start):
-        initial_step_name = start
-        current_name = initial_step_name
-        current = self.steps[current_name] if self.steps else None
-        while current:
-            yield current
-            next_step = current.get_next_step(self._accumulator)
-            current_name = self.__go_to_next_step(current=current_name, next_up=next_step)
-            current = self.steps[current_name] if current_name is not None else None
+        initial_step_uid = start
+        current_uid = initial_step_uid
+        current_step = self.steps[current_uid] if self.steps else None
+        while current_step:
+            yield current_step
+            next_step_uid = self.__get_next_step(current_step, self._accumulator)
+            current_uid = self.__go_to_next_step(next_step_uid)
+            current_step = self.steps[current_uid] if current_uid is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
+
+    def __get_next_step(self, current_step, accumulator):
+        for next_step in self.next_steps[current_step.uid]:
+            next_step = next_step.execute(current_step.get_output(), accumulator)
+            if next_step is not None:
+                data_sent.send(self, callback_name="Conditionals Executed", object_type="Workflow")
+                return next_step
+
+    def __go_to_next_step(self, next_step_uid):
+        if next_step_uid not in self.steps:
+            current = None
+        else:
+            current = next_step_uid
+        return current
 
     def __swap_step_input(self, step, start_input):
         logger.debug('Swapping input to first step of workflow {0}'.format(self.name))

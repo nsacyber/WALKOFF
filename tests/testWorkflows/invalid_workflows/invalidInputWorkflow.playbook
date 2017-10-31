@@ -15,6 +15,7 @@
                         }
                     ],
                     "name": "1",
+                    "uid": "1",
                     "next_steps": [],
                     "position": {},
                     "risk": 0,
@@ -26,6 +27,7 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
+                    "uid": "2",
                     "next_steps": [
                         {
                             "conditions": [
