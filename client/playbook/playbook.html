@@ -88,7 +88,7 @@
                             </ngb-accordion> -->
 
 
-                            <div class="panel-group" id="accordion">
+                            <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
                                 <div *ngFor="let app of apps" class="panel panel-default">
                                     <div class="panel-heading">
                                     <h4 class="panel-title">
@@ -97,11 +97,11 @@
                                     </div>
                                     <div id="collapse{{app.name}}" class="panel-collapse collapse">
                                         <div class="panel-body">
-                                            <div *ngFor="let action of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
-                                             [dragData]="{ appName: app.name, action: action }" (dblclick)="handleDoubleClickEvent(app.name, action.name)">
+                                            <div *ngFor="let actionApi of app.actionApis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
+                                             [dragData]="{ appName: app.name, actionApis: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
                                                 <div class="panel-body">
                                                     <span class="fa fa-bars pull-right"></span>
-                                                    <span>{{action.name}}</span>
+                                                    <span>{{actionApi.name}}</span>
                                                 </div>
                                             </div>
                                         </div>

@@ -647,8 +647,8 @@ export class PlaybookComponent {
 		if (this.cy === null) return;
 
 		let appName: string = e.dragData.appName;
-		let action: ActionApi = e.dragData.action;
-		console.log(e, action);
+		let actionApi: ActionApi = e.dragData.actionApi;
+		console.log(e, actionApi);
 
 		// The following coordinates is where the user dropped relative to the
 		// top-left of the graph
@@ -657,7 +657,7 @@ export class PlaybookComponent {
 			y: e.mouseEvent.layerY
 		}
 
-		this.insertNode(appName, action.name, dropPosition, true);
+		this.insertNode(appName, actionApi.name, dropPosition, true);
 	}
 
 	handleDoubleClickEvent(appName: string, actionName: string): void {
