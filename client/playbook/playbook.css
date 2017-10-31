@@ -15,7 +15,7 @@
 }
 
 #main.playbookMain {
-	padding: 10px 15px;
+	padding: 10px 15px 0px 15px;
 }
 
 #playbookToolbar .btn-default {
@@ -58,7 +58,7 @@
 }
 
 .playbookMain .graphEditorRow, .playbookMain .graphEditorColumn {
-	height: 80vh;
+	height: calc(100vh - 110px);
 	overflow: auto;
 }
 
@@ -182,4 +182,8 @@
 
 #workflowsModal .panel-heading h4 {
 	min-height: 30px;
+}
+
+#executionResultsModal > .modal-dialog {
+	width: 95%;
 }
