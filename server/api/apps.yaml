@@ -97,3 +97,80 @@
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'
+#/api/apps/apis:
+#  get:
+#    tags:
+#      - Apps
+#    summary: Get all app apis
+#    description: ''
+#    operationId: server.endpoints.appapi.read_all_devices
+#    produces:
+#      - application/json
+#    parameters:
+#      - name: field_name
+#        in: query
+#        description: The name of the field of the api to get for all apps
+#        required: true
+#        type: string
+#        enum: [info, actions, conditions, transforms, devices, tags, externalDocs]
+#    responses:
+#      200:
+#        description: Success
+#        schema:
+#          type: array
+#          items:
+#            type: object
+#/api/apps/apis/{app_name}:
+#  get:
+#    tags:
+#      - Apps
+#    summary: Get all app apis
+#    description: ''
+#    operationId: server.endpoints.appapi.read_all_devices
+#    produces:
+#      - application/json
+#    parameters:
+#      - name: app_name
+#        in: path
+#        description: The name of the app to get
+#        required: true
+#        type: string
+#    responses:
+#      200:
+#        description: Success
+#        schema:
+#          $ref: '#/definitions/AppApi'
+#      461:
+#        description: App does not exist
+#        schema:
+#          $ref: '#/definitions/Error'
+#/api/apps/apis/{app_name}/{field_name}:
+#  get:
+#    tags:
+#      - Apps
+#    summary: Get all app apis
+#    description: ''
+#    operationId: server.endpoints.appapi.read_all_devices
+#    produces:
+#      - application/json
+#    parameters:
+#      - name: app_name
+#        in: path
+#        description: The name of the app to get
+#        required: true
+#        type: string
+#      - name: field_name
+#        in: path
+#        description: The name of the field in the app api to get
+#        required: true
+#        type: string
+#        enum: [info, actions, conditions, transforms, devices, tags, externalDocs]
+#    responses:
+#      200:
+#        description: Success
+#        schema:
+#          type: object
+#      461:
+#        description: App does not exist
+#        schema:
+#          $ref: '#/definitions/Error'

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from flask import current_app
 from flask_jwt_extended import jwt_required
 
@@ -51,6 +53,66 @@ def read_all_app_actions():
                 for app_name, app_api in core.config.config.app_apis.items()},  SUCCESS
 
     return __func()
+
+
+def format_app_action_api_full(api):
+    ret = deepcopy(api)
+
+    ret['returns'].extend([{'status': 'UnhandledException', 'description': 'Exception occurred in action'},
+                           {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}])
+    if 'event' in ret:
+        ret['returns'].append({'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'})
+    ret['returns'] = {return_name: return_ for return_name, return_ in ret['returns'].items()}
+    return ret
+
+
+def format_all_app_actions_api(api):
+    actions = []
+    for action_name, action_api in api.items():
+        ret_action_api = {'name': action_name}
+        ret_action_api.update(format_app_action_api_full(action_api))
+        actions.append(ret_action_api)
+    return actions
+
+
+def format_device_api_full(api):
+    ret = {}
+    for device_type, device_type_api in api.items():
+        device_api = {'typename': device_type, 'fields': []}
+        if 'description' in device_type_api:
+            device_api['description'] = device_type_api['description']
+        for device_field in device_type_api['fields']:
+            device_field = deepcopy(device_field)
+            field_api = {}
+            unformatted_fields = ('name', 'required', 'description', 'default', 'encrypted')
+            for unformatted_field in unformatted_fields:
+                if unformatted_field in device_field:
+                   field_api[unformatted_field] = device_field.pop(unformatted_field)
+            field_api['schema'] = device_field
+            device_api['fields'].append(field_api)
+    return ret
+
+
+@jwt_required
+def read_all_app_apis():
+
+    @roles_accepted_for_resources('apps')
+    def __func():
+        ret = []
+        for app_name, app_api in core.config.config.app_apis:
+            app_ret = {'name': app_name}
+            for unformatted_field in ('info', 'tags', 'externalDocs'):
+                if unformatted_field in app_api:
+                    app_ret[unformatted_field] = app_api[unformatted_field]
+            for formatted_action_field in ('actions', 'conditions', 'transforms'):
+                if formatted_action_field in app_api:
+                    app_ret[formatted_action_field] = format_all_app_actions_api(app_api[formatted_action_field])
+            if 'devices' in app_api:
+                app_ret['devices'] = format_device_api_full(app_api['devices'])
+            ret.append(app_ret)
+        return
+    __func()
+
 
 
 @jwt_required

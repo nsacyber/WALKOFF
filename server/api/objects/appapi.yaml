@@ -5,22 +5,22 @@ AppApi:
   properties:
     info:
       $ref: '#/definitions/ApiInfo'
-    actions:
+    action_apis:
       description: Actions associated with this app
       type: array
       items:
         $ref: '#/definitions/ActionApi'
-    conditions:
+    condition_apis:
       description: Conditions associated with this app
       type: array
       items:
         $ref: '#/definitions/ConditionApi'
-    transforms:
+    transform_apis:
       description: Transforms associated with this app
       type: array
       items:
         $ref: '#/definitions/TransformApi'
-    devices:
+    device_apis:
       description: Devices associated with this app
       type: array
       items:
@@ -211,9 +211,9 @@ TransformApi:
 
 DeviceApi:
   type: object
-  required: [typename, fields]
+  required: [name, fields]
   properties:
-    typename:
+    name:
       type: string
       description: Name of the device type
     description:
@@ -225,17 +225,10 @@ DeviceApi:
 
 DeviceFieldApi:
   type: object
-  required: [name, type]
+  required: [name, schema]
   properties:
     name:
       type: string
-    type:
-      type: string
-      enum: [string, number, integer, boolean]
-    required:
-      description: is the argument required
-      type: boolean
-      default: false
     description:
       type: string
       description: description of what the argument provides
@@ -246,8 +239,8 @@ DeviceFieldApi:
       description: Is this field encrypted
       default: false
     schema:
-      type: object
-      description: The schema of the field
+      $ref: '#/definitions/ParameterSchema'
+
 
 ParameterApi:
   type: object
@@ -258,16 +251,11 @@ ParameterApi:
       type: string
     example:
       type: [number, integer, string, boolean]
-    required:
-      type: boolean
-      enum: [true]
-      description: Is this parameter required for the action
     description:
       type: string
       description: description of the parameter
     schema:
-      type: object
-      description: JSON schema of the expected type of this parameter
+      $ref: '#/definitions/ParameterSchema'
 
 ReturnApi:
   type: object
@@ -281,8 +269,7 @@ ReturnApi:
       type: string
       description: description of the return type
     schema:
-      type: object
-      description: The schema of the return value
+      $ref: '#/definitions/ParameterSchema'
     examples:
       description: An exaple of the returned type
 
@@ -313,3 +300,14 @@ ApiTag:
     externalDocs:
       $ref: '#/definitions/ExternalDocs'
       
+ParameterSchema:
+  type: object
+  required: [type]
+  properties:
+    type:
+      type: string
+      enum: [string, boolean, integer, number, object, array]
+    required:
+      type: boolean
+      default: false
+      description: Is this field required?
