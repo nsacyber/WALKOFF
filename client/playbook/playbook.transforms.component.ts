@@ -3,7 +3,7 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, Input } from '@ang
 import { PlaybookService } from './playbook.service';
 
 import { Workflow } from '../models/playbook/workflow';
-import { App } from '../models/api/app';
+import { AppApi } from '../models/api/appApi';
 import { TransformApi } from '../models/api/transformApi';
 import { ArgumentApi } from '../models/api/argumentApi';
 import { Argument } from '../models/playbook/argument';
@@ -19,7 +19,7 @@ import { Transform } from '../models/playbook/transform';
 export class PlaybookTransformsComponent {
 	@Input() selectedAppName: string;
 	@Input() transforms: Transform[];
-	@Input() apps: App[];
+	@Input() apps: AppApi[];
 	@Input() loadedWorkflow: Workflow;
 
 	selectedTransformApi: string;

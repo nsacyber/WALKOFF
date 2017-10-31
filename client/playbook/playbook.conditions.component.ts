@@ -2,7 +2,7 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, Input } from '@ang
 
 import { PlaybookService } from './playbook.service';
 
-import { App } from '../models/api/app';
+import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { TransformApi } from '../models/api/transformApi';
 import { ArgumentApi } from '../models/api/argumentApi';
@@ -21,7 +21,7 @@ import { Transform } from '../models/playbook/transform';
 export class PlaybookConditionsComponent {
 	@Input() selectedAppName: string;
 	@Input() conditions: Condition[];
-	@Input() apps: App[];
+	@Input() apps: AppApi[];
 	// @Input() conditionApis: ConditionApi[];
 	// @Input() transformApis: TransformApi[];
 	@Input() loadedWorkflow: Workflow;
@@ -60,6 +60,22 @@ export class PlaybookConditionsComponent {
 			args: args,
 			transforms: []
 		});
+	}
+
+	moveUp(index: number): void {
+		let idAbove = index - 1;
+		let toBeSwapped = this.conditions[idAbove];
+
+		this.conditions[idAbove] = this.conditions[index];
+		this.conditions[index] = toBeSwapped;
+	}
+
+	moveDown(index: number): void {
+		let idBelow = index + 1;
+		let toBeSwapped = this.conditions[idBelow];
+
+		this.conditions[idBelow] = this.conditions[index];
+		this.conditions[index] = toBeSwapped;
 	}
 
 	removeCondition(index: number): void {

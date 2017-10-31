@@ -24,7 +24,11 @@
 				<label>Condition {{id+1}}: {{condition.app}} - {{condition.action}}</label>
 			</div>
 			<div class="col-xs-6">
-				<button class="btn btn-danger pull-right" (click)="removeCondition(id)" title="Remove Condition"><span class="fa fa-close"></span></button>
+				<div class="pull-right">
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><span class="fa fa-arrow-up"></span></button>
+					<button *ngIf="id < conditions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><span class="fa fa-arrow-down"></span></button>
+					<button class="btn btn-danger" (click)="removeCondition(id)" title="Remove Condition"><span class="fa fa-close"></span></button>
+				</div>
 			</div>
 		</div>
 		<playbook-argument-component *ngFor="let argument of condition.args; let id = index" [loadedWorkflow]="loadedWorkflow"

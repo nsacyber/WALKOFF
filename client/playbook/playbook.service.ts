@@ -4,7 +4,7 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
-import { App } from '../models/api/app';
+import { AppApi } from '../models/api/appApi';
 import { ActionApi } from '../models/api/actionApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { TransformApi } from '../models/api/transformApi';
@@ -161,25 +161,25 @@ export class PlaybookService {
 	}
 
 	// TODO: not actually used and doesn't currently exist in the backend; should replace the actions/conditions/triggers calls with this...
-	getApis(): Promise<App[]> {
+	getApis(): Promise<AppApi[]> {
 		return this.authHttp.get(`/api/apps/apis`)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as App[])
+			.then(data => data as AppApi[])
 			.catch(this.handleError);
 	}
 
 	/**
 	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
 	 */
-	getAppsAndActions(): Promise<App[]> {
+	getAppsAndActions(): Promise<AppApi[]> {
 		return this.authHttp.get(`/api/apps/actions`)
 			.toPromise()
 			.then(this.extractData)
 			// TODO: should remove this step once the backend gives the data in this form
 			.then(a => {
-				let apps: App[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
+				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <AppApi>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
 						action.name = actionName;
 
 						return action;
@@ -196,14 +196,14 @@ export class PlaybookService {
 	/**
 	 * Returns an array of all next step conditions specified within the application and its apps.
 	 */
-	getConditions(): Promise<App[]> {
+	getConditions(): Promise<AppApi[]> {
 		return this.authHttp.get(`/api/conditions`)
 			.toPromise()
 			.then(this.extractData)
 			// TODO: should remove this step once the backend gives the data in this form
 			.then(a => {
-				let apps: App[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <App>{ name: appName, conditionApis: _.map(app, function (condition: ConditionApi, conditionName: string) {
+				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <AppApi>{ name: appName, conditionApis: _.map(app, function (condition: ConditionApi, conditionName: string) {
 						condition.name = conditionName;
 
 						return condition;
@@ -220,14 +220,14 @@ export class PlaybookService {
 	/**
 	 * Returns an array of all data transforms specified within the application and its apps.
 	 */
-	getTransforms(): Promise<App[]> {
+	getTransforms(): Promise<AppApi[]> {
 		return this.authHttp.get(`/api/transforms`)
 			.toPromise()
 			.then(this.extractData)
 			// TODO: should remove this step once the backend gives the data in this form
 			.then(a => {
-				let apps: App[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <App>{ name: appName, transformApis: _.map(app, function (transform: TransformApi, transformName: string) {
+				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
+					return <AppApi>{ name: appName, transformApis: _.map(app, function (transform: TransformApi, transformName: string) {
 						transform.name = transformName;
 
 						return transform;
