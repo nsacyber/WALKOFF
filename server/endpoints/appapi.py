@@ -1,18 +1,15 @@
 from copy import deepcopy
 
-from flask import current_app
 from flask_jwt_extended import jwt_required
 
 import core.config.config
 import core.config.paths
-from apps.devicedb import Device, device_db
 from core import helpers
 from server.returncodes import *
 from server.security import roles_accepted_for_resources
 
 
 def read_all_apps(interfaces_only=None, has_device_types=None):
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -25,44 +22,37 @@ def read_all_apps(interfaces_only=None, has_device_types=None):
     return __func()
 
 
-def __format_app_action_api(api):
+def extract_schema(api, unformatted_fields=None):
+    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'description')
     ret = {}
-    if 'description' in api:
-        ret['description'] = api['description']
-    ret['args'] = api.get('parameters', [])
-    returns = list(api['returns'].keys()) if 'returns' in api else ['Success']
-    returns.extend(['UnhandledException', 'InvalidInput'])
-    if 'event' in api:
-        ret['event'] = api['event']
-        returns.append('EventTimedOut')
-    ret['returns'] = returns
+    schema = {}
+    for key, value in api.items():
+        if key not in unformatted_fields:
+            schema[key] = value
+        else:
+            ret[key] = value
+    ret['schema'] = schema
     return ret
 
 
-def __format_all_app_actions(app_api):
-    return {action_name: __format_app_action_api(action_api)
-            for action_name, action_api in app_api['actions'].items()}
+def format_returns(api, with_event=False):
+    ret_returns = []
+    for return_name, return_schema in api.items():
+        return_schema.update({'status': return_name})
+        ret_returns.append(return_schema)
+    ret_returns.extend([{'status': 'UnhandledException', 'description': 'Exception occurred in action'},
+                        {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}])
+    if with_event:
+        ret_returns.append({'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'})
+    return ret_returns
 
 
-@jwt_required
-def read_all_app_actions():
-
-    @roles_accepted_for_resources('apps')
-    def __func():
-        return {app_name: __format_all_app_actions(app_api)
-                for app_name, app_api in core.config.config.app_apis.items()},  SUCCESS
-
-    return __func()
-
-
-def format_app_action_api_full(api):
+def format_app_action_api(api):
     ret = deepcopy(api)
-
-    ret['returns'].extend([{'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                           {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}])
-    if 'event' in ret:
-        ret['returns'].append({'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'})
-    ret['returns'] = {return_name: return_ for return_name, return_ in ret['returns'].items()}
+    if 'returns' in api:
+        ret['returns'] = format_returns(ret['returns'], 'event' in api)
+    if 'parameters' in api:
+        ret['parameters'] = [extract_schema(param_api) for param_api in ret['parameters']]
     return ret
 
 
@@ -70,82 +60,75 @@ def format_all_app_actions_api(api):
     actions = []
     for action_name, action_api in api.items():
         ret_action_api = {'name': action_name}
-        ret_action_api.update(format_app_action_api_full(action_api))
+        ret_action_api.update(format_app_action_api(action_api))
         actions.append(ret_action_api)
     return actions
 
 
-def format_device_api_full(api):
-    ret = {}
-    for device_type, device_type_api in api.items():
-        device_api = {'typename': device_type, 'fields': []}
-        if 'description' in device_type_api:
-            device_api['description'] = device_type_api['description']
-        for device_field in device_type_api['fields']:
-            device_field = deepcopy(device_field)
-            field_api = {}
-            unformatted_fields = ('name', 'required', 'description', 'default', 'encrypted')
-            for unformatted_field in unformatted_fields:
-                if unformatted_field in device_field:
-                   field_api[unformatted_field] = device_field.pop(unformatted_field)
-            field_api['schema'] = device_field
-            device_api['fields'].append(field_api)
+def format_device_api_full(api, device_name):
+    device_api = {'name': device_name}
+    unformatted_fields = ('name', 'description', 'default', 'encrypted', 'placeholder')
+    if 'description' in api:
+        device_api['description'] = api['description']
+    device_api['fields'] = [extract_schema(device_field,
+                                           unformatted_fields=unformatted_fields)
+                            for device_field in api['fields']]
+
+    return device_api
+
+
+def format_full_app_api(api, app_name):
+    ret = {'name': app_name}
+    for unformatted_field in ('info', 'tags', 'externalDocs'):
+        if unformatted_field in api:
+            ret[unformatted_field] = api[unformatted_field]
+    for formatted_action_field in ('actions', 'conditions', 'transforms'):
+        if formatted_action_field in api:
+            ret[formatted_action_field] = format_all_app_actions_api(api[formatted_action_field])
+    if 'devices' in api:
+        ret['devices'] = [format_device_api_full(device_api, device_name)
+                          for device_name, device_api in api['devices'].items()]
     return ret
 
 
 @jwt_required
-def read_all_app_apis():
+def read_all_app_apis(field_name=None):
 
     @roles_accepted_for_resources('apps')
     def __func():
         ret = []
-        for app_name, app_api in core.config.config.app_apis:
-            app_ret = {'name': app_name}
-            for unformatted_field in ('info', 'tags', 'externalDocs'):
-                if unformatted_field in app_api:
-                    app_ret[unformatted_field] = app_api[unformatted_field]
-            for formatted_action_field in ('actions', 'conditions', 'transforms'):
-                if formatted_action_field in app_api:
-                    app_ret[formatted_action_field] = format_all_app_actions_api(app_api[formatted_action_field])
-            if 'devices' in app_api:
-                app_ret['devices'] = format_device_api_full(app_api['devices'])
-            ret.append(app_ret)
-        return
-    __func()
-
-
-
-@jwt_required
-def list_app_actions(app_name):
-
-    @roles_accepted_for_resources('apps')
-    def __func():
-        try:
-            app_api = core.config.config.app_apis[app_name]
-        except KeyError:
-            current_app.logger.error('Could not get action for app {0}. App does not exist'.format(app_name))
-            return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
-        else:
-            return {'actions': __format_all_app_actions(app_api)}, SUCCESS
+        for app_name, app_api in core.config.config.app_apis.items():
+            ret.append(format_full_app_api(app_api, app_name))
+        if field_name is not None:
+            default = [] if field_name not in ('info', 'externalDocs') else {}
+            ret = [{'name': api['name'], field_name: api.get(field_name, default)} for api in ret]
+        return ret, SUCCESS
 
     return __func()
 
 
 @jwt_required
-def read_all_devices(app_name):
-
+def read_app_api(app_name):
     @roles_accepted_for_resources('apps')
     def __func():
-        if app_name in core.config.config.app_apis.keys():
-            query = device_db.session.query(Device).all()
-            output = []
-            if query:
-                for device in query:
-                    if app_name == device.app_id:
-                        output.append(device.as_json())
-            return output, SUCCESS
+        api = core.config.config.app_apis.get(app_name, None)
+        if api is not None:
+            return format_full_app_api(api, app_name), SUCCESS
         else:
-            current_app.logger.error('Could not get devices for app {0}. App does not exist'.format(app_name))
-            return {'error': 'App name not found.'}, OBJECT_DNE_ERROR
+            return {'error': 'app not found'}, OBJECT_DNE_ERROR
 
     return __func()
+
+
+@jwt_required
+def read_app_api_field(app_name, field_name):
+    @roles_accepted_for_resources('apps')
+    def __func():
+        api = core.config.config.app_apis.get(app_name, None)
+        if api is not None:
+            return format_full_app_api(api, app_name)[field_name], SUCCESS
+        else:
+            return {'error': 'app not found'}, OBJECT_DNE_ERROR
+
+    return __func()
+

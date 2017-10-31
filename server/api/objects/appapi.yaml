@@ -238,6 +238,9 @@ DeviceFieldApi:
       type: boolean
       description: Is this field encrypted
       default: false
+    placeholder:
+      type: string
+      description: brief description of the field to be use to prompt a user
     schema:
       $ref: '#/definitions/ParameterSchema'
 
