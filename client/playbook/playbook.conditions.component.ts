@@ -62,6 +62,10 @@ export class PlaybookConditionsComponent {
 		});
 	}
 
+	removeCondition(index: number): void {
+		this.conditions.splice(index, 1);
+	}
+
 	getConditionApiArgs(appName: string, conditionName: string, argumentName: string): ArgumentApi {
 		return this.apps.find(a => a.name === appName).conditionApis.find(c => c.name === conditionName).args.find(a => a.name === argumentName);
 	}

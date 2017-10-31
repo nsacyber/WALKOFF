@@ -149,6 +149,24 @@
 	margin: 0 5px;
 }
 
+.playbookMain #parameters .form-group.argument {
+	margin-bottom: 5px;
+	padding: 5px;
+}
+
+.playbookMain #parameters .form-group.argument.odd {
+	background-color: #EEE;
+}
+
+.playbookMain #parameters .transforms {
+	padding-left: 15px;
+	border-left: 3px solid #DDD;
+}
+
+.playbookMain .actionAddBar {
+	margin-bottom: 10px;
+}
+
 .playbookMain .actionAddBar button {
 	margin-top: 25px;
 }

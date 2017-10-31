@@ -75,6 +75,10 @@ export class PlaybookTransformsComponent {
 		this.transforms[index] = toBeSwapped;
 	}
 
+	removeTransform(index: number): void {
+		this.transforms.splice(index, 1);
+	}
+
 	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ArgumentApi {
 		return this.apps.find(a => a.name === appName).transformApis.find(t => t.name === transformName).args.find(a => a.name === argumentName);
 	}

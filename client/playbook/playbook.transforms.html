@@ -1,4 +1,4 @@
-<div>
+<div class="transforms">
 	<div class="row actionAddBar">
 		<div class="col-xs-4">
 			<label>App</label>
@@ -14,12 +14,23 @@
 			</div>
 		<div class="col-xs-4">
 			<div class="form-group">
-				<button class="btn btn-primary" (click)="addTransform()"><span class="fa fa-plus"></span>Add Transform</button>
+				<button class="btn btn-primary pull-right" (click)="addTransform()"><span class="fa fa-plus"></span>Add Transform</button>
 			</div>
 		</div>
 	</div>
 	<div *ngFor="let transform of transforms; let id = index">
-		<h5>Transform {{id+1}}: {{transform.app}} - {{transform.action}}</h5>
+		<div class="row">
+			<div class="col-xs-6">
+				<label>Transform {{id+1}}: {{transform.app}} - {{transform.action}}</label>
+			</div>
+			<div class="col-xs-6">
+				<div class="pull-right">
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><span class="fa fa-arrow-up"></span></button>
+					<button *ngIf="id < transforms.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><span class="fa fa-arrow-down"></span></button>
+					<button class="btn btn-danger" (click)="removeTransform(id)" title="Remove Condition"><span class="fa fa-close"></span></button>
+				</div>
+			</div>
+		</div>
 		<playbook-argument-component *ngFor="let argument of transform.args; let id = index" [loadedWorkflow]="loadedWorkflow"
 		 [argument]="argument" [argumentApi]="getTransformApiArgs(transform.app, transform.action, argument.name)" [id]="id"></playbook-argument-component>
 	</div>

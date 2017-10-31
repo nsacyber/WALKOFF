@@ -1,4 +1,4 @@
-<div class="form-group">
+<div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
 	<!-- Label for input with optional required icon -->
 	<label for="{{argument.name}}">
 		Input {{id+1}}: {{argument.name}} ({{argumentApi.type}})
