@@ -114,6 +114,9 @@ export class PlaybookComponent {
 	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions
 	///------------------------------------------------------------------------------------------------------
+	/**
+	 * Sets up the EventStream for receiving stream steps from the server. Will currently return ALL stream steps and not just the ones manually executed.
+	 */
 	getWorkflowResultsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
@@ -145,12 +148,20 @@ export class PlaybookComponent {
 			});
 	}
 
+	/**
+	 * Executes the loaded workflow as it exists on the server. Will not currently execute the workflow as it stands.
+	 */
 	executeWorkflow(): void {
 		this.playbookService.executeWorkflow(this.currentPlaybook, this.currentWorkflow)
 			.then(() => this.toastyService.success(`Starting execution of ${this.currentPlaybook} - ${this.currentWorkflow}.`))
 			.catch(e => this.toastyService.error(`Error starting execution of ${this.currentPlaybook} - ${this.currentWorkflow}: ${e.message}`));
 	}
 
+	/**
+	 * Loads a workflow from a given playbook / workflow name pair. Configures the cytoscape graph and binds cytoscape events.
+	 * @param playbookName Playbook to load
+	 * @param workflowName Workflow to load
+	 */
 	loadWorkflow(playbookName: string, workflowName: string): void {
 		let self = this;
 
@@ -395,6 +406,9 @@ export class PlaybookComponent {
 			.catch(e => this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`));
 	}
 
+	/**
+	 * Triggers the save action based on the editor option selected.
+	 */
 	save(): void {
 		// if ($(".nav-tabs .active").text() === "Graphical Editor") {
 		// 	// If the graphical editor tab is active
@@ -407,41 +421,52 @@ export class PlaybookComponent {
 		this.saveWorkflow(this.cy.elements().jsons());
 	}
 
+	/**
+	 * Saves the workflow loaded in the editor. Updates the graph positions from the cytoscape model and sanitizes data beforehand.
+	 * @param cyData Nodes and edges from the cytoscape graph. Only really used to grab the new positions of nodes.
+	 */
 	saveWorkflow(cyData: any[]): void {
 		if (!this.loadedWorkflow.start) {
-			this.toastyService.warning(`Workflow cannot be saved without a starting step.`);
+			this.toastyService.warning('Workflow cannot be saved without a starting step.');
 			return;
 		}
 
-		// cyData = _.filter(cyData, function (data: any) { return data.group === "nodes"; });
-
-		// Set the new cytoscape positions on our loadedworkflow
+		// Go through our workflow and update some parameters
 		this.loadedWorkflow.steps.forEach(s => {
+			// Set the new cytoscape positions on our loadedworkflow
 			s.position = cyData.find(cyStep => cyStep.data.uid === s.uid).position;
 			
-			// Properly format the inputs, if "reference" is used, set "value" to "selector"
-			s.inputs.forEach(i => {
-				if (i.reference) i.value = i.selector;
-				i.selector = undefined;
+			// Properly sanitize arguments through the tree
+			s.inputs.forEach(i => this._sanitizeArgumentForSave(i));
+
+			s.triggers.forEach(t => {
+				t.args.forEach(a => this._sanitizeArgumentForSave(a));
+
+				t.transforms.forEach(tr => {
+					tr.args.forEach(a => this._sanitizeArgumentForSave(a));
+				});
+			});
+
+			s.next_steps.forEach(ns => {
+				ns.conditions.forEach(c => {
+					c.args.forEach(a => this._sanitizeArgumentForSave(a));
+	
+					c.transforms.forEach(tr => {
+						tr.args.forEach(a => this._sanitizeArgumentForSave(a));
+					});
+				})
 			});
 		});
-
-		// let steps: Step[] = _.map(cyData, function (step: any) {
-		// 	let ret = _.cloneDeep(step.data.parameters);
-		// 	ret.position = _.clone(step.position);
-		// 	return ret;
-		// });
-
-		// this.loadedWorkflow.start = this.startNode;
-		// this.loadedWorkflow.steps = steps;
-
-		// this._transformInputsToSave(steps);
 
 		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, this.loadedWorkflow)
 			.then(() => this.toastyService.success(`Successfully saved workflow ${this.currentPlaybook} - ${this.currentWorkflow}.`))
 			.catch(e => this.toastyService.error(`Error saving workflow ${this.currentPlaybook} - ${this.currentWorkflow}: ${e.message}`));
 	}
 
+	/**
+	 * Saves a workflow from a JSON string instead of using the graphical editor.
+	 * @param workflowJSONString The JSON string submitted by the user to be parsed as a workflow object.
+	 */
 	saveWorkflowJson(workflowJSONString: string): void {
 		// // Convert data in string format under JSON tab to a dictionary
 		// let dataJson = JSON.parse(workflowJSONString);
@@ -491,6 +516,9 @@ export class PlaybookComponent {
 		// this.saveWorkflow(workflowData);
 	}
 
+	/**
+	 * Gets a list of all the loaded playbooks along with their workflows.
+	 */
 	getPlaybooksWithWorkflows(): void {
 		this.playbookService.getPlaybooks()
 			.then(playbooks => this.playbooks = playbooks);
@@ -540,11 +568,23 @@ export class PlaybookComponent {
 			});
 	}
 
+	/**
+	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
+	 * @param argument The argument to sanitize
+	 */
+	_sanitizeArgumentForSave(argument: Argument): void {
+		if (argument.reference) argument.value = undefined;
+	}
+
 	///------------------------------------------------------------------------------------------------------
 	/// Cytoscape functions
 	///------------------------------------------------------------------------------------------------------
 
-	// This function displays a form next to the graph for editing a node when clicked upon
+	/**
+	 * This function displays a form next to the graph for editing a node when clicked upon
+	 * @param e JS Event fired
+	 * @param self Reference to this PlaybookComponent
+	 */
 	onNodeSelect(e: any, self: PlaybookComponent): void {
 		self.selectedNextStepParams = null;
 
@@ -573,6 +613,11 @@ export class PlaybookComponent {
 		self.relevantDevices = self.devices.filter(d => d.app === data.app);
 	}
 
+	/**
+	 * This function displays a form next to the graph for editing an edge when clicked upon.
+	 * @param e JS Event fired
+	 * @param self Reference to this PlaybookComponent
+	 */
 	onEdgeSelect(e: any, self: PlaybookComponent): void {
 		self.selectedStep = null;
 		self.selectedNextStepParams = null;
@@ -595,6 +640,11 @@ export class PlaybookComponent {
 		});
 	}
 
+	/**
+	 * This function unselects any selected nodes/edges and updates the label if necessary.
+	 * @param e JS Event fired
+	 * @param self Reference to this PlaybookComponent
+	 */
 	onUnselect(event: any, self: PlaybookComponent): void {
 		// Update our labels if possible
 		if (self.selectedStep) this.cy.elements(`node[uid="${self.selectedStep.uid}"]`).data('label', self.selectedStep.name);
@@ -605,7 +655,11 @@ export class PlaybookComponent {
 		}
 	}
 
-	// when an edge is removed, check the edges that still exist and remove the "next" steps for those that don't
+	/**
+	 * This function checks when an edge is removed and removes next steps as appropriate.
+	 * @param e JS Event fired
+	 * @param self Reference to this PlaybookComponent
+	 */
 	onEdgeRemove(event: any, self: PlaybookComponent): void {
 		let edgeData = event.target.data();
 		// Do nothing if this is a temporary edge (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
@@ -618,7 +672,12 @@ export class PlaybookComponent {
 		stepWithThisNextStep.next_steps.filter(ns => ns.name === targetUid);
 	}
 
-	// The logic to add a step to the workflow is in insertNode, maybe move it here instead?
+	// TODO: The logic to add a step to the workflow is in insertNode, maybe move it here instead?
+	/**
+	 * This function checks when a node is added and sets start node if no other nodes exist.
+	 * @param e JS Event fired
+	 * @param self Reference to this PlaybookComponent
+	 */
 	onNodeAdded(event: any, self: PlaybookComponent): void {
 		let node = event.target;
 
@@ -626,6 +685,12 @@ export class PlaybookComponent {
 		if (node.isNode() && self.cy.nodes().size() === 1) self.setStartNode(node.data('uid'));
 	}
 
+	/**
+	 * This function fires when a node is removed. If the node was the start node, it sets it to a new root node.
+	 * It also removes the corresponding step from the workflow.
+	 * @param e JS Event fired
+	 * @param self Reference to this PlaybookComponent
+	 */
 	onNodeRemoved(event: any, self: PlaybookComponent): void {
 		let node = event.target;
 		let data = node.data();
@@ -642,13 +707,15 @@ export class PlaybookComponent {
 		});
 	}
 
-	// This function is called when the user drops a new node onto the graph
+	/**
+	 * This function fires when an action is dropped onto the graph and fires the insertNode function.
+	 * @param e JS Event fired
+	 */
 	handleDropEvent(e: any): void {
 		if (this.cy === null) return;
 
 		let appName: string = e.dragData.appName;
 		let actionApi: ActionApi = e.dragData.actionApi;
-		console.log(e, actionApi);
 
 		// The following coordinates is where the user dropped relative to the
 		// top-left of the graph
@@ -660,6 +727,11 @@ export class PlaybookComponent {
 		this.insertNode(appName, actionApi.name, dropPosition, true);
 	}
 
+	/**
+	 * This function is fired when an action on the left-hand list is double clicked. It drops a new node of that action in the center of the visible graph.
+	 * @param appName App name the action resides under
+	 * @param actionName Name of the action that was double clicked
+	 */
 	handleDoubleClickEvent(appName: string, actionName: string): void {
 		if (this.cy === null) return;
 
@@ -671,6 +743,13 @@ export class PlaybookComponent {
 		this.insertNode(appName, actionName, centerGraphPosition, false);
 	}
 
+	/**
+	 * Inserts node into the graph and adds a corresponding step to the loadedworkflow.
+	 * @param appName App name the action resides under
+	 * @param actionName Name of the action to add
+	 * @param location Graph Position, where to create the node
+	 * @param shouldUseRenderedPosition Whether or not to use rendered or "real" graph position
+	 */
 	insertNode(appName: string, actionName: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
 		// Grab a new uid for both the ID of the node and the ID of the step in the workflow
 		// TODO: other aspects of the playbook editor use the uids generated in cytoscape
@@ -742,6 +821,10 @@ export class PlaybookComponent {
 		let newNode = this.ur.do('add', nodeToBeAdded);
 	}
 
+	// TODO: update this to properly "cut" steps from the loadedWorkflow.
+	/**
+	 * Cytoscape cut method.
+	 */
 	cut(): void {
 		let selecteds = this.cy.$(":selected");
 		if (selecteds.length > 0) {
@@ -750,10 +833,17 @@ export class PlaybookComponent {
 		}
 	}
 
+	/**
+	 * Cytoscape copy method.
+	 */
 	copy(): void {
 		this.cy.clipboard().copy(this.cy.$(":selected"));
 	}
 
+	// TODO: update this to properly get new UIDs for pasted steps...
+	/**
+	 * Cytoscape paste method.
+	 */
 	paste(): void {
 		let newNodes = this.ur.do("paste");
 
@@ -780,16 +870,28 @@ export class PlaybookComponent {
 		});
 	}
 
+	/**
+	 * Sets display properties for a given node based on the information on the related Step.
+	 * @param stepNode Cytoscape node to update.
+	 * @param step Step relating to the cytoscape node to update.
+	 */
 	_setNodeDisplayProperties(stepNode: any, step: Step): void {
 		//add a type field to handle node styling
 		if (this._getAction(step.app, step.action).event) stepNode.type = 'eventAction';
 		else stepNode.type = 'action';
 	}
 
+	/**
+	 * Clears the red/green highlighting in the cytoscape graph.
+	 */
 	clearExecutionHighlighting(): void {
 		this.cy.elements().removeClass("good-highlighted bad-highlighted");
 	}
 
+	/**
+	 * Sets the start step / node to be the one matching the UID specified. Not specifying a UID just grabs the first root.
+	 * @param start UID of the new start node (optional)
+	 */
 	setStartNode(start: string): void {
 		// If no start was given set it to one of the root nodes
 		if (start) {
@@ -808,11 +910,17 @@ export class PlaybookComponent {
 		this.cy.elements(`node[uid="${start}"]`).data('isStartNode', true);
 	}
 
+	/**
+	 * Removes all selected nodes and edges.
+	 */
 	removeSelectedNodes(): void {
 		let selecteds = this.cy.$(":selected");
 		if (selecteds.length > 0) this.ur.do("remove", selecteds);
 	}
 
+	/**
+	 * Adds keyboard event bindings for cut/copy/paste/etc.
+	 */
 	_addCytoscapeEventBindings(): void {
 		let self = this;
 
@@ -1018,10 +1126,18 @@ export class PlaybookComponent {
 	///------------------------------------------------------------------------------------------------------
 	/// Utility functions
 	///------------------------------------------------------------------------------------------------------
+	/**
+	 * Gets a list of playbook names from our list of playbooks.
+	 */
 	getPlaybooks(): string[] {
 		return this.playbooks.map(pb => pb.name);
 	}
 
+	/**
+	 * Checks if a workflow exists by playbook and workflow name.
+	 * @param playbook Playbook to check
+	 * @param workflow Workflow to check
+	 */
 	_doesWorkflowExist(playbook: string, workflow: string): boolean {
 		let matchingPB = this.playbooks.find(pb => pb.name == playbook);
 
@@ -1030,31 +1146,45 @@ export class PlaybookComponent {
 		return matchingPB.workflows.findIndex(wf => wf.name === workflow ) >= 0;
 	}
 
-	_doesPlaybookExist(playbook: string): boolean {
-		return this.playbooks.hasOwnProperty(playbook);
-	}
-
-	// getInputArgParamsForSelectedStep() {
-	// 	return this.actionsForApps[(<AppStep>this.selectedStep).app][(<AppStep>this.selectedStep).action].args;
-	// }
-
 	// TODO: maybe somehow recursively find steps that may occur before. Right now it just returns all of them.
+	/**
+	 * Gets a list of steps previous to the currently selected step. (Currently just grabs a list of all steps.)
+	 */
 	getPreviousSteps() {
 		return this.loadedWorkflow.steps;
 	}
 
+	/**
+	 * Gets an ActionApi object by app and action name
+	 * @param appName App name the action resides under
+	 * @param actionName Name of the ActionApi to query
+	 */
 	_getAction(appName: string, actionName: string): ActionApi {
 		return this.apps.find(a => a.name === appName).actionApis.find(a => a.name === actionName);
 	}
 
+	/**
+	 * Gets a list of ConditionApis from a given app name.
+	 * @param appName App name to query
+	 */
 	getConditionApis(appName: string): ConditionApi[] {
 		return this.apps.find(a => a.name === appName).conditionApis;
 	}
 
+	/**
+	 * Gets a list of TransformApis from a given app name.
+	 * @param appName App name to query
+	 */
 	getTransformApis(appName: string): TransformApi[] {
 		return this.apps.find(a => a.name === appName).transformApis;
 	}
 
+	/**
+	 * Gets an ArgumentApi matching the app, action, and input names specified.
+	 * @param appName App name the ActionApi resides under
+	 * @param actionName Name of the ActionApi to query
+	 * @param inputName Name of the action input to query
+	 */
 	getInputApiArgs(appName: string, actionName: string, inputName: string): ArgumentApi {
 		return this._getAction(appName, actionName).args.find(a => a.name === inputName);
 	}

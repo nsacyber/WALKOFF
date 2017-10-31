@@ -1,10 +1,6 @@
 {
     "name": "basicWorkflowTest",
-<<<<<<< HEAD
     "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
-=======
-    "uid": "4f0bf21d093f4627849b0acaaaf92810",
->>>>>>> origin/development
     "workflows": [
         {
             "accumulated_risk": 0.0,
@@ -165,20 +161,11 @@
                         }
                     ],
                     "position": {
-<<<<<<< HEAD
                         "x": -30,
                         "y": 130
                     },
                     "risk": 0,
                     "uid": "580374f6-bd03-46e1-8262-49bb2c0faff1",
-=======
-                        "x": -450,
-                        "y": -50
-                    },
-                    "risk": 0,
-                    "triggers": [],
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
->>>>>>> origin/development
                     "widgets": []
                 },
                 {
@@ -186,7 +173,6 @@
                     "app": "HelloWorld",
                     "device": "",
                     "inputs": [],
-<<<<<<< HEAD
                     "name": "fourth step",
                     "next_steps": [
                         {
@@ -202,17 +188,6 @@
                     },
                     "risk": 0,
                     "uid": "b94fd6ff-88ad-4484-818e-004594bf3b20",
-=======
-                    "name": "3",
-                    "next_steps": [],
-                    "position": {
-                        "x": -50,
-                        "y": 10
-                    },
-                    "risk": 0,
-                    "triggers": [],
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
->>>>>>> origin/development
                     "widgets": []
                 },
                 {
@@ -295,7 +270,6 @@
                     "name": "first step",
                     "next_steps": [],
                     "position": {
-<<<<<<< HEAD
                         "x": 290,
                         "y": 150
                     },
@@ -305,18 +279,6 @@
                 }
             ],
             "uid": "4faf9d28-3631-44bd-838e-81501978714f"
-=======
-                        "x": -230,
-                        "y": -30
-                    },
-                    "risk": 0,
-                    "triggers": [],
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
-                    "widgets": []
-                }
-            ],
-            "uid": "98e356f6fd1b41b487ab992852903bc4"
->>>>>>> origin/development
         }
     ]
 }
