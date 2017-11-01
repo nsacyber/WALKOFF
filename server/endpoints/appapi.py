@@ -97,7 +97,11 @@ def read_all_app_apis(field_name=None):
     @roles_accepted_for_resources('apps')
     def __func():
         ret = []
+        transforms = core.config.config.function_apis['transforms']
+        conditions = core.config.config.function_apis['conditions']
         for app_name, app_api in core.config.config.app_apis.items():
+            app_api['conditions'] = conditions
+            app_api['transforms'] = transforms
             ret.append(format_full_app_api(app_api, app_name))
         if field_name is not None:
             default = [] if field_name not in ('info', 'externalDocs') else {}
@@ -112,6 +116,10 @@ def read_app_api(app_name):
     @roles_accepted_for_resources('apps')
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
+        transforms = core.config.config.function_apis['transforms']
+        conditions = core.config.config.function_apis['conditions']
+        api['conditions'] = conditions
+        api['transforms'] = transforms
         if api is not None:
             return format_full_app_api(api, app_name), SUCCESS
         else:
@@ -125,6 +133,10 @@ def read_app_api_field(app_name, field_name):
     @roles_accepted_for_resources('apps')
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
+        transforms = core.config.config.function_apis['transforms']
+        conditions = core.config.config.function_apis['conditions']
+        api['conditions'] = conditions
+        api['transforms'] = transforms
         if api is not None:
             return format_full_app_api(api, app_name)[field_name], SUCCESS
         else:
