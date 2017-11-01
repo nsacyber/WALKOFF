@@ -3,6 +3,30 @@
     "workflows": [
         {
             "name": "multiactionWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "(.*)"
+                                }
+                            ],
+                            "transforms": [
+                                {
+                                    "action": "length",
+                                    "args": []
+                                }
+                            ]
+                        }
+                    ],
+                    "dst": "1",
+                    "src": "2",
+                    "status": "Success"
+                }
+            ],
             "start": "start",
             "steps": [
                 {
@@ -15,10 +39,9 @@
                         }
                     ],
                     "name": "1",
-                    "uid": "1",
-                    "next_steps": [],
                     "position": {},
-                    "risk": 0, 
+                    "risk": 0,
+                    "uid": "1",
                     "widgets": []
                 },
                 {
@@ -27,32 +50,9 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "uid": "2",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "transforms": [
-                                        {
-                                            "action": "length",
-                                            "args": []
-                                        }
-                                    ]
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
+                    "uid": "2",
                     "widgets": []
                 }
             ]

@@ -5,6 +5,7 @@
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
+            "next_steps": [],
             "start": "e1db14e0cc8d4179aff5f1080a2b7e91",
             "steps": [
                 {
@@ -18,32 +19,6 @@
                         }
                     ],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "transforms": [
-                                        {
-                                            "action": "length",
-                                            "args": [],
-                                            "uid": "0bdf0c7539e246bc9387d7efcca3d170"
-                                        }
-                                    ],
-                                    "uid": "e0436c67fbca42f5a69325d594442bac"
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success",
-                            "uid": "11cb6eaaf3f24374a729a55cdb8a307f"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "triggers": [],

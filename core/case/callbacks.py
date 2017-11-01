@@ -126,9 +126,6 @@ StepStarted, __step_started_callback = __construct_logging_signal('Step',
 StepInputInvalid, __step_input_invalid_callback = __construct_logging_signal('Step',
                                                                              'Input Invalid',
                                                                              'Input is invalid')
-ConditionalsExecuted, __conditionals_executed_callback = __construct_logging_signal('Step',
-                                                                                    'Conditionals Executed',
-                                                                                    'Conditionals executed')
 
 # Next step callbacks
 NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step',

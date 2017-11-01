@@ -3,12 +3,12 @@ import logging
 from copy import deepcopy
 
 import gevent
-from sortedcontainers import SortedList
 
 from core.appinstance import AppInstance
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.step import Step
+from core.executionelements.nextstep import NextStep
 from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -31,13 +31,16 @@ class Workflow(ExecutionElement):
         ExecutionElement.__init__(self, uid)
         self.name = name
         self.steps = {step.uid: step for step in steps} if steps is not None else {}
-        for step in steps:
-            self.next_steps[step.uid] = SortedList()
 
         self.next_steps = {}
-        for next_step in next_steps:
-            if next_step.src in self.next_steps:
-                self.next_steps[next_step.src].add(next_step)
+        if steps:
+            for step in steps:
+                self.next_steps[step.uid] = []
+
+        if next_steps:
+            for next_step in next_steps:
+                if next_step.src in self.next_steps:
+                    self.next_steps[next_step.src].append(next_step)
 
         self.start = start if start is not None else 'start'
         self.accumulated_risk = accumulated_risk
@@ -64,7 +67,7 @@ class Workflow(ExecutionElement):
         arg_input = arg_input if arg_input is not None else {}
         step = Step(name=name, action=action, app=app, device=device, inputs=arg_input, risk=risk)
         self.steps[step.uid] = step
-        self.next_steps[step.uid] = SortedList()
+        self.next_steps[step.uid] = []
         self._total_risk += risk
         logger.info('Step added to workflow {0}. Step: {1}'.format(self.name, self.steps[step.uid].read()))
 
@@ -183,10 +186,9 @@ class Workflow(ExecutionElement):
         yield  # needed so you can avoid catching StopIteration exception
 
     def __get_next_step(self, current_step, accumulator):
-        for next_step in self.next_steps[current_step.uid]:
+        for next_step in sorted(self.next_steps[current_step.uid]):
             next_step = next_step.execute(current_step.get_output(), accumulator)
             if next_step is not None:
-                data_sent.send(self, callback_name="Conditionals Executed", object_type="Workflow")
                 return next_step
 
     def __go_to_next_step(self, next_step_uid):
@@ -270,6 +272,13 @@ class Workflow(ExecutionElement):
             for step_json in json_in['steps']:
                 step = Step.create(step_json)
                 self.steps[step_json['uid']] = step
+            if "next_steps" in json_in:
+                next_steps = [NextStep.create(cond_json) for cond_json in json_in['next_steps']]
+                self.next_steps = {}
+                for next_step in next_steps:
+                    if next_step.src not in self.next_steps:
+                        self.next_steps[next_step.src] = []
+                    self.next_steps[next_step.src].append(next_step)
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.reload_async_result(backup_steps, with_deepcopy=True)
             raise

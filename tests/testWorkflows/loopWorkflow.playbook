@@ -3,6 +3,46 @@
     "workflows": [
         {
             "name": "loopWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "1|2|3|4"
+                                }
+                            ],
+                            "transforms": [],
+                            "uid": "4e25a14eb2db41a1bc10f6d158fb4a76"
+                        }
+                    ],
+                    "dst": "543f6226116c473bb75d19330b77371e",
+                    "src": "543f6226116c473bb75d19330b77371e",
+                    "status": "Success",
+                    "uid": "a29e786e457f4f57beb14eb7d8ed40ed"
+                },
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "5"
+                                }
+                            ],
+                            "transforms": [],
+                            "uid": "b72d98aa7a8e417e98becddc9a1e7297"
+                        }
+                    ],
+                    "dst": "c8d5873e831c44fb838e601bb407a768",
+                    "src": "543f6226116c473bb75d19330b77371e",
+                    "status": "Success",
+                    "uid": "625683196cc44150a4941fc33767dec6"
+                }
+            ],
             "start": "543f6226116c473bb75d19330b77371e",
             "steps": [
                 {
@@ -16,7 +56,6 @@
                         }
                     ],
                     "name": "1",
-                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "templated": true,
@@ -34,44 +73,6 @@
                         }
                     ],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "1|2|3|4"
-                                        }
-                                    ],
-                                    "transforms": [],
-                                    "uid": "4e25a14eb2db41a1bc10f6d158fb4a76"
-                                }
-                            ],
-                            "name": "543f6226116c473bb75d19330b77371e",
-                            "status": "Success",
-                            "uid": "a29e786e457f4f57beb14eb7d8ed40ed"
-                        },
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "5"
-                                        }
-                                    ],
-                                    "transforms": [],
-                                    "uid": "b72d98aa7a8e417e98becddc9a1e7297"
-                                }
-                            ],
-                            "name": "c8d5873e831c44fb838e601bb407a768",
-                            "status": "Success",
-                            "uid": "625683196cc44150a4941fc33767dec6"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "templated": true,

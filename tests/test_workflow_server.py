@@ -24,7 +24,8 @@ class TestWorkflowServer(ServerTestCase):
             {'steps': [],
              'name': 'test_name',
              'start': 'start',
-             'accumulated_risk': 0.0}
+             'accumulated_risk': 0.0,
+             'next_steps': []}
 
         case_database.initialize()
 
@@ -255,12 +256,6 @@ class TestWorkflowServer(ServerTestCase):
 
         def remove_uids(step):
             step.uid = ''
-            for next_step in step.next_steps:
-                next_step.uid = ''
-                for condition in next_step.conditions:
-                    condition.uid = ''
-                    for transform in condition.transforms:
-                        transform.uid = ''
 
         for step_name, loaded_step in loaded_workflow.steps.items():
             self.assertIn(step_name, resulting_workflow.steps.keys())

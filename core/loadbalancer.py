@@ -356,7 +356,6 @@ class Receiver:
         'Step Started': (callbacks.StepStarted, False),
         'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
         'Step Input Invalid': (callbacks.StepInputInvalid, False),
-        'Conditionals Executed': (callbacks.ConditionalsExecuted, False),
         'Next Step Taken': (callbacks.NextStepTaken, False),
         'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
         'Condition Success': (callbacks.ConditionSuccess, False),

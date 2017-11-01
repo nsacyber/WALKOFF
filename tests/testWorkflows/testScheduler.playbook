@@ -3,6 +3,33 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "(.*)"
+                                }
+                            ],
+                            "transforms": [
+                                {
+                                    "action": "length",
+                                    "args": [],
+                                    "uid": "a0bc146e58e04577acfae4ccaf0c56c1"
+                                }
+                            ],
+                            "uid": "9deaaef487ae4e83af5bffef012f8b65"
+                        }
+                    ],
+                    "dst": "1",
+                    "src": "7aeb492a73c345bbb4e8570bb682c87d",
+                    "status": "Success",
+                    "uid": "c510f1dbcadf42499d0fa95c9d126d93"
+                }
+            ],
             "start": "7aeb492a73c345bbb4e8570bb682c87d",
             "steps": [
                 {
@@ -16,32 +43,6 @@
                         }
                     ],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "transforms": [
-                                        {
-                                            "action": "length",
-                                            "args": [],
-                                            "uid": "a0bc146e58e04577acfae4ccaf0c56c1"
-                                        }
-                                    ],
-                                    "uid": "9deaaef487ae4e83af5bffef012f8b65"
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success",
-                            "uid": "c510f1dbcadf42499d0fa95c9d126d93"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "7aeb492a73c345bbb4e8570bb682c87d",

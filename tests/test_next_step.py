@@ -23,50 +23,48 @@ class TestNextStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, conditions, status='Success', uid=None):
+    def __compare_init(self, elem, src, dst, conditions=None, status='Success', uid=None, priority=float("inf")):
+        self.assertEqual(elem.src, src)
+        self.assertEqual(elem.dst, dst)
         self.assertEqual(elem.status, status)
-        self.assertEqual(elem.name, name)
-        self.assertListEqual([condition.action for condition in elem.conditions],
-                             [condition['action'] for condition in conditions])
+        self.assertEqual(elem.priority, priority)
+        if conditions:
+            self.assertListEqual([condition.action for condition in elem.conditions],
+                                 [condition['action'] for condition in conditions])
         if uid is None:
             self.assertIsNotNone(elem.uid)
         else:
             self.assertEqual(elem.uid, uid)
 
     def test_init(self):
-        next_step = NextStep()
-        self.__compare_init(next_step, '', [])
+        next_step = NextStep(src="1", dst="2")
+        self.__compare_init(next_step, "1", "2")
 
     def test_init_wth_uid(self):
         uid = uuid.uuid4().hex
-        next_step = NextStep(uid=uid)
-        self.__compare_init(next_step, '', [], uid=uid)
-
-    def test_init_with_name(self):
-        next_step = NextStep(name='name')
-        self.__compare_init(next_step, 'name', [])
+        next_step = NextStep(src="1", dst="2", uid=uid)
+        self.__compare_init(next_step, "1", "2", uid=uid)
 
     def test_init_with_status(self):
-        next_step = NextStep(name='name', status='test_status')
-        self.__compare_init(next_step, 'name', [], status='test_status')
+        next_step = NextStep(src="1", dst="2", status='test_status')
+        self.__compare_init(next_step, "1", "2", status='test_status')
 
     def test_init_with_empty_conditions(self):
-        next_step = NextStep(name='name', conditions=[])
-        self.__compare_init(next_step, 'name', [])
+        next_step = NextStep(src="1", dst="2", conditions=[])
+        self.__compare_init(next_step, '1', '2')
 
     def test_init_with_conditions(self):
         conditions = [Condition(action='Top Condition'), Condition(action='mod1_flag1')]
         expected_condition_json = [{'action': 'Top Condition', 'args': [], 'filters': []},
                               {'action': 'mod1_flag1', 'args': [], 'filters': []}]
-        next_step = NextStep(name='name', conditions=conditions)
-        self.__compare_init(next_step, 'name', expected_condition_json)
+        next_step = NextStep("1", "2", conditions=conditions)
+        self.__compare_init(next_step, "1", "2", expected_condition_json)
 
     def test_eq(self):
         conditions = [Condition(action='mod1_flag1'), Condition(action='Top Condition')]
-        next_steps = [NextStep(),
-                      NextStep(name='name'),
-                      NextStep(status='TestStatus'),
-                      NextStep(name='name', conditions=conditions)]
+        next_steps = [NextStep(src="1", dst="2"),
+                      NextStep(src="1", dst="2", status='TestStatus'),
+                      NextStep(src="1", dst="2", conditions=conditions)]
         for i in range(len(next_steps)):
             for j in range(len(next_steps)):
                 if i == j:
@@ -86,9 +84,9 @@ class TestNextStep(unittest.TestCase):
                   ('name4', conditions2, ActionResult('aaaa', 'Custom'), False)]
 
         for name, conditions, input_str, expect_name in inputs:
-            next_step = NextStep(name=name, conditions=conditions)
+            next_step = NextStep(src="1", dst="2", conditions=conditions)
             if expect_name:
-                expected_name = next_step.name
+                expected_name = next_step.dst
                 self.assertEqual(next_step.execute(input_str, {}), expected_name)
             else:
                 self.assertIsNone(next_step.execute(input_str, {}))

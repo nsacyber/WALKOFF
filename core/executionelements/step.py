@@ -122,7 +122,6 @@ class Step(ExecutionElement):
                 self.inputs = inputs
         else:
             self.inputs = validate_app_action_parameters(self._input_api, {}, self.app, self.action)
-        self.next_steps = [NextStep.create(cond_json) for cond_json in updated_json['next_steps']]
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -214,20 +213,3 @@ class Step(ExecutionElement):
                 get_widget_signal(widget.app, widget.name).send(self, data=json.dumps({"result": result.as_json()}))
             logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
-
-    def get_next_step(self, accumulator):
-        """Gets the NextStep object to be executed after the current Step.
-
-        Args:
-            accumulator (dict): A record of the previously-executed steps. Of form {step_name: result}
-
-        Returns:
-            The NextStep object to be executed.
-        """
-
-        for next_step in self.next_steps:
-            next_step = next_step.execute(self._output, accumulator)
-            if next_step is not None:
-                self._next_up = next_step
-                data_sent.send(self, callback_name="Conditionals Executed", object_type="Step")
-                return next_step

@@ -3,6 +3,22 @@
     "workflows": [
         {
             "name": "pauseWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [],
+                    "dst": "b7725c22c881484ebe2901027f1acd7f",
+                    "src": "6c52b6a75406452a9d85967d80d71bf8",
+                    "status": "Success",
+                    "uid": "a124b4b7648d48aa9ebc5113a5ec7d47"
+                },
+                {
+                    "conditions": [],
+                    "dst": "6c52b6a75406452a9d85967d80d71bf8",
+                    "src": "e2131c32efe44a83913396a0fbb9f34d",
+                    "status": "Success",
+                    "uid": "ac08f9b8fee2430595ce94af71e17a6f"
+                }
+            ],
             "start": "e2131c32efe44a83913396a0fbb9f34d",
             "steps": [
                 {
@@ -16,14 +32,6 @@
                         }
                     ],
                     "name": "1",
-                    "next_steps": [
-                        {
-                            "conditions": [],
-                            "name": "b7725c22c881484ebe2901027f1acd7f",
-                            "status": "Success",
-                            "uid": "a124b4b7648d48aa9ebc5113a5ec7d47"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "6c52b6a75406452a9d85967d80d71bf8",
@@ -35,14 +43,6 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [],
-                            "name": "6c52b6a75406452a9d85967d80d71bf8",
-                            "status": "Success",
-                            "uid": "ac08f9b8fee2430595ce94af71e17a6f"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "e2131c32efe44a83913396a0fbb9f34d",
@@ -59,7 +59,6 @@
                         }
                     ],
                     "name": "2",
-                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "b7725c22c881484ebe2901027f1acd7f",

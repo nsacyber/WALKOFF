@@ -1,6 +1,5 @@
 from functools import total_ordering
 import logging
-import sys
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
@@ -10,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @total_ordering
 class NextStep(ExecutionElement):
-    def __init__(self, src, dst, status='Success', conditions=None, priority=sys.maxint, uid=None):
+    def __init__(self, src, dst, status='Success', conditions=None, priority=float("inf"), uid=None):
         """Initializes a new NextStep object.
         
         Args:
