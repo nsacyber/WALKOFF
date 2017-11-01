@@ -39,34 +39,34 @@ class TestAppCache(TestCase):
 
     def test_cache_action_empty_cache(self):
         def x(): pass
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
 
     def test_cache_action_existing_app_name_entry(self):
         def x(): pass
         self.cache._cache['app1'] = {}
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
 
     def test_cache_action_existing_app_name_and_actions_tag(self):
         def x(): pass
         self.cache._cache['app1'] = {'actions':  {}}
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
 
     def test_cache_action_multiple_actions_same_app(self):
         def x(): pass
         def y(): pass
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
-        self.cache._cache_action(y, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
+        self.cache._cache_action(y, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False},
                                                                       'y': {'run': y, 'bound': False}}}})
 
     def test_cache_action_multiple_actions_different_app(self):
         def x(): pass
         def y(): pass
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
-        self.cache._cache_action(y, 'app2', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
+        self.cache._cache_action(y, 'app2', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}},
                                                  'app2': {'actions': {'y': {'run': y, 'bound': False}}}})
 
@@ -74,11 +74,11 @@ class TestAppCache(TestCase):
         def x(): pass
         original_id = id(x)
 
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
 
         def x(): pass
 
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
         self.assertNotEqual(id(self.cache._cache['app1']['actions']['x']['run']), original_id)
 
@@ -122,7 +122,7 @@ class TestAppCache(TestCase):
             def x(self): pass
 
             @action
-            def y(self): passTestAppCache
+            def y(self): pass
 
             def z(self): pass
 
@@ -161,7 +161,7 @@ class TestAppCache(TestCase):
         def z(): pass
 
         self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
                                                                               'tests.test_app_cache.A.y': {'run': A.y, 'bound': True},
                                                                               'z': {'run': z, 'bound': False}}}})
@@ -180,7 +180,7 @@ class TestAppCache(TestCase):
         def z(): pass
 
         self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertDictEqual(self.cache._cache,
                              {'A': {'main': A, 'actions': {'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
                                                            'tests.test_app_cache.A.y': {'run': A.y, 'bound': True},
@@ -197,8 +197,8 @@ class TestAppCache(TestCase):
     def test_clear_existing_bound_functions_no_bound_actions(self):
         def x(): pass
         def y(): pass
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
-        self.cache._cache_action(y, 'app1', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
+        self.cache._cache_action(y, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.cache._clear_existing_bound_functions('app1')
         self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False},
                                                                       'y': {'run': y, 'bound': False}}}})
@@ -216,7 +216,7 @@ class TestAppCache(TestCase):
         def z(): pass
 
         self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.cache._clear_existing_bound_functions('A')
         self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {'z': {'run': z, 'bound': False}}}})
 
@@ -253,6 +253,10 @@ class TestAppCache(TestCase):
         self.cache._import_and_cache_submodules('tests.testapps.HelloWorld', 'HelloWorld', 'tests.testapps')
         from tests.testapps.HelloWorld.main import Main, global1
         from tests.testapps.HelloWorld.actions import global2
+        from tests.testapps.HelloWorld.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
+                                                          regMatch, count)
+        from tests.testapps.HelloWorld.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
+                                                          length, json_select, sub1_top_filter)
         expected = {'HelloWorld': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
@@ -263,7 +267,22 @@ class TestAppCache(TestCase):
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
                                                'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False},
-                                               'actions.global2': {'run': global2, 'bound': False}}}}
+                                               'actions.global2': {'run': global2, 'bound': False}},
+                                   'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
+                                                  'conditions.flag1': {'run': flag1},
+                                                  'conditions.flag2': {'run': flag2},
+                                                  'conditions.flag3': {'run': flag3},
+                                                  'conditions.sub1_top_flag': {'run': sub1_top_flag},
+                                                  'conditions.regMatch': {'run': regMatch},
+                                                  'conditions.count': {'run': count}},
+                                   'transforms': {'transforms.top_level_filter': {'run': top_level_filter},
+                                                  'transforms.filter2': {'run': filter2},
+                                                  'transforms.sub1_top_filter': {'run': sub1_top_filter},
+                                                  'transforms.filter3': {'run': filter3},
+                                                  'transforms.filter1': {'run': filter1},
+                                                  'transforms.complex_filter': {'run': complex_filter},
+                                                  'transforms.length': {'run': length},
+                                                  'transforms.json_select': {'run': json_select}}}}
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_import_and_cache_submodules_from_module(self):
@@ -271,6 +290,10 @@ class TestAppCache(TestCase):
         self.cache._import_and_cache_submodules(module, 'HelloWorld', 'tests.testapps')
         from tests.testapps.HelloWorld.main import Main, global1
         from tests.testapps.HelloWorld.actions import global2
+        from tests.testapps.HelloWorld.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
+                                                          regMatch, count)
+        from tests.testapps.HelloWorld.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
+                                                          length, json_select, sub1_top_filter)
         expected = {'HelloWorld': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
@@ -281,7 +304,22 @@ class TestAppCache(TestCase):
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
                                                'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False},
-                                               'actions.global2': {'run': global2, 'bound': False}}}}
+                                               'actions.global2': {'run': global2, 'bound': False}},
+                                   'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
+                                                  'conditions.flag1': {'run': flag1},
+                                                  'conditions.flag2': {'run': flag2},
+                                                  'conditions.flag3': {'run': flag3},
+                                                  'conditions.sub1_top_flag': {'run': sub1_top_flag},
+                                                  'conditions.regMatch': {'run': regMatch},
+                                                  'conditions.count': {'run': count}},
+                                   'transforms': {'transforms.top_level_filter': {'run': top_level_filter},
+                                                  'transforms.filter2': {'run': filter2},
+                                                  'transforms.sub1_top_filter': {'run': sub1_top_filter},
+                                                  'transforms.filter3': {'run': filter3},
+                                                  'transforms.filter1': {'run': filter1},
+                                                  'transforms.complex_filter': {'run': complex_filter},
+                                                  'transforms.length': {'run': length},
+                                                  'transforms.json_select': {'run': json_select}}}}
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_path_to_module_no_slashes(self):
@@ -299,6 +337,10 @@ class TestAppCache(TestCase):
     def test_cache_apps(self):
         self.cache.cache_apps(os.path.join('.', 'tests', 'testapps'))
         from tests.testapps.HelloWorld.main import Main, global1
+        from tests.testapps.HelloWorld.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
+                                                          regMatch, count)
+        from tests.testapps.HelloWorld.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
+                                                          length, json_select, sub1_top_filter)
         from tests.testapps.HelloWorld.actions import global2
         from tests.testapps.DailyQuote.main import Main as DailyMain
         self.maxDiff = None
@@ -312,7 +354,22 @@ class TestAppCache(TestCase):
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
                                                'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False},
-                                               'actions.global2': {'run': global2, 'bound': False}}},
+                                               'actions.global2': {'run': global2, 'bound': False}},
+                                   'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
+                                                  'conditions.flag1': {'run': flag1},
+                                                  'conditions.flag2': {'run': flag2},
+                                                  'conditions.flag3': {'run': flag3},
+                                                  'conditions.sub1_top_flag': {'run': sub1_top_flag},
+                                                  'conditions.regMatch': {'run': regMatch},
+                                                  'conditions.count': {'run': count}},
+                                   'transforms': {'transforms.top_level_filter': {'run': top_level_filter},
+                                                  'transforms.filter2': {'run': filter2},
+                                                  'transforms.sub1_top_filter': {'run': sub1_top_filter},
+                                                  'transforms.filter3': {'run': filter3},
+                                                  'transforms.filter1': {'run': filter1},
+                                                  'transforms.complex_filter': {'run': complex_filter},
+                                                  'transforms.length': {'run': length},
+                                                  'transforms.json_select': {'run': json_select}}},
                     'DailyQuote': {'main': DailyMain,
                                    'actions': {'main.Main.quoteIntro': {'run': DailyMain.quoteIntro, 'bound': True},
                                               'main.Main.repeatBackToMe': {'run': DailyMain.repeatBackToMe, 'bound': True},
@@ -351,7 +408,7 @@ class TestAppCache(TestCase):
 
     def test_get_app_missing_main(self):
         def x(): pass
-        self.cache._cache_action(x, 'A', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(x, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         with self.assertRaises(UnknownApp):
             self.cache.get_app('A')
 
@@ -522,5 +579,5 @@ class TestAppCache(TestCase):
 
         self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(xx, 'A', 'tests.test_app_cache.TestAppCache', cls=TestAppCache)
+        self.cache._cache_action(xx, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertFalse(self.cache.is_app_action_bound('A', 'xx'))

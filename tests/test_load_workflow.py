@@ -4,8 +4,7 @@ import apps
 import core.config.config
 from core import controller
 from tests import config
-from core.helpers import import_all_transforms, import_all_conditions
-from tests.config import test_apps_path, function_api_path
+from tests.config import test_apps_path
 
 
 class TestLoadWorkflow(unittest.TestCase):
@@ -14,9 +13,6 @@ class TestLoadWorkflow(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     def setUp(self):
         self.c = controller.Controller()

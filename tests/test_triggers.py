@@ -5,7 +5,6 @@ import core.config.config
 from core.case import callbacks
 from server import flaskserver as server
 from server.returncodes import *
-from core.helpers import import_all_transforms, import_all_conditions
 from server.triggers import Triggers
 from tests import config
 from tests.util.servertestcase import ServerTestCase
@@ -16,9 +15,6 @@ class TestTriggers(ServerTestCase):
     def setUp(self):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=config.function_api_path)
         self.test_trigger_name = "testTrigger"
         self.test_trigger_workflow = "helloWorldWorkflow"
 
@@ -145,7 +141,7 @@ class TestTriggers(ServerTestCase):
         apps.clear_cache()
 
     def test_add_and_display_and_remove_trigger(self):
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -200,7 +196,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(response._status_code, 400)
 
     def test_add_trigger_add_duplicate(self):
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -216,7 +212,7 @@ class TestTriggers(ServerTestCase):
                                       status_code=OBJECT_DNE_ERROR)
 
     def test_edit_trigger(self):
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -231,7 +227,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_execute_old(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -252,7 +248,7 @@ class TestTriggers(ServerTestCase):
         self.assertListEqual(response['errors'], [])
 
     def test_trigger_execute_invalid_name(self):
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": "invalid_workflow_name",
                 "conditions": [condition]}
@@ -267,7 +263,7 @@ class TestTriggers(ServerTestCase):
         self.assertIn(error, response["errors"])
 
     def test_trigger_execute_no_matching_trigger(self):
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': 'aaaa'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': 'aaaa'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -279,7 +275,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_execute_change_input_old(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -312,7 +308,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_with_change_input_invalid_input(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -334,7 +330,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_execute_one(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -366,7 +362,7 @@ class TestTriggers(ServerTestCase):
         self.assertEqual(0, len(response["errors"]))
 
     def test_trigger_execute_one_invalid_name(self):
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition]}
@@ -381,7 +377,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_execute_tag(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition],
@@ -418,7 +414,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_execute_multiple_tags(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition],
@@ -457,7 +453,7 @@ class TestTriggers(ServerTestCase):
 
     def test_trigger_execute_multiple_tags_with_name(self):
         server.running_context.controller.initialize_threading()
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test",
                 "workflow": self.test_trigger_workflow,
                 "conditions": [condition],
@@ -500,7 +496,7 @@ class TestTriggers(ServerTestCase):
                                    headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json',
                                    data=json.dumps(data))
 
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test_playbook",
                 "workflow": "test_workflow",
                 "conditions": [condition]}
@@ -525,7 +521,7 @@ class TestTriggers(ServerTestCase):
                                    headers=self.headers, status_code=OBJECT_CREATED, content_type='application/json',
                                    data=json.dumps(data))
 
-        condition = {"action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
+        condition = {"app": "HelloWorld", "action": 'regMatch', "args": [{'name': 'regex', 'value': '(.*)'}], "transforms": []}
         data = {"playbook": "test_playbook",
                 "workflow": "test_workflow",
                 "conditions": [condition]}

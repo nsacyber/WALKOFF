@@ -35,6 +35,7 @@
                             "conditions": [
                                 {
                                     "action": "regMatch",
+                                    "app": "HelloWorld",
                                     "args": [
                                         {
                                             "name": "regex",
@@ -44,6 +45,7 @@
                                     "transforms": [
                                         {
                                             "action": "length",
+                                            "app": "HelloWorld",
                                             "args": []
                                         }
                                     ]

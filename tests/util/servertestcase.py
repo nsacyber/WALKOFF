@@ -8,7 +8,6 @@ import core.config.config
 import core.config.paths
 import tests.config
 import server.flaskserver
-from core.helpers import import_all_conditions, import_all_transforms
 from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
@@ -53,9 +52,6 @@ class ServerTestCase(unittest.TestCase):
         apps.cache_apps(path=tests.config.test_apps_path)
         core.config.config.app_apis = {}
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=tests.config.function_api_path)
         core.config.config.num_processes = 2
 
         if cls.patch:

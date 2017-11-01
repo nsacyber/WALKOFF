@@ -8,11 +8,10 @@ from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelements.condition import Condition
 from core.executionelements.nextstep import NextStep
-from core.helpers import (UnknownApp, UnknownAppAction, InvalidInput, import_all_conditions,
-                          import_all_transforms)
+from core.helpers import UnknownApp, UnknownAppAction, InvalidInput
 from core.appinstance import AppInstance
 from core.executionelements.step import Step
-from tests.config import test_apps_path, function_api_path
+from tests.config import test_apps_path
 
 
 class TestStep(unittest.TestCase):
@@ -20,9 +19,6 @@ class TestStep(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -95,14 +91,14 @@ class TestStep(unittest.TestCase):
         self.assertIsNone(step.get_next_step({}))
 
     def test_get_next_step_invalid_step(self):
-        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
         next_step = NextStep(name='next', conditions=[flag], status='Success')
         step = Step('HelloWorld', 'helloWorld', next_steps=[next_step])
         step._output = ActionResult(result='bbb', status='Success')
         self.assertIsNone(step.get_next_step({}))
 
     def test_get_next_step(self):
-        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
         next_step = NextStep(name='next', conditions=[flag], status='Success')
         step = Step('HelloWorld', 'helloWorld', next_steps=[next_step])
         step._output = ActionResult(result='aaa', status='Success')
@@ -169,8 +165,8 @@ class TestStep(unittest.TestCase):
             Step('HelloWorld', 'returnPlusOne', inputs={'number': 'invalid'})
 
     def test_init_with_flags(self):
-        triggers = [Condition(action='regMatch', args={'regex': '(.*)'}),
-                    Condition(action='regMatch', args={'regex': 'a'})]
+        triggers = [Condition('HelloWorld', 'regMatch', args={'regex': '(.*)'}),
+                    Condition('HelloWorld', 'regMatch', args={'regex': 'a'})]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
 
@@ -365,7 +361,7 @@ class TestStep(unittest.TestCase):
             step.set_input({'num1': '-5.62', 'num2': '5', 'num3': 'invalid'})
 
     def test_execute_with_triggers(self):
-        triggers = [Condition(action='regMatch', args={'regex': 'aaa'})]
+        triggers = [Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'aaa'}})
@@ -381,7 +377,7 @@ class TestStep(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_execute_multiple_triggers(self):
-        triggers = [Condition(action='regMatch', args={'regex': 'aaa'})]
+        triggers = [Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'a'}})

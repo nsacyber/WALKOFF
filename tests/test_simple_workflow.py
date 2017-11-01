@@ -4,7 +4,6 @@ import core.config.config
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-from core.helpers import import_all_conditions, import_all_transforms
 from core.case import database
 from core.case import subscription
 from tests import config
@@ -18,9 +17,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         from apps import cache_apps
         cache_apps(path=config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
         core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool

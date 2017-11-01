@@ -277,6 +277,10 @@ Condition:
     uid:
       description: UID of this step
       type: string
+    app:
+      description: The app to which the conditon belongs
+      type: string
+      example: Utilities
     action:
       description: The action encapsulated by this condition
       type: string
@@ -301,6 +305,10 @@ Transform:
     uid:
       description: UID of this step
       type: string
+    app:
+      description: The app to which the transform belongs
+      type: string
+      example: Utilities
     action:
       description: The action encapsulated by this transform
       type: string

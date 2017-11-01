@@ -39,6 +39,7 @@
                             "conditions": [
                                 {
                                     "action": "regMatch",
+                                    "app": "HelloWorld",
                                     "args": [
                                         {
                                             "name": "regex",
@@ -57,6 +58,7 @@
                             "conditions": [
                                 {
                                     "action": "regMatch",
+                                    "app": "HelloWorld",
                                     "args": [
                                         {
                                             "name": "regex",

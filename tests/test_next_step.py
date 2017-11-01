@@ -6,8 +6,7 @@ import core.config.config
 from core.decorators import ActionResult
 from core.executionelements.condition import Condition
 from core.executionelements.nextstep import NextStep
-from core.helpers import import_all_transforms, import_all_conditions
-from tests.config import test_apps_path, function_api_path
+from tests.config import test_apps_path
 
 
 class TestNextStep(unittest.TestCase):
@@ -15,9 +14,6 @@ class TestNextStep(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -55,14 +51,14 @@ class TestNextStep(unittest.TestCase):
         self.__compare_init(next_step, 'name', [])
 
     def test_init_with_conditions(self):
-        conditions = [Condition(action='Top Condition'), Condition(action='mod1_flag1')]
+        conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
         expected_condition_json = [{'action': 'Top Condition', 'args': [], 'filters': []},
                               {'action': 'mod1_flag1', 'args': [], 'filters': []}]
         next_step = NextStep(name='name', conditions=conditions)
         self.__compare_init(next_step, 'name', expected_condition_json)
 
     def test_eq(self):
-        conditions = [Condition(action='mod1_flag1'), Condition(action='Top Condition')]
+        conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
         next_steps = [NextStep(),
                       NextStep(name='name'),
                       NextStep(status='TestStatus'),
@@ -75,9 +71,9 @@ class TestNextStep(unittest.TestCase):
                     self.assertNotEqual(next_steps[i], next_steps[j])
 
     def test_execute(self):
-        conditions1 = [Condition(action='regMatch', args={'regex': '(.*)'})]
-        conditions2 = [Condition(action='regMatch', args={'regex': '(.*)'}),
-                  Condition(action='regMatch', args={'regex': 'a'})]
+        conditions1 = [Condition('HelloWorld', 'regMatch', args={'regex': '(.*)'})]
+        conditions2 = [Condition('HelloWorld', 'regMatch', args={'regex': '(.*)'}),
+                       Condition('HelloWorld', 'regMatch', args={'regex': 'a'})]
 
         inputs = [('name1', [], ActionResult('aaaa', 'Success'), True),
                   ('name2', conditions1, ActionResult('anyString', 'Success'), True),

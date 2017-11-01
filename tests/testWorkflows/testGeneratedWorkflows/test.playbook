@@ -23,6 +23,7 @@
                             "conditions": [
                                 {
                                     "action": "regMatch",
+                                    "app": "HelloWorld",
                                     "args": [
                                         {
                                             "name": "regex",
@@ -32,6 +33,7 @@
                                     "transforms": [
                                         {
                                             "action": "length",
+                                            "app": "HelloWorld",
                                             "args": [],
                                             "uid": "0bdf0c7539e246bc9387d7efcca3d170"
                                         }

@@ -11,7 +11,6 @@ import core.case.subscription as case_subscription
 import core.config.config
 from core import controller
 from tests import config
-from core.helpers import import_all_transforms, import_all_conditions
 import core.config.config
 
 
@@ -20,9 +19,6 @@ class TestExecutionModes(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=config.function_api_path)
 
     def setUp(self):
         case_database.initialize()
