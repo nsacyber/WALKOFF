@@ -33,19 +33,19 @@ export class PlaybookTransformsComponent {
 	resetTransformSelection(appName: string): void {
 		let app = this.appApis.find(a => a.name === appName);
 
-		if (app.transform_apis && app.transform_apis.length) this.selectedTransformApi = app.transform_apis[0].name;
+		if (app.transforms && app.transforms.length) this.selectedTransformApi = app.transforms[0].name;
 
 		console.log(app, this.selectedTransformApi);
 	}
 
 	addTransform(): void {
-		let api = this.appApis.find(a => a.name === this.selectedAppName).transform_apis.find(c => c.name === this.selectedTransformApi);
+		let api = this.appApis.find(a => a.name === this.selectedAppName).transforms.find(c => c.name === this.selectedTransformApi);
 		
 		let args: Argument[] = [];
-		api.parameters.forEach((parameterApi) => {
+		api.parameters.filter(p => p.name !== api.dataIn).forEach((parameterApi) => {
 			args.push({
 				name: parameterApi.name,
-				value: parameterApi.schema.default ? parameterApi.schema.default : null,
+				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 				reference: "",
 				selector: ""
 			});
@@ -80,14 +80,14 @@ export class PlaybookTransformsComponent {
 	}
 
 	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ParameterApi {
-		return this.appApis.find(a => a.name === appName).transform_apis.find(t => t.name === transformName).parameters.find(a => a.name === argumentName);
+		return this.appApis.find(a => a.name === appName).transforms.find(t => t.name === transformName).parameters.find(a => a.name === argumentName);
 	}
 
 	getAppsFromApis(): string[] {
-		return this.appApis.filter(app => app.transform_apis && app.transform_apis.length).map(app => app.name);
+		return this.appApis.filter(app => app.transforms && app.transforms.length).map(app => app.name);
 	}
 
 	getTransformNamesForApp(): string[] {
-		return this.appApis.find(a => a.name === this.selectedAppName).transform_apis.map(c => c.name);
+		return this.appApis.find(a => a.name === this.selectedAppName).transforms.map(c => c.name);
 	}
 }

@@ -13,6 +13,9 @@ import { CasesModalComponent } from './cases.modal.component';
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
+import { Playbook } from '../models/playbook/playbook';
+import { Workflow } from '../models/playbook/workflow';
+import { NextStep } from '../models/playbook/nextStep';
 
 /**
  * Types as the backend calls them for adding a new CaseEvent.
@@ -194,19 +197,21 @@ export class CasesComponent {
 		//Top level controller data
 		let tree = { name: 'Controller', uid: 'controller', type: 'controller', children: <Object[]>[] };
 
+		// Remap the next steps to be under steps as they used to be
+		// playbooks.forEach((p: Playbook) => {
+		// 	p.workflows.forEach((w: Workflow) => {
+		// 		w.steps.forEach((s: any) => {
+		// 			s.next_steps = [];
+		// 		});
+
+		// 		w.next_steps.forEach((ns: NextStep) => {
+		// 			w.steps.find(s => s.uid === ns.name).next_steps.push(ns);
+		// 		});
+		// 	});
+		// });
+
 		playbooks.forEach(function (p) {
 			tree.children.push(self.getNodeRecursive(p, 0));
-			// let node = { name: p.name, uid: '', type: 'playbook', children: <any>[] }
-
-			// p.workflows.forEach(function (w: any) {
-			// 	let node = { name: w.name, uid: w.uid, type: 'workflow', chilren: <any>[] };
-
-
-
-			// 	p.children.push(node);
-			// })
-
-			// tree.children.push(node);
 		});
 		return tree;
 	}

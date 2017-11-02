@@ -40,21 +40,21 @@ export class PlaybookArgumentComponent {
 
 	/**
 	 * Gets the minimum value to check against for JSON Schema minimum / exclusiveMinimum parameters
-	 * @param field JSON Schema object
+	 * @param schema JSON Schema object
 	 */
-	getMin(field: ParameterApi): number {
-		if (field.schema.minimum === undefined) return null;
-		if (field.schema.exclusiveMinimum) return field.schema.minimum + 1;
-		return field.schema.minimum;
+	getMin(schema: ParameterSchema): number {
+		if (schema.minimum === undefined) return null;
+		if (schema.exclusiveMinimum) return schema.schema.minimum + 1;
+		return schema.schema.minimum;
 	}
 
 	/**
 	 * Gets the maximum value to check against for JSON Schema maximum / exclusiveMaximum parameters
-	 * @param field JSON Schema Object
+	 * @param schema JSON Schema Object
 	 */
-	getMax(field: ParameterApi): number {
-		if (field.schema.maximum === undefined) return null;
-		if (field.schema.exclusiveMaximum) return field.schema.maximum - 1;
-		return field.schema.maximum;
+	getMax(schema: ParameterSchema): number {
+		if (schema.maximum === undefined) return null;
+		if (schema.exclusiveMaximum) return schema.schema.maximum - 1;
+		return schema.schema.maximum;
 	}
 }

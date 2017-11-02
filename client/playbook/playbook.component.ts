@@ -2,16 +2,7 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef } from '@angular/co
 // import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
-// import * as cytoscape from 'cytoscape';
-// import * as cytoscapeClipboard from 'cytoscape-clipboard';
-// import * as cytoscapeEdgehandles from 'cytoscape-edgehandles';
-// import * as cytoscapeGridGuide from 'cytoscape-grid-guide';
-// import * as cytoscapePanzoom from 'cytoscape-panzoom';
-// import * as cytoscapeUndoRedo from 'cytoscape-undo-redo';
-// import * as jstree from 'jstree';
 import { UUID } from 'angular2-uuid';
-// import { TreeModel, Ng2TreeSettings, TreeModelSettings } from 'ng2-tree';
-// import { TreeComponent, TreeModel, TreeNode } from 'angular-tree-component';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
@@ -93,24 +84,10 @@ export class PlaybookComponent {
 	constructor(private playbookService: PlaybookService, private authService: AuthService, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
-		// TODO: update this to add them to the apps from getAppsAndActions, or just use getApis when that's implemented
-		// this.playbookService.getConditions().then(apps => apps.forEach(a => this.apps.find(x => x.name === a.name).conditionApis = a.conditionApis));
-		// this.playbookService.getTransforms().then(apps => apps.forEach(a => this.apps.find(x => x.name === a.name).transformApis = a.transformApis));
 		this.playbookService.getDevices().then(devices => this.devices = devices);
-		this.playbookService.getApis().then(appApis => {
-			this.appApis = appApis;
-			console.log(this.appApis);
-		});
+		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 		this.getWorkflowResultsSSE();
 		this.getPlaybooksWithWorkflows();
-
-		// Register cytoscape plugins
-		// cytoscapeClipboard(cytoscape, $); // jquery
-		// cytoscapeEdgehandles(cytoscape, _.debounce, _.throttle);
-		// cytoscapeGridGuide(cytoscape, $); // jquery
-		// cytoscapePanzoom(cytoscape, $);
-		// cytoscapeUndoRedo(cytoscape);
-
 		this._addCytoscapeEventBindings();
 	}
 
@@ -143,7 +120,6 @@ export class PlaybookComponent {
 						this.workflowResults.push(workflowResult);
 					},
 					error: (err: Error) => {
-						// This function removes selected nodes and edges
 						this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 						console.error(err);
 					}
@@ -297,14 +273,6 @@ export class PlaybookComponent {
 								self.cy.remove(addedEntities);
 								return;
 							}
-
-							// addedEntities[i].data('parameters', {
-							// 	uid: UUID.UUID(),
-							// 	name: targetNodes[i].data().parameters.uid,
-							// 	status: 'Success',
-							// 	conditions: [],
-							// 	temp: true
-							// });
 
 							// Add our next step to the actual loadedWorkflow model
 							sourceStep.next_steps.push({
@@ -526,40 +494,6 @@ export class PlaybookComponent {
 			.then(playbooks => this.playbooks = playbooks);
 	}
 
-	// getAppsAndActions(): void {
-	// 	this.playbookService.getAppsAndActions()
-	// 		.then((actionsForApps) => {
-	// 			// this.apps = _.map(actionsForApps, function (app: { [key: string] : ActionApi }, appName: string) {
-	// 			// 	return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
-	// 			// 		action.name = actionName;
-
-	// 			// 		return action;
-	// 			// 	})};
-	// 			// })
-
-	// 			// this.apps.filter(a => a.actionApis.length);
-	// 			this.apps = actionsForApps;
-
-	// 			// TODO: these lines just add the global conditions/transforms to each of the apps.
-	// 			// Shouldn't be necessary when app-specific flags/filters is implemented
-	// 			// Also should just rely on the global get api function.
-	// 			this.playbookService.getConditions().then(c => {
-	// 				this.apps.forEach(a => a.condition_apis = _.cloneDeep(c[0].condition_apis));
-	// 			});
-	// 			this.playbookService.getTransforms().then(t => this.apps.forEach(a => a.transform_apis = _.cloneDeep(t[0].transform_apis)));
-
-	// 			// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
-	// 			// 	let appObj: any = { name: app, children: [] };
-					
-	// 			// 	Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
-
-	// 			// 	result.push(appObj);
-
-	// 			// 	return result;
-	// 			// }, []);
-	// 		});
-	// }
-
 	/**
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
@@ -654,7 +588,6 @@ export class PlaybookComponent {
 		stepWithThisNextStep.next_steps.filter(ns => ns.name === targetUid);
 	}
 
-	// TODO: The logic to add a step to the workflow is in insertNode, maybe move it here instead?
 	/**
 	 * This function checks when a node is added and sets start node if no other nodes exist.
 	 * @param e JS Event fired
@@ -742,7 +675,7 @@ export class PlaybookComponent {
 		this._getAction(appName, actionName).parameters.forEach((input) => {
 			inputs.push({
 				name: input.name,
-				value: input.schema.default ? input.schema.default : null,
+				value: input.schema.default != null ? input.schema.default : null,
 				reference: "",
 				selector: ""
 			});
@@ -924,6 +857,10 @@ export class PlaybookComponent {
 	///------------------------------------------------------------------------------------------------------
 	/// Simple bootstrap modal stuff
 	///------------------------------------------------------------------------------------------------------
+	/**
+	 * Opens a modal to rename a given playbook and performs the rename action on submit.
+	 * @param playbook Name of the playbook to rename
+	 */
 	renamePlaybookModal(playbook: string): void {
 		this._closeWorkflowsModal();
 
@@ -947,6 +884,10 @@ export class PlaybookComponent {
 		this._openModal();
 	}
 
+	/**
+	 * Opens a modal to copy a given playbook and performs the copy action on submit.
+	 * @param playbook Name of the playbook to copy
+	 */
 	duplicatePlaybookModal(playbook: string): void {
 		this._closeWorkflowsModal();
 
@@ -960,6 +901,7 @@ export class PlaybookComponent {
 						let duplicatedPb: Playbook = _.cloneDeep(this.playbooks.find(pb => pb.name === playbook));
 						duplicatedPb.name = this.modalParams.newPlaybook;
 						this.playbooks.push(duplicatedPb);
+						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 						this.toastyService.success(`Successfully duplicated playbook "${playbook}" as "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
@@ -970,6 +912,10 @@ export class PlaybookComponent {
 		this._openModal();
 	}
 
+	/**
+	 * Opens a modal to delete a given playbook and performs the delete action on submit.
+	 * @param playbook Name of the playbook to delete
+	 */
 	deletePlaybook(playbook: string): void {
 		if (!confirm(`Are you sure you want to delete playbook "${playbook}"?`)) return;
 
@@ -983,6 +929,9 @@ export class PlaybookComponent {
 			.catch(e => this.toastyService.error(`Error deleting playbook "${playbook}": ${e.message}`));
 	}
 
+	/**
+	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
+	 */
 	newWorkflowModal(): void {
 		this._closeWorkflowsModal();
 
@@ -993,19 +942,34 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			shouldShowWorkflow: true,
 			submit: () => {
-				this.playbookService.newWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow)
+				let playbookName = this._getModalPlaybookName();
+				this.playbookService.newWorkflow(playbookName, this.modalParams.newWorkflow)
 					.then(newWorkflow => {
-						if (!this.loadedWorkflow) this.loadWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow);
-						this.toastyService.success(`Created workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
+						let pb = this.playbooks.find(pb => pb.name === playbookName);
+						if (pb) {
+							pb.workflows.push(newWorkflow);
+							pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+						}
+						else {
+							this.playbooks.push({ name: playbookName, workflows: [newWorkflow], uid: null });
+							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+						}
+						if (!this.loadedWorkflow) this.loadWorkflow(playbookName, this.modalParams.newWorkflow);
+						this.toastyService.success(`Created workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error creating workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}": ${e.message}`));
+					.catch(e => this.toastyService.error(`Error creating workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			}
 		};
 
 		this._openModal();
 	}
 
+	/**
+	 * Opens a modal to delete a given workflow and performs the rename action on submit.
+	 * @param playbook Name of the playbook the workflow resides under
+	 * @param workflow Name of the workflow to rename
+	 */
 	renameWorkflowModal(playbook: string, workflow: string): void {
 		this._closeWorkflowsModal();
 
@@ -1014,6 +978,7 @@ export class PlaybookComponent {
 			submitText: 'Rename Workflow',
 			shouldShowWorkflow: true,
 			submit: () => {
+				let playbookName = this._getModalPlaybookName();
 				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(() => {
 						this.playbooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
@@ -1022,16 +987,21 @@ export class PlaybookComponent {
 							this.loadedWorkflow.name = this.modalParams.newWorkflow;
 							this.currentWorkflow = this.modalParams.newWorkflow;
 						}
-						this.toastyService.success(`Successfully renamed workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
+						this.toastyService.success(`Successfully renamed workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error renaming workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}": ${e.message}`));
+					.catch(e => this.toastyService.error(`Error renaming workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			}
 		};
 
 		this._openModal();
 	}
 
+	/**
+	 * Opens a modal to copy a given workflow and performs the copy action on submit.
+	 * @param playbook Name of the playbook the workflow resides under
+	 * @param workflow Name of the workflow to copy
+	 */
 	duplicateWorkflowModal(playbook: string, workflow: string): void {
 		this._closeWorkflowsModal();
 
@@ -1043,6 +1013,7 @@ export class PlaybookComponent {
 			selectedPlaybook: playbook,
 			shouldShowWorkflow: true,
 			submit: () => {
+				let playbookName = this._getModalPlaybookName();
 				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(duplicatedWorkflow => {
 						let pb = this.playbooks.find(pb => pb.name === playbook);
@@ -1050,19 +1021,27 @@ export class PlaybookComponent {
 						if (!pb) {
 							pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
 							this.playbooks.push(pb);
+							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 						}
 
 						pb.workflows.push(duplicatedWorkflow);
-						this.toastyService.success(`Successfully duplicated workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
+						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+
+						this.toastyService.success(`Successfully duplicated workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error duplicating workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}": ${e.message}`));
+					.catch(e => this.toastyService.error(`Error duplicating workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			}
 		};
 
 		this._openModal();
 	}
 
+	/**
+	 * Opens a modal to delete a given workflow and performs the delete action on submit.
+	 * @param playbook Name of the playbook the workflow resides under
+	 * @param workflow Name of the workflow to delete
+	 */
 	deleteWorkflow(playbook: string, workflow: string): void {
 		if (!confirm(`Are you sure you want to delete workflow "${playbook} - ${workflow}"?`)) return;
 
@@ -1079,18 +1058,30 @@ export class PlaybookComponent {
 			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook} - ${workflow}": ${e.message}`));
 	}
 
+	/**
+	 * Function to open the bootstrap playbook/workflow action modal.
+	 */
 	_openModal(): void {
 		($('#playbookAndWorkflowActionModal') as any).modal('show');
 	}
 
+	/**
+	 * Function to close the bootstrap playbook/workflow action modal.
+	 */
 	_closeModal(): void {
 		($('#playbookAndWorkflowActionModal') as any).modal('hide');
 	}
 
+	/**
+	 * Function to close the bootstrap load workflow modal.
+	 */
 	_closeWorkflowsModal(): void {
 		($('#workflowsModal') as any).modal('hide');
 	}
 	
+	/**
+	 * Gets the playbook name from a given modal: either by the selected playbook or whatever's specified under new playbook.
+	 */
 	_getModalPlaybookName(): string {
 		if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '')
 			return this.modalParams.selectedPlaybook;
@@ -1135,7 +1126,7 @@ export class PlaybookComponent {
 	 * @param actionName Name of the ActionApi to query
 	 */
 	_getAction(appName: string, actionName: string): ActionApi {
-		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
+		return this.appApis.find(a => a.name === appName).actions.find(a => a.name === actionName);
 	}
 
 	/**
@@ -1143,7 +1134,7 @@ export class PlaybookComponent {
 	 * @param appName App name to query
 	 */
 	getConditionApis(appName: string): ConditionApi[] {
-		return this.appApis.find(a => a.name === appName).condition_apis;
+		return this.appApis.find(a => a.name === appName).conditions;
 	}
 
 	/**
@@ -1151,7 +1142,7 @@ export class PlaybookComponent {
 	 * @param appName App name to query
 	 */
 	getTransformApis(appName: string): TransformApi[] {
-		return this.appApis.find(a => a.name === appName).transform_apis;
+		return this.appApis.find(a => a.name === appName).transforms;
 	}
 
 	/**
@@ -1162,5 +1153,12 @@ export class PlaybookComponent {
 	 */
 	getInputApiArgs(appName: string, actionName: string, inputName: string): ParameterApi {
 		return this._getAction(appName, actionName).parameters.find(a => a.name === inputName);
+	}
+
+	/**
+	 * Filters only the apps that have actions specified
+	 */
+	getAppsWithActions(): AppApi[] {
+		return this.appApis.filter(a => a.actions && a.actions.length);
 	}
 }

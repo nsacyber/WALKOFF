@@ -95,7 +95,7 @@
 
 
                             <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
-                                <div *ngFor="let app of apps" class="panel panel-default">
+                                <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
                                     <div class="panel-heading">
                                     <h4 class="panel-title">
                                         <a data-toggle="collapse" href="#collapse{{app.name}}">{{app.name}}</a>
@@ -103,7 +103,7 @@
                                     </div>
                                     <div id="collapse{{app.name}}" class="panel-collapse collapse">
                                         <div class="panel-body">
-                                            <div *ngFor="let actionApi of app.actionApis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
+                                            <div *ngFor="let actionApi of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
                                              [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
                                                 <div class="panel-body">
                                                     <span class="fa fa-bars pull-right"></span>

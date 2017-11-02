@@ -82,7 +82,7 @@
 
 					<!-- For numbers enter number info -->
 					<input *ngIf="i.schema.type === 'number' || i.schema.type === 'integer'" class="form-control" name="{{i.name}}"
-					 [(ngModel)]="workingDevice.fields[i.name]" type="number" [attr.min]="getMin(i)" [attr.max]="getMax(i)"
+					 [(ngModel)]="workingDevice.fields[i.name]" type="number" [attr.min]="getMin(i.schema)" [attr.max]="getMax(i.schema)"
 					 [attr.step]="i.schema.multipleOf > 0 ? i.schema.multipleOf : null" [attr.required]="i.schema.required"
 					 [attr.placeholder]="i.schema.placeholder">
 

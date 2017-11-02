@@ -9,6 +9,7 @@ import { WorkingDevice } from '../models/device';
 import { AppApi } from '../models/api/appApi';
 import { DeviceApi } from '../models/api/deviceApi';
 import { DeviceFieldApi } from '../models/api/deviceFieldApi';
+import { ParameterSchema } from '../models/api/parameterSchema';
 
 @Component({
 	selector: 'device-modal',
@@ -44,7 +45,7 @@ export class DevicesModalComponent {
 	ngAfterViewInit(): void {
 		//For an existing device, set our available device types and store the known fields for our device type
 		if (this.workingDevice.app) {
-			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app).device_apis;
+			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app).devices;
 		}
 		//Detect changes beforehand so the select box is updated
 		this.cdr.detectChanges();
@@ -59,7 +60,7 @@ export class DevicesModalComponent {
 
 	handleAppSelection(event: any, app: string): void {
 		this.workingDevice.app = app;
-		this.deviceTypesForApp = this.appApis.find(a => a.name === app).device_apis
+		this.deviceTypesForApp = this.appApis.find(a => a.name === app).devices
 		if (this.selectedDeviceType) this._clearDeviceTypeData();
 	}
 
@@ -70,7 +71,7 @@ export class DevicesModalComponent {
 			return;
 		}
 		//Grab the first device type that matches our app and newly selected type
-		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app).device_apis.find(d => d.name === deviceType);
+		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app).devices.find(d => d.name === deviceType);
 		//Set the type on our working device
 		this.workingDevice.type = deviceType;
 		//Set our fields to whatever's stored or a new object
@@ -208,8 +209,8 @@ export class DevicesModalComponent {
 					//We're past the required check; if number is null, don't do any more validation
 					if (inputs[field.name] == null) break;
 
-					let min = this.getMin(field);
-					let max = this.getMax(field);
+					let min = this.getMin(field.schema);
+					let max = this.getMax(field.schema);
 					if (min !== null && inputs[field.name] < min)
 						this._concatValidationMessage(field.name, `The minimum value is ${min}.`);
 					if (max !== null && inputs[field.name] > max)
@@ -234,15 +235,16 @@ export class DevicesModalComponent {
 		else this.validationErrors[field] = message;
 	}
 
-	getMin(field: DeviceFieldApi) {
-		if (field.schema.minimum === undefined) return null;
-		if (field.schema.exclusiveMinimum) return field.schema.minimum + 1;
-		return field.schema.minimum;
+	getMin(schema: ParameterSchema) {
+		if (schema.minimum === undefined) return null;
+		if (schema.exclusiveMinimum) return schema.minimum + 1;
+		return schema.minimum;
 	}
 
-	getMax(field: DeviceFieldApi) {
-		if (field.schema.maximum === undefined) return null;
-		if (field.schema.exclusiveMaximum) return field.schema.maximum - 1;
-		return field.schema.maximum;
+	
+	getMax(schema: ParameterSchema) {
+		if (schema.maximum === undefined) return null;
+		if (schema.exclusiveMaximum) return schema.maximum - 1;
+		return schema.maximum;
 	}
 }

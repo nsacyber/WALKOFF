@@ -9,12 +9,16 @@ import 'rxjs/add/operator/toPromise';
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
+import { Playbook } from '../models/playbook/playbook';
 
 @Injectable()
 export class CasesService {
 	constructor (private authHttp: JwtHttp) {
 	}
 
+	/**
+	 * Gets an array of Case objects specified in the cases DB.
+	 */
 	getCases() : Promise<Case[]> {
 		return this.authHttp.get('/api/cases')
 			.toPromise()
@@ -23,6 +27,10 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Gets an array of CaseEvents for a given case.
+	 * @param name Name of case to query against.
+	 */
 	getEventsForCase(name: string) : Promise<CaseEvent[]> {
 		return this.authHttp.get(`/api/cases/${name}/events`)
 			.toPromise()
@@ -31,6 +39,10 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Adds a case represented by the caseToAdd specified.
+	 * @param caseToAdd JSON of Case to add
+	 */
 	addCase(caseToAdd: Case) : Promise<Case> {
 		return this.authHttp.put('/api/cases', caseToAdd)
 			.toPromise()
@@ -39,6 +51,10 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Edits a case in place (by id specified within the Case JSON).
+	 * @param caseToEdit JSON of Case to edit
+	 */
 	editCase(caseToEdit: Case) : Promise<Case> {
 		return this.authHttp.post('/api/cases', caseToEdit)
 			.toPromise()
@@ -47,6 +63,10 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Deletes a case by a given ID.
+	 * @param id ID of Case to delete
+	 */
 	deleteCase(id: number) : Promise<void> {
 		return this.authHttp.delete(`/api/cases/${id}`)
 			.toPromise()
@@ -54,6 +74,9 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Gets a list of available event subscriptions for each type of object to log against (controller, workflow, step, etc.);
+	 */
 	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
 		return this.authHttp.get('/api/availablesubscriptions')
 			.toPromise()
@@ -62,7 +85,10 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	getPlaybooks() : Promise<any> {
+	/**
+	 * Gets a list of playbooks and all data within.
+	 */
+	getPlaybooks() : Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks?full=true')
 			.toPromise()
 			.then(this.extractData)
