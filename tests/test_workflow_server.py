@@ -230,7 +230,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps.append(added_step)
 
         step_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
-        added_next_step = NextStep(src=step_uid, dst="2").read()
+        added_next_step = NextStep(source_uid=step_uid, destination_uid="2").read()
 
         data = {"steps": initial_steps, "next_steps": [added_next_step]}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
@@ -245,8 +245,8 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn(initial_step['uid'], resulting_workflow.steps.keys())
             self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['uid']].read())
 
-        self.assertEqual(added_next_step["src"], resulting_workflow.next_steps[step_uid][0].src)
-        self.assertEqual(added_next_step["dst"], resulting_workflow.next_steps[step_uid][0].dst)
+        self.assertEqual(added_next_step["source_uid"], resulting_workflow.next_steps[step_uid][0].source_uid)
+        self.assertEqual(added_next_step["destination_uid"], resulting_workflow.next_steps[step_uid][0].destination_uid)
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]

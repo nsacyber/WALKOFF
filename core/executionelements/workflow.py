@@ -39,8 +39,8 @@ class Workflow(ExecutionElement):
 
         if next_steps:
             for next_step in next_steps:
-                if next_step.src in self.next_steps:
-                    self.next_steps[next_step.src].append(next_step)
+                if next_step.source_uid in self.next_steps:
+                    self.next_steps[next_step.source_uid].append(next_step)
 
         self.start = start if start is not None else 'start'
         self.accumulated_risk = accumulated_risk
@@ -86,7 +86,7 @@ class Workflow(ExecutionElement):
             self.next_steps.pop(uid)
             for step in self.next_steps.keys():
                 for next_step in list(self.next_steps[step]):
-                    if next_step.dst == uid:
+                    if next_step.destination_uid == uid:
                         self.next_steps[step].remove(next_step)
 
             logger.debug('Removed step {0} from workflow {1}'.format(uid, self.name))
@@ -279,9 +279,9 @@ class Workflow(ExecutionElement):
                 next_steps = [NextStep.create(cond_json) for cond_json in json_in['next_steps']]
                 self.next_steps = {}
                 for next_step in next_steps:
-                    if next_step.src not in self.next_steps:
-                        self.next_steps[next_step.src] = []
-                    self.next_steps[next_step.src].append(next_step)
+                    if next_step.source_uid not in self.next_steps:
+                        self.next_steps[next_step.source_uid] = []
+                    self.next_steps[next_step.source_uid].append(next_step)
         except (UnknownApp, UnknownAppAction, InvalidInput):
             self.reload_async_result(backup_steps, with_deepcopy=True)
             raise

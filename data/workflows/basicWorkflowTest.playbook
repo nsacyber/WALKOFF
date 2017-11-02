@@ -8,29 +8,29 @@
             "next_steps": [
                 {
                     "conditions": [],
-                    "dst": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
-                    "src": "facaa3c3-0aac-4268-8569-9e269e566de1",
+                    "destination_uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                    "source_uid": "facaa3c3-0aac-4268-8569-9e269e566de1",
                     "status": "Success",
                     "uid": "3b61db33-dae7-4c2d-8847-3c8295824804"
                 },
                 {
                     "conditions": [],
-                    "dst": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
-                    "src": "28c6d4a9-1f2b-4c2e-91e3-c953cc6d66ac",
+                    "destination_uid": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
+                    "source_uid": "28c6d4a9-1f2b-4c2e-91e3-c953cc6d66ac",
                     "status": "Success",
                     "uid": "ad629457-99d5-4e66-ba43-c01726f71fd6"
                 },
                 {
                     "conditions": [],
-                    "dst": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
-                    "src": "ac8c7a4f-83db-4e27-a5b6-ecf18de3937d",
+                    "destination_uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
+                    "source_uid": "ac8c7a4f-83db-4e27-a5b6-ecf18de3937d",
                     "status": "Success",
                     "uid": "1a2c08ef-56c0-43db-9013-8c9d55d53de1"
                 },
                 {
                     "conditions": [],
-                    "dst": "d4300330-b01f-11e7-abc4-cec278b6b50a",
-                    "src": "093fdb92-33bd-4bcc-9653-dfed6563d4a7",
+                    "destination_uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                    "source_uid": "093fdb92-33bd-4bcc-9653-dfed6563d4a7",
                     "status": "Success",
                     "uid": "4d263de5-8a91-402d-90e6-fa561806212d"
                 }
@@ -144,29 +144,29 @@
             "next_steps": [
                 {
                     "conditions": [],
-                    "dst": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
-                    "src": "580374f6-bd03-46e1-8262-49bb2c0faff1",
+                    "destination_uid": "d42fffc0-b01f-11e7-abc4-cec278b6b50a",
+                    "source_uid": "580374f6-bd03-46e1-8262-49bb2c0faff1",
                     "status": "Success",
                     "uid": "8dbd8c0f-8226-479e-ac8b-1b54e6772294"
                 },
                 {
                     "conditions": [],
-                    "dst": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
-                    "src": "b94fd6ff-88ad-4484-818e-004594bf3b20",
+                    "destination_uid": "1e2f9525-809a-4a5c-8eaf-fed32f131e9a",
+                    "source_uid": "b94fd6ff-88ad-4484-818e-004594bf3b20",
                     "status": "Success",
                     "uid": "9a745d77-54cd-4abf-bc72-21fea66e2b98"
                 },
                 {
                     "conditions": [],
-                    "dst": "d4300330-b01f-11e7-abc4-cec278b6b50a",
-                    "src": "d151e29b-6a7f-4da6-91c4-de4b555b8169",
+                    "destination_uid": "d4300330-b01f-11e7-abc4-cec278b6b50a",
+                    "source_uid": "d151e29b-6a7f-4da6-91c4-de4b555b8169",
                     "status": "Success",
                     "uid": "ee13f5d7-b063-4071-a937-01fdf0067c4f"
                 },
                 {
                     "conditions": [],
-                    "dst": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
-                    "src": "a6f7a8dc-e626-4f10-894d-7d4c19d0e7cb",
+                    "destination_uid": "d42ff390-b01f-11e7-abc4-cec278b6b50a",
+                    "source_uid": "a6f7a8dc-e626-4f10-894d-7d4c19d0e7cb",
                     "status": "Success",
                     "uid": "1e9a3ec7-9b8a-4080-985e-9a435bb0fc1c"
                 }

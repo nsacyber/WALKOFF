@@ -15,9 +15,9 @@ def convert_workflows():
                             if "next_steps" in step:
                                 next_steps = step.pop("next_steps")
                                 for next_step in next_steps:
-                                    next_step["src"] = step["uid"]
+                                    next_step["source_uid"] = step["uid"]
                                     dst = next_step.pop("name")
-                                    next_step["dst"] = dst
+                                    next_step["destination_uid"] = dst
                                     workflow["next_steps"].append(next_step)
                 with open(os.path.join(subdir, file), "w") as f:
                     json.dump(playbook, f, sort_keys=True, indent=4, separators=(',', ': '))

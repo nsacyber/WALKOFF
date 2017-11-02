@@ -22,8 +22,8 @@
                             ]
                         }
                     ],
-                    "dst": "1",
-                    "src": "2",
+                    "destination_uid": "1",
+                    "source_uid": "2",
                     "status": "Success"
                 }
             ],
