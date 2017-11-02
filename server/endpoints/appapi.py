@@ -84,9 +84,9 @@ def format_full_app_api(api, app_name):
             ret[unformatted_field] = api[unformatted_field]
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
-            ret[formatted_action_field] = format_all_app_actions_api(api[formatted_action_field])
+            ret[formatted_action_field+'_apis'] = format_all_app_actions_api(api[formatted_action_field])
     if 'devices' in api:
-        ret['devices'] = [format_device_api_full(device_api, device_name)
+        ret['device_apis'] = [format_device_api_full(device_api, device_name)
                           for device_name, device_api in api['devices'].items()]
     return ret
 
@@ -100,8 +100,8 @@ def read_all_app_apis(field_name=None):
         transforms = core.config.config.function_apis['transforms']
         conditions = core.config.config.function_apis['conditions']
         for app_name, app_api in core.config.config.app_apis.items():
-            app_api['conditions'] = conditions
-            app_api['transforms'] = transforms
+            app_api['condition_apis'] = conditions
+            app_api['transform_apis'] = transforms
             ret.append(format_full_app_api(app_api, app_name))
         if field_name is not None:
             default = [] if field_name not in ('info', 'externalDocs') else {}
@@ -118,8 +118,8 @@ def read_app_api(app_name):
         api = core.config.config.app_apis.get(app_name, None)
         transforms = core.config.config.function_apis['transforms']
         conditions = core.config.config.function_apis['conditions']
-        api['conditions'] = conditions
-        api['transforms'] = transforms
+        api['condition_apis'] = conditions
+        api['transform_apis'] = transforms
         if api is not None:
             return format_full_app_api(api, app_name), SUCCESS
         else:
