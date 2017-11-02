@@ -5,7 +5,7 @@ import { PlaybookService } from './playbook.service';
 import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { TransformApi } from '../models/api/transformApi';
-import { ArgumentApi } from '../models/api/argumentApi';
+import { ParameterApi } from '../models/api/parameterApi';
 import { Workflow } from '../models/playbook/workflow';
 import { Argument } from '../models/playbook/argument';
 import { Condition } from '../models/playbook/condition';
@@ -21,9 +21,7 @@ import { Transform } from '../models/playbook/transform';
 export class PlaybookConditionsComponent {
 	@Input() selectedAppName: string;
 	@Input() conditions: Condition[];
-	@Input() apps: AppApi[];
-	// @Input() conditionApis: ConditionApi[];
-	// @Input() transformApis: TransformApi[];
+	@Input() appApis: AppApi[];
 	@Input() loadedWorkflow: Workflow;
 
 	selectedConditionApi: string;
@@ -35,19 +33,19 @@ export class PlaybookConditionsComponent {
 	}
 
 	resetConditionSelection(appName: string) {
-		let app = this.apps.find(a => a.name === appName);
+		let app = this.appApis.find(a => a.name === appName);
 
-		if (app.conditionApis && app.conditionApis.length) this.selectedConditionApi = app.conditionApis[0].name;
+		if (app.condition_apis && app.condition_apis.length) this.selectedConditionApi = app.condition_apis[0].name;
 	}
 
 	addCondition(): void {
-		let api = this.apps.find(a => a.name === this.selectedAppName).conditionApis.find(c => c.name === this.selectedConditionApi);
+		let api = this.appApis.find(a => a.name === this.selectedAppName).condition_apis.find(c => c.name === this.selectedConditionApi);
 
 		let args: Argument[] = [];
-		api.args.forEach((argumentApi) => {
+		api.parameters.forEach((parameterApi) => {
 			args.push({
-				name: argumentApi.name,
-				value: argumentApi.default,
+				name: parameterApi.name,
+				value: parameterApi.schema.default ? parameterApi.schema.default : null,
 				reference: "",
 				selector: ""
 			});
@@ -82,22 +80,15 @@ export class PlaybookConditionsComponent {
 		this.conditions.splice(index, 1);
 	}
 
-	getConditionApiArgs(appName: string, conditionName: string, argumentName: string): ArgumentApi {
-		return this.apps.find(a => a.name === appName).conditionApis.find(c => c.name === conditionName).args.find(a => a.name === argumentName);
+	getConditionApiArgs(appName: string, conditionName: string, argumentName: string): ParameterApi {
+		return this.appApis.find(a => a.name === appName).condition_apis.find(c => c.name === conditionName).parameters.find(a => a.name === argumentName);
 	}
 
 	getAppsFromApis(): string[] {
-		let out: string[] = [];
-
-		this.apps.forEach(app => {
-			if (!app.conditionApis || !app.conditionApis.length) return;
-			out.push(app.name);
-		});
-
-		return out;
+		return this.appApis.filter(app => app.condition_apis && app.condition_apis.length).map(app => app.name);
 	}
 
 	getConditionNamesForApp(): string[] {
-		return this.apps.find(a => a.name === this.selectedAppName).conditionApis.map(c => c.name);
+		return this.appApis.find(a => a.name === this.selectedAppName).condition_apis.map(c => c.name);
 	}
 }

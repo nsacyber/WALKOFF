@@ -179,14 +179,14 @@ export class PlaybookService {
 			// TODO: should remove this step once the backend gives the data in this form
 			.then(a => {
 				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <AppApi>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
+					return <AppApi>{ name: appName, action_apis: _.map(app, function (action: ActionApi, actionName: string) {
 						action.name = actionName;
 
 						return action;
 					})};
 				})
 
-				apps.filter(a => a.actionApis.length);
+				apps.filter(a => a.action_apis.length);
 
 				return apps;
 			})
@@ -203,14 +203,14 @@ export class PlaybookService {
 			// TODO: should remove this step once the backend gives the data in this form
 			.then(a => {
 				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <AppApi>{ name: appName, conditionApis: _.map(app, function (condition: ConditionApi, conditionName: string) {
+					return <AppApi>{ name: appName, condition_apis: _.map(app, function (condition: ConditionApi, conditionName: string) {
 						condition.name = conditionName;
 
 						return condition;
 					})};
 				})
 
-				apps.filter(a => a.conditionApis.length);
+				apps.filter(a => a.condition_apis.length);
 
 				return apps;
 			})
@@ -227,14 +227,14 @@ export class PlaybookService {
 			// TODO: should remove this step once the backend gives the data in this form
 			.then(a => {
 				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <AppApi>{ name: appName, transformApis: _.map(app, function (transform: TransformApi, transformName: string) {
+					return <AppApi>{ name: appName, transform_apis: _.map(app, function (transform: TransformApi, transformName: string) {
 						transform.name = transformName;
 
 						return transform;
 					})};
 				})
 
-				apps.filter(a => a.transformApis.length);
+				apps.filter(a => a.transform_apis.length);
 
 				return apps;
 			})

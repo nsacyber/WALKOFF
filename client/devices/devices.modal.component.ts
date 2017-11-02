@@ -6,7 +6,9 @@ import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty
 import { DevicesService } from './devices.service';
 
 import { WorkingDevice } from '../models/device';
-import { DeviceType } from '../models/deviceType';
+import { AppApi } from '../models/api/appApi';
+import { DeviceApi } from '../models/api/deviceApi';
+import { DeviceFieldApi } from '../models/api/deviceFieldApi';
 
 @Component({
 	selector: 'device-modal',
@@ -21,15 +23,15 @@ export class DevicesModalComponent {
 	@Input() title: string;
 	@Input() submitText: string;
 	@Input() appNames: string[] = [];
-	@Input() deviceTypes: DeviceType[] = [];
+	@Input() appApis: AppApi[] = [];
 	@ViewChild('typeRef') typeRef: ElementRef;
 	// @ViewChild('deviceForm') form: FormGroup
 
-	deviceTypesForApp: DeviceType[] = [];
+	deviceTypesForApp: DeviceApi[] = [];
 	// save device type fields on saving/loading so we don't clear all progress if we switch device type
 	// e.g. { 'router': { 'ip': '127.0.0.1', ... }, ... }
 	deviceTypeFields: { [key: string]: {} } = {};
-	selectedDeviceType: DeviceType;
+	selectedDeviceType: DeviceApi;
 	validationErrors: { [key: string]: string } = {};
 	encryptedConfirmFields: { [key: string]: string } = {};
 	encryptedFieldsToBeCleared: { [key: string]: boolean } = {};
@@ -42,7 +44,7 @@ export class DevicesModalComponent {
 	ngAfterViewInit(): void {
 		//For an existing device, set our available device types and store the known fields for our device type
 		if (this.workingDevice.app) {
-			this.deviceTypesForApp = this.deviceTypes.filter(dt => dt.app === this.workingDevice.app);
+			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app).device_apis;
 		}
 		//Detect changes beforehand so the select box is updated
 		this.cdr.detectChanges();
@@ -57,8 +59,8 @@ export class DevicesModalComponent {
 
 	handleAppSelection(event: any, app: string): void {
 		this.workingDevice.app = app;
-		this.deviceTypesForApp = this.deviceTypes.filter(dt => dt.app === app);
-		if (this.selectedDeviceType && this.selectedDeviceType.app !== app) this._clearDeviceTypeData();
+		this.deviceTypesForApp = this.appApis.find(a => a.name === app).device_apis
+		if (this.selectedDeviceType) this._clearDeviceTypeData();
 	}
 
 	handleDeviceTypeSelection(event: any, deviceType: string): void {
@@ -68,7 +70,7 @@ export class DevicesModalComponent {
 			return;
 		}
 		//Grab the first device type that matches our app and newly selected type
-		this.selectedDeviceType = this.deviceTypes.filter(dt => dt.app === this.workingDevice.app && dt.name === deviceType)[0];
+		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app).device_apis.find(d => d.name === deviceType);
 		//Set the type on our working device
 		this.workingDevice.type = deviceType;
 		//Set our fields to whatever's stored or a new object
@@ -81,18 +83,18 @@ export class DevicesModalComponent {
 		this.encryptedFieldsToBeCleared[fieldName] = isChecked;
 	}
 
-	private _getEncryptedConfirmFields(deviceType: DeviceType): void {
+	private _getEncryptedConfirmFields(deviceType: DeviceApi): void {
 		this.encryptedConfirmFields = {};
 		deviceType.fields.forEach(field => {
 			if (field.encrypted) this.encryptedConfirmFields[field.name] = '';
 		})
 	}
 
-	private _getDefaultValues(deviceType: DeviceType): { [key: string]: any } {
+	private _getDefaultValues(deviceApi: DeviceApi): { [key: string]: any } {
 		let out: { [key: string]: any } = {};
 
-		deviceType.fields.forEach(field => {
-			if (field.default) out[field.name] = field.default;
+		deviceApi.fields.forEach(field => {
+			if (field.schema.default) out[field.name] = field.schema.default;
 			else out[field.name] = null;
 		});
 
@@ -168,7 +170,7 @@ export class DevicesModalComponent {
 		});
 
 		this.selectedDeviceType.fields.forEach(field => {
-			if (field.required) {
+			if (field.schema.required) {
 				if (inputs[field.name] == null ||
 					(typeof inputs[field.name] === 'string' && !inputs[field.name]) ||
 					(typeof inputs[field.name] === 'number' && inputs[field.name] === null)) {
@@ -176,16 +178,16 @@ export class DevicesModalComponent {
 					return;
 				}
 			}
-			switch (field.type) {
+			switch (field.schema.type) {
 				//For strings, check against min/max length, regex pattern, or enum constraints
 				case 'string':
 					if (inputs[field.name] == null) inputs[field.name] = '';
 
 					if (field.encrypted && !this.encryptedFieldsToBeCleared[field.name] && this.encryptedConfirmFields[field.name] !== inputs[field.name])
 						this._concatValidationMessage(field.name, `The values for ${field.name} do not match.`);
-					if (field.enum) {
-						let enumArray: string[] = field.enum.slice(0);
-						if (!field.required) enumArray.push('');
+					if (field.schema.enum) {
+						let enumArray: string[] = field.schema.enum.slice(0);
+						if (!field.schema.required) enumArray.push('');
 						if (enumArray.indexOf(inputs[field.name]) < 0)
 							this._concatValidationMessage(field.name, `You must select a value from the list.`);
 					}
@@ -193,12 +195,12 @@ export class DevicesModalComponent {
 					//We're past the required check; Don't do any more validation if we have an empty string as input
 					if (!inputs[field.name]) break;
 
-					if (field.minLength !== undefined && inputs[field.name].length < field.minLength)
-						this._concatValidationMessage(field.name, `Must be at least ${field.minLength} characters.`);
-					if (field.maxLength !== undefined && inputs[field.name].length > field.maxLength)
-						this._concatValidationMessage(field.name, `Must be at most ${field.minLength} characters.`);
-					if (field.pattern && !new RegExp(<string>field.pattern).test(inputs[field.name]))
-						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.pattern}.`);
+					if (field.schema.minLength !== undefined && inputs[field.name].length < field.schema.minLength)
+						this._concatValidationMessage(field.name, `Must be at least ${field.schema.minLength} characters.`);
+					if (field.schema.maxLength !== undefined && inputs[field.name].length > field.schema.maxLength)
+						this._concatValidationMessage(field.name, `Must be at most ${field.schema.minLength} characters.`);
+					if (field.schema.pattern && !new RegExp(<string>field.schema.pattern).test(inputs[field.name]))
+						this._concatValidationMessage(field.name, `Input must match a given pattern: ${field.schema.pattern}.`);
 					break;
 				//For numbers, check against min/max and multipleOf constraints
 				case 'number':
@@ -212,8 +214,8 @@ export class DevicesModalComponent {
 						this._concatValidationMessage(field.name, `The minimum value is ${min}.`);
 					if (max !== null && inputs[field.name] > max)
 						this._concatValidationMessage(field.name, `The maximum value is ${max}.`);
-					if (field.multipleOf !== undefined && inputs[field.name] % field.multipleOf)
-						this._concatValidationMessage(field.name, `The value must be a multiple of ${field.multipleOf}.`);
+					if (field.schema.multipleOf !== undefined && inputs[field.name] % field.schema.multipleOf)
+						this._concatValidationMessage(field.name, `The value must be a multiple of ${field.schema.multipleOf}.`);
 					break;
 				//For booleans, just initialize the value to false if it doesn't exist
 				case 'boolean':
@@ -232,15 +234,15 @@ export class DevicesModalComponent {
 		else this.validationErrors[field] = message;
 	}
 
-	getMin(field: any) {
-		if (field.minimum === undefined) return null;
-		if (field.exclusiveMinimum) return field.minimum + 1;
-		return field.minimum;
+	getMin(field: DeviceFieldApi) {
+		if (field.schema.minimum === undefined) return null;
+		if (field.schema.exclusiveMinimum) return field.schema.minimum + 1;
+		return field.schema.minimum;
 	}
 
-	getMax(field: any) {
-		if (field.maximum === undefined) return null;
-		if (field.exclusiveMaximum) return field.maximum - 1;
-		return field.maximum;
+	getMax(field: DeviceFieldApi) {
+		if (field.schema.maximum === undefined) return null;
+		if (field.schema.exclusiveMaximum) return field.schema.maximum - 1;
+		return field.schema.maximum;
 	}
 }

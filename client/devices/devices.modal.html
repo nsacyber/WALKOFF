@@ -53,11 +53,11 @@
 				<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
 					<label for="{{i.name}}">
 						{{i.name}}
-						<span *ngIf="i.required" class="fa fa-asterisk required" title="This field is required."></span>
-						<span *ngIf="i.encrypted" class="fa fa-lock"
+						<span *ngIf="i.schema.required" class="fa fa-asterisk required" title="This field is required."></span>
+						<span *ngIf="i.schema.encrypted" class="fa fa-lock"
 						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></span>
 						<!-- If we have an encrypted field AND this is an edit AND there is an encrypted value on the server, allow the user to clear it if it's not required -->
-						<div *ngIf="workingDevice.id && i.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
+						<div *ngIf="workingDevice.id && i.schema.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
 							<label class="form-check-label">
 								Clear Existing Value
 								<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" 
@@ -67,24 +67,27 @@
 					</label>
 
 					<!-- Normal string text entries -->
-					<input *ngIf="i.type === 'string' && !i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
-					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.minLength > 0 ? i.minLength : null" [attr.maxlength]="i.maxLength > 0 ? i.maxLength : null"
-					 [attr.pattern]="i.pattern ? i.pattern : null" [attr.required]="i.required" [disabled]="encryptedFieldsToBeCleared[i.name]"
-					 [attr.placeholder]="i.placeholder">
+					<input *ngIf="i.schema.type === 'string' && !i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
+					 [attr.type]="i.schema.encrypted ? 'password' : 'text'" [attr.minlength]="i.schema.minLength > 0 ? i.schema.minLength : null"
+					 [attr.maxlength]="i.schema.maxLength > 0 ? i.schema.maxLength : null"
+					 [attr.pattern]="i.schema.pattern ? i.schema.pattern : null" [attr.required]="i.schema.required"
+					 [disabled]="encryptedFieldsToBeCleared[i.name]" [attr.placeholder]="i.schema.placeholder">
 
 					<!-- Enum types, make a select box -->
-					<select *ngIf="i.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]" [attr.required]="i.required">
-						<option *ngIf="!i.required" value=""></option>
-						<option *ngFor="let i of i.enum" [value]="i" [label]="i">{{i}}</option>
+					<select *ngIf="i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
+					[attr.required]="i.schema.required">
+						<option *ngIf="!i.schema.required" value=""></option>
+						<option *ngFor="let i of i.schema.enum" [value]="i" [label]="i">{{i}}</option>
 					</select>
 
 					<!-- For numbers enter number info -->
-					<input *ngIf="i.type === 'number' || i.type === 'integer'" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
-					 type="number" [attr.min]="getMin(i)" [attr.max]="getMax(i)" [attr.step]="i.multipleOf > 0 ? i.multipleOf : null" [attr.required]="i.required"
-					 [attr.placeholder]="i.placeholder">
+					<input *ngIf="i.schema.type === 'number' || i.schema.type === 'integer'" class="form-control" name="{{i.name}}"
+					 [(ngModel)]="workingDevice.fields[i.name]" type="number" [attr.min]="getMin(i)" [attr.max]="getMax(i)"
+					 [attr.step]="i.schema.multipleOf > 0 ? i.schema.multipleOf : null" [attr.required]="i.schema.required"
+					 [attr.placeholder]="i.schema.placeholder">
 
 					<!-- Checkbox for boolean values -->
-					<input *ngIf="i.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
+					<input *ngIf="i.schema.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
 
 					<!-- Repeat input for encrypted fields -->
 					<ng-container *ngIf="encryptedConfirmFields[i.name] !== undefined">

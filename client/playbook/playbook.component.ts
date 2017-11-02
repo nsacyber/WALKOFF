@@ -18,9 +18,10 @@ import { AuthService } from '../auth/auth.service';
 
 import { AppApi } from '../models/api/appApi';
 import { ActionApi } from '../models/api/actionApi';
-import { ArgumentApi } from '../models/api/argumentApi';
+import { ParameterApi } from '../models/api/parameterApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { TransformApi } from '../models/api/transformApi';
+import { ReturnApi } from '../models/api/returnApi';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Step } from '../models/playbook/step';
@@ -53,16 +54,15 @@ export class PlaybookComponent {
 	playbooks: Playbook[] = [];
 	cy: any;
 	ur: any;
-	apps: AppApi[] = [];
+	appApis: AppApi[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
 	selectedNextStepParams: {
 		nextStep: NextStep;
-		returnTypes: string[];
+		returnTypes: ReturnApi[];
 		app: string;
 		action: string;
 	};
-	inputArgs: { [key: string]: ArgumentApi } = {};
 	cyJsonData: string;
 	actionTree: any;
 	workflowResults: WorkflowResult[] = [];
@@ -97,7 +97,10 @@ export class PlaybookComponent {
 		// this.playbookService.getConditions().then(apps => apps.forEach(a => this.apps.find(x => x.name === a.name).conditionApis = a.conditionApis));
 		// this.playbookService.getTransforms().then(apps => apps.forEach(a => this.apps.find(x => x.name === a.name).transformApis = a.transformApis));
 		this.playbookService.getDevices().then(devices => this.devices = devices);
-		this.getAppsAndActions();
+		this.playbookService.getApis().then(appApis => {
+			this.appApis = appApis;
+			console.log(this.appApis);
+		});
 		this.getWorkflowResultsSSE();
 		this.getPlaybooksWithWorkflows();
 
@@ -270,6 +273,7 @@ export class PlaybookComponent {
 					preview: false,
 					toggleOffOnLeave: true,
 					complete: function (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
+						console.log(sourceNode[0].data(), targetNodes[0].data(), addedEntities[0].data(), self.loadedWorkflow.steps );
 						let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('uid'));
 						if (!sourceStep.next_steps) sourceStep.next_steps = [];
 
@@ -287,8 +291,6 @@ export class PlaybookComponent {
 								// There is logic in onEdgeRemove to bypass that logic if temp is true
 								temp: true
 							});
-
-							console.log(addedEntities[i]);
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
 							if (sourceStep.next_steps.find(n => n.name === targetNodes[i].data('uid'))) {
@@ -524,48 +526,39 @@ export class PlaybookComponent {
 			.then(playbooks => this.playbooks = playbooks);
 	}
 
-	getAppsAndActions(): void {
-		this.playbookService.getAppsAndActions()
-			.then((actionsForApps) => {
-				// this.apps = _.map(actionsForApps, function (app: { [key: string] : ActionApi }, appName: string) {
-				// 	return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
-				// 		action.name = actionName;
+	// getAppsAndActions(): void {
+	// 	this.playbookService.getAppsAndActions()
+	// 		.then((actionsForApps) => {
+	// 			// this.apps = _.map(actionsForApps, function (app: { [key: string] : ActionApi }, appName: string) {
+	// 			// 	return <App>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
+	// 			// 		action.name = actionName;
 
-				// 		return action;
-				// 	})};
-				// })
+	// 			// 		return action;
+	// 			// 	})};
+	// 			// })
 
-				// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
-				actionsForApps.forEach(app => {
-					app.actionApis.forEach(actionApi => {
-						actionApi.args.forEach(arg => {
-							if (!arg.type && (<any>arg).schema) arg.type = (<any>arg).schema.type;
-						});
-					});
-				});
+	// 			// this.apps.filter(a => a.actionApis.length);
+	// 			this.apps = actionsForApps;
 
-				// this.apps.filter(a => a.actionApis.length);
-				this.apps = actionsForApps;
+	// 			// TODO: these lines just add the global conditions/transforms to each of the apps.
+	// 			// Shouldn't be necessary when app-specific flags/filters is implemented
+	// 			// Also should just rely on the global get api function.
+	// 			this.playbookService.getConditions().then(c => {
+	// 				this.apps.forEach(a => a.condition_apis = _.cloneDeep(c[0].condition_apis));
+	// 			});
+	// 			this.playbookService.getTransforms().then(t => this.apps.forEach(a => a.transform_apis = _.cloneDeep(t[0].transform_apis)));
 
-				// TODO: these lines just add the global conditions/transforms to each of the apps.
-				// Shouldn't be necessary when app-specific flags/filters is implemented
-				// Also should just rely on the global get api function.
-				this.playbookService.getConditions().then(c => {
-					this.apps.forEach(a => a.conditionApis = _.cloneDeep(c[0].conditionApis));
-				});
-				this.playbookService.getTransforms().then(t => this.apps.forEach(a => a.transformApis = _.cloneDeep(t[0].transformApis)));
-
-				// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
-				// 	let appObj: any = { name: app, children: [] };
+	// 			// this.actionTree = _.reduce(actionsForApps, function (result: any[], actionObj: { [key: string]: Action }, app: string) {
+	// 			// 	let appObj: any = { name: app, children: [] };
 					
-				// 	Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
+	// 			// 	Object.keys(actionObj).forEach(actionName => appObj.children.push({ name: actionName, id: app }));
 
-				// 	result.push(appObj);
+	// 			// 	result.push(appObj);
 
-				// 	return result;
-				// }, []);
-			});
-	}
+	// 			// 	return result;
+	// 			// }, []);
+	// 		});
+	// }
 
 	/**
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
@@ -591,7 +584,7 @@ export class PlaybookComponent {
 
 		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.uid);
 
-		console.log(self.selectedStep);
+		console.log(this.loadedWorkflow.steps, data, self.selectedStep);
 
 		if (!self.selectedStep) return;
 
@@ -746,18 +739,10 @@ export class PlaybookComponent {
 		let uid = UUID.UUID();
 
 		let inputs: Argument[] = [];
-		this._getAction(appName, actionName).args.forEach((input) => {
-			// let defaultValue;
-			// if (input.type === "string")
-			// 	defaultValue = input.default || "";
-			// else if (input.type === "boolean")
-			// 	defaultValue = input.default || false;
-			// else
-			// 	defaultValue = input.default || 0;
-
+		this._getAction(appName, actionName).parameters.forEach((input) => {
 			inputs.push({
 				name: input.name,
-				value: input.default,
+				value: input.schema.default ? input.schema.default : null,
 				reference: "",
 				selector: ""
 			});
@@ -769,13 +754,12 @@ export class PlaybookComponent {
 		// Set our name to be something like "action 2" if "action" already exists
 		let stepName = numExistingActions ? `${actionName} ${numExistingActions + 1}` : actionName;
 
-		if (appName && actionName) stepToBeAdded = <Step>{
-			uid: uid,
-			name: stepName,
-			app: appName,
-			action: actionName,
-			inputs: inputs
-		};
+		if (appName && actionName) stepToBeAdded = new Step();
+		stepToBeAdded.uid = uid;
+		stepToBeAdded.name = stepName;
+		stepToBeAdded.app = appName;
+		stepToBeAdded.action = actionName;
+		stepToBeAdded.inputs = inputs;
 
 		this.loadedWorkflow.steps.push(stepToBeAdded);
 
@@ -1151,7 +1135,7 @@ export class PlaybookComponent {
 	 * @param actionName Name of the ActionApi to query
 	 */
 	_getAction(appName: string, actionName: string): ActionApi {
-		return this.apps.find(a => a.name === appName).actionApis.find(a => a.name === actionName);
+		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
 	}
 
 	/**
@@ -1159,7 +1143,7 @@ export class PlaybookComponent {
 	 * @param appName App name to query
 	 */
 	getConditionApis(appName: string): ConditionApi[] {
-		return this.apps.find(a => a.name === appName).conditionApis;
+		return this.appApis.find(a => a.name === appName).condition_apis;
 	}
 
 	/**
@@ -1167,16 +1151,16 @@ export class PlaybookComponent {
 	 * @param appName App name to query
 	 */
 	getTransformApis(appName: string): TransformApi[] {
-		return this.apps.find(a => a.name === appName).transformApis;
+		return this.appApis.find(a => a.name === appName).transform_apis;
 	}
 
 	/**
-	 * Gets an ArgumentApi matching the app, action, and input names specified.
+	 * Gets an parameterApi matching the app, action, and input names specified.
 	 * @param appName App name the ActionApi resides under
 	 * @param actionName Name of the ActionApi to query
 	 * @param inputName Name of the action input to query
 	 */
-	getInputApiArgs(appName: string, actionName: string, inputName: string): ArgumentApi {
-		return this._getAction(appName, actionName).args.find(a => a.name === inputName);
+	getInputApiArgs(appName: string, actionName: string, inputName: string): ParameterApi {
+		return this._getAction(appName, actionName).parameters.find(a => a.name === inputName);
 	}
 }

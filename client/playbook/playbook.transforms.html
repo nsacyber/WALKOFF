@@ -32,6 +32,6 @@
 			</div>
 		</div>
 		<playbook-argument-component *ngFor="let argument of transform.args; let id = index" [loadedWorkflow]="loadedWorkflow"
-		 [argument]="argument" [argumentApi]="getTransformApiArgs(transform.app, transform.action, argument.name)" [id]="id"></playbook-argument-component>
+		 [argument]="argument" [parameterApi]="getTransformApiArgs(transform.app, transform.action, argument.name)" [id]="id"></playbook-argument-component>
 	</div>
 </div>

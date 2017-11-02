@@ -166,13 +166,13 @@
                                 <div *ngIf="selectedStep.inputs.length">
                                     <h4>Inputs</h4>
                                     <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                                    [argument]="argument" [argumentApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
+                                    [argument]="argument" [parameterApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
                                     [id]="id"></playbook-argument-component>
                                 </div>
                                 <!-- Triggers -->
                                 <div>
                                     <h4>Trigger Conditions</h4>
-                                    <playbook-conditions-component [conditions]="selectedStep.triggers" [apps]="apps"
+                                    <playbook-conditions-component [conditions]="selectedStep.triggers" [appApis]="appApis"
                                     [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedStep.app"></playbook-conditions-component>
                                 </div>
                             </div>
@@ -187,7 +187,7 @@
                                 </div>
                                 <div>
                                     <h4>Conditions</h4>
-                                    <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [apps]="apps"
+                                    <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [appApis]="appApis"
                                     [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedNextStepParams.app"></playbook-conditions-component>
                                 </div>
                             </div>

@@ -5,7 +5,7 @@ import { PlaybookService } from './playbook.service';
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
 import { TransformApi } from '../models/api/transformApi';
-import { ArgumentApi } from '../models/api/argumentApi';
+import { ParameterApi } from '../models/api/parameterApi';
 import { Argument } from '../models/playbook/argument';
 import { Transform } from '../models/playbook/transform';
 
@@ -19,7 +19,7 @@ import { Transform } from '../models/playbook/transform';
 export class PlaybookTransformsComponent {
 	@Input() selectedAppName: string;
 	@Input() transforms: Transform[];
-	@Input() apps: AppApi[];
+	@Input() appApis: AppApi[];
 	@Input() loadedWorkflow: Workflow;
 
 	selectedTransformApi: string;
@@ -30,22 +30,22 @@ export class PlaybookTransformsComponent {
 		this.resetTransformSelection(this.selectedAppName);
 	}
 
-	resetTransformSelection(appName: string) {
-		let app = this.apps.find(a => a.name === appName);
+	resetTransformSelection(appName: string): void {
+		let app = this.appApis.find(a => a.name === appName);
 
-		if (app.transformApis && app.transformApis.length) this.selectedTransformApi = app.transformApis[0].name;
+		if (app.transform_apis && app.transform_apis.length) this.selectedTransformApi = app.transform_apis[0].name;
 
 		console.log(app, this.selectedTransformApi);
 	}
 
 	addTransform(): void {
-		let api = this.apps.find(a => a.name === this.selectedAppName).transformApis.find(c => c.name === this.selectedTransformApi);
+		let api = this.appApis.find(a => a.name === this.selectedAppName).transform_apis.find(c => c.name === this.selectedTransformApi);
 		
 		let args: Argument[] = [];
-		api.args.forEach((argumentApi) => {
+		api.parameters.forEach((parameterApi) => {
 			args.push({
-				name: argumentApi.name,
-				value: argumentApi.default,
+				name: parameterApi.name,
+				value: parameterApi.schema.default ? parameterApi.schema.default : null,
 				reference: "",
 				selector: ""
 			});
@@ -79,22 +79,15 @@ export class PlaybookTransformsComponent {
 		this.transforms.splice(index, 1);
 	}
 
-	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ArgumentApi {
-		return this.apps.find(a => a.name === appName).transformApis.find(t => t.name === transformName).args.find(a => a.name === argumentName);
+	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ParameterApi {
+		return this.appApis.find(a => a.name === appName).transform_apis.find(t => t.name === transformName).parameters.find(a => a.name === argumentName);
 	}
 
 	getAppsFromApis(): string[] {
-		let out: string[] = [];
-
-		this.apps.forEach(app => {
-			if (!app.transformApis || !app.transformApis.length) return;
-			out.push(app.name);
-		});
-
-		return out;
+		return this.appApis.filter(app => app.transform_apis && app.transform_apis.length).map(app => app.name);
 	}
 
 	getTransformNamesForApp(): string[] {
-		return this.apps.find(a => a.name === this.selectedAppName).transformApis.map(c => c.name);
+		return this.appApis.find(a => a.name === this.selectedAppName).transform_apis.map(c => c.name);
 	}
 }
