@@ -69,11 +69,6 @@ class TestStep(unittest.TestCase):
         step = Step('HelloWorld', 'helloWorld', uid='test')
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, uid='test')
 
-    # def test_init_with_next_steps(self):
-    #     next_steps = [NextStep(name=i) for i in range(3)]
-    #     step = Step('HelloWorld', 'helloWorld', next_steps=next_steps)
-    #     self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, next_steps=list(range(3)))
-
     def test_init_with_position(self):
         step = Step('HelloWorld', 'helloWorld', position={'x': 13, 'y': 42})
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, position={'x': 13, 'y': 42})
@@ -85,39 +80,6 @@ class TestStep(unittest.TestCase):
     def test_init_templated(self):
         step = Step('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, templated=True, raw_representation={'a': 42})
-
-    # def test_get_next_step_no_next_steps(self):
-    #     step = Step('HelloWorld', 'helloWorld')
-    #     self.assertIsNone(step.get_next_step({}))
-
-    # def test_get_next_step_invalid_step(self):
-    #     flag = Condition(action='regMatch', args={'regex': 'aaa'})
-    #     next_step = NextStep(name='next', conditions=[flag], status='Success')
-    #     step = Step('HelloWorld', 'helloWorld', next_steps=[next_step])
-    #     step._output = ActionResult(result='bbb', status='Success')
-    #     self.assertIsNone(step.get_next_step({}))
-
-    # def test_get_next_step(self):
-    #     flag = Condition(action='regMatch', args={'regex': 'aaa'})
-    #     next_step = NextStep(src="1", dst="2", conditions=[flag], status='Success')
-    #     step = Step('HelloWorld', 'helloWorld', next_steps=[next_step])
-    #     step._output = ActionResult(result='aaa', status='Success')
-    #
-    #     result = {'triggered': False}
-    #
-    #     @callbacks.data_sent.connect
-    #     def validate_sent_data(sender, **kwargs):
-    #         if isinstance(sender, Step):
-    #             self.assertIs(sender, step)
-    #             self.assertIn('callback_name', kwargs)
-    #             self.assertEqual(kwargs['callback_name'], 'Conditionals Executed')
-    #             self.assertIn('object_type', kwargs)
-    #             self.assertEqual(kwargs['object_type'], 'Step')
-    #             result['triggered'] = True
-    #
-    #     self.assertEqual(step.get_next_step({}), 'next')
-    #     self.assertEqual(step._next_up, 'next')
-    #     self.assertTrue(result['triggered'])
 
     def test_get_execution_uid(self):
         step = Step('HelloWorld', 'helloWorld')

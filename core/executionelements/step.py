@@ -11,7 +11,6 @@ from core import contextdecorator
 from core.case.callbacks import data_sent
 from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
-from core.executionelements.nextstep import NextStep
 from core.helpers import get_app_action_api, InvalidInput, dereference_step_routing, format_exception_message
 from core.validator import validate_app_action_parameters
 from core.widgetsignals import get_widget_signal

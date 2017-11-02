@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @total_ordering
 class NextStep(ExecutionElement):
-    def __init__(self, src, dst, status='Success', conditions=None, priority=float("inf"), uid=None):
+    def __init__(self, src, dst, status='Success', conditions=None, priority=999, uid=None):
         """Initializes a new NextStep object.
         
         Args:
@@ -21,7 +21,8 @@ class NextStep(ExecutionElement):
             conditions (list[Condition], optional): A list of Condition objects for the NextStep object.
                 Defaults to None.
             priority (int, optional): Optional priority paramter to specify which NextStep in the Workflow's
-                list of NextSteps should be executed if mutliple have conditions resulting to True. Defaults to MAXINT.
+                list of NextSteps should be executed if mutliple have conditions resulting to True.
+                Defaults to 999 (lowest priority).
             uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4() in Python.
         """
         ExecutionElement.__init__(self, uid)

@@ -179,17 +179,20 @@ class Workflow(ExecutionElement):
         current_step = self.steps[current_uid] if self.steps else None
         while current_step:
             yield current_step
-            next_step_uid = self.__get_next_step(current_step, self._accumulator)
+            next_step_uid = self.get_next_step(current_step, self._accumulator)
             current_uid = self.__go_to_next_step(next_step_uid)
             current_step = self.steps[current_uid] if current_uid is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def __get_next_step(self, current_step, accumulator):
-        for next_step in sorted(self.next_steps[current_step.uid]):
-            next_step = next_step.execute(current_step.get_output(), accumulator)
-            if next_step is not None:
-                return next_step
+    def get_next_step(self, current_step, accumulator):
+        if self.next_steps:
+            for next_step in sorted(self.next_steps[current_step.uid]):
+                next_step = next_step.execute(current_step.get_output(), accumulator)
+                if next_step is not None:
+                    return next_step
+        else:
+            return None
 
     def __go_to_next_step(self, next_step_uid):
         if next_step_uid not in self.steps:

@@ -2,10 +2,13 @@ import unittest
 import uuid
 
 import apps
+from core.case import callbacks
 import core.config.config
-from core.decorators import ActionResult
 from core.executionelements.condition import Condition
+from core.executionelements.step import Step
 from core.executionelements.nextstep import NextStep
+from core.executionelements.workflow import Workflow
+from core.decorators import ActionResult
 from core.helpers import import_all_transforms, import_all_conditions
 from tests.config import test_apps_path, function_api_path
 
@@ -23,7 +26,7 @@ class TestNextStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, src, dst, conditions=None, status='Success', uid=None, priority=float("inf")):
+    def __compare_init(self, elem, src, dst, conditions=None, status='Success', uid=None, priority=999):
         self.assertEqual(elem.src, src)
         self.assertEqual(elem.dst, dst)
         self.assertEqual(elem.status, status)
@@ -90,3 +93,45 @@ class TestNextStep(unittest.TestCase):
                 self.assertEqual(next_step.execute(input_str, {}), expected_name)
             else:
                 self.assertIsNone(next_step.execute(input_str, {}))
+
+    def test_get_next_step_no_next_steps(self):
+        workflow = Workflow()
+        self.assertIsNone(workflow.get_next_step(None, {}))
+
+    def test_get_next_step_invalid_step(self):
+        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        next_step = NextStep(src="1", dst='next', conditions=[flag])
+        step = Step('HelloWorld', 'helloWorld', uid="2")
+        step._output = ActionResult(result='bbb', status='Success')
+        workflow = Workflow(steps=[step], next_steps=[next_step])
+        self.assertIsNone(workflow.get_next_step(step, {}))
+
+    def test_get_next_step(self):
+        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        next_step = NextStep(src="1", dst="2", conditions=[flag])
+        step = Step('HelloWorld', 'helloWorld', uid="1")
+        step._output = ActionResult(result='aaa', status='Success')
+        workflow = Workflow(steps=[step], next_steps=[next_step])
+
+        result = {'triggered': False}
+
+        @callbacks.data_sent.connect
+        def validate_sent_data(sender, **kwargs):
+            if isinstance(sender, NextStep):
+                self.assertIn('callback_name', kwargs)
+                self.assertEqual(kwargs['callback_name'], 'Next Step Taken')
+                self.assertIn('object_type', kwargs)
+                self.assertEqual(kwargs['object_type'], 'NextStep')
+                result['triggered'] = True
+
+        self.assertEqual(workflow.get_next_step(step, {}), '2')
+        self.assertTrue(result['triggered'])
+
+    def test_next_step_with_priority(self):
+        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        next_step_one = NextStep(src="1", dst='five', conditions=[flag], priority="5")
+        next_step_two = NextStep(src="1", dst='one', conditions=[flag], priority="1")
+        step = Step('HelloWorld', 'helloWorld', uid="1")
+        step._output = ActionResult(result='aaa', status='Success')
+        workflow = Workflow(steps=[step], next_steps=[next_step_one, next_step_two])
+        self.assertEqual(workflow.get_next_step(step, {}), "one")

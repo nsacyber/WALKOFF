@@ -9,6 +9,7 @@ import core.case.subscription
 import core.config.paths
 from core import helpers
 from core.case.callbacks import WorkflowShutdown
+from core.executionelements.nextstep import NextStep
 from core.executionelements.step import Step
 from server import flaskserver as flask_server
 from server.returncodes import *
@@ -224,10 +225,14 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step('HelloWorld', 'pause', name='new_id', inputs={'seconds': 5},
-                             position={'x': 0, 'y': 0}).read()
+                          position={'x': 0, 'y': 0}, uid="2").read()
 
         initial_steps.append(added_step)
-        data = {"steps": initial_steps}
+
+        step_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
+        added_next_step = NextStep(src=step_uid, dst="2").read()
+
+        data = {"steps": initial_steps, "next_steps": [added_next_step]}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -239,6 +244,9 @@ class TestWorkflowServer(ServerTestCase):
         for initial_step in initial_steps:
             self.assertIn(initial_step['uid'], resulting_workflow.steps.keys())
             self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['uid']].read())
+
+        self.assertEqual(added_next_step["src"], resulting_workflow.next_steps[step_uid][0].src)
+        self.assertEqual(added_next_step["dst"], resulting_workflow.next_steps[step_uid][0].dst)
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]

@@ -541,6 +541,10 @@
               type: array
               items:
                 $ref: "#/definitions/Step"
+            next_steps:
+              type: array
+              items:
+                $ref: "#/definitions/NextStep"
     produces:
       - application/json
     consumes:
