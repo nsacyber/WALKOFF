@@ -9,7 +9,7 @@ __case_tests = [test_case_subscriptions, test_case_database, test_case_config_db
 case_suite = TestSuite()
 add_tests_to_suite(case_suite, __case_tests)
 
-__server_tests = [test_case_server, test_server, test_scheduler_actions,
+__server_tests = [test_app_api_server, test_case_server, test_server, test_scheduler_actions,
                   test_device_server, test_workflow_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server]

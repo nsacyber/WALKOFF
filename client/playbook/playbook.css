@@ -15,7 +15,7 @@
 }
 
 #main.playbookMain {
-	padding: 10px 15px;
+	padding: 10px 15px 0px 15px;
 }
 
 #playbookToolbar .btn-default {
@@ -58,7 +58,7 @@
 }
 
 .playbookMain .graphEditorRow, .playbookMain .graphEditorColumn {
-	height: 80vh;
+	height: calc(100vh - 110px);
 	overflow: auto;
 }
 
@@ -149,6 +149,28 @@
 	margin: 0 5px;
 }
 
+.playbookMain #parameters .form-group.argument {
+	margin-bottom: 5px;
+	padding: 5px;
+}
+
+.playbookMain #parameters .form-group.argument.odd {
+	background-color: #EEE;
+}
+
+.playbookMain #parameters .transforms {
+	padding-left: 15px;
+	border-left: 3px solid #DDD;
+}
+
+.playbookMain .actionAddBar {
+	margin-bottom: 10px;
+}
+
+.playbookMain .actionAddBar button {
+	margin-top: 25px;
+}
+
 .playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
 	white-space: initial;
 }
@@ -160,4 +182,8 @@
 
 #workflowsModal .panel-heading h4 {
 	min-height: 30px;
+}
+
+#executionResultsModal > .modal-dialog {
+	width: 95%;
 }

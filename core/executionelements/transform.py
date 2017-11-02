@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Transform(ExecutionElement):
 
-    def __init__(self, action, args=None, uid=None):
+    def __init__(self, action, args=None, uid=None, app=''):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
         
         Args:
@@ -22,6 +22,7 @@ class Transform(ExecutionElement):
                 Created from uuid.uuid4() in Python
         """
         ExecutionElement.__init__(self, uid)
+        self.app = app
         self.action = action
         self._args_api, self._data_in_api = get_transform_api(self.action)
         if isinstance(args, list):

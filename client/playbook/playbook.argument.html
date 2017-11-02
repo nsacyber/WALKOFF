@@ -1,8 +1,8 @@
-<div class="form-group">
+<div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
 	<!-- Label for input with optional required icon -->
 	<label for="{{argument.name}}">
-		Input {{id+1}}: {{argument.name}} ({{action.type}})
-		<span *ngIf="action.required" class="fa fa-asterisk required" title="This field is required."></span>
+		Input {{id+1}}: {{argument.name}} ({{argumentApi.type}})
+		<span *ngIf="argumentApi.required" class="fa fa-asterisk required" title="This field is required."></span>
 	</label>
 
 	<!-- Columns for allowing users to specify outputs of other steps as inputs for this one -->
@@ -18,25 +18,25 @@
 			 placeholder="(Optional) Selector for object-based outputs">
 			<ng-container *ngIf="!argument.reference">
 				<!-- Normal string text entries -->
-				<input *ngIf="action.type === 'string' && !action.enum" class="form-control" name="{{argument.name}}"
-				 [(ngModel)]="argument.value" [attr.minlength]="action.minLength > 0 ? action.minLength : null"
-				 [attr.maxlength]="action.maxLength > 0 ? action.maxLength : null" [attr.pattern]="action.pattern ? action.pattern : null"
-				 [attr.required]="action.required" [attr.placeholder]="action.placeholder">
+				<input *ngIf="argumentApi.type === 'string' && !argumentApi.enum" class="form-control" name="{{argument.name}}"
+				 [(ngModel)]="argument.value" [attr.minlength]="argumentApi.minLength > 0 ? argumentApi.minLength : null"
+				 [attr.maxlength]="argumentApi.maxLength > 0 ? argumentApi.maxLength : null" [attr.pattern]="argumentApi.pattern ? argumentApi.pattern : null"
+				 [attr.required]="argumentApi.required" [attr.placeholder]="argumentApi.placeholder">
 
 				<!-- Enum types, make a select box -->
-				<select *ngIf="action.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="action.required">
-					<option *ngIf="!action.required" value=""></option>
-					<option *ngFor="let i of action.enum" [value]="i" [label]="i">{{i}}</option>
+				<select *ngIf="argumentApi.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="argumentApi.required">
+					<option *ngIf="!argumentApi.required" value=""></option>
+					<option *ngFor="let i of argumentApi.enum" [value]="i" [label]="i">{{i}}</option>
 				</select>
 
 				<!-- For numbers enter number info -->
-				<input *ngIf="action.type === 'number' || action.type === 'integer'" class="form-control" name="{{argument.name}}"
-				 [(ngModel)]="argument.value" type="number" [attr.min]="getMin(action)" [attr.max]="getMax(action)"
-				 [attr.step]="action.multipleOf > 0 ? action.multipleOf : null" [attr.required]="action.required"
-				 [attr.placeholder]="action.placeholder">
+				<input *ngIf="argumentApi.type === 'number' || argumentApi.type === 'integer'" class="form-control" name="{{argument.name}}"
+				 [(ngModel)]="argument.value" type="number" [attr.min]="getMin(argumentApi)" [attr.max]="getMax(argumentApi)"
+				 [attr.step]="argumentApi.multipleOf > 0 ? argumentApi.multipleOf : null" [attr.required]="argumentApi.required"
+				 [attr.placeholder]="argumentApi.placeholder">
 
 				<!-- Checkbox for boolean values -->
-				<input *ngIf="action.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
+				<input *ngIf="argumentApi.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
 			</ng-container>
 		</div>
 	</div>

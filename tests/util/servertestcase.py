@@ -51,6 +51,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
         apps.cache_apps(path=tests.config.test_apps_path)
+        core.config.config.app_apis = {}
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
         core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')

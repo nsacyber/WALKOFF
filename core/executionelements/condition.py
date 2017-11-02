@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement):
-    def __init__(self, action, args=None, transforms=None, uid=None):
+    def __init__(self, action, args=None, transforms=None, uid=None, app=''):
         """Initializes a new Condition object.
         
         Args:
@@ -22,6 +22,7 @@ class Condition(ExecutionElement):
                 Created from uuid.uuid4() in Python
         """
         ExecutionElement.__init__(self, uid)
+        self.app = app
         self.action = action
         if isinstance(args, list):
             args = {arg['name']: arg['value'] for arg in args}

@@ -88,6 +88,7 @@ security:
 
 definitions:
     $ref: ./objects/objects.yaml
+    $ref: ./objects/appapi.yaml
     $ref: ./objects/auth.yaml
     $ref: ./objects/cases.yaml
     $ref: ./objects/configuration.yaml
