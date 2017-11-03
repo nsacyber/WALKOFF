@@ -11,6 +11,7 @@ from core import contextdecorator
 from core.case.callbacks import data_sent
 from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
+from core.argument import Argument
 from core.helpers import get_app_action_api, InvalidInput, dereference_step_routing, format_exception_message
 from core.validator import validate_app_action_parameters
 from core.widgetsignals import get_widget_signal
@@ -27,7 +28,7 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device='', inputs=None, triggers=None, position=None, widgets=None,
+    def __init__(self, app, action, name='', device='', arguments=None, triggers=None, position=None, widgets=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 
@@ -37,7 +38,7 @@ class Step(ExecutionElement):
             name (str, optional): The name of the Step object. Defaults to an empty string.
             device (str, optional): The name of the device associated with the app associated with the Step. Defaults
                 to an empty string.
-            inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
+            arguments ([Argument], optional): A list of Argument objects that are input to the step execution. Defaults
                 to None.
             triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data
                 before continuing, then include these Trigger objects in the Step init. Defaults to None.
@@ -61,17 +62,18 @@ class Step(ExecutionElement):
         self.action = action
         self._run, self._input_api = get_app_action_api(self.app, self.action)
         get_app_action(self.app, self._run)
-        if isinstance(inputs, list):
-            inputs = {arg['name']: arg['value'] for arg in inputs}
-        elif isinstance(inputs, dict):
-            inputs = inputs
+
+        if isinstance(arguments, list):
+            arguments = {arg.name: arg for arg in arguments}
+        elif isinstance(arguments, dict):
+            arguments = arguments
         else:
-            inputs = {}
+            arguments = {}
         self.templated = templated
         if not self.templated:
-            self.inputs = validate_app_action_parameters(self._input_api, inputs, self.app, self.action)
+            self.arguments = validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
         else:
-            self.inputs = inputs
+            self.arguments = arguments
         self.device = device if (device is not None and device != 'None') else ''
         self.risk = risk
         self.position = position if position is not None else {}
@@ -113,14 +115,21 @@ class Step(ExecutionElement):
         self.app = updated_json['app']
         self.device = updated_json['device'] if 'device' in updated_json else ''
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
-        inputs = {arg['name']: arg['value'] for arg in updated_json['inputs']} if 'inputs' in updated_json else {}
-        if inputs is not None:
+        arguments = {}
+        if 'arguments' in updated_json:
+            for argument in updated_json['arguments']:
+                arg = Argument(name=argument['name'],
+                               value=argument['value'] if 'value' in argument else None,
+                               reference=argument['reference'] if 'reference' in argument else '',
+                               selection=argument['selection'] if 'selection' in argument else None)
+                arguments[arg.name] = arg
+        if arguments is not None:
             if not self.templated:
-                self.inputs = validate_app_action_parameters(self._input_api, inputs, self.app, self.action)
+                self.arguments = validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
             else:
-                self.inputs = inputs
+                self.arguments = arguments
         else:
-            self.inputs = validate_app_action_parameters(self._input_api, {}, self.app, self.action)
+            self.arguments = validate_app_action_parameters(self._input_api, [], self.app, self.action)
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -135,13 +144,17 @@ class Step(ExecutionElement):
                 core.config.config.JINJA_GLOBALS, **kwargs)
             self._update_json(updated_json=json.loads(env))
 
-    def set_input(self, new_input):
-        """Updates the input for a Step object.
+    def set_input(self, new_arguments):
+        """Updates the arguments for a Step object.
 
         Args:
-            new_input (dict): The new inputs for the Step object.
+            new_arguments ([Argument]): The new Arguments for the Step object.
         """
-        self.inputs = validate_app_action_parameters(self._input_api, new_input, self.app, self.action)
+        if isinstance(new_arguments, list):
+            new_arguments = {arg.name: arg for arg in new_arguments}
+        elif isinstance(new_arguments, dict):
+            new_arguments = new_arguments
+        self.arguments = validate_app_action_parameters(self._input_api, new_arguments, self.app, self.action)
 
     def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
@@ -168,15 +181,20 @@ class Step(ExecutionElement):
                     gevent.sleep(0.1)
                     continue
                 data_in = data['data_in']
-                inputs = data['inputs'] if 'inputs' in data else {}
+                arguments = data['arguments'] if 'arguments' in data else []
 
                 if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
                     data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
                     logger.debug('Trigger is valid for input {0}'.format(data_in))
                     accumulator[self.name] = data_in
 
-                    if inputs:
-                        self.inputs.update(inputs)
+                    if arguments:
+                        for argument in arguments:
+                            arg = Argument(value=argument['value'] if 'value' in argument else None,
+                                           reference=argument['reference'] if 'reference' in argument else '',
+                                           selection=argument['selection'] if 'selection' in argument else None)
+                            self.arguments.append(arg)
+                        # self.arguments.update(arguments)
                     break
                 else:
                     logger.debug('Trigger is not valid for input {0}'.format(data_in))
@@ -185,7 +203,7 @@ class Step(ExecutionElement):
                 gevent.sleep(0.1)
 
         try:
-            args = dereference_step_routing(self.inputs, accumulator, 'In step {0}'.format(self.name))
+            args = dereference_step_routing(self.arguments, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self._input_api, args, self.app, self.action)
             action = get_app_action(self.app, self._run)
             if is_app_action_bound(self.app, self._run):

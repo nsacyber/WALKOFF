@@ -310,7 +310,7 @@ class TestStep(unittest.TestCase):
     def test_set_input_valid(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
         step.set_input({'num1': '-5.62', 'num2': '5', 'num3': '42.42'})
-        self.assertDictEqual(step.inputs, {'num1': -5.62, 'num2': 5., 'num3': 42.42})
+        self.assertDictEqual(step.arguments, {'num1': -5.62, 'num2': 5., 'num3': 42.42})
 
     def test_set_input_invalid_name(self):
         step = Step(app='HelloWorld', action='Add Three', inputs={'num1': '-5.6', 'num2': '4.3', 'num3': '10.2'})
