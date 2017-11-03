@@ -72,7 +72,7 @@ export class DevicesService {
 			.then(this.extractData)
 			.then(data => data as AppApi[])
 			// Clear out any apps without device apis
-			.then(appApis => appApis.filter(a => a.devices && a.devices.length))
+			.then(appApis => appApis.filter(a => a.device_apis && a.device_apis.length))
 			.catch(this.handleError);
 	}
 	

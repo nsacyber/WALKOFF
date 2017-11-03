@@ -103,7 +103,7 @@
                                     </div>
                                     <div id="collapse{{app.name}}" class="panel-collapse collapse">
                                         <div class="panel-body">
-                                            <div *ngFor="let actionApi of app.actions" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
+                                            <div *ngFor="let actionApi of app.action_apis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
                                              [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
                                                 <div class="panel-body">
                                                     <span class="fa fa-bars pull-right"></span>
@@ -148,7 +148,8 @@
                                         <span>{{selectedStep.action}}</span>
                                     </div>
                                     <div class="col-xs-4">
-                                        <button class="btn btn-primary pull-right" (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                                        <button [disabled]="selectedStep.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
+                                        (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -182,7 +183,7 @@
                                 <div class="form-group">
                                     <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
                                     <select class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.status" name="status">
-                                        <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i" [label]="i">{{i}}</option>
+                                        <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
                                     </select>
                                 </div>
                                 <div class="form-group">

@@ -45,7 +45,7 @@ export class DevicesModalComponent {
 	ngAfterViewInit(): void {
 		//For an existing device, set our available device types and store the known fields for our device type
 		if (this.workingDevice.app) {
-			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app).devices;
+			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app).device_apis;
 		}
 		//Detect changes beforehand so the select box is updated
 		this.cdr.detectChanges();
@@ -60,7 +60,7 @@ export class DevicesModalComponent {
 
 	handleAppSelection(event: any, app: string): void {
 		this.workingDevice.app = app;
-		this.deviceTypesForApp = this.appApis.find(a => a.name === app).devices
+		this.deviceTypesForApp = this.appApis.find(a => a.name === app).device_apis
 		if (this.selectedDeviceType) this._clearDeviceTypeData();
 	}
 
@@ -71,7 +71,7 @@ export class DevicesModalComponent {
 			return;
 		}
 		//Grab the first device type that matches our app and newly selected type
-		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app).devices.find(d => d.name === deviceType);
+		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app).device_apis.find(d => d.name === deviceType);
 		//Set the type on our working device
 		this.workingDevice.type = deviceType;
 		//Set our fields to whatever's stored or a new object

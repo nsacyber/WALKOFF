@@ -31,6 +31,7 @@ export class PlaybookArgumentComponent {
 
 	ngOnInit(): void {
 		this.parameterSchema = this.parameterApi.schema;
+		if (this.argument.reference == null) this.argument.reference = '';
 	}
 
 	// TODO: maybe somehow recursively find steps that may occur before. Right now it just returns all of them.

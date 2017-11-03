@@ -25,21 +25,23 @@ export class PlaybookConditionsComponent {
 	@Input() loadedWorkflow: Workflow;
 
 	selectedConditionApi: string;
+	appNamesWithConditions: string[];
 
 	constructor() { }
 
 	ngOnInit() {
 		this.resetConditionSelection(this.selectedAppName);
+		this.appNamesWithConditions = this.appApis.filter(app => app.condition_apis && app.condition_apis.length).map(app => app.name);
 	}
 
 	resetConditionSelection(appName: string) {
 		let app = this.appApis.find(a => a.name === appName);
 
-		if (app.conditions && app.conditions.length) this.selectedConditionApi = app.conditions[0].name;
+		if (app.condition_apis && app.condition_apis.length) this.selectedConditionApi = app.condition_apis[0].name;
 	}
 
 	addCondition(): void {
-		let api = this.appApis.find(a => a.name === this.selectedAppName).conditions.find(c => c.name === this.selectedConditionApi);
+		let api = this.appApis.find(a => a.name === this.selectedAppName).condition_apis.find(c => c.name === this.selectedConditionApi);
 
 		let args: Argument[] = [];
 		// Omit the parameter that matches the dataIn
@@ -82,14 +84,9 @@ export class PlaybookConditionsComponent {
 	}
 
 	getConditionApiArgs(appName: string, conditionName: string, argumentName: string): ParameterApi {
-		return this.appApis.find(a => a.name === appName).conditions.find(c => c.name === conditionName).parameters.find(a => a.name === argumentName);
+		return this.appApis.find(a => a.name === appName).condition_apis.find(c => c.name === conditionName).parameters.find(a => a.name === argumentName);
 	}
-
-	getAppsFromApis(): string[] {
-		return this.appApis.filter(app => app.conditions && app.conditions.length).map(app => app.name);
-	}
-
 	getConditionNamesForApp(): string[] {
-		return this.appApis.find(a => a.name === this.selectedAppName).conditions.map(c => c.name);
+		return this.appApis.find(a => a.name === this.selectedAppName).condition_apis.map(c => c.name);
 	}
 }

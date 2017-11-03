@@ -344,11 +344,11 @@ export class PlaybookComponent {
 					node.data = {
 						id: step.uid,
 						uid: step.uid,
-						// parameters: _.cloneDeep(value), 
 						label: step.name, 
 						isStartNode: step.uid === workflow.start
 					};
 					self._setNodeDisplayProperties(node, step);
+					return node;
 				});
 
 				this.cy.add(nodes.concat(edges));
@@ -371,7 +371,10 @@ export class PlaybookComponent {
 
 				this._closeWorkflowsModal();
 			})
-			.catch(e => this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`));
+			.catch(e => {
+				this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`);
+				console.log(e);
+			});
 	}
 
 	/**
@@ -587,7 +590,7 @@ export class PlaybookComponent {
 		let destinationUid = edgeData.target;
 
 		// Filter out the one that matches
-		this.loadedWorkflow.next_steps.filter(ns => !(ns.source_uid === sourceUid && ns.destination_uid === destinationUid));
+		this.loadedWorkflow.next_steps = this.loadedWorkflow.next_steps.filter(ns => !(ns.source_uid === sourceUid && ns.destination_uid === destinationUid));
 	}
 
 	/**
@@ -671,14 +674,18 @@ export class PlaybookComponent {
 		let uid = UUID.UUID();
 
 		let inputs: Argument[] = [];
-		this._getAction(appName, actionName).parameters.forEach((input) => {
-			inputs.push({
-				name: input.name,
-				value: input.schema.default != null ? input.schema.default : null,
-				reference: "",
-				selector: ""
+		let parameters = this._getAction(appName, actionName).parameters;
+
+		if (parameters && parameters.length) {
+			this._getAction(appName, actionName).parameters.forEach((input) => {
+				inputs.push({
+					name: input.name,
+					value: input.schema.default != null ? input.schema.default : null,
+					reference: "",
+					selector: ""
+				});
 			});
-		});
+		}
 
 		let stepToBeAdded: Step;
 		let numExistingActions = 0;
@@ -1126,7 +1133,7 @@ export class PlaybookComponent {
 	 * @param actionName Name of the ActionApi to query
 	 */
 	_getAction(appName: string, actionName: string): ActionApi {
-		return this.appApis.find(a => a.name === appName).actions.find(a => a.name === actionName);
+		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
 	}
 
 	/**
@@ -1134,7 +1141,7 @@ export class PlaybookComponent {
 	 * @param appName App name to query
 	 */
 	getConditionApis(appName: string): ConditionApi[] {
-		return this.appApis.find(a => a.name === appName).conditions;
+		return this.appApis.find(a => a.name === appName).condition_apis;
 	}
 
 	/**
@@ -1142,7 +1149,7 @@ export class PlaybookComponent {
 	 * @param appName App name to query
 	 */
 	getTransformApis(appName: string): TransformApi[] {
-		return this.appApis.find(a => a.name === appName).transforms;
+		return this.appApis.find(a => a.name === appName).transform_apis;
 	}
 
 	/**
@@ -1159,6 +1166,6 @@ export class PlaybookComponent {
 	 * Filters only the apps that have actions specified
 	 */
 	getAppsWithActions(): AppApi[] {
-		return this.appApis.filter(a => a.actions && a.actions.length);
+		return this.appApis.filter(a => a.action_apis && a.action_apis.length);
 	}
 }

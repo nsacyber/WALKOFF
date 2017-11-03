@@ -23,23 +23,25 @@ export class PlaybookTransformsComponent {
 	@Input() loadedWorkflow: Workflow;
 
 	selectedTransformApi: string;
+	appNamesWithTransforms: string[];
 
 	constructor() { }
 
 	ngOnInit(): void {
 		this.resetTransformSelection(this.selectedAppName);
+		this.appNamesWithTransforms = this.appApis.filter(app => app.transform_apis && app.transform_apis.length).map(app => app.name);
 	}
 
 	resetTransformSelection(appName: string): void {
 		let app = this.appApis.find(a => a.name === appName);
 
-		if (app.transforms && app.transforms.length) this.selectedTransformApi = app.transforms[0].name;
+		if (app.transform_apis && app.transform_apis.length) this.selectedTransformApi = app.transform_apis[0].name;
 
 		console.log(app, this.selectedTransformApi);
 	}
 
 	addTransform(): void {
-		let api = this.appApis.find(a => a.name === this.selectedAppName).transforms.find(c => c.name === this.selectedTransformApi);
+		let api = this.appApis.find(a => a.name === this.selectedAppName).transform_apis.find(c => c.name === this.selectedTransformApi);
 		
 		let args: Argument[] = [];
 		api.parameters.filter(p => p.name !== api.dataIn).forEach((parameterApi) => {
@@ -80,14 +82,10 @@ export class PlaybookTransformsComponent {
 	}
 
 	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ParameterApi {
-		return this.appApis.find(a => a.name === appName).transforms.find(t => t.name === transformName).parameters.find(a => a.name === argumentName);
-	}
-
-	getAppsFromApis(): string[] {
-		return this.appApis.filter(app => app.transforms && app.transforms.length).map(app => app.name);
+		return this.appApis.find(a => a.name === appName).transform_apis.find(t => t.name === transformName).parameters.find(a => a.name === argumentName);
 	}
 
 	getTransformNamesForApp(): string[] {
-		return this.appApis.find(a => a.name === this.selectedAppName).transforms.map(c => c.name);
+		return this.appApis.find(a => a.name === this.selectedAppName).transform_apis.map(c => c.name);
 	}
 }

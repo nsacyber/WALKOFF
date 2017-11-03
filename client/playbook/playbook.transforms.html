@@ -1,9 +1,9 @@
-<div class="transforms">
+<div *ngIf="appNamesWithTransforms.length" class="transforms">
 	<div class="row actionAddBar">
 		<div class="col-xs-4">
 			<label>App</label>
 			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetTransformSelection($event.target.value)">
-				<option *ngFor="let i of getAppsFromApis()" [value]="i" [label]="i">{{i}}</option>
+				<option *ngFor="let i of appNamesWithTransforms" [value]="i" [label]="i">{{i}}</option>
 			</select>
 		</div>
 		<div class="col-xs-4">
