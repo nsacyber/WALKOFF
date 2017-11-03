@@ -884,6 +884,8 @@ $(function(){
 
         var steps = _.map(workflowData, function (step) {
             var ret = _.cloneDeep(step.data.parameters);
+            // Remove "start" parameter as it's not part of the actual schema
+            ret.start = undefined;
             ret.position = _.clone(step.position);
             return ret;
         });
@@ -1100,7 +1102,7 @@ $(function(){
             toggleOffOnLeave: true,
             complete: function( sourceNode, targetNodes, addedEntities ) {
                 var sourceParameters = sourceNode.data().parameters;
-                if (!sourceParameters.hasOwnProperty("next"))
+                if (!sourceParameters.next_steps)
                     sourceParameters.next_steps = [];
 
                 // The edge handles extension is not integrated into the undo/redo extension.
