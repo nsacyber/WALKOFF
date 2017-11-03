@@ -51,6 +51,8 @@ def format_app_action_api(api):
         ret['returns'] = format_returns(ret['returns'], 'event' in api)
     if 'parameters' in api:
         ret['parameters'] = [extract_schema(param_api) for param_api in ret['parameters']]
+    else:
+        ret['parameters'] = []
     return ret
 
 
