@@ -251,7 +251,7 @@ export class PlaybookComponent {
 					complete: function (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
 						console.log(sourceNode[0].data(), targetNodes[0].data(), addedEntities[0].data(), self.loadedWorkflow.steps );
 						let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('uid'));
-						if (!sourceStep.next_steps) sourceStep.next_steps = [];
+						if (!self.loadedWorkflow.next_steps) self.loadedWorkflow.next_steps = [];
 
 						// The edge handles extension is not integrated into the undo/redo extension.
 						// So in order that adding edges is contained in the undo stack,
@@ -259,7 +259,9 @@ export class PlaybookComponent {
 						// extension. Also add info to edge which is displayed when user clicks on it.
 						for (let i = 0; i < targetNodes.length; i++) {
 							// Get the ID from the added node and use it; uses the same UUID method seemingluy
-							let uid = addedEntities[i].data('id');
+							let uid: string = addedEntities[i].data('id');
+							let sourceUid: string = sourceNode.data('uid');
+							let destinationUid = targetNodes[i].data('uid');
 
 							addedEntities[i].data({
 								uid: uid,
@@ -269,16 +271,18 @@ export class PlaybookComponent {
 							});
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
-							if (sourceStep.next_steps.find(n => n.name === targetNodes[i].data('uid'))) {
+							if (self.loadedWorkflow.next_steps.find(ns =>  ns.source_uid === sourceUid && ns.destination_uid === destinationUid)) {
 								self.cy.remove(addedEntities);
 								return;
 							}
 
 							// Add our next step to the actual loadedWorkflow model
-							sourceStep.next_steps.push({
+							self.loadedWorkflow.next_steps.push({
 								uid: uid,
-								name: targetNodes[i].data('uid'),
+								source_uid: sourceUid,
+								destination_uid: destinationUid,
 								status: 'Success',
+								priority: 1,
 								conditions: [],
 							});
 						}
@@ -324,36 +328,30 @@ export class PlaybookComponent {
 				// Load the data into the graph
 				// If a node does not have a label field, set it to
 				// the action. The label is what is displayed in the graph.
-				let edges: any[] = [];
-				let stepNodes = workflow.steps.map(function (step) {
-					var stepNode: any = { group: "nodes", position: _.clone(step.position) };
-					stepNode.data = {
+				let edges = workflow.next_steps.map(nextStep => {
+					let edge: any = { group: "edges" };
+					edge.data = {
+						id: nextStep.uid,
+						uid: nextStep.uid,
+						source: nextStep.source_uid,
+						target: nextStep.destination_uid
+					}
+					return edge;
+				});
+	
+				let nodes = workflow.steps.map(step => {
+					var node: any = { group: "nodes", position: _.clone(step.position) };
+					node.data = {
 						id: step.uid,
 						uid: step.uid,
 						// parameters: _.cloneDeep(value), 
 						label: step.name, 
 						isStartNode: step.uid === workflow.start
 					};
-					self._setNodeDisplayProperties(stepNode, step);
-
-					// For each next step, create an edge and push it to our master edge array
-					step.next_steps.forEach((nextStep) => {
-						edges.push({
-							group: "edges",
-							data: {
-								id: nextStep.uid,
-								uid: nextStep.uid,
-								source: step.uid,
-								target: nextStep.name,
-								// parameters: _.clone(nextStep)
-							}
-						});
-					});
-					return stepNode;
+					self._setNodeDisplayProperties(node, step);
 				});
 
-				stepNodes = stepNodes.concat(edges);
-				this.cy.add(stepNodes);
+				this.cy.add(nodes.concat(edges));
 
 				this.cy.fit(null, 50);
 
@@ -416,16 +414,15 @@ export class PlaybookComponent {
 					tr.args.forEach(a => this._sanitizeArgumentForSave(a));
 				});
 			});
+		});
+		this.loadedWorkflow.next_steps.forEach(ns => {
+			ns.conditions.forEach(c => {
+				c.args.forEach(a => this._sanitizeArgumentForSave(a));
 
-			s.next_steps.forEach(ns => {
-				ns.conditions.forEach(c => {
-					c.args.forEach(a => this._sanitizeArgumentForSave(a));
-	
-					c.transforms.forEach(tr => {
-						tr.args.forEach(a => this._sanitizeArgumentForSave(a));
-					});
-				})
-			});
+				c.transforms.forEach(tr => {
+					tr.args.forEach(a => this._sanitizeArgumentForSave(a));
+				});
+			})
 		});
 
 		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, this.loadedWorkflow)
@@ -540,20 +537,15 @@ export class PlaybookComponent {
 
 		let uid = e.target.data('uid');
 
-		self.loadedWorkflow.steps.forEach(s => {
-			if (self.selectedNextStepParams) return;
+		let nextStep = self.loadedWorkflow.next_steps.find(ns => ns.uid === uid);
+		let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === nextStep.source_uid);
 
-			let ns = s.next_steps.find(ns => ns.uid === uid);
-
-			if (!ns) return;
-
-			self.selectedNextStepParams = {
-				nextStep: ns,
-				returnTypes: this._getAction(s.app, s.action).returns,
-				app: s.app,
-				action: s.action
-			};
-		});
+		self.selectedNextStepParams = {
+			nextStep: nextStep,
+			returnTypes: this._getAction(sourceStep.app, sourceStep.action).returns,
+			app: sourceStep.app,
+			action: sourceStep.action
+		};
 	}
 
 	/**
@@ -581,11 +573,11 @@ export class PlaybookComponent {
 		// Do nothing if this is a temporary edge (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
 		if (!edgeData || edgeData.temp) return;
 
-		let sourceUid = event.target.source().data('uid');
-		let targetUid = edgeData.target;
+		let sourceUid = edgeData.source;
+		let destinationUid = edgeData.target;
 
-		let stepWithThisNextStep = this.loadedWorkflow.steps.find(s => s.uid = sourceUid);
-		stepWithThisNextStep.next_steps.filter(ns => ns.name === targetUid);
+		// Filter out the one that matches
+		this.loadedWorkflow.next_steps.filter(ns => !(ns.source_uid === sourceUid && ns.destination_uid === destinationUid));
 	}
 
 	/**
@@ -616,10 +608,7 @@ export class PlaybookComponent {
 
 		// Delete the step from the workflow and delete any next steps that reference this step
 		this.loadedWorkflow.steps = this.loadedWorkflow.steps.filter(s => s.uid !== data.uid);
-		this.loadedWorkflow.steps.forEach(s => {
-			if (!s.next_steps || !s.next_steps.length) return;
-			s.next_steps = s.next_steps.filter(ns => ns.name !== data.uid);
-		});
+		this.loadedWorkflow.next_steps = this.loadedWorkflow.next_steps.filter(ns => !(ns.source_uid === data.uid || ns.destination_uid === data.uid));
 	}
 
 	/**
@@ -754,7 +743,6 @@ export class PlaybookComponent {
 			let uid = n.data('id');
 
 			pastedStep.uid = uid;
-			pastedStep.next_steps = [];
 
 			// Get new UUIDs for our trigger conditions and transforms as well
 			pastedStep.triggers.forEach(t => {

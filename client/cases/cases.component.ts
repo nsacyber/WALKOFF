@@ -15,6 +15,7 @@ import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
+import { Step } from '../models/playbook/step';
 import { NextStep } from '../models/playbook/nextStep';
 
 /**
@@ -198,17 +199,20 @@ export class CasesComponent {
 		let tree = { name: 'Controller', uid: 'controller', type: 'controller', children: <Object[]>[] };
 
 		// Remap the next steps to be under steps as they used to be
-		// playbooks.forEach((p: Playbook) => {
-		// 	p.workflows.forEach((w: Workflow) => {
-		// 		w.steps.forEach((s: any) => {
-		// 			s.next_steps = [];
-		// 		});
+		playbooks.forEach((p: Playbook) => {
+			p.workflows.forEach((w: Workflow) => {
+				w.steps.forEach((s: Step) => {
+					(<any>s).next_steps = [];
+				});
 
-		// 		w.next_steps.forEach((ns: NextStep) => {
-		// 			w.steps.find(s => s.uid === ns.name).next_steps.push(ns);
-		// 		});
-		// 	});
-		// });
+				w.next_steps.forEach((ns: NextStep) => {
+					(<any>w.steps.find(s => s.uid === ns.source_uid)).next_steps.push(ns);
+				});
+
+				w.next_steps = undefined;
+				console.log(w);
+			});
+		});
 
 		playbooks.forEach(function (p) {
 			tree.children.push(self.getNodeRecursive(p, 0));

@@ -8,7 +8,7 @@ export class Step {
 	uid: string;
 	name: string;
 	position: GraphPosition;
-	next_steps: NextStep[] = [];
+	// next_steps: NextStep[] = [];
 	action: string;
 	app: string;
 	device_id: number;
