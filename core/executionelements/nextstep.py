@@ -9,12 +9,12 @@ logger = logging.getLogger(__name__)
 
 @total_ordering
 class NextStep(ExecutionElement):
-    def __init__(self, src, dst, status='Success', conditions=None, priority=999, uid=None):
+    def __init__(self, source_uid, destination_uid, status='Success', conditions=None, priority=999, uid=None):
         """Initializes a new NextStep object.
         
         Args:
-            src (str): The UID of the source step that will be sending inputs to this NextStep.
-            dst (str): The UID of the destination step that will be returned if the conditions for this NextStep
+            source_uid (str): The UID of the source step that will be sending inputs to this NextStep.
+            destination_uid (str): The UID of the destination step that will be returned if the conditions for this NextStep
                 are met.
             status (str, optional): Optional field to keep track of the status of the NextStep. Defaults to
                 "Success".
@@ -26,14 +26,14 @@ class NextStep(ExecutionElement):
             uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4() in Python.
         """
         ExecutionElement.__init__(self, uid)
-        self.src = src
-        self.dst = dst
+        self.source_uid = source_uid
+        self.destination_uid = destination_uid
         self.status = status
         self.conditions = conditions if conditions is not None else []
         self.priority = priority
 
     def __eq__(self, other):
-        return self.src == other.src and self.dst == other.dst and self.status == other.status \
+        return self.source_uid == other.source_uid and self.destination_uid == other.destination_uid and self.status == other.status \
                and set(self.conditions) == set(other.conditions)
 
     def __lt__(self, other):
@@ -44,7 +44,7 @@ class NextStep(ExecutionElement):
             if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
                 data_sent.send(self, callback_name="Next Step Taken", object_type="NextStep")
                 logger.debug('NextStep is valid for input {0}'.format(data_in))
-                return self.dst
+                return self.destination_uid
             else:
                 logger.debug('NextStep is not valid for input {0}'.format(data_in))
                 data_sent.send(self, callback_name="Next Step Not Taken", object_type="NextStep")

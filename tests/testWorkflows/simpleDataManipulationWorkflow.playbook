@@ -24,8 +24,8 @@
                             "uid": "532ac813429f4f62b7f1d92ac9f324ab"
                         }
                     ],
-                    "dst": "1",
-                    "src": "389b95462e334a52bb0b9608713f81b8",
+                    "destination_uid": "1",
+                    "source_uid": "389b95462e334a52bb0b9608713f81b8",
                     "status": "Success",
                     "uid": "7bd621d9645348c99be8fc9504543e26"
                 }

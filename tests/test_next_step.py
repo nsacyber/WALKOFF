@@ -26,9 +26,9 @@ class TestNextStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, src, dst, conditions=None, status='Success', uid=None, priority=999):
-        self.assertEqual(elem.src, src)
-        self.assertEqual(elem.dst, dst)
+    def __compare_init(self, elem, source_uid, destination_uid, conditions=None, status='Success', uid=None, priority=999):
+        self.assertEqual(elem.source_uid, source_uid)
+        self.assertEqual(elem.destination_uid, destination_uid)
         self.assertEqual(elem.status, status)
         self.assertEqual(elem.priority, priority)
         if conditions:
@@ -40,20 +40,20 @@ class TestNextStep(unittest.TestCase):
             self.assertEqual(elem.uid, uid)
 
     def test_init(self):
-        next_step = NextStep(src="1", dst="2")
+        next_step = NextStep(source_uid="1", destination_uid="2")
         self.__compare_init(next_step, "1", "2")
 
     def test_init_wth_uid(self):
         uid = uuid.uuid4().hex
-        next_step = NextStep(src="1", dst="2", uid=uid)
+        next_step = NextStep(source_uid="1", destination_uid="2", uid=uid)
         self.__compare_init(next_step, "1", "2", uid=uid)
 
     def test_init_with_status(self):
-        next_step = NextStep(src="1", dst="2", status='test_status')
+        next_step = NextStep(source_uid="1", destination_uid="2", status='test_status')
         self.__compare_init(next_step, "1", "2", status='test_status')
 
     def test_init_with_empty_conditions(self):
-        next_step = NextStep(src="1", dst="2", conditions=[])
+        next_step = NextStep(source_uid="1", destination_uid="2", conditions=[])
         self.__compare_init(next_step, '1', '2')
 
     def test_init_with_conditions(self):
@@ -65,9 +65,9 @@ class TestNextStep(unittest.TestCase):
 
     def test_eq(self):
         conditions = [Condition(action='mod1_flag1'), Condition(action='Top Condition')]
-        next_steps = [NextStep(src="1", dst="2"),
-                      NextStep(src="1", dst="2", status='TestStatus'),
-                      NextStep(src="1", dst="2", conditions=conditions)]
+        next_steps = [NextStep(source_uid="1", destination_uid="2"),
+                      NextStep(source_uid="1", destination_uid="2", status='TestStatus'),
+                      NextStep(source_uid="1", destination_uid="2", conditions=conditions)]
         for i in range(len(next_steps)):
             for j in range(len(next_steps)):
                 if i == j:
@@ -87,9 +87,9 @@ class TestNextStep(unittest.TestCase):
                   ('name4', conditions2, ActionResult('aaaa', 'Custom'), False)]
 
         for name, conditions, input_str, expect_name in inputs:
-            next_step = NextStep(src="1", dst="2", conditions=conditions)
+            next_step = NextStep(source_uid="1", destination_uid="2", conditions=conditions)
             if expect_name:
-                expected_name = next_step.dst
+                expected_name = next_step.destination_uid
                 self.assertEqual(next_step.execute(input_str, {}), expected_name)
             else:
                 self.assertIsNone(next_step.execute(input_str, {}))
@@ -100,7 +100,7 @@ class TestNextStep(unittest.TestCase):
 
     def test_get_next_step_invalid_step(self):
         flag = Condition(action='regMatch', args={'regex': 'aaa'})
-        next_step = NextStep(src="1", dst='next', conditions=[flag])
+        next_step = NextStep(source_uid="1", destination_uid='next', conditions=[flag])
         step = Step('HelloWorld', 'helloWorld', uid="2")
         step._output = ActionResult(result='bbb', status='Success')
         workflow = Workflow(steps=[step], next_steps=[next_step])
@@ -108,7 +108,7 @@ class TestNextStep(unittest.TestCase):
 
     def test_get_next_step(self):
         flag = Condition(action='regMatch', args={'regex': 'aaa'})
-        next_step = NextStep(src="1", dst="2", conditions=[flag])
+        next_step = NextStep(source_uid="1", destination_uid="2", conditions=[flag])
         step = Step('HelloWorld', 'helloWorld', uid="1")
         step._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow(steps=[step], next_steps=[next_step])
@@ -129,8 +129,8 @@ class TestNextStep(unittest.TestCase):
 
     def test_next_step_with_priority(self):
         flag = Condition(action='regMatch', args={'regex': 'aaa'})
-        next_step_one = NextStep(src="1", dst='five', conditions=[flag], priority="5")
-        next_step_two = NextStep(src="1", dst='one', conditions=[flag], priority="1")
+        next_step_one = NextStep(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
+        next_step_two = NextStep(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
         step = Step('HelloWorld', 'helloWorld', uid="1")
         step._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow(steps=[step], next_steps=[next_step_one, next_step_two])
