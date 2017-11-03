@@ -16,7 +16,7 @@ import { UUID } from 'angular2-uuid';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 
-import { AppApi } from '../models/api/appApi';
+import { App } from '../models/api/app';
 import { ActionApi } from '../models/api/actionApi';
 import { ArgumentApi } from '../models/api/argumentApi';
 import { ConditionApi } from '../models/api/conditionApi';
@@ -53,7 +53,7 @@ export class PlaybookComponent {
 	playbooks: Playbook[] = [];
 	cy: any;
 	ur: any;
-	apps: AppApi[] = [];
+	apps: App[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedStep: Step; // node being displayed in json editor
 	selectedNextStepParams: {
@@ -552,6 +552,7 @@ export class PlaybookComponent {
 				// Also should just rely on the global get api function.
 				this.playbookService.getConditions().then(c => {
 					this.apps.forEach(a => a.conditionApis = _.cloneDeep(c[0].conditionApis));
+					console.log(this.apps, c);
 				});
 				this.playbookService.getTransforms().then(t => this.apps.forEach(a => a.transformApis = _.cloneDeep(t[0].transformApis)));
 
@@ -597,6 +598,16 @@ export class PlaybookComponent {
 
 		// Add data to the selectedStep if it does not exist
 		if (!self.selectedStep.triggers) self.selectedStep.triggers = [];
+
+		// self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ArgumentApi }, a) => {
+		// 	result[a.name] = a;
+
+		// 	// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
+		// 	if (!result[a.name].type && (<any>result[a.name]).schema) result[a.name].type = (<any>result[a.name]).schema.type;
+		// 	return result;
+		// }, {});
+		
+		// console.log(self.inputArgs);
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app === data.app);
@@ -786,7 +797,17 @@ export class PlaybookComponent {
 			data: {
 				id: uid,
 				uid: uid,
-				label: stepName
+				label: stepName,
+				// parameters: {
+				// 	action: action,
+				// 	app: app,
+				// 	device_id: 0,
+				// 	errors: <any[]>[],
+				// 	inputs: inputs,
+				// 	uid: uid,
+				// 	name: action,
+				// 	next_steps: <any[]>[],
+				// }
 			},
 			renderedPosition: <GraphPosition>null,
 			position: <GraphPosition>null,
@@ -819,6 +840,7 @@ export class PlaybookComponent {
 		this.cy.clipboard().copy(this.cy.$(":selected"));
 	}
 
+	// TODO: update this to properly get new UIDs for pasted steps...
 	/**
 	 * Cytoscape paste method.
 	 */
@@ -826,8 +848,6 @@ export class PlaybookComponent {
 		let newNodes = this.ur.do("paste");
 
 		newNodes.forEach((n: any) => {
-			let uidMapping: { [oldUid: string]: string } = {};
-
 			// Get a copy of the step we just copied
 			let pastedStep: Step = _.clone(this.loadedWorkflow.steps.find(s => s.uid === n.data('uid')));
 
@@ -839,12 +859,7 @@ export class PlaybookComponent {
 			pastedStep.uid = uid;
 			pastedStep.next_steps = [];
 
-			// Get new UUIDs for our trigger conditions and transforms as well
-			pastedStep.triggers.forEach(t => {
-				t.uid = UUID.UUID();
-
-				t.transforms.forEach(tr => tr.uid = UUID.UUID());
-			});
+			console.log(pastedStep);
 
 			n.data({
 				uid: uid,
@@ -951,8 +966,6 @@ export class PlaybookComponent {
 				this.playbookService.renamePlaybook(playbook, this.modalParams.newPlaybook)
 					.then(() => {
 						this.playbooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
-						// Rename our loaded workflow's playbook if necessary.
-						if (this.currentPlaybook === playbook) this.currentPlaybook = this.modalParams.newPlaybook;
 						this.toastyService.success(`Successfully renamed playbook "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
@@ -1011,7 +1024,7 @@ export class PlaybookComponent {
 			submit: () => {
 				this.playbookService.newWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow)
 					.then(newWorkflow => {
-						if (!this.loadedWorkflow) this.loadWorkflow(this._getModalPlaybookName(), this.modalParams.newWorkflow);
+						if (!this.loadedWorkflow) this.loadedWorkflow = newWorkflow;
 						this.toastyService.success(`Created workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
@@ -1033,11 +1046,7 @@ export class PlaybookComponent {
 				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
 					.then(() => {
 						this.playbooks.find(pb => pb.name === playbook).workflows.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
-						// Rename our loaded workflow if necessary.
-						if (this.currentPlaybook === playbook && this.currentWorkflow === workflow && this.loadedWorkflow) {
-							this.loadedWorkflow.name = this.modalParams.newWorkflow;
-							this.currentWorkflow = this.modalParams.newWorkflow;
-						}
+						//TODO: rename loaded workflow
 						this.toastyService.success(`Successfully renamed workflow "${this._getModalPlaybookName()} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})

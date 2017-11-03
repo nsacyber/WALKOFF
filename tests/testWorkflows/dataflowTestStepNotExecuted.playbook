@@ -3,6 +3,15 @@
     "workflows": [
         {
             "name": "dataflowWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [],
+                    "destination_uid": "0ed91d07f1774d16a991d7815814fff1",
+                    "source_uid": "9fd0559779a84bd584c1ecd43b156656",
+                    "status": "Success",
+                    "uid": "3b4fca83078e4eb8881ee5c4e7ac50ed"
+                }
+            ],
             "start": "9fd0559779a84bd584c1ecd43b156656",
             "steps": [
                 {
@@ -24,7 +33,6 @@
                         }
                     ],
                     "name": "1",
-                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "0ed91d07f1774d16a991d7815814fff1",
@@ -49,14 +57,6 @@
                         }
                     ],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [],
-                            "name": "0ed91d07f1774d16a991d7815814fff1",
-                            "status": "Success",
-                            "uid": "3b4fca83078e4eb8881ee5c4e7ac50ed"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "9fd0559779a84bd584c1ecd43b156656",

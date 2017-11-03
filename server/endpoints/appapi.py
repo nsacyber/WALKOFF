@@ -84,9 +84,9 @@ def format_full_app_api(api, app_name):
             ret[unformatted_field] = api[unformatted_field]
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
-            ret[formatted_action_field] = format_all_app_actions_api(api[formatted_action_field])
+            ret[formatted_action_field[:-1]+'_apis'] = format_all_app_actions_api(api[formatted_action_field])
     if 'devices' in api:
-        ret['devices'] = [format_device_api_full(device_api, device_name)
+        ret['device_apis'] = [format_device_api_full(device_api, device_name)
                           for device_name, device_api in api['devices'].items()]
     return ret
 

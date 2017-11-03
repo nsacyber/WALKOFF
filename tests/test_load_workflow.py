@@ -44,15 +44,14 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.device, 'hwTest')
 
     def test_workflow_next_steps(self):
-        next_step = self.testWorkflow.steps[self.workflow_uid].next_steps
+        next_step = list(self.testWorkflow.next_steps.values())[0]
         self.assertEqual(len(next_step), 1)
 
         next_step = next_step[0]
-        self.assertEqual(next_step.name, '1')
         self.assertTrue(next_step.conditions)
 
     def test_workflow_next_step_conditions(self):
-        conditions = self.testWorkflow.steps[self.workflow_uid].next_steps[0].conditions
+        conditions = list(self.testWorkflow.next_steps.values())[0][0].conditions
 
         # Verify conditions exist
         self.assertTrue(len(conditions) == 1)
@@ -62,7 +61,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(condition.transforms)
 
     def test_workflow_next_step_transforms(self):
-        transforms = self.testWorkflow.steps[self.workflow_uid].next_steps[0].conditions[0].transforms
+        transforms = list(self.testWorkflow.next_steps.values())[0][0].conditions[0].transforms
         self.assertEqual(len(transforms), 1)
 
         transform = transforms[0]

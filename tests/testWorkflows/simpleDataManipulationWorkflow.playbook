@@ -3,6 +3,35 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "app": "HelloWorld",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "(.*)"
+                                }
+                            ],
+                            "transforms": [
+                                {
+                                    "action": "length",
+                                    "app": "HelloWorld",
+                                    "args": [],
+                                    "uid": "d0b24e6095ac45669753899bd11d37fd"
+                                }
+                            ],
+                            "uid": "532ac813429f4f62b7f1d92ac9f324ab"
+                        }
+                    ],
+                    "destination_uid": "1",
+                    "source_uid": "389b95462e334a52bb0b9608713f81b8",
+                    "status": "Success",
+                    "uid": "7bd621d9645348c99be8fc9504543e26"
+                }
+            ],
             "start": "389b95462e334a52bb0b9608713f81b8",
             "steps": [
                 {
@@ -16,34 +45,6 @@
                         }
                     ],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "app": "HelloWorld",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "transforms": [
-                                        {
-                                            "action": "length",
-                                            "app": "HelloWorld",
-                                            "args": [],
-                                            "uid": "d0b24e6095ac45669753899bd11d37fd"
-                                        }
-                                    ],
-                                    "uid": "532ac813429f4f62b7f1d92ac9f324ab"
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success",
-                            "uid": "7bd621d9645348c99be8fc9504543e26"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "389b95462e334a52bb0b9608713f81b8",

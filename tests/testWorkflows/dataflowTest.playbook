@@ -3,6 +3,22 @@
     "workflows": [
         {
             "name": "dataflowWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [],
+                    "destination_uid": "9515a631ba4f4d6f8fcd6b843a277c40",
+                    "source_uid": "811b1acdc3ec48a9abbdc0cf01c66176",
+                    "status": "Success",
+                    "uid": "8b7b97775dba4b0a9dda0db213483cd1"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "811b1acdc3ec48a9abbdc0cf01c66176",
+                    "source_uid": "5ed04d7e28354ee7b81619dab9d34fe2",
+                    "status": "Success",
+                    "uid": "4a21e9e1ea0f4286b14643d59ebdda2b"
+                }
+            ],
             "start": "5ed04d7e28354ee7b81619dab9d34fe2",
             "steps": [
                 {
@@ -24,14 +40,6 @@
                         }
                     ],
                     "name": "1",
-                    "next_steps": [
-                        {
-                            "conditions": [],
-                            "name": "9515a631ba4f4d6f8fcd6b843a277c40",
-                            "status": "Success",
-                            "uid": "8b7b97775dba4b0a9dda0db213483cd1"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "811b1acdc3ec48a9abbdc0cf01c66176",
@@ -56,14 +64,6 @@
                         }
                     ],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [],
-                            "name": "811b1acdc3ec48a9abbdc0cf01c66176",
-                            "status": "Success",
-                            "uid": "4a21e9e1ea0f4286b14643d59ebdda2b"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "5ed04d7e28354ee7b81619dab9d34fe2",
@@ -88,7 +88,6 @@
                         }
                     ],
                     "name": "2",
-                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "9515a631ba4f4d6f8fcd6b843a277c40",

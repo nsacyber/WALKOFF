@@ -1,9 +1,0 @@
-{
-    "name": "emptyWorkflow",
-    "workflows": [
-        {
-            "name": "emptyWorkflow",
-            "steps": []
-        }
-    ]
-}

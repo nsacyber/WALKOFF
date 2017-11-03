@@ -9,6 +9,7 @@ import core.case.subscription
 import core.config.paths
 from core import helpers
 from core.case.callbacks import WorkflowShutdown
+from core.executionelements.nextstep import NextStep
 from core.executionelements.step import Step
 from server import flaskserver as flask_server
 from server.returncodes import *
@@ -24,7 +25,8 @@ class TestWorkflowServer(ServerTestCase):
             {'steps': [],
              'name': 'test_name',
              'start': 'start',
-             'accumulated_risk': 0.0}
+             'accumulated_risk': 0.0,
+             'next_steps': []}
 
         case_database.initialize()
 
@@ -223,10 +225,14 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
         added_step = Step('HelloWorld', 'pause', name='new_id', inputs={'seconds': 5},
-                             position={'x': 0, 'y': 0}).read()
+                          position={'x': 0, 'y': 0}, uid="2").read()
 
         initial_steps.append(added_step)
-        data = {"steps": initial_steps}
+
+        step_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
+        added_next_step = NextStep(source_uid=step_uid, destination_uid="2").read()
+
+        data = {"steps": initial_steps, "next_steps": [added_next_step]}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -238,6 +244,9 @@ class TestWorkflowServer(ServerTestCase):
         for initial_step in initial_steps:
             self.assertIn(initial_step['uid'], resulting_workflow.steps.keys())
             self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['uid']].read())
+
+        self.assertEqual(added_next_step["source_uid"], resulting_workflow.next_steps[step_uid][0].source_uid)
+        self.assertEqual(added_next_step["destination_uid"], resulting_workflow.next_steps[step_uid][0].destination_uid)
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]
@@ -255,12 +264,6 @@ class TestWorkflowServer(ServerTestCase):
 
         def remove_uids(step):
             step.uid = ''
-            for next_step in step.next_steps:
-                next_step.uid = ''
-                for condition in next_step.conditions:
-                    condition.uid = ''
-                    for transform in condition.transforms:
-                        transform.uid = ''
 
         for step_name, loaded_step in loaded_workflow.steps.items():
             self.assertIn(step_name, resulting_workflow.steps.keys())

@@ -59,6 +59,11 @@ Workflow:
       type: array
       items:
         $ref: "#/definitions/DisplayStep"
+    next_steps:
+      description: The possible next steps
+      type: array
+      items:
+        $ref: '#/definitions/NextStep'
     start:
       description: UID of the starting step
       type: string
@@ -175,11 +180,6 @@ Step:
           description: y position
           type: number
           example: -12.036
-    next_steps:
-      description: The possible next steps
-      type: array
-      items:
-        $ref: '#/definitions/NextStep'
 
 DisplayStep:
   type: object
@@ -247,17 +247,22 @@ DisplayStep:
 
 NextStep:
   type: object
-  required: [name]
+  required: [source_uid, destination_uid]
   description: Encapsualtion of a list of possible steps to take and conditionals required to be met before taking that step
   additionalProperties: false
   properties:
+    source_uid:
+      description: The source Step UID for this NextStep
+      type: string
+    destination_uid:
+      description: The destination Step UID for this NextStep, if the conditions evaluate to True
+      type: string
     uid:
       description: UID of this step
       type: string
-    name:
-      description: The uid of the next step
-      type: string
-      example: step2
+    priority:
+      description: The priority for this NextStep, which will be compared to other NextSteps with the same source_uid Step, ascending, i.e. 1 is the highest priority.
+      type: integer
     status:
       description: The status return code to use
       type: string

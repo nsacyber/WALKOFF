@@ -7,7 +7,6 @@ import core.config.paths
 from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelements.condition import Condition
-from core.executionelements.nextstep import NextStep
 from core.helpers import UnknownApp, UnknownAppAction, InvalidInput
 from core.appinstance import AppInstance
 from core.executionelements.step import Step
@@ -24,15 +23,13 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, action, app, device, inputs, triggers=None, next_steps=None,
+    def __compare_init(self, elem, name, action, app, device, inputs, triggers=None,
                        widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device, device)
         self.assertDictEqual({key: input_element for key, input_element in elem.inputs.items()}, inputs)
-        next_steps = next_steps if next_steps is not None else []
-        self.assertListEqual([next_step.name for next_step in elem.next_steps], next_steps)
         self.assertEqual(elem.risk, risk)
         widgets = widgets if widgets is not None else []
         self.assertEqual(len(elem.widgets), len(widgets))
@@ -54,7 +51,6 @@ class TestStep(unittest.TestCase):
         else:
             self.assertEqual(elem.uid, uid)
         self.assertIsNone(elem._output)
-        self.assertIsNone(elem._next_up)
         self.assertEqual(elem._execution_uid, 'default')
 
     def test_init_default(self):
@@ -69,11 +65,6 @@ class TestStep(unittest.TestCase):
         step = Step('HelloWorld', 'helloWorld', uid='test')
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, uid='test')
 
-    def test_init_with_next_steps(self):
-        next_steps = [NextStep(name=i) for i in range(3)]
-        step = Step('HelloWorld', 'helloWorld', next_steps=next_steps)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, next_steps=list(range(3)))
-
     def test_init_with_position(self):
         step = Step('HelloWorld', 'helloWorld', position={'x': 13, 'y': 42})
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, position={'x': 13, 'y': 42})
@@ -85,39 +76,6 @@ class TestStep(unittest.TestCase):
     def test_init_templated(self):
         step = Step('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, templated=True, raw_representation={'a': 42})
-
-    def test_get_next_step_no_next_steps(self):
-        step = Step('HelloWorld', 'helloWorld')
-        self.assertIsNone(step.get_next_step({}))
-
-    def test_get_next_step_invalid_step(self):
-        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
-        next_step = NextStep(name='next', conditions=[flag], status='Success')
-        step = Step('HelloWorld', 'helloWorld', next_steps=[next_step])
-        step._output = ActionResult(result='bbb', status='Success')
-        self.assertIsNone(step.get_next_step({}))
-
-    def test_get_next_step(self):
-        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
-        next_step = NextStep(name='next', conditions=[flag], status='Success')
-        step = Step('HelloWorld', 'helloWorld', next_steps=[next_step])
-        step._output = ActionResult(result='aaa', status='Success')
-
-        result = {'triggered': False}
-
-        @callbacks.data_sent.connect
-        def validate_sent_data(sender, **kwargs):
-            if isinstance(sender, Step):
-                self.assertIs(sender, step)
-                self.assertIn('callback_name', kwargs)
-                self.assertEqual(kwargs['callback_name'], 'Conditionals Executed')
-                self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'Step')
-                result['triggered'] = True
-
-        self.assertEqual(step.get_next_step({}), 'next')
-        self.assertEqual(step._next_up, 'next')
-        self.assertTrue(result['triggered'])
 
     def test_get_execution_uid(self):
         step = Step('HelloWorld', 'helloWorld')

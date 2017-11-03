@@ -52,7 +52,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step_uids = [step.uid for step in workflow.steps.values()]
-        step_events = ['Function Execution Success', 'Step Started', 'Conditionals Executed']
+        step_events = ['Function Execution Success', 'Step Started']
         subs = {'case1': {step_uid: step_events for step_uid in step_uids}}
         case_subscription.set_subscriptions(subs)
 
@@ -62,16 +62,17 @@ class TestExecutionEvents(unittest.TestCase):
 
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
-        self.assertEqual(len(execution_events), 3,
+        self.assertEqual(len(execution_events), 2,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(3, len(execution_events)))
+                         'Expected {0}, got {1}'.format(2, len(execution_events)))
 
     def test_condition_transform_execution_events(self):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         step = workflow.steps['c5a7c29a0f844b69a59901bb542e9305']
-        subs = {step.uid: ['Function Execution Success', 'Step Started', 'Conditionals Executed']}
-        next_step = next(conditional for conditional in step.next_steps if conditional.name == '1')
+        subs = {step.uid: ['Function Execution Success', 'Step Started']}
+        next_steps = [next_step for sublist in workflow.next_steps.values() for next_step in sublist]
+        next_step = next_steps[0]
         subs[next_step.uid] = ['Next Step Taken', 'Next Step Not Taken']
         condition = next(condition for condition in next_step.conditions if condition.action == 'regMatch')
         subs[condition.uid] = ['Condition Success', 'Condition Error']
@@ -86,6 +87,6 @@ class TestExecutionEvents(unittest.TestCase):
 
         events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
-        self.assertEqual(len(events), 6,
+        self.assertEqual(len(events), 5,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(6, len(events)))
+                         'Expected {0}, got {1}'.format(5, len(events)))

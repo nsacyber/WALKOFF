@@ -42,6 +42,13 @@ class JsonElementReader(object):
         from core.executionelements.executionelement import ExecutionElement
         if dict_ and all(isinstance(dict_value, ExecutionElement) for dict_value in dict_.values()):
             accumulator[field_name] = [JsonElementReader.read(dict_value) for dict_value in dict_.values()]
+        elif dict_ and all(isinstance(dict_value, list) for dict_value in dict_.values()):
+            if all((isinstance(list_value, ExecutionElement) for list_value in dict_value) for dict_value in dict_.values()):
+                field_accumulator = []
+                for dict_value in dict_.values():
+                    list_acc = [JsonElementReader.read(list_value) for list_value in dict_value]
+                    field_accumulator.extend(list_acc)
+                accumulator[field_name] = field_accumulator
         elif field_name == 'position':
             accumulator[field_name] = dict_
         else:

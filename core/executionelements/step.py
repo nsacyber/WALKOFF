@@ -11,7 +11,6 @@ from core import contextdecorator
 from core.case.callbacks import data_sent
 from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
-from core.executionelements.nextstep import NextStep
 from core.helpers import get_app_action_api, InvalidInput, dereference_step_routing, format_exception_message
 from core.validator import validate_app_action_parameters
 from core.widgetsignals import get_widget_signal
@@ -28,8 +27,8 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device='', inputs=None, triggers=None, next_steps=None, position=None,
-                 widgets=None, risk=0, uid=None, templated=False, raw_representation=None):
+    def __init__(self, app, action, name='', device='', inputs=None, triggers=None, position=None, widgets=None,
+                 risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 
         Args:
@@ -42,7 +41,6 @@ class Step(ExecutionElement):
                 to None.
             triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data
                 before continuing, then include these Trigger objects in the Step init. Defaults to None.
-            next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
             position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
                 for UI display purposes. Defaults to None.
             widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the
@@ -76,13 +74,11 @@ class Step(ExecutionElement):
             self.inputs = inputs
         self.device = device if (device is not None and device != 'None') else ''
         self.risk = risk
-        self.next_steps = next_steps if next_steps is not None else []
         self.position = position if position is not None else {}
         self.widgets = [widget if isinstance(widget, Widget) else Widget(**widget)
                         for widget in widgets] if widgets is not None else []
 
         self._output = None
-        self._next_up = None
         self._raw_representation = raw_representation if raw_representation is not None else {}
         self._execution_uid = 'default'
 
@@ -93,22 +89,6 @@ class Step(ExecutionElement):
             The result of the Step
         """
         return self._output
-
-    def get_next_up(self):
-        """Gets the next step to be executed
-
-        Returns:
-            The next step to be executed
-        """
-        return self._next_up
-
-    def set_next_up(self, next_up):
-        """Sets the next step to be executed
-
-        Returns:
-            The next step to be executed
-        """
-        self._next_up = next_up
 
     def get_execution_uid(self):
         """Gets the execution UID of the Step
@@ -141,7 +121,6 @@ class Step(ExecutionElement):
                 self.inputs = inputs
         else:
             self.inputs = validate_app_action_parameters(self._input_api, {}, self.app, self.action)
-        self.next_steps = [NextStep.create(cond_json) for cond_json in updated_json['next_steps']]
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -232,20 +211,3 @@ class Step(ExecutionElement):
                 get_widget_signal(widget.app, widget.name).send(self, data=json.dumps({"result": result.as_json()}))
             logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
-
-    def get_next_step(self, accumulator):
-        """Gets the NextStep object to be executed after the current Step.
-
-        Args:
-            accumulator (dict): A record of teh previously-executed steps. Of form {step_name: result}
-
-        Returns:
-            The NextStep object to be executed.
-        """
-
-        for next_step in self.next_steps:
-            next_step = next_step.execute(self._output, accumulator)
-            if next_step is not None:
-                self._next_up = next_step
-                data_sent.send(self, callback_name="Conditionals Executed", object_type="Step")
-                return next_step

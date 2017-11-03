@@ -3,6 +3,30 @@
     "workflows": [
         {
             "name": "multiactionWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "(.*)"
+                                }
+                            ],
+                            "transforms": [
+                                {
+                                    "action": "length",
+                                    "args": []
+                                }
+                            ]
+                        }
+                    ],
+                    "destination_uid": "1",
+                    "source_uid": "2",
+                    "status": "Success"
+                }
+            ],
             "start": "start",
             "steps": [
                 {
@@ -19,9 +43,9 @@
                         }
                     ],
                     "name": "1",
-                    "next_steps": [],
                     "position": {},
                     "risk": 0,
+                    "uid": "1",
                     "widgets": []
                 },
                 {
@@ -30,33 +54,9 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "app": "HelloWorld",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "transforms": [
-                                        {
-                                            "action": "length",
-                                            "app": "HelloWorld",
-                                            "args": []
-                                        }
-                                    ]
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
+                    "uid": "2",
                     "widgets": []
                 }
             ]

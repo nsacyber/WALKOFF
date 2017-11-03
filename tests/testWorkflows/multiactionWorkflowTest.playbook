@@ -3,6 +3,35 @@
     "workflows": [
         {
             "name": "multiactionWorkflow",
+            "next_steps": [
+                {
+                    "conditions": [
+                        {
+                            "action": "regMatch",
+                            "app": "HelloWorld",
+                            "args": [
+                                {
+                                    "name": "regex",
+                                    "value": "(.*)"
+                                }
+                            ],
+                            "transforms": [
+                                {
+                                    "action": "length",
+                                    "app": "HelloWorld",
+                                    "args": [],
+                                    "uid": "fead248eba064defbf25b33cccc734fc"
+                                }
+                            ],
+                            "uid": "8f698454d6a74978a730f9f4e429e1f6"
+                        }
+                    ],
+                    "destination_uid": "01204c1451c44f99b828b2367690801b",
+                    "source_uid": "704c94c112fa49c3a4a3b30cf1586fc2",
+                    "status": "Success",
+                    "uid": "f54edf0644ae4bd4878de898bf3997a7"
+                }
+            ],
             "start": "704c94c112fa49c3a4a3b30cf1586fc2",
             "steps": [
                 {
@@ -16,7 +45,6 @@
                         }
                     ],
                     "name": "1",
-                    "next_steps": [],
                     "position": {},
                     "risk": 0,
                     "uid": "01204c1451c44f99b828b2367690801b",
@@ -28,34 +56,6 @@
                     "device": "hwTest",
                     "inputs": [],
                     "name": "start",
-                    "next_steps": [
-                        {
-                            "conditions": [
-                                {
-                                    "action": "regMatch",
-                                    "app": "HelloWorld",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "transforms": [
-                                        {
-                                            "action": "length",
-                                            "app": "HelloWorld",
-                                            "args": [],
-                                            "uid": "fead248eba064defbf25b33cccc734fc"
-                                        }
-                                    ],
-                                    "uid": "8f698454d6a74978a730f9f4e429e1f6"
-                                }
-                            ],
-                            "name": "01204c1451c44f99b828b2367690801b",
-                            "status": "Success",
-                            "uid": "f54edf0644ae4bd4878de898bf3997a7"
-                        }
-                    ],
                     "position": {},
                     "risk": 0,
                     "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
