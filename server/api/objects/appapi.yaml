@@ -232,8 +232,6 @@ DeviceFieldApi:
     description:
       type: string
       description: description of what the argument provides
-    default:
-      description: default value for the argument
     encrypted:
       type: boolean
       description: Is this field encrypted

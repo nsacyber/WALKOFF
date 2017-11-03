@@ -13,11 +13,6 @@
         description: Return only the apps with custom interfaces?
         type: boolean
         required: false
-      - in: query
-        name: has_device_types
-        description: Return only the apps with defined device types
-        type: boolean
-        required: false
     responses:
       200:
         description: Success
