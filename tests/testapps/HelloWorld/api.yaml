@@ -163,6 +163,206 @@ actions:
         description: summation
         schema:
           type: number
+conditions:
+  'Top Condition':
+    run: conditions.top_level_flag
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+  mod1_flag1:
+    run: conditions.flag1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  mod1_flag2:
+    run: conditions.flag2
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: integer
+      - name: arg1
+        required: true
+        type: integer
+  mod1_flag3:
+    run: conditions.flag3
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+      - name: arg1
+        required: true
+        schema:
+          type: object
+          properties:
+            a:
+              type: integer
+            b:
+              type: integer
+  sub1_top_flag:
+    run: conditions.sub1_top_flag
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  regMatch:
+    run: conditions.regMatch
+    description: Matches an input against a regular expression
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input value
+        required: true
+        type: string
+      - name: regex
+        description: The regular expression to match
+        required: true
+        type: string
+  count:
+    run: conditions.count
+    description: Compares two numbers
+    dataIn: value
+    parameters:
+        - name: value
+          description: The input value
+          required: true
+          type: number
+        - name: operator
+          description: The comparison operator ('g', 'ge', etc.)
+          required: true
+          type: string
+          enum: [g, ge, l, le, e]
+          default: e
+        - name: threshold
+          description: The value with which to compare the input
+          required: true
+          type: number
+transforms:
+  'Top Transform':
+    run: transforms.top_level_filter
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  mod1_filter2:
+    run: transforms.filter2
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+      - name: arg1
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub_top_filter:
+    run: transforms.sub1_top_filter
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub1_filter3:
+    run: transforms.filter3
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub1_filter1:
+    run: transforms.filter1
+    dataIn: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+      - name: arg1
+        required: true
+        schema:
+          type: object
+          properties:
+            a:
+              type: number
+            b:
+              type: string
+    returns:
+      Success:
+        schema:
+          type: object
+  complex:
+    run: transforms.complex_filter
+    dataIn: data_in
+    parameters:
+      - name: data_in
+        required: true
+        type: number
+      - name: arg
+        required: true
+        schema:
+          type: object
+          properties:
+            a:
+              type: number
+            b:
+              type: number
+            c:
+              type: array
+              items:
+                type: integer
+    returns:
+      Success:
+        schema:
+          type: number
+  length:
+    run: transforms.length
+    description: Returns the length of a collection
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input collection
+        required: true
+        type: string
+    returns:
+      Success:
+        description: The length of the collection
+        schema:
+          type: object
+  'select json':
+    run: transforms.json_select
+    dataIn: json_in
+    parameters:
+        - name: json_in
+          required: true
+          type: object
+        - name: element
+          type: string
+          required: true
+    returns:
+      Success:
+        schema:
+          type: object
 devices:
   Test Device Type:
     description: a test type

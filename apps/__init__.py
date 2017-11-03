@@ -77,6 +77,60 @@ def get_app_action(app_name, action_name):
     return _cache.get_app_action(app_name, action_name)
 
 
+def get_condition(app_name, condition_name):
+    """
+    Gets the condition function for a given app and condition name from the global cache
+
+    Args:
+        app_name (str): Name of the app
+        condition_name(str): Name of the action
+
+    Returns:
+        (func) The action
+    """
+    return _cache.get_app_condition(app_name, condition_name)
+
+
+def get_all_conditions_for_app(app_name):
+    """
+    Gets all the names of the conditions for a given app from the global cache
+
+    Args:
+        app_name (str): Name of the app
+
+    Returns:
+        (list[str]): The conditions associated with the app
+    """
+    return _cache.get_app_condition_names(app_name)
+
+
+def get_transform(app_name, transform_name):
+    """
+    Gets the transform function for a given app and transform name from the global cache
+
+    Args:
+        app_name (str): Name of the app
+        transform_name(str): Name of the transform
+
+    Returns:
+        (func) The action
+    """
+    return _cache.get_app_transform(app_name, transform_name)
+
+
+def get_all_transforms_for_app(app_name):
+    """
+    Gets all the names of the transforms for a given app from the global cache
+
+    Args:
+        app_name (str): Name of the app
+
+    Returns:
+        (list[str]): The transforms associated with the app
+    """
+    return _cache.get_app_transform_names(app_name)
+
+
 def cache_apps(path):
     """
     Cache apps from a given path into the global cache

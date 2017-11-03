@@ -1,18 +1,12 @@
-from core.decorators import *
 import re
-import json
 
-@transform
-def top_level_filter(value):
-    return value
+from core.decorators import condition
+
 
 @condition
 def top_level_flag(value):
     return True
 
-@transform
-def filter1(value):
-    pass
 
 @condition
 def count(value, operator, threshold):
@@ -33,6 +27,7 @@ def count(value, operator, threshold):
     else:
         return value == threshold
 
+
 @condition
 def regMatch(value, regex):
     """Matches the input using a regular expression matcher. See data/functions.json for argument information
@@ -46,23 +41,22 @@ def regMatch(value, regex):
     match_obj = pattern.search(value)
     return bool(match_obj)
 
-@transform
-def length(value):
-    """ Gets the length of the value provided to it.
 
-    Returns:
-        If the value is a collection, it calls len() on it.
-        If it is an int, it simply returns the value passed in"""
-    try:
-        if isinstance(value, int):
-            return value
-        else:
-            result = len(value)
-            return result
-    except TypeError:
-        return None
+@condition
+def flag2(value, arg1):
+    return (value + arg1) % 2 == 0
 
-@transform
-def json_select(json_in, element):
-    return json_in[element]
 
+@condition
+def sub1_top_flag(value):
+    pass
+
+
+@condition
+def flag1(value):
+    raise ValueError
+
+
+@condition
+def flag3(value, arg1):
+    return (len(value) + arg1['a'] + arg1['b']) > 10

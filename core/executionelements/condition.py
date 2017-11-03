@@ -2,19 +2,20 @@ import logging
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import (get_condition, get_condition_api, InvalidInput,
+from core.helpers import (get_condition_api, InvalidInput,
                           dereference_step_routing, format_exception_message)
 from core.validator import validate_condition_parameters, validate_parameter
-
+from apps import get_condition
 logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement):
-    def __init__(self, action, args=None, transforms=None, uid=None, app=''):
+    def __init__(self, app, action, args=None, transforms=None, uid=None):
         """Initializes a new Condition object.
         
         Args:
-            action (str, optional): The action name for the Condition. Defaults to an empty string.
+            app (str): The name of the app which contains this condition
+            action (str): The action name for the Condition. Defaults to an empty string.
             args (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             transforms(list[Transform], optional): A list of Transform objects for the Condition object. Defaults to None.
@@ -24,13 +25,14 @@ class Condition(ExecutionElement):
         ExecutionElement.__init__(self, uid)
         self.app = app
         self.action = action
+        self._run, self._args_api, self._data_in_api = get_condition_api(self.app, self.action)
+        self._condition_executable = get_condition(self.app, self._run)
         if isinstance(args, list):
             args = {arg['name']: arg['value'] for arg in args}
         elif isinstance(args, dict):
             args = args
         else:
             args = {}
-        self._args_api, self._data_in_api = get_condition_api(self.action)
         self.args = validate_condition_parameters(self._args_api, args, self.action)
         self.transforms = transforms if transforms is not None else []
 
@@ -45,7 +47,7 @@ class Condition(ExecutionElement):
             data_sent.send(self, callback_name="Condition Success", object_type="Condition")
             logger.debug('Arguments passed to condition {} are valid'.format(self.uid))
             args.update({self._data_in_api['name']: data})
-            return get_condition(self.action)(**args)
+            return self._condition_executable(**args)
         except InvalidInput as e:
             logger.error('Condition {0} has invalid input {1} which was converted to {2}. Error: {3}. '
                          'Returning False'.format(self.action, data_in, data, format_exception_message(e)))

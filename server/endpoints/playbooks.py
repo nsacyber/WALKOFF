@@ -434,7 +434,7 @@ def save_workflow(playbook_name, workflow_name):
             except UnknownApp as e:
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
             except UnknownAppAction as e:
-                return {'error': 'Unknown action {0} for app {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+                return {'error': 'Unknown action for app'}, INVALID_INPUT_ERROR
             except InvalidInput as e:
                 return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
             else:

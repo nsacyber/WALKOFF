@@ -60,7 +60,7 @@ class Step(ExecutionElement):
         self.app = app
         self.action = action
         self._run, self._input_api = get_app_action_api(self.app, self.action)
-        get_app_action(self.app, self._run)
+        self._action_executable = get_app_action(self.app, self._run)
         if isinstance(inputs, list):
             inputs = {arg['name']: arg['value'] for arg in inputs}
         elif isinstance(inputs, dict):
@@ -187,11 +187,10 @@ class Step(ExecutionElement):
         try:
             args = dereference_step_routing(self.inputs, accumulator, 'In step {0}'.format(self.name))
             args = validate_app_action_parameters(self._input_api, args, self.app, self.action)
-            action = get_app_action(self.app, self._run)
             if is_app_action_bound(self.app, self._run):
-                result = action(instance, **args)
+                result = self._action_executable(instance, **args)
             else:
-                result = action(**args)
+                result = self._action_executable(**args)
 
             data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
                            data=json.dumps({"result": result.as_json()}))

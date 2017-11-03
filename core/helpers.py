@@ -323,6 +323,7 @@ def get_app_device_api(app, device_type):
 
 def __split_api_params(api):
     data_param_name = api['dataIn']
+    run = api['run']
     args = []
     data_param = None
     for api_param in api['parameters']:
@@ -332,39 +333,33 @@ def __split_api_params(api):
             args.append(api_param)
     if data_param is None:  # This should be validated by the schema, but just in case
         raise ValueError
-    return args, data_param
+    return run, args, data_param
 
 
-def get_condition_api(condition):
+def get_condition_api(app, condition):
     try:
-        api = core.config.config.function_apis['conditions'][condition]
-        return __split_api_params(api)
-    except (KeyError, ValueError):
-        raise UnknownCondition(condition)
-
-
-def get_condition(condition):
-    try:
-        runnable = core.config.config.function_apis['conditions'][condition]['run']
-        return core.config.config.conditions[runnable]
+        app_api = core.config.config.app_apis[app]
     except KeyError:
-        raise UnknownCondition(condition)
+        raise UnknownApp(app)
+    else:
+        try:
+            condition_api = app_api['conditions'][condition]
+            return __split_api_params(condition_api)
+        except KeyError:
+            raise UnknownCondition(app, condition)
 
 
-def get_transform_api(transform):
+def get_transform_api(app, transform):
     try:
-        api = core.config.config.function_apis['transforms'][transform]
-        return __split_api_params(api)
-    except (KeyError, ValueError):
-        raise UnknownTransform(transform)
-
-
-def get_transform(transform):
-    try:
-        runnable = core.config.config.function_apis['transforms'][transform]['run']
-        return core.config.config.transforms[runnable]
+        app_api = core.config.config.app_apis[app]
     except KeyError:
-        raise UnknownTransform(transform)
+        raise UnknownApp(app)
+    else:
+        try:
+            condition_api = app_api['transforms'][transform]
+            return __split_api_params(condition_api)
+        except KeyError:
+            raise UnknownTransform(app, transform)
 
 
 class InvalidAppStructure(Exception):
@@ -377,11 +372,17 @@ class UnknownApp(Exception):
         self.app = app
 
 
+class UnknownFunction(Exception):
+    def __init__(self, app, function_name, function_type):
+        self.message = 'Unknown {0} {1} for app {2}'.format(function_type, function_name, app)
+        super(UnknownFunction, self).__init__(self.message)
+        self.app = app
+        self.function = function_name
+
+
 class UnknownAppAction(Exception):
     def __init__(self, app, action_name):
-        super(UnknownAppAction, self).__init__('Unknown action {0} for app {1}'.format(action_name, app))
-        self.app = app
-        self.action = action_name
+        super(UnknownAppAction, self).__init__(app, action_name, 'action')
 
 
 class UnknownDevice(Exception):
@@ -397,18 +398,14 @@ class InvalidInput(Exception):
         super(InvalidInput, self).__init__(self.message)
 
 
-class UnknownCondition(Exception):
-    def __init__(self, condition):
-        self.message = 'Unknown condition {0}'.format(condition)
-        super(UnknownCondition, self).__init__(self.message)
-        self.condition = condition
+class UnknownCondition(UnknownFunction):
+    def __init__(self, app, condition_name):
+        super(UnknownCondition, self).__init__(app, condition_name, 'condition')
 
 
 class UnknownTransform(Exception):
-    def __init__(self, transform):
-        self.message = 'Unknown transform {0}'.format(transform)
-        super(UnknownTransform, self).__init__(self.message)
-        self.transform = transform
+    def __init__(self, app, transform_name):
+        super(UnknownTransform, self).__init__(app, transform_name, 'transform')
 
 
 def __get_tagged_functions(module, tag, prefix):
@@ -420,51 +417,6 @@ def __get_tagged_functions(module, tag, prefix):
             name = '{0}.{1}'.format(module.__name__, attr_name)[start_index:]
             tagged[name] = attr
     return tagged
-
-
-def import_and_find_tags(package, tag, prefix=None, recursive=True):
-    """Imports the submodules from a given package and finds functions tagged with given tag.
-
-    Args:
-        package (str): The name of the package from which to import the submodules.
-        tag (str): The tag to look for
-        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
-            Defaults to False.
-
-    Returns:
-        A dictionary of the form {<function_name>: <function>}.
-    """
-
-    tagged = {}
-    successful_base_import = True
-    if isinstance(package, str):
-        prefix = package if prefix is None else prefix
-        try:
-            package = importlib.import_module(package)
-        except ImportError:
-            successful_base_import = False
-            logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
-        tagged.update(__get_tagged_functions(package, tag, prefix))
-    if successful_base_import:
-        for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-            full_name = '{0}.{1}'.format(package.__name__, name)
-            try:
-                module = importlib.import_module(full_name)
-            except ImportError:
-                logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
-            else:
-                tagged.update(__get_tagged_functions(module, tag, prefix))
-                if recursive and is_package:
-                    tagged.update(import_and_find_tags(full_name, tag, prefix=prefix))
-        return tagged
-
-
-def import_all_conditions(package='core.conditions'):
-    return import_and_find_tags(package, 'condition')
-
-
-def import_all_transforms(package='core.transforms'):
-    return import_and_find_tags(package, 'transform')
 
 
 def __get_step_from_reference(reference, accumulator, message_prefix):

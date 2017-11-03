@@ -9,8 +9,7 @@ from core.executionelements.step import Step
 from core.executionelements.nextstep import NextStep
 from core.executionelements.workflow import Workflow
 from core.decorators import ActionResult
-from core.helpers import import_all_transforms, import_all_conditions
-from tests.config import test_apps_path, function_api_path
+from tests.config import test_apps_path
 
 
 class TestNextStep(unittest.TestCase):
@@ -18,9 +17,6 @@ class TestNextStep(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -57,14 +53,14 @@ class TestNextStep(unittest.TestCase):
         self.__compare_init(next_step, '1', '2')
 
     def test_init_with_conditions(self):
-        conditions = [Condition(action='Top Condition'), Condition(action='mod1_flag1')]
+        conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
         expected_condition_json = [{'action': 'Top Condition', 'args': [], 'filters': []},
                               {'action': 'mod1_flag1', 'args': [], 'filters': []}]
         next_step = NextStep("1", "2", conditions=conditions)
         self.__compare_init(next_step, "1", "2", expected_condition_json)
 
     def test_eq(self):
-        conditions = [Condition(action='mod1_flag1'), Condition(action='Top Condition')]
+        conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
         next_steps = [NextStep(source_uid="1", destination_uid="2"),
                       NextStep(source_uid="1", destination_uid="2", status='TestStatus'),
                       NextStep(source_uid="1", destination_uid="2", conditions=conditions)]
@@ -76,9 +72,9 @@ class TestNextStep(unittest.TestCase):
                     self.assertNotEqual(next_steps[i], next_steps[j])
 
     def test_execute(self):
-        conditions1 = [Condition(action='regMatch', args={'regex': '(.*)'})]
-        conditions2 = [Condition(action='regMatch', args={'regex': '(.*)'}),
-                  Condition(action='regMatch', args={'regex': 'a'})]
+        conditions1 = [Condition('HelloWorld', 'regMatch', args={'regex': '(.*)'})]
+        conditions2 = [Condition('HelloWorld', 'regMatch', args={'regex': '(.*)'}),
+                       Condition('HelloWorld', 'regMatch', args={'regex': 'a'})]
 
         inputs = [('name1', [], ActionResult('aaaa', 'Success'), True),
                   ('name2', conditions1, ActionResult('anyString', 'Success'), True),
@@ -99,7 +95,7 @@ class TestNextStep(unittest.TestCase):
         self.assertIsNone(workflow.get_next_step(None, {}))
 
     def test_get_next_step_invalid_step(self):
-        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
         next_step = NextStep(source_uid="1", destination_uid='next', conditions=[flag])
         step = Step('HelloWorld', 'helloWorld', uid="2")
         step._output = ActionResult(result='bbb', status='Success')
@@ -107,7 +103,7 @@ class TestNextStep(unittest.TestCase):
         self.assertIsNone(workflow.get_next_step(step, {}))
 
     def test_get_next_step(self):
-        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
         next_step = NextStep(source_uid="1", destination_uid="2", conditions=[flag])
         step = Step('HelloWorld', 'helloWorld', uid="1")
         step._output = ActionResult(result='aaa', status='Success')
@@ -128,7 +124,7 @@ class TestNextStep(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_next_step_with_priority(self):
-        flag = Condition(action='regMatch', args={'regex': 'aaa'})
+        flag = Condition('HelloWorld', 'regMatch', args={'regex': 'aaa'})
         next_step_one = NextStep(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
         next_step_two = NextStep(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
         step = Step('HelloWorld', 'helloWorld', uid="1")
