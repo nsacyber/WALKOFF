@@ -318,11 +318,23 @@ Transform:
 
 Argument:
   type: object
-  required: [name, value]
-  description: Object used for passing an argument into various actions or device
+  required: [name]
+  description: Object used for passing an argument into actions
   properties:
     name:
       type: string
       example: regex
     value:
+      description: The value of the argument
       example: WALK(.*)
+    reference:
+      description: The UID of the step whose output should be used
+      type: string
+    selection:
+      description: >-
+        The path to a subsection of the output of the step to use. For example [1, "a"] would use the second element
+        of a list, and the "a" field of that object.
+      type: array
+      items:
+        type: [string, integer]
+

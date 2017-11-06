@@ -117,12 +117,9 @@ class Step(ExecutionElement):
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         arguments = {}
         if 'arguments' in updated_json:
-            for argument in updated_json['arguments']:
-                arg = Argument(name=argument['name'],
-                               value=argument['value'] if 'value' in argument else None,
-                               reference=argument['reference'] if 'reference' in argument else '',
-                               selection=argument['selection'] if 'selection' in argument else None)
-                arguments[arg.name] = arg
+            for argument_json in updated_json['arguments'].values():
+                argument = Argument(**argument_json)
+                arguments[argument.name] = argument
         if arguments is not None:
             if not self.templated:
                 self.arguments = validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
@@ -173,34 +170,7 @@ class Step(ExecutionElement):
             data_sent.send(self, callback_name="Trigger Step Awaiting Data", object_type="Step")
             logger.debug('Trigger Step {} is awaiting data'.format(self.name))
 
-            while True:
-                try:
-                    data = self._incoming_data.get(timeout=1)
-                    self._incoming_data = AsyncResult()
-                except gevent.Timeout:
-                    gevent.sleep(0.1)
-                    continue
-                data_in = data['data_in']
-                arguments = data['arguments'] if 'arguments' in data else []
-
-                if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
-                    data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
-                    logger.debug('Trigger is valid for input {0}'.format(data_in))
-                    accumulator[self.name] = data_in
-
-                    if arguments:
-                        for argument in arguments:
-                            arg = Argument(value=argument['value'] if 'value' in argument else None,
-                                           reference=argument['reference'] if 'reference' in argument else '',
-                                           selection=argument['selection'] if 'selection' in argument else None)
-                            self.arguments.append(arg)
-                        # self.arguments.update(arguments)
-                    break
-                else:
-                    logger.debug('Trigger is not valid for input {0}'.format(data_in))
-                    data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")
-
-                gevent.sleep(0.1)
+            self._wait_for_trigger(accumulator)
 
         try:
             args = dereference_step_routing(self.arguments, accumulator, 'In step {0}'.format(self.name))
@@ -230,3 +200,33 @@ class Step(ExecutionElement):
                 get_widget_signal(widget.app, widget.name).send(self, data=json.dumps({"result": result.as_json()}))
             logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
+
+    def _wait_for_trigger(self, accumulator):
+        while True:
+            try:
+                data = self._incoming_data.get(timeout=1)
+                self._incoming_data = AsyncResult()
+            except gevent.Timeout:
+                gevent.sleep(0.1)
+                continue
+            data_in = data['data_in']
+            arguments = data['arguments'] if 'arguments' in data else []
+
+            if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
+                data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
+                logger.debug('Trigger is valid for input {0}'.format(data_in))
+                accumulator[self.name] = data_in
+
+                if arguments:
+                    for argument in arguments:
+                        arg = Argument(value=argument['value'] if 'value' in argument else None,
+                                       reference=argument['reference'] if 'reference' in argument else '',
+                                       selection=argument['selection'] if 'selection' in argument else None)
+                        self.arguments.append(arg)
+                        # self.arguments.update(arguments)
+                break
+            else:
+                logger.debug('Trigger is not valid for input {0}'.format(data_in))
+                data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")
+
+            gevent.sleep(0.1)

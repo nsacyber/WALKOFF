@@ -151,7 +151,7 @@ class Workflow(ExecutionElement):
                     self.__swap_step_input(step, start_input)
             self.__execute_step(step, instances[device_id])
             total_steps.append(step)
-            self._accumulator[step.name] = step.get_output().result
+            self._accumulator[step.uid] = step.get_output().result
         self.__shutdown(instances)
         yield
 

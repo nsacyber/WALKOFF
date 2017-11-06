@@ -27,7 +27,7 @@ AddDevice:
       description: fields used to configure this device
       type: array
       items:
-        $ref: '#/definitions/Argument'
+        $ref: '#/definitions/DeviceFieldInput'
 
 Device:
   type: object
@@ -105,3 +105,14 @@ DeviceField:
       type: boolean
       description: Is this field encrypted
       default: false
+
+DeviceFieldInput:
+  type: object
+  required: [name]
+  description: Object used for passing an argument into various actions or device
+  properties:
+    name:
+      type: string
+      example: regex
+    value:
+      example: WALK(.*)
