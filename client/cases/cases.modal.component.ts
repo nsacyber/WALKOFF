@@ -272,7 +272,7 @@ export class CasesModalComponent {
 		let self = this;
 
 		if (!self.selectedNode.name) {
-			console.log('Attempted to select events without a node selected.');
+			console.error('Attempted to select events without a node selected.');
 			return;
 		}
 

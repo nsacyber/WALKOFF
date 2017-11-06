@@ -13,5 +13,8 @@ export class Argument {
 	 * Reference to a Step UID to use the output of
 	 */
 	reference: string;
-	selector: string;
+	/**
+	 * Selector is currently specified in the UI as a string, but is split and sent/ingested as an array containing strings and numbers
+	 */
+	selector: string | (string | number)[];
 }

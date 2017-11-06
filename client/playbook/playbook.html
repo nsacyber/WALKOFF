@@ -96,12 +96,10 @@
 
                             <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
                                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
-                                    <div class="panel-heading">
-                                    <h4 class="panel-title">
-                                        <a data-toggle="collapse" href="#collapse{{app.name}}">{{app.name}}</a>
-                                    </h4>
+                                    <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + app.name">
+                                        <h4 class="panel-title">{{app.name}}</h4>
                                     </div>
-                                    <div id="collapse{{app.name}}" class="panel-collapse collapse">
+                                    <div id="actionsCollapse{{app.name}}" class="panel-collapse collapse">
                                         <div class="panel-body">
                                             <div *ngFor="let actionApi of app.action_apis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
                                              [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
@@ -342,9 +340,9 @@
                 <div class="modal-body">
                     <div class="panel-group" id="workflowAccordion">
                         <div *ngFor="let playbook of playbooks" class="panel panel-default">
-                            <div class="panel-heading">
+                            <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + playbook.name">
                                 <h4 class="panel-title">
-                                    <a data-toggle="collapse" href="#collapse{{playbook.name}}">{{playbook.name}}</a>
+                                    {{playbook.name}}
                                     <div class="pull-right">
                                         <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
                                             <span class="fa fa-i-cursor"></span>
@@ -358,7 +356,7 @@
                                     </div>
                                 </h4>
                             </div>
-                            <div id="collapse{{playbook.name}}" class="panel-collapse collapse in">
+                            <div id="loadWorkflowCollapse{{playbook.name}}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
                                         <div class="panel-body">

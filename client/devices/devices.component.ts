@@ -159,7 +159,6 @@ export class DevicesComponent {
 				this.appApis = appApis;
 				this.appNames = appApis.map(a => a.name);
 				this.availableApps = this.appNames.map((appName) => { return { id: appName, text: appName } });
-				console.log(this.appApis, this.appNames, this.availableApps);
 			})
 			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
 	}

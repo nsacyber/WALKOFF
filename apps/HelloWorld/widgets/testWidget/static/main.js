@@ -113,7 +113,7 @@ $(function(){
             if(xmin < xData.length){
                 data1 = data1.slice(0, xData.length);
                 data2 = data2.slice(0, xData.length);
-                console.log(xData.length, data1.length, data2.length, xmin);
+                // console.log(xData.length, data1.length, data2.length, xmin);
                 forward = 1;
                 xmin +=1;
                 chart1.axis.range({min: {x: xmin}, max: {x: xmin+range}});

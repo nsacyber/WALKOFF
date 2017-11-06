@@ -36,8 +36,6 @@ export class PlaybookTransformsComponent {
 		let app = this.appApis.find(a => a.name === appName);
 
 		if (app.transform_apis && app.transform_apis.length) this.selectedTransformApi = app.transform_apis[0].name;
-
-		console.log(app, this.selectedTransformApi);
 	}
 
 	addTransform(): void {

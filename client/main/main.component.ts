@@ -42,6 +42,6 @@ export class MainComponent {
 	logout(): void {
 		this.authService.logout()
 			.then(() => location.href = '/login')
-			.catch(e => console.log(e));
+			.catch(e => console.error(e));
 	}
 }

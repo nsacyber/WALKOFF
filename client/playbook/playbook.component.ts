@@ -55,7 +55,6 @@ export class PlaybookComponent {
 		action: string;
 	};
 	cyJsonData: string;
-	actionTree: any;
 	workflowResults: WorkflowResult[] = [];
 
 	// Simple bootstrap modal params
@@ -114,7 +113,7 @@ export class PlaybookComponent {
 					next: (workflowResult: WorkflowResult) => {
 						let matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
 
-						if (workflowResult.type === "SUCCESS") matchingNode.addClass('good-highlighted');
+						if (workflowResult.type === 'SUCCESS') matchingNode.addClass('good-highlighted');
 						else matchingNode.addClass('bad-highlighted');
 
 						this.workflowResults.push(workflowResult);
@@ -149,6 +148,13 @@ export class PlaybookComponent {
 				this.currentPlaybook = playbookName;
 				this.currentWorkflow = workflowName;
 				this.loadedWorkflow = workflow;
+
+				// Convert our selector arrays to a string
+				this.loadedWorkflow.steps.forEach(s => {
+					s.inputs.forEach(i => {
+						if (i.selector && Array.isArray(i.selector)) i.selector = (<(string | number)[]>i.selector).join('.');
+					});
+				});
 
 				// Create the Cytoscape graph
 				this.cy = cytoscape({
@@ -191,13 +197,13 @@ export class PlaybookComponent {
 							selector: 'node[?isStartNode]',
 							css: {
 								'border-width': '2px',
-								'border-color': 'crimson',
+								'border-color': '#991818',
 							}
 						},
 						{
 							selector: 'node:selected',
 							css: {
-								'background-color': '#45F'
+								'background-color': '#77b0d0'
 							}
 						},
 						{
@@ -249,7 +255,6 @@ export class PlaybookComponent {
 					preview: false,
 					toggleOffOnLeave: true,
 					complete: function (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
-						console.log(sourceNode[0].data(), targetNodes[0].data(), addedEntities[0].data(), self.loadedWorkflow.steps );
 						let sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('uid'));
 						if (!self.loadedWorkflow.next_steps) self.loadedWorkflow.next_steps = [];
 
@@ -306,18 +311,20 @@ export class PlaybookComponent {
 					zoomDash: true,
 					panGrid: true,
 					centerToEdgeAlignment: true,
+					distributionGuidelines: true, // Distribution guidelines
+					geometricGuideline: true, // Geometric guidelines
 					// Guidelines
 					guidelinesStackOrder: 4, // z-index of guidelines
 					guidelinesTolerance: 2.00, // Tolerance distance for rendered positions of nodes' interaction.
 					guidelinesStyle: { // Set ctx properties of line. Properties are here:
-						strokeStyle: "#8b7d6b", // color of geometric guidelines
+						strokeStyle: '#8b7d6b', // color of geometric guidelines
 						geometricGuidelineRange: 400, // range of geometric guidelines
 						range: 100, // max range of distribution guidelines
 						minDistRange: 10, // min range for distribution guidelines
 						distGuidelineOffset: 10, // shift amount of distribution guidelines
-						horizontalDistColor: "#ff0000", // color of horizontal distribution alignment
-						verticalDistColor: "#00ff00", // color of vertical distribution alignment
-						initPosAlignmentColor: "#0000ff", // color of alignment to initial mouse location
+						horizontalDistColor: '#ff0000', // color of horizontal distribution alignment
+						verticalDistColor: '#00ff00', // color of vertical distribution alignment
+						initPosAlignmentColor: '#0000ff', // color of alignment to initial mouse location
 						lineDash: [0, 0], // line style of geometric guidelines
 						horizontalDistLine: [0, 0], // line style of horizontal distribution guidelines
 						verticalDistLine: [0, 0], // line style of vertical distribution guidelines
@@ -329,7 +336,7 @@ export class PlaybookComponent {
 				// If a node does not have a label field, set it to
 				// the action. The label is what is displayed in the graph.
 				let edges = workflow.next_steps.map(nextStep => {
-					let edge: any = { group: "edges" };
+					let edge: any = { group: 'edges' };
 					edge.data = {
 						id: nextStep.uid,
 						uid: nextStep.uid,
@@ -340,7 +347,7 @@ export class PlaybookComponent {
 				});
 	
 				let nodes = workflow.steps.map(step => {
-					var node: any = { group: "nodes", position: _.clone(step.position) };
+					var node: any = { group: 'nodes', position: _.clone(step.position) };
 					node.data = {
 						id: step.uid,
 						uid: step.uid,
@@ -371,17 +378,25 @@ export class PlaybookComponent {
 
 				this._closeWorkflowsModal();
 			})
-			.catch(e => {
-				this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`);
-				console.log(e);
-			});
+			.catch(e => this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`));
+	}
+
+	/**
+	 * Closes the active workflow and clears all relevant variables.
+	 */
+	closeWorkflow(): void {
+		this.currentPlaybook = '';
+		this.currentWorkflow = '';
+		this.loadedWorkflow = null;
+		this.selectedNextStepParams = null;
+		this.selectedStep = null;
 	}
 
 	/**
 	 * Triggers the save action based on the editor option selected.
 	 */
 	save(): void {
-		// if ($(".nav-tabs .active").text() === "Graphical Editor") {
+		// if ($('.nav-tabs .active').text() === 'Graphical Editor') {
 		// 	// If the graphical editor tab is active
 		// 	this.saveWorkflow(this.cy.elements().jsons());
 		// }
@@ -500,6 +515,15 @@ export class PlaybookComponent {
 	 */
 	_sanitizeArgumentForSave(argument: Argument): void {
 		if (argument.reference) argument.value = undefined;
+
+		// Split our string argument selector into what the server expects
+		if (argument.selector != null && typeof(argument.selector) === 'string') {
+			argument.selector = argument.selector.split('.');
+
+			for (let i = 0; i < argument.selector.length; i++) {
+				if (!isNaN(<number>argument.selector[i])) argument.selector[i] = +argument.selector[i];
+			}
+		}
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -518,22 +542,10 @@ export class PlaybookComponent {
 
 		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.uid);
 
-		console.log(this.loadedWorkflow.steps, data, self.selectedStep);
-
 		if (!self.selectedStep) return;
 
 		// Add data to the selectedStep if it does not exist
 		if (!self.selectedStep.triggers) self.selectedStep.triggers = [];
-
-		// self.inputArgs = self._getAction(self.selectedStep.app, self.selectedStep.action).args.reduce((result: { [key:string]: ArgumentApi }, a) => {
-		// 	result[a.name] = a;
-
-		// 	// TODO: remove this once the back end is fixed to properly return type: object instead of wrapping it in a schema object for type "object"
-		// 	if (!result[a.name].type && (<any>result[a.name]).schema) result[a.name].type = (<any>result[a.name]).schema.type;
-		// 	return result;
-		// }, {});
-		
-		// console.log(self.inputArgs);
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app === data.app);
@@ -681,8 +693,8 @@ export class PlaybookComponent {
 				inputs.push({
 					name: input.name,
 					value: input.schema.default != null ? input.schema.default : null,
-					reference: "",
-					selector: ""
+					reference: '',
+					selector: ''
 				});
 			});
 		}
@@ -738,10 +750,10 @@ export class PlaybookComponent {
 	 * Cytoscape cut method.
 	 */
 	cut(): void {
-		let selecteds = this.cy.$(":selected");
+		let selecteds = this.cy.$(':selected');
 		if (selecteds.length > 0) {
 			this.cy.clipboard().copy(selecteds);
-			this.ur.do("remove", selecteds);
+			this.ur.do('remove', selecteds);
 		}
 	}
 
@@ -749,7 +761,7 @@ export class PlaybookComponent {
 	 * Cytoscape copy method.
 	 */
 	copy(): void {
-		this.cy.clipboard().copy(this.cy.$(":selected"));
+		this.cy.clipboard().copy(this.cy.$(':selected'));
 	}
 
 	// TODO: update this to properly get new UIDs for pasted steps...
@@ -757,7 +769,7 @@ export class PlaybookComponent {
 	 * Cytoscape paste method.
 	 */
 	paste(): void {
-		let newNodes = this.ur.do("paste");
+		let newNodes = this.ur.do('paste');
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the step we just copied
@@ -769,8 +781,6 @@ export class PlaybookComponent {
 			let uid = n.data('id');
 
 			pastedStep.uid = uid;
-
-			console.log(pastedStep);
 
 			n.data({
 				uid: uid,
@@ -796,7 +806,7 @@ export class PlaybookComponent {
 	 * Clears the red/green highlighting in the cytoscape graph.
 	 */
 	clearExecutionHighlighting(): void {
-		this.cy.elements().removeClass("good-highlighted bad-highlighted");
+		this.cy.elements().removeClass('good-highlighted bad-highlighted');
 	}
 
 	/**
@@ -825,8 +835,8 @@ export class PlaybookComponent {
 	 * Removes all selected nodes and edges.
 	 */
 	removeSelectedNodes(): void {
-		let selecteds = this.cy.$(":selected");
-		if (selecteds.length > 0) this.ur.do("remove", selecteds);
+		let selecteds = this.cy.$(':selected');
+		if (selecteds.length > 0) this.ur.do('remove', selecteds);
 	}
 
 	/**
@@ -836,7 +846,7 @@ export class PlaybookComponent {
 		let self = this;
 
 		// Handle keyboard presses on graph
-		document.addEventListener("keydown", function (e) {
+		document.addEventListener('keydown', function (e) {
 			if (self.cy === null) return;
 
 			if (e.which === 46) { // Delete
@@ -930,6 +940,9 @@ export class PlaybookComponent {
 			.deletePlaybook(playbook)
 			.then(() => {
 				this.playbooks = this.playbooks.filter(p => p.name !== playbook);
+
+				// If our loaded workflow is in this playbook, close it.
+				if (playbook === this.currentPlaybook) this.closeWorkflow();
 				
 				this.toastyService.success(`Successfully deleted playbook "${playbook}".`);
 			})
@@ -1059,6 +1072,9 @@ export class PlaybookComponent {
 				pb.workflows = pb.workflows.filter(w => w.name !== workflow);
 
 				if (!pb.workflows.length) this.playbooks = this.playbooks.filter(p => p.name !== pb.name);
+
+				// Close the workflow if the deleted workflow matches the loaded one
+				if (playbook === this.currentPlaybook && workflow === this.currentWorkflow) this.closeWorkflow();
 				
 				this.toastyService.success(`Successfully deleted workflow "${playbook} - ${workflow}".`);
 			})

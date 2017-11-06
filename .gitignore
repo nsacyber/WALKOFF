@@ -8,6 +8,7 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
+apps/*
 data/walkoff.db
 data/events.db
 data/devices.db

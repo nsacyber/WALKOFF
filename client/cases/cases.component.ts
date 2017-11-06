@@ -206,11 +206,12 @@ export class CasesComponent {
 				});
 
 				w.next_steps.forEach((ns: NextStep) => {
+					let matchingStep = w.steps.find(s => s.uid === ns.destination_uid);
+					if (matchingStep) (<any>ns).name = matchingStep.name;
 					(<any>w.steps.find(s => s.uid === ns.source_uid)).next_steps.push(ns);
 				});
 
-				w.next_steps = undefined;
-				console.log(w);
+				delete w.next_steps;
 			});
 		});
 
