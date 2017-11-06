@@ -40,8 +40,8 @@ def add(num1, num2):
 
 
 @transform
-def subtract(value, subtractor):
-    return value - subtractor
+def subtract(value, subtrahend):
+    return value - subtrahend
 
 
 @transform

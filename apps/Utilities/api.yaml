@@ -184,3 +184,154 @@ actions:
         schema:
           type: string
           enum: [success]
+conditions:
+  regex match:
+    run: conditions.regMatch
+    description: Matches an input against a regular expression
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input value
+        required: true
+        type: string
+      - name: regex
+        description: The regular expression to match
+        required: true
+        type: string
+  number compare:
+    run: conditions.count
+    description: Compares two numbers
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input value
+        required: true
+        type: number
+      - name: operator
+        description: The comparison operator ('g', 'ge', etc.)
+        required: true
+        type: string
+        enum: [g, ge, l, le, e]
+        default: e
+      - name: threshold
+        description: The value with which to compare the input
+        required: true
+        type: number
+transforms:
+  length:
+    run: transforms.length
+    description: Returns the length of a collection
+    dataIn: value
+    parameters:
+      - name: value
+        description: The input collection
+        required: true
+        type: string
+    returns:
+      Success:
+        description: The length of the collection
+        schema:
+          type: object
+  select json:
+    run: transforms.json_select
+    description: selects an element from a JSON object
+    dataIn: json_in
+    parameters:
+        - name: json_in
+          required: true
+          type: object
+        - name: element
+          type: string
+          required: true
+    returns:
+      Success:
+        schema:
+          type: object
+  linear scale:
+    run: transforms.linear_scale
+    dataIn: value
+    description: Scale a value linearly between a minimum and a maximum.
+    parameters:
+      - name: value
+        type: number
+        required: true
+      - name: min_value
+        type: number
+        description: minimum value of the input
+        required: true
+      - name: max_value
+        type: number
+        description: maximum value of the input
+        required: true
+      - name: low_scale
+        type: number
+        description: minimum value of the output
+        required: true
+      - name: high_scale
+        type: number
+        description: maximum value of the output
+        required: true
+    returns:
+      Success:
+        schema:
+          type: number
+  divide:
+    run: transforms.divide
+    description: Divides a number
+    dataIn: value
+    parameters:
+      - name: value
+        type: number
+        required: true
+      - name: divisor
+        type: number
+        required: true
+    returns:
+      Success:
+        schema:
+          type: number
+  multiply:
+    run: transforms.multiply
+    description: Multiplies a number
+    dataIn: value
+    parameters:
+      - name: value
+        type: number
+        required: true
+      - name: multiplier
+        type: number
+        required: true
+    returns:
+      Success:
+        schema:
+          type: number
+  add:
+    run: transforms.add
+    description: Adds a number
+    dataIn: num1
+    parameters:
+      - name: num1
+        type: number
+        required: true
+      - name: num2
+        type: number
+        required: true
+    returns:
+      Success:
+        schema:
+          type: number
+  subtract:
+    run: transforms.subtract
+    description: Subtracts a number from the input
+    dataIn: value
+    parameters:
+      - name: value
+        type: number
+        required: true
+      - name: subtrahend
+        type: number
+        required: true
+    returns:
+      Success:
+        schema:
+          type: number
