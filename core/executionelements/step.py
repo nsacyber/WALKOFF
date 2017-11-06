@@ -213,7 +213,7 @@ class Step(ExecutionElement):
                 result = action(instance, **args)
             else:
                 result = action(**args)
-
+                
             data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
                            data=json.dumps({"result": result.as_json()}))
         except InvalidInput as e:

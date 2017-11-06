@@ -208,13 +208,14 @@ class Workflow(ExecutionElement):
 
     def __shutdown(self, instances):
         # Upon finishing shuts down instances
-        for instance in instances:
+        for instance_name, instance in instances.items():
             try:
-                logger.debug('Shutting down app instance: Device: {0}'.format(instance))
-                instances[instance].shutdown()
+                if instance() is not None:
+                    logger.debug('Shutting down app instance: Device: {0}'.format(instance_name))
+                    instance.shutdown()
             except Exception as e:
                 logger.error('Error caught while shutting down app instance. '
-                             'Device: {0}. Error {1}'.format(instance, format_exception_message(e)))
+                             'Device: {0}. Error {1}'.format(instance_name, format_exception_message(e)))
         result_str = {}
         for step, step_result in self._accumulator.items():
             try:
