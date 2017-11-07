@@ -10,14 +10,20 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
-install: pip install -r requirements.txt
+install:
+  - pip install -r requirements.txt
+  - pip install coverage
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
-script: python installDependencies.py && python generate_certificates.py && python runAllTests.py test
+  - python generate_certificates.py
+script:
+  - coverage run runAllTests.py --branch
 after_script:
-  - ./cc-test-reporter after-buld --exit-code $TRAVIS_TEST_RESULT
+  - coverage combine
+  - coverage xml --ignore-errors
+  - ./cc-test-reporter after-buld -t coverage.py --exit-code $TRAVIS_TEST_RESULT
 branches:
     only: 
     - master
