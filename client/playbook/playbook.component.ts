@@ -522,7 +522,7 @@ export class PlaybookComponent {
 	 * @param argument The argument to sanitize
 	 */
 	_sanitizeArgumentForSave(argument: Argument): void {
-		if (argument.reference) { argument.value = undefined; }
+		if (argument.reference) { delete argument.value; }
 
 		// Split our string argument selector into what the server expects
 		if (argument.selector == null) {
