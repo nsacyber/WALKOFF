@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import get_transform, get_transform_api, InvalidInput, dereference_step_routing
+from core.helpers import get_transform, get_transform_api, InvalidInput
 from core.validator import validate_transform_parameters, validate_parameter
 
 logger = logging.getLogger(__name__)
