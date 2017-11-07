@@ -1,3 +1,6 @@
+env:
+  global:
+    - CC_TEST_REPORTER_ID=24494561113a756d710ed23d97545856c68417026fba7a064a7161a12a09305b
 language: python
 os:
     - linux
@@ -8,7 +11,13 @@ python:
     - "3.5"
     - "3.6"
 install: pip install -r requirements.txt
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 script: python installDependencies.py && python generate_certificates.py && python runAllTests.py test
+after_script:
+  - ./cc-test-reporter after-buld --exit-code $TRAVIS_TEST_RESULT
 branches:
     only: 
     - master
