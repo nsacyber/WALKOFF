@@ -1,8 +1,8 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
 
@@ -10,8 +10,6 @@ import { SchedulerModalComponent } from './scheduler.modal.component';
 
 import { SchedulerService } from './scheduler.service';
 
-import { AvailableSubscription } from '../models/availableSubscription';
-import { Case } from '../models/case';
 import { ScheduledTask } from '../models/scheduledTask';
 
 @Component({

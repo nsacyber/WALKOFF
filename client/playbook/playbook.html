@@ -154,7 +154,7 @@
                                     <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
                                     <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required>
                                 </div>
-                                <div *ngIf="relevantDevices.length" class="form-group">
+                                <div *ngIf="getDeviceApis(selectedStep.app).length" class="form-group">
                                     <label for="device_id">Device</label>
                                     <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
                                         <option value=""></option>

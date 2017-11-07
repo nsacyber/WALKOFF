@@ -1,7 +1,6 @@
 import { Argument } from './argument';
 import { Widget } from './widget';
 import { GraphPosition } from './graphPosition';
-import { NextStep } from './nextStep';
 import { Condition } from './condition';
 
 export class Step {

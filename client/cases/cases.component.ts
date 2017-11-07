@@ -1,8 +1,8 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
 
@@ -140,7 +140,8 @@ export class CasesComponent {
 	}
 
 	deleteCase(caseToDelete: Case): void {
-		if (!confirm(`Are you sure you want to delete the case "${caseToDelete.name}"? This will also delete any associated events.`)) { return; }
+		if (!confirm('Are you sure you want to delete the case "' + caseToDelete.name +
+			'"? This will also delete any associated events.')) { return; }
 
 		this.casesService
 			.deleteCase(caseToDelete.id)

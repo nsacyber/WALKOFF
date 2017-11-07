@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 // import * as _ from 'lodash';
 import { Observable } from 'rxjs';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { UUID } from 'angular2-uuid';
 
 import { PlaybookService } from './playbook.service';
@@ -12,13 +12,12 @@ import { ActionApi } from '../models/api/actionApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { TransformApi } from '../models/api/transformApi';
+import { DeviceApi } from '../models/api/deviceApi';
 import { ReturnApi } from '../models/api/returnApi';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Step } from '../models/playbook/step';
 import { NextStep } from '../models/playbook/nextStep';
-import { Condition } from '../models/playbook/condition';
-import { Transform } from '../models/playbook/transform';
 import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
 import { Argument } from '../models/playbook/argument';
@@ -261,7 +260,6 @@ export class PlaybookComponent {
 					preview: false,
 					toggleOffOnLeave: true,
 					complete (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
-						const sourceStep = self.loadedWorkflow.steps.find(s => s.uid === sourceNode.data('uid'));
 						if (!self.loadedWorkflow.next_steps) { self.loadedWorkflow.next_steps = []; }
 
 						// The edge handles extension is not integrated into the undo/redo extension.
@@ -305,7 +303,7 @@ export class PlaybookComponent {
 						addedEntities.forEach(ae => ae.data('temp', false));
 
 						// Re-add with the undo-redo extension.
-						const newEdges = self.ur.do('add', addedEntities); // Added back in using undo/redo extension
+						self.ur.do('add', addedEntities); // Added back in using undo/redo extension
 					},
 				});
 
@@ -766,7 +764,7 @@ export class PlaybookComponent {
 			nodeToBeAdded.renderedPosition = location;
 		} else { nodeToBeAdded.position = location; }
 
-		const newNode = this.ur.do('add', nodeToBeAdded);
+		this.ur.do('add', nodeToBeAdded);
 	}
 
 	// TODO: update this to properly "cut" steps from the loadedWorkflow.
@@ -1204,6 +1202,14 @@ export class PlaybookComponent {
 	 */
 	getTransformApis(appName: string): TransformApi[] {
 		return this.appApis.find(a => a.name === appName).transform_apis;
+	}
+
+	/**
+	 * Gets a list of TransformApis from a given app name.
+	 * @param appName App name to query
+	 */
+	getDeviceApis(appName: string): DeviceApi[] {
+		return this.appApis.find(a => a.name === appName).device_apis;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import * as d3 from 'd3';
 
 import { CasesService } from './cases.service';
@@ -196,7 +196,7 @@ export class CasesModalComponent {
 				.attr('d', function (d) { return diagonal(d, d.parent); });
 
 			// Remove any exiting links
-			const linkExit = link.exit().transition()
+			link.exit().transition()
 				.duration(duration)
 				.attr('d', function (d) {
 					const o = { x: source.x, y: source.y };

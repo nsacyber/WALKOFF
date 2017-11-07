@@ -1,7 +1,6 @@
-import { Component, OnInit, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
 import { AuthService } from '../auth/auth.service';
 
@@ -62,9 +61,9 @@ export class AppsComponent {
 	}
 }
 
-function makeComponent(_selector: string, _templateUrl: string) {
-	// tslint:disable-next-line:max-classes-per-file
-	@Component({ selector: _selector, templateUrl: _templateUrl })
-	class FakeComponent {}
-	return FakeComponent;
-}
+// function makeComponent(_selector: string, _templateUrl: string) {
+// 	// tslint:disable-next-line:max-classes-per-file
+// 	@Component({ selector: _selector, templateUrl: _templateUrl })
+// 	class FakeComponent {}
+// 	return FakeComponent;
+// }

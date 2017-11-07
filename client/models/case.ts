@@ -1,4 +1,3 @@
-import { CaseEvent } from './caseEvent';
 import { Subscription } from './subscription';
 
 export class Case {

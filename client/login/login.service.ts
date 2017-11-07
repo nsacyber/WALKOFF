@@ -6,16 +6,10 @@ export class LoginService {
 	constructor (private http: Http) { }
 
 	login(username: string, password: string): Promise<string> {
-		if (username === password) {
-			return Promise.resolve('hello');
-		} else { return Promise.reject('boo'); }
-
-		// return this.http.post('/login', {
-		// 	username: username,
-		// 	password: password
-		// })
-		// .map(this.extractData)
-		// .catch(this.handleError);
+		return this.http.post('/login', { username, password })
+			.toPromise()
+			.then(this.extractData)
+			.catch(this.handleError);
 	}
 
 	private extractData (res: Response) {
@@ -23,15 +17,17 @@ export class LoginService {
 		return body.data || {};
 	}
 
-	private handleError (error: Response | any) {
+	private handleError (error: Response | any): Promise<any> {
 		let errMsg: string;
+		let err: string;
 		if (error instanceof Response) {
 			const body = error.json() || '';
-			const err = body.error || JSON.stringify(body);
+			err = body.error || body.detail || JSON.stringify(body);
 			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
 		} else {
-			errMsg = error.message ? error.message : error.toString();
+			err = errMsg = error.message ? error.message : error.toString();
 		}
 		console.error(errMsg);
+		throw new Error(err);
 	}
 }

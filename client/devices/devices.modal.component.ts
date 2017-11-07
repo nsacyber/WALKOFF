@@ -1,14 +1,12 @@
-import { Component, Input, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
 import { DevicesService } from './devices.service';
 
 import { WorkingDevice } from '../models/workingDevice';
 import { AppApi } from '../models/api/appApi';
 import { DeviceApi } from '../models/api/deviceApi';
-import { DeviceFieldApi } from '../models/api/deviceFieldApi';
 import { ParameterSchema } from '../models/api/parameterSchema';
 
 @Component({

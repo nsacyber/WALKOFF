@@ -1,8 +1,8 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 
 import { DevicesModalComponent } from './devices.modal.component';
@@ -11,7 +11,6 @@ import { DevicesService } from './devices.service';
 
 import { Device } from '../models/device';
 import { AppApi } from '../models/api/appApi';
-import { DeviceApi } from '../models/api/deviceApi';
 
 @Component({
 	selector: 'devices-component',

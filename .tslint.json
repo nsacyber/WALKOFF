@@ -16,6 +16,7 @@
 	  "member-access": false,
 		"arrow-parens": false,
 		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-snake-case"],
-		"align": [true, "parameters", "statements", "argument", "members", "elements"]
+		"align": [true, "parameters", "statements", "argument", "members", "elements"],
+		"no-unused-variable": true
 	}
 }

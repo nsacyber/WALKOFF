@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
+import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Device } from '../models/device';
-import { DeviceApi } from '../models/api/deviceApi';
 import { AppApi } from '../models/api/appApi';
 
 @Injectable()
@@ -59,7 +58,7 @@ export class DevicesService {
 	}
 
 	getDeviceApis(): Promise<AppApi[]> {
-		return this.authHttp.get('api/apps/apis?field_name=device_types')
+		return this.authHttp.get('api/apps/apis?field_name=devices')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AppApi[])

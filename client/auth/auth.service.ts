@@ -42,8 +42,8 @@ export class AuthService {
 	}
 
 	//TODO: figure out how roles are going to be stored 
-	canAccess(resource: string): boolean {
-		const tokenInfo = this.getAndDecodeAccessToken();
+	canAccess(): boolean {
+		// const tokenInfo = this.getAndDecodeAccessToken();
 
 		return false;
 	}

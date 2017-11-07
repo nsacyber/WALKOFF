@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
+import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { AppApi } from '../models/api/appApi';
-import { ActionApi } from '../models/api/actionApi';
-import { ConditionApi } from '../models/api/conditionApi';
-import { TransformApi } from '../models/api/transformApi';
 import { Device } from '../models/device';
 
 @Injectable()

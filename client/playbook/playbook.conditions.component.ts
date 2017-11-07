@@ -1,15 +1,12 @@
-import { Component, ViewEncapsulation, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, ViewEncapsulation, Input } from '@angular/core';
 
 import { PlaybookService } from './playbook.service';
 
 import { AppApi } from '../models/api/appApi';
-import { ConditionApi } from '../models/api/conditionApi';
-import { TransformApi } from '../models/api/transformApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { Workflow } from '../models/playbook/workflow';
 import { Argument } from '../models/playbook/argument';
 import { Condition } from '../models/playbook/condition';
-import { Transform } from '../models/playbook/transform';
 
 @Component({
 	selector: 'playbook-conditions-component',

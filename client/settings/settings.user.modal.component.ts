@@ -1,10 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
 import { SettingsService } from './settings.service';
 
-import { User } from '../models/user';
 import { WorkingUser } from '../models/workingUser';
 
 @Component({

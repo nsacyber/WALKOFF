@@ -1,10 +1,9 @@
-import { Component, ViewEncapsulation, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, ViewEncapsulation, Input } from '@angular/core';
 
 import { PlaybookService } from './playbook.service';
 
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
-import { TransformApi } from '../models/api/transformApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { Argument } from '../models/playbook/argument';
 import { Transform } from '../models/playbook/transform';
@@ -55,7 +54,6 @@ export class PlaybookTransformsComponent {
 		
 		const args: Argument[] = [];
 		api.parameters.filter(p => p.name !== api.dataIn).forEach((parameterApi) => {
-			console.log(parameterApi);
 			args.push({
 				name: parameterApi.name,
 				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
@@ -63,8 +61,6 @@ export class PlaybookTransformsComponent {
 				selector: '',
 			});
 		});
-
-		console.log(args);
 
 		const newTransform = new Transform();
 		newTransform.app = this.selectedAppName;
