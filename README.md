@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF)
 
 <img src="https://iadgov.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
+
 ## Summary
 WALKOFF is an open source automation platform that enables users to easily integrate, automate and customize their processes enabling their environment to automatically adapt and respond to security threats.   
 
