@@ -13,9 +13,8 @@ def read_all_apps(interfaces_only=None):
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        if interfaces_only:
-            return helpers.list_apps_with_interfaces(), SUCCESS
-        return helpers.list_apps(), SUCCESS
+        apps = helpers.list_apps_with_interfaces() if interfaces_only else helpers.list_apps()
+        return sorted(apps, key=(lambda app_name: app_name.lower())), SUCCESS
 
     return __func()
 
@@ -82,18 +81,23 @@ def format_full_app_api(api, app_name):
     for unformatted_field in ('info', 'tags', 'externalDocs'):
         if unformatted_field in api:
             ret[unformatted_field] = api[unformatted_field]
+        else:
+            ret[unformatted_field] = [] if unformatted_field in ('tags', 'externalDocs') else {}
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
-            ret[formatted_action_field[:-1]+'_apis'] = format_all_app_actions_api(api[formatted_action_field])
+            ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field])
+        else:
+            ret[formatted_action_field[:-1] + '_apis'] = []
     if 'devices' in api:
         ret['device_apis'] = [format_device_api_full(device_api, device_name)
-                          for device_name, device_api in api['devices'].items()]
+                              for device_name, device_api in api['devices'].items()]
+    else:
+        ret['device_apis'] = []
     return ret
 
 
 @jwt_required
 def read_all_app_apis(field_name=None):
-
     @roles_accepted_for_resources('apps')
     def __func():
         ret = []
@@ -131,4 +135,3 @@ def read_app_api_field(app_name, field_name):
             return {'error': 'app not found'}, OBJECT_DNE_ERROR
 
     return __func()
-

@@ -21,10 +21,8 @@ def get_playbooks(full=None):
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
-        if full:
-            return running_context.controller.get_all_workflows(full_representation=True), SUCCESS
-        else:
-            return running_context.controller.get_all_workflows(full_representation=False), SUCCESS
+        playbooks = running_context.controller.get_all_workflows(full_representation=bool(full))
+        return sorted(playbooks, key=(lambda playbook: playbook['name'].lower())), SUCCESS
 
     return __func()
 
