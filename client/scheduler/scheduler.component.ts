@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
-import "rxjs/add/operator/debounceTime";
+import 'rxjs/add/operator/debounceTime';
 
 import { SchedulerModalComponent } from './scheduler.modal.component';
 
@@ -21,7 +21,7 @@ import { ScheduledTask } from '../models/scheduledTask';
 		'client/scheduler/scheduler.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [SchedulerService]
+	providers: [SchedulerService],
 })
 export class SchedulerComponent {
 	currentController: string;
@@ -32,8 +32,10 @@ export class SchedulerComponent {
 
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private schedulerService: SchedulerService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {		
-		this.currentController = "Default Controller";
+	constructor(
+		private schedulerService: SchedulerService, private modalService: NgbModal,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
+		this.currentController = 'Default Controller';
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getSchedulerStatus();
@@ -47,7 +49,7 @@ export class SchedulerComponent {
 	}
 
 	filterScheduledTasks(): void {
-		let searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
+		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayScheduledTasks = this.scheduledTasks.filter((s) => {
 			return (s.name.toLocaleLowerCase().includes(searchFilter) ||
@@ -63,12 +65,12 @@ export class SchedulerComponent {
 	}
 
 	changeSchedulerStatus(status: string): void {
-		if (status === 'start' && this.schedulerStatus === 'paused') status = 'resume';
+		if (status === 'start' && this.schedulerStatus === 'paused') { status = 'resume'; }
 
 		this.schedulerService
 			.changeSchedulerStatus(status)
 			.then((newStatus) => {
-				if (newStatus) this.schedulerStatus = newStatus;
+				if (newStatus) { this.schedulerStatus = newStatus; }
 			})
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
 	}
@@ -102,35 +104,8 @@ export class SchedulerComponent {
 
 	}
 
-	private _handleModalClose(modalRef: NgbModalRef): void {
-		modalRef.result
-			.then((result) => {
-				//Handle modal dismiss
-				if (!result || !result.scheduledTask) return;
-
-				//On edit, find and update the edited item
-				if (result.isEdit) {
-					let toUpdate = _.find(this.scheduledTasks, st => st.id === result.scheduledTask.id);
-					Object.assign(toUpdate, result.scheduledTask);
-
-					this.filterScheduledTasks();
-
-					this.toastyService.success(`Scheduled task "${result.scheduledTask.name}" successfully edited.`);
-				}
-				//On add, push the new item
-				else {
-					this.scheduledTasks.push(result.scheduledTask);
-
-					this.filterScheduledTasks();
-
-					this.toastyService.success(`Scheduled task "${result.scheduledTask.name}" successfully added.`);
-				}
-			},
-			(error) => { if (error) this.toastyService.error(error.message); });
-	}
-
 	deleteScheduledTask(taskToDelete: ScheduledTask): void {
-		if (!confirm(`Are you sure you want to delete the scheduled task "${taskToDelete.name}"?`)) return;
+		if (!confirm(`Are you sure you want to delete the scheduled task "${taskToDelete.name}"?`)) { return; }
 
 		this.schedulerService
 			.deleteScheduledTask(taskToDelete.id)
@@ -162,7 +137,7 @@ export class SchedulerComponent {
 				break;
 		}
 
-		if (!newStatus) return;
+		if (!newStatus) { return; }
 
 		this.schedulerService
 			.changeScheduledTaskStatus(task.id, action)
@@ -172,22 +147,8 @@ export class SchedulerComponent {
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
 	}
 
-	// enableScheduledTask(task: ScheduledTask): void {
-	// 	this.schedulerService
-	// 		.enableScheduledTask(task.id)
-	// 		.then(() => task.status = 'enabled')
-	// 		.catch(e => this.toastyService.error(`Error enabling task: ${e.message}`));
-	// }
-
-	// disableScheduledTask(task: ScheduledTask): void {
-	// 	this.schedulerService
-	// 		.disableScheduledTask(task.id)
-	// 		.then(() => task.status = 'disabled')
-	// 		.catch(e => this.toastyService.error(`Error disabling task: ${e.message}`));
-	// }
-
 	getWorkflowNames(): void {
-		let self = this;
+		const self = this;
 
 		this.schedulerService
 			.getPlaybooks()
@@ -197,24 +158,10 @@ export class SchedulerComponent {
 					pb.workflows.forEach(function (w: any) {
 						self.availableWorkflows.push({
 							id: w.uid,
-							text: `${pb.name} - ${w.name}`
+							text: `${pb.name} - ${w.name}`,
 						});
 					});
-				})
-
-				// playbooks = _.map(playbooks, function (workflows: any, playbook) {
-				// 	workflows = _.map(workflows, function (w: string) {
-				// 		return [playbook, w];
-				// 	});
-
-				// 	return workflows;
-				// });
-
-				// playbooks = _.flatten(playbooks);
-
-				// this.workflowNames = _.map(playbooks, function (pb: string[]) {
-				// 	return `${pb[0]} - ${pb[1]}`;
-				// });
+				});
 			});
 	}
 
@@ -232,12 +179,37 @@ export class SchedulerComponent {
 	}
 
 	getFriendlyWorkflows(scheduledTask: ScheduledTask): string {
-		if (!this.availableWorkflows || !scheduledTask.workflows || !scheduledTask.workflows.length) return '';
+		if (!this.availableWorkflows || !scheduledTask.workflows || !scheduledTask.workflows.length) { return ''; }
 
 		return this.availableWorkflows.filter(function (workflow) {
 			return scheduledTask.workflows.indexOf(workflow.id) >= 0;
 		}).map(function (workflow) {
 			return workflow.text;
 		}).join(', ');
+	}
+
+	private _handleModalClose(modalRef: NgbModalRef): void {
+		modalRef.result
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.scheduledTask) { return; }
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					const toUpdate = _.find(this.scheduledTasks, st => st.id === result.scheduledTask.id);
+					Object.assign(toUpdate, result.scheduledTask);
+
+					this.filterScheduledTasks();
+
+					this.toastyService.success(`Scheduled task "${result.scheduledTask.name}" successfully edited.`);
+				} else {
+					this.scheduledTasks.push(result.scheduledTask);
+
+					this.filterScheduledTasks();
+
+					this.toastyService.success(`Scheduled task "${result.scheduledTask.name}" successfully added.`);
+				}
+			},
+			(error) => { if (error) { this.toastyService.error(error.message); } });
 	}
 }

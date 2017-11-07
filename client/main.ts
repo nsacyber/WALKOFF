@@ -11,5 +11,4 @@ if (sessionStorage.getItem('refresh_token')) {
 	// }
 
 	platformBrowserDynamic().bootstrapModule(MainModule);
-}
-else location.href = '/login';
+} else { location.href = '/login'; }

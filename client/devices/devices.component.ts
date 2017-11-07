@@ -20,7 +20,7 @@ import { DeviceApi } from '../models/api/deviceApi';
 		'client/devices/devices.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [DevicesService]
+	providers: [DevicesService],
 })
 export class DevicesComponent {
 
@@ -34,7 +34,9 @@ export class DevicesComponent {
 	selectedApps: string[] = [];
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private devicesService: DevicesService, private modalService: NgbModal, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {		
+	constructor(
+		private devicesService: DevicesService, private modalService: NgbModal, 
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {
@@ -60,7 +62,7 @@ export class DevicesComponent {
 	}
 
 	filterDevices(): void {
-		let searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
+		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayDevices = this.devices.filter((device) => {
 			return (device.name.toLocaleLowerCase().includes(searchFilter) ||
@@ -99,35 +101,8 @@ export class DevicesComponent {
 		this._handleModalClose(modalRef);
 	}
 
-	private _handleModalClose(modalRef: NgbModalRef): void {
-		modalRef.result
-			.then((result) => {
-				//Handle modal dismiss
-				if (!result || !result.device) return;
-
-				//On edit, find and update the edited item
-				if (result.isEdit) {
-					let toUpdate = _.find(this.devices, d => d.id === result.device.id);
-					Object.assign(toUpdate, result.device);
-
-					this.filterDevices();
-
-					this.toastyService.success(`Device "${result.device.name}" successfully edited.`);
-				}
-				//On add, push the new item
-				else {
-					this.devices.push(result.device);
-
-					this.filterDevices();
-
-					this.toastyService.success(`Device "${result.device.name}" successfully added.`);
-				}
-			},
-			(error) => { if (error) this.toastyService.error(error.message); });
-	}
-
 	deleteDevice(deviceToDelete: Device): void {
-		if (!confirm(`Are you sure you want to delete the device "${deviceToDelete.name}"?`)) return;
+		if (!confirm(`Are you sure you want to delete the device "${deviceToDelete.name}"?`)) { return; }
 
 		this.devicesService
 			.deleteDevice(deviceToDelete.id)
@@ -141,35 +116,49 @@ export class DevicesComponent {
 			.catch(e => this.toastyService.error(`Error deleting device: ${e.message}`));
 	}
 
-	// getApps(): void {
-	// 	this.devicesService
-	// 		.getApps()
-	// 		.then((appNames) => {
-	// 			appNames.sort();
-	// 			this.appNames = appNames;
-	// 			this.availableApps = appNames.map((appName) => { return { id: appName, text: appName } });
-	// 		})
-	// 		.catch(e => this.toastyService.error(`Error retrieving apps: ${e.message}`));
-	// }
-
 	getDeviceApis(): void {
 		this.devicesService
 			.getDeviceApis()
 			.then(appApis => {
 				this.appApis = appApis;
 				this.appNames = appApis.map(a => a.name);
-				this.availableApps = this.appNames.map((appName) => { return { id: appName, text: appName } });
+				this.availableApps = this.appNames.map((appName) => ({ id: appName, text: appName }));
 			})
 			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
 	}
 
 	getCustomFields(device: Device): string {
-		let obj: { [key: string]: string } = {};
+		const obj: { [key: string]: string } = {};
 		device.fields.forEach(element => {
-			if (element.value) obj[element.name] = element.value;
+			if (element.value) { obj[element.name] = element.value; }
 		});
 		let out = JSON.stringify(obj, null, 1);
 		out = out.substr(1, out.length - 2).replace(/"/g, '');
 		return out;
+	}
+
+	private _handleModalClose(modalRef: NgbModalRef): void {
+		modalRef.result
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.device) { return; }
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					const toUpdate = _.find(this.devices, d => d.id === result.device.id);
+					Object.assign(toUpdate, result.device);
+
+					this.filterDevices();
+
+					this.toastyService.success(`Device "${result.device.name}" successfully edited.`);
+				} else {
+					this.devices.push(result.device);
+
+					this.filterDevices();
+
+					this.toastyService.success(`Device "${result.device.name}" successfully added.`);
+				}
+			},
+			(error) => { if (error) { this.toastyService.error(error.message); } });
 	}
 }

@@ -1,8 +1,9 @@
 import { IScheduledTaskArgs } from './ischeduledTaskArgs';
 
 export class ScheduledTaskCron implements IScheduledTaskArgs {
-	//One of these is required
-	//If specified as a string, use expression syntax described at http://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html
+	// One of these is required
+	// If specified as a string, use expression syntax described at
+	// http://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html
 	year: number|string; //4-digit year YYYY
 	month: number|string; //1-12 month of year
 	day: number|string; //1-31 day of month

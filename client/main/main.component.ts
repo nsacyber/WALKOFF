@@ -14,7 +14,7 @@ import { AuthService } from '../auth/auth.service';
 		// 'client/node_modules/bootstrap/dist/css/bootstrap.min.css',
 		// 'client/node_modules/font-awesome/css/font-awesome.min.css',
 	],
-	providers: [MainService, AuthService]
+	providers: [MainService, AuthService],
 })
 export class MainComponent {
 	currentUser: string;
@@ -28,13 +28,13 @@ export class MainComponent {
 		this.updateUserInfo();
 
 		//TODO: remove once we fully convert playbook / triggers to angular
-		(<any>window).JwtHelper = this.jwtHelper;
+		(window as any).JwtHelper = this.jwtHelper;
 	}
 
 	updateUserInfo(): void {
-		let refreshToken = sessionStorage.getItem('refresh_token');
+		const refreshToken = sessionStorage.getItem('refresh_token');
 		
-		let decoded = this.jwtHelper.decodeToken(refreshToken);
+		const decoded = this.jwtHelper.decodeToken(refreshToken);
 
 		this.currentUser = decoded.identity;
 	}

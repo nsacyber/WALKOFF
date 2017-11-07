@@ -267,10 +267,12 @@ transforms:
         type: number
         description: minimum value of the output
         required: true
+        default: 0.0
       - name: high_scale
         type: number
         description: maximum value of the output
         required: true
+        default: 1.0
     returns:
       Success:
         schema:

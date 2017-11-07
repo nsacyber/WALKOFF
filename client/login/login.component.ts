@@ -6,15 +6,15 @@ import { LoginService } from './login.service';
 	selector: 'login-component',
 	templateUrl: './login.html',
 	//styleUrls: ['./style.css'],
-	providers: [LoginService]
+	providers: [LoginService],
 })
 export class LoginComponent {
-	title:string;
-	username:string;
-	password:string;
+	title: string;
+	username: string;
+	password: string;
 
 	constructor(private loginService: LoginService) {
-		this.title = "New Login";
+		this.title = 'New Login';
 	}
 
 	login(): void {
@@ -26,5 +26,5 @@ export class LoginComponent {
 		.catch(function (error) {
 			// console.log(error.message);
 		});
-	};
+	}
 }

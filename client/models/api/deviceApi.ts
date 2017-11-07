@@ -5,4 +5,3 @@ export class DeviceApi {
 	description: string;
 	fields: DeviceFieldApi[] = [];
 }
-

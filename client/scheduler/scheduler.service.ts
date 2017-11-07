@@ -11,9 +11,9 @@ import { Case } from '../models/case';
 import { ScheduledTask } from '../models/scheduledTask';
 
 const schedulerStatusNumberMapping: any = {
-	"0": "stopped",
-	"1": "running",
-	"2": "paused"
+	0: 'stopped',
+	1: 'running',
+	2: 'paused',
 };
 
 @Injectable()
@@ -22,14 +22,14 @@ export class SchedulerService {
 	}
 
 	//TODO: route should most likely be GET
-	executeWorkflow(playbook: string, workflow: string) : Promise<void> {
+	executeWorkflow(playbook: string, workflow: string): Promise<void> {
 		return this.authHttp.post(`/playbooks/${playbook}/workflows/${workflow}/execute`, {})
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	getSchedulerStatus() : Promise<string> {
+	getSchedulerStatus(): Promise<string> {
 		return this.authHttp.get('/api/scheduler')
 			.toPromise()
 			.then(this.extractData)
@@ -37,7 +37,7 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	changeSchedulerStatus(status: string) : Promise<string> {
+	changeSchedulerStatus(status: string): Promise<string> {
 		return this.authHttp.get(`/api/scheduler/${status}`)
 			.toPromise()
 			.then(this.extractData)
@@ -45,7 +45,7 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	getScheduledTasks() : Promise<ScheduledTask[]> {
+	getScheduledTasks(): Promise<ScheduledTask[]> {
 		return this.authHttp.get('/api/scheduledtasks')
 			.toPromise()
 			.then(this.extractData)
@@ -53,23 +53,23 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	addScheduledTask(scheduledTask: ScheduledTask) : Promise<ScheduledTask> {
+	addScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
 		return this.authHttp.put('/api/scheduledtasks', scheduledTask)
 			.toPromise()
 			.then(this.extractData)
-			.then(scheduledTask => scheduledTask as ScheduledTask)
+			.then(newScheduledTask => newScheduledTask as ScheduledTask)
 			.catch(this.handleError);
 	}
 
-	editScheduledTask(scheduledTask: ScheduledTask) : Promise<ScheduledTask> {
+	editScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
 		return this.authHttp.post('/api/scheduledtasks', scheduledTask)
 			.toPromise()
 			.then(this.extractData)
-			.then(scheduledTask => scheduledTask as ScheduledTask)
+			.then(editedScheduledTask => editedScheduledTask as ScheduledTask)
 			.catch(this.handleError);
 	}
 
-	deleteScheduledTask(scheduledTaskId: number) : Promise<void> {
+	deleteScheduledTask(scheduledTaskId: number): Promise<void> {
 		return this.authHttp.delete(`/api/scheduledtasks/${scheduledTaskId}`)
 			.toPromise()
 			.then(() => null)
@@ -83,7 +83,7 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	getPlaybooks() : Promise<any> {
+	getPlaybooks(): Promise<any> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
@@ -91,7 +91,7 @@ export class SchedulerService {
 	}
 
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

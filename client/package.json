@@ -66,5 +66,8 @@
   "engines": {
     "node": ">= 4.2.1",
     "npm": ">= 3"
+  },
+  "devDependencies": {
+    "tslint": "^5.8.0"
   }
 }

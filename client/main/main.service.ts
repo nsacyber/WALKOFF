@@ -6,15 +6,15 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 export class MainService {
 	constructor (private authHttp: JwtHttp) { }
 
-	getApps() : Promise<string[]> {
-		return this.authHttp.get(`/api/apps?interfaces_only=true`)
+	getApps(): Promise<string[]> {
+		return this.authHttp.get('/api/apps?interfaces_only=true')
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

@@ -5,19 +5,12 @@ import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty
 
 import { AuthService } from '../auth/auth.service';
 
-function makeComponent(selector: string, templateUrl: string)
-{
-	@Component({ selector: selector, templateUrl: templateUrl })
-	class FakeComponent {}
-	return FakeComponent;
-}
-
 @Component({
 	selector: 'apps-component',
 	templateUrl: 'client/apps/apps.html',
 	styleUrls: ['client/apps/apps.css'],
 	encapsulation: ViewEncapsulation.None,
-	providers: [AuthService]
+	providers: [AuthService],
 })
 export class AppsComponent {
 	@ViewChild('appsMain') main: ElementRef;
@@ -25,34 +18,40 @@ export class AppsComponent {
 	paramsSub: any;
 	activeIFrame: any;
 
-	constructor(private route: ActivatedRoute, private authService: AuthService, private toastyService:ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(
+		private route: ActivatedRoute, private authService: AuthService,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 	}
 
 	ngOnInit() {
 		this.paramsSub = this.route.params.subscribe(params => {
-			this.appName = params['app'];
+			this.appName = params.app;
 			this.getAppInterface();
 		});
 	}
 
 	getAppInterface() {
-		let self = this;
+		const self = this;
 
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				var xhr= new XMLHttpRequest();
+				const xhr = new XMLHttpRequest();
 				xhr.open('GET', `appinterface/${this.appName}/`, true);
-				xhr.onreadystatechange= function() {
-					if (this.readyState!==4) return;
-					if (this.status!==200) return;
+				xhr.onreadystatechange = function() {
+					if (this.readyState !== 4) {
+						return;
+					}
+					if (this.status !== 200) {
+						return;
+					}
 
 					//Remove our existing iframe if applicable
 					self.main.nativeElement.removeChild(self.main.nativeElement.lastChild);
 
 					self.activeIFrame = document.createElement('iframe');
-					(<any>self.activeIFrame).srcdoc = this.responseText;
-					self.activeIFrame.src = "data:text/html;charset=utf-8," + this.responseText;
+					(self.activeIFrame as any).srcdoc = this.responseText;
+					self.activeIFrame.src = 'data:text/html;charset=utf-8,' + this.responseText;
 
 					self.main.nativeElement.appendChild(self.activeIFrame);
 				};
@@ -61,4 +60,11 @@ export class AppsComponent {
 			})
 			.catch(e => this.toastyService.error(`Error retrieving app: ${e.message}`));
 	}
+}
+
+function makeComponent(_selector: string, _templateUrl: string) {
+	// tslint:disable-next-line:max-classes-per-file
+	@Component({ selector: _selector, templateUrl: _templateUrl })
+	class FakeComponent {}
+	return FakeComponent;
 }

@@ -16,7 +16,7 @@ import { Transform } from '../models/playbook/transform';
 	templateUrl: 'client/playbook/playbook.argument.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService]
+	providers: [PlaybookService],
 })
 export class PlaybookArgumentComponent {
 	@Input() id: number;
@@ -27,11 +27,12 @@ export class PlaybookArgumentComponent {
 	// Simple parameter schema reference so I'm not constantly showing parameterApi.schema
 	parameterSchema: ParameterSchema;
 
+	// tslint:disable-next-line:no-empty
 	constructor() { }
 
 	ngOnInit(): void {
 		this.parameterSchema = this.parameterApi.schema;
-		if (this.argument.reference == null) this.argument.reference = '';
+		if (this.argument.reference == null) { this.argument.reference = ''; }
 	}
 
 	// TODO: maybe somehow recursively find steps that may occur before. Right now it just returns all of them.
@@ -44,8 +45,8 @@ export class PlaybookArgumentComponent {
 	 * @param schema JSON Schema object
 	 */
 	getMin(schema: ParameterSchema): number {
-		if (schema.minimum === undefined) return null;
-		if (schema.exclusiveMinimum) return schema.schema.minimum + 1;
+		if (schema.minimum === undefined) { return null; }
+		if (schema.exclusiveMinimum) { return schema.schema.minimum + 1; }
 		return schema.schema.minimum;
 	}
 
@@ -54,8 +55,8 @@ export class PlaybookArgumentComponent {
 	 * @param schema JSON Schema Object
 	 */
 	getMax(schema: ParameterSchema): number {
-		if (schema.maximum === undefined) return null;
-		if (schema.exclusiveMaximum) return schema.schema.maximum - 1;
+		if (schema.maximum === undefined) { return null; }
+		if (schema.exclusiveMaximum) { return schema.schema.maximum - 1; }
 		return schema.schema.maximum;
 	}
 }

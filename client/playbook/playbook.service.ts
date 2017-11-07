@@ -16,7 +16,7 @@ export class PlaybookService {
 
 	// TODO: should maybe just return all playbooks and not just names?
 	getPlaybooks(): Promise<Playbook[]> {
-		return this.authHttp.get(`/api/playbooks`)
+		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Playbook[])
@@ -29,7 +29,7 @@ export class PlaybookService {
 	 * @param newName New name for the updated playbook
 	 */
 	renamePlaybook(oldName: string, newName: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks`, { name: oldName, new_name: newName })
+		return this.authHttp.post('/api/playbooks', { name: oldName, new_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -79,7 +79,7 @@ export class PlaybookService {
 	 */
 	// TODO: probably don't need playbook in body, verify on server
 	duplicateWorkflow(playbook: string, oldName: string, newName: string): Promise<Workflow> {
-		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}/copy`, { playbook: playbook, workflow: newName })
+		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}/copy`, { playbook, workflow: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -138,7 +138,8 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Notifies the server to execute a given workflow under a given playbook. Note that execution results are not returned here, but on a separate stream-steps EventSource.
+	 * Notifies the server to execute a given workflow under a given playbook.
+	 * Note that execution results are not returned here, but on a separate stream-steps EventSource.
 	 * @param playbook Name of the playbook the workflow exists under
 	 * @param workflow Name of the workflow to execute
 	 */
@@ -153,16 +154,17 @@ export class PlaybookService {
 	 * Returns an array of all devices within the DB.
 	 */
 	getDevices(): Promise<Device[]> {
-		return this.authHttp.get(`/api/devices`)
+		return this.authHttp.get('/api/devices')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device[])
 			.catch(this.handleError);
 	}
 
-	// TODO: not actually used and doesn't currently exist in the backend; should replace the actions/conditions/triggers calls with this...
+	// TODO: not actually used and doesn't currently exist in the backend;
+	// should replace the actions/conditions/triggers calls with this...
 	getApis(): Promise<AppApi[]> {
-		return this.authHttp.get(`/api/apps/apis`)
+		return this.authHttp.get('/api/apps/apis')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AppApi[])
@@ -170,7 +172,7 @@ export class PlaybookService {
 	}
 
 	private extractData(res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

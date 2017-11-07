@@ -6,4 +6,3 @@ export class ParameterApi {
 	example: any;
 	schema: ParameterSchema;
 }
-

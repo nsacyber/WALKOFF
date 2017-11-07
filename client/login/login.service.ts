@@ -1,13 +1,14 @@
-import { Injectable } 			from '@angular/core';
-import { Http, Response } 		from '@angular/http';
+import { Injectable } from '@angular/core';
+import { Http, Response } from '@angular/http';
 
 @Injectable()
 export class LoginService {
 	constructor (private http: Http) { }
 
-	login(username: string, password: string) : Promise<string> {
-		if (username === password) return Promise.resolve('hello');
-		else return Promise.reject('boo');
+	login(username: string, password: string): Promise<string> {
+		if (username === password) {
+			return Promise.resolve('hello');
+		} else { return Promise.reject('boo'); }
 
 		// return this.http.post('/login', {
 		// 	username: username,
@@ -15,10 +16,10 @@ export class LoginService {
 		// })
 		// .map(this.extractData)
 		// .catch(this.handleError);
-	};
+	}
 
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body.data || {};
 	}
 

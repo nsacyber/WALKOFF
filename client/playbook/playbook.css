@@ -82,6 +82,11 @@
 	height: 100%;
 }
 
+/* Need to do this else panzoom appears above modals */
+#cy .cy-panzoom {
+	z-index: 10;
+}
+
 #cy-instructions {
 	padding: 20px;
 	font-size: 25px;

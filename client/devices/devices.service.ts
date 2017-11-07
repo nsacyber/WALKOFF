@@ -11,7 +11,7 @@ export class DevicesService {
 	constructor (private authHttp: JwtHttp) {
 	}
 
-	getDevicesForApp(appName: string) : Promise<Device[]> {
+	getDevicesForApp(appName: string): Promise<Device[]> {
 		return this.authHttp.get(`/api/apps/${appName}`)
 			.toPromise()
 			.then(this.extractData)
@@ -19,7 +19,7 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
-	getAppDevice(appName: string, deviceName: string) : Promise<Device> {
+	getAppDevice(appName: string, deviceName: string): Promise<Device> {
 		return this.authHttp.get(`/api/apps/${appName}/devices/${deviceName}`)
 			.toPromise()
 			.then(this.extractData)
@@ -27,47 +27,39 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
-	getDevices() : Promise<Device[]> {
-		return this.authHttp.get(`/api/devices`)
+	getDevices(): Promise<Device[]> {
+		return this.authHttp.get('/api/devices')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device[])
 			.catch(this.handleError);
 	}
 
-	addDevice(device: Device) : Promise<Device> {
-		return this.authHttp.put(`/api/devices`, device)
+	addDevice(device: Device): Promise<Device> {
+		return this.authHttp.put('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)
 			.catch(this.handleError);
 	}
 
-	editDevice(device: Device) : Promise<Device> {
-		return this.authHttp.post(`/api/devices`, device)
+	editDevice(device: Device): Promise<Device> {
+		return this.authHttp.post('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)
 			.catch(this.handleError);
 	}
 
-	deleteDevice(deviceId: number) : Promise<void> {
+	deleteDevice(deviceId: number): Promise<void> {
 		return this.authHttp.delete(`/api/devices/${deviceId}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	//Only get apps that have device types for the purposes of devices
-	// getApps() : Promise<string[]> {
-	// 	return this.authHttp.get(`/api/apps?has_device_types=true`)
-	// 		.toPromise()
-	// 		.then(this.extractData)
-	// 		.catch(this.handleError);
-	// }
-
-	getDeviceApis() : Promise<AppApi[]> {
-		return this.authHttp.get(`api/apps/apis?field_name=devices`)
+	getDeviceApis(): Promise<AppApi[]> {
+		return this.authHttp.get('api/apps/apis?field_name=device_types')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AppApi[])
@@ -77,7 +69,7 @@ export class DevicesService {
 	}
 	
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Http, RequestOptions, Response } from '@angular/http';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule, ReactiveFormsModule }   from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -45,7 +45,7 @@ import { PlaybookTransformsComponent } from './playbook/playbook.transforms.comp
 		ToastyModule.forRoot(),
 		Select2Module,
 		DateTimePickerModule,
-		DndModule.forRoot()
+		DndModule.forRoot(),
 	],
 	declarations: [
 		//Main component
@@ -72,7 +72,7 @@ import { PlaybookTransformsComponent } from './playbook/playbook.transforms.comp
 	providers: [{
 		provide: JwtHttp,
 		useFactory: getJwtHttp,
-		deps: [ Http, RequestOptions ]
+		deps: [ Http, RequestOptions ],
 	}],
 	entryComponents: [
 		SchedulerModalComponent,
@@ -80,21 +80,21 @@ import { PlaybookTransformsComponent } from './playbook/playbook.transforms.comp
 		CasesModalComponent,
 		SettingsUserModalComponent,
 	],
-	bootstrap: [MainComponent]
+	bootstrap: [MainComponent],
 })
 export class MainModule {}
 
 export function getJwtHttp(http: Http, options: RequestOptions) {
-	let jwtOptions: RefreshConfig = {
+	const jwtOptions: RefreshConfig = {
 		endPoint: '/api/auth/refresh',
 		// optional
 		// payload: { type: 'refresh' },
 		beforeSeconds: 300, // refresh token before 5 min
 		tokenName: 'refresh_token',
 		refreshTokenGetter: (() => {
-			let token = sessionStorage.getItem('refresh_token');
+			const token = sessionStorage.getItem('refresh_token');
 
-			if (token && tokenNotExpired(null, token)) return token;
+			if (token && tokenNotExpired(null, token)) { return token; }
 
 			//TODO: figure out a better way of handling this... maybe incorporate login into the main component somehow
 			location.href = '/login';
@@ -103,7 +103,7 @@ export function getJwtHttp(http: Http, options: RequestOptions) {
 		tokenSetter: ((res: Response): boolean | Promise<void> => {
 			res = res.json();
 
-			if (!(<any>res)['access_token']) {
+			if (!(res as any).access_token) {
 				sessionStorage.removeItem('access_token');
 				sessionStorage.removeItem('refresh_token');
 				//TODO: figure out a better way of handling this... maybe incorporate login into the main component somehow
@@ -111,14 +111,14 @@ export function getJwtHttp(http: Http, options: RequestOptions) {
 				return false;
 			}
 
-			sessionStorage.setItem('access_token', (<any>res)['access_token']);
+			sessionStorage.setItem('access_token', (res as any).access_token);
 			// sessionStorage.setItem('refresh_token', (<any>res)['refresh_token']);
 
 			return true;
-		})
+		}),
 	};
 
-	let authConfig = new AuthConfig({
+	const authConfig = new AuthConfig({
 		noJwtError: true,
 		// globalHeaders: [{ 'Accept': 'application/json' }],
 		tokenName: 'access_token',
@@ -128,6 +128,6 @@ export function getJwtHttp(http: Http, options: RequestOptions) {
 	return new JwtHttp(
 		new JwtConfigService(jwtOptions, authConfig),
 		http,
-		options
+		options,
 	);
 }

@@ -19,7 +19,7 @@ export class CasesService {
 	/**
 	 * Gets an array of Case objects specified in the cases DB.
 	 */
-	getCases() : Promise<Case[]> {
+	getCases(): Promise<Case[]> {
 		return this.authHttp.get('/api/cases')
 			.toPromise()
 			.then(this.extractData)
@@ -31,7 +31,7 @@ export class CasesService {
 	 * Gets an array of CaseEvents for a given case.
 	 * @param name Name of case to query against.
 	 */
-	getEventsForCase(name: string) : Promise<CaseEvent[]> {
+	getEventsForCase(name: string): Promise<CaseEvent[]> {
 		return this.authHttp.get(`/api/cases/${name}/events`)
 			.toPromise()
 			.then(this.extractData)
@@ -43,7 +43,7 @@ export class CasesService {
 	 * Adds a case represented by the caseToAdd specified.
 	 * @param caseToAdd JSON of Case to add
 	 */
-	addCase(caseToAdd: Case) : Promise<Case> {
+	addCase(caseToAdd: Case): Promise<Case> {
 		return this.authHttp.put('/api/cases', caseToAdd)
 			.toPromise()
 			.then(this.extractData)
@@ -55,7 +55,7 @@ export class CasesService {
 	 * Edits a case in place (by id specified within the Case JSON).
 	 * @param caseToEdit JSON of Case to edit
 	 */
-	editCase(caseToEdit: Case) : Promise<Case> {
+	editCase(caseToEdit: Case): Promise<Case> {
 		return this.authHttp.post('/api/cases', caseToEdit)
 			.toPromise()
 			.then(this.extractData)
@@ -67,7 +67,7 @@ export class CasesService {
 	 * Deletes a case by a given ID.
 	 * @param id ID of Case to delete
 	 */
-	deleteCase(id: number) : Promise<void> {
+	deleteCase(id: number): Promise<void> {
 		return this.authHttp.delete(`/api/cases/${id}`)
 			.toPromise()
 			.then(() => null)
@@ -75,9 +75,10 @@ export class CasesService {
 	}
 
 	/**
-	 * Gets a list of available event subscriptions for each type of object to log against (controller, workflow, step, etc.);
+	 * Gets a list of available event subscriptions for each type of object 
+	 * to log against (controller, workflow, step, etc.);
 	 */
-	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
+	getAvailableSubscriptions(): Promise<AvailableSubscription[]> {
 		return this.authHttp.get('/api/availablesubscriptions')
 			.toPromise()
 			.then(this.extractData)
@@ -88,7 +89,7 @@ export class CasesService {
 	/**
 	 * Gets a list of playbooks and all data within.
 	 */
-	getPlaybooks() : Promise<Playbook[]> {
+	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks?full=true')
 			.toPromise()
 			.then(this.extractData)
@@ -96,7 +97,7 @@ export class CasesService {
 	}
 
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 
