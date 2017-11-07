@@ -467,30 +467,6 @@ def import_all_transforms(package='core.transforms'):
     return import_and_find_tags(package, 'transform')
 
 
-def __get_step_from_reference(reference, accumulator, message_prefix):
-    input_step_name = reference[1:]
-    if input_step_name in accumulator:
-        return accumulator[input_step_name]
-    else:
-        message = ('{0}: Referenced step {1} '
-                   'has not been executed'.format(message_prefix, input_step_name))
-        raise InvalidInput(message)
-
-
-# TODO: Rewrite this using generators. Python doesn't play nice with recursion
-def dereference_step_routing(input_, accumulator, message_prefix):
-    if isinstance(input_, dict):
-        return {input_name: dereference_step_routing(input_value, accumulator, message_prefix)
-                for input_name, input_value in input_.items()}
-    elif isinstance(input_, list):
-        return [dereference_step_routing(element, accumulator, message_prefix) for element in input_]
-    else:
-        if isinstance(input_, string_types) and input_.startswith('@'):
-            return __get_step_from_reference(input_, accumulator, message_prefix)
-        else:
-            return input_
-
-
 def get_function_arg_names(func):
     if __new_inspection:
         return list(getsignature(func).parameters.keys())

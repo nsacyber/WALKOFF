@@ -166,10 +166,10 @@ class Triggers(db.Model):
     @staticmethod
     def __execute_trigger(conditional, data_in):
         transforms = [Transform(action=filter_element['action'],
-                             args=Triggers.__to_new_input_format(filter_element['args']))
+                                arguments=Triggers.__to_new_input_format(filter_element['args']))
                    for filter_element in conditional['transforms']]
         return Condition(action=conditional['action'],
-                         args=Triggers.__to_new_input_format(conditional['args']),
+                         arguments=Triggers.__to_new_input_format(conditional['args']),
                          transforms=transforms).execute(data_in, {})
 
     def __repr__(self):

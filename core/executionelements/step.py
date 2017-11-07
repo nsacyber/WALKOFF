@@ -169,11 +169,10 @@ class Step(ExecutionElement):
         if self.triggers:
             data_sent.send(self, callback_name="Trigger Step Awaiting Data", object_type="Step")
             logger.debug('Trigger Step {} is awaiting data'.format(self.name))
-
             self._wait_for_trigger(accumulator)
 
         try:
-            args = dereference_step_routing(self.arguments, accumulator, 'In step {0}'.format(self.name))
+            args = {argument.name: argument.get_value(accumulator) for argument in self.arguments}
             args = validate_app_action_parameters(self._input_api, args, self.app, self.action)
             action = get_app_action(self.app, self._run)
             if is_app_action_bound(self.app, self._run):
@@ -210,20 +209,19 @@ class Step(ExecutionElement):
                 gevent.sleep(0.1)
                 continue
             data_in = data['data_in']
-            arguments = data['arguments'] if 'arguments' in data else []
 
             if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
                 data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
                 logger.debug('Trigger is valid for input {0}'.format(data_in))
                 accumulator[self.name] = data_in
 
+                arguments = data['arguments'] if 'arguments' in data else []
                 if arguments:
+                    new_args = {}
                     for argument in arguments:
-                        arg = Argument(value=argument['value'] if 'value' in argument else None,
-                                       reference=argument['reference'] if 'reference' in argument else '',
-                                       selection=argument['selection'] if 'selection' in argument else None)
-                        self.arguments.append(arg)
-                        # self.arguments.update(arguments)
+                        arg = Argument(**argument)
+                        new_args[arg.name] = arg
+                    self.arguments.update(new_args)
                 break
             else:
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))

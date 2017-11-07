@@ -127,8 +127,8 @@ class TestStep(unittest.TestCase):
             Step('HelloWorld', 'returnPlusOne', inputs={'number': 'invalid'})
 
     def test_init_with_flags(self):
-        triggers = [Condition(action='regMatch', args={'regex': '(.*)'}),
-                    Condition(action='regMatch', args={'regex': 'a'})]
+        triggers = [Condition(action='regMatch', arguments={'regex': '(.*)'}),
+                    Condition(action='regMatch', arguments={'regex': 'a'})]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
 
@@ -323,7 +323,7 @@ class TestStep(unittest.TestCase):
             step.set_input({'num1': '-5.62', 'num2': '5', 'num3': 'invalid'})
 
     def test_execute_with_triggers(self):
-        triggers = [Condition(action='regMatch', args={'regex': 'aaa'})]
+        triggers = [Condition(action='regMatch', arguments={'regex': 'aaa'})]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'aaa'}})
@@ -339,7 +339,7 @@ class TestStep(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_execute_multiple_triggers(self):
-        triggers = [Condition(action='regMatch', args={'regex': 'aaa'})]
+        triggers = [Condition(action='regMatch', arguments={'regex': 'aaa'})]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'a'}})
