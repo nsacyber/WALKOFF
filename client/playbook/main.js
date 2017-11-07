@@ -449,6 +449,7 @@ $(function(){
 
         parameters = transformParametersToSchema(parameters);
 
+        console.log(parameters);
         // Initialize the editor with a JSON schema
         var schema = createNodeSchema(parameters);
         JSONEditor.defaults.options.theme = 'bootstrap3';
@@ -472,6 +473,12 @@ $(function(){
         editor.getEditor('root.app').disable();
         editor.getEditor('root.action').disable();
         editor.getEditor('root.name').disable();
+
+        // Hack: select2 doesn't seem to be properly displaying the values, so update the label here instead.
+        for (let i = 0; i < parameters.next_steps.length; i++) {
+            let selector = "[id*='select2-rootnext_steps" + i + "status']";
+            $(selector).text(parameters.next_steps[i].status);
+        }
 
         // Hack: It appears this function is called as soon as you click on the node.
         // Therefore ignore the first time this function is called.
