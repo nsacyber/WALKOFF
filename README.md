@@ -5,6 +5,8 @@
 ## Summary
 WALKOFF is an open source automation platform that enables users to easily integrate, automate and customize their processes enabling their environment to automatically adapt and respond to security threats.   
 
+<img src="https://iadgov.github.io/WALKOFF/files/images/WALKOFFDemoGIF.gif">
+
 ## Description
 WALKOFF is an automation platform enabling plug and play integration of devices through apps.  By employing an app based architecture, integration capabilities only need to be written once and can be swapped in and out as needed. 
 
