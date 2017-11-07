@@ -1,16 +1,22 @@
 language: python
 os:
     - linux
-
 python:
     - "2.7"
     - "3.4"
     - "3.5"
     - "3.6"
-install: pip install -r requirements.txt
-script: python installDependencies.py && python generate_certificates.py && python runAllTests.py test
+install:
+  - pip install -r requirements.txt
+  - pip install coverage
+before_script:
+  - python generate_certificates.py
+script:
+  - coverage run runAllTests.py
+  - coverage combine
+  - coverage report --fail-under=80
 branches:
     only: 
-    - master
-    - development
+      - master
+      - development
 

@@ -22,6 +22,13 @@ engines:
     enabled: true
   pep8:
     enabled: true
+checks:
+  file-lines:
+    config:
+      threshold: 500
+  method-lines:
+    config:
+      threshold: 40
 ratings:
   paths:
     - "**.css"
@@ -32,3 +39,4 @@ exclude_paths:
   - tests/
   - server/static
   - core/protobuf
+  - "**.js"
