@@ -14,7 +14,7 @@ before_script:
 script:
   - coverage run runAllTests.py
   - coverage combine
-  - coverage report --fail-under=80
+  - coverage report
 branches:
     only: 
       - master

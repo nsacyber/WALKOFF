@@ -28,3 +28,5 @@ private_keys/
 public_keys/
 .idea/markdown-navigator/profiles_settings.xml
 client/build/
+.coverage*
+coverage.*
