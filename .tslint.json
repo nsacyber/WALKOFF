@@ -17,6 +17,11 @@
 		"arrow-parens": false,
 		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-snake-case"],
 		"align": [true, "parameters", "statements", "argument", "members", "elements"],
-		"no-unused-variable": true
+		"no-unused-variable": true,
+		"no-require-imports": true,
+		"use-isnan": true,
+		"typeof-compare": true,
+		"switch-default": true,
+		"no-invalid-this": true
 	}
 }

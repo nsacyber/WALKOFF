@@ -235,6 +235,9 @@ export class CasesComponent {
 				case 'transforms':
 					childPrefix = 'Transform';
 					break;
+				default:
+					childPrefix = '(unknown)';
+					break;
 			}
 
 			target[childType].forEach(function (sub: any) {

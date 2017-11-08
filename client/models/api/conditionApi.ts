@@ -7,9 +7,9 @@ export class ConditionApi {
 	parameters: ParameterApi[] = [];
 	returns: ReturnApi[] = [];
 	run: string;
-	dataIn: string;
+	data_in: string;
 	deprecated: boolean;
 	// tags: Tag[] = [];
 	summary: string;
-	// externalDocs: ExternalDoc[] = [];
+	// external_docs: ExternalDoc[] = [];
 }

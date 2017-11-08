@@ -5,9 +5,9 @@ export class TransformApi {
 	description: string;
 	parameters: ParameterApi[] = [];
 	run: string;
-	dataIn: string;
+	data_in: string;
 	deprecated: boolean;
 	// tags: Tag[] = [];
 	summary: string;
-	// externalDocs: ExternalDoc[] = [];
+	// external_docs: ExternalDoc[] = [];
 }

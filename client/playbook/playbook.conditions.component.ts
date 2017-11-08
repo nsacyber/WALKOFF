@@ -53,8 +53,8 @@ export class PlaybookConditionsComponent {
 			.find(c => c.name === this.selectedConditionApi);
 
 		const args: Argument[] = [];
-		// Omit the parameter that matches the dataIn
-		api.parameters.filter(p => p.name !== api.dataIn).forEach((parameterApi) => {
+		// Omit the parameter that matches the data_in
+		api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
 			args.push({
 				name: parameterApi.name,
 				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,

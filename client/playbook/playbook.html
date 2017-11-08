@@ -104,8 +104,8 @@
                                             <div *ngFor="let actionApi of app.action_apis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
                                              [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
                                                 <div class="panel-body">
-                                                    <span class="fa fa-bars pull-right"></span>
                                                     <span>{{actionApi.name}}</span>
+                                                    <span class="fa fa-bars pull-right"></span>
                                                 </div>
                                             </div>
                                         </div>

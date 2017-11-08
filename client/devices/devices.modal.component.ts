@@ -211,6 +211,9 @@ export class DevicesModalComponent {
 				case 'boolean':
 					inputs[field.name] = inputs[field.name] || false;
 					break;
+				default:
+					this._concatValidationMessage(field.name, `The type specified for field ${field.name} is invalid.`);
+					break;
 			}
 		});
 

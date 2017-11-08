@@ -11,5 +11,5 @@ export class AppApi {
 	device_apis: DeviceApi[] = [];
 	// info: AppInfo;
 	// tags: Tag[] = [];
-	// externalDocs: ExternalDoc[] = [];
+	// external_docs: ExternalDoc[] = [];
 }

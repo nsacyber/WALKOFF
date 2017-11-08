@@ -12,5 +12,5 @@ export class ActionApi {
 	deprecated: boolean;
 	// tags: Tag[] = [];
 	summary: string;
-	// externalDocs: ExternalDoc[] = [];
+	// external_docs: ExternalDoc[] = [];
 }

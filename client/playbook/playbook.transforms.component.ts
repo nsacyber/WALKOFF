@@ -53,7 +53,7 @@ export class PlaybookTransformsComponent {
 			.find(c => c.name === this.selectedTransformApi);
 		
 		const args: Argument[] = [];
-		api.parameters.filter(p => p.name !== api.dataIn).forEach((parameterApi) => {
+		api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
 			args.push({
 				name: parameterApi.name,
 				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
