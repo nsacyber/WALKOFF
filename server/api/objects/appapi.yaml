@@ -180,7 +180,7 @@ ConditionApi:
 TransformApi:
   type: object
   description: The api of an app's transform
-  required: [name, run, data_in]
+  required: [name, run, data_in, returns]
   properties:
     name:
       type: string

@@ -450,7 +450,7 @@
     "transformItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["run", "parameters", "data_in"],
+      "required": ["run", "parameters", "data_in", "returns"],
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
