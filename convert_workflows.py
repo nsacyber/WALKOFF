@@ -1,6 +1,7 @@
 import json
 import os
 from copy import deepcopy
+from six import string_types
 
 
 def convert_playbooks():
@@ -83,7 +84,7 @@ def convert_arg(arg, steps):
 
 
 def convert_arg_value(arg, steps):
-    if arg.startswith('@'):
+    if isinstance(arg, string_types) and arg[0] == '@':
         reference_step_name = arg[1:]
         reference_step_uid = next((step['uid'] for step in steps if step['name'] == reference_step_name), None)
         if reference_step_uid is not None:
