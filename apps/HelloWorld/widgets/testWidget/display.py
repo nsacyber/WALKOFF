@@ -1,7 +1,7 @@
 import time
 import random
 from flask import Blueprint, Response
-from apps import WidgetBlueprint
+from interfaces import WidgetBlueprint
 from threading import Thread
 
 blueprint = WidgetBlueprint(blueprint=Blueprint('HelloWorldTestWidgetPage', __name__))

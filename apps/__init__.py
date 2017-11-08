@@ -1,5 +1,5 @@
 import logging
-from core.decorators import *
+
 from apps.appcache import AppCache
 from apps.devicedb import get_app as get_db_app
 
@@ -160,18 +160,6 @@ def is_app_action_bound(app_name, action_name):
         (bool) Is the action bound?
     """
     return _cache.is_app_action_bound(app_name, action_name)
-
-
-class AppWidgetBlueprint(object):
-    """
-    Class to create blueprints for custom server endpoints in apps
-    """
-    def __init__(self, blueprint, rule=''):
-        self.blueprint = blueprint
-        self.rule = rule
-
-AppBlueprint = AppWidgetBlueprint
-WidgetBlueprint = AppWidgetBlueprint
 
 
 class Event(object):

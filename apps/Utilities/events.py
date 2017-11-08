@@ -1,4 +1,5 @@
-from apps import Event, AppBlueprint
+from apps import Event
+from interfaces import AppBlueprint
 from flask import Blueprint
 
 blueprint = AppBlueprint(blueprint=Blueprint('UtilitiesPage', __name__))
