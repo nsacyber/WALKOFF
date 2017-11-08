@@ -91,7 +91,7 @@
         description: The name of the field in the app api to get
         required: true
         type: string
-        enum: [info, actions, conditions, transforms, devices, tags, externalDocs]
+        enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, externalDocs]
     responses:
       200:
         description: Success

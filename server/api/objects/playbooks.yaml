@@ -117,6 +117,7 @@ Step:
     uid:
       description: UID of this step
       type: string
+      x-nullable: true
     name:
       description: Name of the step
       type: string
@@ -260,6 +261,7 @@ NextStep:
     uid:
       description: UID of this step
       type: string
+      x-nullable: true
     priority:
       description: The priority for this NextStep, which will be compared to other NextSteps with the same source_uid Step, ascending, i.e. 1 is the highest priority.
       type: integer
@@ -282,6 +284,7 @@ Condition:
     uid:
       description: UID of this step
       type: string
+      x-nullable: true
     app:
       description: The app to which the conditon belongs
       type: string
@@ -310,6 +313,7 @@ Transform:
     uid:
       description: UID of this step
       type: string
+      x-nullable: true
     app:
       description: The app to which the transform belongs
       type: string
