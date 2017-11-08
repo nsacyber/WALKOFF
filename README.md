@@ -1,15 +1,24 @@
 [![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF)
 
-# WALKOFF
-## Summary
-WALKOFF is an open source automation platform that enables users to easily integrate, automate and customize their processes enabling their environment to automatically adapt and respond to security threats.   
+<img src="https://iadgov.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
 ## Description
-WALKOFF is an automation platform enabling plug and play integration of devices through apps.  By employing an app based architecture, integration capabilities only need to be written once and can be swapped in and out as needed. 
+* Are repetitive, tedious processes taking up too much of your time?  
+* Is more time spent focusing on managing your data than acting on the data itself?  
 
-Capabilities within WALKOFF apps can then be tied together to form Workflows.  Workflows are defined in an XML format making them easily sharable across environments and organizations.  
+WALKOFF is an automation framework that allows you to easily automate these 80% of tedious tasks so you can get the job done faster, easier, and cheaper.
 
-Apps can also have custom interfaces enabling app developers to uniquely display information.  WALKOFF not only makes it easier for users to automate their work but to also quickly find and visualize information as well.
+WALKOFF is built upon an app based architecture which enables the plug and play integration of devices and capabilities.  These capabilities can then be tied together to form Workflows.  Workflows are defined in a JSON format making them easily sharable across environments and organizations and easily created/customizable through our drag and drop workflow editor.    
+
+<img src="https://raw.githubusercontent.com/iadgov/WALKOFF/gh-pages/files/images/demoGIFs/DragDropGIF.gif" height=300>
+
+WALKOFF also makes it easier to manage your newly automated processes with real time visual updates and feeds based on your workflows progress. 
+
+<img src="https://raw.githubusercontent.com/iadgov/WALKOFF/gh-pages/files/images/demoGIFs/realTimeUpdates.gif" height=300>
+
+Apps can also have custom interfaces enabling app developers to uniquely display information.  WALKOFF not only makes it easier for users to automate their processes but allows users to act on their processes faster as well. 
+
+<img src="https://raw.githubusercontent.com/iadgov/WALKOFF/gh-pages/files/images/demoGIFs/customAnalytics.gif" height=300>
 
 Walkoff apps can be found at: https://github.com/iadgov/WALKOFF-Apps
 
