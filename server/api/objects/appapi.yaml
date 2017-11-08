@@ -251,7 +251,7 @@ DeviceFieldApi:
       default: false
     placeholder:
       type: string
-      description: brief description of the field to be use to prompt a user
+      description: brief description of the field to be used to prompt a user
     schema:
       $ref: '#/definitions/ParameterSchema'
 
@@ -268,6 +268,9 @@ ParameterApi:
     description:
       type: string
       description: description of the parameter
+    placeholder:
+      type: string
+      description: brief description of the field to be used to prompt a user
     schema:
       $ref: '#/definitions/ParameterSchema'
 

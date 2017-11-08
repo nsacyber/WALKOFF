@@ -254,9 +254,7 @@
           "description": "Should the field be encrypted?"
         },
         "placeholder": {
-          "type": "string",
-          "default": "",
-          "description": "Text to display as for the input fields on the UI"
+          "$ref": "#/definitions/placeholder"
         },
         "format": {
           "type": "string"
@@ -578,6 +576,9 @@
           "description": "Determines whether or not this parameter is required or optional.",
           "default": false
         },
+        "placeholder": {
+          "$ref": "#/definitions/placeholder"
+        },
         "schema": {
           "$ref": "#/definitions/schema"
         }
@@ -620,6 +621,9 @@
         },
         "format": {
           "type": "string"
+        },
+        "placeholder": {
+          "$ref": "#/definitions/placeholder"
         },
         "items": {
           "$ref": "#/definitions/primitivesItems"
@@ -911,6 +915,11 @@
         ]
       },
       "uniqueItems": true
+    },
+    "placeholder": {
+      "type": "string",
+      "default": "",
+      "description": "Text to display as for the input fields on the UI"
     },
     "title": {
       "$ref": "http://json-schema.org/draft-04/schema#/properties/title"
