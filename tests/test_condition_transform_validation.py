@@ -55,75 +55,75 @@ class TestConditionTransformValidation(unittest.TestCase):
 
     def test_conditions_valid_run(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag1',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'}]}}
         self.__validate('conditions')
 
     def test_transform_valid_run(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.top_level_filter',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [
                                                        {'name': 'value', 'required': True, 'type': 'number'}]}}
         self.__validate('transforms')
 
     def test_conditions_invalid_run(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.invalid',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'}]}}
         self.__invalidate('conditions')
 
     def test_transforms_invalid_run(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.invalid',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [
                                                        {'name': 'value', 'required': True, 'type': 'string'}]}}
         self.__invalidate('transforms')
 
     def test_conditions_valid_datain_param(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag2',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                 {'name': 'arg1', 'required': True, 'type': 'string'}]}}
         self.__validate('conditions')
 
     def test_transforms_valid_datain_param(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.filter2',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                   {'name': 'arg1', 'type': 'string'}]}}
         self.__validate('transforms')
 
     def test_conditions_invalid_datain_param(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag2',
-                                                 'dataIn': 'invalid',
+                                                 'data_in': 'invalid',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                 {'name': 'arg1', 'required': True, 'type': 'string'}]}}
         self.__invalidate('conditions')
 
     def test_transforms_invalid_datain_param(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.filter2',
-                                                   'dataIn': 'invalid',
+                                                   'data_in': 'invalid',
                                                    'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                   {'name': 'arg1', 'type': 'string'}]}}
         self.__invalidate('transforms')
 
     def test_conditions_invalid_datain_param_not_required(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag2',
-                                                 'dataIn': 'invalid',
+                                                 'data_in': 'invalid',
                                                  'parameters': [{'name': 'value', 'type': 'string'},
                                                                 {'name': 'arg1', 'required': True, 'type': 'string'}]}}
         self.__invalidate('conditions')
 
     def test_transforms_invalid_datain_param_not_required(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.filter2',
-                                                   'dataIn': 'invalid',
+                                                   'data_in': 'invalid',
                                                    'parameters': [{'name': 'value', 'type': 'string'},
                                                                   {'name': 'arg1', 'type': 'string'}]}}
         self.__invalidate('transforms')
 
     def test_conditions_invalid_duplicate_param_names(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag2',
-                                                 'dataIn': 'invalid',
+                                                 'data_in': 'invalid',
                                                  'parameters': [{'name': 'value', 'type': 'string'},
                                                                 {'name': 'value', 'required': True,
                                                                  'type': 'integer'}]}}
@@ -131,14 +131,14 @@ class TestConditionTransformValidation(unittest.TestCase):
 
     def test_transforms_invalid_duplicate_param_names(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.filter2',
-                                                   'dataIn': 'invalid',
+                                                   'data_in': 'invalid',
                                                    'parameters': [{'name': 'value', 'type': 'string'},
                                                                   {'name': 'value', 'type': 'number'}]}}
         self.__invalidate('transforms')
 
     def test_conditions_invalid_mismatched_signature(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag2',
-                                                 'dataIn': 'invalid',
+                                                 'data_in': 'invalid',
                                                  'parameters': [{'name': 'value', 'type': 'string'},
                                                                 {'name': 'arg1', 'required': True, 'type': 'integer'},
                                                                 {'name': 'arg2', 'type': 'integer'}]}}
@@ -146,7 +146,7 @@ class TestConditionTransformValidation(unittest.TestCase):
 
     def test_transforms_invalid_mismatched_signature(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.filter2',
-                                                   'dataIn': 'invalid',
+                                                   'data_in': 'invalid',
                                                    'parameters': [{'name': 'value', 'type': 'string'},
                                                                   {'name': 'value', 'type': 'number'},
                                                                   {'name': 'arg2', 'type': 'integer'}]}}
@@ -154,21 +154,21 @@ class TestConditionTransformValidation(unittest.TestCase):
 
     def test_multiple_conditions_valid(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag1',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'}]},
                                        'flag2': {'run': 'conditions.flag2',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                 {'name': 'arg1', 'required': True, 'type': 'string'}]}}
         self.__validate('conditions')
 
     def test_multiple_transforms_valid(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.top_level_filter',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [
                                                        {'name': 'value', 'required': True, 'type': 'number'}]},
                                        'filter2': {'run': 'transforms.filter2',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                   {'name': 'arg1', 'required': True,
                                                                    'type': 'string'}]}}
@@ -176,21 +176,21 @@ class TestConditionTransformValidation(unittest.TestCase):
 
     def test_multiple_conditions_invalid(self):
         self.basicapi['conditions'] = {'flag1': {'run': 'conditions.flag1',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'required': True, 'type': 'string'}]},
                                        'flag2': {'run': 'conditions.flag2',
-                                                 'dataIn': 'value',
+                                                 'data_in': 'value',
                                                  'parameters': [{'name': 'value', 'type': 'string'},
                                                                 {'name': 'arg1', 'required': True, 'type': 'string'}]}}
         self.__invalidate('conditions')
 
     def test_multiple_transforms_invalid(self):
         self.basicapi['transforms'] = {'filter1': {'run': 'transforms.filter1',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [
                                                        {'name': 'value', 'required': True, 'type': 'string'}]},
                                        'filter2': {'run': 'transforms.filter2',
-                                                   'dataIn': 'value',
+                                                   'data_in': 'value',
                                                    'parameters': [{'name': 'value', 'required': True, 'type': 'string'},
                                                                   {'name': 'value', 'required': True,
                                                                    'type': 'integer'}]}}

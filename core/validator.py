@@ -132,12 +132,12 @@ def validate_data_in_param(params, data_in_param_name, message_prefix):
     data_in_param = next((param for param in params if param['name'] == data_in_param_name), None)
     if data_in_param is None:
         raise InvalidApi(
-            '{0} has a dataIn param {1} '
+            '{0} has a data_in param {1} '
             'for which it does not have a '
             'corresponding parameter'.format(message_prefix, data_in_param_name))
     elif not data_in_param.get('required', False):
         raise InvalidApi(
-            '{0} has a dataIn param {1} which is not marked as required in the api. '
+            '{0} has a data_in param {1} which is not marked as required in the api. '
             'Add "required: true" to parameter specification for {1}'.format(message_prefix,
                                                                              data_in_param_name))
 
@@ -152,7 +152,7 @@ def validate_condition_transform_params(spec, app_name, action_type, defined_act
             raise InvalidApi('{0} action {1} has a "run" param {2} '
                              'which is not defined'.format(action_type, action_name, action['run']))
 
-        data_in_param_name = action['dataIn']
+        data_in_param_name = action['data_in']
         validate_data_in_param(action_params, data_in_param_name, '{0} action {1}'.format(action_type, action_name))
         function = get_condition(app_name, action['run']) if action_type == 'Condition' else get_transform(app_name, action['run'])
         validate_action_params(action_params, dereferencer, action_type, action_name, function)

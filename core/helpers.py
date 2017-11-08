@@ -318,7 +318,7 @@ def get_app_device_api(app, device_type):
 
 
 def __split_api_params(api):
-    data_param_name = api['dataIn']
+    data_param_name = api['data_in']
     run = api['run']
     args = []
     data_param = None

@@ -30,7 +30,7 @@ AppApi:
       items:
         $ref: '#/definitions/ApiTag'
       uniqueItems: true
-    externalDocs:
+    external_docs:
       $ref: '#/definitions/ExternalDocs'
     
 ApiInfo:
@@ -48,7 +48,7 @@ ApiInfo:
     description:
       type: string
       description: A longer description of the API. Should be different from the title.
-    termsOfService:
+    terms_of_service:
       type: string
       description: Terms of service for the API
     contact:
@@ -125,13 +125,13 @@ ActionApi:
     description:
       type: string
       description: A longer description of the operation
-    externalDocs:
+    external_docs:
       $ref: '#/definitions/ExternalDocs'
 
 ConditionApi:
   type: object
   description: The api of an app's condition
-  required: [name, run, returns, dataIn]
+  required: [name, run, returns, data_in]
   properties:
     name:
       type: string
@@ -139,7 +139,7 @@ ConditionApi:
     run:
       type: string
       description: The path to the executable function
-    dataIn:
+    data_in:
       type: string
       description: name of parameter which comes from executed step
     parameters:
@@ -163,7 +163,7 @@ ConditionApi:
     description:
       type: string
       description: A longer description of the operation
-    externalDocs:
+    external_docs:
       $ref: '#/definitions/ExternalDocs'
     returns:
       type: array
@@ -174,7 +174,7 @@ ConditionApi:
 TransformApi:
   type: object
   description: The api of an app's transform
-  required: [name, run, dataIn]
+  required: [name, run, data_in]
   properties:
     name:
       type: string
@@ -182,7 +182,7 @@ TransformApi:
     run:
       type: string
       description: The path to the executable function
-    dataIn:
+    data_in:
       type: string
       description: name of parameter which comes from executed step
     parameters:
@@ -206,7 +206,7 @@ TransformApi:
     description:
       type: string
       description: A longer description of the operation
-    externalDocs:
+    external_docs:
       $ref: '#/definitions/ExternalDocs'
 
 DeviceApi:
@@ -298,7 +298,7 @@ ApiTag:
     description:
       type: string
       description: Description of the tag
-    externalDocs:
+    external_docs:
       $ref: '#/definitions/ExternalDocs'
       
 ParameterSchema:

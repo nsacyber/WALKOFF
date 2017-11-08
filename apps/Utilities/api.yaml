@@ -188,7 +188,7 @@ conditions:
   regex match:
     run: conditions.regMatch
     description: Matches an input against a regular expression
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         description: The input value
@@ -201,7 +201,7 @@ conditions:
   number compare:
     run: conditions.count
     description: Compares two numbers
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         description: The input value
@@ -221,7 +221,7 @@ transforms:
   length:
     run: transforms.length
     description: Returns the length of a collection
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         description: The input collection
@@ -235,7 +235,7 @@ transforms:
   select json:
     run: transforms.json_select
     description: selects an element from a JSON object
-    dataIn: json_in
+    data_in: json_in
     parameters:
         - name: json_in
           required: true
@@ -249,7 +249,7 @@ transforms:
           type: object
   linear scale:
     run: transforms.linear_scale
-    dataIn: value
+    data_in: value
     description: Scale a value linearly between a minimum and a maximum.
     parameters:
       - name: value
@@ -280,7 +280,7 @@ transforms:
   divide:
     run: transforms.divide
     description: Divides a number
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         type: number
@@ -295,7 +295,7 @@ transforms:
   multiply:
     run: transforms.multiply
     description: Multiplies a number
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         type: number
@@ -310,7 +310,7 @@ transforms:
   add:
     run: transforms.add
     description: Adds a number
-    dataIn: num1
+    data_in: num1
     parameters:
       - name: num1
         type: number
@@ -325,7 +325,7 @@ transforms:
   subtract:
     run: transforms.subtract
     description: Subtracts a number from the input
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         type: number

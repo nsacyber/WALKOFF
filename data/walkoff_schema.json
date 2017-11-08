@@ -45,8 +45,8 @@
       },
       "uniqueItems": true
     },
-    "externalDocs": {
-      "$ref": "#/definitions/externalDocs"
+    "external_docs": {
+      "$ref": "#/definitions/external_docs"
     }
   },
   "definitions": {
@@ -76,7 +76,7 @@
           "type": "string",
           "description": "A longer description of the API. Should be different from the title.  GitHub Flavored Markdown is allowed."
         },
-        "termsOfService": {
+        "terms_of_service": {
           "type": "string",
           "description": "The terms of service for the API."
         },
@@ -322,7 +322,7 @@
       },
       "description": "One or more JSON representations for parameters"
     },
-    "externalDocs": {
+    "external_docs": {
       "type": "object",
       "additionalProperties": false,
       "description": "information about external documentation",
@@ -373,8 +373,8 @@
           "type": "string",
           "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
         },
-        "externalDocs": {
-          "$ref": "#/definitions/externalDocs"
+        "external_docs": {
+          "$ref": "#/definitions/external_docs"
         },
         "run": {
           "type": "string",
@@ -399,7 +399,7 @@
     "conditionItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["run", "parameters", "dataIn"],
+      "required": ["run", "parameters", "data_in"],
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
@@ -421,8 +421,8 @@
           "type": "string",
           "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
         },
-        "externalDocs": {
-          "$ref": "#/definitions/externalDocs"
+        "external_docs": {
+          "$ref": "#/definitions/external_docs"
         },
         "run": {
           "type": "string",
@@ -431,7 +431,7 @@
         "parameters": {
           "$ref": "#/definitions/parametersList"
         },
-        "dataIn": {
+        "data_in": {
           "type": "string",
           "description": "name of the parameter which contains the data to evaluate"
         },
@@ -444,7 +444,7 @@
     "transformItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["run", "parameters", "dataIn"],
+      "required": ["run", "parameters", "data_in"],
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
@@ -466,8 +466,8 @@
           "type": "string",
           "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
         },
-        "externalDocs": {
-          "$ref": "#/definitions/externalDocs"
+        "external_docs": {
+          "$ref": "#/definitions/external_docs"
         },
         "run": {
           "type": "string",
@@ -476,7 +476,7 @@
         "parameters": {
           "$ref": "#/definitions/parametersList"
         },
-        "dataIn": {
+        "data_in": {
           "type": "string",
           "description": "name of the parameter which contains the data to transform"
         },
@@ -794,8 +794,8 @@
           "type": "boolean",
           "default": false
         },
-        "externalDocs": {
-          "$ref": "#/definitions/externalDocs"
+        "external_docs": {
+          "$ref": "#/definitions/external_docs"
         },
         "example": {}
       },
@@ -880,8 +880,8 @@
         "description": {
           "type": "string"
         },
-        "externalDocs": {
-          "$ref": "#/definitions/externalDocs"
+        "external_docs": {
+          "$ref": "#/definitions/external_docs"
         }
       },
       "patternProperties": {

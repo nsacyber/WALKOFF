@@ -78,11 +78,11 @@ def format_device_api_full(api, device_name):
 
 def format_full_app_api(api, app_name):
     ret = {'name': app_name}
-    for unformatted_field in ('info', 'tags', 'externalDocs'):
+    for unformatted_field in ('info', 'tags', 'external_docs'):
         if unformatted_field in api:
             ret[unformatted_field] = api[unformatted_field]
         else:
-            ret[unformatted_field] = [] if unformatted_field in ('tags', 'externalDocs') else {}
+            ret[unformatted_field] = [] if unformatted_field in ('tags', 'external_docs') else {}
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
             ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field])
@@ -104,7 +104,7 @@ def read_all_app_apis(field_name=None):
         for app_name, app_api in core.config.config.app_apis.items():
             ret.append(format_full_app_api(app_api, app_name))
         if field_name is not None:
-            default = [] if field_name not in ('info', 'externalDocs') else {}
+            default = [] if field_name not in ('info', 'external_docs') else {}
             ret = [{'name': api['name'], field_name: api.get(field_name, default)} for api in ret]
         return ret, SUCCESS
 

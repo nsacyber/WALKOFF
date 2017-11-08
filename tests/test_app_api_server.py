@@ -177,7 +177,7 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = self.app.get('/api/apps/apis/HelloWorld', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertSetEqual(set(response.keys()), {'name', 'tags', 'info', 'externalDocs',
+        self.assertSetEqual(set(response.keys()), {'name', 'tags', 'info', 'external_docs',
                                                    'action_apis', 'device_apis',
                                                    'condition_apis', 'transform_apis'})
         self.assertEqual(response['name'], 'HelloWorld')
