@@ -1,4 +1,6 @@
 import os
+import yaml
+import re
 
 
 def convert_apis():
@@ -10,9 +12,23 @@ def convert_apis():
                 api = api.replace('externalDocs:', 'external_docs:')
                 api = api.replace('termsOfService:', 'terms_of_service:')
                 api = api.replace('dataIn:', 'data_in:')
+                api = re.sub(r'^flags', 'conditions', api)
+                api = re.sub(r'^filters', 'transforms', api)
+                api_dict = yaml.load(api)
+                scan_api(api_dict, subdir)
             with open(os.path.join(subdir, file), 'w') as f:
                 f.write(api)
 
+
+def scan_api(api, path):
+    if 'transforms' in api:
+        scan_transforms(api['transforms'], path)
+
+
+def scan_transforms(transforms, path):
+    for transform, transform_api in transforms.items():
+        if 'returns' not in transform_api:
+            print('Error in {0}--transforms.{1}: Transforms now require explicit returns'.format(path, transform))
 
 if __name__ == "__main__":
     convert_apis()
