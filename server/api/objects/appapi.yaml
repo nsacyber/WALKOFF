@@ -216,6 +216,11 @@ TransformApi:
       type: array
       items:
         $ref: '#/definitions/ExternalDoc'
+    returns:
+      type: array
+      items:
+        $ref: '#/definitions/ReturnApi'
+      description: The return types of this transform
 
 DeviceApi:
   type: object
