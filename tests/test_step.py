@@ -27,13 +27,13 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, action, app, device, inputs, triggers=None,
+    def __compare_init(self, elem, name, action, app, device, arguments, triggers=None,
                        widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device, device)
-        self.assertDictEqual({key: input_element for key, input_element in elem.inputs.items()}, inputs)
+        self.assertDictEqual({key: argument for key, argument in elem.arguments.items()}, arguments)
         self.assertEqual(elem.risk, risk)
         widgets = widgets if widgets is not None else []
         self.assertEqual(len(elem.widgets), len(widgets))
@@ -111,24 +111,24 @@ class TestStep(unittest.TestCase):
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'test', {})
 
     def test_init_with_inputs_no_conversion(self):
-        step = Step('HelloWorld', 'returnPlusOne', inputs={'number': -5.6})
+        step = Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': -5.6}])
         self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6})
 
     def test_init_with_inputs_with_conversion(self):
-        step = Step('HelloWorld', 'returnPlusOne', inputs={'number': '-5.6'})
+        step = Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': '-5.6'}])
         self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6})
 
     def test_init_with_invalid_input_name(self):
         with self.assertRaises(InvalidInput):
-            Step('HelloWorld', 'returnPlusOne', inputs={'invalid': '-5.6'})
+            Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'invalid', 'value': '-5.6'}])
 
     def test_init_with_invalid_input_type(self):
         with self.assertRaises(InvalidInput):
-            Step('HelloWorld', 'returnPlusOne', inputs={'number': 'invalid'})
+            Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': 'invalid'}])
 
     def test_init_with_flags(self):
-        triggers = [Condition(action='regMatch', arguments={'regex': '(.*)'}),
-                    Condition(action='regMatch', arguments={'regex': 'a'})]
+        triggers = [Condition(action='regMatch', arguments=[{'name': 'regex', 'value': '(.*)'}]),
+                    Condition(action='regMatch', arguments=[{'name': 'regex', 'value': 'a'}])]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
 

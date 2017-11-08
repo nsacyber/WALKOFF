@@ -5,6 +5,7 @@ from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_transform, get_transform_api, InvalidInput
 from core.validator import validate_transform_parameters, validate_parameter
+from core.argument import Argument
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,8 @@ class Transform(ExecutionElement):
         self.app = app
         self.action = action
         self._args_api, self._data_in_api = get_transform_api(self.action)
-        if isinstance(arguments, list):
-            arguments = {arg['name']: arg['value'] for arg in arguments}
-        elif isinstance(arguments, dict):
-            arguments = arguments
-        else:
-            arguments = {}
+        arguments = [Argument(**json_in) for json_in in arguments]
+        arguments = {arg.name: arg for arg in arguments}
 
         self.arguments = validate_transform_parameters(self._args_api, arguments, self.action)
 

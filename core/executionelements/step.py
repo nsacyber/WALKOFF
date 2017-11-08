@@ -11,10 +11,10 @@ from core import contextdecorator
 from core.case.callbacks import data_sent
 from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
-from core.argument import Argument
 from core.helpers import get_app_action_api, InvalidInput, format_exception_message
 from core.validator import validate_app_action_parameters
 from core.widgetsignals import get_widget_signal
+from core.argument import Argument
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +63,9 @@ class Step(ExecutionElement):
         self._run, self._input_api = get_app_action_api(self.app, self.action)
         get_app_action(self.app, self._run)
 
-        if isinstance(arguments, list):
-            arguments = {arg.name: arg for arg in arguments}
-        elif isinstance(arguments, dict):
-            arguments = arguments
-        else:
-            arguments = {}
+        arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
+        arguments = {arg.name: arg for arg in arguments}
+
         self.templated = templated
         if not self.templated:
             self.arguments = validate_app_action_parameters(self._input_api, arguments, self.app, self.action)

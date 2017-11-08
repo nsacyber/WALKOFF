@@ -4,7 +4,7 @@ from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_condition, get_condition_api, InvalidInput, format_exception_message
 from core.validator import validate_condition_parameters, validate_parameter
-
+from core.argument import Argument
 logger = logging.getLogger(__name__)
 
 
@@ -23,12 +23,8 @@ class Condition(ExecutionElement):
         ExecutionElement.__init__(self, uid)
         self.app = app
         self.action = action
-        if isinstance(arguments, list):
-            arguments = {arg['name']: arg['value'] for arg in arguments}
-        elif isinstance(arguments, dict):
-            arguments = arguments
-        else:
-            arguments = {}
+        arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
+        arguments = {arg.name: arg for arg in arguments}
         self._args_api, self._data_in_api = get_condition_api(self.action)
         self.arguments = validate_condition_parameters(self._args_api, arguments, self.action)
         self.transforms = transforms if transforms is not None else []
