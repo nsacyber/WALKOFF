@@ -31,7 +31,9 @@ AppApi:
         $ref: '#/definitions/ApiTag'
       uniqueItems: true
     external_docs:
-      $ref: '#/definitions/ExternalDocs'
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
     
 ApiInfo:
   type: object
@@ -126,7 +128,9 @@ ActionApi:
       type: string
       description: A longer description of the operation
     external_docs:
-      $ref: '#/definitions/ExternalDocs'
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
 
 ConditionApi:
   type: object
@@ -164,7 +168,9 @@ ConditionApi:
       type: string
       description: A longer description of the operation
     external_docs:
-      $ref: '#/definitions/ExternalDocs'
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
     returns:
       type: array
       items:
@@ -207,7 +213,9 @@ TransformApi:
       type: string
       description: A longer description of the operation
     external_docs:
-      $ref: '#/definitions/ExternalDocs'
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
 
 DeviceApi:
   type: object
@@ -274,7 +282,7 @@ ReturnApi:
     examples:
       description: An exaple of the returned type
 
-ExternalDocs:
+ExternalDoc:
   type: object
   description: information about external documentation
   required: [url]
@@ -299,7 +307,9 @@ ApiTag:
       type: string
       description: Description of the tag
     external_docs:
-      $ref: '#/definitions/ExternalDocs'
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
       
 ParameterSchema:
   type: object

@@ -323,6 +323,12 @@
       "description": "One or more JSON representations for parameters"
     },
     "external_docs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/external_doc"
+      }
+    },
+    "external_doc": {
       "type": "object",
       "additionalProperties": false,
       "description": "information about external documentation",
