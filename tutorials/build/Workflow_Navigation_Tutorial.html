@@ -107,18 +107,76 @@ img.media-object.image{
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Basic Workflow Creation Tutorial</h1>
-        <p>In this tutorial, we will create our first, very basic workflow in order to demonstrate the general features of the workflow editor.</p>
+      <h1>Workflow Editor Navigation Tutorial</h1>
+        <p>In this tutorial, we will explore the different components of the Workflow Editor interface.</p>
         <ul type="1" class="media-list imageList">
             <li class="media">
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditorNav/0.PNG">
+                         <img class="media-object image"
+                             src="images/workflowEditorNav/0.PNG"
+                             alt="...">
+                     </a>
+                </div>
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Create a new Workflow</b></h4>
-                  <p>First, begin by clicking the New Workflow button.</p>
+                  <h4 class="media-heading"><b>Toolbar</b></h4>
+
+                  <p>From left to right, the buttons in the toolbar are:</p>
+                  <table>
+                    <tr>
+                      <th>Name</th>
+                      <th>Descrption</th>
+                    </tr>
+                    <tr>
+                      <td>New Workflow</td>
+                      <td>Creates a new Workflow and optionally a new Playbook.</td>
+                    </tr>
+                    <tr>
+                      <td>Open Workflow</td>
+                      <td>Opens an existing Workflow</td>
+                    </tr>
+                    <tr>
+                      <td>Save Workflow</td>
+                      <td>Saves current Workflow to Playbook.</td>
+                    </tr>
+                    <tr>
+                      <td>Delete Selected Nodes</td>
+                      <td>Deletes the selected Action or Edge.</td>
+                    </tr>
+                    <tr>
+                      <td>Cut</td>
+                      <td>Cuts the selected Action or Edge.</td>
+                    </tr>
+                    <tr>
+                      <td>Copy</td>
+                      <td>Copies the selected Action or Edge.</td>
+                    </tr>
+                    <tr>
+                      <td>Paste</td>
+                      <td>Pastes the previously copied or cut Action or Edge.</td>
+                    </tr>
+                    <tr>
+                      <td>Execute Workflow</td>
+                      <td>Schedules the Workflow to run immediately.</td>
+                    </tr>
+                    <tr>
+                      <td>Clear Execution Results Highlighting</td>
+                      <td>Clears the green highlighting of executed actions.</td>
+                    </tr>
+                  </table>
+                  <p>The Delete, Cut, and Copy tools can act on multiple Actions and Edges at a time if they are selected by holding the Shift key and clicking on multiple Actions or Edges.</p>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-body">
+                  <h4 class="media-heading"><b>Highlighting</b></h4>
+                  <p>Selected Actions or Edges will be highlighted in blue. Actions that have been executed during a run will be highlighted in green.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/1.png">
+                    <a href="images/workflowEditorNav/1.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/1.png"
+                             src="images/workflowEditorNav/1.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -126,22 +184,8 @@ img.media-object.image{
             <br>
             <li class="media">
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Enter Playbook and Workflow Name</b></h4>
-                  <p>If you specify an existing Playbook name, the new Workflow will be saved under it. Enter the Playbook name and workflow name, then click Create New Workflow.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/2.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/2.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Add actions to the workspace</b></h4>
-                  <p>Let's begin by adding a Hello World action and a Pause action from the HelloWorld app. Expand the HelloWorld app by double-clicking on the name, or clicking on the drop-down arrow. Then, double-click, or click and drag the desired actions into the workspace.<br>Ensure that the Hello World action is set as the starting node.</p>
+                  <h4 class="media-heading"><b>Apps and Actions</b></h4>
+                  <p>Apps and Actions that you have installed to your Walkoff instance will appear in the left pane. Double-click the name of an App or click the drop-down arrow to expose the Actions that App contains. To take an Action from the pane, double click on the name of the action or click and drag the action into the workspace.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/workflowEditor2/3.png">
@@ -154,22 +198,24 @@ img.media-object.image{
             <br>
             <li class="media">
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Configure actions</b></h4>
-                  <p>Some actions will have inputs; some required, some optional. In this case, the Pause action requires you to input the time in seconds that it should pause for. Enter 5.</p>
+                  <h4 class="media-heading"><b>Navigating the Workspace</b></h4>
+                  <p>The workspace can be navigated using the buttons in the top left of the pane. From top to bottom, these buttons can be used to pan, fullscreen, or zoom. You can also click and drag on an empty area to pan, and use the scroll wheel to zoom in and out.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/4.png">
+                    <div class="media-left media-middle">
+                    <a href="images/workflowEditorNav/2.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/4.png"
+                             src="images/workflowEditorNav/2.PNG"
                              alt="...">
                     </a>
+                </div>
                 </div>
             </li>
             <br>
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Connecting actions together</b></h4>
-                  <p>Now, let's connect our actions together. When hovering over the top edge of an action, a red dot will appear. Click and drag from the red dot to the top of the next action in the sequence; an arrow should appear, linking the actions together.<br>Add another Hello World action after the Pause and connect it as shown.</p>
+                  <p>When hovering over the top edge of an action, a red dot will appear. To create an edge from one action to the next, click and drag from the red dot to the top of the next action in the sequence; an arrow should appear, linking the actions together.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/workflowEditor2/5.png">
@@ -182,13 +228,19 @@ img.media-object.image{
             <br>
             <li class="media">
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Save the Workflow</b></h4>
-                  <p></p>
+                  <h4 class="media-heading"><b>Editing Actions</b></h4>
+                  <p>When an Action is selected, its properties will appear in the right pane.</p>
+                  <p>The Node Parameters will include the Name of the action (which is separate from its UID), the App it came from, the Action it will perform, and the Device it is associated with, if any. You can also designate the start node of the Workflow in this section.</p>
+                  <p>Actions may have inputs, whose properties are defined by the App's API schema. To use the output from an Action as an input to another Action, use @Name, where Name is the name of the outputting action.</p>
+                  <p>Next, if the Action is not terminating (i.e. it has edges pointing away from it), the Next Nodes section will allow you to set the conditions under which Workflow execution will continue to the next node(s). This can be accomplished with return codes, filters and flags.</p>
+                  <p>Actions emit return codes when they finish executing. By default, an Action can return Success, UnhandledException, or InvalidInput. Additional return codes can be defined in an App's schema.
+                  <p>Filters allow you to manipulate the output from the current Action (without changing it), for example selecting a specific field in a JSON output, or performing mathematical transformations.</p>
+                  <p>Finally, Flags allow you to check an action's output after any filters, for example, against conditional operators (greater than, less than, etc.) or against a regular expression.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/6.png">
+                    <a href="images/workflowEditorNav/3.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/6.png"
+                             src="images/workflowEditorNav/3.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -196,22 +248,8 @@ img.media-object.image{
             <br>
             <li class="media">
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Execute the Workflow</b></h4>
-                  <p></p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/7.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/7.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Examine results</b></h4>
-                  <p>If you connected everything as shown, you should obtain similar results to what is shown. Note the 5 second delay created by the Pause action under the Timestamp heading, and the resulting JSON created by each step.</p>
+                  <h4 class="media-heading"><b>Evaluating results</b></h4>
+                  <p>When a Workflow in the editor is executed, actions are highlighted in green as they execute in realtime. When the workflow is complete, its results will be displayed in the table below the editor. The table will contain the name of the node, the time at which it finished executing, the return code, any inputs to the action, and the results of the action.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/workflowEditor2/8.png">

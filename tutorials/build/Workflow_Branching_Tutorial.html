@@ -107,32 +107,18 @@ img.media-object.image{
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Basic Workflow Creation Tutorial</h1>
-        <p>In this tutorial, we will create our first, very basic workflow in order to demonstrate the general features of the workflow editor.</p>
+      <h1>Branching Workflow Creation Tutorial</h1>
+        <p>In this tutorial, we will create a Workflow with branching paths that utilizes flags and filters.</p>
         <ul type="1" class="media-list imageList">
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Create a new Workflow</b></h4>
-                  <p>First, begin by clicking the New Workflow button.</p>
+                  <p>First, begin by creating a new Workflow. Enter the Playbook name and workflow name, then click Create New Workflow.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/1.png">
+                    <a href="images/workflowEditorBranch/0.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/1.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Enter Playbook and Workflow Name</b></h4>
-                  <p>If you specify an existing Playbook name, the new Workflow will be saved under it. Enter the Playbook name and workflow name, then click Create New Workflow.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/2.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/2.png"
+                             src="images/workflowEditorBranch/0.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -141,12 +127,19 @@ img.media-object.image{
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Add actions to the workspace</b></h4>
-                  <p>Let's begin by adding a Hello World action and a Pause action from the HelloWorld app. Expand the HelloWorld app by double-clicking on the name, or clicking on the drop-down arrow. Then, double-click, or click and drag the desired actions into the workspace.<br>Ensure that the Hello World action is set as the starting node.</p>
+                  <p>In this workflow, we will use the "Secure PRNG" action from the included Utilities app, and three "Repeat Back to Me" actions. Ensure that the "Secure PRNG" action is set as the start node, and connect the actions as shown.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/3.png">
+                    <a href="images/workflowEditorBranch/1.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/3.png"
+                             src="images/workflowEditorBranch/1.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditorBranch/4.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditorBranch/4.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -155,54 +148,23 @@ img.media-object.image{
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Configure actions</b></h4>
-                  <p>Some actions will have inputs; some required, some optional. In this case, the Pause action requires you to input the time in seconds that it should pause for. Enter 5.</p>
+                  <p>The "Secure PRNG" action will output a random floating point number between 0.0 and 1.0 using system entropy (it's really only as secure as your system's implementation). We want to know whether the number it outputs is less than, or greater than/equal to 0.5.</p>
+                  <p>Select the "Secure PRNG" action and find the Next Nodes section in the right pane. In one of the Next Node entries, set the return code to "Success", and the flag as "count" with inputs of "l" and "0.5". In the other, set the return code and flag as appropriate.</p>
+                  <p>Select the first "Repeat Back to Me" whose next node entry you configured above, and enter "less than 0.5" as the input. In the other "Repeat Back to Me" action, enter "greater than or equal to 0.5."</p>
+                  <p>Finally, in the third "Repeat Back to Me" action, set the input as @Name, where Name is replaced by the name of the "Secure PRNG" action.</p>
+                  <p>Then, save and execute the workflow.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/4.png">
+                    <a href="images/workflowEditorBranch/6.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/4.png"
+                             src="images/workflowEditorBranch/6.PNG"
                              alt="...">
                     </a>
                 </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Connecting actions together</b></h4>
-                  <p>Now, let's connect our actions together. When hovering over the top edge of an action, a red dot will appear. Click and drag from the red dot to the top of the next action in the sequence; an arrow should appear, linking the actions together.<br>Add another Hello World action after the Pause and connect it as shown.</p>
-                </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/5.png">
+                    <a href="images/workflowEditorBranch/11.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/5.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Save the Workflow</b></h4>
-                  <p></p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/6.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/6.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Execute the Workflow</b></h4>
-                  <p></p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/7.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/7.png"
+                             src="images/workflowEditorBranch/11.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -211,12 +173,12 @@ img.media-object.image{
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Examine results</b></h4>
-                  <p>If you connected everything as shown, you should obtain similar results to what is shown. Note the 5 second delay created by the Pause action under the Timestamp heading, and the resulting JSON created by each step.</p>
+                  <p>If you configured everything as shown, you should obtain similar results to what is shown. The correct "Repeat Back to Me" action should have executed according to the output generated by the "Secure PRNG" action, and the last "Repeat Back to Me" action should have repeated that number. Run the Workflow a few more times to verify that it was set up correctly.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/8.png">
+                    <a href="images/workflowEditorBranch/12.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditor2/8.png"
+                             src="images/workflowEditorBranch/12.PNG"
                              alt="...">
                     </a>
                 </div>
