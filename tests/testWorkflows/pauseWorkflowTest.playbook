@@ -24,13 +24,13 @@
                 {
                     "action": "pause",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "seconds",
                             "value": 1.0
                         }
                     ],
+                    "device": "hwTest",
                     "name": "1",
                     "position": {},
                     "risk": 0,
@@ -40,8 +40,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "hwTest",
-                    "inputs": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,
@@ -51,13 +51,13 @@
                 {
                     "action": "pause",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "seconds",
                             "value": 1.0
                         }
                     ],
+                    "device": "hwTest",
                     "name": "2",
                     "position": {},
                     "risk": 0,

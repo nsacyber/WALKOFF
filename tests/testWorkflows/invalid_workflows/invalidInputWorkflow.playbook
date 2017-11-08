@@ -8,7 +8,8 @@
                     "conditions": [
                         {
                             "action": "regMatch",
-                            "args": [
+                            "app": "Utilities",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -17,7 +18,8 @@
                             "transforms": [
                                 {
                                     "action": "length",
-                                    "args": []
+                                    "app": "Utilities",
+                                    "arguments": []
                                 }
                             ]
                         }
@@ -27,12 +29,12 @@
                     "status": "Success"
                 }
             ],
-            "start": "start",
+            "start": "2",
             "steps": [
                 {
                     "action": "returnPlusOne",
                     "app": "HelloWorld",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "number",
                             "value": "abc"
@@ -47,8 +49,8 @@
                 {
                     "action": "helloWorld",
                     "app": "Invalid",
+                    "arguments": [],
                     "device": "hwTest",
-                    "inputs": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,

@@ -40,8 +40,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "",
-                    "inputs": [],
                     "name": "second step",
                     "position": {
                         "x": -30,
@@ -54,8 +54,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "",
-                    "inputs": [],
                     "name": "fourth step",
                     "position": {
                         "x": 210,
@@ -68,8 +68,7 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "data",
                             "value": {
@@ -84,6 +83,7 @@
                             }
                         }
                     ],
+                    "device": "",
                     "name": "first step",
                     "position": {
                         "x": 290,
@@ -96,8 +96,7 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "data",
                             "value": {
@@ -112,6 +111,7 @@
                             }
                         }
                     ],
+                    "device": "",
                     "name": "first step",
                     "position": {
                         "x": 230,
@@ -124,8 +124,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "",
-                    "inputs": [],
                     "name": "third step",
                     "position": {
                         "x": 90,
@@ -176,8 +176,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "",
-                    "inputs": [],
                     "name": "second step",
                     "position": {
                         "x": -30,
@@ -190,8 +190,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "",
-                    "inputs": [],
                     "name": "fourth step",
                     "position": {
                         "x": 210,
@@ -204,8 +204,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "",
-                    "inputs": [],
                     "name": "third step",
                     "position": {
                         "x": 90,
@@ -218,8 +218,7 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "data",
                             "value": {
@@ -234,6 +233,7 @@
                             }
                         }
                     ],
+                    "device": "",
                     "name": "first step",
                     "position": {
                         "x": 230,
@@ -246,8 +246,7 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "data",
                             "value": {
@@ -262,6 +261,7 @@
                             }
                         }
                     ],
+                    "device": "",
                     "name": "first step",
                     "position": {
                         "x": 290,

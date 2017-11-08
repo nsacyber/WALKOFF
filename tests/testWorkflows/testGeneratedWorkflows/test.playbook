@@ -11,13 +11,13 @@
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "call",
                             "value": "Hello World"
                         }
                     ],
+                    "device": "hwTest",
                     "name": "start",
                     "position": {},
                     "risk": 0,

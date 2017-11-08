@@ -8,7 +8,8 @@
                     "conditions": [
                         {
                             "action": "regMatch",
-                            "args": [
+                            "app": "Utilities",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -27,7 +28,8 @@
                     "conditions": [
                         {
                             "action": "regMatch",
-                            "args": [
+                            "app": "Utilities",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -36,7 +38,8 @@
                             "transforms": [
                                 {
                                     "action": "length",
-                                    "args": [],
+                                    "app": "Utilities",
+                                    "arguments": [],
                                     "uid": "d3a2a7e44b0742cd9838f96a5dc32ce1"
                                 }
                             ],
@@ -54,8 +57,8 @@
                 {
                     "action": "Buggy",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "hwTest",
-                    "inputs": [],
                     "name": "1",
                     "position": {},
                     "risk": 0,
@@ -65,8 +68,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "hwTest",
-                    "inputs": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,
@@ -76,13 +79,13 @@
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "call",
                             "value": "Hello World"
                         }
                     ],
+                    "device": "hwTest",
                     "name": "error",
                     "position": {},
                     "risk": 0,

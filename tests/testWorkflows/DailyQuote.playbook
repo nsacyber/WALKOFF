@@ -9,8 +9,8 @@
                 {
                     "action": "getQuote",
                     "app": "DailyQuote",
+                    "arguments": [],
                     "device": "hwTest",
-                    "inputs": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,

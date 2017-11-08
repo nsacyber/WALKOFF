@@ -8,7 +8,8 @@
                     "conditions": [
                         {
                             "action": "regMatch",
-                            "args": [
+                            "app": "Utilities",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -17,7 +18,8 @@
                             "transforms": [
                                 {
                                     "action": "length",
-                                    "args": [],
+                                    "app": "Utilities",
+                                    "arguments": [],
                                     "uid": "fead248eba064defbf25b33cccc734fc"
                                 }
                             ],
@@ -35,13 +37,13 @@
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "call",
                             "value": "Hello World"
                         }
                     ],
+                    "device": "hwTest",
                     "name": "1",
                     "position": {},
                     "risk": 0,
@@ -51,8 +53,8 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
+                    "arguments": [],
                     "device": "hwTest",
-                    "inputs": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,

@@ -17,21 +17,21 @@
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "num1",
-                            "value": "@start"
+                            "reference": "9fd0559779a84bd584c1ecd43b156656"
                         },
                         {
                             "name": "num2",
-                            "value": "@2"
+                            "reference": "de45a29e29864b39998f60743055a452"
                         },
                         {
                             "name": "num3",
                             "value": 3.0
                         }
                     ],
+                    "device": "hwTest",
                     "name": "1",
                     "position": {},
                     "risk": 0,
@@ -41,8 +41,7 @@
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "num1",
                             "value": 1.0
@@ -56,6 +55,7 @@
                             "value": 3.0
                         }
                     ],
+                    "device": "hwTest",
                     "name": "start",
                     "position": {},
                     "risk": 0,
@@ -65,8 +65,7 @@
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "arguments": [
                         {
                             "name": "num1",
                             "value": 1.0
@@ -80,6 +79,7 @@
                             "value": 3.0
                         }
                     ],
+                    "device": "hwTest",
                     "name": "2",
                     "position": {},
                     "risk": 0,
