@@ -166,21 +166,21 @@ actions:
 conditions:
   'Top Condition':
     run: conditions.top_level_flag
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
         type: number
   mod1_flag1:
     run: conditions.flag1
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
         type: string
   mod1_flag2:
     run: conditions.flag2
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -190,7 +190,7 @@ conditions:
         type: integer
   mod1_flag3:
     run: conditions.flag3
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -206,7 +206,7 @@ conditions:
               type: integer
   sub1_top_flag:
     run: conditions.sub1_top_flag
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -214,7 +214,7 @@ conditions:
   regMatch:
     run: conditions.regMatch
     description: Matches an input against a regular expression
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         description: The input value
@@ -227,7 +227,7 @@ conditions:
   count:
     run: conditions.count
     description: Compares two numbers
-    dataIn: value
+    data_in: value
     parameters:
         - name: value
           description: The input value
@@ -246,7 +246,7 @@ conditions:
 transforms:
   'Top Transform':
     run: transforms.top_level_filter
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -257,7 +257,7 @@ transforms:
           type: object
   mod1_filter2:
     run: transforms.filter2
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -271,7 +271,7 @@ transforms:
           type: object
   sub_top_filter:
     run: transforms.sub1_top_filter
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -282,7 +282,7 @@ transforms:
           type: object
   sub1_filter3:
     run: transforms.filter3
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -293,7 +293,7 @@ transforms:
           type: object
   sub1_filter1:
     run: transforms.filter1
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         required: true
@@ -313,7 +313,7 @@ transforms:
           type: object
   complex:
     run: transforms.complex_filter
-    dataIn: data_in
+    data_in: data_in
     parameters:
       - name: data_in
         required: true
@@ -338,7 +338,7 @@ transforms:
   length:
     run: transforms.length
     description: Returns the length of a collection
-    dataIn: value
+    data_in: value
     parameters:
       - name: value
         description: The input collection
@@ -351,7 +351,7 @@ transforms:
           type: object
   'select json':
     run: transforms.json_select
-    dataIn: json_in
+    data_in: json_in
     parameters:
         - name: json_in
           required: true
