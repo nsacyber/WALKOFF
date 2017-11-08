@@ -22,6 +22,39 @@ Apps can also have custom interfaces enabling app developers to uniquely display
 
 Walkoff apps can be found at: https://github.com/iadgov/WALKOFF-Apps
 
+## Installation Instructions
+You can run (possibly with administrator privileges)
+   `python make.py`
+
+Alternatively, you can manually install
+
+First, install the dependencies with the following command:
+
+   `pip install -r requirements.txt`
+   
+To install the dependencies for each individual app, run:
+
+   `python installDependencies.py`
+   
+Or to just install the dependencies for specific apps:
+
+   `python installDependencies -a AppOne,AppTwo,AppThree`
+
+Next, navigate to /client and install the client dependencies with the following commands:
+
+   `npm install`
+   `npm install gulp-cli -g` (If you need to install gulp)
+
+Next, use gulp to build the client:
+
+   `gulp ts`
+
+That's it! To start up the server, just navigate back to the walkoff root and run:
+
+   `python startServer.py` 
+   
+Then, navigate to the specified IP and port to start using WALKOFF. The default is http://127.0.0.1:5000.
+
 ## Features 
 1. Custom app interfaces
     *  Interfaces are built using HTML/CSS/Javascript with back-end functionality using Python. 
@@ -57,39 +90,6 @@ NodeJS and Node Package Manager (npm)
 Tested on Windows and Linux 
 
 *Requirements for apps may differ* 
-
-## Installation Instructions
-You can run (possibly with administrator privileges)
-   `python make.py`
-
-Alternatively, you can manually install
-
-First, install the dependencies with the following command:
-
-   `pip install -r requirements.txt`
-   
-To install the dependencies for each individual app, run:
-
-   `python installDependencies.py`
-   
-Or to just install the dependencies for specific apps:
-
-   `python installDependencies -a AppOne,AppTwo,AppThree`
-
-Next, navigate to /client and install the client dependencies with the following commands:
-
-   `npm install`
-   `npm install gulp-cli -g` (If you need to install gulp)
-
-Next, use gulp to build the client:
-
-   `gulp ts`
-
-That's it! To start up the server, just navigate back to the walkoff root and run:
-
-   `python startServer.py` 
-   
-Then, navigate to the specified IP and port to start using WALKOFF. The default is http://127.0.0.1:5000.
 
 ## Apps
 WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
