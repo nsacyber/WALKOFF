@@ -162,12 +162,20 @@ class TestAppApiServerFuncs(ServerTestCase):
         orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
 
     def test_read_all_app_apis_with_field(self):
-        response = self.app.get('/api/apps/apis?field_name=actions', headers=self.headers)
+        response = self.app.get('/api/apps/apis?field_name=action_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
         for app in response:
-            self.assertSetEqual(set(app.keys()), {'name', 'actions'})
+            self.assertSetEqual(set(app.keys()), {'name', 'action_apis'})
+
+    def test_read_all_app_apis_with_device(self):
+        response = self.app.get('/api/apps/apis?field_name=device_apis', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
+        for app in response:
+            self.assertSetEqual(set(app.keys()), {'name', 'device_apis'})
 
     def test_read_all_app_apis_with_field_field_dne(self):
         response = self.app.get('/api/apps/apis?field_name=invalid', headers=self.headers)

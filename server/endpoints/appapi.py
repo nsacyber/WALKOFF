@@ -96,8 +96,10 @@ def format_full_app_api(api, app_name):
     return ret
 
 
-@jwt_required
-def read_all_app_apis(field_name=None):
+
+def read_all_app_apis(field_name=''):
+
+    @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         ret = []
@@ -111,8 +113,9 @@ def read_all_app_apis(field_name=None):
     return __func()
 
 
-@jwt_required
+
 def read_app_api(app_name):
+    @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
