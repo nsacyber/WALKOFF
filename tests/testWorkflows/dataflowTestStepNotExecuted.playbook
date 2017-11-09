@@ -17,7 +17,6 @@
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "num1",
@@ -41,7 +40,6 @@
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "num1",
@@ -65,7 +63,6 @@
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "num1",

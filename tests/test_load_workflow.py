@@ -41,7 +41,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(step.name, 'start')
         self.assertEqual(step.app, 'HelloWorld')
         self.assertEqual(step.action, 'repeatBackToMe')
-        self.assertEqual(step.device, 'hwTest')
+        self.assertIsNone(step.device)
 
     def test_workflow_next_steps(self):
         next_step = list(self.testWorkflow.next_steps.values())[0]

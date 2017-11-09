@@ -27,8 +27,10 @@ class JsonElementReader(object):
             elif isinstance(value, bool):
                 if value:
                     accumulator[field] = value
-            else:
-                accumulator[field] = JsonElementReader.read(value) if isinstance(value, ExecutionElement) else value
+            elif isinstance(value, ExecutionElement):
+                accumulator[field] = JsonElementReader.read(value)
+            elif value is not None:
+                accumulator[field] = value
         return accumulator
 
     @staticmethod

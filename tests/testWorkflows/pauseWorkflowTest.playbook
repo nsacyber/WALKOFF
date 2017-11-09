@@ -24,7 +24,6 @@
                 {
                     "action": "pause",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "seconds",
@@ -40,7 +39,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [],
                     "name": "start",
                     "position": {},
@@ -51,7 +49,6 @@
                 {
                     "action": "pause",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "seconds",

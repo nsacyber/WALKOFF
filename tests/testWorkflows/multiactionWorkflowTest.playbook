@@ -37,7 +37,6 @@
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "call",
@@ -53,7 +52,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [],
                     "name": "start",
                     "position": {},

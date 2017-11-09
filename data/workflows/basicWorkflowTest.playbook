@@ -40,7 +40,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "",
                     "inputs": [],
                     "name": "second step",
                     "position": {
@@ -54,7 +53,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "",
                     "inputs": [],
                     "name": "fourth step",
                     "position": {
@@ -68,7 +66,6 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
                     "inputs": [
                         {
                             "name": "data",
@@ -96,7 +93,6 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
                     "inputs": [
                         {
                             "name": "data",
@@ -124,7 +120,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "",
                     "inputs": [],
                     "name": "third step",
                     "position": {
@@ -176,7 +171,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "",
                     "inputs": [],
                     "name": "second step",
                     "position": {
@@ -190,7 +184,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "",
                     "inputs": [],
                     "name": "fourth step",
                     "position": {
@@ -204,7 +197,6 @@
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
-                    "device": "",
                     "inputs": [],
                     "name": "third step",
                     "position": {
@@ -218,7 +210,6 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
                     "inputs": [
                         {
                             "name": "data",
@@ -246,7 +237,6 @@
                 {
                     "action": "echo object",
                     "app": "Utilities",
-                    "device": "",
                     "inputs": [
                         {
                             "name": "data",

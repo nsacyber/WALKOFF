@@ -47,7 +47,6 @@
                 {
                     "action": "helloWorld",
                     "app": "Invalid",
-                    "device": "hwTest",
                     "inputs": [],
                     "name": "start",
                     "position": {},

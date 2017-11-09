@@ -50,7 +50,6 @@
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "call",
@@ -67,7 +66,6 @@
                 {
                     "action": "returnPlusOne",
                     "app": "HelloWorld",
-                    "device": "hwTest",
                     "inputs": [
                         {
                             "name": "number",

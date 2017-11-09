@@ -72,7 +72,7 @@ class Step(ExecutionElement):
             self.inputs = validate_app_action_parameters(self._input_api, inputs, self.app, self.action)
         else:
             self.inputs = inputs
-        self.device = device if (device is not None and device != 'None') else ''
+        self.device = device
         self.risk = risk
         self.position = position if position is not None else {}
         self.widgets = [widget if isinstance(widget, Widget) else Widget(**widget)

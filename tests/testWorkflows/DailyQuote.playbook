@@ -9,7 +9,6 @@
                 {
                     "action": "getQuote",
                     "app": "DailyQuote",
-                    "device": "hwTest",
                     "inputs": [],
                     "name": "start",
                     "position": {},

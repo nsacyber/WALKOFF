@@ -23,7 +23,7 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, action, app, device, inputs, triggers=None,
+    def __compare_init(self, elem, name, action, app, inputs, device=None, triggers=None,
                        widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
@@ -55,27 +55,27 @@ class TestStep(unittest.TestCase):
 
     def test_init_default(self):
         step = Step('HelloWorld', 'helloWorld')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {})
 
     def test_init_with_name(self):
         step = Step('HelloWorld', 'helloWorld', name='test')
-        self.__compare_init(step, 'test', 'helloWorld', 'HelloWorld', '', {})
+        self.__compare_init(step, 'test', 'helloWorld', 'HelloWorld', {})
 
     def test_init_with_uid(self):
         step = Step('HelloWorld', 'helloWorld', uid='test')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, uid='test')
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, uid='test')
 
     def test_init_with_position(self):
         step = Step('HelloWorld', 'helloWorld', position={'x': 13, 'y': 42})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, position={'x': 13, 'y': 42})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, position={'x': 13, 'y': 42})
 
     def test_init_with_risk(self):
         step = Step('HelloWorld', 'helloWorld', risk=42)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, risk=42)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, risk=42)
 
     def test_init_templated(self):
         step = Step('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, templated=True, raw_representation={'a': 42})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, templated=True, raw_representation={'a': 42})
 
     def test_get_execution_uid(self):
         step = Step('HelloWorld', 'helloWorld')
@@ -88,11 +88,11 @@ class TestStep(unittest.TestCase):
 
     def test_init_app_action_only(self):
         step = Step('HelloWorld', 'helloWorld')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {})
 
     def test_init_app_and_action_name_different_than_method_name(self):
         step = Step(app='HelloWorld', action='Hello World')
-        self.__compare_init(step, '', 'Hello World', 'HelloWorld', '', {})
+        self.__compare_init(step, '', 'Hello World', 'HelloWorld', {})
 
     def test_init_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -104,15 +104,15 @@ class TestStep(unittest.TestCase):
 
     def test_init_app_action_only_with_device(self):
         step = Step('HelloWorld', 'helloWorld', device='test')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'test', {})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, device='test')
 
     def test_init_with_inputs_no_conversion(self):
         step = Step('HelloWorld', 'returnPlusOne', inputs={'number': -5.6})
-        self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6})
+        self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', {'number': -5.6})
 
     def test_init_with_inputs_with_conversion(self):
         step = Step('HelloWorld', 'returnPlusOne', inputs={'number': '-5.6'})
-        self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '', {'number': -5.6})
+        self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', {'number': -5.6})
 
     def test_init_with_invalid_input_name(self):
         with self.assertRaises(InvalidInput):
@@ -126,13 +126,13 @@ class TestStep(unittest.TestCase):
         triggers = [Condition('HelloWorld', 'regMatch', args={'regex': '(.*)'}),
                     Condition('HelloWorld', 'regMatch', args={'regex': 'a'})]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, triggers=['regMatch', 'regMatch'])
 
     def test_init_with_widgets(self):
         widget_tuples = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
         widgets = [{'app': widget[0], 'name': widget[1]} for widget in widget_tuples]
         step = Step('HelloWorld', 'helloWorld', widgets=widgets)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, widgets=widget_tuples)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, widgets=widget_tuples)
 
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')
