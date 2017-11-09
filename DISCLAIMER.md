@@ -24,7 +24,7 @@ Nothing in this Work is intended to constitute an endorsement, explicit or
 implied, by the U.S. Government of any particular manufacturer's product or
 service.
 
-# Disclaimer of Endorsement
+## Disclaimer of Endorsement
 
 Reference herein to any specific commercial product, process, or service by
 trade name, trademark, manufacturer, or otherwise, in this Work does not
