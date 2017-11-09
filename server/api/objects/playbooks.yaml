@@ -204,9 +204,9 @@ DisplayStep:
       items:
         $ref: '#/definitions/Condition'
     device:
-      description: Name of the device to use
-      type: string
-      example: server4
+      description: ID of the device to use
+      type: integer
+      example: 42
     risk:
       description: risk associated with this step failing
       type: number
